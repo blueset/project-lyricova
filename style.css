@@ -1,0 +1,57 @@
+body{
+	padding-top: 40px;
+}
+footer{
+	margin-top: 10px;
+	height: 60px;
+    background-color: #f5f5f5;
+}
+.song-box{
+	padding: 10px;
+	border: 1px solid #AAA;
+	box-shadow: 0 0px 5px rgba(0,0,0,0.6);
+	margin-bottom:10px;
+}
+.song-box .lyric, textarea.lyric{
+	line-height: 35px;
+	font-size: 2em;
+}
+.meta span{
+	font-weight: bold;
+	color: #888;
+}
+.meta span:hover{
+	color:#444;
+}
+.header.hero-unit{
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center, linear-gradient(45deg, #020031 0%,#6d3353 100%);
+	color:#fff;
+	border-radius: 0;
+}
+.control-group label{
+	padding: 5px 5px 0 0;
+}
+.control-group input, .control-group textarea{
+	margin-bottom:0;
+}
+/*Media Enq*/
+@media (max-width: 979px){
+	.navbar-fixed-top {
+		margin-bottom: 0px;
+	}
+	body{
+		padding-top: 0px;
+	}
+}
+
+@media (max-width: 767px){
+	body{
+		padding: 0;
+	}
+	.container, .navbar .container{
+		padding: 0 10px;
+	}
+	.hero-unit {
+		padding: 60px 20px;
+	}
+}
