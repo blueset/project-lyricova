@@ -32,3 +32,7 @@ Through Project Gy, people can share their thoughts and feelings through existin
 * Search Module
 * Ajax-ize
 * Theme Support
+* Wallpaper Generation
+* Music Streaming (?)
+* Wysiwyg editor for comment
+* Auto identify song meta in single string (?)

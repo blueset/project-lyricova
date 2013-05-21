@@ -131,7 +131,7 @@ class user_model extends CI_Model {
      public function allow_to_delete($post)
      {
          if(!$this->allow_to_edit($post)===TRUE){return $this->allow_to_edit($post);}else{
-            if($this->session->userdata['role']==2 && $post->user_id == $this->session->userdata['user_id']){return TRUE;}
+            if($this->session->userdata['role']<=2 && $post->user_id == $this->session->userdata['user_id']){return TRUE;}
             elseif($this->session->userdata['role']==3){return TRUE;}
             else{return 'Your account is not eligible to delete this post.';}
          }
