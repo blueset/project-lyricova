@@ -5,8 +5,15 @@ Project Gy (歌语计划)
 
 Current Version:
 
-__Alpha 0.1 build 20130521__
-* First upload to Github
+* __Alpha 0.1 build 20130522__
+ * Optimize - Way of getting session data
+ * Fix - Grammar error in `index.php`
+ * Optimized - Page redirect after submit post
+ * Index Styling (Issue 1)
+ * Delete JS dealing with special chars.
+
+* Alpha 0.1 build 20130520
+ * First upload to Github
 
 ## What is 'Project Gy'?
 Project Gy, a lyric-centered web-log based on PHP and MySQL. Created by [Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)

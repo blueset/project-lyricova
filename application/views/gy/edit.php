@@ -14,10 +14,16 @@
 		</div>
 	</div>
 	<div class="container">
-		<?php if($success ){ ?>
+		<?php if($success){ ?>
 		<div class="alert alert-success fade in ">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
   			<strong>Success!</strong> Edited.
+		</div>
+		<?php } ?>
+		<?php if($_GET['post']==='1' ){ ?>
+		<div class="alert alert-success fade in ">
+  			<a href="#" class="close" data-dismiss="alert">&times;</a>
+  			<strong>Success!</strong> Post has been sent to the database.
 		</div>
 		<?php } ?>
 

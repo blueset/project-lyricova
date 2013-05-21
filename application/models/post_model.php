@@ -23,12 +23,12 @@ class post_model extends CI_Model {
     'user_id' => $this->session->userdata['user_id']
   );
   
-  return $this->db->insert('posts', $data);
+  $this->db->insert('posts', $data);
+  return $this->db->insert_id();
 }
   public function get_post($per_page=20,$offset=0){	
     $this->db->order_by("id", "desc");
   	$query = $this->db->get('posts',$per_page,$offset);
-
   	return $query->result();
   }
   public function get_by_id($id)

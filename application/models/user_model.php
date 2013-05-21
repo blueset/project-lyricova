@@ -94,9 +94,15 @@ class user_model extends CI_Model {
          $query = $this->db->get('users');
          return $query->num_rows() ? TRUE : FALSE;
      }
+     public function get_session($data_name)
+     {
+         if (isset( $this->session->userdata[$data_name]))
+            {return  $this->session->userdata[$data_name];}
+            else {return null;}
+     }
     public function logged_in()
      {
-         if( ! $this->session->userdata['logged_in']===TRUE){
+         if( ! $this->get_session('logged_in')===TRUE){
             return TRUE;
          }else{
             return 'You have not logged in.';
@@ -116,23 +122,23 @@ class user_model extends CI_Model {
      public function allow_to_post()
      {
          if(!$this->logged_in()===TRUE){return $this->logged_in();}else{
-            if ($this->session->userdata['role']>0){return 'Your account is not eligible to post.';}
+            if ($this->get_session('role')>0){return 'Your account is not eligible to post.';}
             else{return TRUE;}
          }
      }
      public function allow_to_edit($post)
      {
          if (!$this->allow_to_post()===TRUE){return $this->allow_to_post();}else{
-            if ($this->session->userdata['role']==1 && $post->user_id == $this->session->userdata['user_id']){return TRUE;}
-            elseif($this->session->userdata['role']>1){return TRUE;}
+            if ($this->get_session('role')==1 && $post->user_id == $this->get_session('user_id')){return TRUE;}
+            elseif($this->get_session('role')>1){return TRUE;}
             else{return 'Your account is not eligible to edit this post.';}
          }
      }
      public function allow_to_delete($post)
      {
          if(!$this->allow_to_edit($post)===TRUE){return $this->allow_to_edit($post);}else{
-            if($this->session->userdata['role']<=2 && $post->user_id == $this->session->userdata['user_id']){return TRUE;}
-            elseif($this->session->userdata['role']==3){return TRUE;}
+            if($this->get_session('role')<=2 && $post->user_id == $this->get_session('user_id')){return TRUE;}
+            elseif($this->get_session('role')==3){return TRUE;}
             else{return 'Your account is not eligible to delete this post.';}
          }
      }

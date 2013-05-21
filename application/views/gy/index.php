@@ -15,14 +15,15 @@
 	</div>
 	<div class="container">
 		<div class="row">
+
 			<?php foreach ($posts as $postitem): ?>
 			<?php
-			$lyricinline=$this->typography->nl2br_except_pre($postitem->lyric);?>
+			$lyricinline=strip_quotes($this->typography->nl2br_except_pre($postitem->lyric));?>
 			<div class="songbox-cont span4">
 				<div class="song-box">
 				<div class="lyric"><?=$this->typography->nl2br_except_pre($postitem->lyric)?></div>
 				<div class="meta muted"><small>
-					<span class="title"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?><a data-toggle="collapse" data-target="#detail-<?=$postitem->id?>" href="#detail-<?=$postitem->id?>">More...</a>
+					<span class="title"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?><a data-toggle="collapse" data-target="#detail-<?=$postitem->id?>" onclick="mansory()" href="#detail-<?=$postitem->id?>">More...</a>
 				</small></div>
   				<div id="detail-<?=$postitem->id?>" class="collapse">
   					<?php if(!$postitem->origin==""){ echo '<strong>Original Lyric:</strong> '.$this->typography->nl2br_except_pre($postitem->origin).'<br>';} ?>
@@ -30,7 +31,7 @@
   					<?php if(!$postitem->translator==""){ echo '<strong>Translator:</strong> '.$postitem->translator.'<br>';} ?>
   					<?php if(!$postitem->comment==""){ echo '<strong>Comment:</strong> '.$this->typography->nl2br_except_pre($postitem->comment).'<br>';} ?>
         			<small class="muted">
-        				Posted in <time><?=$postitem->time?></time> by <?=$this->user_model->get_by_id($postitem->user_id)->display_name?>. 
+        				Posted at <time><?=$postitem->time?></time> by <?=$this->user_model->get_by_id($postitem->user_id)->display_name?>. 
         				<?php if($this->user_model->allow_to_edit($postitem)===TRUE){ echo anchor('edit/'.$postitem->id, 'Edit'); }?> 
         				<?php if($this->user_model->allow_to_delete($postitem)===TRUE){ echo '<a href="javascript:void(0)" onclick="delConfModal('.$postitem->id.",'".str_replace(PHP_EOL, "", $lyricinline)."')\">Delete</a>"; }?>
         			</small>

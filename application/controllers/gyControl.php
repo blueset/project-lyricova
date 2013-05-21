@@ -10,7 +10,7 @@ class GyControl extends CI_Controller {
   }
 	public function index($page=1){
 		$this->load->library('pagination');
-		
+		$this->load->helper('string');
 		$this->load->library('typography');
 
 		$config['base_url'] = site_url('/');
@@ -25,7 +25,7 @@ class GyControl extends CI_Controller {
   		}else{
    			$offset=$config['per_page']*($pageNum-1);
   		}
-		$data['posts'] = $this->post_model->get_post($config['per_page'],$pageNum);
+		$data['posts'] = $this->post_model->get_post($config['per_page'],$offset);
 		$this->load->view('gy/index',$data);
 	}
 	public function post(){
@@ -47,9 +47,10 @@ class GyControl extends CI_Controller {
 		}
   		else
   		{
-    		$posting = $this->post_model->post_item();
+    		$post_id = $this->post_model->post_item();
     		$data['success'] = TRUE;
-    		redirect('/edit/'.$posting->id, 'refresh');
+        $data['is_post'] = TRUE;
+    		redirect('/edit/'.$post_id.'?post=1'/*, 'refresh'*/);
   		}
 	}
 	public function edit($id){
