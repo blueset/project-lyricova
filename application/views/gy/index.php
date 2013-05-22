@@ -14,16 +14,16 @@
 		</div>
 	</div>
 	<div class="container">
-		<div class="row">
+		<div class="row songbox-row">
 
 			<?php foreach ($posts as $postitem): ?>
 			<?php
 			$lyricinline=strip_quotes($this->typography->nl2br_except_pre($postitem->lyric));?>
-			<div class="songbox-cont span4">
+			<div class="songbox-cont span4" >
 				<div class="song-box">
 				<div class="lyric"><?=$this->typography->nl2br_except_pre($postitem->lyric)?></div>
 				<div class="meta muted"><small>
-					<span class="title"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?><a data-toggle="collapse" data-target="#detail-<?=$postitem->id?>" onclick="mansory()" href="#detail-<?=$postitem->id?>">More...</a>
+					<span class="title" onclick="window.open('<?= base_url('/post/'.$postitem->id)?>')"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?><a data-toggle="collapse" data-target="#detail-<?=$postitem->id?>" href="#detail-<?=$postitem->id?>">More...</a>
 				</small></div>
   				<div id="detail-<?=$postitem->id?>" class="collapse">
   					<?php if(!$postitem->origin==""){ echo '<strong>Original Lyric:</strong> '.$this->typography->nl2br_except_pre($postitem->origin).'<br>';} ?>

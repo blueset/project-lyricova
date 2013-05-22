@@ -66,7 +66,7 @@ class user_model extends CI_Model {
          {
              return $user->password == $password ? TRUE : FALSE;
          }
-         return FALSE;                                    //当用户名不存在时
+         return FALSE;  //当用户名不存在时
      }
      /**
       * 添加用户
@@ -83,11 +83,6 @@ class user_model extends CI_Model {
          }
          return FALSE;
      }
- /**
-      * 检查邮箱账号是否存在.
-      * @param string $email
-      * @return boolean
-      */
      function email_exists($email)
      {
          $this->db->where('email', $email);
@@ -102,7 +97,7 @@ class user_model extends CI_Model {
      }
     public function logged_in()
      {
-         if( ! $this->get_session('logged_in')===TRUE){
+         if( $this->get_session('logged_in')===TRUE){
             return TRUE;
          }else{
             return 'You have not logged in.';

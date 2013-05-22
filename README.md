@@ -5,7 +5,13 @@ Project Gy (歌语计划)
 
 Current Version:
 
-* __Alpha 0.1 build 20130522__
+* __Alpha 0.1 build 20130523__
+ * Fix - Minor problem with index styling.
+ * Fix - Error dealing with not existing item
+ * Add - 404 Page added
+ * Add - Single Post Page (click on song name in index page)
+
+* Alpha 0.1 build 20130522
  * Optimize - Way of getting session data
  * Fix - Grammar error in `index.php`
  * Optimized - Page redirect after submit post
@@ -43,3 +49,5 @@ Through Project Gy, people can share their thoughts and feelings through existin
 * Music Streaming (?)
 * Wysiwyg editor for comment
 * Auto identify song meta in single string (?)
+* RSS output
+* Templating functions

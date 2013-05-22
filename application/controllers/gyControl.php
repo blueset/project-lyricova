@@ -29,20 +29,20 @@ class GyControl extends CI_Controller {
 		$this->load->view('gy/index',$data);
 	}
 	public function post(){
-		$this->load->helper('form');
-        $this->load->library('form_validation');
+		  $this->load->helper ('form');
+      $this->load->library('form_validation');
 
-		$this->form_validation->set_rules('lyric', 'Lyric', 'required');
+		  $this->form_validation->set_rules('lyric', 'Lyric', 'required');
   		$this->form_validation->set_rules('name', 'Song Name', 'required');
   		$this->form_validation->set_rules('artist', 'Artist', 'required');
   		$data['success']=FALSE;
   		$data['errinfo']='';
-  		$logged_in = $this->user_model->allow_to_post();
-  		if (!$logged_in===TRUE){
+  		$logged_in = $this->user_model->logged_in();
+  		if (!($logged_in===TRUE)){
   			$data['errinfo']=$logged_in;
   		}
   		$form_valid=$this->form_validation->run();
-		if (($form_valid === FALSE) && !($logged_in===TRUE)){
+		if (($form_valid === FALSE) || !($logged_in===TRUE)){
 			$this->load->view('gy/post',$data);
 		}
   		else
@@ -53,6 +53,20 @@ class GyControl extends CI_Controller {
     		redirect('/edit/'.$post_id.'?post=1'/*, 'refresh'*/);
   		}
 	}
+  public function single($id)
+  {
+    $this->load->helper('string');
+    $this->load->library('typography');
+    $data['post']=$this->post_model->get_by_id($id);
+    if($data['post']===FALSE){$this->load->view('gy/404');}
+    else{
+      $this->load->view('gy/single',$data);
+    }
+  }
+  public function p404()
+  {
+    $this->load->view('gy/404');
+  }
 	public function edit($id){
 		//Load Helpers
 		$this->load->helper('form');
@@ -72,14 +86,14 @@ class GyControl extends CI_Controller {
   		}
   		//var_dump($this->input->post('submit'));
   		$clicked_post = $this->input->post('submit'); // "post" nutton clicked?
-  		
-  		
-  		$form_valid=$this->form_validation->run();
-
-  		if (($form_valid === FALSE) || ($clicked_post===FALSE) || !($allow===TRUE)){
-			$this->load->view('gy/edit',$data);
-		}
-  		else
+  		$form_valid=$this->form_validation->run(); // Form validation
+      //IF item not exit
+      if($data['post']===FALSE){$this->load->view('gy/404');}
+      //Output Normal
+  		elseif (($form_valid === FALSE) || ($clicked_post===FALSE) || !($allow===TRUE)){
+			 $this->load->view('gy/edit',$data);
+  		}
+  		else // Process Edit
   		{
   			$this->post_model->edit_post($id);
   			$data['post']=$this->post_model->get_by_id($id);
@@ -95,13 +109,16 @@ class GyControl extends CI_Controller {
   		$data['post']=$this->post_model->get_by_id($id);
   		//Check Allowance
   		$allow = $this->user_model->allow_to_delete($data['post']); //allow to post?
-  		if (!$allow===TRUE){
+  		//Store Err info
+      if (!$allow===TRUE){
   			$data['errinfo']=$allow;
   		}
+      //If post not exist
+      if($data['post']===FALSE){$this->load->view('gy/404');}
   		//Display
-  		if (!($allow===TRUE)){
-			$this->load->view('gy/delete',$data);
-		}
+  		elseif (!($allow===TRUE)){
+			 $this->load->view('gy/delete',$data);
+		  }
   		else
   		{
   			$data['post']=$this->post_model->get_by_id($id);

@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://localhost/project-gy';
+$config['base_url']	= 'http://localhost/project-gy/';
 
 /*
 |--------------------------------------------------------------------------

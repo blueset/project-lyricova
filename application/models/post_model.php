@@ -34,7 +34,11 @@ class post_model extends CI_Model {
   public function get_by_id($id)
   {
     $query = $this->db->get_where('posts', array('id' => $id));
-    return $query->row();
+    if($this->db->affected_rows()>0){
+      return $query->row();
+    }else{
+      return false;
+    }
   }
 	public function get_post_number(){
 		return $this->db->count_all();
