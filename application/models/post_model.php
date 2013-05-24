@@ -71,5 +71,21 @@ class post_model extends CI_Model {
       return TRUE;
     }
   }
+  public function search($keyword,$per_page=20,$offset=0)
+  {
+    //Processing keywords
+    $rfrom = array("　", ",", '，');
+    $keyword = str_replace($rfrom, ' ', $keyword);
+    $keywords = explode(' ', $keyword);
+    $count = count($keywords);
+    //Generate Query
+    $concat = '`comment`,`translator`,`translate`,`origin`,`album`,`featuring`,`artist`,`name`,`lyric`';
+    $this->db->like('concat('.$concat.')', $keywords[0]);
+    for ($i=1; $i < $count; $i++) { 
+      $this->db->like('concat('.$concat.')', $keywords[$i]);
+    }
+    $query = $this->db->get('posts',$per_page,$offset);
+    return $query->result();
+  }
 }
 ?>

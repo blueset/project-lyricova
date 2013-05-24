@@ -13,7 +13,7 @@ class GyControl extends CI_Controller {
 		$this->load->helper('string');
 		$this->load->library('typography');
 
-		$config['base_url'] = site_url('/');
+		$config['base_url'] = site_url('/page/');
 		$config['total_rows'] = $this->post_model->get_post_number();
 		$config['per_page'] = 20; 
 		$config['uri_segment'] = 2; 
@@ -29,29 +29,28 @@ class GyControl extends CI_Controller {
 		$this->load->view('gy/index',$data);
 	}
 	public function post(){
-		  $this->load->helper ('form');
-      $this->load->library('form_validation');
-
-		  $this->form_validation->set_rules('lyric', 'Lyric', 'required');
-  		$this->form_validation->set_rules('name', 'Song Name', 'required');
-  		$this->form_validation->set_rules('artist', 'Artist', 'required');
-  		$data['success']=FALSE;
-  		$data['errinfo']='';
-  		$logged_in = $this->user_model->logged_in();
-  		if (!($logged_in===TRUE)){
-  			$data['errinfo']=$logged_in;
-  		}
-  		$form_valid=$this->form_validation->run();
-		if (($form_valid === FALSE) || !($logged_in===TRUE)){
+	  $this->load->helper ('form');
+    $this->load->library('form_validation');
+	  $this->form_validation->set_rules('lyric', 'Lyric', 'required');
+ 		$this->form_validation->set_rules('name', 'Song Name', 'required');
+ 		$this->form_validation->set_rules('artist', 'Artist', 'required');
+ 		$data['success']=FALSE;
+ 		$data['errinfo']='';
+ 		$logged_in = $this->user_model->logged_in();
+ 		if (!($logged_in===TRUE)){
+ 			$data['errinfo']=$logged_in;
+ 		}
+ 		$form_valid=$this->form_validation->run();
+  	if (($form_valid === FALSE) || !($logged_in===TRUE)){
 			$this->load->view('gy/post',$data);
 		}
-  		else
-  		{
-    		$post_id = $this->post_model->post_item();
-    		$data['success'] = TRUE;
-        $data['is_post'] = TRUE;
-    		redirect('/edit/'.$post_id.'?post=1'/*, 'refresh'*/);
-  		}
+  	else
+  	{
+    	$post_id = $this->post_model->post_item();
+    	$data['success'] = TRUE;
+       $data['is_post'] = TRUE;
+    	redirect('/edit/'.$post_id.'?post=1'/*, 'refresh'*/);
+  	}
 	}
   public function single($id)
   {
@@ -104,31 +103,43 @@ class GyControl extends CI_Controller {
 	public function delete($id)
 	{
 		//Init vars
-  		$data['success']=FALSE;
-  		$data['errinfo']='';
-  		$data['post']=$this->post_model->get_by_id($id);
-  		//Check Allowance
-  		$allow = $this->user_model->allow_to_delete($data['post']); //allow to post?
-  		//Store Err info
-      if (!$allow===TRUE){
-  			$data['errinfo']=$allow;
-  		}
-      //If post not exist
-      if($data['post']===FALSE){$this->load->view('gy/404');}
-  		//Display
-  		elseif (!($allow===TRUE)){
-			 $this->load->view('gy/delete',$data);
-		  }
-  		else
-  		{
-  			$data['post']=$this->post_model->get_by_id($id);
-  			if ($this->post_model->delete_post($id)){
-    			$data['success'] = TRUE;
-    			$this->load->view('gy/delete',$data);
-    		}else{
-    			$data['errinfo']='Delete failed';
-    			$this->load->view('gy/delete',$data);
-    		}
-  		}
+  	$data['success']=FALSE;
+		$data['errinfo']='';
+ 		$data['post']=$this->post_model->get_by_id($id);
+ 		//Check Allowance
+ 		$allow = $this->user_model->allow_to_delete($data['post']); //allow to post?
+ 		//Store Err info
+    if (!$allow===TRUE){
+ 			$data['errinfo']=$allow;
+ 		}
+    //If post not exist
+    if($data['post']===FALSE){$this->load->view('gy/404');}
+ 		//Display
+ 		elseif (!($allow===TRUE)){
+		 $this->load->view('gy/delete',$data);
+	  }
+ 		else
+ 		{
+ 			$data['post']=$this->post_model->get_by_id($id);
+ 			if ($this->post_model->delete_post($id)){
+   			$data['success'] = TRUE;
+   			$this->load->view('gy/delete',$data);
+   		}else{
+   			$data['errinfo']='Delete failed';
+   			$this->load->view('gy/delete',$data);
+   		}
+ 		}
 	}
+  public function search()
+  {
+    //call on libraries
+    $this->load->helper('string');
+    $this->load->library('typography');
+    //Call on search func.
+    $keyword = $this->input->get('q',TRUE);
+    $data['posts'] = $this->post_model->search($keyword,20,0);
+    $data['keyword'] = $keyword;
+    $data['count'] = count($data['posts']);
+    $this->load->view('gy/search',$data);
+  }
 }
