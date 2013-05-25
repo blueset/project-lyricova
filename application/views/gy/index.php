@@ -23,13 +23,13 @@
 				<div class="song-box">
 				<div class="lyric"><?=$this->typography->nl2br_except_pre($postitem->lyric)?></div>
 				<div class="meta muted"><small>
-					<span class="title" onclick="window.open('<?= base_url('/post/'.$postitem->id)?>')"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?><a data-toggle="collapse" data-target="#detail-<?=$postitem->id?>" href="#detail-<?=$postitem->id?>">More...</a>
+					<span class="title" onclick="window.open('<?= base_url('/post/'.$postitem->id)?>')"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?><a data-toggle="collapse" data-target="#detail-<?=$postitem->id?>" href="javascript:void(0)">More...</a>
 				</small></div>
   				<div id="detail-<?=$postitem->id?>" class="collapse">
-  					<?php if(!$postitem->origin==""){ echo '<strong>Original Lyric:</strong> '.$this->typography->nl2br_except_pre($postitem->origin).'<br>';} ?>
-  					<?php if(!$postitem->translate==""){ echo '<strong>Translated Lyric:</strong> '.$this->typography->nl2br_except_pre($postitem->translate).'<br>';} ?>
+  					<?php if(!$postitem->origin==""){ echo '<strong>Original Lyric:</strong> <br>'.$this->typography->nl2br_except_pre($postitem->origin).'<br>';} ?>
+  					<?php if(!$postitem->translate==""){ echo '<strong>Translated Lyric:</strong> <br>'.$this->typography->nl2br_except_pre($postitem->translate).'<br>';} ?>
   					<?php if(!$postitem->translator==""){ echo '<strong>Translator:</strong> '.$postitem->translator.'<br>';} ?>
-  					<?php if(!$postitem->comment==""){ echo '<strong>Comment:</strong> '.$this->typography->nl2br_except_pre($postitem->comment).'<br>';} ?>
+  					<?php if(!$postitem->comment==""){ echo '<strong>Comment:</strong><br>'.$this->typography->nl2br_except_pre($postitem->comment).'<br>';} ?>
         			<small class="muted">
         				Posted at <time><?=$postitem->time?></time> by <?=$this->user_model->get_by_id($postitem->user_id)->display_name?>. 
         				<?php if($this->user_model->allow_to_edit($postitem)===TRUE){ echo anchor('edit/'.$postitem->id, 'Edit'); }?> 
