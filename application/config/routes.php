@@ -50,6 +50,10 @@ $route['post/(:num)'] = "GyControl/single/$1";
 $route['delete/(:num)'] = "GyControl/delete/$1";
 $route['s'] = "GyControl/search";
 $route['404_override'] = "GyControl/p404";
+
+
+$route['imggen/(:num)/(:num)'] = "GyControl/image_gen/$1/$2";
+$route['imggen/(:num)'] = "GyControl/image_gen/$1/1";
 /*$route['404_override'] = '';*/
 
 /*$route['news/create'] = 'news/create';

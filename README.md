@@ -17,7 +17,7 @@ Through Project Gy, people can share their thoughts and feelings through existin
 Current Version:
 * __Alpha 0.1 build 20130525__
  * Optimise - Comment display on Index
- * Add - Image generation module
+ * Add - Image generation module *Alpha
 
 * Alpha 0.1 build 20130524
  * Add - search module
@@ -45,6 +45,8 @@ This project is built with help of the following open source projects:
 * [Twitter Bootstrap](https://github.com/twitter/bootstrap)
 * [jQuery](https://github.com/jquery/jquery)
 * [jQuery Masonry](http://masonry.desandro.com/)
+* [Yanone](http://www.yanone.de/typedesign/kaffeesatz/) for font "Yanone Kaffeesatz"
+* [Screen MFG Co.](http://www.screen.co.jp/press/pdf/NR090824C.pdf) and [iPlaysoft](http://www.iplaysoft.com/hiragino-sans.html)for "Hiragino Sans W6"
 
 ## To-dos and Dones
 ### What is done:
