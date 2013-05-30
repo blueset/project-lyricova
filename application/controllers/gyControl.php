@@ -142,48 +142,26 @@ class GyControl extends CI_Controller {
     $data['count'] = count($data['posts']);
     $this->load->view('gy/search',$data);
   }
-  
-  public function image_gen($id,$style=1)
+  public function getpostxml($id)
   {
-    $this->load->model('imggen_model');
-    
-
     $post = $this->post_model->get_by_id($id);
-    if($post===FALSE){$this->load->view('gy/404');}else{
-      header ("Content-type: image/png");
-      $string = $post->lyric;
+    $string = <<<XML
+<?xml version='1.0' encoding='utf-8'?>
+<post>
+XML;
+
+    if (!($post === FALSE)){
+      $string .= "\n".'<lyric>'.$post->lyric.'</lyric>';
       $meta = $post->name." by ".$post->artist;
       $meta .= (strlen($post->featuring)) ? " feat. ".$post->featuring : "";
       $meta .= (strlen($post->album)) ? " in ".$post->album : "";
-      switch($style){
-        case 3:
-          $size = 45;
-          $lineheight = 70;
-          $font = "./fonts/YanoneKaffeesatz-Regular.ttf";
-          $metasize = 20;
-          $metalineh = 50;
-          $this->imggen_model->imggen_01($string,$size,$lineheight,$font,$meta,$metasize, $metalineh);
-          break;
-        case 2:
-          $size = 45;
-          $lineheight = 70;
-          $font = "./fonts/YanoneKaffeesatz-Thin.ttf";
-          $metasize = 20;
-          $metalineh = 50;
-          $this->imggen_model->imggen_01($string,$size,$lineheight,$font,$meta,$metasize, $metalineh);
-          break;
-        case 1:
-        default:
-          $size = 45;
-          $lineheight = 70;
-          $font = "./fonts/w6.ttf";
-          $metasize = 15;
-          $metalineh = 30;
-          $this->imggen_model->imggen_01($string,$size,$lineheight,$font,$meta,$metasize, $metalineh);
-          break;
-      }
-      
+      $string .= "\n".'<metainfo>'.$meta.'</metainfo>';
     }
-    
+    else{
+      $string .= "\n".'<lyric>Error! Post not found.</lyric>';
+      $string .= "\n".'<metainfo>Error! Post not found.</metainfo>';
+    }
+    $string .= "\n".'</post>';
+    echo $string; 
   }
 }

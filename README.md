@@ -10,12 +10,15 @@ This project is inspired by my daily updates with lyrics on sites like Facebook 
 
 Through Project Gy, people can share their thoughts and feelings through existing lyrics, and share them with all over the world (just people who can see it *=_=*) by simply type in the lyric and some related information. 
 
-* _By lyrics, here I means lyrics as in the songs.
+_*By lyrics, here I means lyrics as in the songs._
 
 ## Current Version & Changelog
 
 Current Version:
-* __Alpha 0.1 build 20130525__
+* __Alpha 0.1 build 20130530__
+ * Add - Image generation module
+ 
+* Alpha 0.1 build 20130525
  * Optimise - Comment display on Index
  * Add - Image generation module *Alpha
 

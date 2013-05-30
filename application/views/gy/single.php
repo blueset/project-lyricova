@@ -35,13 +35,10 @@
   					<p style="padding-top:10px;">
   						<?php if($this->user_model->allow_to_edit($post)===TRUE){ echo anchor('edit/'.$post->id, 'Edit', 'class="btn btn-mini btn-primary"'); }?> 
         				<?php if($this->user_model->allow_to_delete($post)===TRUE){ echo '<a href="javascript:void(0)" class="btn btn-mini" onclick="delConfModalSingle()">Delete</a>'; }?>
-        			</p>
-        			<p>Generate wallpaper (1366*768) </p>
-					<div class="btn-group">
-						<?=anchor('imggen/'.$post->id.'/1', 'CJK', 'class="btn btn-mini"')?>
-						<?=anchor('imggen/'.$post->id.'/2', 'Europe Light', 'class="btn btn-mini"')?>
-						<?=anchor('imggen/'.$post->id.'/3', 'Europe Bold', 'class="btn btn-mini"')?>
-					</div>
+        			
+        			
+						<?=anchor('imggen/new/'.$post->id, 'Generate Image', 'class="btn btn-mini"')?>
+					</p>
         		</dl>
         				
         				

@@ -32,6 +32,7 @@
 					</div>
 				</blockquote>
 			</div>
+			<p><small>You are trying to access <?=current_url();?> which returns a HTTP 404 error.</small></p>
 		</div>
 	</div>
 	<?php $this->load->view('gy/footer');?>

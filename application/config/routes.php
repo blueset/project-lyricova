@@ -52,8 +52,14 @@ $route['s'] = "GyControl/search";
 $route['404_override'] = "GyControl/p404";
 
 
-$route['imggen/(:num)/(:num)'] = "GyControl/image_gen/$1/$2";
-$route['imggen/(:num)'] = "GyControl/image_gen/$1/1";
+//$route['imggen/(:num)/(:num)'] = "GyControl/image_gen/$1/$2";
+//$route['imggen/(:num)'] = "GyControl/image_gen/$1/1";
+$route['imggen/new'] = "imggen/newimg";
+$route['imggen/new/(:num)'] = "imggen/newimg/$1";
+$route['imggen/edit/(:num)'] = "imggen/editimg/$1";
+$route['imggen/output'] = "imggen/output";
+$route['imggen/output/(:num).png'] = "imggen/output/$1";
+$route['imggen/getpostxml/(:num).xml'] = "GyControl/getpostxml/$1";
 /*$route['404_override'] = '';*/
 
 /*$route['news/create'] = 'news/create';

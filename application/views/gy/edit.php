@@ -17,7 +17,7 @@
 		<?php if($success){ ?>
 		<div class="alert alert-success fade in ">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
-  			<strong>Success!</strong> Edited.
+  			<strong>Success!</strong> Edited. <?=anchor('post/'.$post->id, 'View post');?>
 		</div>
 		<?php } 
 			  if(@$_GET['post']==='1' ){ ?>
@@ -71,7 +71,7 @@ border-radius: 0; margin: 0 -1px;">feat.</span>
 				<label for="comment">Comment</label>
 				<textarea name="comment" id="comment" name="comment" cols="30" rows="4" class="span5" placeholder="(optional)"><?=$post->comment?></textarea>
 				<div>
-				<input type="submit" name="submit" value="Submit" class="btn btn-primary">
+				<input type="submit" name="submit" value="Edit" class="btn btn-primary">
 				<input type="button" value="Draft" class="btn disabled">	
 				</div>
 				

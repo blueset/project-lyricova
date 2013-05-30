@@ -62,9 +62,6 @@ footer{
           transition-property: left, right, top;
 }
 /* 404 Page */
-.cont404 {
-	
-}
 .cont404 .span7{
 	height:340px;
 }
@@ -103,11 +100,73 @@ footer{
 	color:#777;
 	font-style: italic;
 	line-height: 1.2em;
-	padding-top: 1em;
+	padding-top: 1em;.
 }
 .songb-single-cont span{
 	text-wrap:none;
 }
+
+/* Bootstrap code examples
+-------------------------------------------------- */
+
+/* Base class */
+.imggen-preview {
+  position: relative;
+  margin: 15px 0;
+  /*padding: 39px 19px 14px;
+  *padding-top: 19px;*/
+  background-color: #fff;
+  border: 1px solid #ddd;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+
+/* Echo out a label for the example */
+.imggen-preview:after {
+  content: "Preview";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #9da0a4;
+  -webkit-border-radius: 4px 0 4px 0;
+     -moz-border-radius: 4px 0 4px 0;
+          border-radius: 4px 0 4px 0;
+}
+
+/* Remove spacing between an example and it's code */
+.imggen-preview + .prettyprint {
+  margin-top: -20px;
+  padding-top: 15px;
+}
+
+/* Tweak examples
+------------------------- */
+.imggen-preview > p:last-child {
+  margin-bottom: 0;
+}
+.imggen-preview .table,
+.imggen-preview .progress,
+.imggen-preview .well,
+.imggen-preview .alert,
+.imggen-preview .hero-unit,
+.imggen-preview .pagination,
+.imggen-preview .navbar,
+.imggen-preview > .nav,
+.imggen-preview blockquote {
+  margin-bottom: 5px;
+}
+.imggen-preview .pagination {
+  margin-top: 0;
+}
+
+
+
 /*Media Enq*/
 @media (max-width: 979px){
 	.navbar-fixed-top {

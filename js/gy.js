@@ -1,4 +1,4 @@
-
+/* Index Styling */
 function mansonry() {
 	$('.container .songbox-row').masonry({
     	// options
@@ -50,3 +50,23 @@ $(function(){
 		$(".songbox-cont").removeClass("span6");
 	}
 });
+
+
+
+/* IMGGEN_get post info */
+function loadpost()
+{
+//.... AJAX script goes here ...
+	postid = $('#postid').val();
+  	$.get(currpath+"/imggen/getpostxml/"+postid+".xml",function (data,text) {
+  		
+  		$("#meta").val($(data).find("metainfo").text());
+  		$("#lyric").text($(data).find("lyric").text());
+  	});
+}
+$("#postid").keypress(function(evt){
+    if(evt.keyCode==13){
+    	loadpost();
+    	return 0;
+    }
+  });
