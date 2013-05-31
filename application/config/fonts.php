@@ -4,7 +4,7 @@
                    		  "w6");
  $config['fcapt'] = array("Yanone Thin (Europe)",
                  		  "Yanone Regular (Europe)",
-                   		  "Hiragino Sans W6 (CJK)");
+                   		  "Hiragino Sans W6 (CJ)");
  $config['fpath'] = array("./fonts/YanoneKaffeesatz-Thin.ttf",
                    		  "./fonts/YanoneKaffeesatz-Regular.ttf",
                    		  "./fonts/w6.ttf");

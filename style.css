@@ -14,8 +14,8 @@ footer{
 	background-color: #fff;
 }
 .song-box .lyric, textarea.lyric{
-	line-height: 35px;
-	font-size: 2em;
+	line-height: 1em;
+	font-size: 1.5em;
 }
 .meta span{
 	font-weight: bold;
@@ -100,7 +100,7 @@ footer{
 	color:#777;
 	font-style: italic;
 	line-height: 1.2em;
-	padding-top: 1em;.
+	padding-top: 1em;
 }
 .songb-single-cont span{
 	text-wrap:none;
@@ -165,7 +165,9 @@ footer{
   margin-top: 0;
 }
 
-
+.fix-height-thumb{
+	height:17em;
+}
 
 /*Media Enq*/
 @media (max-width: 979px){
@@ -176,10 +178,26 @@ footer{
 		padding-top: 0px;
 	}
 }
+@media (max-width: 979px) and (min-width: 768px){
+	.single-cont .song-box{
+		padding: 50px 0px;
+	}
+	.songb-single-cont{
+		font-size: 2.5em;
+		line-height: 1em;
+	}
 
+}
 @media (max-width: 767px){
 	body{
 		padding: 0;
+	}
+	.single-cont .song-box{
+		padding: 30px 0px;
+	}
+	.songb-single-cont{
+		font-size: 2em;
+		line-height: 1em;
 	}
 	.container, .navbar .container{
 		padding: 0 10px;

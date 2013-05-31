@@ -15,9 +15,13 @@ _*By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Alpha 0.1 build 20130530__
+* __Alpha 0.1 build 20130531__
+ * Add - Image generator tutorial
+ * Optimize - Home and Single page display style
+
+* Alpha 0.1 build 20130530
  * Add - Image generation module
- 
+
 * Alpha 0.1 build 20130525
  * Optimise - Comment display on Index
  * Add - Image generation module *Alpha
@@ -49,7 +53,8 @@ This project is built with help of the following open source projects:
 * [jQuery](https://github.com/jquery/jquery)
 * [jQuery Masonry](http://masonry.desandro.com/)
 * [Yanone](http://www.yanone.de/typedesign/kaffeesatz/) for font "Yanone Kaffeesatz"
-* [Screen MFG Co.](http://www.screen.co.jp/press/pdf/NR090824C.pdf) and [iPlaysoft](http://www.iplaysoft.com/hiragino-sans.html)for "Hiragino Sans W6"
+* [Screen MFG Co.](http://www.screen.co.jp/press/pdf/NR090824C.pdf) and [iPlaysoft](http://www.iplaysoft.com/hiragino-sans.html) for "Hiragino Sans W6"
+* [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
 
 ## To-dos and Dones
 ### What is done:

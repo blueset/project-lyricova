@@ -47,11 +47,11 @@
 							<option value="bc" <?php if($post->style == "bc"){echo "selected";}?>>Bottom center</option>
 							<option value="br" <?php if($post->style == "br"){echo "selected";}?>>Bottom Right</option>
 						</select>
-						<label for="background">Background Picture</label>
+						<label for="background">Background Picture <?=anchor('imggen/help#bg','<i class="icon-info-sign"></i>','style="color:grey;"')?></label>
 						<?=form_dropdown('background', $bgarray, $post->background);?>
 					</div>
 					<div class="span2">
-						<label for="font">Font</label>
+						<label for="font">Font <?=anchor('imggen/help#fonts','<i class="icon-info-sign"></i>','style="color:grey;"')?></label>
 						<?=form_dropdown('font', $fontlist, $post->font);?>
 						<label for="bgpos">Background Position</label>
 						<?=form_dropdown('bgpos', array('1'=>'Top Left',
@@ -82,7 +82,7 @@
 									<input type="number" name="width" id="width" value="<?=$post->width?>">
 									<label for="x_offset">X-offset</label>
 									<input type="number" name="x_offset" id="x_offset" value="<?=$post->x_offset?>">
-									<label for="textcolor">Text Color</label>
+									
 									
 								</div>
 								<div class="span2">
@@ -96,17 +96,20 @@
 									<input type="number" name="y_offset" id="y_offset" value="<?=$post->y_offset?>">
 									
 								</div>
+
+							</div>
+							<label for="textcolor">Text Color</label>
 								<select name="textcolor" id="textcolor" class="span5">
 										<option value="w" <?php if($post->textcolor == "w"){echo "selected";}?>>White (For dark backgrounds)</option>
 										<option value="b" <?php if($post->textcolor == "b"){echo "selected";}?>>Black (For bright backgrounds)</option>
 									</select>
-							</div>
 							
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="span6">
+				<?=anchor('imggen/help','<i class="icon-question-sign icon-large"></i>','class="pull-right" style="color:grey;"')?>
 				<div class="form-inline">
 					<label for="postid">Import Post by ID: </label>
 					<input type="text" name="podtid" id="postid">
@@ -116,7 +119,7 @@
 					<img src="<?=site_url('imggen/output').'/'.$post->id.'.png'?>" alt="Preview">
 				</div>
 				<input type="submit" name="submit" value="Edit" class="btn btn-primary">
-					
+				<a href="<?=site_url('imggen/output').'/'.$post->id.'.png'?>" class="btn">Download</a>
 				</div>
 				
 			</div>

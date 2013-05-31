@@ -11,6 +11,7 @@
 			<ul class="nav">
 				<li class="active"><a href="<?=site_url();?>">Home</a></li>
 				<li><a href="<?=site_url('post');?>">Post</a></li>
+				<li><a href="<?=site_url('imggen/new');?>">Image Generator</a></li>
 			</ul>
 			<form class="navbar-search pull-left" method="get" accept-charset="utf-8" action="<?=site_url("s");?>">
 				<div class="input-append">

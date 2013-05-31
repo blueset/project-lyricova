@@ -43,11 +43,11 @@
 							<option value="bc">Bottom center</option>
 							<option value="br">Bottom Right</option>
 						</select>
-						<label for="background">Background Picture</label>
+						<label for="background">Background Picture <?=anchor('imggen/help#bg','<i class="icon-info-sign"></i>','style="color:grey;"')?></label>
 						<?=form_dropdown('background', $bgarray);?>
 					</div>
 					<div class="span2">
-						<label for="font">Font</label>
+						<label for="font">Font <?=anchor('imggen/help#fonts','<i class="icon-info-sign"></i>','style="color:grey;"')?></label>
 						<?=form_dropdown('font', $fontlist, $defaultf);?>
 						<label for="bgpos">Background Position</label>
 											<?=form_dropdown('bgpos', array('1'=>'Top Left',
@@ -79,7 +79,7 @@
 									<input type="number" name="width" id="width" value="640">
 									<label for="x_offset">X-offset</label>
 									<input type="number" name="x_offset" id="x_offset" value="30">
-									<label for="textcolor">Text Color</label>
+									
 									
 								</div>
 								<div class="span2">
@@ -93,12 +93,13 @@
 									<input type="number" name="y_offset" id="y_offset" value="30">
 									
 								</div>
-								<select name="textcolor" id="textcolor" class="span5">
+								
+							</div>
+							<label for="textcolor">Text Color</label>
+							<select name="textcolor" id="textcolor" class="span5">
 									<option value="w" selected>White (For dark backgrounds)</option>
 									<option value="b">Black (For bright backgrounds)</option>
 								</select>
-							</div>
-							
 						</div>
 					</div>
 				</div>
@@ -106,6 +107,7 @@
 			</div>
 			</Form>
 			<div class="span6">
+				<?=anchor('imggen/help','<i class="icon-question-sign icon-large"></i>','class="pull-right" style="color:grey;"')?>
 				<div class="form-inline">
 					<label for="postid">Import Post by ID: </label>
 					<input type="text" name="podtid" id="postid">

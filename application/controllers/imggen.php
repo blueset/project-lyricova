@@ -85,5 +85,16 @@ class imggen extends CI_Controller {
     }
   	
   }
+  public function help()
+  {
+    $data['bgno'] = $this->config->item('bgnumber');
+    $fcapt = $this->config->item('fcapt');
+    $fpath = $this->config->item('fpath');
+    foreach ($fpath as &$string) {
+      $string = substr($string, 8, -4);
+    }
+    $data['flist'] = array_combine($fpath, $fcapt);
+    $this->load->view('imggen/help',$data);
+  }
 }
 ?>
