@@ -6,6 +6,7 @@ class imggen extends CI_Controller {
     parent::__construct();
     $this->load->model('post_model');
     $this->load->model('user_model');
+    $this->load->model('admin_model');
     $this->load->helper('url');
     $this->load->model('imggen_model');
   }
@@ -28,7 +29,7 @@ class imggen extends CI_Controller {
     $this->form_validation->set_rules('meta', 'Song Meta', 'required');
     
     if(!($post_id == -1)){
-      $post = $post = $this->post_model->get_by_id($post_id);
+      $post = $this->post_model->get_by_id($post_id);
       $data['lyric'] = $post->lyric;
       $data['meta']  = $post->name." by ".$post->artist;
       $data['meta'] .= (strlen($post->featuring)) ? " feat. ".$post->featuring : "";

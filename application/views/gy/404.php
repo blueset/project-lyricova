@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>404 - Project Gy - 歌语计划</title>
+	<title>404 - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Post - Project Gy - 歌语计划</title>
+	<title>Post - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>

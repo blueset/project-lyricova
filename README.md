@@ -4,19 +4,27 @@ Project Gy (歌语计划)
 > "A verse, a feeling, a recollection."
 
 ## What is 'Project Gy'?
-Project Gy, a lyric-centered web-log based on PHP and MySQL. Created by [Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)
+Project Gy, a lyric-centered web-log based on PHP and MySQL, created by [Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)
 
 This project is inspired by my daily updates with lyrics on sites like Facebook and Twitter. I was then thinking about creating a blog program that focus on lyric posting, and this whole thing came to my mind. 
 
 Through Project Gy, people can share their thoughts and feelings through existing lyrics, and share them with all over the world (just people who can see it *=_=*) by simply type in the lyric and some related information. 
 
-_*By lyrics, here I means lyrics as in the songs._
+_\* By lyrics, here I means lyrics as in the songs._
 
 ## Current Version & Changelog
 
 Current Version:
-* __Alpha 0.1 build 20130531__
+* __Beta 0.1 build 20130620__
+ * Fix - Extra spaces in new image generation page.
+ * Fix - Top Nav Bar Highlight
+ * Add - Dashboard
+ * Change - Move post management into dashboard
+ * Optimize - Some Styles
+
+* Alpha 0.1 build 20130531
  * Add - Image generator tutorial
+ * Add - Image Generator - Bg and fonts preview
  * Optimize - Home and Single page display style
 
 * Alpha 0.1 build 20130530
@@ -46,7 +54,7 @@ Current Version:
  * First upload to Github
 
 ## Ackonwledgements
-This project is built with help of the following open source projects:
+This project is built with help of the following projects:
 
 * [CodeIgniter](https://github.com/EllisLab/CodeIgniter/)
 * [Twitter Bootstrap](https://github.com/twitter/bootstrap)
@@ -55,6 +63,7 @@ This project is built with help of the following open source projects:
 * [Yanone](http://www.yanone.de/typedesign/kaffeesatz/) for font "Yanone Kaffeesatz"
 * [Screen MFG Co.](http://www.screen.co.jp/press/pdf/NR090824C.pdf) and [iPlaysoft](http://www.iplaysoft.com/hiragino-sans.html) for "Hiragino Sans W6"
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
+* [Charisma](http://usman.it/free-responsive-admin-template) Dashboard Theme
 
 ## To-dos and Dones
 ### What is done:
@@ -68,15 +77,15 @@ This project is built with help of the following open source projects:
 * Single item display
 * Wallpaper Generation
 * Search Module
+* User Dashboard
 
 ### What to do?
 
 * RSS output
-* User Dashboard
 * Ajax-ize
-* Theme Support
+* Theme Support (?)
 * Music Streaming (?)
 * Wysiwyg editor for comment
 * Auto identify song meta in single string (?)
-* Templating functions
+* Templating functions (?)
 * Categorization and Tagging

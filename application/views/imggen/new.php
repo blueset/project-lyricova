@@ -2,15 +2,18 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Image Generator - Project Gy - 歌语计划</title>
+	<title>Image Generator - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
 	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header">
+	<div class="hero-unit header single-head">
 		<div class="container">
-			<h1>Image Generator</h1>	
-			<p class="lead">Generate pictures with your favourate lyrics and share with others.</p>
+			
+			<h2>
+				<?=anchor('imggen/help','<i class="icon-question-sign"></i>','class="pull-right" style="color:white;"')?>
+				Image Generator <small>Share your lyric with pictures</small>
+			</h2>	
 		</div>
 	</div>
 	<div class="container">
@@ -24,9 +27,7 @@
 		<?php echo form_open('imggen/new/'); ?>
 			<div class="span6">
 				<label for="lyric">Lyric</label>
-				<textarea name="lyric" id="lyric" class="span6" rows="6" placeholder="Lyrics here...">
-<?php if(isset($lyric)){echo($lyric);} ?>
-				</textarea>
+				<textarea name="lyric" id="lyric" class="span6" rows="6" placeholder="Lyrics here..."><?php if(isset($lyric)){echo($lyric);} ?></textarea>
 				<label for="meta">Meta text</label>
 				<input type="text" class="span5" name="meta" id="meta" value="<?php if(isset($meta)){echo($meta);} ?>">
 				<div class="row">
@@ -107,7 +108,7 @@
 			</div>
 			</Form>
 			<div class="span6">
-				<?=anchor('imggen/help','<i class="icon-question-sign icon-large"></i>','class="pull-right" style="color:grey;"')?>
+				
 				<div class="form-inline">
 					<label for="postid">Import Post by ID: </label>
 					<input type="text" name="podtid" id="postid">

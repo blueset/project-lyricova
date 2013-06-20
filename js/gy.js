@@ -19,8 +19,14 @@ $('.collapse').on('shown',function () {
 $('.collapse').on('hidden',function () {	
 	$('.container .songbox-row').masonry('reload');
 });
-
-
+//Tooltip
+if ($("[data-toggle=tooltip]").length) {
+     $("[data-toggle=tooltip]").tooltip();
+     }
+//popover
+if ($("[data-toggle=popover]").length) {
+     $("[data-toggle=popover]").popover();
+     }
 $(window).resize(function(){
   //mansonry();
   if($(window).width()<=979){
@@ -35,7 +41,15 @@ $(window).resize(function(){
 
 
 function delConfModal(id,lyric){
-		$("#btn-delete").attr('href','delete/'+id);
+		$("#btn-delete").attr('href',currpath+'delete/'+id);
+		$("#del_info").html("Item: <br>"+lyric+" <br> with ID = "+id);
+		$('.modal').modal('show').on('shown',function(){});
+	}
+function delConfModalSingle(){
+		$('.modal').modal('show').on('shown',function(){});
+	}
+function delImgModal(page,id,lyric){
+		$("#btn-delete").attr('href',currpath+'admin/image/'+page+'/delete/'+id);
 		$("#del_info").html("Item: <br>"+lyric+" <br> with ID = "+id);
 		$('.modal').modal('show').on('shown',function(){});
 	}

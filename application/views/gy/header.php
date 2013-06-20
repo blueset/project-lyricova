@@ -7,11 +7,19 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
 	<div class="navbar-inner">
 		<div class="container">
-			<a href="<?=site_url();?>" class="brand">Project Gy</a>
+			<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        		<span class="icon-bar"></span>
+        		<span class="icon-bar"></span>
+        		<span class="icon-bar"></span>
+      		</a>
+			<a href="<?=site_url();?>" class="brand"><?=$this->admin_model->get_title();?></a>
+
+			<div class="nav-collapse collapse">
+
 			<ul class="nav">
-				<li class="active"><a href="<?=site_url();?>">Home</a></li>
-				<li><a href="<?=site_url('post');?>">Post</a></li>
-				<li><a href="<?=site_url('imggen/new');?>">Image Generator</a></li>
+				<li <?php echo ((uri_string() == "")?'class="active"':"");?>><a href="<?=site_url();?>">Home</a></li>
+				<li <?php echo ((stripos(uri_string(),"post")!==FALSE)?'class="active"':"");?>><a href="<?=site_url('admin/post');?>">Post</a></li>
+				<li <?php echo ((stripos(uri_string(),"imggen")!==FALSE)?'class="active"':"");?>><a href="<?=site_url('imggen/new');?>">Image Generator</a></li>
 			</ul>
 			<form class="navbar-search pull-left" method="get" accept-charset="utf-8" action="<?=site_url("s");?>">
 				<div class="input-append">
@@ -20,13 +28,21 @@
 			</form>
 			<ul class="nav pull-right">
 				<?php if($logged_in){?>
-				<li><a href="#">Welcome back, <?=$this->user_model->get_by_id($user_id)->display_name?></a></li>
-				<li><a href="<?=site_url('logout');?>">Log out</a></li>
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome back, <?=$this->user_model->get_by_id($user_id)->display_name?> <b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li><a href="<?=site_url('admin/dashboard');?>"><i class="icon-dashboard"></i> Dashboard</a></li>
+						<li><a href="<?=site_url('logout');?>"><i class="icon-signout"></i> Log out</a></li>
+					</ul>
+				</li>
 				<?php }else{ ?>
 				<li><a href="<?=site_url('login');?>">Log in</a></li>
 				<li><a href="<?=site_url('register');?>">Register</a></li>
 				<?php }?>
 			</ul>
+
+			</div>
+
 		</div>
 	</div>
 </div>

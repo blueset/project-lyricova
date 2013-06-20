@@ -6,12 +6,14 @@ class GyControl extends CI_Controller {
     parent::__construct();
     $this->load->model('post_model');
     $this->load->model('user_model');
+    $this->load->model('admin_model');
     $this->load->helper('url');
   }
 	public function index($page=1){
 		$this->load->library('pagination');
 		$this->load->helper('string');
 		$this->load->library('typography');
+    $this->load->model('admin_model');
 
 		$config['base_url'] = site_url('/page/');
 		$config['total_rows'] = $this->post_model->get_post_number();
@@ -109,7 +111,7 @@ class GyControl extends CI_Controller {
  		//Check Allowance
  		$allow = $this->user_model->allow_to_delete($data['post']); //allow to post?
  		//Store Err info
-    if (!$allow===TRUE){
+    if (! ($allow === TRUE)){
  			$data['errinfo']=$allow;
  		}
     //If post not exist
@@ -163,5 +165,14 @@ XML;
     }
     $string .= "\n".'</post>';
     echo $string; 
+  }
+  public function error($id=0)
+  {
+    $err_message = array('Undefined error occured.', //0
+                         'You do not have the right to access this page.' //1
+                        );
+    if ($id>=count($err_message)){$id=0;}
+    $data['errmsg'] = $err_message[$id];
+    $this->load->view('gy/error',$data);
   }
 }

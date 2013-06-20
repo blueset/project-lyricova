@@ -58,7 +58,7 @@
 			<p id="del_info">Lyric: <br><?=$this->typography->nl2br_except_pre($post->lyric)?></p>
 		</div>
 		<div class="modal-footer">
-			<a href="#" class="btn" id="btn-delete">Delete</a>
+			<?=anchor('delete/'.$post->id, 'Delete', 'class="btn btn-danger"');?>
 			<a href="#" data-dismiss="modal" class="btn btn-primary">Cancel</a>
 		</div>
 	</div>

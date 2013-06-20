@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Project Gy - 歌语计划</title>
+	<title><?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
 	<?php $this->load->view('gy/header');?>
 	<div class="hero-unit header">
 		<div class="container">
-			<h1>It's the real "me" at the moment. </h1>
-			<p class="lead">Project Gy, a lyric-centered web-log created by Blueset Studio together with iBe.</p>			
+			<h1><?=$this->admin_model->get_config('banner');?></h1>
+			<p class="lead"><?=$this->admin_model->get_config('subbanner');?></p>			
 		</div>
 	</div>
 	<div class="container">
@@ -33,7 +33,7 @@
         			<small class="muted">
         				Posted at <time><?=$postitem->time?></time> by <?=$this->user_model->get_by_id($postitem->user_id)->display_name?>. 
         				<?php if($this->user_model->allow_to_edit($postitem)===TRUE){ echo anchor('edit/'.$postitem->id, 'Edit'); }?> 
-        				<?php if($this->user_model->allow_to_delete($postitem)===TRUE){ echo '<a href="javascript:void(0)" onclick="delConfModal('.$postitem->id.",'".str_replace(PHP_EOL, "", $lyricinline)."')\">Delete</a>"; }?>
+        				<?php if($this->user_model->allow_to_delete($postitem)===TRUE){ echo '<a href="javascript:void(0)" onclick="delConfModal('.$postitem->id.",'".jsize_string($lyricinline)."')\">Delete</a>"; }?>
         			</small>
     			</div>
     			</div>
@@ -52,7 +52,7 @@
 			<p id="del_info">....</p>
 		</div>
 		<div class="modal-footer">
-			<a href="#" class="btn" id="btn-delete">Delete</a>
+			<a href="#" class="btn btn-danger" id="btn-delete">Delete</a>
 			<a href="#" data-dismiss="modal" class="btn btn-primary">Cancel</a>
 		</div>
 	</div>

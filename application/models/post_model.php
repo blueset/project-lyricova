@@ -41,7 +41,7 @@ class post_model extends CI_Model {
     }
   }
 	public function get_post_number(){
-		return $this->db->count_all();
+		return $this->db->count_all('posts');
 	}
   public function edit_post($id)
   {

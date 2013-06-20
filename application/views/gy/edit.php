@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Edit - Project Gy - 歌语计划</title>
+	<title>Edit - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
@@ -23,7 +23,7 @@
 			  if(@$_GET['post']==='1' ){ ?>
 		<div class="alert alert-success fade in ">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
-  			<strong>Success!</strong> Post has been sent to the database.
+  			<strong>Success!</strong> Post has been sent to the database.　<?=anchor('post/'.$post->id, 'View post');?>
 		</div>
 		<?php } ?>
 

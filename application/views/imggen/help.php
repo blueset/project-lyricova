@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Help - Image Generator - Project Gy - 歌语计划</title>
+	<title>Help - Image Generator - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
@@ -84,7 +84,7 @@
 			<?php for ($i=1; $i < $bgno+1; $i++) :?>
 			<?php $image_size = getimagesize(base_url('img/bg/bg'.$i.'.png')); ?>
 			<li class="span3">
-				<div class="thumbnail fix-height-thumb">
+				<div class="thumbnail">
 					<img src="<?=base_url('img/bg/bg'.$i.'.png')?>" alt="Background <?=$i?>">
 					<h4>Background <?=$i?></h4>
 					<p>Maximum dimention: <?=$image_size[0]?> x <?=$image_size[1]?></p>

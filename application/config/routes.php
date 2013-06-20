@@ -48,7 +48,9 @@ $route['page/(:num)'] = "GyControl/index/$1";
 $route['edit/(:num)'] = "GyControl/edit/$1";
 $route['post/(:num)'] = "GyControl/single/$1";
 $route['delete/(:num)'] = "GyControl/delete/$1";
+$route['error/(:num)'] = "GyControl/error/$1";
 $route['s'] = "GyControl/search";
+$route['admin/edit'] = "GyControl/p404";
 $route['404_override'] = "GyControl/p404";
 
 

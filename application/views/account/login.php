@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Login - Project Gy - 歌语计划</title>
+	<title>Login - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
@@ -14,10 +14,10 @@
 		</div>
 	</div>
 	<div class="container">
-		<?php if(!validation_errors()==''){ ?>
+		<?php if(!validation_errors()=='' || @!$err_message == ''){ ?>
 		<div class="alert alert-error fade in">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
-  			<strong>Error!</strong> <?=validation_errors('<span>','</span>');?>
+  			<strong>Error!</strong> <?=validation_errors('<span>','</span>');?> <?=$err_message?>
 		</div>
 		<?php } ?>
 		<?php if(@$message!=''){ ?>

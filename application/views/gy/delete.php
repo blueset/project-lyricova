@@ -2,15 +2,18 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Edit - Project Gy - 歌语计划</title>
+	<title>Delete - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
 	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header">
+	<div class="hero-unit header single-head">
 		<div class="container">
-			<h1>Delete</h1>	
-			<p class="lead"><?php if($errinfo==''){ ?>Delete item <?=$post->name?> with ID <?=$post->id?>.<?php }else{ echo 'A critical error has occured. -- the Disappearance';}?></p>
+			<h2>
+				Delete
+				<?php if($errinfo==''){ ?><small> item <?=$post->name?> with ID <?=$post->id?></small><?php }else{ echo '<p class="lead">A critical error has occured. -- the Disappearance<p>';}?>
+			</h2>	
+			<p class="lead"></p>
 		</div>
 	</div>
 	<div class="container">

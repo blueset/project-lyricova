@@ -168,6 +168,15 @@ footer{
 .fix-height-thumb{
 	height:17em;
 }
+/* Post list */
+/*.post-list 			{width:1000px;}*/
+.post-list .tick 	{width:10px;}
+.post-list .id 		{width:20px;}
+.post-list .name 	{width:15%;}
+.post-list .lyric 	{}
+.post-list .author 	{width:10%;}
+.post-list .action 	{width:22%;}
+.post-list tr 		{max-height:1em;}
 
 /*Media Enq*/
 @media (max-width: 979px){

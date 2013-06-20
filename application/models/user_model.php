@@ -83,6 +83,18 @@ class user_model extends CI_Model {
          }
          return FALSE;
      }
+     public function update_profile()
+     {
+        $pw = ($this->input->post('newpwconf') == "")?$this->input->post('password'):$this->input->post('newpw');
+        $data = array('username' => $this->input->post('username'),
+                      'password' => md5($pw),
+                      'email' => $this->input->post('email'),
+                      'display_name' => $this->input->post('display_name'));
+        $this->db->where('id', $this->get_session('user_id'));
+        $this->db->update('users', $data);
+
+        
+     }
      function email_exists($email)
      {
          $this->db->where('email', $email);
@@ -137,4 +149,7 @@ class user_model extends CI_Model {
             else{return 'Your account is not eligible to delete this post.';}
          }
      }
+     public function get_user_number(){
+        return $this->db->count_all('users');
+    }
 }

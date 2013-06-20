@@ -2,15 +2,18 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Image Generator - Project Gy - 歌语计划</title>
+	<title>Image Generator - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
 	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header">
+	<div class="hero-unit header single-head">
 		<div class="container">
-			<h1>Edit Image</h1>	
-			<p class="lead">Editing image with id <?=$post->id?>.</p>
+			<h2>
+				<?=anchor('imggen/help','<i class="icon-question-sign"></i>','class="pull-right" style="color:white;"')?>
+				Edit Image <small>with id <?=$post->id?></small>
+			</h2>	
+
 		</div>
 	</div>
 	<div class="container">
@@ -109,7 +112,7 @@
 				</div>
 			</div>
 			<div class="span6">
-				<?=anchor('imggen/help','<i class="icon-question-sign icon-large"></i>','class="pull-right" style="color:grey;"')?>
+				
 				<div class="form-inline">
 					<label for="postid">Import Post by ID: </label>
 					<input type="text" name="podtid" id="postid">

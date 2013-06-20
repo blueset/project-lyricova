@@ -170,4 +170,22 @@ class imggen_model extends CI_Model {
                   $post->style,
                   $post->bgpos);
   }
+  public function get_image_number(){
+    return $this->db->count_all('imggen');
+  }
+  public function get_image($per_page=20,$offset=0){ 
+    $this->db->order_by("id", "desc");
+    $query = $this->db->get('imggen',$per_page,$offset);
+    return $query->result();
+  }
+  public function delete_image($id)
+  {
+    $this->db->where('id', $id);
+    $this->db->delete('imggen');
+    if($this->db->affected_rows()==0){
+      return false;
+    }else{
+      return TRUE;
+    }
+  }
  }
