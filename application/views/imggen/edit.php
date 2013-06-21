@@ -10,7 +10,7 @@
 	<div class="hero-unit header single-head">
 		<div class="container">
 			<h2>
-				<?=anchor('imggen/help','<i class="icon-question-sign"></i>','class="pull-right" style="color:white;"')?>
+				<?=anchor('imggen/help','<i class="icon-question-sign"></i>','class="pull-right" style="color:white;" target="_blank"')?>
 				Edit Image <small>with id <?=$post->id?></small>
 			</h2>	
 
@@ -50,11 +50,11 @@
 							<option value="bc" <?php if($post->style == "bc"){echo "selected";}?>>Bottom center</option>
 							<option value="br" <?php if($post->style == "br"){echo "selected";}?>>Bottom Right</option>
 						</select>
-						<label for="background">Background Picture <?=anchor('imggen/help#bg','<i class="icon-info-sign"></i>','style="color:grey;"')?></label>
+						<label for="background">Background Picture <?=anchor('imggen/help#bg','<i class="icon-info-sign"></i>','style="color:grey;" target="_blank"')?></label>
 						<?=form_dropdown('background', $bgarray, $post->background);?>
 					</div>
 					<div class="span2">
-						<label for="font">Font <?=anchor('imggen/help#fonts','<i class="icon-info-sign"></i>','style="color:grey;"')?></label>
+						<label for="font">Font <?=anchor('imggen/help#fonts','<i class="icon-info-sign"></i>','style="color:grey;" target="_blank"')?></label>
 						<?=form_dropdown('font', $fontlist, $post->font);?>
 						<label for="bgpos">Background Position</label>
 						<?=form_dropdown('bgpos', array('1'=>'Top Left',
