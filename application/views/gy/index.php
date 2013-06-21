@@ -32,7 +32,7 @@
   					<?php if(!$postitem->comment==""){ echo '<strong>Comment:</strong><br>'.$this->typography->nl2br_except_pre($postitem->comment).'<br>';} ?>
         			<small class="muted">
         				Posted at <time><?=$postitem->time?></time> by <?=$this->user_model->get_by_id($postitem->user_id)->display_name?>. 
-        				<?php if($this->user_model->allow_to_edit($postitem)===TRUE){ echo anchor('edit/'.$postitem->id, 'Edit'); }?> 
+        				<?php if($this->user_model->allow_to_edit($postitem)===TRUE){ echo anchor('admin/edit/'.$postitem->id, 'Edit'); }?> 
         				<?php if($this->user_model->allow_to_delete($postitem)===TRUE){ echo '<a href="javascript:void(0)" onclick="delConfModal('.$postitem->id.",'".jsize_string($lyricinline)."')\">Delete</a>"; }?>
         			</small>
     			</div>

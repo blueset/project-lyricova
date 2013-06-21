@@ -30,7 +30,7 @@ class GyControl extends CI_Controller {
 		$data['posts'] = $this->post_model->get_post($config['per_page'],$offset);
 		$this->load->view('gy/index',$data);
 	}
-	public function post(){
+	/*public function post(){
 	  $this->load->helper ('form');
     $this->load->library('form_validation');
 	  $this->form_validation->set_rules('lyric', 'Lyric', 'required');
@@ -51,9 +51,9 @@ class GyControl extends CI_Controller {
     	$post_id = $this->post_model->post_item();
     	$data['success'] = TRUE;
        $data['is_post'] = TRUE;
-    	redirect('/edit/'.$post_id.'?post=1'/*, 'refresh'*/);
+    	redirect('/edit/'.$post_id.'?post=1');
   	}
-	}
+	}*/
   public function single($id)
   {
     $this->load->helper('string');
@@ -68,7 +68,7 @@ class GyControl extends CI_Controller {
   {
     $this->load->view('gy/404');
   }
-	public function edit($id){
+	/*public function edit($id){
 		//Load Helpers
 		$this->load->helper('form');
         $this->load->library('form_validation');
@@ -101,7 +101,7 @@ class GyControl extends CI_Controller {
     		$data['success'] = TRUE;
     		$this->load->view('gy/edit',$data);
   		}
-	}
+	}*/
 	public function delete($id)
 	{
 		//Init vars

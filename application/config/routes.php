@@ -39,13 +39,13 @@
 */
 
 
-$route['post']="GyControl/post";
+//$route['post']="GyControl/post";
 $route['register']="User/register";
 $route['login']="User/login";
 $route['logout']="User/logout";
 $route['default_controller'] = "GyControl";
 $route['page/(:num)'] = "GyControl/index/$1";
-$route['edit/(:num)'] = "GyControl/edit/$1";
+//$route['edit/(:num)'] = "GyControl/edit/$1";
 $route['post/(:num)'] = "GyControl/single/$1";
 $route['delete/(:num)'] = "GyControl/delete/$1";
 $route['error/(:num)'] = "GyControl/error/$1";

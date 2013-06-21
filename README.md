@@ -15,7 +15,10 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.1 build 20130620__
+* Beta 0.1 build 20130621  
+ * Fix - Disabled the former Edit and Post page.
+
+* Beta 0.1 build 20130620
  * Fix - Extra spaces in new image generation page.
  * Fix - Top Nav Bar Highlight
  * Add - Dashboard

@@ -33,7 +33,7 @@
   					<?php if(!$post->translator==""){ echo '<dt>Translator:</dt><dd> '.$post->translator.'</dd>';} ?>
   					<?php if(!$post->comment==""){ echo '<dt>Comment:</dt><dd> '.$this->typography->nl2br_except_pre($post->comment).'</dd>';} ?>
   					<p style="padding-top:10px;">
-  						<?php if($this->user_model->allow_to_edit($post)===TRUE){ echo anchor('edit/'.$post->id, 'Edit', 'class="btn btn-mini btn-primary"'); }?> 
+  						<?php if($this->user_model->allow_to_edit($post)===TRUE){ echo anchor('admin/edit/'.$post->id, 'Edit', 'class="btn btn-mini btn-primary"'); }?> 
         				<?php if($this->user_model->allow_to_delete($post)===TRUE){ echo '<a href="javascript:void(0)" class="btn btn-mini" onclick="delConfModalSingle()">Delete</a>'; }?>
         			
         			
