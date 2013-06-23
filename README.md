@@ -35,7 +35,7 @@ Current Version:
  * Add - Image generation module
 
 * Alpha 0.1 build 20130525
- * Optimise - Comment display on Index
+ * Optimize - Comment display on Index
  * Add - Image generation module *Alpha
 
 * Alpha 0.1 build 20130524
@@ -57,7 +57,7 @@ Current Version:
 * Alpha 0.1 build 20130520
  * First upload to Github
 
-## Ackonwledgements
+## Acknowledgements
 This project is built with help of the following projects:
 
 * [CodeIgniter](https://github.com/EllisLab/CodeIgniter/)
@@ -75,7 +75,7 @@ This project is built with help of the following projects:
 * Item Create & Legibility Check
 * Item Edit
 * Item Display
-* User Registeration and Logging in
+* User Registration and Logging in
 * User role and rights
 * Item Delete
 * Single item display
