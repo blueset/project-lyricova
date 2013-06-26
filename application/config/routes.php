@@ -39,36 +39,37 @@
 */
 
 
-//$route['post']="GyControl/post";
-$route['register']="User/register";
-$route['login']="User/login";
-$route['logout']="User/logout";
-$route['default_controller'] = "GyControl";
-$route['page/(:num)'] = "GyControl/index/$1";
-//$route['edit/(:num)'] = "GyControl/edit/$1";
-$route['post/(:num)'] = "GyControl/single/$1";
-$route['delete/(:num)'] = "GyControl/delete/$1";
-$route['error/(:num)'] = "GyControl/error/$1";
-$route['s'] = "GyControl/search";
-$route['admin/edit'] = "GyControl/p404";
-$route['404_override'] = "GyControl/p404";
+//$route['post']="main/post";
+$route['register']="user/register";
+$route['login']="user/login";
+$route['logout']="user/logout";
+$route['default_controller'] = "main";
+$route['page'] = "main/page";
+$route['page/(:num)'] = "main/index/$1";
+//$route['edit/(:num)'] = "main/edit/$1";
+$route['post/(:num)'] = "main/single/$1";
+$route['delete/(:num)'] = "main/delete/$1";
+$route['error/(:num)'] = "main/error/$1";
+$route['s'] = "main/search";
+$route['admin/edit'] = "main/p404";
+$route['404_override'] = "main/p404";
 
 
-//$route['imggen/(:num)/(:num)'] = "GyControl/image_gen/$1/$2";
-//$route['imggen/(:num)'] = "GyControl/image_gen/$1/1";
+//$route['imggen/(:num)/(:num)'] = "main/image_gen/$1/$2";
+//$route['imggen/(:num)'] = "main/image_gen/$1/1";
 $route['imggen/new'] = "imggen/newimg";
 $route['imggen/new/(:num)'] = "imggen/newimg/$1";
 $route['imggen/edit/(:num)'] = "imggen/editimg/$1";
 $route['imggen/output'] = "imggen/output";
 $route['imggen/help'] = "imggen/help";
 $route['imggen/output/(:num).png'] = "imggen/output/$1";
-$route['imggen/getpostxml/(:num).xml'] = "GyControl/getpostxml/$1";
+$route['imggen/getpostxml/(:num).xml'] = "main/getpostxml/$1";
 /*$route['404_override'] = '';*/
 
 /*$route['news/create'] = 'news/create';
 $route['news/(:any)'] = 'news/view/$1';
 $route['news'] = 'news';*/
-/*$route['page/(:any)'] = 'gyControl/index';*/
+/*$route['page/(:any)'] = 'main/index';*/
 /*$route['default_controller'] = 'news';*/
 
 

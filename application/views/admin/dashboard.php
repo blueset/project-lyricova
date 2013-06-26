@@ -43,7 +43,7 @@
 						<div class="box-header well">
 							<h2><i class="icon-user"></i> User Info</h2>
 							<div class="box-icon">
-								<a href="#" class="btn btn-setting btn-round"><i class="icon-cog"></i></a>
+								<a href="<?=site_url('admin/profile');?>" class="btn btn-setting btn-round"><i class="icon-cog"></i></a>
 							</div>
 						</div>
 						<div class="box-content">

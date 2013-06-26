@@ -7,27 +7,20 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 
-DROP TABLE IF EXISTS `gy_config`;
-CREATE TABLE IF NOT EXISTS `gy_config` (
+DROP TABLE IF EXISTS `GY_config`;
+CREATE TABLE IF NOT EXISTS `GY_config` (
   `name` varchar(20) NOT NULL,
   `value` varchar(500) NOT NULL,
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `gy_config` (`name`, `value`) VALUES
+INSERT INTO `GY_config` (`name`, `value`) VALUES
 ('banner', 'Project Gy'),
 ('subbanner', 'Yet another lyric blog'),
 ('title', 'Project Gy');
 
-DROP TABLE IF EXISTS `gy_entries`;
-CREATE TABLE IF NOT EXISTS `gy_entries` (
-  `id` int(11) NOT NULL,
-  `title` varchar(128) DEFAULT NULL,
-  `body` text
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-DROP TABLE IF EXISTS `gy_imggen`;
-CREATE TABLE IF NOT EXISTS `gy_imggen` (
+DROP TABLE IF EXISTS `GY_imggen`;
+CREATE TABLE IF NOT EXISTS `GY_imggen` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lyric` text NOT NULL,
   `meta` varchar(300) NOT NULL,
@@ -47,8 +40,8 @@ CREATE TABLE IF NOT EXISTS `gy_imggen` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=10 ;
 
-DROP TABLE IF EXISTS `gy_posts`;
-CREATE TABLE IF NOT EXISTS `gy_posts` (
+DROP TABLE IF EXISTS `GY_posts`;
+CREATE TABLE IF NOT EXISTS `GY_posts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lyric` text NOT NULL,
   `name` varchar(200) NOT NULL,
@@ -74,8 +67,8 @@ CREATE TABLE IF NOT EXISTS `gy_posts` (
   FULLTEXT KEY `comment_2` (`comment`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=32 ;
 
-DROP TABLE IF EXISTS `gy_users`;
-CREATE TABLE IF NOT EXISTS `gy_users` (
+DROP TABLE IF EXISTS `GY_users`;
+CREATE TABLE IF NOT EXISTS `GY_users` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `username` varchar(20) NOT NULL,
   `password` char(32) NOT NULL,

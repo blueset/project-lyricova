@@ -39,7 +39,9 @@
     			</div>
 			</div>
 			<?php endforeach ?>
-			<?php $this->pagination->create_links(); ?>
+			<div class="songbox-cont span4" >
+				<?=$this->pagination->create_links();?>
+			</div>
 		</div>
 	</div>
 	<div class="modal hide" id="Del">

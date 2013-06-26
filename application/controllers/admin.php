@@ -10,6 +10,7 @@ class Admin extends CI_Controller {
     $this->load->model('imggen_model');
     $this->load->helper('url');
     if($this->user_model->logged_in() !== TRUE){redirect('login');}
+    if($this->get_session('role') < 3){redirect('error/1');}
   }
   	public function index()
   	{
@@ -104,8 +105,20 @@ class Admin extends CI_Controller {
     $config['total_rows'] = $this->post_model->get_post_number();
     $config['per_page'] = 20; 
     $config['uri_segment'] = 3; 
+    $config['use_page_numbers'] = TRUE;
+    $config['full_tag_open'] = '<div class="pagination"><ul>';
+    $config['full_tag_close'] = '</ul></div>';
+    $config['num_tag_open'] = '<li>';
+    $config['num_tag_close'] = '</li>';
+    $config['cur_tag_open'] = '<li class="active"><span>';
+    $config['cur_tag_close'] = '</span></li>';
+    $config['prev_tag_open'] = '<li>';
+    $config['prev_tag_close'] = '</li>';
+    $config['next_tag_open'] = '<li>';
+    $config['next_tag_close'] = '</li>';
 
     $this->pagination->initialize($config); 
+    $data['page']=$page;
 
     $pageNum=($this->uri->segment(3)>1)?$this->uri->segment(3):1;
       if($pageNum==1){

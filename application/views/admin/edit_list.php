@@ -16,7 +16,7 @@
 		<div class="row-fluid">
 			<?php $this->load->view('admin/sidebar');?>
 			<div class="span10">
-				<h1>Edit Post</h1>
+				<h1>Edit Post <small>Page <?=$page?></small></h1>
 				<table class="table table-hover text-left post-list"><tbody>
 					<tr>
 						<!--<th><input type="checkbox" name="post-all" id="post-all"></th>-->
@@ -41,7 +41,7 @@
 					</tr>
 					<?php endforeach; ?>
 				<tbody></table>
-
+				<?=$this->pagination->create_links();?>
 			</div>
 			
 		</div>

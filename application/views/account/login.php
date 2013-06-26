@@ -17,7 +17,7 @@
 		<?php if(!validation_errors()=='' || @!$err_message == ''){ ?>
 		<div class="alert alert-error fade in">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
-  			<strong>Error!</strong> <?=validation_errors('<span>','</span>');?> <?=$err_message?>
+  			<strong>Error!</strong> <?=validation_errors('<span>','</span>');?> <?=@$err_message?>
 		</div>
 		<?php } ?>
 		<?php if(@$message!=''){ ?>

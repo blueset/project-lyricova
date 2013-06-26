@@ -15,7 +15,13 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* Beta 0.1 build 20130621  
+* Beta 0.1 build 20130626
+ * Fix - Linux capitalisations
+ * Add - Enabled responsive design
+ * Add - Paginations for over 20 posts
+ * Fix - Only User with role 3 can access dashboard.
+
+* Beta 0.1 build 20130621
  * Fix - Disabled the former Edit and Post page.
  * Fix - New windows for Imggen Help links
 
