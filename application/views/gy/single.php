@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Project Gy - 歌语计划</title>
+	<title><?=$post->name?> - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
@@ -39,10 +39,13 @@
         			
 						<?=anchor('imggen/new/'.$post->id, 'Generate Image', 'class="btn btn-mini"')?>
 					</p>
-        		</dl>
-        				
-        				
-        			
+        		</dl>	
+			</div>
+			<div class="span12">
+				<?php 
+					$data['comment_id']='post_'.$post->id;
+					$this->load->view('gy/comment',$data);
+				?>
 			</div>
 
 		</div>

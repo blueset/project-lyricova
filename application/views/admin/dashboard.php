@@ -33,9 +33,9 @@
 						<div>Registered users</div>
 					</a>
 						
-					<a class="well span3 top-block muted" data-toggle="tooltip" title="Comming Soon" data-placement="bottom" href="#">
-						<h1>0</h1>
-						<div>Comments</div>
+					<a class="well span3 top-block" data-placement="bottom" href="http://<?=$this->config->item('disqus_sname');?>.disqus.com">
+						<h1><i class="icon-comments-alt"></i></h1>
+						<div>Comments via Disqus</div>
 					</a>
 				</div>
 				<div class="row-fluid">

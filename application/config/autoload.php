@@ -80,7 +80,7 @@ $autoload['helper'] = array();
 |
 */
 
-$autoload['config'] = array('fonts');
+$autoload['config'] = array('gy_config','version');
 
 
 /*
