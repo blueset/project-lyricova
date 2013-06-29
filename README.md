@@ -16,7 +16,11 @@ _\* By lyrics, here I means lyrics as in the songs._
 
 Current Version:
 <<<<<<< HEAD
+<<<<<<< HEAD
 * __Beta 0.1 build 20130629__
+=======
+* Beta 0.1 build 20130629
+>>>>>>> d1f1a03c0602f2fa54a4ec1bf238c0cb07d83123
 =======
 * Beta 0.1 build 20130629
 >>>>>>> d1f1a03c0602f2fa54a4ec1bf238c0cb07d83123
