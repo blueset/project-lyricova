@@ -4,7 +4,7 @@ Project Gy (歌语计划)
 <img src="http://1a23.com/wp-content/uploads/2013/06/GyBanner.png" title="A verse, a feeling, a recollection." style="width:100%;height:auto;">
 
 ## What is 'Project Gy'?
-Project Gy, a lyric-centered web-log based on PHP and MySQL, created by [Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)
+Project Gy (pronounce as _'Project Gee-Wai'_), a lyric-centered web-log based on PHP and MySQL, created by [Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)
 
 This project is inspired by my daily updates with lyrics on sites like Facebook and Twitter. I was then thinking about creating a blog program that focus on lyric posting, and this whole thing came to my mind. 
 
@@ -15,6 +15,10 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
+* __Beta 0.1 build 20130629__
+ * Fix - Title for single post page
+ * Add - Comment system based on Disqus
+
 * Beta 0.1 build 20130626
  * Fix - Linux capitalisations
  * Add - Enabled responsive design
@@ -74,6 +78,7 @@ This project is built with help of the following projects:
 * [Screen MFG Co.](http://www.screen.co.jp/press/pdf/NR090824C.pdf) and [iPlaysoft](http://www.iplaysoft.com/hiragino-sans.html) for "Hiragino Sans W6"
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
 * [Charisma](http://usman.it/free-responsive-admin-template) Dashboard Theme
+* [Disqus](http://disqus.com/) Commenting system
 
 ## To-dos and Dones
 ### What is done:
