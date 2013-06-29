@@ -360,4 +360,4 @@ $config['proxy_ips'] = '';
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */
-$config['current_version'] = 'Beta 0.1 build 20130626';
+

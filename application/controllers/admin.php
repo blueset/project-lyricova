@@ -10,7 +10,7 @@ class Admin extends CI_Controller {
     $this->load->model('imggen_model');
     $this->load->helper('url');
     if($this->user_model->logged_in() !== TRUE){redirect('login');}
-    if($this->get_session('role') < 3){redirect('error/1');}
+    if($this->user_model->get_session('role') < 3){redirect('error/1');}
   }
   	public function index()
   	{
