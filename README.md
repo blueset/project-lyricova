@@ -15,7 +15,10 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.1 build 20130629__
+* __Beta 0.1 build 2013706__
+ * Add - Color code for posying lyrics and comment
+
+* Beta 0.1 build 20130629
  * Fix - Title for single post page
  * Add - Comment system based on Disqus
 
@@ -100,7 +103,7 @@ This project is built with help of the following projects:
 * Ajax-ize
 * Theme Support (?)
 * Music Streaming (?)
-* Wysiwyg editor for comment
+* Wysiwyg editor
 * Auto identify song meta in single string (?)
 * Templating functions (?)
 * Categorization and Tagging
