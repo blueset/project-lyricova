@@ -63,7 +63,9 @@ $route['imggen/edit/(:num)'] = "imggen/editimg/$1";
 $route['imggen/output'] = "imggen/output";
 $route['imggen/help'] = "imggen/help";
 $route['imggen/output/(:num).png'] = "imggen/output/$1";
+$route['imggen/dynamic/(:num).png'] = "imggen/dynamic/$1";
 $route['imggen/getpostxml/(:num).xml'] = "main/getpostxml/$1";
+
 /*$route['404_override'] = '';*/
 
 /*$route['news/create'] = 'news/create';

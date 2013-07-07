@@ -15,8 +15,12 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.1 build 2013706__
- * Add - Color code for posying lyrics and comment
+* __Beta 0.1 build 20130707__
+ * Fix - Imggen Error caused by version.php (thanks to [AMADANON Inc.](http://stackoverflow.com/users/2514521/amadanon-inc))
+ * Add - Dymnastic Image Generation (beta)
+
+* Beta 0.1 build 20130706
+ * Add - Color code for posting lyrics and comment
 
 * Beta 0.1 build 20130629
  * Fix - Title for single post page

@@ -76,15 +76,75 @@ class imggen extends CI_Controller {
   public function output($img_id=0)
   {
   	header ("Content-type: image/png");
-    //var_dump(!($this->imggen_model->get_by_id($img_id) === false));
-
     if(($this->imggen_model->get_by_id($img_id) === FALSE)){
       $this->imggen_model->imggen();
     }else{
-      //echo "HEREIAM!!!";
       $this->imggen_model->imggen_db($img_id);
     }
-  	
+  }
+  public function test()
+  {
+    header ("Content-type: image/png");
+    $this->imggen_model->imggen_dynm("Can't you see me breaking down?\nI can feel me breaking down.\nPainful tears fall to the ground.\nI'M DYING, I'M DYING\nBut, watching as I'm deleted,\nLike all those dreams I'd believed in.\nMy final words are stuck in...\n==ERROR==",
+                  15,
+                  22,
+                  "./fonts/w6.ttf",
+                  "Posted at 2012 2013 2014",
+                  10, 
+                  25, 
+                  "./img/dymn-bg/bg1.png",
+                  "w",
+                  600,
+                  300,
+                  10,
+                  10,
+                  "tl",
+                  base_url());
+  }
+  public function dynamic($id)
+  {
+    header ("Content-type: image/png");
+    $user = $this->user_model->get_by_id($id);
+    if ($user === false){
+      $this->output();
+    }else{
+      $post = $this->post_model->last_post_by_user($id);
+      if ($post === False){
+        $this->output();
+      }else{
+        //TODO: Add preference data.
+        $height = 600;
+        $width = 300;
+        $meta_str = $post->name ." by ". $post->artist;
+        $meta_str .= strlen($post->featuring) ? " feat.". $post->featuring : "";
+        $lyric = strip_tags($post->lyric);
+        $lines = substr_count($lyric, "\n")+1;
+        $bbox = imagettfbbox(50, 0, "./fonts/w6.ttf", $lyric);
+        $dx = ($bbox[4]-$bbox[6]);
+        $max_size = 50 * ($height-20) / $dx; // Geometry similar rectangle
+        $lineh = ($width - 120) / $lines;
+        $size = $lineh / 3 * 2;
+        if($size>$max_size){
+          $size=$max_size;
+          $lineh = $size /2 *3;
+        }
+        $this->imggen_model->imggen_dynm($lyric,
+                  $size,
+                  $lineh,
+                  "./fonts/w6.ttf",
+                  $meta_str,
+                  10, 
+                  25, 
+                  "./img/dymn-bg/bg1.png",
+                  "w",
+                  $height,
+                  $width,
+                  10,
+                  10,
+                  "tl",
+                  base_url());
+      }
+    }
   }
   public function help()
   {

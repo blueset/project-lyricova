@@ -43,6 +43,16 @@ class post_model extends CI_Model {
 	public function get_post_number(){
 		return $this->db->count_all('posts');
 	}
+  public function last_post_by_user($id)
+  {
+    $this->db->order_by("id", "desc"); 
+    $query = $this->db->get_where('posts',array('user_id'=>$id));
+    if ($query->num_rows()>0){
+      return $query->row();
+    }else{
+      return false;
+    }
+  }
   public function edit_post($id)
   {
     $data = array(

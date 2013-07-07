@@ -56,6 +56,8 @@
 									   <b>User Role:</b> <?=$user->role?></p>
 								</div>
 							</div>
+							<a href="<?=site_url('admin/profile');?>" class="btn btn-block btn-large btn-primary">Edit Profile</a>
+							<a href="http://gravatar.com" class="btn btn-block btn-large">Change Gravatar</a>
 							<div class="clear-fix"></div>
 						</div>	
 					</div>
@@ -74,6 +76,33 @@
 							<div class="clear-fix"></div>
 						</div>	
 					</div>
+				</div>
+				<div class="row-fluid">
+					<div class="box span12">
+						<div class="box-header well">
+							<h2><i class="icon-picture"></i> Dynamic Picture</h2>
+						</div>
+						<div class="box-content">
+							<div class="row-fluid">
+								<div class="span4">
+									<h3>Get your dynamic picture now!</h3>
+									<img src="<?=site_url('imggen/dynamic/'.$user->id.'.png');?>" alt="Dynamic Picture" style="width:100%;height:auto;">
+								</div>
+								<div class="span8">
+									<p>HTML Code:</p>
+									<textarea name="html" id="html" class="input-xxlarge" rows="2"><?=htmlspecialchars('<a href="'.base_url().'" title="'.$this->admin_model->get_title().'"><img src="'.site_url('imggen/dynamic/'.$user->id.'.png').'" title="'.$this->admin_model->get_title().'" /></a>');?></textarea>
+									<p>BB Code:</p>
+									<textarea name="html" id="html" class="input-xxlarge" rows="2"><?=htmlspecialchars('[url='.base_url().'][img]'.site_url('imggen/dynamic/'.$user->id.'.png').'[/img][/url]');?></textarea>
+									<p>Pure Address:</p>
+									<textarea name="html" id="html" class="input-xxlarge" rows="2"><?=htmlspecialchars(site_url('imggen/dynamic/'.$user->id.'.png'));?></textarea>
+								</div>
+							</div>
+							
+							
+							<div class="clear-fix"></div>
+						</div>	
+					</div>
+					
 				</div>
 			</div>
 			

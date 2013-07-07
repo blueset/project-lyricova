@@ -38,7 +38,6 @@ class imggen_model extends CI_Model {
                          $y_offset = 30,
                          $position="cc",
                          $bgpos = 5){
-
     $logo_src ='./img/bg/wtm-'.$position[1].'-'.$textcolor.'.png';
     $logo = ImageCreateFromPNG($logo_src);
     $bg = ImageCreateFromPNG($bg_src);
@@ -89,6 +88,69 @@ class imggen_model extends CI_Model {
     elseif($position[1]=="c"){$logoX = $width / 2 - $logoW/2;} //Horiz. Center
     elseif($position[1]=="r"){$logoX = $width - $x_offset - $logoW;}
     ImageCopy($bgcrop, $logo, ($logoX), ($lineacuu + 20), 0, 0, $logoW, $logoH);
+    ImagePng($bgcrop);
+  }
+  public function imggen_dynm($string = "Enter your own lyric.",
+                         $size = 35,
+                         $lineheight = 50,
+                         $font = "./fonts/w6.ttf",
+                         $meta = "Project Gy Picture Generation",
+                         $metasize = 10, 
+                         $metalineh = 25, 
+                         $bg_src = "./img/bg/bg1.png",
+                         $textcolor = "w",
+                         $width=640,
+                         $height=596, 
+                         $x_offset = 30,
+                         $y_offset = 30,
+                         $position="cc",
+                         $local_add = "http://github.com/1a23/project-gy"){
+    $logo_src ='./img/bg/wtm-'.$position[1].'-'.$textcolor.'.png';
+    $logo = ImageCreateFromPNG($logo_src);
+    $bg = ImageCreateFromPNG($bg_src);
+    $bgcrop = imagecreatetruecolor($width,$height);
+    $bgW = ImageSX($bg);
+    $bgH = ImageSY($bg);
+    $bgpos = 9;
+
+    if ($bgpos == 1||$bgpos == 2||$bgpos == 3){$src_y = 0;}
+      elseif ($bgpos == 4||$bgpos == 5||$bgpos == 6){$src_y = ($bgH - $height)/2;}
+      else{$src_y = $bgH - $height;}
+
+    if ($bgpos == 1||$bgpos == 4||$bgpos == 7){$src_x = 0;}
+      elseif ($bgpos == 2||$bgpos == 5||$bgpos == 8){$src_x = ($bgW - $width)/2;}
+      else{$src_x = $bgW - $width;}
+
+    imagecopyresized($bgcrop,$bg,0,0,$src_x,$src_y,$width,$height,$width,$height);
+    ImageDestroy($bg);
+    $logoW = ImageSX($logo);
+    $logoH = ImageSY($logo);
+    $strings = explode("\n", $string);
+    $color = ($textcolor == "b") ? imagecolorallocate($bgcrop, 0, 0, 0) : imagecolorallocate($bgcrop, 255, 255, 255); 
+    if ($position[1]=="l"){$anchorX = $x_offset;}//Horiz. left
+    elseif($position[1]=="c"){$anchorX = $width / 2;} //Horiz. Center
+    elseif($position[1]=="r"){$anchorX = $width - $x_offset;} //Horiz Right
+
+    if ($position[0]=="t"){$anchorY = $y_offset;} //Vert. Top
+    elseif($position[0]=="c"){$anchorY = ($height / 2)-(($lineheight * count($strings) + $metalineh + 20+$logoH)/2);} //Vert. Center
+    elseif($position[0]=="b"){$anchorY = $height - ($lineheight * count($strings) + $metalineh + 20 + $logoH + $y_offset);} //Vert. Bottom
+    $lineacuu = $anchorY + $lineheight;
+    //imageline($bgcrop,0,($lineacuu),300,($lineacuu),$color);
+    foreach($strings as $line){
+      if ($position[1]=="l"){imagettftext($bgcrop, $size, 0, ($anchorX), ($lineacuu), $color, $font, $line);}//Horiz. left
+      elseif($position[1]=="c"){$this->imagettftext_ca($bgcrop, $size, 0, ($anchorX), ($lineacuu), $color, $font, $line);} //Horiz. Center
+      elseif($position[1]=="r"){$this->imagettftext_ra($bgcrop, $size, 0, ($anchorX), ($lineacuu), $color, $font, $line);} //Horiz Right
+      
+      $lineacuu += $lineheight;
+    }
+
+    $lineacuu += $metalineh - $lineheight;
+    
+    //imageline($bgcrop,0,($lineacuu),200,($lineacuu),$color);
+    if ($position[1]=="l"){imagettftext($bgcrop, $metasize, 0, ($anchorX), ($lineacuu), $color, $font, $meta);}//Horiz. left
+    elseif($position[1]=="c"){$this->imagettftext_ca($bgcrop, $metasize, 0, ($anchorX), ($lineacuu), $color, $font, $meta);} //Horiz. Center
+    elseif($position[1]=="r"){$this->imagettftext_ra($bgcrop, $metasize, 0, ($anchorX), ($lineacuu), $color, $font, $meta);}
+    $this->imagettftext_ra($bgcrop, 8, 0, ($width-9), ($height-14), $color, $font, $local_add);
     ImagePng($bgcrop);
   }
   public function add_img(){
@@ -153,7 +215,6 @@ class imggen_model extends CI_Model {
     $post = $this->get_by_id($img_id);
 
     $bgpath = "./img/bg/bg".$post->background.".png";
-    //var_dump($post);
     $this->imggen($post->lyric,
                   $post->size,
                   $post->lineheight,
