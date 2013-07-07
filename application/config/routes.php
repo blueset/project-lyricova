@@ -44,6 +44,7 @@ $route['register']="user/register";
 $route['login']="user/login";
 $route['logout']="user/logout";
 $route['default_controller'] = "main";
+$route['rss']="main/rss";
 $route['page'] = "main/page";
 $route['page/(:num)'] = "main/index/$1";
 //$route['edit/(:num)'] = "main/edit/$1";

@@ -18,6 +18,7 @@ Current Version:
 * __Beta 0.1 build 20130707__
  * Fix - Imggen Error caused by version.php (thanks to [AMADANON Inc.](http://stackoverflow.com/users/2514521/amadanon-inc))
  * Add - Dymnastic Image Generation (beta)
+ * Add - RSS output
 
 * Beta 0.1 build 20130706
  * Add - Color code for posting lyrics and comment
@@ -100,10 +101,10 @@ This project is built with help of the following projects:
 * Wallpaper Generation
 * Search Module
 * User Dashboard
+* RSS output
 
 ### What to do?
 
-* RSS output
 * Ajax-ize
 * Theme Support (?)
 * Music Streaming (?)

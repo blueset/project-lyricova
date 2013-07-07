@@ -40,6 +40,14 @@ class main extends CI_Controller {
 		$data['posts'] = $this->post_model->get_post($config['per_page'],$offset);
 		$this->load->view('gy/index',$data);
 	}
+  public function rss(){
+    header ('Content-Type: text/xml');
+    $this->load->helper('string');
+    $this->load->library('typography');
+    $this->load->model('admin_model');
+    $data['posts'] = $this->post_model->get_post(20,0);
+    $this->load->view('gy/rss',$data);
+  }
 	/*public function post(){
 	  $this->load->helper ('form');
     $this->load->library('form_validation');
