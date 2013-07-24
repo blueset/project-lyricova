@@ -15,7 +15,10 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.1 build 20130707__
+* __Beta 0.1 build 20130725__
+ * Fix - Pagination style error
+
+* Beta 0.1 build 20130707
  * Fix - Imggen Error caused by version.php (thanks to [AMADANON Inc.](http://stackoverflow.com/users/2514521/amadanon-inc))
  * Add - Dymnastic Image Generation (beta)
  * Add - RSS output
