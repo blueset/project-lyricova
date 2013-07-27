@@ -19,25 +19,6 @@ class main extends CI_Controller {
 		$config['total_rows'] = $this->post_model->get_post_number();
 		$config['per_page'] = 20; 
 		$config['uri_segment'] = 2; 
-    $config['use_page_numbers'] = TRUE;
-    $config['full_tag_open'] = '<div class="pagination"><ul>';
-    $config['full_tag_close'] = '</ul></div>';
-    $config['num_tag_open'] = '<li>';
-    $config['num_tag_close'] = '</li>';
-    $config['cur_tag_open'] = '<li class="active"><span>';
-    $config['cur_tag_close'] = '</span></li>';
-    $config['prev_tag_open'] = '<li>';
-    $config['prev_tag_close'] = '</li>';
-    $config['prev_link'] = '<i class="icon-angle-left"></i>';
-    $config['next_tag_open'] = '<li>';
-    $config['next_tag_close'] = '</li>';
-    $config['next_link'] = '<i class="icon-angle-right"></i>';
-    $config['first_link'] = '<i class="icon-double-angle-left"></i>';
-    $config['first_tag_open'] = '<li>';
-    $config['first_tag_close'] = '</li>';
-    $config['last_link'] = '<i class="icon-double-angle-right"></i>';
-    $config['last_tag_open'] = '<li>';
-    $config['last_tag_close'] = '</li>';
 		$this->pagination->initialize($config); 
 		$pageNum=$this->uri->segment(2)?$this->uri->segment(2):1;
 	    if($pageNum==1){
@@ -134,15 +115,18 @@ class main extends CI_Controller {
 	}*/
 	public function delete($id)
 	{
+
 		//Init vars
   	$data['success']=FALSE;
 		$data['errinfo']='';
  		$data['post']=$this->post_model->get_by_id($id);
  		//Check Allowance
- 		$allow = $this->user_model->allow_to_delete($data['post']); //allow to post?
+    $own = $this->user_model->is_own($postitem->user_id);
+ 		$allow = $this->user_model->access_to("delete".$own); //allow to post?
  		//Store Err info
     if (! ($allow === TRUE)){
- 			$data['errinfo']=$allow;
+ 			redirect('error/1');
+      die;
  		}
     //If post not exist
     if($data['post']===FALSE){$this->load->view('gy/404');}

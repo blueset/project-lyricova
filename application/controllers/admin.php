@@ -10,7 +10,7 @@ class Admin extends CI_Controller {
     $this->load->model('imggen_model');
     $this->load->helper('url');
     if($this->user_model->logged_in() !== TRUE){redirect('login');}
-    if($this->user_model->get_session('role') < 3){redirect('error/1');}
+    /*if($this->user_model->get_session('role') < 3){redirect('error/1');}*/
   }
   	public function index()
   	{
@@ -24,6 +24,7 @@ class Admin extends CI_Controller {
  	}
  	public function config()
  	{
+    if( $this->user_model->access_to("system_admin") !== TRUE){ redirect('error/1'); die;}
  		//Init.....
  		$this->load->helper('form');
  		$item_list = array('title','banner','subbanner');
@@ -37,6 +38,7 @@ class Admin extends CI_Controller {
  		$this->load->view('admin/config',$data);
  	}
   public function post(){
+    if($this->user_model->access_to("post") !== TRUE){redirect('error/1');die;}
     $this->load->helper ('form');
     $this->load->library('form_validation');
     $this->form_validation->set_rules('lyric', 'Lyric', 'required');
@@ -61,6 +63,7 @@ class Admin extends CI_Controller {
     }
   }
   public function edit($id){
+
       //Load Helpers
       $this->load->helper('form');
       $this->load->library('form_validation');
@@ -73,10 +76,12 @@ class Admin extends CI_Controller {
       $data['errinfo']='';
       $data['post']=$this->post_model->get_by_id($id);
       //Post Allowance
-      $allow = $this->user_model->allow_to_edit($data['post']); //allow to post?
+      $allow = $this->user_model->access_to("post"); //allow to post?
       if (!$allow===TRUE){
         $data['errinfo']=$allow;
       }
+      $own = $this->user_model->is_own($data['post']->user_id);
+      if($this->user_model->access_to("edit".$own)!==TRUE){redirect('error/1');die;}
       //var_dump($this->input->post('submit'));
       $clicked_post = $this->input->post('submit'); // "post" nutton clicked?
       $form_valid=$this->form_validation->run(); // Form validation
@@ -97,12 +102,13 @@ class Admin extends CI_Controller {
   }
   public function edit_list($page=1)
   {
+    if($this->user_model->access_to("edit_own")!==TRUE){redirect('error/1');die;}
     $this->load->library('pagination');
     $this->load->helper('string');
     $this->load->library('typography');
-
+    $user_id = $this->user_model->access_to("edit")===TRUE ? -1 : (int)$this->session->userdata('user_id');
     $config['base_url'] = site_url('admin/edit_list');
-    $config['total_rows'] = $this->post_model->get_post_number();
+    $config['total_rows'] = $this->post_model->get_post_number($user_id);
     $config['per_page'] = 20; 
     $config['uri_segment'] = 3; 
     $config['use_page_numbers'] = TRUE;
@@ -120,13 +126,14 @@ class Admin extends CI_Controller {
     $this->pagination->initialize($config); 
     $data['page']=$page;
 
+    
     $pageNum=($this->uri->segment(3)>1)?$this->uri->segment(3):1;
       if($pageNum==1){
         $offset=0;
       }else{
         $offset=$config['per_page']*($pageNum-1);
       }
-    $data['posts'] = $this->post_model->get_post($config['per_page'],$offset);
+    $data['posts'] = $this->post_model->get_post($config['per_page'],$offset,$user_id);
     $this->load->view('admin/edit_list',$data);
   }
   public function profile()
@@ -177,12 +184,13 @@ class Admin extends CI_Controller {
   }
   public function image($page=1,$mode="",$id=-1)
   {
+    if($this->user_model->access_to("edit_own")!==TRUE){redirect('error/1');die;}
     $this->load->library('pagination');
     $this->load->helper('string');
     $this->load->library('typography');
-
+    $user_id = $this->user_model->access_to("edit")===TRUE ? -1 : (int)$this->session->userdata('user_id');
     $config['base_url'] = site_url('admin/image');
-    $config['total_rows'] = $this->imggen_model->get_image_number();
+    $config['total_rows'] = $this->imggen_model->get_image_number($user_id);
     $config['per_page'] = 20; 
     $config['uri_segment'] = 3; 
 
@@ -195,7 +203,6 @@ class Admin extends CI_Controller {
         $offset=$config['per_page']*($pageNum-1);
       }
     
-    # code...
     $data['page']=$page;
     $data['success']=false;
     $data['errinfo']='';
@@ -207,7 +214,7 @@ class Admin extends CI_Controller {
         $data['errinfo']='Fail to delete image with id '.$id.'.';
       }
     }
-    $data['posts'] = $this->imggen_model->get_image($config['per_page'],$offset);
+    $data['posts'] = $this->imggen_model->get_image($config['per_page'],$offset,$user_id);
     $this->load->view('admin/image',$data);
   }
   public function users()

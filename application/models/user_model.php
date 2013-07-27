@@ -125,7 +125,7 @@ class user_model extends CI_Model {
          }
          return FALSE;
      }
-
+/*
      public function allow_to_post()
      {
          if(!$this->logged_in()===TRUE){return $this->logged_in();}else{
@@ -149,7 +149,45 @@ class user_model extends CI_Model {
             else{return 'Your account is not eligible to delete this post.';}
          }
      }
+     */
      public function get_user_number(){
         return $this->db->count_all('users');
+    }
+    public function is_own($user_id)
+    {
+        $string = $this->session->userdata('user_id') == $user_id ? "_own" : "";
+        return $string;
+    }
+    public function access_to($activity,$user_role=-1)
+    {
+        if ($user_role == -1){$user_role = (int)$this->session->userdata('user_id');}
+        $table=array(
+            "edit" => array( 0 => FALSE,
+                             1 => FALSE,
+                             2 => TRUE,
+                             3 => TRUE),
+            "edit_own" => array( 0 => FALSE,
+                                 1 => TRUE,
+                                 2 => TRUE,
+                                 3 => TRUE),
+            "delete" => array( 0 => FALSE,
+                               1 => FALSE,
+                               2 => TRUE,
+                               3 => TRUE),
+            "delete_own" => array( 0 => FALSE,
+                                   1 => TRUE,
+                                   2 => TRUE,
+                                   3 => TRUE),
+            "system_admin" => array( 0 => FALSE,
+                                   1 => TRUE,
+                                   2 => TRUE,
+                                   3 => TRUE),
+
+            "post" =>     array( 0 => FALSE,
+                                 1 => TRUE,
+                                 2 => TRUE,
+                                 3 => TRUE)
+            );
+        return $table[$activity][$user_role];
     }
 }

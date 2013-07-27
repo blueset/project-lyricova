@@ -4,10 +4,11 @@
 	</div>
 </footer>
 <script>
-	currpath = "<?=base_url()?>";
+	currpath = "<?=site_url()?>";
+	if (currpath[currpath.length-1] !== "/") {currpath = currpath + "/";}
 </script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-<script src="<?=site_url('js/bootstrap.min.js');?>"></script>
-<script src="<?=site_url('js/jquery.masonry.min.js');?>"></script>
-<!--<script src="<?=site_url('js/charisma.js');?>"></script>-->
-<script src="<?=site_url('js/gy.js');?>"></script>
+<script src="<?=base_url('js/bootstrap.min.js');?>"></script>
+<script src="<?=base_url('js/jquery.masonry.min.js');?>"></script>
+<!--<script src="<?=base_url('js/charisma.js');?>"></script>-->
+<script src="<?=base_url('js/gy.js');?>"></script>

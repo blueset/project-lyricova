@@ -15,7 +15,12 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.1 build 20130725__
+* __Beta 0.1 build 20130728__
+ * Fix - URL Error for case without `htaccess`. 
+ * Fix - Dynamic picture spacing error.
+ * Add - Completed User Access Control
+
+* Beta 0.1 build 20130725
  * Fix - Pagination style error
 
 * Beta 0.1 build 20130707
@@ -115,3 +120,5 @@ This project is built with help of the following projects:
 * Auto identify song meta in single string (?)
 * Templating functions (?)
 * Categorization and Tagging
+* Installation & Update Scripts
+* User Management

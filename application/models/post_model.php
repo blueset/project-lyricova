@@ -26,8 +26,10 @@ class post_model extends CI_Model {
   $this->db->insert('posts', $data);
   return $this->db->insert_id();
 }
-  public function get_post($per_page=20,$offset=0){	
+  public function get_post($per_page=20,$offset=0,$user_id=-1){	
+
     $this->db->order_by("id", "desc");
+    if($user_id !== -1){$this->db->where('user_id', $user_id);}
   	$query = $this->db->get('posts',$per_page,$offset);
   	return $query->result();
   }
@@ -40,7 +42,8 @@ class post_model extends CI_Model {
       return false;
     }
   }
-	public function get_post_number(){
+	public function get_post_number($user_id=-1){
+    if($user_id !== -1){$this->db->where('user_id', $user_id);}
 		return $this->db->count_all('posts');
 	}
   public function last_post_by_user($id)

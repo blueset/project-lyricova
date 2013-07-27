@@ -14,16 +14,14 @@
       		</a>
 			<a href="<?=site_url();?>" class="brand"><?=$this->admin_model->get_title();?></a>
 
-			<div class="nav-collapse collapse">
+			<div class="nav-collapse collapse navbar-responsive-collapse">
 
 			<ul class="nav">
 				<li <?php echo ((uri_string() == "")?'class="active"':"");?>><a href="<?=site_url();?>">Home</a></li>
 				<li <?php echo ((stripos(uri_string(),"imggen")!==FALSE)?'class="active"':"");?>><a href="<?=site_url('imggen/new');?>">Image Generator</a></li>
 			</ul>
 			<form class="navbar-search pull-left" method="get" accept-charset="utf-8" action="<?=site_url("s");?>">
-				<div class="input-append">
-    				<input type="text" name="q" placeholder="Search Project Gy" value="<?php if(isset($keyword)){echo $keyword;} ?>" class="span2 search-query">
-  				</div>
+    			<input type="text" name="q" placeholder="Search Project Gy" value="<?php if(isset($keyword)){echo $keyword;} ?>" class="search-query span2">
 			</form>
 			<ul class="nav pull-right">
 				<?php if($logged_in){?>

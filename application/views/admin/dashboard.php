@@ -77,6 +77,7 @@
 						</div>	
 					</div>
 				</div>
+				<?php if($this->user_model->access_to("post")===TRUE): ?>
 				<div class="row-fluid">
 					<div class="box span12">
 						<div class="box-header well">
@@ -104,6 +105,7 @@
 					</div>
 					
 				</div>
+			<?php endif; ?>
 			</div>
 			
 		</div>

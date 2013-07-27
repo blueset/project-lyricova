@@ -12,6 +12,7 @@
 			<h2>Post</h2>
 		</div>
 	</div>
+	<?php $own = $this->user_model->is_own($post->user_id); ?>
 	<div class="container single-cont">
 		<div class="row">
 			<div class="span9">
@@ -33,8 +34,8 @@
   					<?php if(!$post->translator==""){ echo '<dt>Translator:</dt><dd> '.$post->translator.'</dd>';} ?>
   					<?php if(!$post->comment==""){ echo '<dt>Comment:</dt><dd> '.$this->typography->nl2br_except_pre($post->comment).'</dd>';} ?>
   					<p style="padding-top:10px;">
-  						<?php if($this->user_model->allow_to_edit($post)===TRUE){ echo anchor('admin/edit/'.$post->id, 'Edit', 'class="btn btn-mini btn-primary"'); }?> 
-        				<?php if($this->user_model->allow_to_delete($post)===TRUE){ echo '<a href="javascript:void(0)" class="btn btn-mini" onclick="delConfModalSingle()">Delete</a>'; }?>
+  						<?php if($this->user_model->access_to("edit".$own)===TRUE){ echo anchor('admin/edit/'.$post->id, 'Edit', 'class="btn btn-mini btn-primary"'); }?> 
+        				<?php if($this->user_model->access_to("delete".$own)===TRUE){ echo '<a href="javascript:void(0)" class="btn btn-mini" onclick="delConfModalSingle()">Delete</a>'; }?>
         			
         			
 						<?=anchor('imggen/new/'.$post->id, 'Generate Image', 'class="btn btn-mini"')?>

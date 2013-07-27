@@ -116,7 +116,7 @@ class imggen extends CI_Controller {
         $height = 600;
         $width = 300;
         $meta_str = $post->name ." by ". $post->artist;
-        $meta_str .= strlen($post->featuring) ? " feat.". $post->featuring : "";
+        $meta_str .= strlen($post->featuring) ? " feat. ". $post->featuring : "";
         $lyric = strip_tags($post->lyric);
         $lines = substr_count($lyric, "\n")+1;
         $bbox = imagettfbbox(50, 0, "./fonts/w6.ttf", $lyric);
