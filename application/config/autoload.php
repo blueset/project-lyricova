@@ -64,7 +64,7 @@ $autoload['libraries'] = array('session');
 |	$autoload['helper'] = array('url', 'file');
 */
 
-$autoload['helper'] = array();
+$autoload['helper'] = array('language');
 
 
 /*
@@ -96,7 +96,7 @@ $autoload['config'] = array('gy_config','version');
 |
 */
 
-$autoload['language'] = array();
+$autoload['language'] = array('main');
 
 
 /*

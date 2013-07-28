@@ -35,7 +35,7 @@
 					</ul>
 				</li>
 				<?php }else{ ?>
-				<li><a href="<?=site_url('login');?>">Log in</a></li>
+				<li><a href="<?=site_url('login');?>"><?=lang('main_login');?></a></li>
 				<li><a href="<?=site_url('register');?>">Register</a></li>
 				<?php }?>
 			</ul>
