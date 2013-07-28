@@ -94,7 +94,7 @@
 									<textarea name="html" id="html" class="input-xxlarge" rows="2"><?=htmlspecialchars('<a href="'.base_url().'" title="'.$this->admin_model->get_title().'"><img src="'.site_url('imggen/dynamic/'.$user->id.'.png').'" title="'.$this->admin_model->get_title().'" /></a>');?></textarea>
 									<p>BB Code:</p>
 									<textarea name="html" id="html" class="input-xxlarge" rows="2"><?=htmlspecialchars('[url='.base_url().'][img]'.site_url('imggen/dynamic/'.$user->id.'.png').'[/img][/url]');?></textarea>
-									<p>Pure Address:</p>
+									<p>URL:</p>
 									<textarea name="html" id="html" class="input-xxlarge" rows="2"><?=htmlspecialchars(site_url('imggen/dynamic/'.$user->id.'.png'));?></textarea>
 								</div>
 							</div>

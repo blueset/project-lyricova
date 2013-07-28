@@ -1,5 +1,6 @@
 body{
 	padding-top: 40px;
+	font-family: "Helvetica Neue",Helvetica,Arial, "Hiragino Sans W3", "Hiragino Sans W6", 文泉驿微米黑, "Wenquanyi Micro Hei", "Droid Sans Fallback",微软雅黑, 'Microsoft Yahei', sans-serif;
 }
 footer{
 	margin-top: 10px;
@@ -25,7 +26,18 @@ footer{
 	color:#444;
 }
 .header.hero-unit{
-	background: url(img/bs-docs-masthead-pattern.png) repeat center center, linear-gradient(45deg, #020031 0%,#6d3353 100%);
+	/*background: url(img/bs-docs-masthead-pattern.png) repeat center center, linear-gradient(45deg, #020031 0%,#6d3353 100%);]*/
+	background: #020031; /* Old browsers */
+	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMTAwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CiAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDIwMDMxIiBzdG9wLW9wYWNpdHk9IjEiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzZkMzM1MyIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-moz-linear-gradient(45deg,  #020031 0%, #6d3353 100%); /* FF3.6+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-webkit-gradient(linear, left bottom, right top, color-stop(0%,#020031), color-stop(100%,#6d3353)); /* Chrome,Safari4+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-webkit-linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* Chrome10+,Safari5.1+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-o-linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* Opera 11.10+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-ms-linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* IE10+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#020031', endColorstr='#6d3353',GradientType=1 ); /* IE6-8 fallback on horizontal gradient */
+
 	color:#fff;
 	border-radius: 0;
 }

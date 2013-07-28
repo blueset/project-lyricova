@@ -27,7 +27,7 @@ class User extends CI_Controller {
          	 $userinfo=$this->user_model->get_by_username($this->_username);
              $this->user_model->login($userinfo);
              $data['message'] = 'Welcome back, '.$this->session->userdata('username').'!';
-             $this->load->view('account/login', $data);
+             redirect('admin/dashboard');
          }
         
      }

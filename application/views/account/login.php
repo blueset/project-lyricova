@@ -9,11 +9,14 @@
 	<?php $this->load->view('gy/header');?>
 	<div class="hero-unit header">
 		<div class="container">
-			<h1>Sign in</h1>	
-			<p class="lead">Log into Project Gy.</p>
+			<div style="text-align:center;">
+				<h1>Sign in</h1>	
+				<p class="lead">Log into <?=$this->admin_model->get_title();?>.</p>
+			</div>
 		</div>
 	</div>
 	<div class="container">
+		<div class="span5 offset3">
 		<?php if(!validation_errors()=='' || @!$err_message == ''){ ?>
 		<div class="alert alert-error fade in">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
@@ -39,8 +42,11 @@
       					<input type="password" id="password" name="password" placeholder="Password">
     				</div>
   				</div>
-				<input type="submit" name="submit" value="Log in" class="btn btn-primary">
+				<div style="text-align:center;">
+					<input type="submit" name="submit" value="Log in" class="btn btn-primary">
+				</div>
 		</Form>
+	</div>
 	</div>
 	<?php $this->load->view('gy/footer');?>
 </body>

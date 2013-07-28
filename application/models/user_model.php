@@ -160,7 +160,7 @@ class user_model extends CI_Model {
     }
     public function access_to($activity,$user_role=-1)
     {
-        if ($user_role == -1){$user_role = (int)$this->session->userdata('user_id');}
+        if ($user_role == -1){$user_role = (int)$this->session->userdata('role');}
         $table=array(
             "edit" => array( 0 => FALSE,
                              1 => FALSE,

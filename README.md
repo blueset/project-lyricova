@@ -19,6 +19,8 @@ Current Version:
  * Fix - URL Error for case without `htaccess`. 
  * Fix - Dynamic picture spacing error.
  * Add - Completed User Access Control
+ * Fix - CJK font Optimisation
+ * Fix - Banner Grident in IE
 
 * Beta 0.1 build 20130725
  * Fix - Pagination style error
