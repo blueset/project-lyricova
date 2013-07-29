@@ -9,30 +9,27 @@
 	<?php $this->load->view('gy/header');?>
 	<div class="hero-unit header">
 		<div class="container">
-			<h1>Nothing found here at the moment. </h1>
-			<p class="lead">You are in a place that nobody have visited.</p>			
+			<h1><?=lang('main_404_title');?></h1>
+			<p class="lead"><?=lang('main_404_subtitle');?></p>			
 		</div>
 	</div>
 	<div class="container">
 		<div class="row cont404">
 			<div class="span4">
 				<div class="lhs404">
-					<h2>Page Not found</h2>
-					<p>and that's the error.</p>
+					<h2><?=lang('main_404_intitle');?></h2>
+					<p><?=lang('main_404_insubtitle');?></p>
 				</div>
 			</div>
 			<div class="span7 offset1">
 				<blockquote>
 					<div class="rhs404">
-						<p>Nothing else to say, <br>
-							This is just a an error page,<br>
-							showing you that <br>
-							you are going to somewhere wrong.</p>
-						<small>Just go back.</small>
+						<p><?=lang('main_404_rtext');?></p>
+						<small><?=lang('main_404_small');?></small>
 					</div>
 				</blockquote>
 			</div>
-			<p><small>You are trying to access <?=current_url();?> which returns a HTTP 404 error.</small></p>
+			<p><small><?=lang('main_404_footer');?></small></p>
 		</div>
 	</div>
 	<?php $this->load->view('gy/footer');?>
