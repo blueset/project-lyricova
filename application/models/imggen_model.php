@@ -235,7 +235,7 @@ class imggen_model extends CI_Model {
     if($user_id !== -1){$this->db->where('user_id', $user_id);}
     return $this->db->count_all('imggen');
   }
-  public function get_image($per_page=20,$offset=0){ 
+  public function get_image($per_page=20,$offset=0,$user_id=-1){ 
     $this->db->order_by("id", "desc");
     if($user_id !== -1){$this->db->where('user_id', $user_id);}
     $query = $this->db->get('imggen',$per_page,$offset);

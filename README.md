@@ -15,7 +15,10 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.1 build 20130728__
+* __Beta 0.1 build 20130801__
+ * Fix - Imggen module DB problem.
+
+* Beta 0.1 build 20130728
  * Fix - URL Error for case without `htaccess`. 
  * Fix - Dynamic picture spacing error.
  * Add - Completed User Access Control
