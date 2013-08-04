@@ -26,7 +26,8 @@
 		<?php endif; ?>
 		<div class="row songbox-row">
 			<?php foreach ($posts as $postitem): ?>
-			<?php $lyricinline=strip_quotes($this->typography->nl2br_except_pre($postitem->lyric));?>
+			<?php $lyricinline=strip_quotes($this->typography->nl2br_except_pre($postitem->lyric));
+			$own = $this->user_model->is_own($postitem->user_id);?>
 			<div class="songbox-cont span4" >
 				<div class="song-box">
 				<div class="lyric"><?=$this->typography->nl2br_except_pre($postitem->lyric)?></div>
