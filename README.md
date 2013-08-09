@@ -3,6 +3,8 @@ Project Gy (歌语计划)
 
 <img src="http://1a23.com/wp-content/uploads/2013/06/GyBanner.png" title="A verse, a feeling, a recollection." style="width:100%;height:auto;">
 
+> 【Live Demo: [Eana's Project Gy](http://1a23.com/gy)】
+
 ## What is 'Project Gy'?
 Project Gy (pronounce as _'Project Gee-Wai'_), a lyric-centered web-log based on PHP and MySQL, created by [Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)
 
