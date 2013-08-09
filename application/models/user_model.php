@@ -158,6 +158,10 @@ class user_model extends CI_Model {
         $string = $this->session->userdata('user_id') == $user_id ? "_own" : "";
         return $string;
     }
+    public function get_users($per_page=20,$offset=0){ 
+        $query = $this->db->get('users',$per_page,$offset);
+        return $query->result();
+    }
     public function access_to($activity,$user_role=-1)
     {
         if ($user_role == -1){$user_role = (int)$this->session->userdata('role');}
@@ -190,4 +194,14 @@ class user_model extends CI_Model {
             );
         return $table[$activity][$user_role];
     }
+    public function delete_user($id)
+  {
+    $this->db->where('id', $id);
+    $this->db->delete('users');
+    if($this->db->affected_rows()==0){
+      return false;
+    }else{
+      return TRUE;
+    }
+  }
 }

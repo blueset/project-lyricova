@@ -53,6 +53,11 @@ function delImgModal(page,id,lyric){
 		$("#del_info").html("Item: <br>"+lyric+" <br> with ID = "+id);
 		$('.modal').modal('show').on('shown',function(){});
 	}
+function delUserModal(id,lyric){
+		$("#btn-delete").attr('href',currpath+'admin/user_delete/'+id);
+		$("#del_info").html("User: <br>"+lyric+" <br> with ID = "+id);
+		$('.modal').modal('show').on('shown',function(){});
+	}
 
 $(function(){
 	mansonry();

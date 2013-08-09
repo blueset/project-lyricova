@@ -138,7 +138,6 @@ class Admin extends CI_Controller {
   }
   public function profile()
   {
-    $data['1']='';
     $this->load->helper('form');
     $data['user']=$this->user_model->get_by_id($this->session->userdata('user_id'));
 
@@ -217,8 +216,91 @@ class Admin extends CI_Controller {
     $data['posts'] = $this->imggen_model->get_image($config['per_page'],$offset,$user_id);
     $this->load->view('admin/image',$data);
   }
-  public function users()
+  public function users_list($page=1)
   {
-    # code...
+    //accessibility check.
+    if($this->user_model->access_to("system_admin")!==TRUE){redirect('error/1');die;}
+    //init pagination
+    $this->load->library('pagination');
+    $this->load->helper('string');
+    $this->load->library('typography');
+    $config['base_url'] = site_url('admin/users_list');
+    $config['total_rows'] = $this->user_model->get_user_number();
+    $config['per_page'] = 20; 
+    $config['uri_segment'] = 3; 
+    $config['use_page_numbers'] = TRUE;
+    $this->pagination->initialize($config); 
+    $data['page']=$page;
+
+    
+    $pageNum=$page;
+      if($pageNum==1){
+        $offset=0;
+      }else{
+        $offset=$config['per_page']*($pageNum-1);
+      }
+    $data['posts'] = $this->user_model->get_users($config['per_page'],$offset);
+    $this->load->view('admin/users_list',$data);
+  }
+  public function user_edit($id)
+  {
+    //accessibility check.
+    if($this->user_model->access_to("system_admin")!==TRUE){redirect('error/1');die;}
+    //init
+    $this->load->helper('form');
+    $data['user']=$this->user_model->get_by_id($id);
+
+    $un_rule = 'trim|required|xss_clean';
+    if ($this->input->post('username') !== "" && $data['user']->username !== $this->input->post('username')){
+      $un_rule .="|is_unique[users.username]";
+    }
+    $em_rule = 'trim|required|xss_clean|valid_email';
+    if ($this->input->post('email') !== "" && $data['user']->email !== $this->input->post('email')){
+      $em_rule .="|is_unique[users.email]";
+    }
+
+
+    $this->load->library('form_validation');
+    $this->form_validation->set_rules('username','Username',$un_rule);
+    $this->form_validation->set_rules('newpw','New Password','md5');
+    $this->form_validation->set_rules('newpwconf','New Password Confirmation','match[newpw]');
+    $this->form_validation->set_rules('email','E-mail',$em_rule);
+    $this->form_validation->set_rules('display_name','Display name','required');
+
+    $data['success']=FALSE;
+    $clicked_post = $this->input->post('submit'); // "post" nutton clicked?
+    $form_valid=$this->form_validation->run(); // Form validation
+
+    
+    $data['gravatar_url'] = "http://www.gravatar.com/avatar/" . md5( strtolower( trim( $data['user']->email ) ) ) ."&s=64";
+    $data['user']=$this->user_model->get_by_id($this->session->userdata('user_id'));
+    if (!($form_valid === false) && !($clicked_post===false)){
+      $this->user_model->update_profile();
+      $data['success']=true;
+    }
+    $this->load->view('admin/user_edit',$data);
+  }
+  public function user_delete($id)
+  {
+    //accessibility check.
+    if($this->user_model->access_to("system_admin")!==TRUE){redirect('error/1');die;}
+    //Init vars
+    $data['success']=FALSE;
+    $data['errinfo']='';
+    $data['post']=$this->user_model->get_by_id($id);
+    //If post not exist
+    if($data['post']===FALSE){$this->load->view('gy/404');}
+    //Display
+    else
+    {
+      $data['post']=$this->user_model->get_by_id($id);
+      if ($this->user_model->delete_user($id)){
+        $data['success'] = TRUE;
+        $this->load->view('admin/user_delete',$data);
+      }else{
+        $data['errinfo']='Delete failed';
+        $this->load->view('admin/user_delete',$data);
+      }
+    }
   }
 }

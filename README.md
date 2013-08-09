@@ -15,8 +15,8 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.1 build 20130802__
- * Fix - Search Display problem.
+* __Beta 0.1 build 20130809__
+ * Add - User Managenent Module
 
 > Refer to Changelog.md for more.
 
