@@ -273,7 +273,7 @@ class Admin extends CI_Controller {
 
     
     $data['gravatar_url'] = "http://www.gravatar.com/avatar/" . md5( strtolower( trim( $data['user']->email ) ) ) ."&s=64";
-    $data['user']=$this->user_model->get_by_id($this->session->userdata('user_id'));
+    $data['user']=$this->user_model->get_by_id($id);
     if (!($form_valid === false) && !($clicked_post===false)){
       $this->user_model->update_profile();
       $data['success']=true;
