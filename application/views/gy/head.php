@@ -1,3 +1,4 @@
+<meta http-equiv="version" content="<?=$this->config->item('current_version');?>" />
 <link rel="stylesheet" href="<?=base_url('/css/bootstrap.min.css')?>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="<?=base_url('/css/bootstrap-responsive.css')?>">

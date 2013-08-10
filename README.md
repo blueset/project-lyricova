@@ -19,6 +19,7 @@ _\* By lyrics, here I means lyrics as in the songs._
 Current Version:
 * __Beta 0.1 build 20130809__
  * Add - User Managenent Module
+ * Add - Version Meta and footer link
 
 > Refer to Changelog.md for more.
 

@@ -32,7 +32,7 @@
 				<div class="row-fluid">
 					<div class="span3 text-center">
 						<img src="<?=$gravatar_url?>" alt="Avatar from Gravatar"><br>
-						<a href="http://gravatar.com" class="btn btn-primary">Change your avatar</a><br>
+						<a href="http://gravatar.com" class="btn btn-primary">Change avatar</a><br>
 						<small>via Gravatar.com</small>
 						<p><small><a href="javascript:void(0);" id="gravatarhelp" data-toggle="popover"
 									data-original-title="How is this picture obtained?"

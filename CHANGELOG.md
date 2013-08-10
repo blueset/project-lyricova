@@ -1,6 +1,10 @@
 CHANGE LOG
 ==========
 
+* Beta 0.1 build 20130809
+ * Add - User Managenent Module
+ * Add - Version Meta and footer link
+ 
 * Beta 0.1 build 20130802
  * Fix - Search Display problem.
 
