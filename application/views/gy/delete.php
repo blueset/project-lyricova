@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Delete - <?=$this->admin_model->get_title();?></title>
+	<title><?=lang('main_delete');?> - <?=$this->admin_model->get_title();?></title>
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
@@ -10,8 +10,8 @@
 	<div class="hero-unit header single-head">
 		<div class="container">
 			<h2>
-				Delete
-				<?php if($errinfo==''){ ?><small> item <?=$post->name?> with ID <?=$post->id?></small><?php }else{ echo '<p class="lead">A critical error has occured. -- the Disappearance<p>';}?>
+				<?=lang('main_delete');?>
+				<?php if($errinfo==''){ ?><small> <?=lang('main_item');?> <?=$post->name?> <?=lang('main_with_id');?> <?=$post->id?></small><?php }else{ echo '<p class="lead">'.lang('main_delete_404').'<p>';}?>
 			</h2>	
 			<p class="lead"></p>
 		</div>
@@ -20,13 +20,13 @@
 		<?php if($success ){ ?>
 		<div class="alert alert-success fade in ">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
-  			<strong>Success!</strong> Item Deleted.
+  			<strong><?=lang('main_success');?></strong> <?=lang('main_delete_ok');?>
 		</div>
 		<div class="alert fade in ">
-  			<strong>Attention!</strong> Please keep this page if you want to recover your deleted item. Data would be irrecoverable after you close it. 
+  			<strong><?=lang('main_attention');?></strong> <?=lang('main_delete_attention');?> 
 		</div>
 		<table class="table">
-			<tr><th>Column</th><th>Info</th></tr>
+			<tr><th><?=lang('main_column');?></th><th><?=lang('main_info');?></th></tr>
 			<tr><td>lyric</td><td><?=$post->lyric?></td></tr>
     		<tr><td>name</td><td><?=$post->name?></td></tr>
     		<tr><td>artist</td><td><?=$post->artist?></td></tr>
@@ -44,7 +44,7 @@
 		<?php if(!$errinfo==''){ ?>
 		<div class="alert alert-error fade in ">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
-  			<strong>Error!</strong> <?=$errinfo?> 
+  			<strong><?=lang('main_error');?></strong> <?=$errinfo?> 
 		</div>
 		<?php } ?>
 

@@ -1,6 +1,6 @@
 <footer>
 	<div class="container">
-		<p class="muted" style="margin: 20px 0;">Project Gy, a lyric-centered web-log created by Blueset Studio together with iBe.</p>
+		<p class="muted" style="margin: 20px 0;"><?=lang('main_footer_text');?></p>
 	</div>
 </footer>
 <script>
