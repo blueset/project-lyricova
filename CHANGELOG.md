@@ -1,6 +1,11 @@
 CHANGE LOG
 ==========
 
+* Beta 0.2 build 20131127
+ * Fix - Imggen PHP error
+ * Fix - User Role Edit
+ * Fix - Validated RSS Format
+
 * Beta 0.1 build 20130809
  * Add - User Managenent Module
  * Add - Version Meta and footer link

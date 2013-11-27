@@ -1,4 +1,4 @@
-<?php 
+<?php  
 class imggen_model extends CI_Model {
 
   public function __construct(){

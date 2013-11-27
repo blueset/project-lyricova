@@ -44,7 +44,7 @@
 						</small></p>
 					</div>
 					<div class="span9">
-						<?php echo form_open('admin/profile',array('class'=>'form-horizontal')); ?>
+						<?php echo form_open('admin/user_edit/'.$user->id,array('class'=>'form-horizontal')); ?>
 							<div class="control-group">
 								<label for="id" class="control-label">User ID</label>
 								<div class="controls"><input type="text" class="input-large" id="id" name="id" disabled value="<?=$user->id?>"></div>
@@ -52,6 +52,10 @@
 							<div class="control-group">
 								<label for="username" class="control-label">Username</label>
 								<div class="controls"><input type="text" class="input-large" id="username" name="username" value="<?=$user->username?>"></div>
+							</div>
+							<div class="control-group">
+								<label for="role" class="control-label">User Role</label>
+								<div class="controls"><input type="text" class="input-large" id="role" name="role" value="<?=$user->role?>"></div>
 							</div>
 							<div class="control-group">
 								<label for="newpw" class="control-label">New Password</label>

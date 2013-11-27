@@ -83,14 +83,24 @@ class user_model extends CI_Model {
          }
          return FALSE;
      }
-     public function update_profile()
+     public function update_profile($id=-1)
      {
         $pw = ($this->input->post('newpwconf') == "")?$this->input->post('password'):$this->input->post('newpw');
-        $data = array('username' => $this->input->post('username'),
-                      'password' => md5($pw),
-                      'email' => $this->input->post('email'),
-                      'display_name' => $this->input->post('display_name'));
-        $this->db->where('id', $this->get_session('user_id'));
+        if ($id == -1){
+            $data = array('username' => $this->input->post('username'),
+                        'password' => md5($pw),
+                        'email' => $this->input->post('email'),
+                        'display_name' => $this->input->post('display_name'));
+            $this->db->where('id', $this->get_session('user_id'));
+        }else{
+            $data = array('username' => $this->input->post('username'),
+                        'password' => md5($pw),
+                        'email' => $this->input->post('email'),
+                        'role' => $this->input->post('role'),
+                        'display_name' => $this->input->post('display_name'));
+            $this->db->where('id', $id);
+        }
+        
         $this->db->update('users', $data);
 
         

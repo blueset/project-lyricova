@@ -247,6 +247,7 @@ class Admin extends CI_Controller {
     //accessibility check.
     if($this->user_model->access_to("system_admin")!==TRUE){redirect('error/1');die;}
     //init
+    if(!isset($id)){redirect('admin/profile');die;}
     $this->load->helper('form');
     $data['user']=$this->user_model->get_by_id($id);
 
@@ -266,6 +267,7 @@ class Admin extends CI_Controller {
     $this->form_validation->set_rules('newpwconf','New Password Confirmation','match[newpw]');
     $this->form_validation->set_rules('email','E-mail',$em_rule);
     $this->form_validation->set_rules('display_name','Display name','required');
+    $this->form_validation->set_rules('role','User Role','required|numeric');
 
     $data['success']=FALSE;
     $clicked_post = $this->input->post('submit'); // "post" nutton clicked?
@@ -275,7 +277,7 @@ class Admin extends CI_Controller {
     $data['gravatar_url'] = "http://www.gravatar.com/avatar/" . md5( strtolower( trim( $data['user']->email ) ) ) ."&s=64";
     $data['user']=$this->user_model->get_by_id($id);
     if (!($form_valid === false) && !($clicked_post===false)){
-      $this->user_model->update_profile();
+      $this->user_model->update_profile($id);
       $data['success']=true;
     }
     $this->load->view('admin/user_edit',$data);

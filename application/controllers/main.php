@@ -32,6 +32,7 @@ class main extends CI_Controller {
   public function rss(){
     header ('Content-Type: text/xml');
     $this->load->helper('string');
+    $this->load->helper('date');
     $this->load->library('typography');
     $this->load->model('admin_model');
     $data['posts'] = $this->post_model->get_post(20,0);
