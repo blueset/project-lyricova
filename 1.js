@@ -1,0 +1,1 @@
+$("#container").append($("<div></div>").css({"background":"#fff","color":"#000","left":"80px","right":"80px"}).attr({"class":"lyricline","id":"2"}).text("22")

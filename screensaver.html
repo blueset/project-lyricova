@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Screensaver / Demo</title>
+</head>
+<body>
+    <script src="jq.js"></script>
+    <div id="container">
+        <div class="lyricline" id="lyric_id">
+            Content
+        </div>
+    </div>
+    <style>
+        body{
+            background: #000;
+            color: #fff;
+            font-family: "Kozuka Gothic Pro B", "Hiragino Sans GB W6", "冬青黑简体中文 W6", "微软雅黑 Bold", sans-serif;
+            overflow:hidden;
+        }
+        #container{
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .lyricline{
+            position: absolute;
+            text-align: center;
+        }
+    </style>
+    <script>
+    minTextSize = 16;
+    tickfactor = 2;
+    tickMainFactor = 100;
+    animationFactor = 0.7;
+    var apiPath = "main/"
+
+    //Object oLyricLine
+    function oLyricLine(obj){
+        this.lyricLines = [];
+        this.textSize = 30;
+        this.toppx = -1;
+        this.leftpx = -1;
+        this.unixtime = -1;
+        this.widthpx = -1;
+        this.colorhex = "#000";
+        this.obj = obj;
+
+        //constants....
+
+    }
+    oLyricLine.prototype.animateIn = function(lyricLine, unixtime) {
+    	var tickCount = -1;
+    	var maxtick = lyricLine.length-1;
+    	var timerAnimation;
+    	var nLyricLine = lyricLine;
+    	var tickAnimationFactor = Math.floor(tickMainFactor*animationFactor);
+
+    	timerAnimation = setInterval(function () {
+    		tickCount += 1;
+    		if (tickCount > maxtick) clearInterval(timerAnimation);
+    		$("#"+unixtime).text(nLyricLine.substr(0,tickCount));
+    	},tickAnimationFactor);
+    };
+    oLyricLine.prototype.animateOut = function(unixtime, isLast) {
+    	var tickCount = $("#"+unixtime).text().length;
+    	var maxtick = 0;
+    	var timerAnimation;
+    	var tickAnimationFactor = Math.floor(tickMainFactor*animationFactor);
+
+
+    	timerAnimation = setInterval(function () {
+    		tickCount -= 1;
+    		if (tickCount < maxtick) {
+    			if (isLast) $("#"+unixtime).remove();
+    			clearInterval(timerAnimation);
+
+    		}
+    		$("#"+unixtime).text($("#"+unixtime).text().substr(0,tickCount));
+    	},tickAnimationFactor);
+    };
+
+    oLyricLine.prototype.drawText = function(){
+        if (this.toppx != -1 && this.leftpx != -1 && this.unixtime != -1 && this.widthpx != -1){
+    
+
+        var transitionInTime = 10;
+        var transitionOutTime = 10;
+        
+        $("#"+this.unixtime).css({
+            "color": this.colorhex,
+            "left": this.leftpx,
+            "top": this.toppx,
+            "width": this.widthpx,
+            "font-size":this.textSize
+        }).attr({"class":"lyricline","id":this.unixtime});
+        oLyricLine.prototype.animateIn(this.lyricLines[0],this.unixtime);
+        var tickCount = 0;
+        var lyricLinesCountIn = 1;
+        var lyricLinesCountOut = 0;
+        var lyricLinesTickIn = [];
+        var lyricLinesTickOut = [];
+        lyricLinesTickIn[0]=0;
+        lyricLinesTickOut[0]=this.lyricLines[0].length*(animationFactor+tickfactor);
+        for (var i =1; i <= this.lyricLines.length - 1; i++) {
+            lyricLinesTickIn[i] = lyricLinesTickOut[i-1]+animationFactor*this.lyricLines[i-1].length;
+            lyricLinesTickOut[i] = lyricLinesTickIn[i]+this.lyricLines[i].length*(animationFactor+tickfactor);
+
+        };
+        var nLyricLines = this.lyricLines;
+        var nUnixtime = this.unixtime;
+        this.obj = setInterval(function () {
+            tickCount += 1;
+            if (tickCount >= lyricLinesTickIn[lyricLinesCountIn]){
+                oLyricLine.prototype.animateIn(nLyricLines[lyricLinesCountIn],nUnixtime);
+                lyricLinesCountIn +=1;
+            }
+            if (tickCount >= lyricLinesTickOut[lyricLinesCountOut]){
+            	var isLast = lyricLinesCountOut == lyricLinesTickOut.length - 1; 
+            	oLyricLine.prototype.animateOut(nUnixtime,isLast);
+            	lyricLinesCountOut += 1;
+            }
+        },100);
+
+
+        }
+    };
+    oLyricLine.prototype.initLines = function() {
+    	if (this.lyricLines.length < 1) return;
+    	this.colorhex = randomColor();
+        this.textSize = Math.floor(Math.random()*(maxSize(this.lyricLines)-minTextSize)+minTextSize);
+        var strDimensionThis = strDimension(this.lyricLines, this.textSize);
+        this.widthpx = strDimensionThis[0];
+        this.toppx = Math.floor(Math.random()*($(window).height()-parseInt(strDimensionThis[1])));
+        this.leftpx = Math.floor(Math.random()*($(window).width()-parseInt(this.widthpx)));
+    };
+    var lyricPostCount;
+    var lyricPostShuffle =[[],[]];
+   	$.getJSON(apiPath+"postcountjson?callback=?", function(data) {
+		lyricPostCount = data;
+		fillShuffle();
+		shuffle(lyricPostShuffle);
+	});
+
+	
+	
+	
+	var lyricPostNext = 0;
+    var mainTimer = setInterval(function () {
+    	if (lyricPostNext>=lyricPostCount){lyricPostNext=0;shuffle(lyricPostShuffle);}
+    	var unixtime = Date.now();
+    	$("#container").append($("<div></div>").attr("id",unixtime));
+    	var lyricLinesArray;
+    	$.getJSON(apiPath+"getlyricjson?post_id="+lyricPostShuffle[0][lyricPostNext]+"&post_cat="+lyricPostShuffle[1][lyricPostNext]+"&callback=?", function(data) {
+			lyricLinesArray = data;
+			$.getJSON(apiPath+"getlyricmetajson?post_id="+lyricPostShuffle[0][lyricPostNext]+"&callback=?", function(data) {
+				$("#lyric_id").text(data);
+			});
+			var obj=$("#"+unixtime);
+    		var LyricGen = new oLyricLine(obj);
+    		LyricGen.lyricLines = lyricLinesArray;
+    		LyricGen.initLines();
+    		LyricGen.unixtime = unixtime;
+    		LyricGen.drawText();
+    		lyricPostNext+=1;
+		});
+		
+    },4000)
+    
+
+    function strlen(str){ var len = 0; for (var i=0; i<str.length; i++) { var c = str.charCodeAt(i); if ((c >= 0x0001 && c <= 0x007e) || (0xff60<=c && c<=0xff9f)) { len++; } else { len+=2; } } return len; }
+    /*
+     * Dimension of a string series
+     * @param {array[string]} lyricLines lines of strings
+     * @param {int} textSize textSize
+     * @return {array[int]} maxPxLength,maxPxHeight dimension [0]:width [1]:height
+     */
+    function strDimension (lyricLines, textSize) {
+        var maxStringLength=0, maxStringId=-1;
+        for (var i = lyricLines.length - 1; i >= 0; i--) {
+                if (maxStringLength < strlen(lyricLines[i])){
+                maxStringLength = strlen(lyricLines[i]);
+                maxStringId = i;
+            };
+        };
+        $("#container").append($("<div></div>").css({
+            "background":"#fff",
+            "color":"#000",
+            "visibility":"hidden",
+            "font-size":textSize
+        }).attr({"class":"lyricline","id":"widgen"}).text(lyricLines[maxStringId]));
+        var maxPxLength =  $("#widgen").css("width"); 
+        var maxPxHeight = $("#widgen").css("height");
+        $("#widgen").remove();
+        return [maxPxLength,maxPxHeight];
+    }
+    function maxSize (lyricLines) {
+    	var size = 100;
+    	var dimension = strDimension(lyricLines, size);
+    	var screenW = $(window).width();
+    	var screenH = $(window).height();
+    return Math.floor(Math.min(Math.floor(size/parseInt(dimension[0])*screenW),Math.floor(size/parseInt(dimension[1])*screenH))*0.5);
+    }
+    function randomColor () {
+    	var h = Math.floor(Math.random()*255);
+    	var s = Math.floor(Math.random()*100) + "%";
+    	var l = Math.floor(Math.random()*10+60) + "%";
+    	return "hsl("+h+","+s+","+l+")";
+    }
+    /**
+     * Fisher–Yates Shuffle
+     * code from http://bost.ocks.org/mike/shuffle/
+     */
+    function shuffle(array) {
+  		var m = array[0].length, t, i;
+
+  		// While there remain elements to shuffle…
+  		while (m) {
+
+	    	// Pick a remaining element…
+    		i = Math.floor(Math.random() * m--);
+
+    		// And swap it with the current element.
+    		t = array[0][m];
+    		array[0][m] = array[0][i];
+    		array[0][i] = t;
+    		t = array[1][m];
+    		array[1][m] = array[1][i];
+    		array[1][i] = t;
+  		}
+
+  		return array;
+	}
+	function fillShuffle () {
+		for (var i = lyricPostCount - 1; i >= 0; i--) {
+			lyricPostShuffle[0][i]=i;
+			lyricPostShuffle[1][i]=1;
+			lyricPostShuffle[0][i+lyricPostCount]=i;
+			lyricPostShuffle[1][i+lyricPostCount]=0;
+		};
+	}
+    </script>
+    
+</body>
+</html>

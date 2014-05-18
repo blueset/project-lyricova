@@ -17,10 +17,13 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.2 build 20131127__
- * Fix - Imggen PHP error
- * Fix - User Role Edit
- * Fix - Validated RSS Format
+* __Beta 0.2 build 20140318__
+ * Add - links in dashboard statistics
+ * Change - gy & ci direction name
+ * Add - Insatallation module (beta)
+ * Fix - Imggen module for registered users only
+ * Add - Gy screensaver
+ * Add - Remember me
 
 > Refer to Changelog.md for more.
 
@@ -43,7 +46,6 @@ This project is built with help of the following projects:
 * Item Create & Legibility Check
 * Item Edit
 * Item Display
-* User Registration and Logging in
 * User role and rights
 * Item Delete
 * Single item display
@@ -51,10 +53,10 @@ This project is built with help of the following projects:
 * Search Module
 * User Dashboard
 * RSS output
+* User Management
 
 ### What to do?
 
-* Ajax-ize
 * Theme Support (?)
 * Music Streaming (?)
 * Wysiwyg editor
@@ -62,4 +64,5 @@ This project is built with help of the following projects:
 * Templating functions (?)
 * Categorization and Tagging
 * Installation & Update Scripts
-* User Management
+* Multi language UI
+* Comment link.

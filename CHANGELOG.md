@@ -1,6 +1,11 @@
 CHANGE LOG
 ==========
 
+* Beta 0.2 build 20140318
+ * Add - links in dashboard statistics
+ * Change - gy & ci direction name
+ * Add - Insatallation module (beta)
+
 * Beta 0.2 build 20131127
  * Fix - Imggen PHP error
  * Fix - User Role Edit
