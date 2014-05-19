@@ -297,8 +297,19 @@ function update(){
         do{
             this.toppx = Math.floor(Math.random()*($(window).height()-parseInt(strDimensionThis[1])));
             this.leftpx = Math.floor(Math.random()*($(window).width()-parseInt(this.widthpx)));
-        }while(arrayOccupiedY[this.toppx] && arrayOccupiedY[this.toppx+parseInt(strDimensionThis[1])] && arrayOccupiedX[this.leftpx] && arrayOccupiedX[this.leftpx+parseInt(strDimensionThis[0])]);
-        
+            var validity = (arrayOccupiedY[this.toppx] && 
+                 arrayOccupiedY[this.toppx+parseInt(strDimensionThis[1])] ) || 
+                (arrayOccupiedX[this.leftpx] && 
+                 arrayOccupiedX[this.leftpx+parseInt(strDimensionThis[0])] );
+                console.log(validity);
+        }while( validity );
+        /*
+        console.log("arrayOccupiedY["+this.toppx+"] && arrayOccupiedY["+(this.toppx+parseInt(strDimensionThis[1]))+"] && arrayOccupiedX["+this.leftpx+"] && arrayOccupiedX["+(this.leftpx+parseInt(strDimensionThis[0]))+"]");
+        console.log(arrayOccupiedY[this.toppx]);
+        console.log(arrayOccupiedY[this.toppx+parseInt(strDimensionThis[1])]);
+        console.log(arrayOccupiedX[this.leftpx]);
+        console.log(arrayOccupiedX[this.leftpx+parseInt(strDimensionThis[0])]);
+        */
     };
     var lyricPostCount;
     var lyricPostShuffle =[[],[]];
