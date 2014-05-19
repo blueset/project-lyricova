@@ -5,6 +5,9 @@ CHANGE LOG
  * Add - links in dashboard statistics
  * Change - gy & ci direction name
  * Add - Insatallation module (beta)
+ * Fix - Imggen module for registered users only
+ * Add - Gy screensaver
+ * Add - Remember me
 
 * Beta 0.2 build 20131127
  * Fix - Imggen PHP error

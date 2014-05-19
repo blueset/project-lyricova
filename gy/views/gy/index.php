@@ -25,7 +25,7 @@
 				<div class="song-box">
 				<div class="lyric"><?=$this->typography->nl2br_except_pre($postitem->lyric)?></div>
 				<div class="meta muted"><small>
-					<span class="title" onclick="window.open('<?= site_url('/post/'.$postitem->id)?>')"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?><a data-toggle="collapse" data-target="#detail-<?=$postitem->id?>" href="javascript:void(0)">More...</a>
+					<span class="title" onclick="window.open('<?= site_url('/post/'.$postitem->id)?>')"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?> <br /><?=anchor('/post/'.$postitem->id.'#disqus_thread', "Comment");?> | <a data-toggle="collapse" data-target="#detail-<?=$postitem->id?>" href="javascript:void(0)">More...</a>
 				</small></div>
   				<div id="detail-<?=$postitem->id?>" class="collapse">
   					<?php if(!$postitem->origin==""){ echo '<strong>Original Lyric:</strong> <br>'.$this->typography->nl2br_except_pre($postitem->origin).'<br>';} ?>
