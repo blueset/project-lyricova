@@ -39,6 +39,8 @@ This project is built with help of the following projects:
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
 * [Charisma](http://usman.it/free-responsive-admin-template) Dashboard Theme
 * [Disqus](http://disqus.com/) Commenting system
+* [three.js](http://threejs.org/)
+* [three.js Particle Engine](http://stemkoski.github.io/Three.js/Particle-Engine.html) by [Lee Stemkoski](http://www.adelphi.edu/~stemkoski/)
 
 ## To-dos and Dones
 ### What is done:
