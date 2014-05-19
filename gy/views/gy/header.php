@@ -19,6 +19,7 @@
 			<ul class="nav">
 				<li <?php echo ((uri_string() == "")?'class="active"':"");?>><a href="<?=site_url();?>">Home</a></li>
 				<li <?php echo ((stripos(uri_string(),"imggen")!==FALSE)?'class="active"':"");?>><a href="<?=site_url('imggen/new');?>">Image Generator</a></li>
+				<li><a href="<?=site_url('screensaver.html');?>">Screensaver</a></li>
 			</ul>
 			<form class="navbar-search pull-left" method="get" accept-charset="utf-8" action="<?=site_url("s");?>">
     			<input type="text" name="q" placeholder="Search Project Gy" value="<?php if(isset($keyword)){echo $keyword;} ?>" class="search-query span2">

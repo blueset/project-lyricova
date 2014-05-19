@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+    body{margin:0;overflow: hidden;}
+    </style>
+    <script src="three.min.js"></script>
+    <script src="jq.js"></script>
+    <script src="particleEngine.js"></script>
+    <script>
+        var container, stats;
+        var camera, scene, renderer, particles, geometry, material, i, h, color, sprite, size;
+        var mouseX = 0, mouseY = 0;
+        var clock = new THREE.Clock();
+
+        var windowHalfX = window.innerWidth / 2;
+        var windowHalfY = window.innerHeight / 2;
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+
+        camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 2, 2000 );
+        camera.position.z = 1000;
+// 创建渲染器、相机和场景
+        renderer = new THREE.WebGLRenderer( { clearAlpha: 1 } );
+        scene = new THREE.Scene();
+// 将相机加入场景
+        scene.add(camera);
+// 相机的初始位置为原点
+// 将相机拉回来一些（译者注：这样才能看到原点）
+// 启动渲染器
+        renderer.setSize( window.innerWidth, window.innerHeight );
+// 将渲染器加到DOM结构中
+        container.appendChild( renderer.domElement );
+
+        function animate() {
+            requestAnimationFrame( animate );
+            render(); 
+            update();
+        }
+        function render() {
+            renderer.render( scene, camera );
+        }
+        var starfield ={
+        positionStyle  : Type.CUBE,
+        positionBase   : new THREE.Vector3( 0, 0, 0 ),
+        positionSpread : new THREE.Vector3( 10, 10, 10 ),
+
+        velocityStyle  : Type.CUBE,
+        velocityBase   : new THREE.Vector3( 0, 100, 200 ),
+        velocitySpread : new THREE.Vector3( 40, 40, 80 ), 
+        
+        angleBase               : 0,
+        angleSpread             : 720,
+        angleVelocityBase       : 10,
+        angleVelocitySpread     : 0,
+        
+        particleTexture : THREE.ImageUtils.loadTexture( 'spikey.png' ),
+
+        sizeBase    : 4.0,
+        sizeSpread  : 2.0,              
+        colorBase   : new THREE.Vector3(0.15, 1.0, 0.8), // H,S,L
+        opacityBase : 1,
+        blendStyle  : THREE.AdditiveBlending,
+
+        particlesPerSecond : 500,
+        particleDeathAge   : 4.0,       
+        emitterDeathAge    : 60
+    }
+
+function resetCamera()
+{
+    // CAMERA
+    var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+    var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+    camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+    //camera.up = new THREE.Vector3( 0, 0, 1 );
+    camera.position.set(0,200,400);
+    camera.lookAt(scene.position);  
+    scene.add(camera);
+    
+    
+}
+function update(){
+    
+    var dt = clock.getDelta();
+    engine.update( dt * 0.5 );  
+}
+        resetCamera();
+        this.engine = new ParticleEngine();
+        engine.setValues( starfield );
+        engine.initialize();
+
+        animate();
+    </script>
+</body>
+</html>

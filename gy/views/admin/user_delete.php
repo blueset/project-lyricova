@@ -11,7 +11,7 @@
 		<div class="container">
 			<h2>
 				Delete
-				<?php if($errinfo==''){ ?><small> item <?=$post->name?> with ID <?=$post->id?></small><?php }else{ echo '<p class="lead">A critical error has occured. -- the Disappearance<p>';}?>
+				<?php if($errinfo==''){ ?><small> user <?=$post->username?> with ID <?=$post->id?></small><?php }else{ echo '<p class="lead">A critical error has occured. -- the Disappearance<p>';}?>
 			</h2>	
 			<p class="lead"></p>
 		</div>

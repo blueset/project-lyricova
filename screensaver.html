@@ -8,18 +8,21 @@
     <script src="jq.js"></script>
     <div id="container">
         <div class="lyricline" id="lyric_id">
-            Content
+            
         </div>
+        <div id="credit"><a href="./">Project Gy Screensaver</a></div>
     </div>
     <style>
         body{
             background: #000;
+            margin:0;
             color: #fff;
-            font-family: "Kozuka Gothic Pro B", "Hiragino Sans GB W6", "冬青黑简体中文 W6", "微软雅黑 Bold", sans-serif;
+            font-family: "Kozuka Gothic Pro B", "Hiragino Sans GB W6", "冬青黑简体中文 W6", "微软雅黑 Bold", "Myriad Pro Bold" sans-serif;
             overflow:hidden;
+            text-shadow: #000 0 0 10px, #000 0 0 10px,#000 0 0 10px,#000 0 0 10px,#000 0 0 10px, #000 0 0 10px;
         }
         #container{
-            position: relative;
+            position: absolute;
             width: 100%;
             height: 100%;
         }
@@ -27,14 +30,151 @@
             position: absolute;
             text-align: center;
         }
+        #lyric_id{margin:5px;}
+        #credit{bottom: 0; right: 0;position: absolute;}
+        #credit a{color:#fff;}
     </style>
+    <!-- Three.js begin -->
+    <script src="three.min.js"></script>
+    <script src="jq.js"></script>
+    <script src="particleEngine.js"></script>
+    <script>
+        var container, stats;
+        var camera, scene, renderer, particles, geometry, material, i, h, color, sprite, size;
+        var mouseX = 0, mouseY = 0;
+        var clock = new THREE.Clock();
+
+        var windowHalfX = window.innerWidth / 2;
+        var windowHalfY = window.innerHeight / 2;
+        container = document.createElement( 'div' )
+        $(container).css("height",0);
+        $("#container").before(container);
+
+        camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 2, 2000 );
+        camera.position.z = 1000;
+        // 创建渲染器、相机和场景
+        renderer = new THREE.WebGLRenderer( { clearAlpha: 1 } );
+        scene = new THREE.Scene();
+        // 将相机加入场景
+        scene.add(camera);
+        // 相机的初始位置为原点
+        // 将相机拉回来一些（译者注：这样才能看到原点）
+        // 启动渲染器
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        // 将渲染器加到DOM结构中
+        container.appendChild( renderer.domElement );
+
+        function animate() {
+            requestAnimationFrame( animate );
+            render(); 
+            update();
+        }
+        function render() {
+            renderer.render( scene, camera );
+        }
+        var starfield ={
+        positionStyle  : Type.CUBE,
+        positionBase   : new THREE.Vector3( 0, 0, 0 ),
+        positionSpread : new THREE.Vector3( 10, 10, 10 ),
+
+        velocityStyle  : Type.CUBE,
+        velocityBase   : new THREE.Vector3( 0, 100, 200 ),
+        velocitySpread : new THREE.Vector3( 40, 40, 80 ), 
+        
+        angleBase               : 0,
+        angleSpread             : 720,
+        angleVelocityBase       : 10,
+        angleVelocitySpread     : 0,
+        
+        particleTexture : THREE.ImageUtils.loadTexture( 'spikey.png' ),
+
+        sizeBase    : 4.0,
+        sizeSpread  : 2.0,              
+        colorBase   : new THREE.Vector3(0.15, 1.0, 0.8), // H,S,L
+        opacityBase : 1,
+        blendStyle  : THREE.AdditiveBlending,
+
+        particlesPerSecond : 300,
+        particleDeathAge   : 4.0,       
+        emitterDeathAge    : 60
+    }
+var THREEx  = THREEx        || {};
+
+/**
+ * Update renderer and camera when the window is resized
+ * 
+ * @param {Object} renderer the renderer to update
+ * @param {Object} Camera the camera to update
+*/
+THREEx.WindowResize = function(renderer, camera){
+    var callback    = function(){
+        // notify the renderer of the size change
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        // update the camera
+        camera.aspect   = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    }
+    // bind the resize event
+    window.addEventListener('resize', callback, false);
+    // return .stop() the function to stop watching window resize
+    return {
+        /**
+         * Stop watching window resize
+        */
+        stop    : function(){
+            window.removeEventListener('resize', callback);
+        }
+    };
+}
+THREEx.WindowResize(renderer, camera);
+function resetCamera()
+{
+    // CAMERA
+    var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+    var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+    camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+    //camera.up = new THREE.Vector3( 0, 0, 1 );
+    camera.position.set(0,200,400);
+    camera.lookAt(scene.position);  
+    scene.add(camera);
+    
+    
+}
+function update(){
+    
+    var dt = clock.getDelta();
+    engine.update( dt * 0.5 );  
+}
+        resetCamera();
+        this.engine = new ParticleEngine();
+        engine.setValues( starfield );
+        engine.initialize();
+
+        animate();
+
+    </script>
+    <!-- Three.js end -->
+
+
+
+
+
+
+
+
     <script>
     minTextSize = 16;
     tickfactor = 2;
     tickMainFactor = 100;
     animationFactor = 0.7;
     var apiPath = "main/"
-
+    var arrayOccupiedX = [], arrayOccupiedY = [];
+    for (var i = screen.height; i >= 1; i--) {
+        arrayOccupiedY[i] = false;
+    };
+    for (var i = screen.width; i >= 1; i--) {
+        arrayOccupiedX[i] = false;
+    };
     //Object oLyricLine
     function oLyricLine(obj){
         this.lyricLines = [];
@@ -72,7 +212,19 @@
     	timerAnimation = setInterval(function () {
     		tickCount -= 1;
     		if (tickCount < maxtick) {
-    			if (isLast) $("#"+unixtime).remove();
+                if (isLast){
+                    var y1 = parseInt($("#"+unixtime).css("top"));
+                    var y2 = y1 + parseInt($("#"+unixtime).css("height"));
+                    for (var i = y2 ; i >= y1; i--) {
+                        arrayOccupiedY[i] = false;
+                    };
+                    var x1 = parseInt($("#"+unixtime).css("left"));
+                    var x2 = x1 + parseInt($("#"+unixtime).css("width"));
+                    for (var i = x2 ; i >= x1; i--) {
+                        arrayOccupiedX[i] = false;
+                    };
+    		        $("#"+unixtime).remove();
+                }
     			clearInterval(timerAnimation);
 
     		}
@@ -94,6 +246,16 @@
             "width": this.widthpx,
             "font-size":this.textSize
         }).attr({"class":"lyricline","id":this.unixtime});
+        var y1 = parseInt($("#"+this.unixtime).css("top"));
+        var y2 = y1 + strDimension(this.lyricLines, this.textSize)[1];
+        for (var i = y2 ; i >= y1; i--) {
+            arrayOccupiedY[i] = true;
+        };
+        var x1 = parseInt($("#"+this.unixtime).css("left"));
+        var x2 = x1 + parseInt($("#"+this.unixtime).css("width"));
+        for (var i = x2 ; i >= x1; i--) {
+            arrayOccupiedX[i] = true;
+        };
         oLyricLine.prototype.animateIn(this.lyricLines[0],this.unixtime);
         var tickCount = 0;
         var lyricLinesCountIn = 1;
@@ -118,6 +280,7 @@
             if (tickCount >= lyricLinesTickOut[lyricLinesCountOut]){
             	var isLast = lyricLinesCountOut == lyricLinesTickOut.length - 1; 
             	oLyricLine.prototype.animateOut(nUnixtime,isLast);
+                if (isLast) clearInterval(this.obj);
             	lyricLinesCountOut += 1;
             }
         },100);
@@ -131,8 +294,11 @@
         this.textSize = Math.floor(Math.random()*(maxSize(this.lyricLines)-minTextSize)+minTextSize);
         var strDimensionThis = strDimension(this.lyricLines, this.textSize);
         this.widthpx = strDimensionThis[0];
-        this.toppx = Math.floor(Math.random()*($(window).height()-parseInt(strDimensionThis[1])));
-        this.leftpx = Math.floor(Math.random()*($(window).width()-parseInt(this.widthpx)));
+        do{
+            this.toppx = Math.floor(Math.random()*($(window).height()-parseInt(strDimensionThis[1])));
+            this.leftpx = Math.floor(Math.random()*($(window).width()-parseInt(this.widthpx)));
+        }while(arrayOccupiedY[this.toppx] && arrayOccupiedY[this.toppx+parseInt(strDimensionThis[1])] && arrayOccupiedX[this.leftpx] && arrayOccupiedX[this.leftpx+parseInt(strDimensionThis[0])]);
+        
     };
     var lyricPostCount;
     var lyricPostShuffle =[[],[]];
