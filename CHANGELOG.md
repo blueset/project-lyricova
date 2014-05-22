@@ -1,7 +1,10 @@
 CHANGE LOG
 ==========
+* Beta 0.2 build 20140522
+ * Add - Screensaver transition
+ * Fix - Screensaver word collision
 
-* Beta 0.2 build 20140318
+* Beta 0.2 build 20140518
  * Add - links in dashboard statistics
  * Change - gy & ci direction name
  * Add - Insatallation module (beta)

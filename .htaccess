@@ -1,5 +1,5 @@
 RewriteEngine on
 RewriteBase /project-gy/
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond $1 !^(index\.php|images|robots\.txt)
+RewriteCond $1 !^(index\.php|images|install|js|robots\.txt)
 RewriteRule ^(.*)$ index.php/$1 [L]

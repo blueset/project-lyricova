@@ -17,13 +17,9 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.2 build 20140318__
- * Add - links in dashboard statistics
- * Change - gy & ci direction name
- * Add - Insatallation module (beta)
- * Fix - Imggen module for registered users only
- * Add - Gy screensaver
- * Add - Remember me
+* __Beta 0.2 build 20140522__
+ * Add - Screensaver transition
+ * Fix - Screensaver word collision
 
 > Refer to Changelog.md for more.
 

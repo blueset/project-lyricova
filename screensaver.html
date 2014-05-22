@@ -1,422 +1,526 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Screensaver / Demo</title>
+    <link rel="stylesheet" href="css/animate.css">
 </head>
+
 <body>
-    <script src="jq.js"></script>
+    <script src="js/jquery-1.7.2.min.js"></script>
     <div id="container">
         <div class="lyricline" id="lyric_id">
-            
+
         </div>
-        <div id="credit"><a href="./">Project Gy Screensaver</a></div>
+        <div id="credit"><a href="./">Project Gy Screensaver</a>
+        </div>
     </div>
     <style>
-        body{
+        body {
             background: #000;
-            margin:0;
+            margin: 0;
             color: #fff;
             font-family: "Kozuka Gothic Pro B", "Hiragino Sans GB W6", "冬青黑简体中文 W6", "微软雅黑 Bold", "Myriad Pro Bold" sans-serif;
-            overflow:hidden;
-            text-shadow: #000 0 0 10px, #000 0 0 10px,#000 0 0 10px,#000 0 0 10px,#000 0 0 10px, #000 0 0 10px;
+            overflow: hidden;
+            text-shadow: #000 0 0 10px, #000 0 0 10px;
         }
-        #container{
+        #container {
             position: absolute;
             width: 100%;
             height: 100%;
         }
-        .lyricline{
+        .lyricline {
             position: absolute;
             text-align: center;
+            white-space: nowrap;
         }
-        #lyric_id{margin:5px;}
-        #credit{bottom: 0; right: 0;position: absolute;}
-        #credit a{color:#fff;}
+        #lyric_id {
+            margin: 5px;
+            text-shadow: white 0 0 5px;
+        }
+        #credit {
+            bottom: 0;
+            right: 0;
+            position: absolute;
+        }
+        #credit a {
+            color: #fff;
+        }
     </style>
     <!-- Three.js begin -->
-    <script src="three.min.js"></script>
-    <script src="jq.js"></script>
-    <script src="particleEngine.js"></script>
+    <script src="js/three.min.js"></script>
+    <script src="js/particleEngine.js"></script>
+
     <script>
         var container, stats;
         var camera, scene, renderer, particles, geometry, material, i, h, color, sprite, size;
-        var mouseX = 0, mouseY = 0;
+        var mouseX = 0,
+            mouseY = 0;
         var clock = new THREE.Clock();
 
         var windowHalfX = window.innerWidth / 2;
         var windowHalfY = window.innerHeight / 2;
-        container = document.createElement( 'div' )
-        $(container).css("height",0);
+        container = document.createElement('div')
+         $(container).css("height", 0);
         $("#container").before(container);
 
-        camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 2, 2000 );
+        camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 2, 2000);
         camera.position.z = 1000;
-        // 创建渲染器、相机和场景
-        renderer = new THREE.WebGLRenderer( { clearAlpha: 1 } );
+         // 创建渲染器、相机和场景
+        renderer = new THREE.WebGLRenderer({
+            clearAlpha: 1
+        });
         scene = new THREE.Scene();
-        // 将相机加入场景
+         // 将相机加入场景
         scene.add(camera);
-        // 相机的初始位置为原点
-        // 将相机拉回来一些（译者注：这样才能看到原点）
-        // 启动渲染器
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        // 将渲染器加到DOM结构中
-        container.appendChild( renderer.domElement );
+         // 相机的初始位置为原点
+         // 将相机拉回来一些（译者注：这样才能看到原点）
+         // 启动渲染器
+        renderer.setSize(window.innerWidth, window.innerHeight);
+         // 将渲染器加到DOM结构中
+        container.appendChild(renderer.domElement);
 
         function animate() {
-            requestAnimationFrame( animate );
-            render(); 
+            requestAnimationFrame(animate);
+            render();
             update();
         }
+
         function render() {
-            renderer.render( scene, camera );
+            renderer.render(scene, camera);
         }
-        var starfield ={
-        positionStyle  : Type.CUBE,
-        positionBase   : new THREE.Vector3( 0, 0, 0 ),
-        positionSpread : new THREE.Vector3( 10, 10, 10 ),
+        var starfield = {
+            positionStyle: Type.CUBE,
+            positionBase: new THREE.Vector3(0, 0, 0),
+            positionSpread: new THREE.Vector3(10, 10, 10),
 
-        velocityStyle  : Type.CUBE,
-        velocityBase   : new THREE.Vector3( 0, 100, 200 ),
-        velocitySpread : new THREE.Vector3( 40, 40, 80 ), 
-        
-        angleBase               : 0,
-        angleSpread             : 720,
-        angleVelocityBase       : 10,
-        angleVelocitySpread     : 0,
-        
-        particleTexture : THREE.ImageUtils.loadTexture( 'spikey.png' ),
+            velocityStyle: Type.CUBE,
+            velocityBase: new THREE.Vector3(0, 100, 200),
+            velocitySpread: new THREE.Vector3(40, 40, 80),
 
-        sizeBase    : 4.0,
-        sizeSpread  : 2.0,              
-        colorBase   : new THREE.Vector3(0.15, 1.0, 0.8), // H,S,L
-        opacityBase : 1,
-        blendStyle  : THREE.AdditiveBlending,
+            angleBase: 0,
+            angleSpread: 720,
+            angleVelocityBase: 10,
+            angleVelocitySpread: 0,
 
-        particlesPerSecond : 300,
-        particleDeathAge   : 4.0,       
-        emitterDeathAge    : 60
-    }
-var THREEx  = THREEx        || {};
+            particleTexture: THREE.ImageUtils.loadTexture('spikey.png'),
 
-/**
- * Update renderer and camera when the window is resized
- * 
- * @param {Object} renderer the renderer to update
- * @param {Object} Camera the camera to update
-*/
-THREEx.WindowResize = function(renderer, camera){
-    var callback    = function(){
-        // notify the renderer of the size change
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        // update the camera
-        camera.aspect   = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-    }
-    // bind the resize event
-    window.addEventListener('resize', callback, false);
-    // return .stop() the function to stop watching window resize
-    return {
+            sizeBase: 4.0,
+            sizeSpread: 2.0,
+            colorBase: new THREE.Vector3(0.15, 1.0, 0.8), // H,S,L
+            opacityBase: 1,
+            blendStyle: THREE.AdditiveBlending,
+
+            particlesPerSecond: 300,
+            particleDeathAge: 4.0,
+            emitterDeathAge: 60
+        }
+        var THREEx = THREEx || {};
+
         /**
-         * Stop watching window resize
-        */
-        stop    : function(){
-            window.removeEventListener('resize', callback);
+         * Update renderer and camera when the window is resized
+         *
+         * @param {Object} renderer the renderer to update
+         * @param {Object} Camera the camera to update
+         */
+        THREEx.WindowResize = function (renderer, camera) {
+            var callback = function () {
+                    // notify the renderer of the size change
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    // update the camera
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                }
+                // bind the resize event
+            window.addEventListener('resize', callback, false);
+            // return .stop() the function to stop watching window resize
+            return {
+                /**
+                 * Stop watching window resize
+                 */
+                stop: function () {
+                    window.removeEventListener('resize', callback);
+                }
+            };
         }
-    };
-}
-THREEx.WindowResize(renderer, camera);
-function resetCamera()
-{
-    // CAMERA
-    var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
-    var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-    camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
-    //camera.up = new THREE.Vector3( 0, 0, 1 );
-    camera.position.set(0,200,400);
-    camera.lookAt(scene.position);  
-    scene.add(camera);
-    
-    
-}
-function update(){
-    
-    var dt = clock.getDelta();
-    engine.update( dt * 0.5 );  
-}
+        THREEx.WindowResize(renderer, camera);
+
+        function resetCamera() {
+            // CAMERA
+            var SCREEN_WIDTH = window.innerWidth,
+                SCREEN_HEIGHT = window.innerHeight;
+            var VIEW_ANGLE = 45,
+                ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT,
+                NEAR = 0.1,
+                FAR = 20000;
+            camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+            //camera.up = new THREE.Vector3( 0, 0, 1 );
+            camera.position.set(0, 200, 400);
+            camera.lookAt(scene.position);
+            scene.add(camera);
+
+
+        }
+
+        function update() {
+
+            var dt = clock.getDelta();
+            engine.update(dt * 0.5);
+        }
         resetCamera();
         this.engine = new ParticleEngine();
-        engine.setValues( starfield );
+        engine.setValues(starfield);
         engine.initialize();
 
         animate();
-
     </script>
     <!-- Three.js end -->
 
-
-
-
-
-
-
+    <script src="js/jquery.fittext.js"></script>
+    <script src="js/jquery.lettering.js"></script>
+    <script src="js/jquery.textillate.js"></script>
 
     <script>
-    minTextSize = 16;
-    tickfactor = 2;
-    tickMainFactor = 100;
-    animationFactor = 0.7;
-    var apiPath = "main/"
-    var arrayOccupiedX = [], arrayOccupiedY = [];
-    for (var i = screen.height; i >= 1; i--) {
-        arrayOccupiedY[i] = false;
-    };
-    for (var i = screen.width; i >= 1; i--) {
-        arrayOccupiedX[i] = false;
-    };
-    //Object oLyricLine
-    function oLyricLine(obj){
-        this.lyricLines = [];
-        this.textSize = 30;
-        this.toppx = -1;
-        this.leftpx = -1;
-        this.unixtime = -1;
-        this.widthpx = -1;
-        this.colorhex = "#000";
-        this.obj = obj;
-
-        //constants....
-
-    }
-    oLyricLine.prototype.animateIn = function(lyricLine, unixtime) {
-    	var tickCount = -1;
-    	var maxtick = lyricLine.length-1;
-    	var timerAnimation;
-    	var nLyricLine = lyricLine;
-    	var tickAnimationFactor = Math.floor(tickMainFactor*animationFactor);
-
-    	timerAnimation = setInterval(function () {
-    		tickCount += 1;
-    		if (tickCount > maxtick) clearInterval(timerAnimation);
-    		$("#"+unixtime).text(nLyricLine.substr(0,tickCount));
-    	},tickAnimationFactor);
-    };
-    oLyricLine.prototype.animateOut = function(unixtime, isLast) {
-    	var tickCount = $("#"+unixtime).text().length;
-    	var maxtick = 0;
-    	var timerAnimation;
-    	var tickAnimationFactor = Math.floor(tickMainFactor*animationFactor);
-
-
-    	timerAnimation = setInterval(function () {
-    		tickCount -= 1;
-    		if (tickCount < maxtick) {
-                if (isLast){
-                    var y1 = parseInt($("#"+unixtime).css("top"));
-                    var y2 = y1 + parseInt($("#"+unixtime).css("height"));
-                    for (var i = y2 ; i >= y1; i--) {
-                        arrayOccupiedY[i] = false;
-                    };
-                    var x1 = parseInt($("#"+unixtime).css("left"));
-                    var x2 = x1 + parseInt($("#"+unixtime).css("width"));
-                    for (var i = x2 ; i >= x1; i--) {
-                        arrayOccupiedX[i] = false;
-                    };
-    		        $("#"+unixtime).remove();
-                }
-    			clearInterval(timerAnimation);
-
-    		}
-    		$("#"+unixtime).text($("#"+unixtime).text().substr(0,tickCount));
-    	},tickAnimationFactor);
-    };
-
-    oLyricLine.prototype.drawText = function(){
-        if (this.toppx != -1 && this.leftpx != -1 && this.unixtime != -1 && this.widthpx != -1){
-    
-
-        var transitionInTime = 10;
-        var transitionOutTime = 10;
+        minTextSize = 16;
+        tickfactor = 2;
+        tickMainFactor = 100;
+        animationFactor = 0.7;
+        var apiPath = "main/"
+        var onScreen = [];
         
-        $("#"+this.unixtime).css({
-            "color": this.colorhex,
-            "left": this.leftpx,
-            "top": this.toppx,
-            "width": this.widthpx,
-            "font-size":this.textSize
-        }).attr({"class":"lyricline","id":this.unixtime});
-        var y1 = parseInt($("#"+this.unixtime).css("top"));
-        var y2 = y1 + strDimension(this.lyricLines, this.textSize)[1];
-        for (var i = y2 ; i >= y1; i--) {
-            arrayOccupiedY[i] = true;
-        };
-        var x1 = parseInt($("#"+this.unixtime).css("left"));
-        var x2 = x1 + parseInt($("#"+this.unixtime).css("width"));
-        for (var i = x2 ; i >= x1; i--) {
-            arrayOccupiedX[i] = true;
-        };
-        oLyricLine.prototype.animateIn(this.lyricLines[0],this.unixtime);
-        var tickCount = 0;
-        var lyricLinesCountIn = 1;
-        var lyricLinesCountOut = 0;
-        var lyricLinesTickIn = [];
-        var lyricLinesTickOut = [];
-        lyricLinesTickIn[0]=0;
-        lyricLinesTickOut[0]=this.lyricLines[0].length*(animationFactor+tickfactor);
-        for (var i =1; i <= this.lyricLines.length - 1; i++) {
-            lyricLinesTickIn[i] = lyricLinesTickOut[i-1]+animationFactor*this.lyricLines[i-1].length;
-            lyricLinesTickOut[i] = lyricLinesTickIn[i]+this.lyricLines[i].length*(animationFactor+tickfactor);
-
-        };
-        var nLyricLines = this.lyricLines;
-        var nUnixtime = this.unixtime;
-        this.obj = setInterval(function () {
-            tickCount += 1;
-            if (tickCount >= lyricLinesTickIn[lyricLinesCountIn]){
-                oLyricLine.prototype.animateIn(nLyricLines[lyricLinesCountIn],nUnixtime);
-                lyricLinesCountIn +=1;
+        var textillateMeta = {
+            autoStart: false,
+            loop: false,
+            inEffects: ['flipInX'],
+            in: {
+                effect: 'flipInX'
             }
-            if (tickCount >= lyricLinesTickOut[lyricLinesCountOut]){
-            	var isLast = lyricLinesCountOut == lyricLinesTickOut.length - 1; 
-            	oLyricLine.prototype.animateOut(nUnixtime,isLast);
-                if (isLast) clearInterval(this.obj);
-            	lyricLinesCountOut += 1;
-            }
-        },100);
+        }
 
+        //Object oLyricLine
+        function oLyricLine(obj) {
+            this.lyricLines = [];
+            this.textSize = 30;
+            this.toppx = -1;
+            this.leftpx = -1;
+            this.unixtime = -1;
+            this.widthpx = -1;
+            this.colorhex = "#000";
+            this.obj = obj;
 
         }
-    };
-    oLyricLine.prototype.initLines = function() {
-    	if (this.lyricLines.length < 1) return;
-    	this.colorhex = randomColor();
-        this.textSize = Math.floor(Math.random()*(maxSize(this.lyricLines)-minTextSize)+minTextSize);
-        var strDimensionThis = strDimension(this.lyricLines, this.textSize);
-        this.widthpx = strDimensionThis[0];
-        do{
-            this.toppx = Math.floor(Math.random()*($(window).height()-parseInt(strDimensionThis[1])));
-            this.leftpx = Math.floor(Math.random()*($(window).width()-parseInt(this.widthpx)));
-            var validity = (arrayOccupiedY[this.toppx] && 
-                 arrayOccupiedY[this.toppx+parseInt(strDimensionThis[1])] ) || 
-                (arrayOccupiedX[this.leftpx] && 
-                 arrayOccupiedX[this.leftpx+parseInt(strDimensionThis[0])] );
-                console.log(validity);
-        }while( validity );
         /*
-        console.log("arrayOccupiedY["+this.toppx+"] && arrayOccupiedY["+(this.toppx+parseInt(strDimensionThis[1]))+"] && arrayOccupiedX["+this.leftpx+"] && arrayOccupiedX["+(this.leftpx+parseInt(strDimensionThis[0]))+"]");
-        console.log(arrayOccupiedY[this.toppx]);
-        console.log(arrayOccupiedY[this.toppx+parseInt(strDimensionThis[1])]);
-        console.log(arrayOccupiedX[this.leftpx]);
-        console.log(arrayOccupiedX[this.leftpx+parseInt(strDimensionThis[0])]);
-        */
-    };
-    var lyricPostCount;
-    var lyricPostShuffle =[[],[]];
-   	$.getJSON(apiPath+"postcountjson?callback=?", function(data) {
-		lyricPostCount = data;
-		fillShuffle();
-		shuffle(lyricPostShuffle);
-	});
+        oLyricLine.prototype.animateIn = function (lyricLine, unixtime) {
+            var tickCount = -1;
+            var maxtick = lyricLine.length - 1;
+            var timerAnimation;
+            var nLyricLine = lyricLine;
+            var tickAnimationFactor = Math.floor(tickMainFactor * animationFactor);
 
-	
-	
-	
-	var lyricPostNext = 0;
-    var mainTimer = setInterval(function () {
-    	if (lyricPostNext>=lyricPostCount){lyricPostNext=0;shuffle(lyricPostShuffle);}
-    	var unixtime = Date.now();
-    	$("#container").append($("<div></div>").attr("id",unixtime));
-    	var lyricLinesArray;
-    	$.getJSON(apiPath+"getlyricjson?post_id="+lyricPostShuffle[0][lyricPostNext]+"&post_cat="+lyricPostShuffle[1][lyricPostNext]+"&callback=?", function(data) {
-			lyricLinesArray = data;
-			$.getJSON(apiPath+"getlyricmetajson?post_id="+lyricPostShuffle[0][lyricPostNext]+"&callback=?", function(data) {
-				$("#lyric_id").text(data);
-			});
-			var obj=$("#"+unixtime);
-    		var LyricGen = new oLyricLine(obj);
-    		LyricGen.lyricLines = lyricLinesArray;
-    		LyricGen.initLines();
-    		LyricGen.unixtime = unixtime;
-    		LyricGen.drawText();
-    		lyricPostNext+=1;
-		});
-		
-    },4000)
-    
-
-    function strlen(str){ var len = 0; for (var i=0; i<str.length; i++) { var c = str.charCodeAt(i); if ((c >= 0x0001 && c <= 0x007e) || (0xff60<=c && c<=0xff9f)) { len++; } else { len+=2; } } return len; }
-    /*
-     * Dimension of a string series
-     * @param {array[string]} lyricLines lines of strings
-     * @param {int} textSize textSize
-     * @return {array[int]} maxPxLength,maxPxHeight dimension [0]:width [1]:height
-     */
-    function strDimension (lyricLines, textSize) {
-        var maxStringLength=0, maxStringId=-1;
-        for (var i = lyricLines.length - 1; i >= 0; i--) {
-                if (maxStringLength < strlen(lyricLines[i])){
-                maxStringLength = strlen(lyricLines[i]);
-                maxStringId = i;
-            };
+            timerAnimation = setInterval(function () {
+                tickCount += 1;
+                if (tickCount > maxtick) clearInterval(timerAnimation);
+                $("#" + unixtime).text(nLyricLine.substr(0, tickCount));
+            }, tickAnimationFactor);
         };
-        $("#container").append($("<div></div>").css({
-            "background":"#fff",
-            "color":"#000",
-            "visibility":"hidden",
-            "font-size":textSize
-        }).attr({"class":"lyricline","id":"widgen"}).text(lyricLines[maxStringId]));
-        var maxPxLength =  $("#widgen").css("width"); 
-        var maxPxHeight = $("#widgen").css("height");
-        $("#widgen").remove();
-        return [maxPxLength,maxPxHeight];
-    }
-    function maxSize (lyricLines) {
-    	var size = 100;
-    	var dimension = strDimension(lyricLines, size);
-    	var screenW = $(window).width();
-    	var screenH = $(window).height();
-    return Math.floor(Math.min(Math.floor(size/parseInt(dimension[0])*screenW),Math.floor(size/parseInt(dimension[1])*screenH))*0.5);
-    }
-    function randomColor () {
-    	var h = Math.floor(Math.random()*255);
-    	var s = Math.floor(Math.random()*100) + "%";
-    	var l = Math.floor(Math.random()*10+60) + "%";
-    	return "hsl("+h+","+s+","+l+")";
-    }
-    /**
-     * Fisher–Yates Shuffle
-     * code from http://bost.ocks.org/mike/shuffle/
-     */
-    function shuffle(array) {
-  		var m = array[0].length, t, i;
+        oLyricLine.prototype.animateOut = function (unixtime, isLast) {
+            var tickCount = $("#" + unixtime).text().length;
+            var maxtick = 0;
+            var timerAnimation;
+            var tickAnimationFactor = Math.floor(tickMainFactor * animationFactor);
 
-  		// While there remain elements to shuffle…
-  		while (m) {
 
-	    	// Pick a remaining element…
-    		i = Math.floor(Math.random() * m--);
+            timerAnimation = setInterval(function () {
+                tickCount -= 1;
+                if (tickCount < maxtick) {
+                    if (isLast) {
+                        var indexOnScreen = onScreen.indexOf(unixtime);
+                        var r;
+                        r = onScreen[indexOnScreen];
+                        onScreen[indexOnScreen] = onScreen[0];
+                        onScreen[0] = r;
 
-    		// And swap it with the current element.
-    		t = array[0][m];
-    		array[0][m] = array[0][i];
-    		array[0][i] = t;
-    		t = array[1][m];
-    		array[1][m] = array[1][i];
-    		array[1][i] = t;
-  		}
+                        onScreen.shift();
+                        $("#" + unixtime).remove();
+                    }
+                    clearInterval(timerAnimation);
 
-  		return array;
-	}
-	function fillShuffle () {
-		for (var i = lyricPostCount - 1; i >= 0; i--) {
-			lyricPostShuffle[0][i]=i;
-			lyricPostShuffle[1][i]=1;
-			lyricPostShuffle[0][i+lyricPostCount]=i;
-			lyricPostShuffle[1][i+lyricPostCount]=0;
-		};
-	}
+                }
+                $("#" + unixtime).text($("#" + unixtime).text().substr(0, tickCount));
+            }, tickAnimationFactor);
+        };
+        */
+        oLyricLine.prototype.drawText = function () {
+            if (this.toppx != -1 && this.leftpx != -1 && this.unixtime != -1 && this.widthpx != -1) {
+
+
+                var transitionInTime = 10;
+                var transitionOutTime = 10;
+
+                $("#" + this.unixtime).css({
+                    "color": this.colorhex,
+                    "left": this.leftpx,
+                    "top": this.toppx,
+                    "width": this.widthpx,
+                    "font-size": this.textSize,
+                    "visibility": ""
+                }).attr({
+                    "class": "lyricline",
+                    "id": this.unixtime
+                });
+                onScreen.push(this.unixtime);
+                //oLyricLine.prototype.animateIn(this.lyricLines[0], this.unixtime);
+                var tickCount = 0;
+                var lyricLinesCountIn = 1;
+                var lyricLinesCountOut = 0;
+                var lyricLinesTickIn = [];
+                var lyricLinesTickOut = [];
+                lyricLinesTickIn[0] = 0;
+                lyricLinesTickOut[0] = this.lyricLines[0].length * (animationFactor + tickfactor);
+                for (var i = 1; i <= this.lyricLines.length - 1; i++) {
+                    lyricLinesTickIn[i] = lyricLinesTickOut[i - 1] + animationFactor * this.lyricLines[i - 1].length;
+                    lyricLinesTickOut[i] = lyricLinesTickIn[i] + this.lyricLines[i].length * (animationFactor + tickfactor);
+
+                };
+                var nLyricLines = this.lyricLines;
+                var nUnixtime = this.unixtime;
+                var lyricText = '<ul class="texts">';
+                for (var i = 0; i < this.lyricLines.length; i++) {
+                    lyricText += "<li>" + this.lyricLines[i] + "</li>";
+                };
+                lyricText += '</ul>';
+                this.obj.append(lyricText);
+                var textillateLyric = {
+                    inEffects: ['fadeInDown'],
+                    outEffects: ['fadeOutDown'],
+                    in: {
+                        effect: 'fadeInDown',
+                        shuffle: true
+                    },
+                    out: {
+                        effect: 'fadeOutDown'
+                    },
+                    callback: function () {
+                        var textillateEnd = {
+                            out: {effect:"fadeOutDown",
+                                callback: function () {
+                                    var indexOnScreen = onScreen.indexOf(nUnixtime);
+                                    var r;
+                                    r = onScreen[indexOnScreen];
+                                    onScreen[indexOnScreen] = onScreen[0];
+                                    onScreen[0] = r;
+                                    onScreen.shift();
+                                    $("#"+nUnixtime).remove();
+                                    //onsole.log("outcallback");
+                                }
+                            }
+                        };
+                        $("#"+nUnixtime).textillate(textillateEnd);
+                        //console.log("maincallback");
+                        $("#"+nUnixtime).textillate('out');
+                        
+                    }
+                };
+                this.obj.textillate(textillateLyric);
+
+
+                
+                /*this.obj = setInterval(function () {
+                    tickCount += 1;
+                    if (tickCount >= lyricLinesTickIn[lyricLinesCountIn]) {
+                        oLyricLine.prototype.animateIn(nLyricLines[lyricLinesCountIn], nUnixtime);
+                        lyricLinesCountIn += 1;
+                    }
+                    if (tickCount >= lyricLinesTickOut[lyricLinesCountOut]) {
+                        var isLast = lyricLinesCountOut == lyricLinesTickOut.length - 1;
+                        oLyricLine.prototype.animateOut(nUnixtime, isLast);
+                        if (isLast) clearInterval(this.obj);
+                        lyricLinesCountOut += 1;
+                    }
+                }, 100);*/
+            }
+        };
+        oLyricLine.prototype.initLines = function () {
+            if (this.lyricLines.length < 1) return;
+            this.colorhex = randomColor();
+            this.textSize = Math.floor(Math.random() * (maxSize(this.lyricLines) - minTextSize) + minTextSize);
+            var strDimensionThis = strDimension(this.lyricLines, this.textSize);
+            this.widthpx = strDimensionThis[0];
+            do {
+                this.toppx = Math.floor(Math.random() * ($(window).height() - parseInt(strDimensionThis[1])));
+                this.leftpx = Math.floor(Math.random() * ($(window).width() - parseInt(this.widthpx)));
+                var validity = verifyLine(this.toppx, this.leftpx, this.toppx + parseInt(strDimensionThis[1]), this.leftpx + parseInt(this.widthpx));
+            } while (validity);
+        };
+        var lyricPostCount;
+        var lyricPostShuffle = [[],[]];
+        $.getJSON(apiPath + "postcountjson?callback=?", function (data) {
+            lyricPostCount = data;
+            fillShuffle();
+            shuffle(lyricPostShuffle);
+        });
+        var lyricPostNext = 0;
+        var mainTimer = setInterval(function () {
+            if (lyricPostNext >= lyricPostCount) {
+                lyricPostNext = 0;
+                shuffle(lyricPostShuffle);
+            }
+            var unixtime = Date.now();
+            $("#container").append($("<div></div>").attr("id", unixtime));
+            var lyricLinesArray;
+            $.getJSON(apiPath + "getlyricjson?post_id=" + lyricPostShuffle[0][lyricPostNext] + "&post_cat=" + lyricPostShuffle[1][lyricPostNext] + "&callback=?", function (data) {
+                var obj = $("#" + unixtime);
+                var LyricGen = new oLyricLine(obj);
+                lyricLinesArray = data;
+                LyricGen.lyricLines = lyricLinesArray;
+                LyricGen.unixtime = unixtime;
+                LyricGen.initLines();
+                $.getJSON(apiPath + "getlyricmetajson?post_id=" + lyricPostShuffle[0][lyricPostNext] + "&callback=?", function (data) {
+                    console.group("%c " + data + " ", "color:white;background:black;text-shadow: white 0 0 5px;");
+                    var $lyric_id = $("#lyric_id");
+                    
+                    $lyric_id.textillate(textillateMeta);
+                    $lyric_id.text(data);
+                    $lyric_id.textillate('init');
+                    $lyric_id.textillate('in');
+
+                    for (var i = 0; i <= LyricGen.lyricLines.length - 1; i++) {
+                        if (LyricGen.lyricLines[i].length > 0) console.log("%c " + LyricGen.lyricLines[i] + " ", "color:" + LyricGen.colorhex + ";background:black;width:100%;");
+                    };
+                    console.groupEnd()
+                });
+
+                LyricGen.drawText();
+                lyricPostNext += 1;
+            });
+        // clearInterval(mainTimer);
+        }, 4000)
+
+
+        function strlen(str) {
+            var len = 0;
+            for (var i = 0; i < str.length; i++) {
+                var c = str.charCodeAt(i);
+                if ((c >= 0x0001 && c <= 0x007e) || (0xff60 <= c && c <= 0xff9f)) {
+                    len++;
+                } else {
+                    len += 2;
+                }
+            }
+            return len;
+        }
+        /*
+         * Dimension of a string series
+         * @param {array[string]} lyricLines lines of strings
+         * @param {int} textSize textSize
+         * @return {array[int]} maxPxLength,maxPxHeight dimension [0]:width [1]:height
+         */
+        function strDimension(lyricLines, textSize) {
+            var maxStringLength = 0,
+                maxStringId = -1;
+            for (var i = lyricLines.length - 1; i >= 0; i--) {
+                if (maxStringLength < strlen(lyricLines[i])) {
+                    maxStringLength = strlen(lyricLines[i]);
+                    maxStringId = i;
+                };
+            };
+            $("#container").append($("<div></div>").css({
+                "background": "#fff",
+                "color": "#000",
+                "visibility": "hidden",
+                "font-size": textSize
+            }).attr({
+                "class": "lyricline",
+                "id": "widgen"
+            }).text(lyricLines[maxStringId]));
+            var maxPxLength = $("#widgen").css("width");
+            var maxPxHeight = $("#widgen").css("height");
+            $("#widgen").remove();
+            return [maxPxLength, maxPxHeight];
+        }
+
+        function maxSize(lyricLines) {
+            var size = 100;
+            var dimension = strDimension(lyricLines, size);
+            var screenW = $(window).width();
+            var screenH = $(window).height();
+            return Math.floor(Math.min(Math.floor(size / parseInt(dimension[0]) * screenW), Math.floor(size / parseInt(dimension[1]) * screenH)) * 0.5);
+        }
+
+        function randomColor() {
+            var h = Math.floor(Math.random() * 255);
+            var s = Math.floor(Math.random() * 100) + "%";
+            var l = Math.floor(Math.random() * 10 + 60) + "%";
+            return "hsl(" + h + "," + s + "," + l + ")";
+        }
+        /**
+         * Fisher–Yates Shuffle
+         * code from http://bost.ocks.org/mike/shuffle/
+         */
+        function shuffle(array) {
+            var m = array[0].length,
+                t, i;
+
+            // While there remain elements to shuffle…
+            while (m) {
+
+                // Pick a remaining element…
+                i = Math.floor(Math.random() * m--);
+
+                // And swap it with the current element.
+                t = array[0][m];
+                array[0][m] = array[0][i];
+                array[0][i] = t;
+                t = array[1][m];
+                array[1][m] = array[1][i];
+                array[1][i] = t;
+            }
+
+            return array;
+        }
+
+        function fillShuffle() {
+            for (var i = lyricPostCount - 1; i >= 0; i--) {
+                lyricPostShuffle[0][i] = i;
+                lyricPostShuffle[1][i] = 1;
+                lyricPostShuffle[0][i + lyricPostCount] = i;
+                lyricPostShuffle[1][i + lyricPostCount] = 0;
+            };
+        }
+
+        function verifyLine(toppx, leftpx, bottompx, rightpx) {
+            var isCross = false,
+                check1, check2, check0;
+            if (onScreen.length == 0) {
+                return isCross;
+            }
+            var onScreenIndex = 0;
+            var currUnixtime, currTop, currLeft, currRight, currBottom, Xb, Hb, Xb3, Xa3;
+            var Wa = rightpx - leftpx,
+                Ha = bottompx - toppx;
+            var Xa3 = (rightpx + leftpx) / 2,
+                Ya3 = (bottompx + toppx) / 2;
+            do {
+                currUnixtime = onScreen[onScreenIndex];
+                currTop = parseInt($("#" + currUnixtime).css("top"));
+                currBottom = parseInt($("#" + currUnixtime).css("top")) + parseInt($("#" + currUnixtime).css("height"));
+                currLeft = parseInt($("#" + currUnixtime).css("left"));
+                currRight = parseInt($("#" + currUnixtime).css("left")) + parseInt($("#" + currUnixtime).css("width"));
+                Wb = currRight - currLeft;
+                Hb = currBottom - currTop;
+                Xb3 = (currLeft + currRight) / 2;
+                Yb3 = (currTop + currBottom) / 2;
+                check1 = (Math.abs(Xb3 - Xa3) <= (Wa / 2 + Wb / 2));
+                check2 = (Math.abs(Yb3 - Ya3) <= (Ha / 2 + Hb / 2));
+                onScreenIndex += 1;
+                check0 = check1 && check2;
+                if (check0) isCross = true;
+            } while (!check0 && !(onScreenIndex > (onScreen.length - 1)))
+            return isCross;
+        }
     </script>
-    
+
 </body>
+
 </html>
