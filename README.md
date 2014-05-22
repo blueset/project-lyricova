@@ -35,8 +35,11 @@ This project is built with help of the following projects:
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
 * [Charisma](http://usman.it/free-responsive-admin-template) Dashboard Theme
 * [Disqus](http://disqus.com/) Commenting system
-* [three.js](http://threejs.org/)
+* [three.js](http://threejs.org/), JavaScript 3D library
 * [three.js Particle Engine](http://stemkoski.github.io/Three.js/Particle-Engine.html) by [Lee Stemkoski](http://www.adelphi.edu/~stemkoski/)
+* [Textillate.js](https://github.com/jschr/textillate), A simple plugin for CSS3 text animations
+* [Lettering.js](https://github.com/davatron5000/Lettering.js), a jQuery plugin for radical Web
+* [Animate.css](https://github.com/daneden/animate.css), Just-add-water CSS animation
 
 ## To-dos and Dones
 ### What is done:
