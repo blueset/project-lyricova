@@ -25,7 +25,7 @@ footer{
 .meta span:hover{
 	color:#444;
 }
-.header.hero-unit{
+.header.jumbotron{
 	/*background: url(img/bs-docs-masthead-pattern.png) repeat center center, linear-gradient(45deg, #020031 0%,#6d3353 100%);]*/
 	background: #020031; /* Old browsers */
 	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
@@ -95,7 +95,7 @@ footer{
 	vertical-align:middle;
 }
 /* Single */
-.hero-unit.single-head{
+.jumbotron.single-head{
 	padding-top: 5px;
 	padding-bottom: 5px;
 }
@@ -116,6 +116,57 @@ footer{
 }
 .songb-single-cont span{
 	text-wrap:none;
+}
+.infobuttons{
+	float:right;position: absolute;right: 0px;display: block;bottom: 0px;
+}
+.infobuttons a{
+	color:grey;
+	background: #fff;
+}
+.meta{
+	position: relative;
+}
+
+/* Jumbotron wrapper */
+.admin-jumbotron .page-wrapper {
+    padding: 0 15px;
+}
+@media(min-width:768px) {
+    .admin-jumbotron .page-wrapper {
+        position: inherit;
+        margin: 0 0 0 250px;
+        padding: 0 30px;
+    }
+}
+.admin-jumbotron{
+	padding: 0;
+	margin-bottom: 0;
+}
+
+#page-wrapper{
+	padding-top: 20px;
+}
+
+/* Admin Sidebar */
+.navbar-inverse .navbar-static-side ul li {
+border-bottom: 1px solid #111;
+}
+
+.navbar-inverse .nav>li>a:hover, .navbar-inverse .nav>li>a:focus {
+text-decoration: none;
+background-color: inherit;
+color:#fff;
+}
+
+.navbar-inverse .nav>li>a, .navbar-inverse .nav>li>a {
+text-decoration: none;
+background-color: inherit;
+color:#999;
+}
+
+#wrapper {
+background: #222;
 }
 
 /* COLOR TAGS */

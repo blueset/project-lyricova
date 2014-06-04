@@ -12,7 +12,7 @@ class imggen extends CI_Controller {
   }
   public function newimg($post_id = -1)
   {
-    if($this->user_model->logged_in() !== TRUE){redirect('login');}
+    if($this->user_model->logged_in() !== TRUE){redirect('login?target='.uri_string());}
     $data = array();
     $fname = $this->config->item('fname');
     $fcapt = $this->config->item('fcapt');
@@ -46,7 +46,7 @@ class imggen extends CI_Controller {
   }
   public function editimg($img_id)
   {
-    if($this->user_model->logged_in() !== TRUE){redirect('login');}
+    if($this->user_model->logged_in() !== TRUE){redirect('login?target='.uri_string());}
     $fname = $this->config->item('fname');
     $fcapt = $this->config->item('fcapt');
     $bgnumber = $this->config->item('bgnumber');

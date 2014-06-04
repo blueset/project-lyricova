@@ -18,13 +18,6 @@
 
       <h1>Step 2 <small>Install process</small></h1>
       <textarea name="loading" id="" cols="30" rows="10" class="form-control">
-TODO:
-Write config.php
-Write database.php
-Generate SQL query file
-Execute SQL query
-Done.
-
 <?php
 
 // Serious stuff begins
@@ -360,7 +353,7 @@ $quertString = sprintf($queryUser,mysql_escape_string($_POST['db-prefix']),
   echo "Database connection error. "mysql_errno()." : ".mysql_error();
 }
 
-
+echo "Please remove /install folder."
 ?>
       </textarea>
       <div class="footer">

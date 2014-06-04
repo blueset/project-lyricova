@@ -7,7 +7,7 @@
 </head>
 <body>
 	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header single-head">
+	<div class="jumbotron header single-head">
 		<div class="container">
 			<h2>Post</h2>
 		</div>
@@ -15,7 +15,7 @@
 	<?php $own = $this->user_model->is_own($post->user_id); ?>
 	<div class="container single-cont">
 		<div class="row">
-			<div class="span9">
+			<div class="col-sm-9 col-md-9">
 				<div class="song-box">
 					<div class="songb-single-cont">
 						<p><?=$this->typography->nl2br_except_pre($post->lyric)?></p>
@@ -23,7 +23,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="span3">
+			<div class="col-sm-3 col-md-3">
 				<dl>
 					<dt>Posted at</dt><dd><?=$post->time?></dd> 
 					<dt>by</dt> <dd><?=$this->user_model->get_by_id($post->user_id)->display_name?></dd>
@@ -34,15 +34,15 @@
   					<?php if(!$post->translator==""){ echo '<dt>Translator:</dt><dd> '.$post->translator.'</dd>';} ?>
   					<?php if(!$post->comment==""){ echo '<dt>Comment:</dt><dd> '.$this->typography->nl2br_except_pre($post->comment).'</dd>';} ?>
   					<p style="padding-top:10px;">
-  						<?php if($this->user_model->access_to("edit".$own)===TRUE){ echo anchor('admin/edit/'.$post->id, 'Edit', 'class="btn btn-mini btn-primary"'); }?> 
-        				<?php if($this->user_model->access_to("delete".$own)===TRUE){ echo '<a href="javascript:void(0)" class="btn btn-mini" onclick="delConfModalSingle()">Delete</a>'; }?>
+  						<?php if($this->user_model->access_to("edit".$own)===TRUE){ echo anchor('admin/edit/'.$post->id, 'Edit', 'class="btn btn-xs btn-primary"'); }?> 
+        				<?php if($this->user_model->access_to("delete".$own)===TRUE){ echo '<a href="javascript:void(0)" class="btn btn-default btn-xs" onclick="delConfModalSingle()">Delete</a>'; }?>
         			
         			
-						<?=anchor('imggen/new/'.$post->id, 'Generate Image', 'class="btn btn-mini"')?>
+						<?=anchor('imggen/new/'.$post->id, 'Generate Image', 'class="btn btn-xs"')?>
 					</p>
         		</dl>	
 			</div>
-			<div class="span12">
+			<div class="col-sm-12 col-md-12">
 				<?php 
 					$data['comment_id']='post_'.$post->id;
 					$this->load->view('gy/comment',$data);

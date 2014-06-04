@@ -17,9 +17,10 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* __Beta 0.2 build 20140522__
- * Add - Screensaver transition
- * Fix - Screensaver word collision
+* **Beta 0.3 build 20140604**
+ * Change - Upgraded to Bootstrap 3
+ * Change - Admin panel theme to Start Bootstrap 2
+ * Fix - Minor UI optimisation
 
 > Refer to Changelog.md for more.
 
@@ -33,7 +34,7 @@ This project is built with help of the following projects:
 * [Yanone](http://www.yanone.de/typedesign/kaffeesatz/) for font "Yanone Kaffeesatz"
 * [Screen MFG Co.](http://www.screen.co.jp/press/pdf/NR090824C.pdf) and [iPlaysoft](http://www.iplaysoft.com/hiragino-sans.html) for "Hiragino Sans W6"
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
-* [Charisma](http://usman.it/free-responsive-admin-template) Dashboard Theme
+* [Start Bootstrap Admin 2](http://startbootstrap.com/sb-admin-v2) Dashboard Theme
 * [Disqus](http://disqus.com/) Commenting system
 * [three.js](http://threejs.org/), JavaScript 3D library
 * [three.js Particle Engine](http://stemkoski.github.io/Three.js/Particle-Engine.html) by [Lee Stemkoski](http://www.adelphi.edu/~stemkoski/)
@@ -41,29 +42,6 @@ This project is built with help of the following projects:
 * [Lettering.js](https://github.com/davatron5000/Lettering.js), a jQuery plugin for radical Web
 * [Animate.css](https://github.com/daneden/animate.css), Just-add-water CSS animation
 
-## To-dos and Dones
-### What is done:
+## First time using this?
 
-* Item Create & Legibility Check
-* Item Edit
-* Item Display
-* User role and rights
-* Item Delete
-* Single item display
-* Wallpaper Generation
-* Search Module
-* User Dashboard
-* RSS output
-* User Management
-
-### What to do?
-
-* Theme Support (?)
-* Music Streaming (?)
-* Wysiwyg editor
-* Auto identify song meta in single string (?)
-* Templating functions (?)
-* Categorization and Tagging
-* Installation & Update Scripts
-* Multi language UI
-* Comment link.
+Please refer to Wiki for [installation guide](https://github.com/1a23/project-gy/wiki/Installation).

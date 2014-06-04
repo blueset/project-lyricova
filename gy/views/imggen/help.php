@@ -83,13 +83,18 @@
 		<ul class="thumbnails">
 			<?php for ($i=1; $i < $bgno+1; $i++) :?>
 			<?php $image_size = getimagesize(base_url('img/bg/bg'.$i.'.png')); ?>
-			<li class="span3">
-				<div class="thumbnail">
-					<img src="<?=base_url('img/bg/bg'.$i.'.png')?>" alt="Background <?=$i?>">
-					<h4>Background <?=$i?></h4>
-					<p>Maximum dimention: <?=$image_size[0]?> x <?=$image_size[1]?></p>
+			<div class="col-sm-3 col-lg-3">
+				<div class="panel panel-default" style="min-height:250px;">
+				  				<div class="panel-body">
+				    				<img src="<?=base_url('img/bg/bg'.$i.'.png')?>" alt="Background <?=$i?>" style="width:100%">
+				  				</div>
+				  				<div class="panel-footer">
+				  					<h4>Background <?=$i?></h4>
+						<p>Maximum dimention: <?=$image_size[0]?> x <?=$image_size[1]?></p>
+					</div>
 				</div>
-			</li>	
+			</div>
+
 			<?php endfor; ?>
 			
 		</ul>

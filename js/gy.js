@@ -1,22 +1,21 @@
 /* Index Styling */
+
+
 function mansonry() {
 	$('.container .songbox-row').masonry({
     	// options
-    	itemSelector : '.songbox-cont',
+    	itemSelector : '.songbox-cont'/*,
     	columnWidth :  function(containerWidth){
 		   	var columnW=$('.songbox-cont').width();
 			if($(window).width()>=768){columnW=containerWidth/2;}
 			if($(window).width()>=980){columnW=10;}
 			if($(window).width()>=1200){columnW=10;}
     		return columnW;
-  		}
+  		}*/
 	});
 }
 
-$('.collapse').on('shown',function () {	
-	$('.container .songbox-row').masonry('reload');
-});
-$('.collapse').on('hidden',function () {	
+$('.infobutton').on('click',function () {	
 	$('.container .songbox-row').masonry('reload');
 });
 //Tooltip
@@ -27,16 +26,9 @@ if ($("[data-toggle=tooltip]").length) {
 if ($("[data-toggle=popover]").length) {
      $("[data-toggle=popover]").popover();
      }
-$(window).resize(function(){
-  //mansonry();
-  if($(window).width()<=979){
-		$(".songbox-cont").addClass("span6");
-		$(".songbox-cont").removeClass("span4");
-	}else{
-		$(".songbox-cont").addClass("span4");
-		$(".songbox-cont").removeClass("span6");
-	}
-});
+
+
+
 
 
 
@@ -60,14 +52,14 @@ function delUserModal(id,lyric){
 	}
 
 $(function(){
-	mansonry();
+	mansonry();/*
   if($(window).width()<=979){
 		$(".songbox-cont").addClass("span6");
 		$(".songbox-cont").removeClass("span4");
 	}else{
 		$(".songbox-cont").addClass("span4");
 		$(".songbox-cont").removeClass("span6");
-	}
+	}*/
 });
 
 
@@ -77,7 +69,7 @@ function loadpost()
 {
 //.... AJAX script goes here ...
 	postid = $('#postid').val();
-  	$.get(currpath+"/imggen/getpostxml/"+postid+".xml",function (data,text) {
+  	$.get(currpath+"imggen/getpostxml/"+postid+".xml",function (data,text) {
   		
   		$("#meta").val($(data).find("metainfo").text());
   		$("#lyric").text($(data).find("lyric").text());
@@ -89,3 +81,19 @@ $("#postid").keypress(function(evt){
     	return 0;
     }
   });
+if(typeof current_page != 'undefined'){
+if(current_page=="index"){
+	$(".infobutton").click(function(){
+		togglePlus(this);
+	});
+}}
+function togglePlus (button) {
+	var $button = $(button);
+	if($button.html() == '<i class="icon-chevron-sign-right icon-large"></i>'){
+		var buttonSign = '<i class="icon-chevron-sign-down icon-large"></i>';
+	}else{
+		var buttonSign = '<i class="icon-chevron-sign-right icon-large"></i>';
+	}
+	$button.html(buttonSign);
+	$($button.data('target')).collapse('toggle');
+}

@@ -24,7 +24,8 @@ class User extends CI_Controller {
                 $userinfo=$this->user_model->get_by_username($userinfo_json->username);
                 $this->user_model->login($userinfo);
                 $data['redirect_path']= base_url('admin/dashboard');
-                $data['message']="You are being redirected to dashboard. If you are not redirected there, please click ".anchor("admin/dashboard","here").".";
+                if(isset($_GET['target'])){$data['redirect_path'] = base_url($_GET['target']);}
+                $data['message']="You are being redirected. If you are not redirected, please click ".anchor($data['redirect_path'],"here").".";
             }
         }
 
@@ -32,8 +33,9 @@ class User extends CI_Controller {
         	$userinfo=$this->user_model->get_by_username($this->_username);
             $this->user_model->login($userinfo);
             if($remember_me=="on"){$this->user_model->write_cookie($userinfo);}
-            $data['redirect_path']= base_url('admin/dashboard');
-            $data['message']="You are being redirected to dashboard. If you are not redirected there, please click ".anchor("admin/dashboard","here").".";
+                $data['redirect_path']= base_url('admin/dashboard');
+                if(isset($_GET['target'])){$data['redirect_path'] = base_url($_GET['target']);}
+                $data['message']="You are being redirected. If you are not redirected, please click ".anchor($data['redirect_path'],"here").".";
         }
         $this->load->view('account/login',$data);
         

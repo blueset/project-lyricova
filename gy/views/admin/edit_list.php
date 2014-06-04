@@ -6,18 +6,15 @@
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
-	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header single-head">
-		<div class="container">
-			<h2>Dashboard</h2>
+	<div id="wrapper">
+		<?php $this->load->view('admin/header');?>
+		<div class="jumbotron header single-head admin-jumbotron">
+			<div class="page-wrapper">
+				<h2>Edit Post <small>Page <?=$page?></small></h2>
+			</div>
 		</div>
-	</div>
-	<div class="container container-fluid">
-		<div class="row-fluid">
-			<?php $this->load->view('admin/sidebar');?>
-			<div class="span10">
-				<h1>Edit Post <small>Page <?=$page?></small></h1>
-				<table class="table table-hover text-left post-list"><tbody>
+		<div id="page-wrapper">
+			<table class="table table-hover text-left post-list"><tbody>
 					<tr>
 						<!--<th><input type="checkbox" name="post-all" id="post-all"></th>-->
 						<th>ID</th>
@@ -34,18 +31,16 @@
 						<td class="lyric"><?=$postitem->lyric?></td>
 						<td class="author"><?=$this->user_model->get_by_id($postitem->user_id)->display_name?></td>
 						<td class="action">
-							<?=anchor('admin/edit/'.$postitem->id, 'Edit', 'class="btn btn-small btn-primary"')?>
-							<?='<a href="javascript:void(0)" class="btn btn-danger btn-small" onclick="delConfModal('.$postitem->id.",'".jsize_string($postitem->lyric)."')\">Delete</a>"; ?> 
-							<?=anchor('imggen/new/'.$postitem->id, 'ImageGen', 'class="btn btn-small"')?>
+							<?=anchor('admin/edit/'.$postitem->id, 'Edit', 'class="btn btn-sm btn-primary"')?>
+							<?='<a href="javascript:void(0)" class="btn btn-danger btn-sm" onclick="delConfModal('.$postitem->id.",'".jsize_string($postitem->lyric)."')\">Delete</a>"; ?> 
+							<?=anchor('imggen/new/'.$postitem->id, 'ImageGen', 'class="btn btn-sm btn-default"')?>
 						</td>
 					</tr>
 					<?php endforeach; ?>
 				<tbody></table>
 				<?=$this->pagination->create_links();?>
-			</div>
-			
 		</div>
-
+		<?php $this->load->view('gy/footer');?>
 	</div>
 	<div class="modal hide" id="Del">
 		<div class="modal-header">
@@ -61,6 +56,5 @@
 			<a href="#" data-dismiss="modal" class="btn btn-primary">Cancel</a>
 		</div>
 	</div>
-	<?php $this->load->view('gy/footer');?>
 </body>
 </html>

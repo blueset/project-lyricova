@@ -7,7 +7,7 @@
 </head>
 <body>
 	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header">
+	<div class="jumbotron header">
 		<div class="container">
 			<h1>Search result</h1>
 			<p class="lead">Searching “<?=$keyword?>” with <?=$count?> <?php if($count > 1){echo 'results';}else{echo "result";} ?>.</p>			
@@ -20,7 +20,7 @@
 			</div>
 		<?php endif; ?>
 		<?php if($count < 1): ?>
-			<div class="alert alert-error clear-fix">
+			<div class="alert alert-error clear-fix alert-warning">
 				<strong>No result</strong> found with your query. Please try to rewrite your query.
 			</div>
 		<?php endif; ?>
@@ -28,11 +28,15 @@
 			<?php foreach ($posts as $postitem): ?>
 			<?php $lyricinline=strip_quotes($this->typography->nl2br_except_pre($postitem->lyric));
 			$own = $this->user_model->is_own($postitem->user_id);?>
-			<div class="songbox-cont span4" >
+			<div class="songbox-cont col-sm-6 col-md-4 col-xs-12" >
 				<div class="song-box">
 				<div class="lyric"><?=$this->typography->nl2br_except_pre($postitem->lyric)?></div>
-				<div class="meta muted"><small>
-					<span class="title" onclick="window.open('<?= base_url('/post/'.$postitem->id)?>')"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?><a data-toggle="collapse" data-target="#detail-<?=$postitem->id?>" href="#detail-<?=$postitem->id?>">More...</a>
+				<div class="infobuttons">
+					<?=anchor('/post/'.$postitem->id, '<i class="icon-circle-arrow-right icon-large"></i>');?> 
+					<a data-toggle="collapse" class="infobutton" data-target="#detail-<?=$postitem->id?>" href="javascript:void(0)"> <i class="icon-chevron-sign-down icon-large"></i> </a>
+				</div>
+				<div class="meta text-muted"><small>
+					<span class="title" onclick="window.open('<?= base_url('/post/'.$postitem->id)?>')"><?=$postitem->name?></span> by <span class="author"><?=$postitem->artist?></span> <?php if(!$postitem->featuring=="") {?>feat. <span class="feat"><?=$postitem->featuring?></span> <?php } ?><?php if(!$postitem->album==""){ ?>in <span class="album"><?=$postitem->album?></span> <?php } ?>
 				</small></div>
   				<div id="detail-<?=$postitem->id?>" class="collapse">
   					<?php if(!$postitem->origin==""){ echo '<strong>Original Lyric:</strong> '.$this->typography->nl2br_except_pre($postitem->origin).'<br>';} ?>
@@ -61,7 +65,7 @@
 			<p id="del_info">....</p>
 		</div>
 		<div class="modal-footer">
-			<a href="#" class="btn" id="btn-delete">Delete</a>
+			<a href="#" class="btn btn-danger" id="btn-delete">Delete</a>
 			<a href="#" data-dismiss="modal" class="btn btn-primary">Cancel</a>
 		</div>
 	</div>

@@ -7,54 +7,49 @@
 </head>
 <body>
 	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header">
+	<div class="jumbotron header">
 		<div class="container">
 			<div style="text-align:center;">
         <h1>Register</h1>  
-        <p class="lead">Create a new account at Project Gy.</p>
+        <p class="lead">Create a new account at <?=$this->admin_model->get_title();?>.</p>
       </div>
 		</div>
 	</div>
 	<div class="container">
-		<div class="span5 offset3">
+		<div style="max-width:300px" class="center-block">
       <?php if(!validation_errors()==''){ ?>
-      <div class="alert alert-error fade in ">
+      <div class="alert alert-error fade in alert-warning alert-dismissable">
               <a href="#" class="close" data-dismiss="alert">&times;</a>
               <strong>Error!</strong> <?=validation_errors();?>
       </div>
       <?php } ?>
         <?php echo form_open('register',array('class'=>'form-horizontal')); ?>
-          <div class="control-group">
-                  <label class="control-label" for="username">User name</label>
-                  <div class="controls">
-                      <input type="text" id="username" name="username" placeholder="User name">
+                <div class="form-group">
+                  <div>
+                      <input type="text" id="username" name="username" placeholder="User name" class="form-control">
                   </div>
                 </div>
-          <div class="control-group">
-                  <label class="control-label" for="email">E-mail Address</label>
-                  <div class="controls">
-                      <input type="text" id="email" name="email" placeholder="E-mail Address">
+                <div class="form-group">
+                  <div>
+                      <input type="text" id="email" name="email" placeholder="E-mail Address" class="form-control">
                   </div>
                 </div>
-                <div class="control-group">
-                  <label class="control-label" for="password">Password</label>
-                  <div class="controls">
-                      <input type="password" id="password" name="password" placeholder="Password">
+                <div class="form-group">
+                  <div>
+                      <input type="password" id="password" name="password" placeholder="Password" class="form-control">
                   </div>
                 </div>
-                <div class="control-group">
-                  <label class="control-label" for="passwordconf">Password Confirm</label>
-                  <div class="controls">
-                      <input type="password" id="passwordconf" name="passwordconf" placeholder="Same as above">
+                <div class="form-group">
+                  <div>
+                      <input type="password" id="passwordconf" name="passwordconf" placeholder="Password Confirm" class="form-control">
                   </div>
                 </div>
-                <div class="control-group">
-                  <label class="control-label" for="display_name">Display name</label>
+                <div class="form-group">
                   <div class="controls">
-                      <input type="text" id="display_name" name="display_name" placeholder="The name shown on the website.">
+                      <input type="text" id="display_name" name="display_name" placeholder="Display name" class="form-control">
                   </div>
                 </div>
-          <div style="text-align:center;">
+              <div style="text-align:center;">
                 <input type="submit" name="submit" value="Register" class="btn btn-primary">
               </div>
       </Form>

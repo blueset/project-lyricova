@@ -6,18 +6,15 @@
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
-	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header single-head">
-		<div class="container">
-			<h2>
-				Delete
-				<?php if($errinfo==''){ ?><small> user <?=$post->username?> with ID <?=$post->id?></small><?php }else{ echo '<p class="lead">A critical error has occured. -- the Disappearance<p>';}?>
-			</h2>	
-			<p class="lead"></p>
+	<div id="wrapper">
+		<?php $this->load->view('admin/header');?>
+		<div class="jumbotron header single-head admin-jumbotron">
+			<div class="page-wrapper">
+				<h2><?php if($errinfo==''){ ?><small>Delete user <?=$post->username?> with ID <?=$post->id?></small><?php }else{ echo '<p class="lead">A critical error has occured. -- the Disappearance<p>';}?></h2>
+			</div>
 		</div>
-	</div>
-	<div class="container">
-		<?php if($success ){ ?>
+		<div id="page-wrapper">
+			<?php if($success ){ ?>
 		<div class="alert alert-success fade in ">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
   			<strong>Success!</strong> User Deleted.
@@ -41,11 +38,8 @@
   			<strong>Error!</strong> <?=$errinfo?> 
 		</div>
 		<?php } ?>
-
-		
-
-
+		</div>
+		<?php $this->load->view('gy/footer');?>
 	</div>
-	<?php $this->load->view('gy/footer');?>
 </body>
 </html>

@@ -7,7 +7,7 @@
 </head>
 <body>
 	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header">
+	<div class="jumbotron header">
 		<div class="container">
 			<h1><?=$message?></h1>
 			<p class="lead">If your are not redirected, click <?=$here?>.</p>			

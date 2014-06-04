@@ -2,7 +2,7 @@
 		$totalPage = $num / $pagesize;
 		if($num % $pagesize != 0) {$totalPage+=1;}
 		echo "\n";
-		echo "<div class=\"pagination\">\n<ul>\n";
+		echo "<div>\n<ul class=\"pagination\">\n";
 		if($page=1){echo '<li class="disabled"><a href="#">&laquo;</a></li>';echo "\n";}
 			else{echo '<li><a href="'.$url.'?page='.($page-1).'">&laquo;</a></li>';echo "\n";}
 

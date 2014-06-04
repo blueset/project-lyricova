@@ -6,18 +6,15 @@
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
-	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header single-head">
-		<div class="container">
-			<h2>Dashboard</h2>
+	<div id="wrapper">
+		<?php $this->load->view('admin/header');?>
+		<div class="jumbotron header single-head admin-jumbotron">
+			<div class="page-wrapper">
+				<h2>List of image generated</h2>
+			</div>
 		</div>
-	</div>
-	<div class="container container-fluid">
-		<div class="row-fluid">
-			<?php $this->load->view('admin/sidebar');?>
-			<div class="span10">
-				<h1>List of image generated</h1>
-				<?php if($success){ ?>
+		<div id="page-wrapper">
+			<?php if($success){ ?>
 				<div class="alert alert-success fade in ">
   					<a href="#" class="close" data-dismiss="alert">&times;</a>
   					<strong>Success!</strong> Image Deleted. 
@@ -44,13 +41,28 @@
 						<td class="name"><?=$postitem->meta?></td>
 						<td class="lyric"><?=$postitem->lyric?></td>
 						<td class="action">							
-							<?=anchor('imggen/edit/'.$postitem->id, 'Edit', 'class="btn btn-small btn-primary"');?>
-							<?=anchor('imggen/output/'.$postitem->id.'.png', 'Open', 'class="btn btn-small"');?>
-							<a href="javascript:void(0)" class="btn btn-danger btn-small" onclick="delImgModal(<?=$page?>,<?=$postitem->id?>,'<?=jsize_string($postitem->lyric)?>');">Delete</a>
+							<?=anchor('imggen/edit/'.$postitem->id, 'Edit', 'class="btn btn-sm btn-primary"');?>
+							<?=anchor('imggen/output/'.$postitem->id.'.png', 'Open', 'class="btn btn-sm btn-default"');?>
+							<a href="javascript:void(0)" class="btn btn-danger btn-sm" onclick="delImgModal(<?=$page?>,<?=$postitem->id?>,'<?=jsize_string($postitem->lyric)?>');">Delete</a>
 						</td>
 					</tr>
 					<?php endforeach; ?>
 				<tbody></table>
+		</div>
+		<?php $this->load->view('gy/footer');?>
+	</div>
+	<?php $this->load->view('gy/header');?>
+	<div class="hero-unit header single-head">
+		<div class="container">
+			<h2>Dashboard</h2>
+		</div>
+	</div>
+	<div class="container container-fluid">
+		<div class="row-fluid">
+			<?php $this->load->view('admin/sidebar');?>
+			<div class="span10">
+				<h1></h1>
+				
 
 			</div>
 			
@@ -71,6 +83,6 @@
 			<a href="#" data-dismiss="modal" class="btn btn-primary">Cancel</a>
 		</div>
 	</div>
-	<?php $this->load->view('gy/footer');?>
+
 </body>
 </html>

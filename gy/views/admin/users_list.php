@@ -6,18 +6,15 @@
 	<?php $this->load->view('gy/head');?>
 </head>
 <body>
-	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header single-head">
-		<div class="container">
-			<h2>Dashboard</h2>
+	<div id="wrapper">
+		<?php $this->load->view('admin/header');?>
+		<div class="jumbotron header single-head admin-jumbotron">
+			<div class="page-wrapper">
+				<h2>User list <small>Page <?=$page?></small></h2>
+			</div>
 		</div>
-	</div>
-	<div class="container container-fluid">
-		<div class="row-fluid">
-			<?php $this->load->view('admin/sidebar');?>
-			<div class="span10">
-				<h1>User list <small>Page <?=$page?></small></h1>
-				<table class="table table-hover text-left post-list"><tbody>
+		<div id="page-wrapper">
+			<table class="table table-hover text-left post-list"><tbody>
 					<tr>
 						<!--<th><input type="checkbox" name="post-all" id="post-all"></th>-->
 						<th>ID</th>
@@ -41,10 +38,8 @@
 					<?php endforeach; ?>
 				<tbody></table>
 				<?=$this->pagination->create_links();?>
-			</div>
-			
 		</div>
-
+		<?php $this->load->view('gy/footer');?>
 	</div>
 	<div class="modal hide" id="Del">
 		<div class="modal-header">
