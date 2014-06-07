@@ -1,5 +1,10 @@
 CHANGE LOG
 ==========
+* Beta 0.3 build 20140604
+ * Change - Upgraded to Bootstrap 3
+ * Change - Admin panel theme to Start Bootstrap 2
+ * Fix - Minor UI optimisation
+ 
 * Beta 0.2 build 20140522
  * Add - Screensaver transition
  * Fix - Screensaver word collision

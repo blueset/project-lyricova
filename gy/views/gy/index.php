@@ -54,20 +54,24 @@
 			</div>
 		</div>
 	</div>
-	<div class="modal hide" id="Del">
-		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal">×</button>
-			<h3>Confirm Delete</h3>
-		</div>
-		<div class="modal-body">
-			<p>Are you sure you want to delete the following item?</p>
-			<p id="del_info">....</p>
-		</div>
-		<div class="modal-footer">
-			<a href="#" class="btn btn-danger" id="btn-delete">Delete</a>
-			<a href="#" data-dismiss="modal" class="btn btn-primary">Cancel</a>
-		</div>
-	</div>
+	<div class="modal fade" id="Del">
+  		<div class="modal-dialog">
+    		<div class="modal-content">
+      			<div class="modal-header">
+        			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        			<h4 class="modal-title">Confirm Delete</h4>
+      			</div>
+      		<div class="modal-body">
+        		<p>Are you sure you want to delete the following item?</p>
+				<p id="del_info">....</p>
+      		</div>
+      		<div class="modal-footer">
+        		<a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+        		<a href="#" class="btn btn-danger" id="btn-delete">Delete</a>
+      		</div>
+    		</div><!-- /.modal-content -->
+  		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
 	<?php $this->load->view('gy/footer');?>
 </body>
 </html>

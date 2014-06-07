@@ -89,11 +89,18 @@ if(current_page=="index"){
 }}
 function togglePlus (button) {
 	var $button = $(button);
-	if($button.html() == '<i class="icon-chevron-sign-right icon-large"></i>'){
-		var buttonSign = '<i class="icon-chevron-sign-down icon-large"></i>';
+	if($button.html() == '<i class="fa fa-chevron-circle-down fa-large"></i>'){
+		var buttonSign = '<i class="fa fa-chevron-circle-right fa-large"></i>';
 	}else{
-		var buttonSign = '<i class="icon-chevron-sign-right icon-large"></i>';
+		var buttonSign = '<i class="fa fa-chevron-circle-down fa-large"></i>';
 	}
 	$button.html(buttonSign);
-	$($button.data('target')).collapse('toggle');
+	$($button.data('target')).collapse('toggle')
+							 .on('hidden.bs.collapse', function () {
+								$('.container .songbox-row').masonry('reload');
+							  })
+							 .on('shown.bs.collapse', function () {
+								$('.container .songbox-row').masonry('reload');
+							  });
+	
 }

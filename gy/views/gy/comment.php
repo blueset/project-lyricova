@@ -1,3 +1,4 @@
+<?php if($this->config->item('disqus_sname') != ""):?>
 <div id="disqus_thread"></div>
     <script type="text/javascript">
         
@@ -13,3 +14,4 @@
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
     
+<?php endif ?>

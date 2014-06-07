@@ -27,8 +27,8 @@
 
 //======== Comment Setting ========
 
- //disqus-sName - a "short name" for disquz comments.
+ // disqus-sName - a "short name" for disquz comments.
  // For more information, please visit [Disqus](http://disqus.com/)
- // for getting an Disqus short name please [register](http://disqus.com/).
- $config['disqus_sname'] = "project-gy";
+ // To get a Disqus short name, please [register](http://disqus.com/admin/create/).
+ $config['disqus_sname'] = "";
 

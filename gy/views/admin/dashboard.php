@@ -17,25 +17,41 @@
 			<div class="row-fluid">
 					<h1>Welcome back, <?=$user->display_name?></h1>
 					<div class="sortable row-fluid">
-						<a class="well col-md-3 top-block" href="<?=site_url('admin/edit_list');?>">
-							<h1><?=$this->post_model->get_post_number()?></h1>
-							<div>Posts published</div>
-						</a>	
+						<div class="col-md-3">
+							<a class="well top-block" href="<?=site_url('admin/edit_list');?>">
+								<h1><?=$this->post_model->get_post_number()?></h1>
+								<div>Posts published</div>
+							</a>
+						</div>
 		
-						<a class="well col-md-3 top-block" href="<?=site_url('admin/image');?>">
-							<h1><?=$this->imggen_model->get_image_number()?></h1>
-							<div>Images generated</div>
-						</a>
+						<div class="col-md-3">
+							<a class="well top-block" href="<?=site_url('admin/image');?>">
+								<h1><?=$this->imggen_model->get_image_number()?></h1>
+								<div>Images generated</div>
+							</a>
+						</div>
 		
-						<a class="well col-md-3 top-block" href="<?=site_url('admin/users_list');?>">
-							<h1><?=$this->user_model->get_user_number()?></h1>
-							<div>Registered users</div>
-						</a>
-							
-						<a class="well col-md-3 top-block" data-placement="bottom" href="http://<?=$this->config->item('disqus_sname');?>.disqus.com">
-							<h1><i class="fa fa-comments-o"></i></h1>
-							<div>Comments via Disqus</div>
-						</a>
+						<div class="col-md-3">
+							<a class="well top-block" href="<?=site_url('admin/users_list');?>">
+								<h1><?=$this->user_model->get_user_number()?></h1>
+								<div>Registered users</div>
+							</a>
+						</div>
+						<?php if($this->config->item('disqus_sname') != ""): ?>	
+						<div class="col-md-3">
+							<a class="well top-block" data-placement="bottom" href="http://<?=$this->config->item('disqus_sname');?>.disqus.com">
+								<h1><i class="fa fa-comments-o"></i></h1>
+								<div>Comments via Disqus</div>
+							</a>
+						</div>
+						<?php else: ?>
+						<div class="col-md-3">
+							<a class="well top-block" data-placement="bottom" href="http://disqus.com">
+								<h1><i class="fa fa-comments-o"></i></h1>
+								<div>Setup comment system</div>
+							</a>
+						</div>
+						<?php endif ?>
 					</div>
 					<div class="row">
 						<div class="col-md-4">

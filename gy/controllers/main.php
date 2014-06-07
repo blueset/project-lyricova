@@ -66,7 +66,7 @@ class main extends CI_Controller {
 		$data['errinfo']='';
  		$data['post']=$this->post_model->get_by_id($id);
  		//Check Allowance
-    $own = $this->user_model->is_own($postitem->user_id);
+    $own = $this->user_model->is_own($data['post']->user_id);
  		$allow = $this->user_model->access_to("delete".$own); //allow to post?
  		//Store Err info
     if (! ($allow === TRUE)){
