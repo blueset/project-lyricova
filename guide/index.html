@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Quick staring guide. &mdash; Project Gy</title>
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <!-- styles -->
+        <link rel="stylesheet" href="http://1a23.github.io/project-gy/css/bootstrap.min.css">
+        <link rel="stylesheet" href="http://1a23.github.io/project-gy/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="http://1a23.github.io/project-gy/css/default.css">
+
+        <!-- scripts -->
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script type="text/javascript" src="http://1a23.github.io/project-gy/scripts/bootstrap.min.js"></script>
+        <script type="text/javascript" src="http://1a23.github.io/project-gy/scripts/default.js"></script>
+    </head>
+    <body>
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Project Gy</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/timeline">Timeline</a></li>
+        <li><a href="/guide">Guide</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://github.com/1a23/project-gy">Github</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="http://1a23.com">Blueset Studio</a></li>
+            <li><a href="http://ilove.1a23.com">iBe - 1A23.Lab</a></li>
+            <li><a href="https://github.com/1a23/project-gy/archive/master.zip">Download</a></li>
+            <li class="divider"></li>
+            <li><a href="https://github.com/1a23/project-gy/issues/new">Report Issue</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>                <div class="page-header">
+            <div class="container">
+                <h1>Quick staring guide. <small>This is how you start your own Gy.</small></h1>
+            </div>
+        </div>
+                        <div class="container">
+            <h3>1. Download Gy on to your computer</h3>
+
+<h3>2. Upload to a PHP server</h3>
+
+<h3>Choose your way to install Gy.</h3>
+
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<div class="panel-title">3a. Auto install (beta)</div>
+	</div>
+	<div class="panel-body">
+		<p>Simply navigate to <code>/your/path/to/gy<code>/install</code>ation</code> and follow the instructions.</p>
+
+		<div class="alert alert-warning"><strong>Notice:</strong> this function is currently in beta test. Please <a href="https://github.com/1a23/project-gy/issues">report</a> if you face any issue.</div>
+		<div class="alert alert-danger"><strong>PLEASE REMOVE <code>/install</code> FOLDER AFTER INSTALLATION FOR SAFETY REASON.</strong></div>
+	</div>
+</div>
+<h3></h3>
+
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<div class="panel-title">3b. Manual Install</div>
+	</div>
+	<div class="panel-body">
+		<p>Manually installation is more stable, yet requires a basic knowledge of PHP and MySQL.</p>
+		<p>The following instructions are for manual installation.</p>
+	</div>
+</div>
+
+<h4>3b.1. Edit <code>gy/config/config.php</code></h4>
+
+<p>
+	<code>base_url</code> would be the root directory of Project Gy. <br>
+	e.g. http://localhost/project-gy/
+</p>
+
+<p>
+	If your server does not support <code>.htaccess</code> feature,
+	Please change <code>index_page</code> into <code>index.php</code>
+	otherwise, please leave blank.
+</p>
+
+<pre>
+$config['base_url'] = 'http://localhost/project-gy/';
+$config['index_page'] = '';
+</pre>
+
+<h4>3b.2. Edit <code>gy/config/database.php</code></h4>
+
+<p>
+	<code>$db['default']['hostname']</code> is database address <br>
+	<code>$db['default']['username']</code> is database username <br>
+	<code>$db['default']['password']</code> is database password <br>
+	<code>$db['default']['database']</code> is database name
+</p>
+
+<pre>
+$db['default']['hostname'] = 'localhost';
+$db['default']['username'] = 'root';
+$db['default']['password'] = '';
+$db['default']['database'] = 'gy';
+</pre>
+
+<h4>3b.3. Edit htaccess.php</h4>
+
+<div class="alert alert-warning">Skip this step if your server does not support <code>.htaccess</code> feature.</div>
+<p>Change <code>RewriteBase</code> into your root folder of Project Gy</p>
+<pre>RewriteBase /project-gy/</pre>
+
+
+<h4>3b.4. Imply MYSQL Files</h4> 
+
+<p>Simply import <code>gy.sql</code> into MySQL database.</p>
+
+<h4>3b.5. Take a look at your user role</h4>
+
+<p>At the very beginning, role of new users are always 0 (Registered user). (Refer to <a href="https://github.com/1a23/project-gy/wiki/User-Role">Role of Users</a>)</p>
+<p>As the user management module is not yet built, you are advised to change your role to Admin manually, by changing <code>role</code> of your user into 3 (Administrator), or you can also use this query...</p>
+
+<p><em>Assuming your user id is 0</em></p>
+<pre>UPDATE users SET role = '3' WHERE id = 0</pre>
+<div class="alert alert-danger"><strong>PLEASE REMOVE <code>/install</code> FOLDER AFTER INSTALLATION FOR SAFETY REASON.</strong></div>
+
+<h4>5. Enjoy your Gy!</h4>
+<p>For more information and full documentation, please refer to <a href="https://github.com/1a23/project-gy/wiki">GitHub Wiki</a></p>        </div>
+                <footer>
+    <div class="container">
+    	<p><a href="http://github.com/1a23/project-gy">Project Gy</a>, a lyric-centered web-log created by <a href="http://1a23.com/404.php">Blueset Studio</a> together with <a href="http://ilove.1a23.com/">iBe</a>.</p>
+    </div>
+</footer>
+    </body>
+</html>
+
