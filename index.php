@@ -32,7 +32,7 @@ if (defined('ENVIRONMENT'))
 {
 	switch (ENVIRONMENT)
 	{
-		case 'development':
+		case 'production':
 			error_reporting(E_ALL);
 		break;
 	

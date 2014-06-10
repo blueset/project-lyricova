@@ -102,7 +102,7 @@ class User extends CI_Controller {
                 $data['here'] = anchor("account/register", 'here');
             }
             $this->load->view('account/note', $data);
-        };        
+        }
        }
     /**
      * ======================================

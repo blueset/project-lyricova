@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://your.path/to/gy';
+$config['base_url']	= 'http://localhost/project-gy/';
 
 /*
 |--------------------------------------------------------------------------
@@ -224,7 +224,7 @@ $config['cache_path'] = '';
 | MUST set an encryption key.  See the user guide for info.
 |
 */
-$config['encryption_key'] = 'Your encryption_key here';
+$config['encryption_key'] = '深信的一切只不过是将妄想反复映照出的镜子';
 
 /*
 |--------------------------------------------------------------------------
