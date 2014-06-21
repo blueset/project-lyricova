@@ -51,38 +51,5 @@
 		</div>
 		<?php $this->load->view('gy/footer');?>
 	</div>
-	<?php $this->load->view('gy/header');?>
-	<div class="hero-unit header single-head">
-		<div class="container">
-			<h2>Dashboard</h2>
-		</div>
-	</div>
-	<div class="container container-fluid">
-		<div class="row-fluid">
-			<?php $this->load->view('admin/sidebar');?>
-			<div class="span10">
-				<h1></h1>
-				
-
-			</div>
-			
-		</div>
-
-	</div>
-	<div class="modal hide" id="Del">
-		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal">×</button>
-			<h3>Confirm Delete</h3>
-		</div>
-		<div class="modal-body">
-			<p>Are you sure you want to delete the following item?</p>
-			<p id="del_info">....</p>
-		</div>
-		<div class="modal-footer">
-			<a href="#" class="btn btn-danger" id="btn-delete">Delete</a>
-			<a href="#" data-dismiss="modal" class="btn btn-primary">Cancel</a>
-		</div>
-	</div>
-
 </body>
 </html>
