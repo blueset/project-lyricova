@@ -6,21 +6,25 @@ Project Gy (歌语计划)
 > 【Live Demo: [Eana's Project Gy](http://1a23.com/gy)】
 
 ## What is 'Project Gy'?
-Project Gy (pronounce as _'Project Gee-Wai'_), a lyric-centered web-log based on PHP and MySQL, created by [Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)
+Project Gy (pronounce as _'Project Gee-Wai'_), a lyric-centered web-log based on PHP and MySQL, created by
+[Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)
 
-This project is inspired by my daily updates with lyrics on sites like Facebook and Twitter. I was then thinking about creating a blog program that focus on lyric posting, and this whole thing came to my mind. 
+This project is inspired by my daily updates with lyrics on sites like Facebook and Twitter.
+I was then thinking about creating a blog program that focus on lyric posting, and this whole thing came to my mind.
 
-Through Project Gy, people can share their thoughts and feelings through existing lyrics, and share them with all over the world (just people who can see it *=_=*) by simply type in the lyric and some related information. 
+Through Project Gy, people can share their thoughts and feelings through existing lyrics,
+and share them with all over the world (just people who can see it *=_=*) by simply type in the lyric and
+some related information.
 
 _\* By lyrics, here I means lyrics as in the songs._
 
 ## Current Version & Changelog
 
 Current Version:
-* **Beta 0.3 build 20140604**
- * Change - Upgraded to Bootstrap 3
- * Change - Admin panel theme to Start Bootstrap 2
- * Fix - Minor UI optimisation
+* **Beta 0.3 build 20140623*
+ * Change - Font to Droid Sans Fallback
+ * Optimize - Removed debug info
+ * Minor UI update
 
 > Refer to Changelog.md for more.
 

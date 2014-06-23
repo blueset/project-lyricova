@@ -10,7 +10,7 @@ footer{
 .song-box{
 	padding: 10px;
 	border: 1px solid #AAA;
-	box-shadow: 0 0px 5px rgba(0,0,0,0.6);
+	box-shadow: 0 0 5px rgba(0,0,0,0.6);
 	margin-bottom:10px;
 	background-color: #fff;
 }
@@ -114,11 +114,18 @@ footer{
 	line-height: 1.2em;
 	padding-top: 1em;
 }
-.songb-single-cont span{
-	text-wrap:none;
+.songb-hr{
+    margin: 10px -10px;
+    border-top: 1px solid #aaaaaa;
+
+}
+.songb-end-meta{
+    text-align: right;
+    font-style: italic;
+    display: block;
 }
 .infobuttons{
-	float:right;position: absolute;right: 0px;display: block;bottom: 0px;
+	float:right;position: absolute;right: 0;display: block;bottom: 0;
 }
 .infobuttons a{
 	color:grey;
