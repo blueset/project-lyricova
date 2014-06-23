@@ -32,7 +32,7 @@ This project is built with help of the following projects:
 * [jQuery](https://github.com/jquery/jquery)
 * [jQuery Masonry](http://masonry.desandro.com/)
 * [Yanone](http://www.yanone.de/typedesign/kaffeesatz/) for font "Yanone Kaffeesatz"
-* [Screen MFG Co.](http://www.screen.co.jp/press/pdf/NR090824C.pdf) and [iPlaysoft](http://www.iplaysoft.com/hiragino-sans.html) for "Hiragino Sans W6"
+* [Droid Sans Fallback](http://www.droidfonts.com/) from [Google](http://google.com)
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
 * [Start Bootstrap Admin 2](http://startbootstrap.com/sb-admin-v2) Dashboard Theme
 * [Disqus](http://disqus.com/) Commenting system

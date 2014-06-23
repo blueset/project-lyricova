@@ -4,6 +4,7 @@ class imggen_model extends CI_Model {
   public function __construct(){
     parent::__construct();
     $this->load->database();
+    putenv('GDFONTPATH=' . realpath('.'));
   }
   function imagettftext_ca(&$im, $size, $angle, $x, $y, $color, $fontfile, $text)
   {
@@ -26,7 +27,7 @@ class imggen_model extends CI_Model {
   public function imggen($string = "Enter your own lyric.",
                          $size = 35,
                          $lineheight = 50,
-                         $font = "./fonts/w6.ttf",
+                         $font = "./fonts/DroidSansFallback.ttf",
                          $meta = "Project Gy Picture Generation",
                          $metasize = 10, 
                          $metalineh = 25, 
@@ -93,7 +94,7 @@ class imggen_model extends CI_Model {
   public function imggen_dynm($string = "Enter your own lyric.",
                          $size = 35,
                          $lineheight = 50,
-                         $font = "./fonts/w6.ttf",
+                         $font = "./fonts/DroidSansFallback.ttf",
                          $meta = "Project Gy Picture Generation",
                          $metasize = 10, 
                          $metalineh = 25, 

@@ -102,7 +102,7 @@ class imggen extends CI_Controller {
         $meta_str .= strlen($post->featuring) ? " feat. ". $post->featuring : "";
         $lyric = strip_tags($post->lyric);
         $lines = substr_count($lyric, "\n")+1;
-        $bbox = imagettfbbox(50, 0, "./fonts/w6.ttf", $lyric);
+        $bbox = imagettfbbox(50, 0, "./fonts/DroidSansFallback.ttf", $lyric);
         $dx = ($bbox[4]-$bbox[6]);
         $max_size = 50 * ($height-20) / $dx; // Geometry similar rectangle
         $lineh = ($width - 120) / $lines;
@@ -114,7 +114,7 @@ class imggen extends CI_Controller {
         $this->imggen_model->imggen_dynm($lyric,
                   $size,
                   $lineh,
-                  "./fonts/w6.ttf",
+                  "./fonts/DroidSansFallback.ttf",
                   $meta_str,
                   10, 
                   25, 

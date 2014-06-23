@@ -12,12 +12,12 @@
 //fCapt - Display name for fonts
  $config['fcapt'] = array("Yanone Thin (Europe)",
                  		  "Yanone Regular (Europe)",
-                   		  "Hiragino Sans W6 (CJ)",
+                   		  "Droid Sans Fallback (CJK)",
                    		  "Lanting Light (Chinese)");
  //fPath - Path for font files.
  $config['fpath'] = array("./fonts/YanoneKaffeesatz-Thin.ttf",
                    		  "./fonts/YanoneKaffeesatz-Regular.ttf",
-                   		  "./fonts/w6.ttf",
+                   		  "./fonts/DroidSansFallback.ttf",
                    		  "./fonts/FZLTXH.ttf");
  //defaultF - "fname" of default font
  $config['defaultf'] = "w6";
