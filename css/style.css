@@ -14,7 +14,9 @@ footer.container {
     padding: 30px 0;
     border-top: 1px dashed #aaa;
 }
-
+.container{
+    width: 750px;
+}
 @media (max-width: 767px) {
     .sidebar {
         padding-top: 30px;
