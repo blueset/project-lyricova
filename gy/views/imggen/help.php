@@ -67,7 +67,7 @@
 			<tr>
 				<td><?=$flist[$font]?></td>
 				<td><?php 
-					echo '<img src="'.base_url('fonts/preview/'.$font.'-1.png').'" alt="'.$flist[$font].' Preview 1" />';
+					echo '<img src="'.base_url('./fonts/preview/'.$font.'-1.png').'" alt="'.$flist[$font].' Preview 1" />';
 					$i=2;
 					while (!(file_exists('./fonts/preview/'.$font.'-'.$i.'.png') == FALSE)) {
 						echo '<br>';

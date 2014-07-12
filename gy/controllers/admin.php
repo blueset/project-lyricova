@@ -12,10 +12,10 @@ class Admin extends CI_Controller {
     if($this->user_model->logged_in() !== TRUE){redirect('login?target='.uri_string());}
     /*if($this->user_model->get_session('role') < 3){redirect('error/1');}*/
   }
-  	public function index()
-  	{
-  		redirect('admin/dashboard','admin');
-  	}
+  public function index()
+  {
+  	redirect('admin/dashboard','admin');
+  }
  	public function dashboard()
  	{
  		$data['user']=$this->user_model->get_by_id($this->session->userdata('user_id'));
@@ -37,7 +37,8 @@ class Admin extends CI_Controller {
     }
  		$this->load->view('admin/config',$data);
  	}
-  public function post(){
+  public function post()
+  {
     if($this->user_model->access_to("post") !== TRUE){redirect('error/1');die;}
     $this->load->helper ('form');
     $this->load->library('form_validation');
@@ -62,8 +63,8 @@ class Admin extends CI_Controller {
       redirect('/admin/edit/'.$post_id.'?post=1'/*, 'refresh'*/);
     }
   }
-  public function edit($id){
-
+  public function edit($id)
+  {
       //Load Helpers
       $this->load->helper('form');
       $this->load->library('form_validation');
@@ -172,7 +173,8 @@ class Admin extends CI_Controller {
     }
     $this->load->view('admin/profile',$data);
   }
-  function pw_idencal($password) {
+  function pw_idencal($password)
+  {
          $password = md5($password);
          if ($this->user_model->password_check($this->_username, $password)){
              return TRUE;
@@ -305,4 +307,29 @@ class Admin extends CI_Controller {
       }
     }
   }
+  public function font()
+  {
+    $data['fonts'] = $this->admin_model->load_font();
+    $this->load->view('admin/font', $data);
+  }
+  public function font_add()
+  {
+    $this->load->helper('form');
+    $config['upload_path'] = './fonts/';
+    $config['allowed_types'] = 'ttf|txt|TTF|TXT|Ttf';
+    $config['max_size'] = '10240';
+    var_dump($_FILES);
+    $this->load->library('upload', $config);
+    $data = array();
+    /*
+    if ( ! $this->upload->do_upload("fontfile"))
+      {$data['error'] => $this->upload->display_errors());} 
+    else
+      {$data['upload_data'] => $this->upload->data());}
+    */
+    $this->load->view('admin/font_add',$data);
+  }
+  // 
+  // AJAX apis is written below.
+  //
 }

@@ -252,4 +252,16 @@ class imggen_model extends CI_Model {
       return TRUE;
     }
   }
+
+  public function font_validate($filePath)
+  {
+    $mimeTypes = array('font/ttf','font/truetype');
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = finfo_file($finfo, $filePath);
+    if(in_array($mime, $mimeTypes)){
+      $return = true;
+    }
+    finfo_close($finfo);
+    return $return ? true : false;
+  }
  }

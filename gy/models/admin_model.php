@@ -5,6 +5,9 @@ class admin_model extends CI_Model {
     parent::__construct();
     $this->load->database();
   }
+  //
+  // General Config
+  //
   public function get_config($name)
   {
   	if ($name == NULL){return false;}
@@ -30,5 +33,16 @@ class admin_model extends CI_Model {
   public function get_title()
   {
   	return htmlspecialchars($this->admin_model->get_config('title'));
+  
+}  //
+  // Font management
+  //
+  public function load_font()
+  {
+    return $this->db->get('fonts')->result();
+  }
+  public function check_font($name)
+  {
+    return file_exists("./fonts/".$name.".ttf");
   }
 }
