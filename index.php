@@ -18,7 +18,11 @@
  * NOTE: If you change these, also change the error_reporting() code below
  *
  */
+if(file_exists("./gy/config/development/config.php")){
 	define('ENVIRONMENT', 'development');
+}else{
+	define('ENVIRONMENT', 'production');
+}
 /*
  *---------------------------------------------------------------
  * ERROR REPORTING
