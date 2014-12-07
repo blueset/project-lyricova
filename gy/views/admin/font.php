@@ -24,19 +24,19 @@
 				<div class="col-sm-6 col-md-4">
 					<div class="panel panel-default">
 						<div class="panel-heading">
-							<div class="btn btn-default btn-xs pull-right"><a href="javascript:void(0);" onclick="show_delete_modal('<?php echo $font->name; ?>')"><i class="fa fa-times"></i></a></div>
+							<div class="btn btn-default btn-xs pull-right"><a href="javascript:void(0);" onclick="delFontModal('<?php echo $font->name; ?>','<?php echo $font->caption; ?>')"><i class="fa fa-times"></i></a></div>
 							<?php echo $font->caption; ?>
 						</div>
 						<div class="panel-body">
 						<?php 
 							echo "Font ID: ".$font->name."<br>"; 
-							$i=1;
+							$i=0;
 							while (!(file_exists('./fonts/preview/'.$font->name.'-'.$i.'.png') == FALSE)) {
 								echo '<img src="'.base_url('fonts/preview/'.$font->name.'-'.$i.'.png').'" class="font-preview" alt="'.$font->caption.' Preview '.$i.'" />'."<br>";
 
 								$i+=1;
 							}
-							echo ($i==1) ? '<p class="text-danger">This font have no thumbnail.</p>' : "";
+							echo ($i==0) ? '<p class="text-danger">This font have no thumbnail.</p>' : "";
 						?>
 						</div>
 					</div>
@@ -45,7 +45,7 @@
 				<div class="col-sm-6 col-md-4">
 					<div class="panel panel-danger">
 						<div class="panel-heading">
-							<div class="btn btn-default btn-xs pull-right"><a href="javascript:void(0);" onclick="show_delete_modal('<?php echo $font->name; ?>')"><i class="fa fa-times"></i></a></div>
+							<div class="btn btn-default btn-xs pull-right"><a href="javascript:void(0);" onclick="delFontModal('<?php echo $font->name; ?>','<?php echo $font->caption; ?>')"><i class="fa fa-times"></i></a></div>
 							<?php echo $font->caption; ?>
 						</div>
 						<div class="panel-body">
@@ -59,19 +59,33 @@
 		</div>
 		<?php $this->load->view('gy/footer');?>
 	</div>
-	<div class="modal hide" id="Del">
-		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal">×</button>
-			<h3>Confirm Delete</h3>
-		</div>
-		<div class="modal-body">
-			<p>Are you sure you want to delete the following item?</p>
-			<p id="del_info">....</p>
-		</div>
-		<div class="modal-footer">
-			<a href="#" class="btn btn-danger" id="btn-delete">Delete</a>
-			<a href="#" data-dismiss="modal" class="btn btn-primary">Cancel</a>
-		</div>
+
+	<div class="modal fade" id="Del" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  		<div class="modal-dialog">
+    		<div class="modal-content">
+      			<div class="modal-header">
+        			<button type="button" class="close" data-dismiss="modal">
+        			<span aria-hidden="true">&times;</span>
+        			<span class="sr-only">Close</span></button>
+        			<h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+      			</div>
+      			<div class="modal-body">
+        			<p>Are you sure you want to delete the following font?</p>
+					<p id="del_info">....</p>
+      			</div>
+      			<div class="modal-footer">
+        			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        			<a href="#" class="btn btn-danger" id="btn-delete">Delete</a>
+      			</div>
+    		</div>
+  		</div>
 	</div>
+<script type="text/javascript">
+	function delFontModal(name,caption){
+		$("#btn-delete").attr('href',currpath+'admin/font_delete/'+name);
+		$("#del_info").html("Font: "+name+" ("+caption+")");
+		$('.modal').modal('show');
+	}
+</script>
 </body>
 </html>

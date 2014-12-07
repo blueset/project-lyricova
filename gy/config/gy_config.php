@@ -17,7 +17,7 @@
  //fPath - Path for font files.
  $config['fpath'] = array("./fonts/YanoneKaffeesatz-Thin.ttf",
                    		  "./fonts/YanoneKaffeesatz-Regular.ttf",
-                   		  "./fonts/DroidSansFallback.ttf",
+                   		  "./fonts/SourceHanSansCN-Medium.ttf",
                    		  "./fonts/FZLTXH.ttf");
  //defaultF - "fname" of default font
  $config['defaultf'] = "w6";

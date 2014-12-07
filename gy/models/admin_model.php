@@ -34,7 +34,8 @@ class admin_model extends CI_Model {
   {
   	return htmlspecialchars($this->admin_model->get_config('title'));
   
-}  //
+  }  
+  //
   // Font management
   //
   public function load_font()
@@ -43,6 +44,11 @@ class admin_model extends CI_Model {
   }
   public function check_font($name)
   {
-    return file_exists("./fonts/".$name.".ttf");
+    $result = array_sum(array_map('file_exists', glob("./fonts/".$name.".*")));
+    return ($result >= 1);
+  }
+  public function add_font_db($name,$capt)
+  {
+    $this->db->insert('fonts', array('name' => $name, "caption" => $capt));
   }
 }

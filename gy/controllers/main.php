@@ -103,6 +103,9 @@ class main extends CI_Controller {
     $data['count'] = count($data['posts']);
     $this->load->view('gy/search',$data);
   }
+
+  // here goes all the APIs
+  
   public function getpostxml($id)
   {
     $post = $this->post_model->get_by_id($id);
@@ -170,5 +173,4 @@ XML;
       echo $callbackstr.'(["深刻なエラーが発生しました"]);';
     }
   }
-          
 }

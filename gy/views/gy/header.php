@@ -24,7 +24,7 @@
 				<li><a href="<?=site_url('screensaver.html');?>">Screensaver</a></li>
 			</ul>
 			<form class="navbar-form navbar-left navbar-search" method="get" accept-charset="utf-8" action="<?=site_url("s");?>">
-    				<input type="text" name="q" placeholder="Search Project Gy" value="<?php if(isset($keyword)){echo $keyword;} ?>" class="search-query span2 form-control">
+    				<input type="text" name="q" placeholder="Search Project Gy" value="<?php if(isset($keyword)){echo htmlspecialchars($keyword);} ?>" class="search-query span2 form-control">
 			</form>
 			<ul class="nav navbar-right navbar-nav">
 					<?php if($logged_in){?>

@@ -63,15 +63,15 @@
 				<th>Font Name</th>
 				<th>Preview</th>
 			</tr>
-			<?php foreach (array_keys($flist) as $font) : ?>
+			<?php foreach ($flist as $font) : ?>
 			<tr>
-				<td><?=$flist[$font]?></td>
+				<td><?=$font->caption;?></td>
 				<td><?php 
-					echo '<img src="'.base_url('./fonts/preview/'.$font.'-1.png').'" alt="'.$flist[$font].' Preview 1" />';
+					echo '<img src="'.base_url('./fonts/preview/'.$font->name.'-1.png').'" alt="'.$font->caption.' Preview 1" />';
 					$i=2;
-					while (!(file_exists('./fonts/preview/'.$font.'-'.$i.'.png') == FALSE)) {
+					while (!(file_exists('./fonts/preview/'.$font->name.'-'.$i.'.png') == FALSE)) {
 						echo '<br>';
-						echo '<img src="'.base_url('fonts/preview/'.$font.'-'.$i.'.png').'" alt="'.$flist[$font].' Preview '.$i.'" />';
+						echo '<img src="'.base_url('fonts/preview/'.$font->name.'-'.$i.'.png').'" alt="'.$font->caption.' Preview '.$i.'" />';
 						$i+=1;
 					}
 				 ?></td>

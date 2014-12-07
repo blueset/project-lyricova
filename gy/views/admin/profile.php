@@ -40,6 +40,7 @@
 								data-placement="bottom">
 							<i class="fa fa-question-circle"></i> How is this picture obtained?</a>
 						</small></p>
+						<p><a href="<?=site_url('admin/signature');?>" class="btn btn-default">Customize Signature</a></p>	
 					</div>
 					<div class="col-sm-9">
 						<?php echo form_open('admin/profile',array('class'=>'form-horizontal')); ?>

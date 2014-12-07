@@ -15,20 +15,32 @@
 		</div>
 		<div id="page-wrapper">
 			<div class="row">
-				<?php if(isset($error))var_dump($error); echo" >> err<br>"; 
-				if(isset($upload_data))var_dump($upload_data); echo" >> upload-data<br>"; ?>
+				<?php 
+					if (!isset($errormsg)) {$errormsg = "";}
+					$errormsg .= validation_errors();
+					if ($errormsg != ''):?>
+						<div class="alert alert-danger">
+							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+							<strong>Error: </strong> <?=$errormsg;?> 
+						</div>
+				<?php endif; ?>
+
+				
 				<?php echo form_open_multipart('admin/font_add',array("class"=>"form col-lg-8"));?>
-					<div class="form-group"><label for="name">Font ID</label><input type="text" class="form-control" id="name" name placeholder="Font ID"></div>
+					<div class="form-group"><label for="name">Font ID</label><input type="text" class="form-control" id="name" name="name" placeholder="Font ID"></div>
 					<div class="form-group"><label for="caption">Font name</label><input type="text" class="form-control" id="caption" name="caption" placeholder="Font name"></div>
 					<div class="form-group">
-						<label for="file">File</label>
+						<label for="file">Font file</label>
 						<div class="input-group">
-							<span class="input-group-btn"><span class="btn btn-default btn-file">Select file <input type="file" name="fontfile" size="20" /></span></span>
+							<span class="input-group-btn"><span class="btn btn-default btn-file">Select file <input type="file" name="fontfile" accept=".ttf,.otf" size="20" /></span></span>
 							<input type="text" id="file-path" class="form-control" readonly>
 						</div>
 					</div>
-					<input type="radio" name="type" id="upload-radio" value="upload" checked>
-					<input type="radio" name="type" id="generate-radio" value="generate">
+
+					<div style="display:none;">
+						<input type="radio" name="type" id="upload-radio" value="upload" checked>
+						<input type="radio" name="type" id="generate-radio" value="generate">
+					</div>
 
 					<ul class="nav nav-tabs" role="tablist">
 						<li class="active"><a href="#upload" role="tab" data-toggle="tab">Upload</a></li>
@@ -37,14 +49,12 @@
 
 					<div class="tab-content">
 						<div id="upload" class="tab-pane fade in active">
-							<a href="javascript:void(0)" onclick="add_preview()" class="btn btn-success pull-right"><i class="fa fa-plus"></i> Add preview</a>
 							<b>Thumbnail file: </b>
-							<p>Recommanded size: 450x50 px, PNG, transparent background.</p>
+							<p>Recommanded size: 450x50 px, transparent background. Only PNG files are allowed.</p>
 							<div class="form-group preview-group">
 								<div class="input-group">
-									<span class="input-group-btn"><span class="btn btn-default btn-file">Select file <input type="file" name="previewfile[]" size="20" /></span></span>
+									<span class="input-group-btn"><span class="btn btn-default btn-file">Select file <input type="file" name="previewfile[]" accept=".png" size="20" multiple/></span></span>
 									<input type="text" id="file-path" class="form-control" placeholder="File path" readonly>
-									<span class="input-group-btn"><a href="javascript:void(0)" onclick="delete_preview_upload(this)" class="btn btn-danger"><i class="fa fa-times"></i></a></span>
 								</div>
 							</div>
 						</div>
@@ -64,7 +74,7 @@
 							<p>Font preview can be generated automatically. Please only use characters that is included in this font.</p>
 							<div class="form-group generate-group">
 								<div class="input-group">
-									<input type="text" name="generate-text[]" placeholder="Preview text" class="form-control">
+									<input type="text" name="generate-text[]" placeholder="Preview text" value="Project Gy, font preview." class="form-control">
 									<span class="input-group-btn"><a href="javascript:void(0)" onclick="delete_preview_generate(this)" class="btn btn-danger"><i class="fa fa-times"></i></a></span>
 								</div>
 							</div>
@@ -72,7 +82,7 @@
 					</div>
 
 					<div class="form-group">
-						<input class="btn btn-default" type="submit" value="Upload" />
+						<input class="btn btn-default" type="submit" name="submit" value="Upload" />
 					</div>
 				</form>
 			</div>
@@ -110,16 +120,6 @@ $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
 });
 
 /* Upload preview pictures */
-function add_preview () {
-	var newobj = $($(".preview-group")[0]).clone(true).appendTo("#upload");
-	newobj.find(":file").val("");
-	newobj.find(':text').val("");
-}
-
-function delete_preview_upload (obj) {
-	if($(".preview-group").length>1){$(obj).parent().parent().parent().remove();}
-		else{alert("Cannot remove the last item.")}
-}
 
 function delete_preview_generate (obj) {
 	if($(".generate-group").length>1){$(obj).parent().parent().parent().remove();}
@@ -133,7 +133,7 @@ function add_generate (name) {
 			if($("#name").val() != ""){
 				strTemplate = $("#name").val();
 			}else{
-				alert("Font name is not written");
+				alert("Please fill in font name first.");
 				return;
 			}
 			break;

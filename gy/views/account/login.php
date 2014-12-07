@@ -30,7 +30,7 @@
   			<strong>Success!</strong> <?=$message?>
 		</div>
 		<?php } ?>
-			<?php if(isset($_GET['target'])){echo form_open('login?target='.$_GET['target'],array('class'=>'form-horizontal'));}else{echo form_open('login',array('class'=>'form-horizontal'));} ?>
+			<?php if(isset($_GET['target'])){echo form_open('login?target='.htmlspecialchars($_GET['target']),array('class'=>'form-horizontal'));}else{echo form_open('login',array('class'=>'form-horizontal'));} ?>
 				<div class="form-group">
     				<input type="text" class="form-control" id="username" name="username" placeholder="User name">
     			</div>
