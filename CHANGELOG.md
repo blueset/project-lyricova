@@ -1,5 +1,12 @@
 CHANGE LOG
 ==========
+
+* 1.0 build 20141207
+ * New - Signature Customisation
+ * New - Font Management
+ * Fix - XSS script errors
+ * New - Reconstructed Image Generation Module
+
 * Beta 0.3 build 20140604
  * Change - Upgraded to Bootstrap 3
  * Change - Admin panel theme to Start Bootstrap 2

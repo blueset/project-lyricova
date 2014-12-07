@@ -1,4 +1,4 @@
-<?php 
+<?php if(!defined("BASEPATH")){ exit("No direct script access allowed"); }
 function jsize_string($str)
 {
 	$str=str_replace(    

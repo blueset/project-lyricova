@@ -4,9 +4,8 @@
 <link rel="stylesheet" href="<?=base_url('/css/bootstrap-responsive.css')?>">
 <link rel="stylesheet" href="<?=base_url('/css/opa-icons.css')?>">
 <link rel="stylesheet" href="<?=base_url('/css/font-awesome.min.css')?>">
-<?php if(stripos(uri_string(),"admin")!==FALSE): ?><link rel="stylesheet" href="<?=base_url('/css/charisma-app.css')?>"><?php endif;?>
 <?php if(stripos(uri_string(),"admin")!==FALSE): ?><link rel="stylesheet" href="<?=base_url('/css/sb-admin.css')?>"><?php endif;?>
-<link rel="stylesheet" href="<?=base_url('/style.css')?>">
+<link rel="stylesheet" href="<?=base_url('/css/style.css')?>">
 <style>
 @font-face {
   font-family: 'FontAwesome';

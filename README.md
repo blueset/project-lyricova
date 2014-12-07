@@ -5,6 +5,10 @@ Project Gy (歌语计划)
 
 > 【Live Demo: [Eana's Project Gy](http://1a23.com/gy)】
 
+## Notice
+
+Project Gy is (probably) releasing it's last major version based on Codeigniter. The next version will be based on Lavarus and focused on social function. Currently only bug fixes for version 1.0 is planned.
+
 ## What is 'Project Gy'?
 Project Gy (pronounce as _'Project Gee-Wai'_), a lyric-centered web-log based on PHP and MySQL, created by
 [Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)
@@ -21,10 +25,11 @@ _\* By lyrics, here I means lyrics as in the songs._
 ## Current Version & Changelog
 
 Current Version:
-* **Beta 0.3 build 20140623*
- * Change - Font to Droid Sans Fallback
- * Optimize - Removed debug info
- * Minor UI update
+* *1.0 build 20141207*
+ * New - Signature Customisation
+ * New - Font Management
+ * Fix - XSS script errors
+ * New - Reconstructed Image Generation Module
 
 > Refer to Changelog.md for more.
 
@@ -35,7 +40,6 @@ This project is built with help of the following projects:
 * [Twitter Bootstrap](https://github.com/twitter/bootstrap)
 * [jQuery](https://github.com/jquery/jquery)
 * [jQuery Masonry](http://masonry.desandro.com/)
-* [Yanone](http://www.yanone.de/typedesign/kaffeesatz/) for font "Yanone Kaffeesatz"
 * [Droid Sans Fallback](http://www.droidfonts.com/) from [Google](http://google.com)
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
 * [Start Bootstrap Admin 2](http://startbootstrap.com/sb-admin-v2) Dashboard Theme
@@ -45,7 +49,10 @@ This project is built with help of the following projects:
 * [Textillate.js](https://github.com/jschr/textillate), A simple plugin for CSS3 text animations
 * [Lettering.js](https://github.com/davatron5000/Lettering.js), a jQuery plugin for radical Web
 * [Animate.css](https://github.com/daneden/animate.css), Just-add-water CSS animation
+* [Source Han Sans](https://github.com/adobe-fonts/source-han-sans/), an open source pan-CJK typeface by Adobe and Google.
+* [Fabric.js](http://fabricjs.com/), a powerful and simple Javascript HTML5 canvas library.
 
 ## First time using this?
 
 Please refer to Wiki for [installation guide](https://github.com/1a23/project-gy/wiki/Installation).
+

@@ -11,7 +11,7 @@ class User extends CI_Controller {
 	}
 	function login(){
        
-        $this->form_validation->set_rules('username', 'Username', 'trim|required|xss_clean|callback_username_check');
+        $this->form_validation->set_rules('username', 'Username', 'trim|required|xss_clean|alpha_dash|callback_username_check');
         $this->form_validation->set_rules('password', 'Password', 'trim|required|md5|callback_password_check');
         $this->_username = $this->input->post('username');                //用户名
         
@@ -93,7 +93,7 @@ class User extends CI_Controller {
             $email = $this->input->post('email');
             $display_name = $this->input->post('display_name');
             if ($this->user_model->add_user($username, $password, $email, $display_name)){
-                $data['message'] = "The user account has now been created! You can go "
+                $data['message'] = "The user account has now been created! You can go to "
                             .anchor('account/index', 'here').'.';
                 $data['here'] = anchor("account/index", 'here');
             }else{

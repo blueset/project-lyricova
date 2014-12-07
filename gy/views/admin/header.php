@@ -74,6 +74,11 @@
                                 <i class="fa fa-group"></i> Users
                             </a>
                         </li>
+                        <li>
+                            <a href="<?=site_url('admin/font');?>">
+                                <i class="fa fa-font"></i> Fonts
+                            </a>
+                        </li>
                         <?php endif; ?>
                     </ul>
                     <!-- /#side-menu -->

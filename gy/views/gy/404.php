@@ -1,3 +1,4 @@
+<?php http_response_code(404); ?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,13 +16,13 @@
     </div>
     <div class="container">
         <div class="row cont404">
-            <div class="col-sm-4 col-md-4">
-                <div class="lhs404">
+            <div class="col-sm-4 ">
+                <div class="">
                     <h2>Page Not found</h2>
                     <p>and that's the error.</p>
                 </div>
             </div>
-            <div class="col-lg-offset-1 col-sm-7 col-md-7">
+            <div class="col-sm-8">
                 <blockquote>
                     <div class="rhs404">
                         <p>Nothing else to say, <br>

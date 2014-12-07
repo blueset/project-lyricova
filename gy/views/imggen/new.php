@@ -48,7 +48,11 @@
 					</div>
 					<div class="col-sm-6 col-md-6">
 						<label for="font">Font <?=anchor('imggen/help#fonts','<i class="fa fa-info-circle"></i>','style="color:grey;" target="_blank"')?></label>
-						<?=form_dropdown('font', $fontlist, $defaultf, 'class="form-control"');?>
+						<select class="form-control" name="font" id="font">
+                            <?php foreach ($fontlist as $font):?>
+                            <?='<option value="'.$font->name.'">'.$font->caption."</option>"?>
+                            <?php endforeach; ?>
+                        </select>
 						<label for="bgpos">Background Position</label>
 											<?=form_dropdown('bgpos', array('1'=>'Top Left',
 																			'2'=>'Top Center',
