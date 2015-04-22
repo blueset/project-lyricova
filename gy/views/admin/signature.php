@@ -155,6 +155,8 @@ if (!Array.prototype.last){
 var prevCanvas = new fabric.Canvas("preview");
 fabric.Image.fromURL('<?=base_url('img/dyna-bg/'.$settings['bgimg'])?>',function(_img){
     prevCanvas.add(_img);
+    prevCanvas.setWidth(_img.width);
+    prevCanvas.setHeight(_img.height);
     bgimg = _img;
     updateRange();
     initPreview();
@@ -235,6 +237,8 @@ function readValue () {
     metasize = parseInt($("input[name=meta-size]")[0].value);
     metalineh = parseFloat($("input[name=meta-line-height]")[0].value);
     _position = parseInt($("select[name=position]")[0].value);
+    max_size = parseInt($("input[name=max-size]")[0].value);
+    min_size = parseInt($("input[name=min-size]")[0].value);
 
     if (parseInt((_position - 1)/3) == 0) x_offset = _x_offset;
     if (parseInt((_position - 1)/3) == 1) x_offset = bgimg.width - parseInt(boxHeight / 2);

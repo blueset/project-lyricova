@@ -129,8 +129,8 @@ class imggen extends CI_Controller {
       //             $lineh,
       //             "./fonts/DroidSansFallback.ttf",
       //             $meta_str,
-      //             10, 
-      //             25, 
+      //             10,
+      //             25,
       //             "./img/dymn-bg/bg1.png",
       //             "w",
       //             $height,
@@ -140,7 +140,7 @@ class imggen extends CI_Controller {
       //             "tl",
       //             base_url());
       // }
-    
+      // 
   }
   public function help()
   {
