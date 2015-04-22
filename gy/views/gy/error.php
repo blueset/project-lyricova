@@ -10,7 +10,7 @@
 	<div class="hero-unit header">
 		<div class="container">
 			<h1><?=$errmsg?></h1>
-			<p class="lead">This is an error.</p>			
+			<p class="lead">This is an error.</p>
 		</div>
 	</div>
 	<?php $this->load->view('gy/footer');?>

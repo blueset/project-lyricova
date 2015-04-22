@@ -12,7 +12,7 @@
 			<h2>
 				Delete
 				<?php if($errinfo==''){ ?><small> item <?=$post->name?> with ID <?=$post->id?></small><?php }else{ echo '<p class="lead">A critical error has occured. -- the Disappearance<p>';}?>
-			</h2>	
+			</h2>
 			<p class="lead"></p>
 		</div>
 	</div>
@@ -46,11 +46,9 @@
 		<?php if(!$errinfo==''){ ?>
 		<div class="alert alert-error fade in ">
   			<a href="#" class="close" data-dismiss="alert">&times;</a>
-  			<strong>Error!</strong> <?=$errinfo?> 
+  			<strong>Error!</strong> <?=$errinfo?>
 		</div>
 		<?php } ?>
-
-		
 
 
 	</div>

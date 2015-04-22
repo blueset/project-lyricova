@@ -1,26 +1,18 @@
-Project Gy (歌语计划)
+Project Lyricova 
 ==========
 
-<img src="http://1a23.com/wp-content/uploads/2013/06/GyBanner.png" title="A verse, a feeling, a recollection." style="width:100%;height:auto;">
+<img src="http://i.imgur.com/R57IJLM.png" title="A verse, a feeling, a recollection." style="width:100%;height:auto;">
 
-> 【Live Demo: [Eana's Project Gy](http://1a23.com/gy)】
+> 【Live Demo: [Eana's Lyricova](http://1a23.com/lyricova)】
 
 ## Notice
 
-Project Gy is (probably) releasing it's last major version based on Codeigniter. The next version will be based on Lavarus and focused on social function. Currently only bug fixes for version 1.0 is planned.
+Project Lyricova is (probably) releasing it's last major version based on Codeigniter. The next version will be based on Laravel and focused on social function. Currently only bug fixes for version 1.0 is planned.
 
 ## What is 'Project Gy'?
-Project Gy (pronounce as _'Project Gee-Wai'_), a lyric-centered web-log based on PHP and MySQL, created by
-[Blueset Studio](http://1a23.com) with [iBe](http://ilove.1a23.com). (Actually, it's just me.)
+Project Lyricova, is a free and open source blogging tool focused on lyrics based on PHP and MySQL.
 
-This project is inspired by my daily updates with lyrics on sites like Facebook and Twitter.
-I was then thinking about creating a blog program that focus on lyric posting, and this whole thing came to my mind.
-
-Through Project Gy, people can share their thoughts and feelings through existing lyrics,
-and share them with all over the world (just people who can see it *=_=*) by simply type in the lyric and
-some related information.
-
-_\* By lyrics, here I means lyrics as in the songs._
+Whats special about this is that you can share your thoughts and feelings through lyrics, and share them with people all over the world by simply typing into the blog. Gy provides a brand new experience of blogging. Furthermore, it have many other features like generate word-based pictures, and unique dynamic images for forum signatures.
 
 ## Current Version & Changelog
 
@@ -54,5 +46,5 @@ This project is built with help of the following projects:
 
 ## First time using this?
 
-Please refer to Wiki for [installation guide](https://github.com/1a23/project-gy/wiki/Installation).
+Please refer to Wiki for [installation guide](https://github.com/blueset/project-lyricova/wiki/Installation).
 

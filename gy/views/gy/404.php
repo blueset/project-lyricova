@@ -11,7 +11,7 @@
     <div class="header jumbotron">
         <div class="container">
             <h1>Nothing found here at the moment. </h1>
-            <p class="lead">You are in a place that nobody have visited.</p>            
+            <p class="lead">You are in a place that nobody have visited.</p>
         </div>
     </div>
     <div class="container">

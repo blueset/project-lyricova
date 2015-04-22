@@ -1,6 +1,6 @@
 <footer>
 	<div class="container">
-		<p class="text-muted" style="margin: 20px 0;"><a href="http://github.com/1a23/project-gy">Project Gy</a>, a lyric-centered web-log created by <a href="http://1a23.com/404.php">Blueset Studio</a> together with <a href="http://ilove.1a23.com/">iBe</a>.</p>
+		<p class="text-muted" style="margin: 20px 0;"><a href="http://blueset.github.io/project-lyricova/">Project Lyricova</a>, a free and open source blogging tool focused on lyrics created by <a href="http://1a23.com/">Blueset Studio</a> together with <a href="http://ilove.1a23.com/">iBe</a>.</p>
 	</div>
 </footer>
 <script>

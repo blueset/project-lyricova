@@ -455,6 +455,7 @@ class Admin extends CI_Controller {
     $config['allowed_types'] = 'image/png|image/x-png|png';
     $config['file_name'] = 'bg_'.(string)$id;
     $config['max_size'] = '20480';
+    $config['overwrite'] = true;
     $this->load->library('upload', $config);
     if ( !$this->upload->do_upload("bgimg") && $this->upload->display_errors()!=="<p>You did not select a file to upload.</p>"){
       $this->load->view('admin/signature', array_merge($data, array("errormsg" => "Error occured when uploading the background picture. ".$this->upload->display_errors())));

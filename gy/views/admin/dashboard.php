@@ -87,10 +87,9 @@
 									<p class="pull-right"><b>Current Version: </b><?=$this->config->item('current_version');?></p>
 									<blockquote>
 										<p>"A verse, a feeling, a recollection."</p>
-										<small>Project Gy, a lyric-centered web-log.</small>
+										<small>Project Lyricova.</small>
 									</blockquote>
-									<p>Project Gy, a lyric-centered web-log based on PHP and MySQL, created by Blueset Studio with iBe. (Actually, it's just me.)</p>
-									<p>Through Project Gy, people can share their thoughts and feelings through existing lyrics, and share them with all over the world (just people who can see it =_=) by simply type in the lyric and some related information.</p>
+									<p>Whats special about this is that you can share your thoughts and feelings through lyrics, and share them with people all over the world by simply typing into the blog. Lyricova provides a brand new experience of blogging. Furthermore, it have many other features like generate word-based pictures, and unique dynamic images for forum signatures.</p>
 									<div class="clear-fix"></div>
 								</div>
 							</div>

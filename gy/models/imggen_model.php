@@ -215,7 +215,6 @@ class imggen_model extends CI_Model
 
     $setting['textcolor'] = substr($setting['color'],1);
     $setting['size'] = $this->get_dyna_size($setting);
-
     // truncate text
     if ($setting['size'] == $setting['min_size']){
       $max_line = intval(($setting['height']-($setting['metasize']*$setting['metalineh'])/($setting['size']*$setting['lineheight'])));
@@ -224,8 +223,11 @@ class imggen_model extends CI_Model
         $i = 0;
         $count = 0;
         while ($count <= $max_line){
+        // while ($i < 20){
           $i++;
-          $count = strpos($setting['string'],"\n", $count);
+          $setting['string'] = str_replace(array("\r\n","\r","\n"), "\n", $setting['string']);
+          $count = strpos($setting['string'],"\n", $count+1);
+
         }
         $setting['string'] = substr($setting['string'],0,$count);
       }
