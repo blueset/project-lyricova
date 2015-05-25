@@ -1,6 +1,8 @@
 Project Gy (歌语计划)
 ==========
 
+[![Join the chat at https://gitter.im/blueset/project-lyricova](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/blueset/project-lyricova?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 <img src="http://1a23.com/wp-content/uploads/2013/06/GyBanner.png" title="A verse, a feeling, a recollection." style="width:100%;height:auto;">
 
 > 【Live Demo: [Eana's Project Gy](http://1a23.com/gy)】
