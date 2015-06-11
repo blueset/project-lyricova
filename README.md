@@ -9,7 +9,7 @@ Project Lyricova (歌语计划)
 
 ## Notice
 
-Project Lyricova is (probably) releasing it's last major version based on Codeigniter. The next version will be based on Lavarus and focused on social function. Currently only bug fixes for version 1.0 is planned.
+Project Lyricova is (probably) releasing it's last major version based on Codeigniter. The next version will be based on Laravel and focused on social function. Currently only bug fixes for version 1.0 is planned.
 
 ## What is 'Project lyricova'?
 Project Lyricova is a free and open source blogging tool focused on lyrics based on PHP and MySQL.
