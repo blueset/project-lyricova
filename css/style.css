@@ -1,30 +1,501 @@
-h4 small
-{
+body{
+	padding-top: 40px;
+	font-family: "Helvetica Neue",Helvetica,Arial, "Hiragino Sans GB W3", "Hiragino Sans GB", "文泉驿微米黑", "Wenquanyi Micro Hei", "Droid Sans Fallback", "微软雅黑", 'Microsoft Yahei', sans-serif;
+}
+footer{
+	margin-top: 10px;
+	height: 60px;
+    background-color: #f5f5f5;
+}
+.song-box{
+	padding: 10px;
+	border: 1px solid #AAA;
+	box-shadow: 0 0 5px rgba(0,0,0,0.6);
+	margin-bottom:10px;
+	background-color: #fff;
+}
+.song-box .lyric, textarea.lyric{
+	line-height: 1em;
+	font-size: 1.5em;
+}
+.meta span{
+	font-weight: bold;
+	color: #888;
+}
+.meta span:hover{
+	color:#444;
+}
+.header.jumbotron{
+	/*background: url(img/bs-docs-masthead-pattern.png) repeat center center, linear-gradient(45deg, #020031 0%,#6d3353 100%);]*/
+	background: #020031; /* Old browsers */
+	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMTAwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CiAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDIwMDMxIiBzdG9wLW9wYWNpdHk9IjEiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzZkMzM1MyIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-moz-linear-gradient(45deg,  #020031 0%, #6d3353 100%); /* FF3.6+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-webkit-gradient(linear, left bottom, right top, color-stop(0%,#020031), color-stop(100%,#6d3353)); /* Chrome,Safari4+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-webkit-linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* Chrome10+,Safari5.1+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-o-linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* Opera 11.10+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,-ms-linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* IE10+ */
+	background: url(img/bs-docs-masthead-pattern.png) repeat center center,linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#020031', endColorstr='#6d3353',GradientType=1 ); /* IE6-8 fallback on horizontal gradient */
+
+	color:#fff;
+	border-radius: 0;
+}
+.control-group label{
+	padding: 5px 5px 0 0;
+}
+.control-group input, .control-group textarea{
+	margin-bottom:0;
+}
+/**** Transitions ****/
+
+.masonry,
+.masonry .masonry-brick {
+  -webkit-transition-duration: 0.3s;
+     -moz-transition-duration: 0.3s;
+      -ms-transition-duration: 0.3s;
+       -o-transition-duration: 0.3s;
+          transition-duration: 0.3s;
+}
+
+.masonry {
+  -webkit-transition-property: height, width;
+     -moz-transition-property: height, width;
+      -ms-transition-property: height, width;
+       -o-transition-property: height, width;
+          transition-property: height, width;
+}
+
+.masonry .masonry-brick {
+  -webkit-transition-property: left, right, top;
+     -moz-transition-property: left, right, top;
+      -ms-transition-property: left, right, top;
+       -o-transition-property: left, right, top;
+          transition-property: left, right, top;
+}
+/* 404 Page */
+.cont404 .span7{
+	height:340px;
+}
+.cont404 .span4, .cont404 .span7 blockquote{
+	height:340px;
+	display:table;
+}
+.lhs404 {
+	height:340px;
+	text-align: right;
+	display:table-cell; 
+	vertical-align:middle;
+}
+.lhs404 h2{
+	margin:0;
+}
+.rhs404 {
+	display:table-cell; 
+	vertical-align:middle;
+}
+/* Single */
+.jumbotron.single-head{
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+.single-cont .song-box{
+	padding:100px 50px;
+}
+.songb-single-cont{
+	font-size: 3em;
+	line-height: 1em;
+	text-align: center;
+}
+.songb-single-cont .small{
+	font-size: .5em;
+	color:#777;
+	font-style: italic;
+	line-height: 1.2em;
+	padding-top: 1em;
+}
+.songb-hr{
+    margin: 10px -10px;
+    border-top: 1px solid #aaaaaa;
+
+}
+.songb-end-meta{
+    text-align: right;
+    font-style: italic;
     display: block;
-    font-size: 60%;
-    color: #888;
+}
+.infobuttons{
+	float:right;position: absolute;right: 0;display: block;bottom: 0;
+}
+.infobuttons a{
+	color:grey;
+	background: #fff;
+}
+.meta{
+	position: relative;
 }
 
-.mainContent, footer.container {
-    max-width: 900px;
+/* Jumbotron wrapper */
+.admin-jumbotron .page-wrapper {
+    padding: 0 15px;
+}
+@media(min-width:768px) {
+    .admin-jumbotron .page-wrapper {
+        position: inherit;
+        margin: 0 0 0 250px;
+        padding: 0 30px;
+    }
+}
+.admin-jumbotron{
+	padding: 0;
+	margin-bottom: 0;
 }
 
-footer.container {
-    margin-top: 30px;
-    padding: 30px 0;
-    border-top: 1px dashed #aaa;
+#page-wrapper{
+	padding-top: 20px;
 }
-.container{
-    width: 750px;
+
+/* Admin Sidebar */
+.navbar-inverse .navbar-static-side ul li {
+border-bottom: 1px solid #111;
 }
-@media (max-width: 767px) {
-    .sidebar {
-        padding-top: 30px;
-    }
+
+.navbar-inverse .nav>li>a:hover, .navbar-inverse .nav>li>a:focus {
+text-decoration: none;
+background-color: inherit;
+color:#fff;
 }
-@media (min-width: 980px) {
-    body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-        padding-bottom: 40px;
-    }
+
+.navbar-inverse .nav>li>a, .navbar-inverse .nav>li>a {
+text-decoration: none;
+background-color: inherit;
+color:#999;
+}
+
+#wrapper {
+background: #222;
+}
+
+/* ADMIN PANEL FONT SETTINGS */
+
+.font-preview{
+	width: 100%;
+}
+
+/* FILE INPUT STYLING */
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 999px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+input#file-path[readonly] {
+  background-color: white !important;
+  cursor: text !important;
+}
+
+.input-group-btn .fa, .btn .fa{
+	line-height: inherit;
+}
+
+.tab-content{
+	margin-top: 10px;
+}
+
+.top-block {
+font-size: 14px;
+text-align: center;
+padding: 5px;
+margin-bottom: 10px;
+font-weight: bold;
+position: relative;
+display: block;
+line-height: 22px;
+text-shadow: 0 0 1px #DDD;
+text-decoration: none;
+-webkit-box-shadow: inset 0 0 0 1px #FAFAFA;
+-moz-box-shadow: inset 0 0 0 1px #FAFAFA;
+box-shadow: inset 0 0 0 1px #FAFAFA;
+background: -moz-linear-gradient(top, rgba(30,87,153,0.2) 0%, rgba(125,185,232,0) 100%);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(30,87,153,0.2)), color-stop(100%,rgba(125,185,232,0)));
+background: -webkit-linear-gradient(top, rgba(30,87,153,0.2) 0%,rgba(125,185,232,0) 100%);
+background: -o-linear-gradient(top, rgba(30,87,153,0.2) 0%,rgba(125,185,232,0) 100%);
+background: -ms-linear-gradient(top, rgba(30,87,153,0.2) 0%,rgba(125,185,232,0) 100%);
+background: linear-gradient(to bottom, rgba(30,87,153,0.2) 0%,rgba(125,185,232,0) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#331e5799', endColorstr='#007db9e8',GradientType=0 );
+}
+
+/* COLOR TAGS */
+
+AliceBlue { color: AliceBlue; }
+AntiqueWhite { color: AntiqueWhite; }
+Aqua { color: Aqua; }
+Aquamarine { color: Aquamarine; }
+Azure { color: Azure; }
+Beige { color: Beige; }
+Bisque { color: Bisque; }
+Black { color: Black; }
+BlanchedAlmond { color: BlanchedAlmond; }
+Blue { color: Blue; }
+BlueViolet { color: BlueViolet; }
+Brown { color: Brown; }
+BurlyWood { color: BurlyWood; }
+CadetBlue { color: CadetBlue; }
+Chartreuse { color: Chartreuse; }
+Chocolate { color: Chocolate; }
+Coral { color: Coral; }
+CornflowerBlue { color: CornflowerBlue; }
+Cornsilk { color: Cornsilk; }
+Crimson { color: Crimson; }
+Cyan { color: Cyan; }
+DarkBlue { color: DarkBlue; }
+DarkCyan { color: DarkCyan; }
+DarkGoldenRod { color: DarkGoldenRod; }
+DarkGray { color: DarkGray; }
+DarkGreen { color: DarkGreen; }
+DarkKhaki { color: DarkKhaki; }
+DarkMagenta { color: DarkMagenta; }
+DarkOliveGreen { color: DarkOliveGreen; }
+DarkOrange { color: DarkOrange; }
+DarkOrchid { color: DarkOrchid; }
+DarkRed { color: DarkRed; }
+DarkSalmon { color: DarkSalmon; }
+DarkSeaGreen { color: DarkSeaGreen; }
+DarkSlateBlue { color: DarkSlateBlue; }
+DarkSlateGray { color: DarkSlateGray; }
+DarkTurquoise { color: DarkTurquoise; }
+DarkViolet { color: DarkViolet; }
+DeepPink { color: DeepPink; }
+DeepSkyBlue { color: DeepSkyBlue; }
+DimGray { color: DimGray; }
+DodgerBlue { color: DodgerBlue; }
+FireBrick { color: FireBrick; }
+FloralWhite { color: FloralWhite; }
+ForestGreen { color: ForestGreen; }
+Fuchsia { color: Fuchsia; }
+Gainsboro { color: Gainsboro; }
+GhostWhite { color: GhostWhite; }
+Gold { color: Gold; }
+GoldenRod { color: GoldenRod; }
+Gray { color: Gray; }
+Grey { color: Grey; }
+Green { color: Green; }
+GreenYellow { color: GreenYellow; }
+HoneyDew { color: HoneyDew; }
+HotPink { color: HotPink; }
+IndianRed { color: IndianRed; }
+Indigo { color: Indigo; }
+Ivory { color: Ivory; }
+Khaki { color: Khaki; }
+Lavender { color: Lavender; }
+LavenderBlush { color: LavenderBlush; }
+LawnGreen { color: LawnGreen; }
+LemonChiffon { color: LemonChiffon; }
+LightBlue { color: LightBlue; }
+LightCoral { color: LightCoral; }
+LightCyan { color: LightCyan; }
+LightGoldenRodYellow { color: LightGoldenRodYellow; }
+LightGray { color: LightGray; }
+LightGreen { color: LightGreen; }
+LightPink { color: LightPink; }
+LightSalmon { color: LightSalmon; }
+LightSeaGreen { color: LightSeaGreen; }
+LightSkyBlue { color: LightSkyBlue; }
+LightSlateGray { color: LightSlateGray; }
+LightSteelBlue { color: LightSteelBlue; }
+LightYellow { color: LightYellow; }
+Lime { color: Lime; }
+LimeGreen { color: LimeGreen; }
+Linen { color: Linen; }
+Magenta { color: Magenta; }
+Maroon { color: Maroon; }
+MediumAquaMarine { color: MediumAquaMarine; }
+MediumBlue { color: MediumBlue; }
+MediumOrchid { color: MediumOrchid; }
+MediumPurple { color: MediumPurple; }
+MediumSeaGreen { color: MediumSeaGreen; }
+MediumSlateBlue { color: MediumSlateBlue; }
+MediumSpringGreen { color: MediumSpringGreen; }
+MediumTurquoise { color: MediumTurquoise; }
+MediumVioletRed { color: MediumVioletRed; }
+MidnightBlue { color: MidnightBlue; }
+MintCream { color: MintCream; }
+MistyRose { color: MistyRose; }
+Moccasin { color: Moccasin; }
+NavajoWhite { color: NavajoWhite; }
+Navy { color: Navy; }
+OldLace { color: OldLace; }
+Olive { color: Olive; }
+OliveDrab { color: OliveDrab; }
+Orange { color: Orange; }
+OrangeRed { color: OrangeRed; }
+Orchid { color: Orchid; }
+PaleGoldenRod { color: PaleGoldenRod; }
+PaleGreen { color: PaleGreen; }
+PaleTurquoise { color: PaleTurquoise; }
+PaleVioletRed { color: PaleVioletRed; }
+PapayaWhip { color: PapayaWhip; }
+PeachPuff { color: PeachPuff; }
+Peru { color: Peru; }
+Pink { color: Pink; }
+Plum { color: Plum; }
+PowderBlue { color: PowderBlue; }
+Purple { color: Purple; }
+Red { color: Red; }
+RosyBrown { color: RosyBrown; }
+RoyalBlue { color: RoyalBlue; }
+SaddleBrown { color: SaddleBrown; }
+Salmon { color: Salmon; }
+SandyBrown { color: SandyBrown; }
+SeaGreen { color: SeaGreen; }
+SeaShell { color: SeaShell; }
+Sienna { color: Sienna; }
+Silver { color: Silver; }
+SkyBlue { color: SkyBlue; }
+SlateBlue { color: SlateBlue; }
+SlateGray { color: SlateGray; }
+Snow { color: Snow; }
+SpringGreen { color: SpringGreen; }
+SteelBlue { color: SteelBlue; }
+Tan { color: Tan; }
+Teal { color: Teal; }
+Thistle { color: Thistle; }
+Tomato { color: Tomato; }
+Turquoise { color: Turquoise; }
+Violet { color: Violet; }
+Wheat { color: Wheat; }
+White { color: White; }
+WhiteSmoke { color: WhiteSmoke; }
+Yellow { color: Yellow; }
+YellowGreen { color: YellowGreen; }
+
+/* Bootstrap code examples
+-------------------------------------------------- */
+
+/* Base class */
+.imggen-preview {
+  position: relative;
+  margin: 15px 0;
+  /*padding: 39px 19px 14px;
+  *padding-top: 19px;*/
+  background-color: #fff;
+  border: 1px solid #ddd;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+
+/* Echo out a label for the example */
+.imggen-preview:after {
+  content: "Preview";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #9da0a4;
+  -webkit-border-radius: 4px 0 4px 0;
+     -moz-border-radius: 4px 0 4px 0;
+          border-radius: 4px 0 4px 0;
+}
+
+/* Remove spacing between an example and it's code */
+.imggen-preview + .prettyprint {
+  margin-top: -20px;
+  padding-top: 15px;
+}
+
+/* Tweak examples
+------------------------- */
+.imggen-preview > p:last-child {
+  margin-bottom: 0;
+}
+.imggen-preview .table,
+.imggen-preview .progress,
+.imggen-preview .well,
+.imggen-preview .alert,
+.imggen-preview .hero-unit,
+.imggen-preview .pagination,
+.imggen-preview .navbar,
+.imggen-preview > .nav,
+.imggen-preview blockquote {
+  margin-bottom: 5px;
+}
+.imggen-preview .pagination {
+  margin-top: 0;
+}
+
+.fix-height-thumb{
+	height:17em;
+}
+/* Post list */
+/*.post-list 			{width:1000px;}*/
+.post-list .tick 	{width:10px;}
+.post-list .id 		{width:20px;}
+.post-list .name 	{width:15%;}
+.post-list .lyric 	{}
+.post-list .author 	{width:10%;}
+.post-list .action 	{width:22%;}
+.post-list tr 		{max-height:1em;}
+
+/*Media Enq*/
+@media (max-width: 979px){
+	.navbar-fixed-top {
+		margin-bottom: 0px;
+	}
+	body{
+		padding-top: 0px;
+	}
+}
+@media (max-width: 979px) and (min-width: 768px){
+	.single-cont .song-box{
+		padding: 50px 0px;
+	}
+	.songb-single-cont{
+		font-size: 2.5em;
+		line-height: 1em;
+	}
+
+}
+@media (max-width: 767px){
+	body{
+		padding: 0;
+	}
+	.single-cont .song-box{
+		padding: 30px 0px;
+	}
+	.songb-single-cont{
+		font-size: 2em;
+		line-height: 1em;
+	}
+	.container, .navbar .container{
+		padding: 0 10px;
+	}
+	.hero-unit {
+		padding: 60px 20px;
+	}
+	.cont404 .span7, .cont404 .span4, .cont404 .span7 blockquote, .lhs404 {
+		height:auto;
+	}
+	.lhs404{
+		text-align: center;
+	}
 }
