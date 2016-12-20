@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://your.path/to/gy';
+$config['base_url']	= 'https://1a23.com/lyricova';
 
 /*
 |--------------------------------------------------------------------------

@@ -139,12 +139,14 @@ XML;
   }
   public function postcountjson()
   {
+    header("Content-type: application/javascript");
     $callbackstr= isset($_GET['callback']) ? $_GET['callback'] : "callback";
     $number = $this->post_model->get_post_number();
     echo $callbackstr."(".$number.");";
   }
   public function getlyricjson()
   {
+    header("Content-type: application/javascript");
     $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : -1;
     $post_cat = isset($_GET['post_cat']) ? intval($_GET['post_cat']) : 1;
     $callbackstr= isset($_GET['callback']) ? $_GET['callback'] : "callback";
@@ -162,6 +164,7 @@ XML;
   }
   public function getlyricmetajson()
   {
+    header("Content-type: application/javascript");
     $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : -1;
     $callbackstr= isset($_GET['callback']) ? $_GET['callback'] : "callback";
     $meta_str=$this->post_model->get_meta_json($post_id);
