@@ -1,18 +1,20 @@
-Project Lyricova 
+Project Lyricova (歌语计划)
 ==========
+
+[![Join the chat at https://gitter.im/blueset/project-lyricova](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/blueset/project-lyricova?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 <img src="http://i.imgur.com/R57IJLM.png" title="A verse, a feeling, a recollection." style="width:100%;height:auto;">
 
-> 【Live Demo: [Eana's Lyricova](http://1a23.com/lyricova)】
+> 【Live Demo: [Eana's lyricova](http://1a23.com/lyricova)】
 
 ## Notice
 
 Project Lyricova is (probably) releasing it's last major version based on Codeigniter. The next version will be based on Laravel and focused on social function. Currently only bug fixes for version 1.0 is planned.
 
-## What is 'Project Gy'?
-Project Lyricova, is a free and open source blogging tool focused on lyrics based on PHP and MySQL.
+## What is 'Project lyricova'?
+Project Lyricova is a free and open source blogging tool focused on lyrics based on PHP and MySQL.
 
-Whats special about this is that you can share your thoughts and feelings through lyrics, and share them with people all over the world by simply typing into the blog. Gy provides a brand new experience of blogging. Furthermore, it have many other features like generate word-based pictures, and unique dynamic images for forum signatures.
+Whats special about this is that you can share your thoughts and feelings through lyrics, and share them with people all over the world by simply typing into the blog. Lyricova provides a brand new experience of blogging. Furthermore, it have many other features like generate word-based pictures, and unique dynamic images for forum signatures.
 
 ## Current Version & Changelog
 

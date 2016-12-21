@@ -4,7 +4,9 @@
 function mansonry() {
 	$('.container .songbox-row').masonry({
     	// options
-    	itemSelector : '.songbox-cont'/*,
+    	itemSelector : '.songbox-cont',
+	columnWidth: '.songbox-cont',
+  	percentPosition: true/*,
     	columnWidth :  function(containerWidth){
 		   	var columnW=$('.songbox-cont').width();
 			if($(window).width()>=768){columnW=containerWidth/2;}
@@ -16,7 +18,7 @@ function mansonry() {
 }
 
 $('.infobutton').on('click',function () {	
-	$('.container .songbox-row').masonry('reload');
+	$('.container .songbox-row').masonry();
 });
 //Tooltip
 if ($("[data-toggle=tooltip]").length) {
@@ -97,10 +99,10 @@ function togglePlus (button) {
 	$button.html(buttonSign);
 	$($button.data('target')).collapse('toggle')
 							 .on('hidden.bs.collapse', function () {
-								$('.container .songbox-row').masonry('reload');
+								$('.container .songbox-row').masonry();
 							  })
 							 .on('shown.bs.collapse', function () {
-								$('.container .songbox-row').masonry('reload');
+								$('.container .songbox-row').masonry();
 							  });
 	
 }
