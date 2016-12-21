@@ -386,31 +386,6 @@ class Admin extends CI_Controller {
                                             "here"=>"admin/font"));
     }
   }
-  public function testPage()
-  {
-    Header("Content-type: image/png"); 
-    // Create the image
-    $im = imagecreatetruecolor(400, 30);
-
-    // Create some colors
-    $white = imagecolorallocate($im, 255, 255, 255);
-    $black = imagecolorallocate($im, 0, 0, 0);
-    imagefilledrectangle($im, 0, 0, 399, 29, $white);
-
-    // The text to draw
-    $text = 'Testing...';
-    // Replace path by your own font path
-    putenv('GDFONTPATH=' . realpath('.'));
-    $font = './fonts/SourceHanSansCN-Medium';
-
-    // Add the text
-    imagettftext($im, 20, 0, 10, 20, $black, $font, $text);
-
-    // Using imagepng() results in clearer text compared with imagejpeg()
-    imagepng($im);
-    imagedestroy($im);
-    
-  }
   public function signature($id=-1)
   {
     //accessibility check.
@@ -500,7 +475,38 @@ class Admin extends CI_Controller {
 
     $this->load->view('admin/signature',$data);
   }
+  public function category() {
+      //accessibility check.
+      if($this->user_model->access_to("system_admin")!==TRUE){redirect('error/1');die;}
+      $this->load->view("admin/category");
+  }
   // 
   // AJAX apis is written below.
   //
+  public function category_api($id) {
+      if ($this->input->post()){
+          $data = json_decode($this->input->post('data'));
+          $this->post_model->set_category_by_id($id, $data);
+      } else {
+          $pn = $this->post_model->get_prev_next_id($id);
+          if (! $this->post_model->post_exist($id)){
+              $id = $pn[1] ? $pn[1] : $pn[0];
+              $pn = $this->post_model->get_prev_next_id($id);
+          }
+          $post = $this->post_model->get_by_id($id);
+          $cat = $this->post_model->get_category_by_id($id);
+          $artists = $post->artist;
+          $artists .= $post->featuring ? ' feat. '.$post->featuring : '';
+          header ('Content-Type: application/json');
+          echo json_encode([
+              "lyrics" => $post->lyric,
+              "name" => $post->name,
+              "artist" => $artists,
+              "category" => $cat,
+              "id" => $id,
+              "prev" => $pn[0],
+              "next" => $pn[1]
+          ]);
+      }
+  }
 }

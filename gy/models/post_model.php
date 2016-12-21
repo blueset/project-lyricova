@@ -95,7 +95,8 @@ class post_model extends CI_Model {
     'origin' => $this->input->post('origin'),
     'translate' => $this->input->post('translate'),
     'translator' => $this->input->post('translator'),
-    'comment' => $this->input->post('comment')
+    'comment' => $this->input->post('comment'),
+    'time' => mdate('%Y-%m-%d %H:%i:%s',now())
     );
     $this->db->where('id', $id);
     
@@ -128,5 +129,39 @@ class post_model extends CI_Model {
     $query = $this->db->get('posts',$per_page,$offset);
     return $query->result();
   }
+  public function post_exist($id){
+      return $this->db->get_where('posts', ['id' => $id])->num_rows() > 0;
+  }
+    public function get_prev_next_id($id) {
+        $id = intval($id);
+        $this->db->where('id <', $id);
+        $this->db->select_max('id');
+        $prev = $this->db->get('posts');
+        $prev = $prev->num_rows() > 0 ? $prev->row()->id : NULL;
+        $this->db->where('id >', $id);
+        $this->db->select_min('id');
+        $next = $this->db->get('posts');
+        $next = $next->num_rows() > 0 ? $next->row()->id : NULL;
+        return [$prev, $next];
+    }
+    public function get_category_by_id($id) {
+        $cat = $this->db->get_where('postmeta', ["post_id" => $id, "key" => "category"]);
+        if ($cat->num_rows() > 0) {
+            return json_decode($cat->row()->value);
+        }
+        return array();
+    }
+
+    public function set_category_by_id($id, $cats) {
+        $cate_exist = $this->db->get_where('postmeta', ["post_id" => $id, "key" => "category"])->num_rows() > 0;
+        $this->db->set('post_id', $id);
+        $this->db->set('key', 'category');
+        $this->db->set('value', json_encode($cats));
+        if ($cate_exist) {
+            $this->db->where(["post_id" => $id, "key" => "category"]);
+            $this->db->update('postmeta');
+        } else {
+            $this->db->insert("postmeta");
+        }
+    }
 }
-?>

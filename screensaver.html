@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Screensaver / Demo</title>
+    <title>Screensaver</title>
     <link rel="stylesheet" href="css/animate.css">
 </head>
 
@@ -13,7 +13,7 @@
         <div class="lyricline" id="lyric_id">
 
         </div>
-        <div id="credit"><a href="./">Project Gy Screensaver</a>
+        <div id="credit"><a href="./">Project Lyricova Screensaver</a>
         </div>
     </div>
     <style>
@@ -112,7 +112,7 @@
             opacityBase: 1,
             blendStyle: THREE.AdditiveBlending,
 
-            particlesPerSecond: 300,
+            particlesPerSecond: 30,
             particleDeathAge: 4.0,
             emitterDeathAge: 60
         }
@@ -186,9 +186,9 @@
         tickfactor = 2;
         tickMainFactor = 100;
         animationFactor = 0.7;
-        var apiPath = "main/"
+        var apiPath = "https://1a23.com/lyricova/main/"
         var onScreen = [];
-        
+
         var textillateMeta = {
             autoStart: false,
             loop: false,
@@ -319,13 +319,13 @@
                         $("#"+nUnixtime).textillate(textillateEnd);
                         //console.log("maincallback");
                         $("#"+nUnixtime).textillate('out');
-                        
+
                     }
                 };
                 this.obj.textillate(textillateLyric);
 
 
-                
+
                 /*this.obj = setInterval(function () {
                     tickCount += 1;
                     if (tickCount >= lyricLinesTickIn[lyricLinesCountIn]) {
@@ -379,7 +379,7 @@
                 $.getJSON(apiPath + "getlyricmetajson?post_id=" + lyricPostShuffle[0][lyricPostNext] + "&callback=?", function (data) {
                     console.group("%c " + data + " ", "color:white;background:black;text-shadow: white 0 0 5px;");
                     var $lyric_id = $("#lyric_id");
-                    
+
                     $lyric_id.textillate(textillateMeta);
                     $lyric_id.text(data);
                     $lyric_id.textillate('init');
