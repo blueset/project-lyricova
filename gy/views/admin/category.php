@@ -152,7 +152,7 @@
                 xhr.onload = function() {
                     if (xhr.status === 200) {
                         var data = JSON.parse(xhr.responseText);
-                        elem.getElementsByClassName("cate-lrc-lyrics")[0].innerHTML = data.lyrics.replace(/\n/, "<br>");
+                        elem.getElementsByClassName("cate-lrc-lyrics")[0].innerHTML = data.lyrics.replace(/\n/g, "<br>");
                         elem.getElementsByClassName("cate-lrc-name")[0].innerText = data.name;
                         elem.getElementsByClassName("cate-lrc-author")[0].innerText = data.artist;
                         id = parseInt(data.id);
