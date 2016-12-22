@@ -55,11 +55,11 @@
             flex-grow: 1;
             text-align: center;
             font-weight: bold;
-            padding: 2rem 1rem;
+            padding: 2rem .5rem;
             border: 1px solid;
             border-radius: 5px;
             margin: 0.5rem;
-            font-size: 2em;
+            font-size: 1.5em;
         }
 
         .cate-row {
@@ -68,7 +68,7 @@
         }
 
         .cate-prev, .cate-next {
-            height: 17rem;
+            height: 15rem;
             display: flex;
             align-items: center;
             justify-content: center;
