@@ -324,7 +324,7 @@ var match_category = function(cates, allowed){
 
 var load_config = function(){
     if (window.location.hash.length > 1){
-        conf = JSON.parse(window.location.hash.substring(1));
+        conf = JSON.parse(unescape(window.location.hash.substring(1)));
         for (var i in conf){
             window.config[i] = conf[i];
         }
