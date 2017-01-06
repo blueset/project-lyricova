@@ -40,11 +40,20 @@ class Admin extends CI_Controller {
   public function post()
   {
     if($this->user_model->access_to("post") !== TRUE){redirect('error/1');die;}
+
     $this->load->helper ('form');
     $this->load->library('form_validation');
-    $this->form_validation->set_rules('lyric', 'Lyric', 'required');
     $this->form_validation->set_rules('name', 'Song Name', 'required');
     $this->form_validation->set_rules('artist', 'Artist', 'required');
+    $this->form_validation->set_rules('lang', 'Languages', '');
+    $this->form_validation->set_rules('romanize', 'Romanization', '');
+    $this->form_validation->set_rules('featuring', 'Featuring', '');
+    $this->form_validation->set_rules('album', 'Album', '');
+    $this->form_validation->set_rules('main', 'Main', '');
+    $this->form_validation->set_rules('original', 'Original', '');
+    $this->form_validation->set_rules('translator', 'Translator', '');
+    $this->form_validation->set_rules('comment', 'Comment', '');
+    $this->form_validation->set_rules('category', 'Category', '');
     $data['success']=FALSE;
     $data['errinfo']='';
     $logged_in = $this->user_model->logged_in();
@@ -53,6 +62,7 @@ class Admin extends CI_Controller {
     }
     $form_valid=$this->form_validation->run();
     if (($form_valid === FALSE) || !($logged_in===TRUE)){
+
       $this->load->view('admin/post',$data);
     }
     else
@@ -69,13 +79,26 @@ class Admin extends CI_Controller {
       $this->load->helper('form');
       $this->load->library('form_validation');
       //Init Validation
-      $this->form_validation->set_rules('lyric', 'Lyric', 'required');
       $this->form_validation->set_rules('name', 'Song Name', 'required');
       $this->form_validation->set_rules('artist', 'Artist', 'required');
+      $this->form_validation->set_rules('lang', 'Languages', '');
+      $this->form_validation->set_rules('romanize', 'Romanization', '');
+      $this->form_validation->set_rules('featuring', 'Featuring', '');
+      $this->form_validation->set_rules('album', 'Album', '');
+      $this->form_validation->set_rules('main', 'Main', '');
+      $this->form_validation->set_rules('original', 'Original', '');
+      $this->form_validation->set_rules('translator', 'Translator', '');
+      $this->form_validation->set_rules('comment', 'Comment', '');
+      $this->form_validation->set_rules('category', 'Category', '');
       //Init vars
       $data['success']=FALSE;
       $data['errinfo']='';
       $data['post']=$this->post_model->get_by_id($id);
+      $data['language']=json_decode($this->post_model->get_lang_by_id($id), true);
+      $data['category']=$this->post_model->get_category_by_id($id);
+      $data['romanize']=json_decode($this->post_model->get_roman_by_id($id), true);
+      $data['romanize']['zh'] = json_encode($data['romanize']['zh'], JSON_UNESCAPED_UNICODE);
+      $data['romanize']['ja'] = json_encode($data['romanize']['ja'], JSON_UNESCAPED_UNICODE);
       //Post Allowance
       $allow = $this->user_model->access_to("post"); //allow to post?
       if (!$allow===TRUE){
@@ -84,7 +107,7 @@ class Admin extends CI_Controller {
       $own = $this->user_model->is_own($data['post']->user_id);
       if($this->user_model->access_to("edit".$own)!==TRUE){redirect('error/1');die;}
       //var_dump($this->input->post('submit'));
-      $clicked_post = $this->input->post('submit'); // "post" nutton clicked?
+      $clicked_post = $this->input->post('submit'); // "post" button clicked?
       $form_valid=$this->form_validation->run(); // Form validation
       //IF item not exit
       if($data['post']===FALSE){
@@ -97,6 +120,11 @@ class Admin extends CI_Controller {
       {
         $this->post_model->edit_post($id);
         $data['post']=$this->post_model->get_by_id($id);
+        $data['language']=json_decode($this->post_model->get_lang_by_id($id), true);
+        $data['category']=$this->post_model->get_category_by_id($id);
+        $data['romanize']=json_decode($this->post_model->get_roman_by_id($id), true);
+        $data['romanize']['zh'] = json_encode($data['romanize']['zh'], JSON_UNESCAPED_UNICODE);
+        $data['romanize']['ja'] = json_encode($data['romanize']['ja'], JSON_UNESCAPED_UNICODE);
         $data['success'] = TRUE;
         $this->load->view('admin/edit',$data);
       }
@@ -508,5 +536,11 @@ class Admin extends CI_Controller {
               "next" => $pn[1]
           ]);
       }
+  }
+
+    public function romanize_api() {
+        header('Content-Type: text/plain');
+        $res = $this->post_model->romanize($this->input->post("lang"), $this->input->post("text"));
+        echo $res;
   }
 }

@@ -6,26 +6,51 @@ class post_model extends CI_Model {
     $this->load->database();
   }
   public function post_item(){
-  $this->load->helper('url');
-  $this->load->helper('date');
-  $timenow = mdate('%Y-%m-%d %H:%i:%s',now());
-  $data = array(
-    'lyric' => $this->input->post('lyric'),
-    'name' => $this->input->post('name'),
-    'artist' => $this->input->post('artist'),
-    'featuring' => $this->input->post('featuring'),
-    'album' => $this->input->post('album'),
-    'origin' => $this->input->post('origin'),
-    'translate' => $this->input->post('translate'),
-    'translator' => $this->input->post('translator'),
-    'comment' => $this->input->post('comment'),
-    'time' => $timenow,
-    'user_id' => $this->session->userdata['user_id']
-  );
-  
-  $this->db->insert('posts', $data);
-  return $this->db->insert_id();
-}
+      $this->load->helper('url');
+      $this->load->helper('date');
+      $timenow = date("Y-m-d H:i:s");
+      $language = $this->input->post("lang");
+      $language['main'] = $this->input->post("main");
+      $language['orig'] = $this->input->post("original");
+      $romanize = ["zh"=>"[]", "ja"=>"[]"];
+      if (count($language['zh']) > 0){
+          $romanize['zh'] = json_decode($this->romanize('zh', $language['zh']));
+      }
+      if (count($language['ja']) > 0){
+          $romanize['ja'] = json_decode($this->romanize('ja', $language['ja']));
+      }
+      $main = $language[$language['main']];
+      $orig = "";
+      if ($language['main'] != $language['orig']){
+          $orig = $language[$language['orig']];
+      }
+      $trans = "";
+      foreach (["ja", "zh", "en"] as $lcode){
+          if ($lcode != $language['orig'] && $lcode != $language['main']){
+              $trans .= $language[$lcode];
+          }
+      }
+      $data = array(
+        'lyric' => $main,
+        'name' => $this->input->post('name'),
+        'artist' => $this->input->post('artist'),
+        'featuring' => $this->input->post('featuring'),
+        'album' => $this->input->post('album'),
+        'origin' => $orig,
+        'translate' => $trans,
+        'translator' => $this->input->post('translator'),
+        'comment' => $this->input->post('comment'),
+        'time' => $timenow,
+        'user_id' => $this->session->userdata['user_id']
+      );
+
+      $this->db->insert('posts', $data);
+      $id = $this->db->insert_id();
+      $this->set_lang_by_id($id, json_encode($language));
+      $this->set_roman_by_id($id, json_encode($romanize));
+      $this->set_category_by_id($id, $this->input->post('category'));
+      return $id;
+    }
   public function get_post($per_page=20,$offset=0,$user_id=-1){	
 
     $this->db->order_by("id", "desc");
@@ -86,18 +111,46 @@ class post_model extends CI_Model {
   }
   public function edit_post($id)
   {
-    $data = array(
-    'lyric' => $this->input->post('lyric'),
-    'name' => $this->input->post('name'),
-    'artist' => $this->input->post('artist'),
-    'featuring' => $this->input->post('featuring'),
-    'album' => $this->input->post('album'),
-    'origin' => $this->input->post('origin'),
-    'translate' => $this->input->post('translate'),
-    'translator' => $this->input->post('translator'),
-    'comment' => $this->input->post('comment'),
-    'time' => mdate('%Y-%m-%d %H:%i:%s',now())
-    );
+      $timenow = date("Y-m-d H:i:s");
+      $language = $this->input->post("lang");
+      $language['main'] = $this->input->post("main");
+      $language['orig'] = $this->input->post("original");
+      $romanize = ["zh"=>"[]", "ja"=>"[]"];
+      if (count($language['zh']) > 0){
+          $romanize['zh'] = json_decode($this->romanize('zh', $language['zh']));
+      }
+      if (count($language['ja']) > 0){
+          $romanize['ja'] = json_decode($this->romanize('ja', $language['ja']));
+      }
+      $main = $language[$language['main']];
+      $orig = "";
+      if ($language['main'] != $language['orig']){
+          $orig = $language[$language['orig']];
+      }
+      $trans = "";
+      foreach (["ja", "zh", "en"] as $lcode){
+          if ($lcode != $language['orig'] && $lcode != $language['main']){
+              $trans .= $language[$lcode];
+          }
+      }
+      $data = array(
+          'lyric' => $main,
+          'name' => $this->input->post('name'),
+          'artist' => $this->input->post('artist'),
+          'featuring' => $this->input->post('featuring'),
+          'album' => $this->input->post('album'),
+          'origin' => $orig,
+          'translate' => $trans,
+          'translator' => $this->input->post('translator'),
+          'comment' => $this->input->post('comment'),
+          'time' => $timenow,
+          'user_id' => $this->session->userdata['user_id']
+      );
+
+      $this->set_lang_by_id($id, json_encode($language));
+      $this->set_roman_by_id($id, json_encode($romanize));
+      $this->set_category_by_id($id, $this->input->post('category'));
+
     $this->db->where('id', $id);
     
     $this->db->update('posts', $data);
@@ -163,5 +216,85 @@ class post_model extends CI_Model {
         } else {
             $this->db->insert("postmeta");
         }
+    }
+
+    public function get_last_date(){
+        $this->db->order_by("time", 'desc');
+        $post = $this->db->get('posts', 1)->row();
+        return $post->time;
+    }
+
+    public function get_lang_by_id($id){
+        $q = $this->db->get_where('postmeta', ['post_id' => $id, 'key' => 'languages']);
+        if ($q->num_rows() > 0) {
+            return $q->row()->value;
+        }
+        return null;
+    }
+    
+    public function get_lang($timestamp = false){
+        if ($timestamp > 0){
+            $this->db->join("posts", "posts.id = postmeta.post_id");
+            $this->db->where("posts.time >", date("Y-m-d H:i:s", $timestamp));
+        }
+        $q = $this->db->get_where('postmeta', ['key' => 'languages']);
+        $res = [];
+        foreach ($q->result() as $i){
+            $res[$i->post_id] = $i->value;
+        }
+        return $res;
+    }
+
+    public function set_lang_by_id($id, $json){
+        $cate_exist = $this->db->get_where('postmeta', ["post_id" => $id, "key" => "languages"])->num_rows() > 0;
+        $this->db->set('post_id', $id);
+        $this->db->set('key', 'languages');
+        $this->db->set('value', $json);
+        if ($cate_exist) {
+            $this->db->where(["post_id" => $id, "key" => "lanugages"]);
+            $this->db->update('postmeta');
+        } else {
+            $this->db->insert("postmeta");
+        }
+    }
+
+    public function get_roman_by_id($id){
+        $q = $this->db->get_where('postmeta', ['post_id' => $id, 'key' => 'romanize']);
+        if ($q->num_rows() > 0) {
+            return $q->row()->value;
+        }
+        return null;
+    }
+
+    public function get_roman($timestamp = false){
+        if ($timestamp > 0){
+            $this->db->join("posts", "posts.id = postmeta.post_id");
+            $this->db->where("posts.time >", date("Y-m-d H:i:s", $timestamp));
+        }
+        $q = $this->db->get_where('postmeta', ['key' => 'romanize']);
+        $res = [];
+        foreach ($q->result() as $i){
+            $res[$i->post_id] = $i->value;
+        }
+        return $res;
+    }
+
+    public function set_roman_by_id($id, $json){
+        $cate_exist = $this->db->get_where('postmeta', ["post_id" => $id, "key" => "romanize"])->num_rows() > 0;
+        $this->db->set('post_id', $id);
+        $this->db->set('key', 'romanize');
+        $this->db->set('value', $json);
+        if ($cate_exist) {
+            $this->db->where(["post_id" => $id, "key" => "romanize"]);
+            $this->db->update('postmeta');
+        } else {
+            $this->db->insert("postmeta");
+        }
+    }
+
+    public function romanize($lang, $str) {;
+        $cmd = $this->config->item("python_path") . " tr.py ".escapeshellarg($lang)." ".escapeshellarg($str);
+        $res = shell_exec($cmd);
+        return json_encode(json_decode($res), JSON_UNESCAPED_UNICODE);
     }
 }

@@ -499,3 +499,14 @@ YellowGreen { color: YellowGreen; }
 		text-align: center;
 	}
 }
+
+/* New posting form */
+
+.button-row{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+.button-row .btn {
+    flex-grow: 1;
+}

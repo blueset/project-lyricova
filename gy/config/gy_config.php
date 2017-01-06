@@ -32,3 +32,4 @@
  // To get a Disqus short name, please [register](http://disqus.com/admin/create/).
  $config['disqus_sname'] = "";
 
+ $config['python_path'] = "/usr/bin/python3";

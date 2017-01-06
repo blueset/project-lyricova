@@ -31,4 +31,3 @@
  // For more information, please visit [Disqus](http://disqus.com/)
  // To get a Disqus short name, please [register](http://disqus.com/admin/create/).
  $config['disqus_sname'] = "project-gy";
-
