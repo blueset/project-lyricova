@@ -56,15 +56,15 @@
       overflow: hidden;
     }
     .lyrics-body:lang(ja) p,.lyrics-caption:lang(ja){
-      font-family: "LyricovaJa", "YuMincho +36p Kana", serif;
+      font-family: "YuMincho +36p Kana", "LyricovaJa", serif;
       font-weight: 600;
     }
     .lyrics-body:lang(zh) p,.lyrics-caption:lang(zh){
-      font-family: "LyricovaEn", "LyricovaZh", Cormorant, "Songti SC", serif;
+      font-family: Cormorant, "Songti SC", "LyricovaEn", "LyricovaZh", serif;
       font-weight: 600;
     }
     .lyrics-body:lang(en) p,.lyrics-caption:lang(en),.credit{
-      font-family: "LyricovaEn", Cormorant, serif;
+      font-family: Cormorant, "LyricovaEn", serif;
       font-size: 1.2em;
       font-weight: 600;
     }
@@ -210,7 +210,7 @@ window.lyrics = [];
 window.title = "";
 window.category = [];
 window.lyrics_lang = "";
-window.data = {"0":{
+window.data = window.default_data = {"0":{
     "romanize": {
         "ja": [
                 [['信じたものは', 'しんじたものは']],
@@ -239,7 +239,7 @@ window.data = {"0":{
 //     "category": ["core"]
 // }};
 
-window.picker = [["0", "zh"]];
+window.picker = window.default_picker = [["0", "ja"]];
 
 var api_base_path = "../api/";
 
@@ -463,7 +463,6 @@ var anim_en = function(line){
 var prepare_anim_seq = function(){
     window.animationSeq = [];
 
-
     for (var ln of lyrics) {
         window.animationSeq.push([]);
         for (var word of ln) {
@@ -544,18 +543,22 @@ var animate = function(){
 
 var done = function() {
     if (window.picker.length < 1) load_picker();
-    var picked_i = Math.floor(Math.random() * window.picker.length);
-    var picked = window.picker.splice(picked_i, 1)[0];
-    window.title = window.data[picked[0]]['title'];
-    window.category = window.data[picked[0]]['category'];
+    if (Object.keys(window.data).length < 1) {
+        window.picker = window.default_picker;
+        window.data = window.default_data;
+    }
+    var picked_i = Math.floor(Math.random() * picker.length);
+    var picked = picker.splice(picked_i, 1)[0];
+    window.title = data[picked[0]]['title'];
+    window.category = data[picked[0]]['category'];
     window.lyrics_lang = picked[1];
     if (picked[1] == 'en'){
         var lrc = [];
-        for (var i of window.data[picked[0]]['languages']['en'].replace(/<.*?>/g, '').split('\n'))
+        for (var i of data[picked[0]]['languages']['en'].replace(/<.*?>/g, '').split('\n'))
             lrc.push([i]);
         window.lyrics = lrc;
     } else {
-        window.lyrics = window.data[picked[0]]['romanize'][picked[1]];
+        window.lyrics = data[picked[0]]['romanize'][picked[1]];
     }
     prepare_anim_seq();
     window.globalTimer = setInterval(animate, 150);
