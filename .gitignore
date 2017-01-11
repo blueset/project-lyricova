@@ -12,10 +12,8 @@ user_guide/
 
 *.zip
 
-gy/config/development
-gy/config/development/*
 */config/development
-*/config/development/
+*/config/production
 */logs/log-*.php
 */logs/!index.html
 */cache/*
