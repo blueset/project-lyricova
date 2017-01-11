@@ -462,7 +462,7 @@ YellowGreen { color: YellowGreen; }
 		margin-bottom: 0px;
 	}
 	body{
-		padding-top: 0px;
+		/* padding-top: 0px; */
 	}
 }
 @media (max-width: 979px) and (min-width: 768px){
@@ -477,7 +477,7 @@ YellowGreen { color: YellowGreen; }
 }
 @media (max-width: 767px){
 	body{
-		padding: 0;
+		/* padding: 0; */
 	}
 	.single-cont .song-box{
 		padding: 30px 0px;
