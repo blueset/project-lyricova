@@ -13,6 +13,8 @@ class API extends CI_Controller {
         $this->load->model('post_model');
         $this->load->helper('url');
         $this->output->set_header("Access-Control-Allow-Origin: *");
+        $this->output->set_header("Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS");
+        $this->output->set_header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
     }
 
     public function last_update(){
