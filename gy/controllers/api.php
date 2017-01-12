@@ -12,7 +12,7 @@ class API extends CI_Controller {
         parent::__construct();
         $this->load->model('post_model');
         $this->load->helper('url');
-        header("Access-Control-Allow-Origin: *");
+        $this->output->set_header("Access-Control-Allow-Origin: *");
     }
 
     public function last_update(){
