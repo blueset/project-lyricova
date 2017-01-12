@@ -187,15 +187,15 @@
             <script>
                 var romanize_reset = function(lang){
                     return function() {
-                        let text = $("#lang\\[" + lang + "\\]").text();
-                        $("#romanize\\[" + lang + "\\]").text("Loading...");
+                        let text = $("#lang\\[" + lang + "\\]").val();
+                        $("#romanize\\[" + lang + "\\]").val("Loading...");
                         $.ajax(currpath + "admin/romanize_api", {
                             method: "post", data: {
                                 lang: lang,
                                 text: text
                             }
                         }).done(function (result) {
-                            $("#romanize\\[" + lang + "\\]").text(result);
+                            $("#romanize\\[" + lang + "\\]").val(result);
                         });
                     };
                 };
