@@ -20,7 +20,7 @@ class API extends CI_Controller {
     public function last_update(){
         $this->output->set_header("Content-type: application/json");
         $d = new DateTime($this->post_model->get_last_date());
-        echo $d->getTimestamp();
+        $this->output->set_output($d->getTimestamp());
     }
 
     public function get_data(){
@@ -42,7 +42,7 @@ class API extends CI_Controller {
                 "category" => $this->post_model->get_category_by_id($id)];
         }
         $this->output->set_header("Content-type: application/json");
-        echo json_encode($res, JSON_UNESCAPED_UNICODE);
+        $this->output->set_output(json_encode($res, JSON_UNESCAPED_UNICODE));
     }
 
 }
