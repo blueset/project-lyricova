@@ -3,6 +3,7 @@ import jieba
 import pypinyin
 import sys
 import json
+import os
 
 
 def lang_ja(text):
@@ -57,13 +58,14 @@ def lang_zh(text):
     return res
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3 or sys.argv[1] not in ('zh', 'ja'):
-        print("Usage: %s (zh|ja) text" % sys.argv[0])
+    argv = list(map(lambda a: os.fsencode(a).decode(), sys.argv))
+    if len(argv) < 3 or argv[1] not in ('zh', 'ja'):
+        print("Usage: %s (zh|ja) text" % argv[0])
         exit()
-    if sys.argv[1] == 'zh':
+    if argv[1] == 'zh':
         jieba.initialize()
-        print(json.dumps(lang_zh(sys.argv[2])))
-    elif sys.argv[1] == 'ja':
-        print(json.dumps(lang_ja(sys.argv[2])))
+        print(json.dumps(lang_zh(argv[2])))
+    elif argv[1] == 'ja':
+        print(json.dumps(lang_ja(argv[2])))
 else:
     jieba.initialize()
