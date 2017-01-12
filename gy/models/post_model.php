@@ -251,7 +251,7 @@ class post_model extends CI_Model {
         $this->db->set('key', 'languages');
         $this->db->set('value', $json);
         if ($cate_exist) {
-            $this->db->where(["post_id" => $id, "key" => "lanugages"]);
+            $this->db->where(["post_id" => $id, "key" => "languages"]);
             $this->db->update('postmeta');
         } else {
             $this->db->insert("postmeta");
