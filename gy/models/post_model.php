@@ -28,6 +28,7 @@ class post_model extends CI_Model {
       foreach (["ja", "zh", "en"] as $lcode){
           if ($lcode != $language['orig'] && $lcode != $language['main']){
               $trans .= $language[$lcode];
+              if (strlen($trans) > 0) $trans .= "\n";
           }
       }
       $data = array(
@@ -51,7 +52,7 @@ class post_model extends CI_Model {
       $this->set_category_by_id($id, $this->input->post('category'));
       return $id;
     }
-  public function get_post($per_page=20,$offset=0,$user_id=-1){	
+  public function get_post($per_page=20,$offset=0,$user_id=-1){
 
     $this->db->order_by("id", "desc");
     if($user_id !== -1){$this->db->where('user_id', $user_id);}
@@ -94,14 +95,14 @@ class post_model extends CI_Model {
     $meta_str .= strlen($post->featuring) ? " feat. ". $post->featuring : "";
     return $meta_str;
   }
-  
+
 	public function get_post_number($user_id=-1){
     if($user_id !== -1){$this->db->where('user_id', $user_id);}
 		return $this->db->count_all('posts');
 	}
   public function last_post_by_user($id)
   {
-    $this->db->order_by("id", "desc"); 
+    $this->db->order_by("id", "desc");
     $query = $this->db->get_where('posts',array('user_id'=>$id));
     if ($query->num_rows()>0){
       return $query->row();
@@ -131,6 +132,7 @@ class post_model extends CI_Model {
       foreach (["ja", "zh", "en"] as $lcode){
           if ($lcode != $language['orig'] && $lcode != $language['main']){
               $trans .= $language[$lcode];
+              if (strlen($trans) > 0) $trans .= "\n";
           }
       }
       $data = array(
@@ -152,7 +154,7 @@ class post_model extends CI_Model {
       $this->set_category_by_id($id, $this->input->post('category'));
 
     $this->db->where('id', $id);
-    
+
     $this->db->update('posts', $data);
     return 0;
   }
@@ -176,7 +178,7 @@ class post_model extends CI_Model {
     //Generate Query
     $concat = '`comment`,`translator`,`translate`,`origin`,`album`,`featuring`,`artist`,`name`,`lyric`';
     $this->db->like('concat('.$concat.')', $keywords[0]);
-    for ($i=1; $i < $count; $i++) { 
+    for ($i=1; $i < $count; $i++) {
       $this->db->like('concat('.$concat.')', $keywords[$i]);
     }
     $query = $this->db->get('posts',$per_page,$offset);
@@ -231,7 +233,7 @@ class post_model extends CI_Model {
         }
         return null;
     }
-    
+
     public function get_lang($timestamp = false){
         if ($timestamp > 0){
             $this->db->join("posts", "posts.id = postmeta.post_id");
