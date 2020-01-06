@@ -1,52 +1,12 @@
 Project Lyricova (歌语计划)
-==========
+=========================
 
-[![Join the chat at https://gitter.im/blueset/project-lyricova](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/blueset/project-lyricova?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Project Lyricova is a free and open source blogging tool focused on lyrics.
 
-<img src="http://i.imgur.com/R57IJLM.png" title="A verse, a feeling, a recollection." style="width:100%;height:auto;">
+Project Lyricova is currently under the progress of a complete rewrite. The new program will consist of 2 parts: a jukebox + music library manager and a lyrics blog. The new tech stack is planned to be TypeScript + Node.js + MySQL + Express.js + React.
 
-> 【Live Demo: [Eana's lyricova](http://1a23.com/lyricova)】
+For the current version of Project Lyricova released in 2015, see the `v1` branch.
 
-## Notice
-
-Project Lyricova is (probably) releasing it's last major version based on Codeigniter. The next version will be based on Laravel and focused on social function. Currently only bug fixes for version 1.0 is planned.
-
-## What is 'Project lyricova'?
-Project Lyricova is a free and open source blogging tool focused on lyrics based on PHP and MySQL.
-
-Whats special about this is that you can share your thoughts and feelings through lyrics, and share them with people all over the world by simply typing into the blog. Lyricova provides a brand new experience of blogging. Furthermore, it have many other features like generate word-based pictures, and unique dynamic images for forum signatures.
-
-## Current Version & Changelog
-
-Current Version:
-* *1.0 build 20141207*
- * New - Signature Customisation
- * New - Font Management
- * Fix - XSS script errors
- * New - Reconstructed Image Generation Module
-
-> Refer to Changelog.md for more.
-
-## Acknowledgements
-This project is built with help of the following projects:
-
-* [CodeIgniter](https://github.com/EllisLab/CodeIgniter/)
-* [Twitter Bootstrap](https://github.com/twitter/bootstrap)
-* [jQuery](https://github.com/jquery/jquery)
-* [jQuery Masonry](http://masonry.desandro.com/)
-* [Droid Sans Fallback](http://www.droidfonts.com/) from [Google](http://google.com)
-* [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
-* [Start Bootstrap Admin 2](http://startbootstrap.com/sb-admin-v2) Dashboard Theme
-* [Disqus](http://disqus.com/) Commenting system
-* [three.js](http://threejs.org/), JavaScript 3D library
-* [three.js Particle Engine](http://stemkoski.github.io/Three.js/Particle-Engine.html) by [Lee Stemkoski](http://www.adelphi.edu/~stemkoski/)
-* [Textillate.js](https://github.com/jschr/textillate), A simple plugin for CSS3 text animations
-* [Lettering.js](https://github.com/davatron5000/Lettering.js), a jQuery plugin for radical Web
-* [Animate.css](https://github.com/daneden/animate.css), Just-add-water CSS animation
-* [Source Han Sans](https://github.com/adobe-fonts/source-han-sans/), an open source pan-CJK typeface by Adobe and Google.
-* [Fabric.js](http://fabricjs.com/), a powerful and simple Javascript HTML5 canvas library.
-
-## First time using this?
-
-Please refer to Wiki for [installation guide](https://github.com/blueset/project-lyricova/wiki/Installation).
-
+## Project structure
+* `jukebox`: Music library manager and public jukebox.
+* `lyricova`: Lyrics blog (similar to version 1).
