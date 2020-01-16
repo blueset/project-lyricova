@@ -6,7 +6,8 @@ import {
   BaseEntity,
   PrimaryColumn,
   ManyToOne,
-  ManyToMany
+  ManyToMany,
+  PrimaryGeneratedColumn
 } from "typeorm";
 import { Song } from "./Song";
 import { Album } from "./Album";
@@ -14,7 +15,10 @@ import { Playlist } from "./Playlist";
 
 @Entity()
 export class MusicFile extends BaseEntity {
-  @PrimaryColumn({ type: "varchar", length: 65535 })
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: "varchar", length: 768, unique: true })
   path: string;
 
   @Column({ type: "int", unsigned: true })
@@ -40,22 +44,22 @@ export class MusicFile extends BaseEntity {
   )
   playlists: Playlist;
 
-  @Column({ type: "varchar", nullable: true, length: 4096 })
+  @Column({ type: "varchar", nullable: true, length: 1024 })
   trackName: string | null;
 
-  @Column({ type: "varchar", nullable: true, length: 4096 })
+  @Column({ type: "varchar", nullable: true, length: 1024 })
   trackSortOrder: string | null;
 
-  @Column({ type: "varchar", nullable: true, length: 4096 })
+  @Column({ type: "varchar", nullable: true, length: 1024 })
   albumName: string | null;
 
-  @Column({ type: "varchar", nullable: true, length: 4096 })
+  @Column({ type: "varchar", nullable: true, length: 1024 })
   albumSortOrder: string | null;
 
-  @Column({ type: "varchar", nullable: true, length: 4096 })
+  @Column({ type: "varchar", nullable: true, length: 1024 })
   artistName: string | null;
 
-  @Column({ type: "varchar", nullable: true, length: 4096 })
+  @Column({ type: "varchar", nullable: true, length: 1024 })
   artistSortOrder: string | null;
 
   @Column()

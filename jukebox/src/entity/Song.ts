@@ -56,7 +56,7 @@ export class Song extends BaseEntity {
   )
   videos: VideoFile[];
 
-  @Column({ type: "varchar", length: 65535, nullable: true })
+  @Column({ type: "varchar", length: 4096, nullable: true })
   coverPath: string | null;
 
   @OneToMany(

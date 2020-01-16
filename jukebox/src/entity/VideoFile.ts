@@ -5,7 +5,8 @@ import {
   ManyToOne,
   Column,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
+  PrimaryGeneratedColumn
 } from "typeorm";
 import { Song } from "./Song";
 
@@ -21,7 +22,10 @@ export enum VideoType {
 
 @Entity()
 export class VideoFile extends BaseEntity {
-  @PrimaryColumn({ type: "varchar", length: 65535 })
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: "varchar", length: 768, unique: true })
   path: string;
 
   @ManyToOne(
@@ -30,10 +34,10 @@ export class VideoFile extends BaseEntity {
   )
   song: Song;
 
-  @Column({ type: "varchar", length: 4096 })
+  @Column({ type: "varchar", length: 1024 })
   title: string;
 
-  @Column({ type: "varchar", length: 32768, nullable: true })
+  @Column({ type: "varchar", length: 2048, nullable: true })
   sourceUrl: string | null;
 
   @Column({ type: "enum", enum: VideoType, default: VideoType.Other })
