@@ -7,7 +7,8 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToMany
+  ManyToMany,
+  JoinTable
 } from "typeorm";
 import { Song } from "./Song";
 import { User } from "./User";
@@ -32,6 +33,7 @@ export class Entry extends BaseEntity {
     type => Song,
     song => song.lyricovaEntries
   )
+  @JoinTable({ name: "song_of_entry" })
   songs: Song[];
 
   @ManyToOne(type => User)
@@ -44,6 +46,7 @@ export class Entry extends BaseEntity {
     type => Tag,
     tag => tag.entries
   )
+  @JoinTable({ name: "tag_of_entry" })
   tags: Tag[];
 
   @OneToMany(

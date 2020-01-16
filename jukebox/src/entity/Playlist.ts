@@ -1,4 +1,11 @@
-import { Entity, BaseEntity, PrimaryColumn, Column, ManyToMany } from "typeorm";
+import {
+  Entity,
+  BaseEntity,
+  PrimaryColumn,
+  Column,
+  ManyToMany,
+  JoinTable
+} from "typeorm";
 import { MusicFile } from "./MusicFile";
 
 @Entity()
@@ -13,5 +20,6 @@ export class Playlist extends BaseEntity {
     type => MusicFile,
     musicFile => musicFile.playlists
   )
+  @JoinTable({ name: "file_in_playlist" })
   files: MusicFile[];
 }
