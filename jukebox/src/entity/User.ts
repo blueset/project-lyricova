@@ -17,7 +17,7 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: "varchar", length: 256 })
+  @Column({ type: "varchar", length: 256, unique: true })
   username: string;
 
   @Column({ type: "varchar", length: 256 })
@@ -26,7 +26,7 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", length: 256 })
   password: string;
 
-  @Column({ type: "varchar", length: 512 })
+  @Column({ type: "varchar", length: 512, unique: true })
   email: string;
 
   @Column({ type: "enum", enum: UserRole, default: UserRole.GUEST })

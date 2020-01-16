@@ -13,6 +13,7 @@ import { VideoFile } from "./VideoFile";
 import { SongForApiContract } from "vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { SongInAlbum } from "./SongInAlbum";
+import { Entry } from "./Entry";
 
 @Entity()
 export class Song extends BaseEntity {
@@ -62,6 +63,12 @@ export class Song extends BaseEntity {
     musicFile => musicFile.song
   )
   files: MusicFile[];
+
+  @OneToMany(
+    () => Entry,
+    entry => entry.song
+  )
+  lyricovaEntries: Entry[];
 
   @CreateDateColumn()
   createdOn: Date;

@@ -5,9 +5,12 @@ import {
   UpdateDateColumn,
   BaseEntity,
   PrimaryColumn,
-  ManyToOne
+  ManyToOne,
+  ManyToMany
 } from "typeorm";
 import { Song } from "./Song";
+import { Album } from "./Album";
+import { Playlist } from "./Playlist";
 
 @Entity()
 export class MusicFile extends BaseEntity {
@@ -30,6 +33,12 @@ export class MusicFile extends BaseEntity {
     { nullable: true }
   )
   album: Album | null;
+
+  @ManyToMany(
+    type => Playlist,
+    playlist => playlist.files
+  )
+  playlists: Playlist;
 
   @Column({ type: "varchar", nullable: true, length: 4096 })
   trackName: string | null;

@@ -10,6 +10,7 @@ import {
 import { SongInAlbum } from "./SongInAlbum";
 import { AlbumForApiContract } from "vocadb";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
+import { MusicFile } from "./MusicFile";
 
 @Entity()
 export class Album extends BaseEntity {
@@ -33,6 +34,12 @@ export class Album extends BaseEntity {
     artistOfAlbum => artistOfAlbum.album
   )
   artistsOfAlbum: ArtistOfAlbum[];
+
+  @ManyToOne(
+    () => MusicFile,
+    musicFile => musicFile.album
+  )
+  files: MusicFile[];
 
   @Column({ type: "json", nullable: true })
   vocaDbJson: AlbumForApiContract | null;
