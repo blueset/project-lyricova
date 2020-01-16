@@ -6,7 +6,8 @@ import {
   BaseEntity,
   PrimaryColumn,
   ManyToOne,
-  OneToMany
+  OneToMany,
+  ManyToMany
 } from "typeorm";
 import { MusicFile } from "./MusicFile";
 import { VideoFile } from "./VideoFile";
@@ -64,9 +65,9 @@ export class Song extends BaseEntity {
   )
   files: MusicFile[];
 
-  @OneToMany(
+  @ManyToMany(
     () => Entry,
-    entry => entry.song
+    entry => entry.songs
   )
   lyricovaEntries: Entry[];
 

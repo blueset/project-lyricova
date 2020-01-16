@@ -28,12 +28,11 @@ export class Entry extends BaseEntity {
   @Column({ type: "varchar", length: 1024 })
   vocalistsName: string;
 
-  @ManyToOne(
+  @ManyToMany(
     type => Song,
-    song => song.lyricovaEntries,
-    { nullable: true }
+    song => song.lyricovaEntries
   )
-  song: Song | null;
+  songs: Song[];
 
   @ManyToOne(type => User)
   author: User;
