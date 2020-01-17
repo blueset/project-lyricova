@@ -2,19 +2,18 @@ import errorHandler from "errorhandler";
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 
-import app from "./app";
-
-/**
- * Error Handler. Provides full stack - remove for production
- */
-app.use(errorHandler());
+import App from "./app";
 
 createConnection()
-  .then(async connection => {
+  .then(() => {
+    const app = App();
+
     /**
-     * Start Express server.
+     * Error Handler. Provides full stack - remove for production
      */
-    const server = app.listen(app.get("port"), () => {
+    app.use(errorHandler());
+
+    const server = app.listen(app.get("port"), async () => {
       console.log(
         "  App is running at http://localhost:%d in %s mode",
         app.get("port"),
@@ -23,6 +22,6 @@ createConnection()
       console.log("  Press CTRL-C to stop\n");
     });
   })
-  .catch(error => console.log(error));
+  .catch(error => console.log("TypeORM connection error: ", error));
 
 // export default server;

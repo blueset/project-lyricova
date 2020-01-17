@@ -37,6 +37,7 @@
   },
   "homepage": "https://github.com/blueset/project-lyricova#readme",
   "dependencies": {
+    "@types/glob": "^7.1.1",
     "@typescript-eslint/eslint-plugin": "^2.14.0",
     "@typescript-eslint/parser": "^2.14.0",
     "async": "^3.1.0",
@@ -52,6 +53,7 @@
     "express-flash": "0.0.2",
     "express-session": "^1.17.0",
     "express-validator": "^6.3.1",
+    "glob": "^7.1.6",
     "lodash": "^4.17.15",
     "lusca": "^1.6.1",
     "mysql": "^2.17.1",

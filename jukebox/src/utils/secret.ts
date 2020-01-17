@@ -20,3 +20,7 @@ if (!SESSION_SECRET) {
   logger.error("No client secret. Set SESSION_SECRET environment variable.");
   process.exit(1);
 }
+
+export const MUSIC_FILES_PATH = process.env["MUSIC_FILES_PATH"].endsWith("/")
+  ? process.env["MUSIC_FILES_PATH"]
+  : process.env["MUSIC_FILES_PATH"] + "/";

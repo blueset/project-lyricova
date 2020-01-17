@@ -140,7 +140,7 @@ export type VDBArtistForArtistLinkType =
 export interface SongForApiContract {
   additionalNames: string;
   albums?: AlbumContract[];
-  artists?: ArtistsForSongContract[];
+  artists?: ArtistForSongContract[];
   artistString: string;
   createDate: string;
   defaultName: string;
