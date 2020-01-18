@@ -17,7 +17,7 @@ declare module "ffprobe-client" {
     [key: string]: string;
   }
   export interface Metadata {
-    streams?: Stream[];
+    streams: Stream[];
     format?: {
       filename: string;
       format_name: string;
@@ -25,7 +25,6 @@ declare module "ffprobe-client" {
       tags: Tags;
       [key: string]: any;
     };
-    [key: string]: any;
   }
   export default function ffprobe(target: string): Promise<Metadata>;
   export default function ffprobe(
