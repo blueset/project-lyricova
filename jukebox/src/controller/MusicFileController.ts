@@ -17,6 +17,17 @@ export class MusicFileController {
   }
 
   async scan(request: Request, response: Response, next: NextFunction) {
+    /**
+     * Workflow:
+     * - Scan path
+     * - For each file
+     *    - if file not in database -> enrol
+     *    - else:
+     *      - check file size: same -> pass
+     *      - check md5: same -> pass
+     *      - update
+     *      - mark as need to verify
+     */
     const paths = glob.sync(`${MUSIC_FILES_PATH}/**/*.{mp3,flac,aiff,lrc}`, {
       nosort: true,
       nocase: true
