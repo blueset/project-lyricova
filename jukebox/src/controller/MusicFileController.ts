@@ -3,12 +3,10 @@ import { MusicFile } from "../entity/MusicFile";
 import { Request, Response, NextFunction } from "express";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";
-import ffprobe, { Metadata } from "ffprobe-client";
-import { get, filter } from "lodash";
+import ffprobe from "ffprobe-client";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
-import { setFlagsFromString } from "v8";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -98,23 +96,7 @@ export class MusicFileController {
     return entry;
   }
 
-  public scan = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    /**
-     * Workflow:
-     * - Scan path
-     * - Load database
-     * - For each file
-     *    - if file not in database -> enrol
-     *    - else:
-     *      - check file size: same -> pass
-     *      - check md5: same -> pass
-     *      - update
-     *      - mark as need to verify
-     */
+  public scan = async (req: Request, res: Response) => {
     console.log("this", this);
     console.dir(this);
     // Load
@@ -128,10 +110,6 @@ export class MusicFileController {
         nocase: true
       }
     );
-    const lrcPaths = glob.sync(`${MUSIC_FILES_PATH}/**/*.lrc`, {
-      nosort: true,
-      nocase: true
-    });
     const knownPathsSet: Set<string> = new Set(
       databaseEntries.map(entry => entry.path)
     );
