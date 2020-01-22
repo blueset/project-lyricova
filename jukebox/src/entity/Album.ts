@@ -44,6 +44,9 @@ export class Album extends BaseEntity {
   @Column({ type: "json", nullable: true })
   vocaDbJson: AlbumForApiContract | null;
 
+  @Column({ default: true })
+  incomplete: boolean;
+
   @CreateDateColumn()
   createdOn: Date;
 

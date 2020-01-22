@@ -71,6 +71,9 @@ export class Song extends BaseEntity {
   )
   lyricovaEntries: Entry[];
 
+  @Column({ default: true })
+  incomplete: boolean;
+
   @CreateDateColumn()
   createdOn: Date;
 

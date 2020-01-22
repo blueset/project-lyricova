@@ -23,6 +23,8 @@ declare module "ffprobe-client" {
       format_name: string;
       format_long_name: string;
       tags: Tags;
+      duration: string;
+      size: string;
       [key: string]: any;
     };
   }

@@ -68,6 +68,9 @@ export class Artist extends BaseEntity {
   @Column({ type: "json", nullable: true })
   vocaDbJson: ArtistForApiContract | null;
 
+  @Column({ default: true })
+  incomplete: boolean;
+
   @CreateDateColumn()
   createdOn: Date;
 

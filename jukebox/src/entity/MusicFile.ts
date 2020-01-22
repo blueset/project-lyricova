@@ -64,9 +64,17 @@ export class MusicFile extends BaseEntity {
 
   @Column()
   hasLyrics: boolean;
+  @Column()
+  hasCover: boolean;
 
   @Column()
   needReview: boolean;
+
+  @Column({ type: "float", default: -1.0 })
+  duration: number;
+
+  @Column({ type: "varchar", length: 128 })
+  hash: string;
 
   @CreateDateColumn()
   createdOn: Date;
