@@ -55,7 +55,7 @@ export class MusicFileController {
     };
   }
 
-  private async addSong(path: string) {
+  private async addSongEntry(path: string): Promise<MusicFile> {
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
     const metadataPromise = this.getSongMetadata(path);
     const md5 = await md5Promise,
@@ -69,10 +69,10 @@ export class MusicFileController {
       needReview: true,
       ...metadata
     });
-    await this.musicFileRepository.insert(newFile);
+    return newFile;
   }
 
-  private async updateSong(entry: MusicFile): Promise<MusicFile | null> {
+  private async updateSongEntry(entry: MusicFile): Promise<MusicFile | null> {
     let needUpdate = false;
     const path = entry.path;
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
@@ -92,7 +92,6 @@ export class MusicFileController {
       needReview: true,
       ...metadata
     });
-    await this.musicFileRepository.save(entry);
     return entry;
   }
 
@@ -129,9 +128,10 @@ export class MusicFileController {
     // Add new files to database
     const limit = pLimit(10);
 
-    await Promise.all(
-      [...toAdd].map(path => limit(async () => this.addSong(path)))
+    const entriesToAdd = await Promise.all(
+      [...toAdd].map(path => limit(async () => this.addSongEntry(path)))
     );
+    await this.musicFileRepository.save(entriesToAdd, { chunk: 100 });
 
     // update songs into database
     const toUpdateEntries = databaseEntries.filter(entry =>
@@ -139,9 +139,10 @@ export class MusicFileController {
     );
     const updateResults = await Promise.all(
       toUpdateEntries.map(entry =>
-        limit(async () => this.updateSong(entry))
+        limit(async () => this.updateSongEntry(entry))
       )
     );
+    await this.musicFileRepository.save(updateResults.filter(x => x !== null), { chunk: 100 });
 
     const updatedCount = updateResults.reduce(
       (prev, curr) => prev + (curr === null ? 0 : 1),
