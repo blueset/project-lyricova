@@ -15,6 +15,7 @@ import { SongForApiContract } from "vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { SongInAlbum } from "./SongInAlbum";
 import { Entry } from "./Entry";
+import { transliterate } from "../utils/transliterate";
 
 @Entity()
 export class Song extends BaseEntity {
@@ -79,4 +80,19 @@ export class Song extends BaseEntity {
 
   @UpdateDateColumn()
   updatedOn: Date;
+
+  static fromVocaDBEntity(entity: SongForApiContract): Song {
+    const obj = new Song();
+    Object.assign<Song, Partial<Song>>(obj, {
+      id: entity.id,
+      name: entity.name,
+      sortOrder: transliterate(entity.name), // prompt user to check this upon import
+      vocaDbJson: entity,
+      incomplete: false
+      // TODO: More entries here
+    });
+    obj.artistsOfSong = entity.artists.map(x => ArtistOfSong.fromVocaDBEntity(obj, x));
+    obj.songsInAlbum = entity.albums.map(x => SongInAlbum.fromVocaDBAlbumEntity(obj, x));
+    return obj;
+  }
 }

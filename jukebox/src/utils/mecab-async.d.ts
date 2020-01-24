@@ -26,7 +26,7 @@ declare module "mecab-async" {
     public wakachi(str: string, callback: (err: Error, result: string[]) => void): void;
     public wakachiSync(str: string): string[];
     public parseFormat(str: string, callback: (err: Error, result: T[]) => void): void;
-    public parseFormatSync(str: string): T[];
+    public parseSyncFormat(str: string): T[];
 
   }
 }

@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn
 } from "typeorm";
-import { VDBArtistRoleType } from "vocadb";
+import { VDBArtistRoleType, ArtistForSongContract } from "vocadb";
 import { Song } from "./Song";
 import { Artist } from "./Artist";
 
@@ -16,33 +16,19 @@ export class ArtistOfSong extends BaseEntity {
   @PrimaryGeneratedColumn()
   artistOfSongId: number;
 
-  @Column({ type: "int", nullable: true })
+  @Column({ type: "int", nullable: true, unique: true })
   vocaDbId: number | null;
 
   @Column({
-    type: "enum",
-    enum: [
-      "Default",
-      "Animator",
-      "Arranger",
-      "Composer",
-      "Distributor",
-      "Illustrator",
-      "Instrumentalist",
-      "Lyricist",
-      "Mastering",
-      "Publisher",
-      "Vocalist",
-      "VoiceManipulator",
-      "Other",
-      "Mixer",
-      "Chorus",
-      "Encoder",
-      "VocalDataProvider"
-    ],
-    default: "Default"
+    type: "simple-array"
   })
-  artistRole: VDBArtistRoleType;
+  artistRoles: VDBArtistRoleType[];
+
+  @Column({ type: "varchar", length: 4096, nullable: true })
+  customName: string | null;
+
+  @Column({ default: false })
+  isSupport: boolean;
 
   @ManyToOne(
     type => Song,
@@ -61,4 +47,17 @@ export class ArtistOfSong extends BaseEntity {
 
   @UpdateDateColumn()
   updatedOn: Date;
+
+  /** Incomplete build. */
+  static fromVocaDBEntity(song: Song, entity: ArtistForSongContract): ArtistOfSong {
+    const obj = new ArtistOfSong();
+    Object.assign<ArtistOfSong, Partial<ArtistOfSong>>(obj, {
+      vocaDbId: entity.id,
+      artistRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
+      customName: entity.isCustomName ? entity.name : null,
+      isSupport: entity.isSupport,
+      artist: Artist.fromVocaDBArtistContract(entity.artist)
+    });
+    return obj;
+  }
 }

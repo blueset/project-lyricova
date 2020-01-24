@@ -186,12 +186,14 @@ export interface AlbumContract {
 export interface ArtistForSongContract {
   artist: ArtistContract;
   categories: VDBArtistCategoryType;
-  effectiveRoles: VDBArtistRoleType;
+  /** VDBArtistRoleType[].join(", ") */
+  effectiveRoles: string;
   id: number;
   isCustomName: boolean;
   isSupport: boolean;
   name: string;
-  roles: VDBArtistRoleType;
+  /** VDBArtistRoleType[].join(", ") */
+  roles: string;
 }
 export interface LyricsForSongContract {
   cultureCode: string;
@@ -386,10 +388,12 @@ export interface AlbumForApiContract {
 export interface ArtistForAlbumForApiContract {
   artist: ArtistContract;
   categories: VDBArtistCategoryType;
-  effectiveRoles: VDBArtistRoleType;
+  /** VDBArtistRoleType[].join(", ") */
+  effectiveRoles: string;
   isSupport: boolean;
   name: string;
-  roles: VDBArtistRoleType;
+  /** VDBArtistRoleType[].join(", ") */
+  roles: string;
 }
 export interface AlbumDiscPropertiesContract {
   discNumber: number;

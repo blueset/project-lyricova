@@ -9,13 +9,14 @@ import {
 } from "typeorm";
 import { Song } from "./Song";
 import { Album } from "./Album";
+import { AlbumContract } from "vocadb";
 
 @Entity()
 export class SongInAlbum extends BaseEntity {
   @PrimaryGeneratedColumn()
   songInAlbumId: number;
 
-  @Column({ type: "int", nullable: true })
+  @Column({ type: "int", nullable: true, unique: true })
   vocaDbId: number | null;
 
   @Column({ type: "int", nullable: true })
@@ -44,4 +45,15 @@ export class SongInAlbum extends BaseEntity {
 
   @UpdateDateColumn()
   updatedOn: Date;
+
+  /** Incomplete build. */
+  static fromVocaDBAlbumEntity(song: Song, entity: AlbumContract): SongInAlbum {
+    const obj = new SongInAlbum();
+    Object.assign<SongInAlbum, Partial<SongInAlbum>>(obj, {
+      name: song.name,
+      // song: song,
+      album: Album.fromVocaDBAlbumContract(entity)
+    });
+    return obj;
+  }
 }

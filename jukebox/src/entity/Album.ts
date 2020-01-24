@@ -8,9 +8,10 @@ import {
   ManyToOne
 } from "typeorm";
 import { SongInAlbum } from "./SongInAlbum";
-import { AlbumForApiContract } from "vocadb";
+import { AlbumForApiContract, AlbumContract } from "vocadb";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
 import { MusicFile } from "./MusicFile";
+import { transliterate } from "../utils/transliterate";
 
 @Entity()
 export class Album extends BaseEntity {
@@ -52,4 +53,16 @@ export class Album extends BaseEntity {
 
   @UpdateDateColumn()
   updatedOn: Date;
+
+  /** Incomplete build. */
+  static fromVocaDBAlbumContract(entity: AlbumContract): Album {
+    const obj = new Album();
+    Object.assign<Album, Partial<Album>>(obj, {
+      id: entity.id,
+      name: entity.name,
+      sortOrder: transliterate(entity.name),
+      incomplete: true
+    });
+    return obj;
+  }
 }

@@ -8,7 +8,6 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm";
 import { VDBArtistRoleType, VDBArtistCategoryType } from "vocadb";
-import { Song } from "./Song";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
 
@@ -50,18 +49,14 @@ export class ArtistOfAlbum extends BaseEntity {
   artistOfAlbumId: number;
 
   @Column({
-    type: "enum",
-    enum: ROLES,
-    default: "Default"
+    type: "simple-array"
   })
-  roles: VDBArtistRoleType;
+  roles: VDBArtistRoleType[];
 
   @Column({
-    type: "enum",
-    enum: ROLES,
-    default: "Default"
+    type: "simple-array"
   })
-  effectiveRoles: VDBArtistRoleType;
+  effectiveRoles: VDBArtistRoleType[];
 
   @Column({
     type: "enum",
@@ -71,13 +66,13 @@ export class ArtistOfAlbum extends BaseEntity {
   categories: VDBArtistCategoryType;
 
   @ManyToOne(
-    type => Album,
+    () => Album,
     album => album.artistsOfAlbum
   )
   album: Album;
 
   @ManyToOne(
-    type => Artist,
+    () => Artist,
     artist => artist.artistsOfAlbum
   )
   artist: Artist;

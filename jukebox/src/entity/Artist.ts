@@ -8,9 +8,10 @@ import {
   ManyToOne,
   OneToMany
 } from "typeorm";
-import { ArtistForApiContract, VDBArtistCategoryType } from "vocadb";
+import { ArtistForApiContract, ArtistContract, VDBArtistType } from "vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
+import { transliterate } from "../utils/transliterate";
 
 @Entity()
 export class Artist extends BaseEntity {
@@ -26,20 +27,28 @@ export class Artist extends BaseEntity {
   @Column({
     type: "enum",
     enum: [
-      "Nothing",
-      "Vocalist",
+      "Unknown",
+      "Circle",
+      "Label",
       "Producer",
       "Animator",
-      "Label",
-      "Circle",
-      "Other",
-      "Band",
       "Illustrator",
-      "Subject"
+      "Lyricist",
+      "Vocaloid",
+      "UTAU",
+      "CeVIO",
+      "OtherVoiceSynthesizer",
+      "OtherVocalist",
+      "OtherGroup",
+      "OtherIndividual",
+      "Utaite",
+      "Band",
+      "Vocalist",
+      "Character",
     ],
-    default: "Nothing"
+    default: "Unknown"
   })
-  type: VDBArtistCategoryType;
+  type: VDBArtistType;
 
   @ManyToOne(
     () => ArtistOfSong,
@@ -76,4 +85,17 @@ export class Artist extends BaseEntity {
 
   @UpdateDateColumn()
   updatedOn: Date;
+
+  /** incomplete entity */
+  static fromVocaDBArtistContract(artist: ArtistContract): Artist {
+    const obj = new Artist();
+    Object.assign<Artist, Partial<Artist>>(obj, {
+      id: artist.id,
+      name: artist.name,
+      sortOrder: transliterate(artist.name),
+      type: artist.artistType,
+      incomplete: true
+    });
+    return obj;
+  }
 }
