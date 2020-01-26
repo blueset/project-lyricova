@@ -30,13 +30,15 @@ export class Song extends BaseEntity {
 
   @ManyToOne(
     () => ArtistOfSong,
-    artistOfSong => artistOfSong.song
+    artistOfSong => artistOfSong.song,
+    { cascade: ["insert", "update"] }
   )
   artistsOfSong: ArtistOfSong[]; // custom intermediate table
 
   @ManyToOne(
     () => Song,
-    song => song.derivedSongs
+    song => song.derivedSongs,
+    { cascade: ["insert", "update"] }
   )
   original: Song | null;
 
@@ -46,6 +48,11 @@ export class Song extends BaseEntity {
   )
   derivedSongs: Song[];
 
+  @OneToMany(
+    type => SongInAlbum,
+    songInAlbum => songInAlbum.song,
+    { cascade: ["insert", "update"] }
+  )
   songsInAlbum: SongInAlbum[]; // custom intermediate table
 
   @Column({ type: "json", nullable: true })

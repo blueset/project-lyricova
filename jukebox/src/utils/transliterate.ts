@@ -39,7 +39,6 @@ export function transliterate(text: string): string {
     // transliterate as ja
     const words = mecab.parseSyncFormat(text);
     return words.map(x => {
-      console.dir(x);
       if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
         const prefix = x.kanji.substr(0, x.kanji.indexOf(x.original));
         return prefix + kanaToHira(x.reading || x.kanji);

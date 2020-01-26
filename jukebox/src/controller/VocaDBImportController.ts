@@ -51,7 +51,7 @@ export class VocaDBImportController {
     const originalSong = await this.getOriginalSong(song);
     songEntity.original = Song.fromVocaDBEntity(originalSong);
 
-    this.songRepository.save(songEntity);
+    await this.songRepository.save(songEntity);
 
     res.json({ status: "OK", data: songEntity });
   }

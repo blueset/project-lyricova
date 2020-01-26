@@ -96,8 +96,6 @@ export class MusicFileController {
   }
 
   public scan = async (req: Request, res: Response) => {
-    console.log("this", this);
-    console.dir(this);
     // Load
     const databaseEntries = await this.musicFileRepository.find({
       select: ["id", "path", "fileSize", "hash", "hasLyrics"]

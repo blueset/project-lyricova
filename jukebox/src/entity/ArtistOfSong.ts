@@ -38,7 +38,8 @@ export class ArtistOfSong extends BaseEntity {
 
   @ManyToOne(
     type => Artist,
-    artist => artist.artistsOfSong
+    artist => artist.artistsOfSong,
+    { cascade: ["insert", "update"] }
   )
   artist: Artist;
 

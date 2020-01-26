@@ -64,7 +64,8 @@ export class Artist extends BaseEntity {
 
   @ManyToOne(
     () => Artist,
-    artist => artist.derivedVoiceBank
+    artist => artist.derivedVoiceBank,
+    { cascade: ["insert", "update"] }
   )
   baseVoiceBank: Artist | null;
 

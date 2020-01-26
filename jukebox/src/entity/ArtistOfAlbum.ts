@@ -67,13 +67,15 @@ export class ArtistOfAlbum extends BaseEntity {
 
   @ManyToOne(
     () => Album,
-    album => album.artistsOfAlbum
+    album => album.artistsOfAlbum,
+    { cascade: ["insert", "update"] }
   )
   album: Album;
 
   @ManyToOne(
     () => Artist,
-    artist => artist.artistsOfAlbum
+    artist => artist.artistsOfAlbum,
+    { cascade: ["insert", "update"] }
   )
   artist: Artist;
 
