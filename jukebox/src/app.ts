@@ -7,7 +7,7 @@ import passport from "passport";
 
 import registerRoutes from "./routes";
 import { SESSION_SECRET } from "./utils/secret";
-import sequelize from "./models";
+import sequelize from "./db";
 import SequelizeStoreConstructor from "connect-session-sequelize";
 
 const SequelizeStore = SequelizeStoreConstructor(session.Store);

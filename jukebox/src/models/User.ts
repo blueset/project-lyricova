@@ -3,9 +3,9 @@ import { DataTypes } from "sequelize";
 
 @Table
 export class User extends Model<User> {
-  @Column({ type: new DataTypes.INTEGER })
-  @PrimaryKey
   @AutoIncrement
+  @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   id: number;
 
   @Column({ type: new DataTypes.STRING(256), unique: true })
@@ -20,8 +20,8 @@ export class User extends Model<User> {
   @Column({ type: new DataTypes.STRING(512), unique: true })
   email: string;
 
-  @Column({ type: new DataTypes.ENUM("admin", "guest") })
   @Default("guest")
+  @Column({ type: new DataTypes.ENUM("admin", "guest") })
   role: "admin" | "guest";
 
   @Column({ type: new DataTypes.STRING(256) })

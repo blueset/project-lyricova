@@ -6,9 +6,9 @@ import { Tag } from "./Tag";
 @Table
 export class TagOfEntry extends Model<TagOfEntry> {
 
-  @Column({ type: new DataTypes.INTEGER })
   @AutoIncrement
   @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   public id!: number;
 
   @ForeignKey(() => Tag)
@@ -24,8 +24,5 @@ export class TagOfEntry extends Model<TagOfEntry> {
 
   @UpdatedAt
   updatedOn: Date;
-
-  @DeletedAt
-  deletionDate: Date;
 
 }

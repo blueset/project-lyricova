@@ -10,8 +10,8 @@ import { Album } from "./Album";
 
 @Table
 export class Artist extends Model<Artist> {
-  @Column({ type: new DataTypes.INTEGER })
   @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   id: number;
 
   @Column({ type: new DataTypes.STRING(4096) })
@@ -52,8 +52,8 @@ export class Artist extends Model<Artist> {
   albums: Array<Album & { ArtistOfAlbum: ArtistOfAlbum }>;
 
   @ForeignKey(type => Artist)
-  @Column({ type: DataTypes.INTEGER })
   @AllowNull
+  @Column({ type: DataTypes.INTEGER })
   public baseVoiceBankId!: number | null;
 
   @BelongsTo(type => Artist, "baseVoiceBankId")
@@ -62,12 +62,12 @@ export class Artist extends Model<Artist> {
   @HasMany(type => Artist, "baseVoiceBankId")
   public readonly derivedVoiceBanks: Artist[];
 
-  @Column({ type: DataTypes.JSON })
   @AllowNull
+  @Column({ type: DataTypes.JSON })
   vocaDbJson: ArtistForApiContract | null;
 
-  @Column({ type: DataTypes.BOOLEAN })
   @Default(true)
+  @Column({ type: DataTypes.BOOLEAN })
   incomplete: boolean;
 
   @CreatedAt
@@ -81,13 +81,11 @@ export class Artist extends Model<Artist> {
 
   /** incomplete entity */
   static fromVocaDBArtistContract(artist: ArtistContract): Artist {
-    const obj = new Artist();
-    Object.assign<Artist, Partial<Artist>>(obj, {
+    const obj = Artist.build({
       id: artist.id,
       name: artist.name,
       sortOrder: transliterate(artist.name),
-      type: artist.artistType,
-      incomplete: true
+      type: artist.artistType
     });
     return obj;
   }

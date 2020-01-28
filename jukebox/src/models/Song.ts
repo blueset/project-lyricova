@@ -6,6 +6,7 @@ import { SongInAlbum } from "./SongInAlbum";
 import { Entry } from "./Entry";
 import { transliterate } from "../utils/transliterate";
 import { DataTypes } from "sequelize";
+import { Includeable } from "sequelize/types";
 import { Model, CreatedAt, UpdatedAt, DeletedAt, Column, Table, BelongsTo, PrimaryKey, ForeignKey, HasMany, AllowNull, BelongsToMany } from "sequelize-typescript";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
@@ -13,8 +14,8 @@ import { SongOfEntry } from "./SongOfEntry";
 
 @Table
 export class Song extends Model<Song> {
-  @Column({ type: new DataTypes.INTEGER })
   @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   public id!: number;
 
   @Column({ type: new DataTypes.STRING(4096) })
@@ -35,27 +36,27 @@ export class Song extends Model<Song> {
   )
   albums: Array<Album & { SongInAlbum: SongInAlbum }>;
 
+  @AllowNull
   @ForeignKey(type => Song)
   @Column({ type: DataTypes.INTEGER })
-  @AllowNull
-  public originalId!: number | null;
+  originalId!: number | null;
 
   @BelongsTo(type => Song, "originalId")
-  public original: Song | null;
+  original: Song | null;
 
   @HasMany(type => Song, "originalId")
-  public readonly derivedSongs: Song[];
+  readonly derivedSongs: Song[];
 
-  @Column({ type: DataTypes.JSON })
   @AllowNull
-  public vocaDbJson!: SongForApiContract | null;
+  @Column({ type: DataTypes.JSON })
+  vocaDbJson!: SongForApiContract | null;
 
   @HasMany(() => VideoFile)
   videos: VideoFile[];
 
-  @Column({ type: new DataTypes.STRING(4096) })
   @AllowNull
-  public coverPath!: string | null;
+  @Column({ type: new DataTypes.STRING(4096) })
+  coverPath!: string | null;
 
   @HasMany(() => MusicFile)
   files: MusicFile[];
@@ -64,7 +65,7 @@ export class Song extends Model<Song> {
   lyricovaEntries: Array<Entry & { SongOfEntry: SongOfEntry }>;
 
   @Column({ type: DataTypes.BOOLEAN, defaultValue: true })
-  public incomplete!: boolean;
+  incomplete!: boolean;
 
   @CreatedAt
   creationDate: Date;
@@ -75,18 +76,22 @@ export class Song extends Model<Song> {
   @DeletedAt
   deletionDate: Date;
 
-  // static fromVocaDBEntity(entity: SongForApiContract): Song {
-  //   const obj = new Song();
-  //   Object.assign<Song, Partial<Song>>(obj, {
-  //     id: entity.id,
-  //     name: entity.name,
-  //     sortOrder: transliterate(entity.name), // prompt user to check this upon import
-  //     vocaDbJson: entity,
-  //     incomplete: false
-  //     // TODO: More entries here
-  //   });
-  //   obj.artistsOfSong = entity.artists.map(x => ArtistOfSong.fromVocaDBEntity(obj, x));
-  //   obj.songsInAlbum = entity.albums.map(x => SongInAlbum.fromVocaDBAlbumEntity(obj, x));
-  //   return obj;
-  // }
+  static async saveFromVocaDBEntity(entity: SongForApiContract, original: Song | null): Promise<Song> {
+    const include: Includeable[] = [Artist, Album];
+    if (original !== null) {
+      include.push({ model: Song, as: "original" });
+    }
+    return Song.build({
+      id: entity.id,
+      name: entity.name,
+      sortOrder: transliterate(entity.name), // prompt user to check this upon import
+      vocaDbJson: entity,
+      incomplete: false,
+      artists: entity.artists.map(x => ArtistOfSong.artistFromVocaDB(x)),
+      albums: entity.albums.map(x => SongInAlbum.albumFromVocaDB(entity, x)),
+      original: original
+    }, {
+      include: include
+    });
+  }
 }

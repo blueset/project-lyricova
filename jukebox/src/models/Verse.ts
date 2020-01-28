@@ -1,14 +1,13 @@
 
 import { Entry } from "./Entry";
-import { Model, PrimaryKey, Table, Column, AutoIncrement, CreatedAt, UpdatedAt, DeletedAt } from "sequelize-typescript";
+import { Model, PrimaryKey, Table, Column, AutoIncrement, CreatedAt, UpdatedAt, DeletedAt, BelongsTo, ForeignKey } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
-import { ManyToOne } from "typeorm";
 
 @Table
 export class Verse extends Model<Verse> {
-  @Column({ type: new DataTypes.INTEGER })
-  @PrimaryKey
   @AutoIncrement
+  @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   id: number;
 
   @Column({ type: new DataTypes.STRING(64) })
@@ -32,10 +31,11 @@ export class Verse extends Model<Verse> {
   @Column({ type: DataTypes.JSON })
   typingSequence: string;
 
-  @ManyToOne(
-    () => Entry,
-    entry => entry.verses
-  )
+  @ForeignKey(() => Entry)
+  @Column
+  entryId: number;
+
+  @BelongsTo(() => Entry)
   entry: Entry;
 
   @CreatedAt

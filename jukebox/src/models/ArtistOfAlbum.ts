@@ -40,9 +40,9 @@ const CATEGORIES = [
 
 @Table
 export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
-  @Column({ type: new DataTypes.INTEGER })
-  @PrimaryKey
   @AutoIncrement
+  @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   artistOfAlbumId: number;
 
   @Column({
@@ -55,10 +55,10 @@ export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
   })
   effectiveRoles: VDBArtistRoleType[];
 
+  @Default("Nothing")
   @Column({
     type: DataTypes.ENUM(...CATEGORIES)
   })
-  @Default("Nothing")
   categories: VDBArtistCategoryType;
 
   @BelongsTo(type => Album)
@@ -80,7 +80,4 @@ export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
 
   @UpdatedAt
   updatedOn: Date;
-
-  @DeletedAt
-  deletionDate: Date;
 }

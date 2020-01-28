@@ -3,20 +3,14 @@ import { MusicFile } from "../models/MusicFile";
 import { Song } from "../models/Song";
 import { Album } from "../models/Album";
 import { Artist } from "../models/Artist";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { SongForApiContract } from "vocadb";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 
 export class VocaDBImportController {
-  private musicFileRepository: Repository<MusicFile>;
-  private songRepository: Repository<Song>;
-  private albumRepository: Repository<Album>;
-  private artistRepository: Repository<Artist>;
   private axios: AxiosInstance;
 
   constructor() {
-    this.musicFileRepository = getRepository(MusicFile);
-    this.songRepository = getRepository(Song);
     this.axios = axios.create({ responseType: "json" });
   }
 
@@ -41,18 +35,21 @@ export class VocaDBImportController {
     return song;
   }
 
-  public enrolSong = async (req: Request, res: Response) => {
-    const songId = req.params.id;
-    // Fetch song data
-    const song = await this.getSong(songId);
-    const songEntity = Song.fromVocaDBEntity(song);
+  public enrolSong = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const songId = req.params.id;
+      // Fetch song data
+      const song = await this.getSong(songId);
+      // Recursively get original song
+      const originalSong = await this.getOriginalSong(song);
+      let originalSongEntity: Song | null = null;
+      if (originalSong !== null) {
+        originalSongEntity = await Song.saveFromVocaDBEntity(originalSong, null);
+      }
+      const songEntity = await Song.saveFromVocaDBEntity(song, originalSongEntity);
+      const outcome = await songEntity.save();
 
-    // Recursively get original song
-    const originalSong = await this.getOriginalSong(song);
-    songEntity.original = Song.fromVocaDBEntity(originalSong);
-
-    await this.songRepository.save(songEntity);
-
-    res.json({ status: "OK", data: songEntity });
+      res.json({ status: "OK", data: outcome });
+    } catch (e) { next(e); }
   }
 }

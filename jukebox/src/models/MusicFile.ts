@@ -7,26 +7,27 @@ import { FileInPlaylist } from "./FileInPlaylist";
 
 @Table
 export class MusicFile extends Model<MusicFile> {
-  @Column({ type: new DataTypes.INTEGER })
   @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   id: number;
 
   @Column({ type: new DataTypes.STRING(768), unique: true })
   path: string;
 
-  @Column({ type: new DataTypes.INTEGER.UNSIGNED })
+  @Column({ type: DataTypes.INTEGER.UNSIGNED })
   fileSize: number;
 
+  @AllowNull
   @ForeignKey(() => Song)
   @Column({ type: new DataTypes.INTEGER })
-  @AllowNull
   songId: number;
 
   @BelongsTo(() => Song)
   song: Song | null;
 
-  @ForeignKey(() => Album)
   @AllowNull
+  @ForeignKey(() => Album)
+  @Column
   albumId: number;
 
   @BelongsTo(() => Album)
@@ -38,32 +39,33 @@ export class MusicFile extends Model<MusicFile> {
   )
   playlists: Playlist[];
 
-  @Column({ type: new DataTypes.STRING(1024) })
   @AllowNull
+  @Column({ type: new DataTypes.STRING(1024) })
   trackName: string | null;
 
-  @Column({ type: new DataTypes.STRING(1024) })
   @AllowNull
+  @Column({ type: new DataTypes.STRING(1024) })
   trackSortOrder: string | null;
 
-  @Column({ type: new DataTypes.STRING(1024) })
   @AllowNull
+  @Column({ type: new DataTypes.STRING(1024) })
   albumName: string | null;
 
-  @Column({ type: new DataTypes.STRING(1024) })
   @AllowNull
+  @Column({ type: new DataTypes.STRING(1024) })
   albumSortOrder: string | null;
 
-  @Column({ type: new DataTypes.STRING(1024) })
   @AllowNull
+  @Column({ type: new DataTypes.STRING(1024) })
   artistName: string | null;
 
-  @Column({ type: new DataTypes.STRING(1024) })
   @AllowNull
+  @Column({ type: new DataTypes.STRING(1024) })
   artistSortOrder: string | null;
 
   @Column
   hasLyrics: boolean;
+
   @Column
   hasCover: boolean;
 
@@ -81,7 +83,4 @@ export class MusicFile extends Model<MusicFile> {
 
   @UpdatedAt
   updatedOn: Date;
-
-  @DeletedAt
-  deletionDate: Date;
 }

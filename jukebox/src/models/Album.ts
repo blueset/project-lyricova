@@ -10,8 +10,8 @@ import { DataTypes } from "sequelize";
 
 @Table
 export class Album extends Model<Album> {
-  @Column({ type: new DataTypes.INTEGER })
   @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   id: number;
 
   @Column({ type: new DataTypes.STRING(4096) })
@@ -37,12 +37,12 @@ export class Album extends Model<Album> {
   )
   files: MusicFile[];
 
-  @Column({ type: DataTypes.JSON })
   @AllowNull
+  @Column({ type: DataTypes.JSON })
   vocaDbJson: AlbumForApiContract | null;
 
-  @Column({ type: DataTypes.BOOLEAN })
   @Default(true)
+  @Column({ type: DataTypes.BOOLEAN })
   incomplete: boolean;
 
   @CreatedAt

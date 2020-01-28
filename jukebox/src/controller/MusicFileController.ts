@@ -7,6 +7,8 @@ import ffprobe from "ffprobe-client";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
+import { Op } from "sequelize";
+import chunkArray from "../utils/chunkArray";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -30,11 +32,6 @@ interface GenericMetadata {
 }
 
 export class MusicFileController {
-  private musicFileRepository: Repository<MusicFile>;
-
-  constructor() {
-    this.musicFileRepository = getRepository(MusicFile);
-  }
 
   private async getSongMetadata(path: string): Promise<GenericMetadata> {
     const metadata = await ffprobe(path);
@@ -62,7 +59,7 @@ export class MusicFileController {
       metadata = await metadataPromise;
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
     const hasLyrics = fs.existsSync(lrcPath);
-    const newFile = this.musicFileRepository.create({
+    const newFile = MusicFile.build({
       path: path,
       hasLyrics: hasLyrics,
       hash: md5,
@@ -84,7 +81,7 @@ export class MusicFileController {
     if (!needUpdate) return null;
 
     const metadata = await this.getSongMetadata(path);
-    entry = this.musicFileRepository.merge(entry, {
+    entry = await entry.update({
       path: path,
       hasLyrics: hasLyrics,
       fileSize: fileSize,
@@ -95,65 +92,67 @@ export class MusicFileController {
     return entry;
   }
 
-  public scan = async (req: Request, res: Response) => {
-    // Load
-    const databaseEntries = await this.musicFileRepository.find({
-      select: ["id", "path", "fileSize", "hash", "hasLyrics"]
-    });
-    const filePaths = glob.sync(
-      `${MUSIC_FILES_PATH}/**/*.{mp3,flac,aiff}`,
-      {
-        nosort: true,
-        nocase: true
-      }
-    );
-    const knownPathsSet: Set<string> = new Set(
-      databaseEntries.map(entry => entry.path)
-    );
-    const filePathsSet: Set<string> = new Set(filePaths);
-
-    const toAdd = setDifference(filePathsSet, knownPathsSet);
-    const toUpdate = setUnion(knownPathsSet, filePathsSet);
-    const toDelete = setDifference(knownPathsSet, filePathsSet);
-
-    // Remove records from database for removed files
-    if (toDelete.size) {
-      await this.musicFileRepository.delete({
-        path: In([...toDelete])
+  public scan = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Load
+      const databaseEntries = await MusicFile.findAll({
+        attributes: ["id", "path", "fileSize", "hash", "hasLyrics"]
       });
-    }
+      const filePaths = glob.sync(
+        `${MUSIC_FILES_PATH}/**/*.{mp3,flac,aiff}`,
+        {
+          nosort: true,
+          nocase: true
+        }
+      );
+      const knownPathsSet: Set<string> = new Set(
+        databaseEntries.map(entry => entry.path)
+      );
+      const filePathsSet: Set<string> = new Set(filePaths);
 
-    // Add new files to database
-    const limit = pLimit(10);
+      const toAdd = setDifference(filePathsSet, knownPathsSet);
+      const toUpdate = setUnion(knownPathsSet, filePathsSet);
+      const toDelete = setDifference(knownPathsSet, filePathsSet);
 
-    const entriesToAdd = await Promise.all(
-      [...toAdd].map(path => limit(async () => this.addSongEntry(path)))
-    );
-    await this.musicFileRepository.save(entriesToAdd, { chunk: 100 });
-
-    // update songs into database
-    const toUpdateEntries = databaseEntries.filter(entry =>
-      toUpdate.has(entry.path)
-    );
-    const updateResults = await Promise.all(
-      toUpdateEntries.map(entry =>
-        limit(async () => this.updateSongEntry(entry))
-      )
-    );
-    await this.musicFileRepository.save(updateResults.filter(x => x !== null), { chunk: 100 });
-
-    const updatedCount = updateResults.reduce(
-      (prev, curr) => prev + (curr === null ? 0 : 1),
-      0
-    );
-    res.send({
-      status: "ok",
-      data: {
-        added: toAdd.size,
-        deleted: toDelete.size,
-        updated: updatedCount,
-        unchanged: toUpdate.size - updatedCount
+      // Remove records from database for removed files
+      if (toDelete.size) {
+        await MusicFile.destroy({ where: { path: { [Op.in]: [...toDelete] } } });
       }
-    });
+
+      // Add new files to database
+      const limit = pLimit(10);
+
+      const entriesToAdd = await Promise.all(
+        [...toAdd].map(path => limit(async () => this.addSongEntry(path)))
+      );
+
+      for (const chunk of chunkArray(entriesToAdd)) {
+        await MusicFile.bulkCreate(chunk);
+      }
+
+      // update songs into database
+      const toUpdateEntries = databaseEntries.filter(entry =>
+        toUpdate.has(entry.path)
+      );
+      const updateResults = await Promise.all(
+        toUpdateEntries.map(entry =>
+          limit(async () => this.updateSongEntry(entry))
+        )
+      );
+
+      const updatedCount = updateResults.reduce(
+        (prev: number, curr) => prev + (curr === null ? 0 : 1),
+        0
+      ) as number;
+      res.send({
+        status: "ok",
+        data: {
+          added: toAdd.size,
+          deleted: toDelete.size,
+          updated: updatedCount,
+          unchanged: toUpdate.size - updatedCount
+        }
+      });
+    } catch (e) { next(e); }
   };
 }

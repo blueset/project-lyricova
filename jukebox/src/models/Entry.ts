@@ -10,9 +10,9 @@ import { TagOfEntry } from "./TagOfEntry";
 
 @Table
 export class Entry extends Model<Entry> {
-  @Column({ type: new DataTypes.INTEGER })
-  @PrimaryKey
   @AutoIncrement
+  @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   id: number;
 
   @Column({ type: new DataTypes.STRING(512) })

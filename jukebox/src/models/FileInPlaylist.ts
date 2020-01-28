@@ -6,9 +6,9 @@ import { Playlist } from "./Playlist";
 @Table
 export class FileInPlaylist extends Model<FileInPlaylist> {
 
-  @Column({ type: new DataTypes.INTEGER })
   @AutoIncrement
   @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   public id!: number;
 
   @ForeignKey(() => MusicFile)
@@ -24,8 +24,5 @@ export class FileInPlaylist extends Model<FileInPlaylist> {
 
   @UpdatedAt
   updatedOn: Date;
-
-  @DeletedAt
-  deletionDate: Date;
 
 }

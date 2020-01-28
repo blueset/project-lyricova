@@ -5,8 +5,8 @@ import { FileInPlaylist } from "./FileInPlaylist";
 
 @Table
 export class Playlist extends Model<Playlist> {
-  @Column({ type: new DataTypes.STRING(512) })
   @PrimaryKey
+  @Column({ type: new DataTypes.STRING(512) })
   slug: string;
 
   @Column({ type: new DataTypes.STRING(1024) })

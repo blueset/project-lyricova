@@ -6,8 +6,8 @@ import { TagOfEntry } from "./TagOfEntry";
 
 @Table
 export class Tag extends Model<Tag> {
-  @Column({ type: new DataTypes.STRING(512) })
   @PrimaryKey
+  @Column({ type: new DataTypes.STRING(512) })
   slug: string;
 
   @Column({ type: new DataTypes.STRING(1024) })

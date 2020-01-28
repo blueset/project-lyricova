@@ -6,9 +6,9 @@ import { Entry } from "./Entry";
 @Table
 export class SongOfEntry extends Model<SongOfEntry> {
 
-  @Column({ type: new DataTypes.INTEGER })
   @AutoIncrement
   @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   public id!: number;
 
   @ForeignKey(() => Song)
@@ -24,8 +24,5 @@ export class SongOfEntry extends Model<SongOfEntry> {
 
   @UpdatedAt
   updatedOn: Date;
-
-  @DeletedAt
-  deletionDate: Date;
 
 }

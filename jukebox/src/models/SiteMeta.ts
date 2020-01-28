@@ -4,8 +4,8 @@ import { DataTypes } from "sequelize";
 
 @Table
 export class SiteMeta extends Model<SiteMeta> {
-  @Column({ type: new DataTypes.STRING(768) })
   @PrimaryKey
+  @Column({ type: new DataTypes.STRING(768) })
   key: string;
 
   @Column({ type: "text" })

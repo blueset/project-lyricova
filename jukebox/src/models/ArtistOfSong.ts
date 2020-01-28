@@ -7,14 +7,14 @@ import { SIMPLE_ENUM_ARRAY } from "../utils/sequelizeAdditions";
 
 @Table
 export class ArtistOfSong extends Model<ArtistOfSong> {
-  @Column({ type: new DataTypes.INTEGER })
-  @PrimaryKey
   @AutoIncrement
+  @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   artistOfSongId: number;
 
-  @Column({ type: DataTypes.INTEGER })
   @Unique
   @AllowNull
+  @Column({ type: DataTypes.INTEGER })
   vocaDbId: number | null;
 
   @Column({
@@ -38,12 +38,12 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
   })
   artistRoles: VDBArtistRoleType[];
 
-  @Column({ type: new DataTypes.STRING(4096) })
   @AllowNull
+  @Column({ type: new DataTypes.STRING(4096) })
   customName: string | null;
 
-  @Column
   @Default(false)
+  @Column
   isSupport: boolean;
 
   @BelongsTo(type => Song)
@@ -66,19 +66,15 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
   @UpdatedAt
   updatedOn: Date;
 
-  @DeletedAt
-  deletionDate: Date;
-
   /** Incomplete build. */
-  static fromVocaDBEntity(song: Song, entity: ArtistForSongContract): ArtistOfSong {
-    const obj = new ArtistOfSong();
-    Object.assign<ArtistOfSong, Partial<ArtistOfSong>>(obj, {
+  static artistFromVocaDB(entity: ArtistForSongContract): Artist & { ArtistOfSong: ArtistOfSong } {
+    const artist = Artist.fromVocaDBArtistContract(entity.artist) as (Artist & { ArtistOfSong: ArtistOfSong });
+    artist.ArtistOfSong = ArtistOfSong.build({
       vocaDbId: entity.id,
       artistRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
       customName: entity.isCustomName ? entity.name : null,
       isSupport: entity.isSupport,
-      artist: Artist.fromVocaDBArtistContract(entity.artist)
     });
-    return obj;
+    return artist;
   }
 }

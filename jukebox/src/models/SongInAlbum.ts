@@ -1,32 +1,32 @@
 
 import { Song } from "./Song";
 import { Album } from "./Album";
-import { AlbumContract } from "vocadb";
+import { AlbumContract, SongForApiContract } from "vocadb";
 import { Model, Table, Column, PrimaryKey, AutoIncrement, BelongsTo, ForeignKey, CreatedAt, UpdatedAt, DeletedAt, Unique, AllowNull } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 
 @Table
 export class SongInAlbum extends Model<SongInAlbum> {
-  @Column({ type: new DataTypes.INTEGER })
-  @PrimaryKey
   @AutoIncrement
+  @PrimaryKey
+  @Column({ type: new DataTypes.INTEGER })
   songInAlbumId: number;
 
-  @Column({ type: DataTypes.INTEGER })
   @Unique
   @AllowNull
+  @Column({ type: DataTypes.INTEGER })
   vocaDbId: number | null;
 
-  @Column({ type: DataTypes.INTEGER })
   @AllowNull
+  @Column({ type: DataTypes.INTEGER })
   diskNumber: number | null;
 
-  @Column({ type: DataTypes.INTEGER })
   @AllowNull
+  @Column({ type: DataTypes.INTEGER })
   trackNumber: number | null;
 
-  @Column({ type: new DataTypes.STRING(2048) })
   @AllowNull
+  @Column({ type: new DataTypes.STRING(2048) })
   name: string | null;
 
   @BelongsTo(
@@ -53,17 +53,12 @@ export class SongInAlbum extends Model<SongInAlbum> {
   @UpdatedAt
   updatedOn: Date;
 
-  @DeletedAt
-  deletionDate: Date;
-
   /** Incomplete build. */
-  static fromVocaDBAlbumEntity(song: Song, entity: AlbumContract): SongInAlbum {
-    const obj = new SongInAlbum();
-    Object.assign<SongInAlbum, Partial<SongInAlbum>>(obj, {
+  static albumFromVocaDB(song: SongForApiContract, entity: AlbumContract): Album & { SongInAlbum: SongInAlbum } {
+    const album = Album.fromVocaDBAlbumContract(entity) as (Album & { SongInAlbum: SongInAlbum });
+    album.SongInAlbum = SongInAlbum.build({
       name: song.name,
-      // song: song,
-      album: Album.fromVocaDBAlbumContract(entity)
     });
-    return obj;
+    return album;
   }
 }

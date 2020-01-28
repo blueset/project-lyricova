@@ -1,12 +1,14 @@
 import { Sequelize } from "sequelize-typescript";
-import { DB_URI } from "../utils/secret";
-import { sequelizeAdditions } from "../utils/sequelizeAdditions";
+import { DB_URI } from "./utils/secret";
+import { sequelizeAdditions } from "./utils/sequelizeAdditions";
 
 sequelizeAdditions(Sequelize);
+console.log("=========== DIRNAME: " + __dirname + "/models");
 
 const sequelize = new Sequelize(DB_URI, {
-  models: [__dirname]
+  models: [__dirname + "/models/*"]
 });
+
 
 (async () => {
   try {
