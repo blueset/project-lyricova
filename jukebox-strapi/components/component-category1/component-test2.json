@@ -1,0 +1,14 @@
+{
+  "info": {
+    "name": "componentTest2",
+    "icon": "arrow-circle-down"
+  },
+  "options": {},
+  "attributes": {
+    "componentTest2RichText": {
+      "type": "richtext"
+    }
+  },
+  "connection": "default",
+  "collectionName": "components_component_category1_component_test2_s"
+}

@@ -7,13 +7,14 @@ import passport from "passport";
 
 import registerRoutes from "./routes";
 import { SESSION_SECRET } from "./utils/secret";
-import { TypeormStore } from "connect-typeorm";
-import { getRepository } from "typeorm";
-import { Session } from "./entity/Session";
+import sequelize from "./models";
+import SequelizeStoreConstructor from "connect-session-sequelize";
+
+const SequelizeStore = SequelizeStoreConstructor(session.Store);
+
 
 export default () => {
   const app = express();
-  const sessionRepository = getRepository(Session);
 
   app.set("port", process.env.PORT || 3000);
   app.use(compression());
@@ -21,14 +22,13 @@ export default () => {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(
     session({
-      resave: true,
+      resave: false,
       saveUninitialized: true,
+      proxy: true,
       secret: SESSION_SECRET,
-      store: new TypeormStore({
-        cleanupLimit: 2,
-        limitSubquery: false, // If using MariaDB.
-        ttl: 86400
-      }).connect(sessionRepository)
+      store: new SequelizeStore({
+        db: sequelize
+      })
     })
   );
   app.use(passport.initialize());

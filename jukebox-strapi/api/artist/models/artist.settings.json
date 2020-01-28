@@ -1,0 +1,72 @@
+{
+  "info": {
+    "name": "Artist"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "sortOrder": {
+      "type": "string"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "Unknown",
+        "Circle",
+        "Label",
+        "Producer",
+        "Animator",
+        "Illustrator",
+        "Lyricist",
+        "Vocaloid",
+        "UTAU",
+        "CeVIO",
+        "OtherVoiceSynthesizer",
+        "OtherVocalist",
+        "OtherGroup",
+        "OtherIndividual",
+        "Utaite",
+        "Band",
+        "Vocalist",
+        "Character"
+      ],
+      "default": "Unknown",
+      "required": true
+    },
+    "baseVoiceBank": {
+      "via": "derivedVoiceBanks",
+      "collection": "artist"
+    },
+    "derivedVoiceBanks": {
+      "via": "baseVoiceBank",
+      "model": "artist"
+    },
+    "vocaDbJson": {
+      "type": "json"
+    },
+    "incomplete": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "songs": {
+      "collection": "song",
+      "via": "artists",
+      "dominant": true
+    },
+    "dynamicFieldTest": {
+      "type": "dynamiczone",
+      "components": [
+        "component-category0.component-test0",
+        "component-category1.component-test2"
+      ]
+    }
+  },
+  "connection": "default",
+  "collectionName": "artists"
+}

@@ -1,5 +1,5 @@
-import { getRepository, Repository, In } from "typeorm";
-import { MusicFile } from "../entity/MusicFile";
+
+import { MusicFile } from "../models/MusicFile";
 import { Request, Response, NextFunction } from "express";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";

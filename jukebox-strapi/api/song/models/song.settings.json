@@ -1,0 +1,44 @@
+{
+  "connection": "default",
+  "collectionName": "songs",
+  "info": {
+    "name": "Song"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": false
+    },
+    "sortOrder": {
+      "type": "string"
+    },
+    "original": {
+      "collection": "song",
+      "via": "derivedSongs"
+    },
+    "derivedSongs": {
+      "model": "song",
+      "via": "original"
+    },
+    "vocaDbJSON": {
+      "type": "json",
+      "required": false
+    },
+    "coverPath": {
+      "type": "string"
+    },
+    "incomplete": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "artists": {
+      "via": "songs",
+      "collection": "artist"
+    }
+  }
+}

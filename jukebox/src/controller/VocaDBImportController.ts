@@ -1,8 +1,8 @@
-import { getRepository, Repository } from "typeorm";
-import { MusicFile } from "../entity/MusicFile";
-import { Song } from "../entity/Song";
-import { Album } from "../entity/Album";
-import { Artist } from "../entity/Artist";
+
+import { MusicFile } from "../models/MusicFile";
+import { Song } from "../models/Song";
+import { Album } from "../models/Album";
+import { Artist } from "../models/Artist";
 import { Request, Response } from "express";
 import { SongForApiContract } from "vocadb";
 import axios, { AxiosInstance, AxiosResponse } from "axios";

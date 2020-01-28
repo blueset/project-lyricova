@@ -1,0 +1,68 @@
+
+import { SongInAlbum } from "./SongInAlbum";
+import { AlbumForApiContract, AlbumContract } from "vocadb";
+import { ArtistOfAlbum } from "./ArtistOfAlbum";
+import { MusicFile } from "./MusicFile";
+import { transliterate } from "../utils/transliterate";
+import { HasMany, Table, Model, Column, PrimaryKey, BelongsToMany, CreatedAt, UpdatedAt, DeletedAt, Default, AllowNull } from "sequelize-typescript";
+import { Song } from "./Song";
+import { DataTypes } from "sequelize";
+
+@Table
+export class Album extends Model<Album> {
+  @Column({ type: new DataTypes.INTEGER })
+  @PrimaryKey
+  id: number;
+
+  @Column({ type: new DataTypes.STRING(4096) })
+  name: string;
+
+  @Column({ type: new DataTypes.STRING(4096) })
+  sortOrder: string;
+
+  @BelongsToMany(
+    () => Song,
+    () => SongInAlbum
+  )
+  songs: Array<Song & { SongInAlbum: SongInAlbum }>;
+
+  @BelongsToMany(
+    () => Album,
+    () => ArtistOfAlbum
+  )
+  albums: Array<Album & { ArtistOfAlbum: ArtistOfAlbum }>;
+
+  @HasMany(
+    () => MusicFile
+  )
+  files: MusicFile[];
+
+  @Column({ type: DataTypes.JSON })
+  @AllowNull
+  vocaDbJson: AlbumForApiContract | null;
+
+  @Column({ type: DataTypes.BOOLEAN })
+  @Default(true)
+  incomplete: boolean;
+
+  @CreatedAt
+  creationDate: Date;
+
+  @UpdatedAt
+  updatedOn: Date;
+
+  @DeletedAt
+  deletionDate: Date;
+
+  /** Incomplete build. */
+  static fromVocaDBAlbumContract(entity: AlbumContract): Album {
+    const obj = new Album();
+    Object.assign<Album, Partial<Album>>(obj, {
+      id: entity.id,
+      name: entity.name,
+      sortOrder: transliterate(entity.name),
+      incomplete: true
+    });
+    return obj;
+  }
+}

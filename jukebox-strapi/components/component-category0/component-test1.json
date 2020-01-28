@@ -1,0 +1,14 @@
+{
+  "info": {
+    "name": "componentTest1",
+    "icon": "arrow-alt-circle-right"
+  },
+  "options": {},
+  "attributes": {
+    "componentTest1Text": {
+      "type": "string"
+    }
+  },
+  "connection": "default",
+  "collectionName": "components_component_category0_component_test1_s"
+}
