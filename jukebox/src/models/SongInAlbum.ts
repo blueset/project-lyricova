@@ -54,11 +54,17 @@ export class SongInAlbum extends Model<SongInAlbum> {
   updatedOn: Date;
 
   /** Incomplete build. */
-  static albumFromVocaDB(song: SongForApiContract, entity: AlbumContract): Album & { SongInAlbum: SongInAlbum } {
-    const album = Album.fromVocaDBAlbumContract(entity) as (Album & { SongInAlbum: SongInAlbum });
-    album.SongInAlbum = SongInAlbum.build({
-      name: song.name,
-    });
+  static async albumFromVocaDB(song: SongForApiContract, entity: AlbumContract): Promise<Album & { SongInAlbum: SongInAlbum }> {
+    const album = await Album.fromVocaDBAlbumContract(entity) as (Album & { SongInAlbum: SongInAlbum });
+    album.SongInAlbum = (await SongInAlbum.findOrCreate({
+      where: {
+        songId: song.id,
+        albumId: entity.id
+      },
+      defaults: {
+        name: song.name,
+      }
+    }))[0];
     return album;
   }
 }

@@ -80,13 +80,15 @@ export class Artist extends Model<Artist> {
   deletionDate: Date;
 
   /** incomplete entity */
-  static fromVocaDBArtistContract(artist: ArtistContract): Artist {
-    const obj = Artist.build({
-      id: artist.id,
-      name: artist.name,
-      sortOrder: transliterate(artist.name),
-      type: artist.artistType
-    });
+  static async fromVocaDBArtistContract(artist: ArtistContract): Promise<Artist> {
+    const obj = (await Artist.findOrCreate({
+      where: { id: artist.id },
+      defaults: {
+        name: artist.name,
+        sortOrder: transliterate(artist.name),
+        type: artist.artistType
+      }
+    }))[0];
     return obj;
   }
 }

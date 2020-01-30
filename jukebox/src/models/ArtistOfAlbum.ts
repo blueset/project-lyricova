@@ -45,11 +45,15 @@ export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
   @Column({ type: new DataTypes.INTEGER })
   artistOfAlbumId: number;
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  // @ts-ignore
   @Column({
     type: new SIMPLE_ENUM_ARRAY(ROLES)
   })
   roles: VDBArtistRoleType[];
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  // @ts-ignore
   @Column({
     type: new SIMPLE_ENUM_ARRAY(ROLES)
   })

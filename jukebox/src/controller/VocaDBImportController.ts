@@ -43,13 +43,14 @@ export class VocaDBImportController {
       // Recursively get original song
       const originalSong = await this.getOriginalSong(song);
       let originalSongEntity: Song | null = null;
+
       if (originalSong !== null) {
         originalSongEntity = await Song.saveFromVocaDBEntity(originalSong, null);
       }
+      console.dir(originalSongEntity);
       const songEntity = await Song.saveFromVocaDBEntity(song, originalSongEntity);
-      const outcome = await songEntity.save();
 
-      res.json({ status: "OK", data: outcome });
+      res.json({ status: "OK", data: songEntity });
     } catch (e) { next(e); }
   }
 }

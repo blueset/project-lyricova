@@ -1,11 +1,17 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, AbstractDataType } from "sequelize";
 
-class SimpleEnumArray extends DataTypes.STRING {
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// @ts-ignore
+const UnproxyAbstract: DataTypes.ABSTRACT = (new DataTypes.ABSTRACT()).constructor;
+
+class SimpleEnumArray extends UnproxyAbstract implements AbstractDataType {
 
   private _enum: string[];
   private _length: number;
   public key = "SIMPLE_ENUM_ARRAY";
   public static key = "SIMPLE_ENUM_ARRAY";
+
+  public dialectTypes: string;
 
   constructor(enumValues: string[]) {
     super();
@@ -22,12 +28,13 @@ class SimpleEnumArray extends DataTypes.STRING {
   }
 
   // Mandatory, complete definition of the new type in the database
-  toSql() {
+  public toSql() {
+    console.log("----------- TOSQL");
     return `VARCHAR(${this._length})`;
   }
 
   // Optional, validator function
-  validate(value): boolean {
+  public validate(value: any): boolean {
     if (!Array.isArray(value)) {
       throw new Error(`${value} is not a valid array.`);
     }
@@ -39,8 +46,12 @@ class SimpleEnumArray extends DataTypes.STRING {
     return true;
   }
 
+  public toString() {
+    return this.toSql();
+  }
+
   // Optional, value stringifier before sending to database
-  _stringify(value: string[]) {
+  public stringify(value: string[]) {
     return value.join(",");
   }
 

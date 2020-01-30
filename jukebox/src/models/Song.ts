@@ -5,9 +5,9 @@ import { ArtistOfSong } from "./ArtistOfSong";
 import { SongInAlbum } from "./SongInAlbum";
 import { Entry } from "./Entry";
 import { transliterate } from "../utils/transliterate";
-import { DataTypes } from "sequelize";
+import { DataTypes, BelongsToManySetAssociationsMixin, BelongsToManySetAssociationsMixinOptions } from "sequelize";
 import { Includeable } from "sequelize/types";
-import { Model, CreatedAt, UpdatedAt, DeletedAt, Column, Table, BelongsTo, PrimaryKey, ForeignKey, HasMany, AllowNull, BelongsToMany } from "sequelize-typescript";
+import { Model, CreatedAt, UpdatedAt, DeletedAt, Column, Table, BelongsTo, PrimaryKey, ForeignKey, HasMany, AllowNull, BelongsToMany, AssociationActionOptions } from "sequelize-typescript";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
 import { SongOfEntry } from "./SongOfEntry";
@@ -81,17 +81,26 @@ export class Song extends Model<Song> {
     if (original !== null) {
       include.push({ model: Song, as: "original" });
     }
-    return Song.build({
+    /* const inserted: boolean = */
+    await Song.upsert({
       id: entity.id,
       name: entity.name,
       sortOrder: transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
       incomplete: false,
-      artists: entity.artists.map(x => ArtistOfSong.artistFromVocaDB(x)),
-      albums: entity.albums.map(x => SongInAlbum.albumFromVocaDB(entity, x)),
-      original: original
-    }, {
-      include: include
     });
+
+    const song = await Song.findByPk(entity.id);
+    if (original !== null) {
+      await song.$set("original", original);
+    }
+
+    const artists = await Promise.all(entity.artists.map(x => ArtistOfSong.artistFromVocaDB(x))),
+      albums = await Promise.all(entity.albums.map(x => SongInAlbum.albumFromVocaDB(entity, x)));
+    // await Promise.all(artists.map(x => x.save()));
+    // await Promise.all(albums.map(x => x.save()));
+    await song.$set("artists", artists);
+    await song.$set("albums", albums);
+    return song;
   }
 }

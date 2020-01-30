@@ -17,6 +17,8 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
   @Column({ type: DataTypes.INTEGER })
   vocaDbId: number | null;
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  // @ts-ignore
   @Column({
     type: new SIMPLE_ENUM_ARRAY(["Default",
       "Animator",
@@ -67,14 +69,17 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
   updatedOn: Date;
 
   /** Incomplete build. */
-  static artistFromVocaDB(entity: ArtistForSongContract): Artist & { ArtistOfSong: ArtistOfSong } {
-    const artist = Artist.fromVocaDBArtistContract(entity.artist) as (Artist & { ArtistOfSong: ArtistOfSong });
-    artist.ArtistOfSong = ArtistOfSong.build({
-      vocaDbId: entity.id,
-      artistRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
-      customName: entity.isCustomName ? entity.name : null,
-      isSupport: entity.isSupport,
+  static async artistFromVocaDB(entity: ArtistForSongContract): Promise<Artist & { ArtistOfSong: ArtistOfSong }> {
+    const artist = await Artist.fromVocaDBArtistContract(entity.artist) as (Artist & { ArtistOfSong: ArtistOfSong });
+    const [artistOfSong, _] = await ArtistOfSong.findOrCreate({
+      where: { vocaDbId: entity.id },
+      defaults: {
+        artistRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
+        customName: entity.isCustomName ? entity.name : null,
+        isSupport: entity.isSupport,
+      }
     });
+    artist.ArtistOfSong = artistOfSong;
     return artist;
   }
 }

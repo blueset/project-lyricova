@@ -55,14 +55,15 @@ export class Album extends Model<Album> {
   deletionDate: Date;
 
   /** Incomplete build. */
-  static fromVocaDBAlbumContract(entity: AlbumContract): Album {
-    const obj = new Album();
-    Object.assign<Album, Partial<Album>>(obj, {
-      id: entity.id,
-      name: entity.name,
-      sortOrder: transliterate(entity.name),
-      incomplete: true
-    });
+  static async fromVocaDBAlbumContract(entity: AlbumContract): Promise<Album> {
+    const obj = (await Album.findOrCreate({
+      where: { id: entity.id },
+      defaults: {
+        name: entity.name,
+        sortOrder: transliterate(entity.name),
+        incomplete: true
+      }
+    }))[0];
     return obj;
   }
 }

@@ -1,12 +1,13 @@
 import { Sequelize } from "sequelize-typescript";
 import { DB_URI } from "./utils/secret";
 import { sequelizeAdditions } from "./utils/sequelizeAdditions";
+import logger from "./utils/logger";
 
 sequelizeAdditions(Sequelize);
-console.log("=========== DIRNAME: " + __dirname + "/models");
 
 const sequelize = new Sequelize(DB_URI, {
-  models: [__dirname + "/models/*"]
+  models: [__dirname + "/models/*"],
+  // logging: (sql) => logger.debug(sql)
 });
 
 
