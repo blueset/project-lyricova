@@ -1,4 +1,6 @@
 import { isTranslationTag } from "./lyricsLineAttachment";
+import { LyricsProviderSource } from "../service/lyricsProviderSource";
+import { LyricsSearchRequest } from "../service/lyricsSearchRequest";
 
 export const ATTACHMENT_TAGS = "attachmentTags";
 export const SOURCE = "source";
@@ -35,10 +37,10 @@ export class LyricsMetadata {
 
     /* Sources/LyricsService/LyricsMetadata+Extension.swift */
 
-    public get source(): LyricsProviderSource | undefined { 
-        return this.data[SOURCE] as LyricsProviderSource | undefined;
+    public get source(): LyricsProviderSource<any> | undefined { 
+        return this.data[SOURCE] as LyricsProviderSource<any> | undefined;
     }
-    public set source(val: LyricsProviderSource | undefined) {
+    public set source(val: LyricsProviderSource<any> | undefined) {
         this.data[SOURCE] = val;
     }
     

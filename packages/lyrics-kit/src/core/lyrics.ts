@@ -202,8 +202,8 @@ export class Lyrics {
             return false;
         }
         if (searchTerm.state === "info") {
-            return isCaseInsensitiveSimilar(title, searchTerm.searchTitle) &&
-                isCaseInsensitiveSimilar(artist, searchTerm.searchArtist);
+            return isCaseInsensitiveSimilar(title, searchTerm.title) &&
+                isCaseInsensitiveSimilar(artist, searchTerm.artist);
         }
         if (searchTerm.state === "keyword") {
             return isCaseInsensitiveSimilar(title, searchTerm.keyword) &&
@@ -219,10 +219,10 @@ export class Lyrics {
         }
         const searchTerm = this.metadata.request?.searchTerm;
         if (searchTerm.state === "info") {
-            if (artist === searchTerm.searchArtist) {
+            if (artist === searchTerm.artist) {
                 return this.matchedArtistFactor;
             }
-            return similarity(artist, searchTerm.searchArtist);
+            return similarity(artist, searchTerm.artist);
         }
         if (searchTerm.state === "keyword") {
             if (searchTerm.keyword.indexOf(artist) >= 0) {
@@ -240,10 +240,10 @@ export class Lyrics {
         }
         const searchTerm = this.metadata.request?.searchTerm;
         if (searchTerm.state === "info") {
-            if (title === searchTerm.searchTitle) {
+            if (title === searchTerm.title) {
                 return this.matchedTitleFactor;
             }
-            return similarity(title, searchTerm.searchTitle);
+            return similarity(title, searchTerm.title);
         }
         if (searchTerm.state === "keyword") {
             if (searchTerm.keyword.indexOf(title) >= 0) {
