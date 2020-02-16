@@ -2,7 +2,9 @@ import { id3TagRegex, lyricsLineRegex, resolveTimeTag, lyricsLineAttachmentRegex
 import { LyricsLine } from "./lyricsLine";
 import { LyricsMetadata, ATTACHMENT_TAGS } from "./lyricsMetadata";
 import _ from "lodash";
-import { OFFSET, LENGTH } from "./idTagKey";
+import { OFFSET, LENGTH, ARTIST, TITLE } from "./idTagKey";
+import { TIME_TAG } from "./lyricsLineAttachment";
+import { isCaseInsensitiveSimilar, similarity, similarityIn } from "./stringExtensions";
 
 type LyricsMatch = {
     state: "found";
@@ -163,5 +165,106 @@ export class Lyrics {
                 this.lines[index].enabled = false;
             }
         }
+    }
+
+    /* Sources/LyricsService/Lyrics+Quality.swift */
+
+    private translationFactor = 0.1;
+    private wordTimeTagFactor = 0.1;
+    private matchedArtistFactor = 1.3;
+    private matchedTitleFactor = 1.5;
+    private noArtistFactor = 0.7;
+    private noTitleFactor = 0.7;
+    private noDurationFactor = 0.7;
+
+    public get quality(): number {
+        if (this.metadata.quality) {
+            return this.metadata.quality;
+        }
+        let quality = this.artistQuality + this.titleQuality + this.durationQuality;
+        if (this.metadata.hasTranslation) {
+            quality += this.translationFactor;
+        }
+        if (this.metadata.attachmentTags.has(TIME_TAG)) {
+            quality += this.wordTimeTagFactor;
+        }
+        this.metadata.quality = quality;
+        return quality;
+    }
+
+    public isMatched(): boolean {
+        const artist = this.idTags[ARTIST], title = this.idTags[TITLE];
+        if (artist === undefined || title === undefined) {
+            return false;
+        }
+        const searchTerm = this.metadata.request?.searchTerm;
+        if (searchTerm === undefined) {
+            return false;
+        }
+        if (searchTerm.state === "info") {
+            return isCaseInsensitiveSimilar(title, searchTerm.searchTitle) &&
+                isCaseInsensitiveSimilar(artist, searchTerm.searchArtist);
+        }
+        if (searchTerm.state === "keyword") {
+            return isCaseInsensitiveSimilar(title, searchTerm.keyword) &&
+                isCaseInsensitiveSimilar(artist, searchTerm.keyword);
+        }
+        return false;
+    }
+
+    private get artistQuality(): number {
+        const artist = this.idTags[ARTIST];
+        if (artist === undefined) {
+            return this.noArtistFactor;
+        }
+        const searchTerm = this.metadata.request?.searchTerm;
+        if (searchTerm.state === "info") {
+            if (artist === searchTerm.searchArtist) {
+                return this.matchedArtistFactor;
+            }
+            return similarity(artist, searchTerm.searchArtist);
+        }
+        if (searchTerm.state === "keyword") {
+            if (searchTerm.keyword.indexOf(artist) >= 0) {
+                return this.matchedArtistFactor;
+            }
+            return similarityIn(artist, searchTerm.keyword);
+        }
+        return this.noArtistFactor;
+    }
+
+    private get titleQuality(): number {
+        const title = this.idTags[TITLE];
+        if (title === undefined) {
+            return this.noTitleFactor;
+        }
+        const searchTerm = this.metadata.request?.searchTerm;
+        if (searchTerm.state === "info") {
+            if (title === searchTerm.searchTitle) {
+                return this.matchedTitleFactor;
+            }
+            return similarity(title, searchTerm.searchTitle);
+        }
+        if (searchTerm.state === "keyword") {
+            if (searchTerm.keyword.indexOf(title) >= 0) {
+                return this.matchedTitleFactor;
+            }
+            return similarityIn(title, searchTerm.keyword);
+        }
+        return this.noTitleFactor;
+    }
+
+    private get durationQuality(): number {
+        const 
+            duration = this.length,
+            searchDuration = this.metadata.request?.duration;
+        if (searchDuration === undefined) {
+            return this.noDurationFactor;
+        }
+        const absDt = Math.abs(searchDuration - duration);
+        if (absDt <= 1) return 1;
+        if (1 < absDt && absDt <= 4) return 0.9;
+        if (4 < absDt && absDt <= 10) return 0.8;
+        return 0.7;
     }
 }

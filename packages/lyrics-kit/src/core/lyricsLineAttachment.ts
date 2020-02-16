@@ -4,10 +4,10 @@ import { timeLineAttachmentRegex, rangeAttachmentRegex } from "./regexPattern";
 type Range = [number, number];
 
 /** Attribute tag values */
-const TRANSLATION = "tr";
-const TIME_TAG = "tt";
-const FURIGANA = "fu";
-const ROMAJI = "ro";
+export const TRANSLATION = "tr";
+export const TIME_TAG = "tt";
+export const FURIGANA = "fu";
+export const ROMAJI = "ro";
 
 function makeTranslationTag(languageCode: string | null): string {
     if (languageCode)
