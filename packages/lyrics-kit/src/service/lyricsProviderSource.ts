@@ -1,26 +1,15 @@
 import { LyricsProvider } from "./provider";
 import { NetEaseProvider } from "./provider/netease";
+import { QQMusicProvider } from "./provider/qqMusic";
 
 export class LyricsProviderSource<T extends LyricsProvider<any>> {
     static netease = new LyricsProviderSource(NetEaseProvider);
-    static qq = new LyricsProviderSource(
-        QQMusicProvider
-    );
-    static kugou = new LyricsProviderSource(
-        KugouProvider
-    );
-    static xiami = new LyricsProviderSource(
-        XiamiProvider
-    );
-    static gecimi = new LyricsProviderSource(
-        GecimiProvider
-    );
-    static viewLyrics = new LyricsProviderSource(
-        ViewLyricsProvider
-    );
-    static syair = new LyricsProviderSource(
-        SyairProvider
-    );
+    static qq = new LyricsProviderSource(QQMusicProvider);
+    static kugou = new LyricsProviderSource(KugouProvider);
+    static xiami = new LyricsProviderSource(XiamiProvider);
+    static gecimi = new LyricsProviderSource(GecimiProvider);
+    static viewLyrics = new LyricsProviderSource(ViewLyricsProvider);
+    static syair = new LyricsProviderSource(SyairProvider);
 
     static allCases = [
         LyricsProviderSource.netease,

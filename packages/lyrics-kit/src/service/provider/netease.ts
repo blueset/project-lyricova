@@ -8,8 +8,8 @@ import { id3TagRegex, krcLineRegex, netEaseInlineTagRegex } from "../../utils/re
 import { WordTimeTag, WordTimeTagLabel, Attachments, TIME_TAG } from "../../core/lyricsLineAttachment";
 import { LyricsLine } from "../../core/lyricsLine";
 
-const SEARCH_URL = "http://music.163.com/api/search/pc?";
-const LYRICS_URL = "http://music.163.com/api/song/lyric?";
+const SEARCH_URL = "http://music.163.com/api/search/pc";
+const LYRICS_URL = "http://music.163.com/api/song/lyric";
 
 class NeteaseKLyrics extends Lyrics {
     constructor(content: string) {

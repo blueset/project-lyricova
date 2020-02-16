@@ -25,7 +25,9 @@ export abstract class LyricsProvider<T> {
 
     public async getLyrics(request: LyricsSearchRequest): Promise<Lyrics[]> {
         const results = (await this.searchLyrics(request)).slice(0, request.limit);
-        let lyrics = await Promise.all(results.map(this.fetchLyrics));
+        let lyrics = await Promise.all(results.map(
+            token => this.fetchLyrics(token).catch(() => undefined)
+        ));
         lyrics = lyrics.filter(v => v !== undefined);
         lyrics.forEach((v) => {v.metadata.request = request});
         return lyrics;
