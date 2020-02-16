@@ -7,6 +7,8 @@ Project Lyricova is currently under the progress of a complete rewrite. The new 
 
 For the current version of Project Lyricova released in 2015, see the `v1` branch.
 
-## Project structure
+## Packages
 * `jukebox`: Music library manager and public jukebox.
 * `lyricova`: Lyrics blog (similar to version 1).
+* `common`: Common code shared between jukebox and lyricova.
+* `lyrics-kit`: Fetch and parse lyrics from various sources
