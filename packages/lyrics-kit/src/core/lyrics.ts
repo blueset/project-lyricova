@@ -1,9 +1,9 @@
-import { id3TagRegex, lyricsLineRegex, resolveTimeTag, lyricsLineAttachmentRegex, base60TimeRegex } from "./regexPattern";
+import { id3TagRegex, lyricsLineRegex, resolveTimeTag, lyricsLineAttachmentRegex, base60TimeRegex } from "../utils/regexPattern";
 import { LyricsLine } from "./lyricsLine";
 import { LyricsMetadata, ATTACHMENT_TAGS } from "./lyricsMetadata";
 import _ from "lodash";
 import { OFFSET, LENGTH, ARTIST, TITLE } from "./idTagKey";
-import { TIME_TAG } from "./lyricsLineAttachment";
+import { TIME_TAG, TRANSLATION } from "./lyricsLineAttachment";
 import { isCaseInsensitiveSimilar, similarity, similarityIn } from "./stringExtensions";
 
 type LyricsMatch = {
@@ -14,12 +14,16 @@ type LyricsMatch = {
     insertAt: number;
 };
 
+const mergeTimetagThreshold = 0.02;
+
 export class Lyrics {
     public lines: LyricsLine[] = [];
     public idTags: { [key: string]: string } = {};
     public metadata: LyricsMetadata = new LyricsMetadata();
 
-    constructor(description: String) {
+    constructor(description?: String) {
+        if (description === undefined) return;
+
         for (const match in description.matchAll(id3TagRegex)) {
             const key = match[1].trim(), value = match[2].trim();
             if (value !== "") {
@@ -266,5 +270,35 @@ export class Lyrics {
         if (1 < absDt && absDt <= 4) return 0.9;
         if (4 < absDt && absDt <= 10) return 0.8;
         return 0.7;
+    }
+
+    public merge(other: Lyrics) {
+        var index = 0, otherIndex = 0;
+        while (index < this.lines.length && otherIndex < other.lines.length) {
+            if (Math.abs(this.lines[index].position - other.lines[index].position) < mergeTimetagThreshold) {
+                const transStr = other.lines[otherIndex].content;
+                if (transStr !== "") {
+                    this.lines[index].attachments.setTranslation(transStr);
+                }
+                index ++; otherIndex ++;
+            } else if (this.lines[index].position > other.lines[otherIndex].position) {
+                otherIndex ++;
+            } else {
+                index ++;
+            }
+        }
+        this.metadata.attachmentTags.add(TRANSLATION)
+    }
+
+    /** Merge without matching timetag */
+    public forceMerge(other: Lyrics) {
+        if (this.lines.length !== other.lines.length) return;
+        for (let i = 0; i < this.lines.length; i++) {
+            const otherStr = other.lines[i].content;
+            if (otherStr !== "") {
+                this.lines[i].attachments.setTranslation(otherStr);
+            }
+        }
+        this.metadata.attachmentTags.add(TRANSLATION)
     }
 }

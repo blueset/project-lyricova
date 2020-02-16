@@ -1,4 +1,4 @@
-import { timeLineAttachmentRegex, rangeAttachmentRegex } from "./regexPattern";
+import { timeLineAttachmentRegex, rangeAttachmentRegex } from "../utils/regexPattern";
 
 /** Range: [a, b) */
 type Range = [number, number];
@@ -21,7 +21,7 @@ export function isTranslationTag(tag: string): boolean {
 
 interface LyricsLineAttachment { }
 
-class PlainText implements LyricsLineAttachment {
+export class PlainText implements LyricsLineAttachment {
     public text: string;
 
     constructor(text: string) {
@@ -33,7 +33,7 @@ class PlainText implements LyricsLineAttachment {
     }
 }
 
-class WordTimeTagLabel {
+export class WordTimeTagLabel {
     public index: number;
     /** Time tag in seconds */
     public timeTag: number;
@@ -64,7 +64,7 @@ class WordTimeTagLabel {
     }
 }
 
-class WordTimeTag implements LyricsLineAttachment {
+export class WordTimeTag implements LyricsLineAttachment {
     public tags: WordTimeTagLabel[];
     /** Duration in seconds */
     public duration?: number;
@@ -95,7 +95,7 @@ class WordTimeTag implements LyricsLineAttachment {
     }
 }
 
-class RangeAttributeLabel {
+export class RangeAttributeLabel {
     public content: string;
     public range: Range;
     constructor(description: string);
@@ -125,7 +125,7 @@ class RangeAttributeLabel {
     }
 }
 
-class RangeAttribute implements LyricsLineAttachment {
+export class RangeAttribute implements LyricsLineAttachment {
     public attachment: RangeAttributeLabel[];
     public toString(): string {
         return this.attachment.join("");

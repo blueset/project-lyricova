@@ -1,9 +1,8 @@
 import { LyricsProvider } from "./provider";
+import { NetEaseProvider } from "./provider/netease";
 
-export class LyricsProviderSource<T extends LyricsProvider> {
-    static netease = new LyricsProviderSource(
-        NetEaseProvider
-    );
+export class LyricsProviderSource<T extends LyricsProvider<any>> {
+    static netease = new LyricsProviderSource(NetEaseProvider);
     static qq = new LyricsProviderSource(
         QQMusicProvider
     );

@@ -30,3 +30,17 @@ export const timeLineAttachmentRegex = /<(\d+,\d+)>/g;
 export const timeLineAttachmentDurationRegex = /<(\d+)>/g;
 
 export const rangeAttachmentRegex = /<([^,]+,\d+,\d+)>/g;
+
+export const krcLineRegex = /^\[(\d+),(\d+)\](.*)/gm
+
+export const netEaseInlineTagRegex = /\(0,(\d+)\)([^(]+)(\(0,1\) )?/g;
+
+export const kugouInlineTagRegex = /<(\d+),(\d+),0>([^<]*)/g;
+
+export const ttpodXtrcLineRegex = /^((?:\[[+-]?\d+:\d+(?:\.\d+)?\])+)(?:((?:<\d+>[^<\r\n]+)+)|(.*))$(?:[\r\n]+\[x\-trans\](.*))?/gm;
+
+export const ttpodXtrcInlineTagRegex = /<(\d+)>([^<\r\n]*)/gm;
+
+export const syairSearchResultRegex = /<div class="title"><a href="([^"]+)">/g;
+
+export const syairLyricsContentRegex = /<div class="entry">(.+?)<div/gs;
