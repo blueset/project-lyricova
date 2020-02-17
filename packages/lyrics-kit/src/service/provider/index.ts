@@ -2,11 +2,11 @@ import { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 
 export interface LyricsProviderConstructor<T> {
-    constructor(): LyricsProvider<T>;
+    new(): LyricsProvider<T>;
 }
 
 export abstract class LyricsProvider<T> {
-    
+
     // I had no idea what the publishers are doing here.
     // Just assuming that they are simply requests that return
     // values asynchronously.
@@ -29,8 +29,8 @@ export abstract class LyricsProvider<T> {
             token => this.fetchLyrics(token).catch(() => undefined)
         ));
         lyrics = lyrics.filter(v => v !== undefined);
-        lyrics.forEach((v) => {v.metadata.request = request});
+        lyrics.forEach((v) => { v.metadata.request = request; });
         return lyrics;
     }
-    
+
 }

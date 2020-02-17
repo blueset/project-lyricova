@@ -19,12 +19,13 @@ export function isTranslationTag(tag: string): boolean {
     return tag.startsWith(TRANSLATION);
 }
 
-interface LyricsLineAttachment { }
+abstract class LyricsLineAttachment {}
 
-export class PlainText implements LyricsLineAttachment {
+export class PlainText extends LyricsLineAttachment {
     public text: string;
 
     constructor(text: string) {
+        super();
         this.text = text;
     }
 
@@ -42,7 +43,7 @@ export class WordTimeTagLabel {
     constructor(timeTag: number, index: number);
     constructor(arg0: number | string, arg1: number | undefined = undefined) {
         if (typeof arg0 == "number") {
-            const timeTag = arg0 as number, index = arg1 as number
+            const timeTag = arg0 as number, index = arg1 as number;
             this.timeTag = timeTag;
             this.index = index;
         } else {
@@ -64,7 +65,7 @@ export class WordTimeTagLabel {
     }
 }
 
-export class WordTimeTag implements LyricsLineAttachment {
+export class WordTimeTag extends LyricsLineAttachment {
     public tags: WordTimeTagLabel[];
     /** Duration in seconds */
     public duration?: number;
@@ -73,7 +74,8 @@ export class WordTimeTag implements LyricsLineAttachment {
 
     constructor(description: string);
     constructor(tags: WordTimeTagLabel[], duration?: number);
-    constructor(arg0: any, arg1: any = undefined) {
+    constructor(arg0: string | WordTimeTagLabel[], arg1: number = undefined) {
+        super();
         if (typeof arg0 === "string") {
             const description: string = arg0;
             const matches = description.matchAll(timeLineAttachmentRegex);
@@ -86,7 +88,7 @@ export class WordTimeTag implements LyricsLineAttachment {
             }
             const match = timeLineAttachmentRegex.exec(description);
             if (match !== null) {
-                this.durationMSec = parseInt(match[1])
+                this.durationMSec = parseInt(match[1]);
             }
         } else {
             this.tags = arg0 as WordTimeTagLabel[];
@@ -102,7 +104,7 @@ export class RangeAttributeLabel {
     constructor(content: string, range: Range);
     constructor(arg0: string, arg1: Range = undefined) {
         if (typeof arg0 == "number") {
-            const content = arg0, range = arg1 as Range
+            const content = arg0, range = arg1 as Range;
             this.content = content;
             this.range = range;
         } else {
@@ -125,13 +127,14 @@ export class RangeAttributeLabel {
     }
 }
 
-export class RangeAttribute implements LyricsLineAttachment {
+export class RangeAttribute extends LyricsLineAttachment {
     public attachment: RangeAttributeLabel[];
     public toString(): string {
         return this.attachment.join("");
     }
 
     constructor(description: string) {
+        super();
         const matches = description.matchAll(rangeAttachmentRegex);
         this.attachment = [];
         for (const match of matches) {

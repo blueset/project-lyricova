@@ -21,7 +21,7 @@ export class Lyrics {
     public idTags: { [key: string]: string } = {};
     public metadata: LyricsMetadata = new LyricsMetadata();
 
-    constructor(description?: String) {
+    constructor(description?: string) {
         if (description === undefined) return;
 
         for (const match in description.matchAll(id3TagRegex)) {
@@ -71,9 +71,9 @@ export class Lyrics {
                         .attachments[attachmentTagStr] = attachmentStr;
                 }
             }
-            tags.add(attachmentTagStr)
+            tags.add(attachmentTagStr);
         }
-        this.metadata.data[ATTACHMENT_TAGS] = tags
+        this.metadata.data[ATTACHMENT_TAGS] = tags;
 
         if (this.lines.length === 0) {
             throw new Error(`No valid line is found in this lyric file: ${description}`);
@@ -102,7 +102,7 @@ export class Lyrics {
         return {
             state: "notFound",
             insertAt: left
-        }
+        };
     }
 
     public toString(): string {
@@ -137,7 +137,7 @@ export class Lyrics {
     get length(): number | undefined {
         const len = this.idTags[LENGTH];
         if (len === undefined) {
-            return undefined
+            return undefined;
         }
         const match = base60TimeRegex.exec(len);
         const
@@ -273,7 +273,7 @@ export class Lyrics {
     }
 
     public merge(other: Lyrics) {
-        var index = 0, otherIndex = 0;
+        let index = 0, otherIndex = 0;
         while (index < this.lines.length && otherIndex < other.lines.length) {
             if (Math.abs(this.lines[index].position - other.lines[index].position) < mergeTimetagThreshold) {
                 const transStr = other.lines[otherIndex].content;
@@ -287,7 +287,7 @@ export class Lyrics {
                 index ++;
             }
         }
-        this.metadata.attachmentTags.add(TRANSLATION)
+        this.metadata.attachmentTags.add(TRANSLATION);
     }
 
     /** Merge without matching timetag */
@@ -299,6 +299,6 @@ export class Lyrics {
                 this.lines[i].attachments.setTranslation(otherStr);
             }
         }
-        this.metadata.attachmentTags.add(TRANSLATION)
+        this.metadata.attachmentTags.add(TRANSLATION);
     }
 }

@@ -8,7 +8,7 @@ export function isCaseInsensitiveSimilar(self: string, other: string): boolean {
 export function distance(
     self: string, other: string,
     options: {
-        substitutionCost?: number, insertionCost?: number, deletionCost?: number
+        substitutionCost?: number; insertionCost?: number; deletionCost?: number;
     }
 ): number {
     options = _.defaultTo(options, {
@@ -17,14 +17,14 @@ export function distance(
         deletionCost: 1
     });
     const { substitutionCost, insertionCost, deletionCost } = options;
-    let d: number[] = _.range(other.length);
+    const d: number[] = _.range(other.length);
     let t = 0;
     for (const c1 of self) {
         t = d[0];
         d[0] += 1;
         for (let i = 0; i < other.length; i++) {
             const c2 = other[i];
-            let t2 = d[i + 1];
+            const t2 = d[i + 1];
             if (c1 === c2) {
                 d[i + 1] = t;
             } else {
@@ -49,6 +49,6 @@ export function similarity(s1: string, s2: string): number {
 /** similarity(s1: string, in s2: string) */
 export function similarityIn(s1: string, s2: string): number {
     const len = Math.min(s1.length, s2.length);
-    const diff = distance(s1, s2, { insertionCost: 0 })
+    const diff = distance(s1, s2, { insertionCost: 0 });
     return (len - diff) / len;
 }

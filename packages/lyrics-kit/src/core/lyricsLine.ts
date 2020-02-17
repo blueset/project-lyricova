@@ -5,7 +5,7 @@ export class LyricsLine {
     public content: string;
     public position: number;
     public attachments: Attachments;
-    public enabled: boolean = true;
+    public enabled = true;
 
     public lyrics?: Lyrics;
 

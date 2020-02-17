@@ -32,7 +32,7 @@ export const timeLineAttachmentDurationRegex = /<(\d+)>/g;
 
 export const rangeAttachmentRegex = /<([^,]+,\d+,\d+)>/g;
 
-export const krcLineRegex = /^\[(\d+),(\d+)\](.*)/gm
+export const krcLineRegex = /^\[(\d+),(\d+)\](.*)/gm;
 
 export const netEaseInlineTagRegex = /\(0,(\d+)\)([^(]+)(\(0,1\) )?/g;
 

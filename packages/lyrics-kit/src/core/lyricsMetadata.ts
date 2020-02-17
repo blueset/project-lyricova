@@ -12,6 +12,7 @@ export const PROVIDER_TOKEN = "providerToken";
 const QUALITY = "quality";
 
 export class LyricsMetadata {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public data: {[key: string]: any} = {};
     /* Lyrics.Metadata.Key is mapped to string */
     public toString(): string {
@@ -37,9 +38,12 @@ export class LyricsMetadata {
 
     /* Sources/LyricsService/LyricsMetadata+Extension.swift */
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public get source(): LyricsProviderSource<any> | undefined { 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.data[SOURCE] as LyricsProviderSource<any> | undefined;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public set source(val: LyricsProviderSource<any> | undefined) {
         this.data[SOURCE] = val;
     }
