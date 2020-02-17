@@ -10,8 +10,9 @@ export function resolveTimeTag(str: string): number[] {
     const matches = str.matchAll(timeTagRegex);
     const results = [];
     for (const i of matches) {
-        let min = parseFloat(i[1]),
-        sec = parseFloat(i[2]);
+        const 
+            min = parseFloat(i[1]),
+            sec = parseFloat(i[2]);
         results.push(min * 60 + sec);
     }
     return results;
