@@ -2,6 +2,7 @@ import { LyricsProvider } from "./provider";
 import { NetEaseProvider } from "./provider/netease";
 import { QQMusicProvider } from "./provider/qqMusic";
 import { KugouProvider } from "./provider/kugou";
+import { XiamiProvider } from "./provider/xiami";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class LyricsProviderSource<T extends LyricsProvider<any>> {

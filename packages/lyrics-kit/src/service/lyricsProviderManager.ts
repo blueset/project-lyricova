@@ -5,8 +5,10 @@ import { LyricsProvider } from "./provider";
 import _ from "lodash";
 
 export class LyricsProviderManager {
-    public providers: LyricsProvider[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public providers: LyricsProvider<any>[];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(sources: LyricsProviderSource<any>[] = LyricsProviderSource.allCases) {
         this.providers = sources.map(v => v.build());
     }
