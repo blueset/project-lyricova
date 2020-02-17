@@ -3,6 +3,7 @@ import { NetEaseProvider } from "./provider/netease";
 import { QQMusicProvider } from "./provider/qqMusic";
 import { KugouProvider } from "./provider/kugou";
 import { XiamiProvider } from "./provider/xiami";
+import { GecimiProvider } from "./provider/gecimi";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class LyricsProviderSource<T extends LyricsProvider<any>> {
@@ -25,8 +26,10 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     ];
 
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cls: new (...args: any[]) => T;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(cls: new (...args: any[]) => T) {
         this.cls = cls;
     }
