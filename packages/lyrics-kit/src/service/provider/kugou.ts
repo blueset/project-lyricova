@@ -33,7 +33,6 @@ function decryptKrc(base64: string): string {
     for (let i = 0; i < buffer.length; i++) {
         buffer[i] = buffer[i] ^ decodeKey[i & 0b1111];
     }
-    console.log(buffer.toString("base64"));
     const unarchivedData = unzipSync(buffer);
     return unarchivedData.toString();
 }
