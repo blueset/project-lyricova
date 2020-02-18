@@ -14,6 +14,11 @@ type LyricsMatch = {
     insertAt: number;
 };
 
+type CustomSyntaxConfig = {
+    idTag?: (key: string, value: string) => string;
+    line?: (line: LyricsLine) => string;
+}
+
 const mergeTimetagThreshold = 0.02;
 
 export class Lyrics {
@@ -21,6 +26,10 @@ export class Lyrics {
     public idTags: { [key: string]: string } = {};
     public metadata: LyricsMetadata = new LyricsMetadata();
 
+    /** 
+     * Construct Lyrics object from LRCX syntax. 
+     * @param description Content in LRCX syntax.
+    */
     constructor(description?: string) {
         if (description === undefined) return;
 
@@ -107,16 +116,48 @@ export class Lyrics {
         };
     }
 
+    /** Build LRCX string. */
     public toString(): string {
         const components = Object.entries(this.idTags).map(v => `[${v[0]}:${v[1]}]`);
         components.push(...this.lines.map(v => v.toString()));
         return components.join("\n");
     }
 
+    /** Build LRCX string in legacy syntax. */
     public legacyToString(): string {
         const components = Object.entries(this.idTags).map(v => `[${v[0]}:${v[1]}]`);
         components.push(...this.lines.map(v => v.toLegacyString()));
         return components.join("\n");
+    }
+
+    private static customSyntaxConfig: CustomSyntaxConfig = {
+        idTag: (key, val) => `[${key}:${val}]`,
+        line: line => line.toString()
+    };
+
+    public toCustomSyntax(config: CustomSyntaxConfig): string {
+        config = _.defaults(config, Lyrics.customSyntaxConfig);
+        const components = Object.entries(this.idTags).map(v => config.idTag(v[0], v[1]));
+        components.push(...this.lines.map(config.line));
+        return components.join("\n");
+    }
+
+    /**
+     * Convert to plain LRC text without inline time tag and ruby support.
+     * Translations are added with separators.
+     */
+    public toPlainLRC(separator: string = " / "): string {
+        return this.toCustomSyntax({
+            line: line => {
+                let translation = line.attachments.translation();
+                if (translation) {
+                    translation = separator + translation;
+                } else {
+                    translation = "";
+                }
+                return `[${line.timeTag}]${line.content}` + translation;
+            }
+        });
     }
 
     /** Offset of the lyrics (in milliseconds) */
