@@ -1,7 +1,7 @@
 import { timeLineAttachmentRegex, rangeAttachmentRegex } from "../utils/regexPattern";
 
 /** Range: [a, b) */
-type Range = [number, number];
+export type Range = [number, number];
 
 /** Attribute tag values */
 export const TRANSLATION = "tr";
@@ -123,7 +123,7 @@ export class RangeAttributeLabel {
     }
 
     public toString(): string {
-        return `<${this.content},${this.range[0]},${this.range[0]}>`;
+        return `<${this.content},${this.range[0]},${this.range[1]}>`;
     }
 }
 
@@ -133,20 +133,29 @@ export class RangeAttribute extends LyricsLineAttachment {
         return this.attachment.join("");
     }
 
-    constructor(description: string) {
+    constructor(description: string);
+    constructor(attachments: [string, Range][]);
+    constructor(value: string | [string, Range][]) {
         super();
-        const matches = description.matchAll(rangeAttachmentRegex);
         this.attachment = [];
-        for (const match of matches) {
-            this.attachment.push(new RangeAttributeLabel(match[1]));
+        if (typeof value === "string") {
+            const matches = value.matchAll(rangeAttachmentRegex);
+            for (const match of matches) {
+                this.attachment.push(new RangeAttributeLabel(match[1]));
+            }
+        } else if (typeof value === "object") {
+            for (const [content, range] of value) {
+                this.attachment.push(new RangeAttributeLabel(content, range));
+            }
         }
         if (this.attachment.length == 0) {
-            throw new Error(`Range attribute has no attachment: ${description}`);
+            throw new Error(`Range attribute has no attachment: ${value}`);
         }
+        
     }
 }
 
-type AttachmentsContent = {
+export type AttachmentsContent = {
     [TIME_TAG]?: WordTimeTag;
     [TRANSLATION]?: PlainText;
     [FURIGANA]?: RangeAttribute;

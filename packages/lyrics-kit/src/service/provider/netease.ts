@@ -60,6 +60,8 @@ class NeteaseKLyrics extends Lyrics {
         if (lines.length === 0) {
             throw new Error("Lyrics are empty");
         }
+
+        this.lines = lines;
     }
 }
 
@@ -84,7 +86,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
                 headers: {
                     "Referer": "http://music.163.com/"
                 }
-            })
+            });
             if (outcome.status !== 200) {
                 console.error(outcome.data);
                 return [];

@@ -86,6 +86,8 @@ class TTPodXtrcLyrics extends Lyrics {
         if (lines.length === 0) {
             throw new Error("Lyrics are empty");
         }
+
+        this.lines = lines;
     }
 }
 

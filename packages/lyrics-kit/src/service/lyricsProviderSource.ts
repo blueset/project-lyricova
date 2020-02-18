@@ -6,6 +6,7 @@ import { XiamiProvider } from "./provider/xiami";
 import { GecimiProvider } from "./provider/gecimi";
 import { ViewLyricsProvider } from "./provider/viewLyrics";
 import { SyairProvider } from "./provider/syair";
+import { MarumaruProvider } from "./provider/marumaru";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class LyricsProviderSource<T extends LyricsProvider<any>> {
@@ -16,6 +17,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     static gecimi = new LyricsProviderSource(GecimiProvider);
     static viewLyrics = new LyricsProviderSource(ViewLyricsProvider);
     static syair = new LyricsProviderSource(SyairProvider);
+    static marumaru = new LyricsProviderSource(MarumaruProvider);
 
     static allCases = [
         LyricsProviderSource.netease,
@@ -25,18 +27,25 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
         LyricsProviderSource.gecimi,
         LyricsProviderSource.viewLyrics,
         LyricsProviderSource.syair,
+        LyricsProviderSource.marumaru,
     ];
 
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cls: new (...args: any[]) => T;
+    name: string;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(cls: new (...args: any[]) => T) {
         this.cls = cls;
+        this.name = cls.constructor.name;
     }
 
     public build(): T {
         return new this.cls();
+    }
+
+    public toJSON() {
+        return this.name;
     }
 }

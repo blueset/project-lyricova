@@ -2,10 +2,10 @@ import { LyricsProvider } from ".";
 import { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
+import cheerio from "cheerio";
 
 import { LyricsProviderSource } from "../lyricsProviderSource";
 import { syairSearchResultRegex, syairLyricsContentRegex } from "../../utils/regexPattern";
-import _ from "lodash";
 
 const SEARCH_URL = "https://syair.info/search";
 const LYRICS_URL = "https://syair.info/";
@@ -63,9 +63,8 @@ export class SyairProvider extends LyricsProvider<string> {
             if (!content) {
                 throw new Error("lyric is empty");
             }
-            const match = syairLyricsContentRegex.exec(content);
-
-            const lrc = new Lyrics(_.unescape(match[1]));
+            const match = cheerio.load(response.data)(".entry").text();
+            const lrc = new Lyrics(match[1]);
             lrc.metadata.source = LyricsProviderSource.syair;
             lrc.metadata.providerToken = token;
             return lrc;

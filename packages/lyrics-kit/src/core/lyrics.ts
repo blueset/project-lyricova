@@ -75,9 +75,11 @@ export class Lyrics {
         }
         this.metadata.data[ATTACHMENT_TAGS] = tags;
 
-        if (this.lines.length === 0) {
+        if (lines.length === 0) {
             throw new Error(`No valid line is found in this lyric file: ${description}`);
         }
+
+        this.lines = lines;
     }
 
     /**
