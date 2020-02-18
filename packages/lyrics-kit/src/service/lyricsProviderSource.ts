@@ -4,6 +4,8 @@ import { QQMusicProvider } from "./provider/qqMusic";
 import { KugouProvider } from "./provider/kugou";
 import { XiamiProvider } from "./provider/xiami";
 import { GecimiProvider } from "./provider/gecimi";
+import { ViewLyricsProvider } from "./provider/viewLyrics";
+import { SyairProvider } from "./provider/syair";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class LyricsProviderSource<T extends LyricsProvider<any>> {

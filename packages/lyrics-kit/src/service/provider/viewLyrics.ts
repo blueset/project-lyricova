@@ -29,9 +29,9 @@ export class ViewLyricsProvider extends LyricsProvider<ViewLyricsResponseSearchR
         }
         try {
             const { title, artist } = request.searchTerm;
-            const data = ViewLyricsProvider.assembleQuery(artist, title);
+            const query = ViewLyricsProvider.assembleQuery(artist, title);
 
-            const response = await axios.post<string>(SEARCH_URL, data, {
+            const response = await axios.post<string>(SEARCH_URL, query, {
                 responseType: "arraybuffer",
                 transformResponse: [(resp: ArrayBuffer) => {
                     if (resp.byteLength <= 22) {
@@ -85,7 +85,7 @@ export class ViewLyricsProvider extends LyricsProvider<ViewLyricsResponseSearchR
     public async fetchLyrics(token: ViewLyricsResponseSearchResult): Promise<Lyrics | undefined> {
         try {
             const url = LYRICS_URL + token.link;
-            const response = await axios.get<string>();
+            const response = await axios.get<string>(url);
             if (response.status !== 200) {
                 console.error(response.data);
                 return undefined;
