@@ -1,8 +1,8 @@
-interface NetEaseLyrics {
+export interface NetEaseLyrics {
     lyric?: string;
 }
 
-interface NetEaseResponseSingleLyrics {
+export interface NetEaseResponseSingleLyrics {
     lrc?: NetEaseLyrics;
     klyric?: NetEaseLyrics;
     tlyric?: NetEaseLyrics;

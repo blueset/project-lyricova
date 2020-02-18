@@ -5,7 +5,7 @@
 //  Copyright (C) 2020 Eana Hufwe. Licensed under GPLv3.
 //
 
-interface MarumaruResponseSingleLyrics {
+export interface MarumaruResponseSingleLyrics {
     Name: string;
     Name_Translate_zh: string;
     Singer: string;

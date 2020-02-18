@@ -1,4 +1,4 @@
-interface KugouResultItem {
+export interface KugouResultItem {
     id: string;
     accesskey: string;
     song: string;
@@ -7,6 +7,6 @@ interface KugouResultItem {
     duration: number;
 }
 
-interface KugouResponseSearchResult {
+export interface KugouResponseSearchResult {
     candidates: KugouResultItem[];
 }

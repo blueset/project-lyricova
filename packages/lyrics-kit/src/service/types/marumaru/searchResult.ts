@@ -5,7 +5,7 @@
 //  Copyright (C) 2020 Eana Hufwe. Licensed under GPLv3.
 //
 
-interface MarumaruEntry {
+export interface MarumaruEntry {
     songPK: string;
     title: string;
     artist: string;

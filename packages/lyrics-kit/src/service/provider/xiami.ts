@@ -8,6 +8,7 @@ import { ttpodXtrcLineRegex, id3TagRegex, resolveTimeTag, ttpodXtrcInlineTagRege
 import { LyricsLine } from "../../core/lyricsLine";
 import { WordTimeTag, WordTimeTagLabel, Attachments, TRANSLATION, TIME_TAG } from "../../core/lyricsLineAttachment";
 import _ from "lodash";
+import { XiamiResultSong, XiamiResponseSearchResult } from "../types/xiami/searchResult";
 
 const SEARCH_URL = "http://api.xiami.com/web";
 
@@ -28,7 +29,7 @@ class TTPodXtrcLyrics extends Lyrics {
         super();
 
         const matches = content.matchAll(id3TagRegex);
-        for (const match in matches) {
+        for (const match of matches) {
             const key = match[1].trim(), value = match[2].trim();
             if (key && value) {
                 this.idTags[key] = value;
@@ -42,7 +43,7 @@ class TTPodXtrcLyrics extends Lyrics {
                 timeTags = resolveTimeTag(timeTagStr);
 
             let line: LyricsLine;
-            if (match[3]) {
+            if (match[3] !== undefined) {
                 line = new LyricsLine(match[3], 0);
             } else {
                 let lineContent = "";
@@ -50,7 +51,7 @@ class TTPodXtrcLyrics extends Lyrics {
                     [new WordTimeTagLabel(0, 0)]
                 );
                 let dt = 0.0;
-                const inlineTagMatches = match[3].matchAll(ttpodXtrcInlineTagRegex);
+                const inlineTagMatches = match[2].matchAll(ttpodXtrcInlineTagRegex);
                 for (const m of inlineTagMatches) {
                     const timeTagStr = m[1];
                     const timeTag = parseFloat(timeTagStr) / 1000;
@@ -92,7 +93,7 @@ class TTPodXtrcLyrics extends Lyrics {
 }
 
 export class XiamiProvider extends LyricsProvider<XiamiResultSong> {
-    static source = LyricsProviderSource.qq;
+    // static source = LyricsProviderSource.qq;
 
     public async searchLyrics(request: LyricsSearchRequest): Promise<XiamiResultSong[]> {
         try {
@@ -104,7 +105,7 @@ export class XiamiProvider extends LyricsProvider<XiamiResultSong> {
                 // eslint-disable-next-line @typescript-eslint/camelcase
                 app_key: 1
             };
-            const response = await axios.post<XiamiResponseSearchResult>(SEARCH_URL,
+            const response = await axios.post<XiamiResponseSearchResult>(SEARCH_URL, "",
                 { params: parameter, headers: { Referer: "http://h.xiami.com/" } }
             );
             if (response.status !== 200) {

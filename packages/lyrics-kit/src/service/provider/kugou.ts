@@ -3,12 +3,15 @@ import { LyricsProviderSource } from "../lyricsProviderSource";
 import { LyricsSearchRequest } from "../lyricsSearchRequest";
 import axios from "axios";
 import { Lyrics } from "../../core/lyrics";
-import { gunzipSync } from "zlib";
+import { unzipSync } from "zlib";
 import { id3TagRegex, krcLineRegex, kugouInlineTagRegex } from "../../utils/regexPattern";
 import { WordTimeTag, WordTimeTagLabel, Attachments, TIME_TAG, TRANSLATION } from "../../core/lyricsLineAttachment";
 import { LyricsLine } from "../../core/lyricsLine";
 import _ from "lodash";
 import { LRC_BY, TITLE, ARTIST } from "../../core/idTagKey";
+import { KugouKrcHeaderField } from "../types/kugou/headerField";
+import { KugouResultItem, KugouResponseSearchResult } from "../types/kugou/searchResult";
+import { KugouResponseSingleLyrics } from "../types/kugou/singleLyrics";
 
 const SEARCH_URL = "http://lyrics.kugou.com/search";
 const LYRICS_URL = "http://lyrics.kugou.com/download";
@@ -30,7 +33,8 @@ function decryptKrc(base64: string): string {
     for (let i = 0; i < buffer.length; i++) {
         buffer[i] = buffer[i] ^ decodeKey[i & 0b1111];
     }
-    const unarchivedData = gunzipSync(buffer);
+    console.log(buffer.toString("base64"));
+    const unarchivedData = unzipSync(buffer);
     return unarchivedData.toString();
 }
 
@@ -39,7 +43,7 @@ class KugouKRCLyrics extends Lyrics {
         super();
         let languageHeader: KugouKrcHeaderField | null = null;
         const matches = content.matchAll(id3TagRegex);
-        for (const match in matches) {
+        for (const match of matches) {
             const key = match[1].trim(), value = match[2].trim();
             if (!key || !value) {
                 continue;
@@ -108,7 +112,7 @@ class KugouKRCLyrics extends Lyrics {
 }
 
 export class KugouProvider extends LyricsProvider<KugouResultItem> {
-    static source = LyricsProviderSource.kugou;
+    // static source = LyricsProviderSource.kugou;
 
     public async searchLyrics(request: LyricsSearchRequest): Promise<KugouResultItem[]> {
         try {

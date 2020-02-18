@@ -1,4 +1,4 @@
-interface QQSongItem {
+export interface QQSongItem {
     songmid: string;
     songname: string;
     albumname: string;
@@ -8,7 +8,7 @@ interface QQSongItem {
     }[];
 }
 
-interface QQResponseSearchResult {
+export interface QQResponseSearchResult {
     data: {
         song: {
             list: QQSongItem[];

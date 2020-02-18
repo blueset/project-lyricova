@@ -30,7 +30,7 @@ export class LyricsMetadata {
     }
 
     public get hasTranslation(): boolean {
-        for (const tag in this.attachmentTags) {
+        for (const tag of this.attachmentTags) {
             if (isTranslationTag(tag)) return true;
         }
         return false;

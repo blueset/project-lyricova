@@ -12,11 +12,14 @@ import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 import cheerio from "cheerio";
 import { URL } from "url";
+import { stringify } from "querystring";
 
 import { LyricsProviderSource } from "../lyricsProviderSource";
 import { TITLE, ARTIST } from "../../core/idTagKey";
 import { Range, AttachmentsContent, FURIGANA, RangeAttribute, TRANSLATION, PlainText, Attachments } from "../../core/lyricsLineAttachment";
 import { LyricsLine } from "../../core/lyricsLine";
+import { MarumaruResponseSingleLyrics } from "../types/marumaru/singleLyrics";
+import { MarumaruEntry } from "../types/marumaru/searchResult";
 
 const SEARCH_URL = "https://www.jpmarumaru.com/tw/JPSongList.asp";
 const LYRICS_URL = "https://www.jpmarumaru.com/tw/api/json_JPSongTrack.asp";
@@ -114,7 +117,7 @@ class MarumaruLyrics extends Lyrics {
 }
 
 export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
-    static source = LyricsProviderSource.marumaru;
+    // static source = LyricsProviderSource.marumaru;
 
     public async searchLyrics(request: LyricsSearchRequest): Promise<MarumaruEntry[]> {
         try {
@@ -136,13 +139,16 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
                 Page: 1
             };
 
-            const response = await axios.post<string>(SEARCH_URL, {
-                params: parameters,
-                headers: { 
-                    Accept: "*/*", "Content-Type": 
-                    "application/x-www-form-urlencoded; charset=utf-8"
+            const response = await axios.post<string>(
+                SEARCH_URL, 
+                stringify(parameters),
+                {
+                    headers: { 
+                        Accept: "*/*",
+                        "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
+                    }
                 }
-            });
+            );
             if (response.status !== 200) {
                 console.error(response.data);
                 return [];

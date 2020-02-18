@@ -1,4 +1,4 @@
-interface QQResponseSingleLyrics {
+export interface QQResponseSingleLyrics {
     retcode: number;
     code: number;
     subcode: number;

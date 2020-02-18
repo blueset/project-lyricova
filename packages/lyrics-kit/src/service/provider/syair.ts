@@ -5,15 +5,16 @@ import axios from "axios";
 import cheerio from "cheerio";
 
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import { syairSearchResultRegex, syairLyricsContentRegex } from "../../utils/regexPattern";
+import { SyairResponseSearchResult } from "../types/syair/searchResult";
+import { TITLE } from "../../core/idTagKey";
 
 const SEARCH_URL = "https://syair.info/search";
 const LYRICS_URL = "https://syair.info/";
 
-export class SyairProvider extends LyricsProvider<string> {
-    static source = LyricsProviderSource.syair;
+export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
+    // static source = LyricsProviderSource.syair;
 
-    public async searchLyrics(request: LyricsSearchRequest): Promise<string[]> {
+    public async searchLyrics(request: LyricsSearchRequest): Promise<SyairResponseSearchResult[]> {
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const parameters: any = {
@@ -34,25 +35,19 @@ export class SyairProvider extends LyricsProvider<string> {
                 return [];
             }
             const data: string = response.data;
-
-            const matches = data.matchAll(syairSearchResultRegex);
-            const lyrics: string[] = [];
-            for (const match of matches) {
-                if (match[1]) {
-                    lyrics.push(match[1]);
-                }
-            }
-
-            return lyrics;
+            const $ = cheerio.load(data);
+            return $(".li > a").map((_, x: CheerioElement): SyairResponseSearchResult => { 
+                return { url: $(x).attr("href"), name: $(x).text() }; 
+            }).get();
         } catch (e) {
             console.error(e);
             return [];
         }
     }
-    public async fetchLyrics(token: string): Promise<Lyrics | undefined> {
+    public async fetchLyrics(token: SyairResponseSearchResult): Promise<Lyrics | undefined> {
         try {
-            const url = LYRICS_URL + token;
-            const response = await axios.get<string>(url, {
+            const response = await axios.get<string>(token.url, {
+                baseURL: LYRICS_URL,
                 headers: { Referer: "https://syair.info" }
             });
             if (response.status !== 200) {
@@ -63,10 +58,27 @@ export class SyairProvider extends LyricsProvider<string> {
             if (!content) {
                 throw new Error("lyric is empty");
             }
-            const match = cheerio.load(response.data)(".entry").text();
-            const lrc = new Lyrics(match[1]);
+            const $ = cheerio.load(content);
+            const downloadLink = $("a[href*=download]").attr("href");
+            let lyricsText = "";
+            
+            const lyricsRequest = await axios.get(downloadLink, {
+                baseURL: LYRICS_URL,
+                headers: {
+                    "Cookie": response.headers["set-cookie"][0].split(";")[0]
+                }
+            });
+            if (lyricsRequest.data !== "This URL is invalid or has expired.") {
+                lyricsText = lyricsRequest.data;
+            }
+            if (!lyricsText) {
+                lyricsText = cheerio.load(response.data)(".entry").text();
+            }
+            lyricsText = lyricsText.replace(/\r\n/g, "\n");
+            const lrc = new Lyrics(lyricsText);
+            lrc.idTags[TITLE] = lrc.idTags[TITLE] || token.name;
             lrc.metadata.source = LyricsProviderSource.syair;
-            lrc.metadata.providerToken = token;
+            lrc.metadata.providerToken = token.url;
             return lrc;
         } catch (e) {
             console.error(e);

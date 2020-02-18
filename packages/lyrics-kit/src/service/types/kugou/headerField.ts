@@ -1,4 +1,4 @@
-interface KugouKrcHeaderField {
+export interface KugouKrcHeaderField {
     version: number;
     content: {
         language: number;

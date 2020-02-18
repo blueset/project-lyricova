@@ -4,13 +4,14 @@ import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 
 import { LyricsProviderSource } from "../lyricsProviderSource";
+import { GecimiResultEntry, GecimiResponseSearchResult } from "../types/gecimi/searchResult";
 
 const SEARCH_URL = "http://gecimi.com/api/lyric";
 // const COVER_URL = "http://gecimi.com/api/cover";
 // Not used in code.
 
 export class GecimiProvider extends LyricsProvider<GecimiResultEntry> {
-    static source = LyricsProviderSource.gecimi;
+    // static source = LyricsProviderSource.gecimi;
 
     public async searchLyrics(request: LyricsSearchRequest): Promise<GecimiResultEntry[]> {
         if (request.searchTerm.state !== "info") {

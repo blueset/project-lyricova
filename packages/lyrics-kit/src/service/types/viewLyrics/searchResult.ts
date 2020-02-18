@@ -1,4 +1,4 @@
-interface ViewLyricsResponseSearchResult {
+export interface ViewLyricsResponseSearchResult {
     link: string;
     artist: string;
     title: string;

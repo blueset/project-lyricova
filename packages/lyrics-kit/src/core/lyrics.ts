@@ -33,7 +33,7 @@ export class Lyrics {
     constructor(description?: string) {
         if (description === undefined) return;
 
-        for (const match in description.matchAll(id3TagRegex)) {
+        for (const match of description.matchAll(id3TagRegex)) {
             const key = match[1].trim(), value = match[2].trim();
             if (value !== "") {
                 this.idTags[key] = value;
@@ -41,7 +41,7 @@ export class Lyrics {
         }
 
         const lines: LyricsLine[] = [];
-        for (const match in description.matchAll(lyricsLineRegex)) {
+        for (const match of description.matchAll(lyricsLineRegex)) {
             const
                 timeTagStr = match[1],
                 timeTags = resolveTimeTag(timeTagStr);
@@ -64,7 +64,7 @@ export class Lyrics {
         lines.sort((a, b) => a.position - b.position);
 
         const tags: Set<string> = new Set();
-        for (const match in description.matchAll(lyricsLineAttachmentRegex)) {
+        for (const match of description.matchAll(lyricsLineAttachmentRegex)) {
             const
                 timeTagStr = match[1],
                 timeTags = resolveTimeTag(timeTagStr);

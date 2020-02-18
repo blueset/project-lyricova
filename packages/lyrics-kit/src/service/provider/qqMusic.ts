@@ -6,6 +6,8 @@ import axiosJsonp from "../../utils/axiosJsonp";
 import _ from "lodash";
 import { TITLE, ARTIST, ALBUM } from "../../core/idTagKey";
 import { LyricsProviderSource } from "../lyricsProviderSource";
+import { QQSongItem, QQResponseSearchResult } from "../types/qqMusic/searchResult";
+import { QQResponseSingleLyrics } from "../types/qqMusic/singleLyrics";
 
 const SEARCH_URL = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp";
 const LYRICS_URL = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg";
@@ -15,7 +17,7 @@ function decodeLyrics(base64: string): string {
 }
 
 export class QQMusicProvider extends LyricsProvider<QQSongItem> {
-    static source = LyricsProviderSource.qq;
+    // static source = LyricsProviderSource.qq;
 
     public async searchLyrics(request: LyricsSearchRequest): Promise<QQSongItem[]> {
         try {
@@ -23,7 +25,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
                 w: request.searchTerm.toString()
             };
             const response = await axios.get<QQResponseSearchResult>(SEARCH_URL,
-                _.defaultTo({ params: parameter }, axiosJsonp));
+                _.defaults({ params: parameter }, axiosJsonp));
             if (response.status !== 200) {
                 console.error(response.data);
                 return [];
@@ -42,7 +44,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
                 // eslint-disable-next-line @typescript-eslint/camelcase
                 g_tk: 5381
             };
-            const response = await axios.get<QQResponseSingleLyrics>(LYRICS_URL, _.defaultTo({
+            const response = await axios.get<QQResponseSingleLyrics>(LYRICS_URL, _.defaults({
                 params: parameters,
                 headers: {
                     Referer: "y.qq.com/portal/player.html"

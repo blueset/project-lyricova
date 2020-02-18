@@ -1,4 +1,4 @@
-interface NetEaseResponseSong {
+export interface NetEaseResponseSong {
     name: string;
     id: number;
     /** duration (in millisecond) */
@@ -14,7 +14,7 @@ interface NetEaseResponseSong {
     };
 }
 
-interface NetEaseResponseSearchResult {
+export interface NetEaseResponseSearchResult {
     result: {
         songCount: number;
         songs: NetEaseResponseSong[];

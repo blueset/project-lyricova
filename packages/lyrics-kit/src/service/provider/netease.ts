@@ -7,6 +7,8 @@ import { TITLE, ARTIST, ALBUM, LRC_BY } from "../../core/idTagKey";
 import { id3TagRegex, krcLineRegex, netEaseInlineTagRegex } from "../../utils/regexPattern";
 import { WordTimeTag, WordTimeTagLabel, Attachments, TIME_TAG } from "../../core/lyricsLineAttachment";
 import { LyricsLine } from "../../core/lyricsLine";
+import { NetEaseResponseSong, NetEaseResponseSearchResult } from "../types/netease/searchResult";
+import { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
 
 const SEARCH_URL = "http://music.163.com/api/search/pc";
 const LYRICS_URL = "http://music.163.com/api/song/lyric";
@@ -15,7 +17,7 @@ class NeteaseKLyrics extends Lyrics {
     constructor(content: string) {
         super();
         const matches = content.matchAll(id3TagRegex);
-        for (const match in matches) {
+        for (const match of matches) {
             const key = match[1].trim(), value = match[2].trim();
             if (key && value) {
                 this.idTags[key] = value;
@@ -66,7 +68,7 @@ class NeteaseKLyrics extends Lyrics {
 }
 
 export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
-    static source = LyricsProviderSource.netease;
+    // static source = LyricsProviderSource.netease;
 
     constructor() {
         super();
