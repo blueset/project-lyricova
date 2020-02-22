@@ -37,9 +37,15 @@
 
     "lib": ["es2017", "es2020.string"],
     "types": ["node"],
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "typeRoots": ["node_modules/@types", "src/types"],
+
+    "normalTypeScriptOptions": "here"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules/**"],
-  "compileOnSave": false
+  "compileOnSave": false,
+  "typedocOptions": {
+    "mode": "modules",
+    "out": "docs"
+  }
 }
