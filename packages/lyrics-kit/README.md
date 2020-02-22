@@ -101,6 +101,16 @@ positive_integer        ::= "1".."9" decimal*
 non_negative_integer    ::= zero | positive_integer
 ```
 
+## Known issue
+
+- LRCX specs uses indexes of [grapheme clusters] when processing inline tags
+  concerning text offset. The ported `lyrics-kit` has not yet implemented
+  this feature and counting by the default JavaScript string length
+  (UTF-16 encoded length) instead for now. This may result in a discrepancy
+  when rendering lyrics with LyricsX.
+
+[grapheme clusters]: http://unicode.org/reports/tr29/
+
 ---
 
     lyrics-kit: Fetch and parse lyrics from various sources.
