@@ -14,44 +14,46 @@ $ # This package is not yet on npm / yarn.
 ## Usage
 
 ### Typescript (ES6 import)
+
 ```typescript
-import { 
-    LyricsSearchRequest as Request,
-    LyricsProviderManager as Manager,
-    LyricsProviderSource as Source,
-    Lyrics
-} from "lyrics-kit";
+import {
+  LyricsSearchRequest as Request,
+  LyricsProviderManager as Manager,
+  LyricsProviderSource as Source,
+  Lyrics
+} from 'lyrics-kit';
 
 async () => {
-    const request = Request.fromInfo(
-        "Song title", 
-        "Artist name", 
-        /* duration in seconds */ 320.1,
-    );
-    // Get lyrics from all sources.
-    let manager = new Manager();
-    let lyrics: Lyrics[] = manager.getLyrics(request);
+  const request = Request.fromInfo(
+    'Song title',
+    'Artist name',
+    /* duration in seconds */ 320.1
+  );
+  // Get lyrics from all sources.
+  let manager = new Manager();
+  let lyrics: Lyrics[] = manager.getLyrics(request);
 
-    // Get lyrics from a set of sources
-    manager = new Manager([Source.netease, Source.kugou]);
-    lyrics = manager.getLyrics(request);
+  // Get lyrics from a set of sources
+  manager = new Manager([Source.netease, Source.kugou]);
+  lyrics = manager.getLyrics(request);
 
-    // Get lyrics from a single source
-    source = Source.qqMusic.build();
-    lyrics = source.getLyrics(request);
+  // Get lyrics from a single source
+  source = Source.qqMusic.build();
+  lyrics = source.getLyrics(request);
 
-    // Get LRCX text
-    for (const lyric of lyrics) {
-        console.log("========== BEGIN LRCX CONTENT ==========");
-        console.log(lyric.toString());
-        console.log("=========== END LRCX CONTENT ===========");
-    }
-}
+  // Get LRCX text
+  for (const lyric of lyrics) {
+    console.log('========== BEGIN LRCX CONTENT ==========');
+    console.log(lyric.toString());
+    console.log('=========== END LRCX CONTENT ===========');
+  }
+};
 ```
 
 ---
 
 ## Appendix: LRCX grammar
+
 ```grammar
 lrcx                    ::= [line (NEWLINE line)*]
 line                    ::= id_tag | lyric_line | ""
@@ -82,7 +84,7 @@ translation             ::= "[tr" [ ":" text ] "]" text
 
 // Ruby (furigana / romaji for Japanese)
 
-ruby                    ::= ("fu" | "ro") ruby_tags
+ruby                    ::= "[" ("fu" | "ro") "]" ruby_tags
 ruby_tags               ::= ruby_tag ruby_tag*
 ruby_tag                ::= "<" ruby_tag_text "," non_negative_integer "," non_negative_integer ">"
 ruby_text_text          ::= <all printable characters except NEWLINE, "<" or ">">
