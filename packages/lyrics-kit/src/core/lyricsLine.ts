@@ -33,8 +33,8 @@ export class LyricsLine {
     public toString(): string {
         return [
             this.content, 
-            ...Object.entries(this.attachments.content).map((v) => `[${v[0]}]${v[1]}`)
-        ].map((v) => `[${this.timeTag}]${v}`).join("\n");
+            ...Object.entries(this.attachments.content).map((v) => `[${v[0].toString()}]${v[1].toString()}`)
+        ].map((v) => `[${this.timeTag.toString()}]${v}`).join("\n");
     }
     public toLegacyString(): string {
         let translation = this.attachments.translation();

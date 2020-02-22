@@ -1,4 +1,4 @@
-// export * from './lib/async';
-// export * from './lib/hash';
-// export * from './lib/number';
-// TODO: decide what to expose from the API.
+export { LyricsProviderManager } from "./service/lyricsProviderManager";
+export { LyricsProviderSource } from "./service/lyricsProviderSource";
+export { LyricsSearchRequest } from "./service/lyricsSearchRequest";
+export { Lyrics } from "./core/lyrics";

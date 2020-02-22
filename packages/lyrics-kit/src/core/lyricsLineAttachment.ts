@@ -95,6 +95,14 @@ export class WordTimeTag extends LyricsLineAttachment {
             this.duration = arg1 as number | undefined;
         }
     }
+
+    public toString(): string {
+        let text = this.tags.map(x => x.toString()).join();
+        if (this.duration) {
+            text += `<${this.durationMSec}>`;
+        }
+        return text;
+    }
 }
 
 export class RangeAttributeLabel {

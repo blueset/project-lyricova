@@ -114,7 +114,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
                 return undefined;
             }
             const data = response.data;
-            let lyrics: Lyrics;
+            let lyrics: Lyrics = undefined;
             const transLrc = data?.tlyric?.lyric ? new Lyrics(data.tlyric.lyric) : null;
             const kLrc = data?.klyric?.lyric ? new NeteaseKLyrics(data.klyric.lyric) : null;
             if (kLrc) {
