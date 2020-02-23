@@ -8,6 +8,7 @@ import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
 import { Op } from "sequelize";
+import Path from "path";
 import chunkArray from "../utils/chunkArray";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
@@ -39,6 +40,7 @@ export class MusicFileController {
     this.router = Router();
     this.router.get("/scan", this.scan);
     this.router.get("/", this.getSongs);
+    this.router.get("/:id(\\d+)", this.getSong);
   }
 
   /** Get metadata of a song via ffprobe */
@@ -70,7 +72,7 @@ export class MusicFileController {
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
     const hasLyrics = fs.existsSync(lrcPath);
     return {
-      path: path,
+      path: Path.relative(MUSIC_FILES_PATH, path),
       hasLyrics: hasLyrics,
       hash: md5,
       needReview: true,
@@ -94,7 +96,7 @@ export class MusicFileController {
 
     const metadata = await this.getSongMetadata(path);
     entry = await entry.update({
-      path: path,
+      path: Path.relative(MUSIC_FILES_PATH, path),
       hasLyrics: hasLyrics,
       fileSize: fileSize,
       hash: md5,
@@ -182,6 +184,16 @@ export class MusicFileController {
     try {
       const songs = await MusicFile.findAll();
       return res.json(songs);
+    } catch (e) { next(e); }
+  }
+
+  public getSong = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const song = await MusicFile.findByPk(parseInt(req.params.id));
+      if (song === null) {
+        return res.status(404).json({ status: 404, text: "Not found" });
+      }
+      return res.json(song);
     } catch (e) { next(e); }
   }
 }
