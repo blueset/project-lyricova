@@ -1,8 +1,9 @@
-export default function chunkArray<T>(arr: T[], chunk: number = 100): T[][] {
-  if (chunk <= 0) throw Error("chunk = {chunk} must be positive.");
-  const result: T[][] = [];
-  for (let i = 0; i < arr.length;) {
-    result.push(arr.slice(i, i + chunk));
+export default function* chunkArray<T>(arr: T[], chunk: number = 100) {
+  if (chunk <= 0) throw Error(`chunk size ${chunk} must be positive.`);
+  let iterationCount = 0;
+  for (let i = 0; i < arr.length; i += chunk) {
+    yield arr.slice(i, i + chunk);
+    iterationCount++;
   }
-  return result;
+  return iterationCount;
 }

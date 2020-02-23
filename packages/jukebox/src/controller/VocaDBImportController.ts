@@ -3,15 +3,18 @@ import { MusicFile } from "../models/MusicFile";
 import { Song } from "../models/Song";
 import { Album } from "../models/Album";
 import { Artist } from "../models/Artist";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, Router } from "express";
 import { SongForApiContract } from "vocadb";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 
 export class VocaDBImportController {
   private axios: AxiosInstance;
+  public router: Router;
 
   constructor() {
     this.axios = axios.create({ responseType: "json" });
+    this.router = Router();
+    this.router.get("/enrolSong/:id(\\d+)", this.enrolSong);
   }
 
   private async getSong(songId: string | number): Promise<SongForApiContract> {

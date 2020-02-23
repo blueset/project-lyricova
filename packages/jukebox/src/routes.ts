@@ -12,18 +12,14 @@ export default (app: express.Express) => {
   userRouter.get("/users/:id", userController.one);
   userRouter.post("/users", userController.save);
   userRouter.delete("/users/:id", userController.remove);
-
-  const musicFileRouter = express.Router();
-  const musicFileController = new MusicFileController();
-  musicFileRouter.get("/scan", musicFileController.scan);
-
-  const vocaDBImportRouter = express.Router();
-  const vocaDBImportController = new VocaDBImportController();
-  vocaDBImportRouter.get("/enrolSong/:id(\\d+)", vocaDBImportController.enrolSong);
-
   app.use("/", userRouter);
-  app.use("/", musicFileRouter);
-  app.use("/vocadb", vocaDBImportRouter);
+
+  const musicFileController = new MusicFileController();
+  app.use("/files", musicFileController.router);
+
+  const vocaDBImportController = new VocaDBImportController();
+  app.use("/vocadb", vocaDBImportController.router);
+
 
   app.get("/transliterate/:text", (req: Request, res: Response) => {
     res.send(transliterate(req.params.text));

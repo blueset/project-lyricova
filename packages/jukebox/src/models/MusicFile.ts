@@ -1,12 +1,13 @@
 import { Song } from "./Song";
 import { Album } from "./Album";
 import { Playlist } from "./Playlist";
-import { Model, Column, PrimaryKey, Table, ForeignKey, BelongsTo, AllowNull, BelongsToMany, CreatedAt, UpdatedAt, DeletedAt } from "sequelize-typescript";
+import { Model, Column, PrimaryKey, Table, ForeignKey, BelongsTo, AllowNull, BelongsToMany, CreatedAt, UpdatedAt, DeletedAt, AutoIncrement } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { FileInPlaylist } from "./FileInPlaylist";
 
 @Table
 export class MusicFile extends Model<MusicFile> {
+  @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER })
   id: number;

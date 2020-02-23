@@ -1,6 +1,6 @@
 
 import { MusicFile } from "../models/MusicFile";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, Router } from "express";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";
 import ffprobe from "ffprobe-client";
@@ -33,6 +33,15 @@ interface GenericMetadata {
 
 export class MusicFileController {
 
+  public router: Router;
+
+  constructor() {
+    this.router = Router();
+    this.router.get("/scan", this.scan);
+    this.router.get("/", this.getSongs);
+  }
+
+  /** Get metadata of a song via ffprobe */
   private async getSongMetadata(path: string): Promise<GenericMetadata> {
     const metadata = await ffprobe(path);
     const tags = metadata.format.tags;
@@ -52,23 +61,26 @@ export class MusicFileController {
     };
   }
 
-  private async addSongEntry(path: string): Promise<MusicFile> {
+  /** Make a new MusicFile object from file path. */
+  private async buildSongEntry(path: string): Promise<object> {
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
     const metadataPromise = this.getSongMetadata(path);
     const md5 = await md5Promise,
       metadata = await metadataPromise;
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
     const hasLyrics = fs.existsSync(lrcPath);
-    const newFile = MusicFile.build({
+    return {
       path: path,
       hasLyrics: hasLyrics,
       hash: md5,
       needReview: true,
       ...metadata
-    });
-    return newFile;
+    };
+    // const newFile = MusicFile.build();
+    // return newFile;
   }
 
+  /** Update an existing MusicFile object with data in file. */
   private async updateSongEntry(entry: MusicFile): Promise<MusicFile | null> {
     let needUpdate = false;
     const path = entry.path;
@@ -114,21 +126,29 @@ export class MusicFileController {
       const toUpdate = setUnion(knownPathsSet, filePathsSet);
       const toDelete = setDifference(knownPathsSet, filePathsSet);
 
+      console.log(`toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`);
+
       // Remove records from database for removed files
       if (toDelete.size) {
         await MusicFile.destroy({ where: { path: { [Op.in]: [...toDelete] } } });
       }
 
+      console.log("entries deleted.");
+
       // Add new files to database
       const limit = pLimit(10);
 
       const entriesToAdd = await Promise.all(
-        [...toAdd].map(path => limit(async () => this.addSongEntry(path)))
+        [...toAdd].map(path => limit(async () => this.buildSongEntry(path)))
       );
+
+      console.log("entries_to_add done.");
 
       for (const chunk of chunkArray(entriesToAdd)) {
         await MusicFile.bulkCreate(chunk);
       }
+
+      console.log("entries added.");
 
       // update songs into database
       const toUpdateEntries = databaseEntries.filter(entry =>
@@ -139,6 +159,8 @@ export class MusicFileController {
           limit(async () => this.updateSongEntry(entry))
         )
       );
+
+      console.log("entries updated.");
 
       const updatedCount = updateResults.reduce(
         (prev: number, curr) => prev + (curr === null ? 0 : 1),
@@ -155,4 +177,11 @@ export class MusicFileController {
       });
     } catch (e) { next(e); }
   };
+
+  public getSongs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const songs = await MusicFile.findAll();
+      return res.json(songs);
+    } catch (e) { next(e); }
+  }
 }
