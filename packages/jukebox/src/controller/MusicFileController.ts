@@ -4,12 +4,14 @@ import { Request, Response, NextFunction, Router } from "express";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";
 import ffprobe from "ffprobe-client";
+import { writeAsync as ffMetadataWrite } from "../utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
 import { Op } from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
+import _ from "lodash";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -30,7 +32,15 @@ interface GenericMetadata {
   duration: number;
   fileSize: number;
   // formatName?: string;
+  songId: string;
+  albumId: string;
+  // playlists: string[];
 }
+
+const
+  SONG_ID_TAG = "LyricovaSongID",
+  ALBUM_ID_TAG = "LyricovaAlbumID",
+  PLAYLIST_IDS_TAG = "LyricovaPlaylistIDs";
 
 export class MusicFileController {
 
@@ -41,6 +51,7 @@ export class MusicFileController {
     this.router.get("/scan", this.scan);
     this.router.get("/", this.getSongs);
     this.router.get("/:id(\\d+)", this.getSong);
+    this.router.patch("/:id(\\d+)", this.writeToSong);
   }
 
   /** Get metadata of a song via ffprobe */
@@ -58,8 +69,11 @@ export class MusicFileController {
       albumSortOrder: tags["album-sort"] || tags.ALBUMSORT || undefined,
       hasCover: metadata.streams.some(val => val.codec_type === "video"),
       duration: isNaN(duration) ? -1 : duration,
-      fileSize: parseInt(metadata.format.size)
-      // formatName: get(metadata, "format.format_name", "")
+      fileSize: parseInt(metadata.format.size),
+      songId: tags[SONG_ID_TAG] || undefined,
+      albumId: tags[ALBUM_ID_TAG] || undefined,
+      // formatName: get(metadata, "format.format_name", ""),
+      // playlists: tags[PLAYLIST_IDS_TAG] ? tags[PLAYLIST_IDS_TAG].split(",") : undefined,
     };
   }
 
@@ -78,8 +92,6 @@ export class MusicFileController {
       needReview: true,
       ...metadata
     };
-    // const newFile = MusicFile.build();
-    // return newFile;
   }
 
   /** Update an existing MusicFile object with data in file. */
@@ -104,6 +116,27 @@ export class MusicFileController {
       ...metadata
     });
     return entry;
+  }
+
+  /** Write metadata to file partially */
+  private async writeToFile(file: MusicFile, data: Partial<MusicFile>) {
+    let mapping;
+    if (file.path.toLowerCase().endsWith(".flac")) {
+      mapping = { trackSortOrder: "TITLESORT", artistSortOrder: "ARTISTSORT", albumSortOrder: "ALBUMSORT" };
+    } else { // FFMPEG default
+      mapping = { trackSortOrder: "title-sort", artistSortOrder: "artist-sort", albumSortOrder: "album-sort" };
+    }
+    const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
+    await ffMetadataWrite(Path.resolve(MUSIC_FILES_PATH, file.path), {
+      title: data.trackName,
+      [mapping.trackSortOrder]: data.trackSortOrder,
+      album: data.albumName,
+      [mapping.albumSortOrder]: data.albumSortOrder,
+      artist: data.artistName,
+      [mapping.artistSortOrder]: data.artistSortOrder,
+      [SONG_ID_TAG]: `${data.songId}`,
+      [ALBUM_ID_TAG]: `${data.albumId}`
+    }, { preserveStreams: true, forceId3v2: forceId3v2 });
   }
 
   public scan = async (req: Request, res: Response, next: NextFunction) => {
@@ -193,6 +226,27 @@ export class MusicFileController {
       if (song === null) {
         return res.status(404).json({ status: 404, text: "Not found" });
       }
+      return res.json(song);
+    } catch (e) { next(e); }
+  }
+
+  public writeToSong = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const song = await MusicFile.findByPk(parseInt(req.params.id));
+      if (song === null) {
+        return res.status(404).json({ status: 404, text: "Not found" });
+      }
+
+      const data = _.pick(req.body, [
+        "songId", "albumId", "trackName", "trackSortOrder", "albumName", "albumSortOrder",
+        "artistName", "artistSortOrder"
+      ]);
+
+      // write song file
+      await this.writeToFile(song, data);
+
+      _.assign(song, data);
+      await song.save();
       return res.json(song);
     } catch (e) { next(e); }
   }
