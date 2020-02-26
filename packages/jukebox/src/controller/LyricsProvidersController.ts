@@ -159,6 +159,7 @@ export class LyricsProvidersController {
   public lyricsKit = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const artists = req.query.artists, title = req.query.title;
+      const useLRCX = parseInt(req.query.useLRCX) === 1;
       const duration = parseFloat(req.query.duration) || 0;
       if (title === undefined || artists === undefined) {
         return res.status(400).json({
@@ -172,7 +173,7 @@ export class LyricsProvidersController {
       return res.json(
         lyrics.map(lrc => {
           return {
-            lyrics: lrc.toPlainLRC(),
+            lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
             quality: lrc.quality,
             isMatched: lrc.isMatched(),
             metadata: lrc.metadata,

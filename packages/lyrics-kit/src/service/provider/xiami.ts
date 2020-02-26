@@ -75,8 +75,8 @@ class TTPodXtrcLyrics extends Lyrics {
             timeTags.forEach(v => {
                 const l = _.clone(line);
                 l.position = v;
-                line.lyrics = this;
-                lines.push(line);
+                l.lyrics = this;
+                lines.push(l);
             });
         }
 

@@ -33,7 +33,8 @@ class MarumaruLyrics extends Lyrics {
     /** Parse time tag in format of hh:mm:ss.mmm into number of seconds. */
     static parseTimeTag(timeTag: string): number {
         try {
-            const [h, m, s] = timeTag.match(/^(\d+):(\d+):([\d.]+)$/);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const [, h, m, s] = timeTag.match(/^(\d+):(\d+):([\d.]+)$/);
             return parseFloat(h) * 60 * 60 +
                 parseFloat(m) * 60 +
                 parseFloat(s);
@@ -79,20 +80,24 @@ class MarumaruLyrics extends Lyrics {
                 const furigana: [string, Range][] = [];
                 const $ = cheerio;
                 const segments: CheerioElement[] = $(LyricsYomi[i]).map((_, x) => x).get();
-                for (const segment of segments) {
-                    if ($(segment).children().length > 0) {
-                        const
-                            segmentText = $("rb", segment).text(),
-                            segmentRuby = $("rt", segment).text();
-                        furigana.push([segmentRuby, [lineContent.length, lineContent.length + segmentText.length]]);
-                        lineContent += segmentText;
-                    } else {
-                        lineContent += $(segment).text();
+                if (segments.length === 0) {
+                    lineContent = LyricsYomi[i];
+                } else {
+                    for (const segment of segments) {
+                        if ($(segment).children().length > 0) {
+                            const
+                                segmentText = $("rb", segment).text(),
+                                segmentRuby = $("rt", segment).text();
+                            furigana.push([segmentRuby, [lineContent.length, lineContent.length + segmentText.length]]);
+                            lineContent += segmentText;
+                        } else {
+                            lineContent += $(segment).text();
+                        }
                     }
-                }
-                if (furigana.length > 0) {
-                    attachments[FURIGANA] = new RangeAttribute(furigana);
-                    this.metadata.attachmentTags.add(FURIGANA);
+                    if (furigana.length > 0) {
+                        attachments[FURIGANA] = new RangeAttribute(furigana);
+                        this.metadata.attachmentTags.add(FURIGANA);
+                    }
                 }
             } else {
                 lineContent = Lyrics[i];
