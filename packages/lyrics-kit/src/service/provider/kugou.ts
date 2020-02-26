@@ -55,7 +55,6 @@ class KugouKRCLyrics extends Lyrics {
             } else {
                 this.idTags[key] = value;
             }
-            this.idTags[key] = value;
         }
         
         const krcLineMatches = content.matchAll(krcLineRegex);
