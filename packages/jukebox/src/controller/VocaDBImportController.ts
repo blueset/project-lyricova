@@ -5,7 +5,7 @@ import { Album } from "../models/Album";
 import { Artist } from "../models/Artist";
 import { Request, Response, NextFunction, Router } from "express";
 import { SongForApiContract } from "vocadb";
-import axios, { AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosInstance } from "axios";
 
 export class VocaDBImportController {
   private axios: AxiosInstance;
