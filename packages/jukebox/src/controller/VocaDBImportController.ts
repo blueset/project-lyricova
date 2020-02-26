@@ -20,7 +20,7 @@ export class VocaDBImportController {
   private async getSong(songId: string | number): Promise<SongForApiContract> {
     const song = await this.axios.get<SongForApiContract>(`https://vocadb.net/api/songs/${songId}`, {
       params: {
-        fields: "Albums,Artists,Names,ThumbUrl,PVs"
+        fields: "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags"
       }
     });
     return song.data;

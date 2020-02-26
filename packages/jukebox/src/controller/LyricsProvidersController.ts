@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction, Router } from "express";
 import axios from "axios";
 import cheerio from "cheerio";
+import { Song } from "../models/Song";
+import { json } from "body-parser";
+import { SongForApiContract } from "vocadb";
 
 export class LyricsProvidersController {
   public router: Router;
@@ -9,6 +12,7 @@ export class LyricsProvidersController {
     this.router = Router();
     this.router.get("/hmiku", this.hmikuAtWiki);
     this.router.get("/hmiku/:id(\\d+)", this.hmikuAtWikiSingle);
+    this.router.get("/vocadb/:id(\\d+)", this.vocaDBSingle);
   }
 
   public hmikuAtWiki = async (req: Request, res: Response, next: NextFunction) => {
@@ -101,6 +105,42 @@ export class LyricsProvidersController {
         furigana: furigana,
         lyrics: lyrics
       });
+    } catch (e) {
+      if (e.response && e.response.status === 404) {
+        return res.status(404).json({
+          status: 404,
+          error: "Not found"
+        });
+      }
+      next(e);
+    }
+  }
+
+  public vocaDBSingle = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id;
+      const elm = await Song.findByPk(id);
+      if (elm) {
+        if (elm.vocaDbJson.lyrics && elm.vocaDbJson.lyrics.length) {
+          return res.json(elm.vocaDbJson.lyrics);
+        } else {
+          if (elm.vocaDbJson.originalVersionId) {
+            return res.redirect(`${elm.vocaDbJson.originalVersionId}`);
+          }
+          return res.json([]);
+        }
+      }
+      const resp = await axios.get<SongForApiContract>(`https://vocadb.net/api/songs/${id}`, {
+        params: { fields: "Lyrics" }
+      });
+      if (resp.data.lyrics && resp.data.lyrics.length) {
+        return res.json(resp.data.lyrics);
+      } else {
+        if (resp.data.originalVersionId) {
+          return res.redirect(`${resp.data.originalVersionId}`);
+        }
+        return res.json([]);
+      }
     } catch (e) {
       if (e.response && e.response.status === 404) {
         return res.status(404).json({
