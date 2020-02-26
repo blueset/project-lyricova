@@ -2,17 +2,21 @@ import { Request, Response, NextFunction, Router } from "express";
 import axios from "axios";
 import cheerio from "cheerio";
 import { Song } from "../models/Song";
-import { json } from "body-parser";
 import { SongForApiContract } from "vocadb";
+import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
 
 export class LyricsProvidersController {
   public router: Router;
+
+  private lyricsProvider: LyricsProviderManager;
 
   constructor() {
     this.router = Router();
     this.router.get("/hmiku", this.hmikuAtWiki);
     this.router.get("/hmiku/:id(\\d+)", this.hmikuAtWikiSingle);
     this.router.get("/vocadb/:id(\\d+)", this.vocaDBSingle);
+    this.router.get("/lyrics-kit", this.lyricsKit);
+    this.lyricsProvider = new LyricsProviderManager();
   }
 
   public hmikuAtWiki = async (req: Request, res: Response, next: NextFunction) => {
@@ -148,6 +152,35 @@ export class LyricsProvidersController {
           error: "Not found"
         });
       }
+      next(e);
+    }
+  }
+
+  public lyricsKit = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const artists = req.query.artists, title = req.query.title;
+      const duration = parseFloat(req.query.duration) || 0;
+      if (title === undefined || artists === undefined) {
+        return res.status(400).json({
+          status: 400,
+          error: "Query parameter `title` and `artists` are required."
+        });
+      }
+      const lyrics = await this.lyricsProvider.getLyrics(
+        LyricsSearchRequest.fromInfo(title, artists, duration)
+      );
+      return res.json(
+        lyrics.map(lrc => {
+          return {
+            lyrics: lrc.toPlainLRC(),
+            quality: lrc.quality,
+            isMatched: lrc.isMatched(),
+            metadata: lrc.metadata,
+            tags: lrc.idTags
+          };
+        })
+      );
+    } catch (e) {
       next(e);
     }
   }

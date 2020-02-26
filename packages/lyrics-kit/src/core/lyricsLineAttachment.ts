@@ -111,7 +111,7 @@ export class RangeAttributeLabel {
     constructor(description: string);
     constructor(content: string, range: Range);
     constructor(arg0: string, arg1: Range = undefined) {
-        if (typeof arg0 == "number") {
+        if (Array.isArray(arg1)) {
             const content = arg0, range = arg1 as Range;
             this.content = content;
             this.range = range;
@@ -190,7 +190,7 @@ export class Attachments {
 
     public translation(languageCode: string | undefined = undefined): string | undefined {
         const tag = makeTranslationTag(languageCode) || TRANSLATION;
-        return (this.content[tag] as PlainText).text;
+        return this.content[tag] && (this.content[tag] as PlainText).text;
     }
 
     public setTranslation(str: string, languageCode: string | undefined = undefined) {
@@ -199,7 +199,7 @@ export class Attachments {
     }
 
     public getTag(tag: string): string | undefined {
-        return this.content[tag].toString();
+        return this.content[tag] && this.content[tag].toString();
     }
 
     public setTag(tag: string, value: string) {

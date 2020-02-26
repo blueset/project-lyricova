@@ -183,6 +183,10 @@ export class Lyrics {
             return undefined;
         }
         const match = base60TimeRegex.exec(len);
+        if (match === null) {
+            console.error(`"${len}" (${typeof len}) is an invalid length.`);
+            return undefined;
+        }
         const
             min = parseFloat(match[1]) || 0,
             sec = parseFloat(match[2]) || 0;
@@ -225,7 +229,7 @@ export class Lyrics {
     private noDurationFactor = 0.7;
 
     public get quality(): number {
-        if (this.metadata.quality) {
+        if (this.metadata.quality !== undefined || this.metadata.quality !== null) {
             return this.metadata.quality;
         }
         let quality = this.artistQuality + this.titleQuality + this.durationQuality;
@@ -302,7 +306,7 @@ export class Lyrics {
     }
 
     private get durationQuality(): number {
-        const 
+        const
             duration = this.length,
             searchDuration = this.metadata.request?.duration;
         if (searchDuration === undefined) {
@@ -318,16 +322,16 @@ export class Lyrics {
     public merge(other: Lyrics) {
         let index = 0, otherIndex = 0;
         while (index < this.lines.length && otherIndex < other.lines.length) {
-            if (Math.abs(this.lines[index].position - other.lines[index].position) < mergeTimetagThreshold) {
+            if (Math.abs(this.lines[index].position - other.lines[otherIndex].position) < mergeTimetagThreshold) {
                 const transStr = other.lines[otherIndex].content;
                 if (transStr !== "") {
                     this.lines[index].attachments.setTranslation(transStr);
                 }
-                index ++; otherIndex ++;
+                index++; otherIndex++;
             } else if (this.lines[index].position > other.lines[otherIndex].position) {
-                otherIndex ++;
+                otherIndex++;
             } else {
-                index ++;
+                index++;
             }
         }
         this.metadata.attachmentTags.add(TRANSLATION);

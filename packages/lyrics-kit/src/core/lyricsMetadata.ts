@@ -1,6 +1,7 @@
 import { isTranslationTag } from "./lyricsLineAttachment";
 import { LyricsProviderSource } from "../service/lyricsProviderSource";
 import { LyricsSearchRequest } from "../service/lyricsSearchRequest";
+import _ from "lodash";
 
 export const ATTACHMENT_TAGS = "attachmentTags";
 export const SOURCE = "source";
@@ -20,6 +21,14 @@ export class LyricsMetadata {
             .entries(this)
             .map(v => `[${v[0]}:${v[1]}]`)
             .join("\n");
+    }
+
+    public toJSON(): object {
+        const d = _.clone(this.data);
+        if (d.source && d.source.cls && d.source.cls.name) {
+            d.source = d.source.cls.name;
+        }
+        return d;
     }
 
     public get attachmentTags(): Set<string> {

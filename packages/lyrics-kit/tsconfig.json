@@ -39,7 +39,7 @@
     "types": ["node"],
     "typeRoots": ["node_modules/@types", "src/types"],
 
-    "normalTypeScriptOptions": "here"
+    // "normalTypeScriptOptions": "here"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules/**"],

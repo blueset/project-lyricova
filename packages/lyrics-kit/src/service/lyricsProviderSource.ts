@@ -38,7 +38,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(cls: new (...args: any[]) => T) {
         this.cls = cls;
-        this.name = cls.constructor.name;
+        this.name = cls && cls.constructor && cls.constructor.name;
     }
 
     public build(): T {

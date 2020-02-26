@@ -54,6 +54,8 @@
     "axios-cookiejar-support": "^0.5.1",
     "cheerio": "^1.0.0-rc.3",
     "lodash": "^4.17.15",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.8",
     "sha.js": "^2.4.11",
     "tough-cookie": "^3.0.1"
   },
@@ -63,9 +65,10 @@
     "@types/axios": "^0.14.0",
     "@types/cheerio": "^0.22.16",
     "@types/lodash": "^4.14.149",
+    "@types/request-promise-native": "^1.0.17",
     "@typescript-eslint/eslint-plugin": "^2.19.2",
     "@typescript-eslint/parser": "^2.19.2",
-    "ava": "2.2.0",
+    "ava": "^3.4.0",
     "codecov": "^3.5.0",
     "cz-conventional-changelog": "^2.1.0",
     "eslint": "^6.8.0",
@@ -86,9 +89,6 @@
     "failFast": true,
     "files": [
       "build/main/**/*.spec.js"
-    ],
-    "sources": [
-      "build/main/**/*.js"
     ]
   },
   "config": {
