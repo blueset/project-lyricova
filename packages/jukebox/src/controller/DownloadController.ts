@@ -5,6 +5,8 @@ import Path from "path";
 import { VIDEO_FILES_PATH } from "../utils/secret";
 import { promisify } from "util";
 import shortid from "shortid";
+import { pythonBridge, PythonBridge } from "python-bridge";
+import { encrypt, decrypt } from "../utils/crypto";
 
 export class DownloadController {
   public router: Router;
@@ -14,6 +16,8 @@ export class DownloadController {
     this.router.post("/youtubedl/video", this.youtubeDlVideo);
     this.router.get("/youtubedl/info", this.youtubeDlGetInfo);
     this.router.post("/youtubedl/thumbnails", this.youtubeDlGetThumbnail);
+    this.router.get("/music-dl", this.musicDlSearch);
+    this.router.post("/music-dl", this.musicDlDownload);
 
     // TODO: find a way to open a global web socket/socket.io
   }
@@ -204,7 +208,87 @@ export class DownloadController {
     }
   }
 
-  // TODO: write python script to search and download from music_dl
-  // with streaming from pipe (stdin)
-  // Use AES-256-CBC to encrypt/decrypt pickled data.
+  private async prepareMusicDlPythonSession(): Promise<PythonBridge> {
+    const python = pythonBridge({ python: "/usr/local/bin/python3" });
+    await python.ex`
+import pickle
+import codecs
+import sys
+from music_dl.source import MusicSource
+from music_dl import config
+
+ms = MusicSource()
+config.init()
+
+def search(term):
+    result = ms.search(
+        term, ["baidu", "kugou", "netease", "163", "qq", "migu"]
+    )
+    data = [
+        {
+            "source": i.source,
+            "title": i.title,
+            "artists": i.singer,
+            "album": i.album,
+            "duration": i.duration,
+            "size": i.size,
+            "songURL": i.song_url,
+            "lyricsURL": i.lyrics_url,
+            "coverURL": i.cover_url,
+            "pickle": codecs.encode(pickle.dumps(i), "base64").decode()
+        }
+        for i in result
+    ]
+    return data
+
+
+def download():
+    data = sys.stdin.read()
+    pickled = codecs.decode(data.encode(), "base64")
+    obj = pickle.loads(pickled)
+    obj.download()
+    return obj.song_fullname
+    `;
+    return python;
+  }
+
+  /**
+   * Search songs via music-dl
+   * GET .../music-dl?query=QUERY
+   */
+  public musicDlSearch = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query = req.query.query;
+      if (!query) res.status(400).json({ status: 400, error: "`query` is required." });
+      const python = await this.prepareMusicDlPythonSession();
+      const outcome: { pickle: string }[] = await python`search(${query})`;
+      outcome.forEach(v => { v.pickle = encrypt(v.pickle); });
+      res.json(outcome);
+      await python.end();
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * Download song via music-dl
+   * POST .../music-dl
+   * <Encrypted pickle data>
+   */
+  public musicDlDownload = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const encrypted = req.body;
+      if (!encrypted) res.status(400).json({ status: 400, error: "payload is required." });
+      const payload = decrypt(encrypted);
+      const python = await this.prepareMusicDlPythonSession();
+      python.stdin.write(payload);
+      python.stdin.end();
+      const outcome = await python`download()`;
+      // TODO: move file to right place
+      res.json({ status: 200, path: outcome });
+      await python.end();
+    } catch (e) {
+      next(e);
+    }
+  }
 }
