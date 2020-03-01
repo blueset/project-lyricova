@@ -206,5 +206,5 @@ export class DownloadController {
 
   // TODO: write python script to search and download from music_dl
   // with streaming from pipe (stdin)
-  // Use AES-256-CFB to encrypt/decrypt pickled data.
+  // Use AES-256-CBC to encrypt/decrypt pickled data.
 }
