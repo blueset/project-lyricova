@@ -1,4 +1,3 @@
-
 import { MusicFile } from "../models/MusicFile";
 import { Request, Response, NextFunction, Router } from "express";
 import glob from "glob";

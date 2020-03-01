@@ -4,6 +4,7 @@ import { MusicFileController } from "./controller/MusicFileController";
 import { VocaDBImportController } from "./controller/VocaDBImportController";
 import { transliterate } from "./utils/transliterate";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController";
+import { DownloadController } from "./controller/DownloadController";
 
 export default (app: express.Express) => {
   const userRouter = express.Router();
@@ -21,8 +22,11 @@ export default (app: express.Express) => {
   const vocaDBImportController = new VocaDBImportController();
   app.use("/vocadb", vocaDBImportController.router);
 
-  const lyricsProviderController = new LyricsProvidersController();
-  app.use("/lyrics", lyricsProviderController.router);
+  const lyricsProvidersController = new LyricsProvidersController();
+  app.use("/lyrics", lyricsProvidersController.router);
+
+  const downloadController = new DownloadController();
+  app.use("/download", downloadController.router);
 
   app.get("/transliterate/:text", (req: Request, res: Response) => {
     res.send(transliterate(req.params.text));

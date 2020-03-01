@@ -25,4 +25,9 @@ export const MUSIC_FILES_PATH = process.env["MUSIC_FILES_PATH"].endsWith("/")
   ? process.env["MUSIC_FILES_PATH"]
   : process.env["MUSIC_FILES_PATH"] + "/";
 
+export const VIDEO_FILES_PATH = process.env["VIDEO_FILES_PATH"].endsWith("/")
+  ? process.env["VIDEO_FILES_PATH"]
+  : process.env["VIDEO_FILES_PATH"] + "/";
+
+
 export const DB_URI = process.env["DB_URI"];

@@ -1,7 +1,13 @@
-# Awesome Project Build with TypeORM
+# JukeBox
 
-Steps to run this project:
+# Node dependencies
 
-1. Run `npm i` command
-2. Setup database settings inside `ormconfig.json` file
-3. Run `npm start` command
+```bash
+npm install
+```
+
+# Python 3 dependencies
+
+```
+pip install music-dl click
+```
