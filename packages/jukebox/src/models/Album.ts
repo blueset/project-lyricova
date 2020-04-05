@@ -7,16 +7,21 @@ import { transliterate } from "../utils/transliterate";
 import { HasMany, Table, Model, Column, PrimaryKey, BelongsToMany, CreatedAt, UpdatedAt, DeletedAt, Default, AllowNull } from "sequelize-typescript";
 import { Song } from "./Song";
 import { DataTypes } from "sequelize";
+import { ObjectType, Field, Int } from "type-graphql";
 
+@ObjectType()
 @Table
 export class Album extends Model<Album> {
+  @Field(type => Int)
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER })
   id: number;
 
+  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   name: string;
 
+  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   sortOrder: string;
 
@@ -41,16 +46,20 @@ export class Album extends Model<Album> {
   @Column({ type: DataTypes.JSON })
   vocaDbJson: AlbumForApiContract | null;
 
+  @Field()
   @Default(true)
   @Column({ type: DataTypes.BOOLEAN })
   incomplete: boolean;
 
+  @Field()
   @CreatedAt
   creationDate: Date;
 
+  @Field()
   @UpdatedAt
   updatedOn: Date;
 
+  @Field()
   @DeletedAt
   deletionDate: Date;
 

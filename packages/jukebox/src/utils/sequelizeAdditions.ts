@@ -29,7 +29,7 @@ class SimpleEnumArray extends UnproxyAbstract implements AbstractDataType {
 
   // Mandatory, complete definition of the new type in the database
   public toSql() {
-    console.log("----------- TOSQL");
+    // console.log("----------- TOSQL");
     return `VARCHAR(${this._length})`;
   }
 

@@ -11,16 +11,21 @@ import { Model, CreatedAt, UpdatedAt, DeletedAt, Column, Table, BelongsTo, Prima
 import { Artist } from "./Artist";
 import { Album } from "./Album";
 import { SongOfEntry } from "./SongOfEntry";
+import { ObjectType, Int, Field } from "type-graphql";
 
+@ObjectType()
 @Table
 export class Song extends Model<Song> {
+  @Field(type => Int)
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER })
   public id!: number;
 
+  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   public name!: string;
 
+  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   public sortOrder!: string;
 
@@ -36,6 +41,7 @@ export class Song extends Model<Song> {
   )
   albums: Array<Album & { SongInAlbum: SongInAlbum }>;
 
+  @Field(type => Int, { nullable: true })
   @AllowNull
   @ForeignKey(type => Song)
   @Column({ type: DataTypes.INTEGER })
@@ -54,6 +60,7 @@ export class Song extends Model<Song> {
   @HasMany(() => VideoFile)
   videos: VideoFile[];
 
+  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(4096) })
   coverPath!: string | null;
@@ -64,12 +71,15 @@ export class Song extends Model<Song> {
   @BelongsToMany(() => Entry, () => SongOfEntry)
   lyricovaEntries: Array<Entry & { SongOfEntry: SongOfEntry }>;
 
+  @Field()
   @Column({ type: DataTypes.BOOLEAN, defaultValue: true })
   incomplete!: boolean;
 
+  @Field()
   @CreatedAt
   creationDate: Date;
 
+  @Field()
   @UpdatedAt
   updatedOn: Date;
 

@@ -1,5 +1,4 @@
 import { MusicFile } from "../models/MusicFile";
-import { Request, Response, NextFunction, Router } from "express";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";
 import ffprobe from "ffprobe-client";
@@ -11,9 +10,12 @@ import { Op } from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
-import { Resolver, Query, Args, ObjectType, Field, Int, Arg, Mutation, Ctx, InputType } from "type-graphql";
+import { Resolver, Query, Args, ObjectType, Field, Int, Arg, Mutation, Ctx, InputType, FieldResolver, Root } from "type-graphql";
 import { PaginationArgs, PaginationInfo } from "./commons";
 import { UserInputError } from "apollo-server-express";
+import { Playlist } from "../models/Playlist";
+import { Song } from "../models/Song";
+import { Album } from "../models/Album";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -115,7 +117,7 @@ class MusicFileInput implements Partial<MusicFile> {
 }
 
 
-@Resolver()
+@Resolver(of => MusicFile)
 export class MusicFileResolver {
 
 
@@ -310,7 +312,7 @@ export class MusicFileResolver {
   }
 
   @Mutation(returns => MusicFile)
-  public async wr(@Arg("id", type => Int) id: number, @Arg("data") data: MusicFileInput): Promise<MusicFile> {
+  public async writeToMusicFile(@Arg("id", type => Int) id: number, @Arg("data") data: MusicFileInput): Promise<MusicFile> {
     const song = await MusicFile.findByPk(id);
     if (song === null) {
       throw new UserInputError(`Music file with id ${id} is not found.`);
@@ -322,5 +324,20 @@ export class MusicFileResolver {
     _.assign(song, data);
     await song.save();
     return song;
+  }
+
+  @FieldResolver(type => [Playlist])
+  private async playlists(@Root() musicFile: MusicFile): Promise<Playlist[]> {
+    return await musicFile.$get("playlists");
+  }
+
+  @FieldResolver(type => Song, { nullable: true })
+  private async song(@Root() musicFile: MusicFile): Promise<Song | null> {
+    return await musicFile.$get("song");
+  }
+
+  @FieldResolver(type => Album, { nullable: true })
+  private async album(@Root() musicFile: MusicFile): Promise<Album | null> {
+    return await musicFile.$get("album");
   }
 }
