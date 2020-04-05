@@ -9,11 +9,12 @@ import registerRoutes from "./routes";
 import { SESSION_SECRET } from "./utils/secret";
 import sequelize from "./db";
 import SequelizeStoreConstructor from "connect-session-sequelize";
+import { applyApollo } from "./graphql";
 
 const SequelizeStore = SequelizeStoreConstructor(session.Store);
 
 
-export default () => {
+export default async () => {
   const app = express();
 
   app.set("port", process.env.PORT || 3000);
@@ -36,6 +37,8 @@ export default () => {
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(flash());
+
+  await applyApollo(app);
 
   app.get("/", async (req: Request, res: Response) => {
     res.send("Hello world!");

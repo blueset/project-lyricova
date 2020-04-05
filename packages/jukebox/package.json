@@ -37,9 +37,11 @@
   },
   "homepage": "https://github.com/blueset/project-lyricova#readme",
   "dependencies": {
+    "@types/graphql": "^14.5.0",
     "@types/pinyin": "^2.8.1",
     "@typescript-eslint/eslint-plugin": "^2.14.0",
     "@typescript-eslint/parser": "^2.14.0",
+    "apollo-server-express": "^2.11.0",
     "async": "^3.1.0",
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
@@ -82,6 +84,7 @@
     "stream-combiner": "^0.2.2",
     "stream-filter": "^2.1.0",
     "through": "^2.3.8",
+    "type-graphql": "^0.17.6",
     "typeorm": "^0.2.22",
     "winston": "^3.2.1",
     "youtube-dl": "^3.0.2"
