@@ -1,6 +1,5 @@
 
 import { Song } from "../models/Song";
-import { Router } from "express";
 import { SongForApiContract } from "vocadb";
 import axios, { AxiosInstance } from "axios";
 import { Resolver, Mutation, Arg, Int } from "type-graphql";
