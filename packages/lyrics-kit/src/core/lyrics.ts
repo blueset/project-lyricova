@@ -229,7 +229,7 @@ export class Lyrics {
     private noDurationFactor = 0.7;
 
     public get quality(): number {
-        if (this.metadata.quality !== undefined || this.metadata.quality !== null) {
+        if (_.isNumber(this.metadata.quality)) {
             return this.metadata.quality;
         }
         let quality = this.artistQuality + this.titleQuality + this.durationQuality;

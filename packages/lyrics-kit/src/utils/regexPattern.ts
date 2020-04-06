@@ -22,7 +22,7 @@ export const id3TagRegex = /^(?!\[[+-]?\d+:\d+(?:\.\d+)?\])\[(.+?):(.+)\]$/gm;
 
 export const lyricsLineRegex = /^(\[[+-]?\d+:\d+(?:\.\d+)?\])+(?!\[)([^【\n\r]*)(?:【(.*)】)?/gm;
 
-export const base60TimeRegex = /^\s*(?:(\d+):)?(\d+(?:.\d+)?)\s*$/g;
+export const base60TimeRegex = /^\s*(?:(\d+):)?(\d+(?:.\d+)?)\s*$/;
 
 export const lyricsLineAttachmentRegex = /^(\[[+-]?\d+:\d+(?:\.\d+)?\])+\[(.+?)\](.*)/gm;
 

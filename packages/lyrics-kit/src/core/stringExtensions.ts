@@ -11,13 +11,13 @@ export function distance(
         substitutionCost?: number; insertionCost?: number; deletionCost?: number;
     }
 ): number {
-    options = _.defaultTo(options, {
+    options = _.defaults(options, {
         substitutionCost: 1, 
         insertionCost: 1, 
         deletionCost: 1
     });
     const { substitutionCost, insertionCost, deletionCost } = options;
-    const d: number[] = _.range(other.length);
+    const d: number[] = _.range(other.length + 1);
     let t = 0;
     for (const c1 of self) {
         t = d[0];
