@@ -52,7 +52,45 @@ async () => {
 
 ---
 
-## Appendix: LRCX grammar
+## Appendix: LRCX specification
+
+Taken from [ddddxxx/LyricsKit](https://github.com/ddddxxx/LyricsKit/blob/master/README.md).
+
+```
+<lrcx>              ::= <line> (NEWLINE <line>)*
+<line>              ::= <id tag>
+                      | <lyric line>
+                      | <lyric attachment>
+                      | ""
+
+<id tag>            ::= <tag>
+<tag>               ::= "[" <tag content> "]"
+<tag content>       ::= <tag key>
+                      | <tag key> ":" <tag value>
+<tag key>           ::= [0-9a-zA-Z_-]+
+<tag value>         ::= <character except NEWLINE or "]">+
+
+<lyric line>        ::= <time tag> <character except NEWLINE>*
+<lyric attachment>  ::= <time tag> <attachment tag> <attachment body>
+
+<time tag>          ::= "[" (<minute> ":")* <second> ("." <millisecond>)* "]"
+
+<attachment tag>            ::= <tag>
+<attachment body>           ::= <plain text attachment>
+                              | <index based attachment>
+                              | <range based attachment>
+<plain text attachment>     ::= <character except NEWLINE>+
+<index based attachment>    ::= <index based segment>+
+<range based attachment>    ::= <range based segment>+
+<index based segment>       ::= "<" <segment value> "," <segment index> ">"
+<range based segment>       ::= "<" <segment value> "," <segment range> ">"
+<segment value>             ::= <characters except NEWLINE, "," or ">">
+<segment index>             ::= <number>
+<segment range>             ::= <lowerBound> "," <upperBound>
+```
+
+<details>
+<summary>My previous intepretation</summary>
 
 ```grammar
 lrcx                    ::= [line (NEWLINE line)*]
@@ -64,7 +102,7 @@ id_tag                  ::= "[" text_tag_key ":" tag_text "]"
                           | "[length:" fixed_2_number "]"
                           | "[offset:" number "]"
 id_tag_key              ::= "ti" | "al" | "ar" | "au" | "by"
-tag_text                ::= <all printable characters except NEWLINE, ":" or "]">
+tag_text                ::= < all printable characters except NEWLINE, ":" or "]">
 
 // Lyric line
 
@@ -100,6 +138,8 @@ zero                    ::= "0"
 positive_integer        ::= "1".."9" decimal*
 non_negative_integer    ::= zero | positive_integer
 ```
+
+</details>
 
 ## Known issue
 
