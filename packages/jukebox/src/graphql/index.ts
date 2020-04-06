@@ -1,7 +1,9 @@
 import { Application } from "express";
 import { ApolloServer } from "apollo-server-express";
-import { ObjectType, Field, Int, Resolver, Query } from "type-graphql";
+import { ObjectType, Field, Int, Resolver, Query, Arg } from "type-graphql";
 import { buildSchema } from "type-graphql";
+import { GraphQLString } from "graphql";
+import { transliterate } from "../utils/transliterate";
 
 @ObjectType({ description: "Foo is not foolish." })
 class Foo {
@@ -16,6 +18,12 @@ class Foo {
 class FooResolver {
   // What is dependency injection ???
   // constructor(private fooService: FooService) {}
+
+  @Query(returns => GraphQLString)
+  transliterate(@Arg("text") text: string): string {
+    return transliterate(text);
+  }
+
 
   @Query(returns => Foo)
   foo(): Foo {
