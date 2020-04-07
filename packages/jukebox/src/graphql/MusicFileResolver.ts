@@ -277,7 +277,7 @@ export class MusicFileResolver {
   };
 
   @Query(returns => MusicFilesPagination)
-  public async songFiles(@Args() { first, after }: PaginationArgs): Promise<MusicFilesPagination> {
+  public async musicFiles(@Args() { first, after }: PaginationArgs): Promise<MusicFilesPagination> {
     if (after === null || after === undefined) {
       after = "-1";
     }
@@ -306,7 +306,7 @@ export class MusicFileResolver {
   }
 
   @Query(returns => MusicFile, { nullable: true })
-  public async songFile(@Arg("id", type => Int) id: number): Promise<MusicFile | null> {
+  public async musicFile(@Arg("id", type => Int) id: number): Promise<MusicFile | null> {
     const song = await MusicFile.findByPk(id);
     return song;
   }
