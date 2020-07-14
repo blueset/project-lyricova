@@ -5,6 +5,8 @@ import { VocaDBImportController } from "./controller/VocaDBImportController";
 import { transliterate } from "./utils/transliterate";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController";
 import { DownloadController } from "./controller/DownloadController";
+import { constant } from "lodash";
+import { AuthController } from "./controller/AuthController";
 
 export default (app: express.Express) => {
   const userRouter = express.Router();
@@ -27,6 +29,9 @@ export default (app: express.Express) => {
 
   const downloadController = new DownloadController();
   app.use("/download", downloadController.router);
+
+  const authController = new AuthController();
+  app.use("/", authController.router);
 
   app.get("/transliterate/:text", (req: Request, res: Response) => {
     res.send(transliterate(req.params.text));

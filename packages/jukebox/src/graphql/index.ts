@@ -1,9 +1,11 @@
 import { Application } from "express";
 import { ApolloServer } from "apollo-server-express";
-import { ObjectType, Field, Int, Resolver, Query, Arg } from "type-graphql";
+import { ObjectType, Field, Int, Resolver, Query, Arg, Authorized } from "type-graphql";
 import { buildSchema } from "type-graphql";
 import { GraphQLString } from "graphql";
 import { transliterate } from "../utils/transliterate";
+import { authChecker } from "./auth";
+import bcrypt from "bcryptjs";
 
 @ObjectType({ description: "Foo is not foolish." })
 class Foo {
@@ -24,7 +26,13 @@ class FooResolver {
     return transliterate(text);
   }
 
+  @Query(returns => GraphQLString)
+  async hash(@Arg("plaintext") plaintext: string): Promise<string> {
+    return bcrypt.hash(plaintext, 10);
+  }
 
+
+  @Authorized("LEVEL0")
   @Query(returns => Foo)
   foo(): Foo {
     return {
@@ -52,9 +60,15 @@ export async function applyApollo(app: Application) {
 
   const schema = await buildSchema({
     resolvers: [FooResolver, `${__dirname}/**/*Resolver.{ts,js}`],
-    dateScalarMode: "timestamp"
+    dateScalarMode: "timestamp",
+    authChecker
   });
-  const server = new ApolloServer({ schema });
+  const server = new ApolloServer({
+    schema,
+    context: ({ req }) => ({
+      req
+    })
+  });
 
   server.applyMiddleware({ app });
 }

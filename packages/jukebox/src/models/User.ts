@@ -1,5 +1,6 @@
 import { Model, Table, Column, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, DeletedAt, Default } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
+import bcrypt from "bcryptjs";
 
 @Table
 export class User extends Model<User> {
@@ -38,4 +39,8 @@ export class User extends Model<User> {
 
   @DeletedAt
   deletionDate: Date;
+
+  public async checkPassword(plaintextPassword: string): Promise<boolean> {
+    return await bcrypt.compare(plaintextPassword, this.password);
+  }
 }
