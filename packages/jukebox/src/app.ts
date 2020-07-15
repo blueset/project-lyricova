@@ -26,7 +26,7 @@ export default async () => {
   app.use(
     session({
       resave: false,
-      saveUninitialized: true,
+      saveUninitialized: false,
       proxy: true,
       secret: SESSION_SECRET,
       store: new SequelizeStore({

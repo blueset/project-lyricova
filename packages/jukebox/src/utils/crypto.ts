@@ -1,8 +1,8 @@
 import crypto from "crypto";
-import { SESSION_SECRET } from "./secret";
+import { PICKLE_SECRET } from "./secret";
 
 const algorithm = "aes-256-cbc";
-const key = crypto.createHash("md5").update(SESSION_SECRET).digest("hex");
+const key = crypto.createHash("md5").update(PICKLE_SECRET).digest("hex");
 
 /**
  * Encrypt base64 data.

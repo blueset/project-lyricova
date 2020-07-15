@@ -21,6 +21,21 @@ if (!SESSION_SECRET) {
   process.exit(1);
 }
 
+export const PICKLE_SECRET = process.env["PICKLE_SECRET"];
+
+if (!PICKLE_SECRET) {
+  logger.error("No pickle secret. Set PICKLE_SECRET environment variable.");
+  process.exit(1);
+}
+
+
+export const JWT_SECRET = process.env["JWT_SECRET"];
+
+if (!JWT_SECRET) {
+  logger.error("No JWT secret. Set JWT_SECRET environment variable.");
+  process.exit(1);
+}
+
 export const MUSIC_FILES_PATH = process.env["MUSIC_FILES_PATH"].endsWith("/")
   ? process.env["MUSIC_FILES_PATH"]
   : process.env["MUSIC_FILES_PATH"] + "/";

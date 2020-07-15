@@ -7,12 +7,15 @@ import { promisify } from "util";
 import shortid from "shortid";
 import { pythonBridge, PythonBridge } from "python-bridge";
 import { encrypt, decrypt } from "../utils/crypto";
+import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 
 export class DownloadController {
   public router: Router;
 
   constructor() {
     this.router = Router();
+    // Bar all requests behind this with JWT
+    this.router.use(adminOnlyMiddleware);
     this.router.post("/youtubedl/video", this.youtubeDlVideo);
     this.router.get("/youtubedl/info", this.youtubeDlGetInfo);
     this.router.post("/youtubedl/thumbnails", this.youtubeDlGetThumbnail);
