@@ -16,6 +16,8 @@ import { UserInputError } from "apollo-server-express";
 import { Playlist } from "../models/Playlist";
 import { Song } from "../models/Song";
 import { Album } from "../models/Album";
+import path from "path";
+import { swapExt } from "../utils/path";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -339,5 +341,38 @@ export class MusicFileResolver {
   @FieldResolver(type => Album, { nullable: true })
   private async album(@Root() musicFile: MusicFile): Promise<Album | null> {
     return await musicFile.$get("album");
+  }
+
+  @FieldResolver(type => String, { nullable: true })
+  private async lyrics(@Root() musicFile: MusicFile, @Arg("ext", { defaultValue: "lrc" }) ext: string): Promise<string | null> {
+    const filePath = path.join(MUSIC_FILES_PATH, musicFile.path);
+    const lyricsPath = swapExt(filePath, ext);
+    try {
+      const buffer = fs.readFileSync(lyricsPath);
+      return buffer.toString();
+    } catch {
+      return null;
+    }
+  }
+
+  @Mutation(returns => Boolean, { description: "Write lyrics file" })
+  public async writeLyrics(
+    @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
+    @Arg("lyrics", () => String, { description: "Lyrics file content" }) lyrics: string,
+    @Arg("ext", () => String, { description: "Lyrics file extension", defaultValue: "lrc" }) ext: string,
+  ): Promise<boolean> {
+    const file = await MusicFile.findByPk(fileId);
+    if (file === null) return false;
+    const filePath = path.join(MUSIC_FILES_PATH, file.path);
+    const lyricsPath = swapExt(filePath, ext);
+
+    try {
+      fs.writeFileSync(lyricsPath, lyrics);
+      await file.update({ hasLyrics: true });
+    } catch {
+      return false;
+    }
+
+    return true;
   }
 }
