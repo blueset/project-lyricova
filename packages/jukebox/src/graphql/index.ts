@@ -32,7 +32,7 @@ class FooResolver {
   }
 
 
-  @Authorized("LEVEL0")
+  @Authorized("ADMIN")
   @Query(returns => Foo)
   foo(): Foo {
     return {
@@ -66,7 +66,8 @@ export async function applyApollo(app: Application) {
   const server = new ApolloServer({
     schema,
     context: ({ req }) => ({
-      req
+      req,
+      user: req.user,  // That should come from passport strategy JWT
     })
   });
 

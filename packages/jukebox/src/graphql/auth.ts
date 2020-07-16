@@ -1,23 +1,20 @@
 import { AuthChecker } from "type-graphql";
-import { Request } from "apollo-server-express";
+import { User } from "../models/User";
+import { Request } from "express";
 
 export type ContextType = {
-  user?: {};
+  user?: User;
   req: Request;
 };
 
-export const authChecker: AuthChecker<ContextType> = (
-  { root, args, context, info },
-  roles,
-) => {
-  console.log("Context", context);
-  console.log("root", root);
-  console.log("args", args);
-  console.log("info", info);
-  console.log("roles", roles);
-  // here we can read the user from context
-  // and check his permission in the db against the `roles` argument
-  // that comes from the `@Authorized` decorator, eg. ["ADMIN", "MODERATOR"]
+export const authChecker: AuthChecker<ContextType> = ({ context }, roles) => {
+  if (roles.indexOf("ADMIN") >= 0) {
+    console.log("context.user", context.user);
+    if (context.user !== null && context.user !== undefined) {
+      return context.user.role === "admin";
+    }
+    return false;
+  }
 
-  return true; // or false if access is denied
+  return true;
 };

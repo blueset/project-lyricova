@@ -38,13 +38,13 @@ export default async () => {
   app.use(passport.session());
   app.use(flash());
 
-  await applyApollo(app);
+  registerRoutes(app);
 
   app.get("/", async (req: Request, res: Response) => {
     res.send("Hello world!");
   });
 
-  registerRoutes(app);
+  await applyApollo(app);
 
   return app;
 };

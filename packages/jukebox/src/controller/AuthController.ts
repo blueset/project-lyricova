@@ -28,6 +28,9 @@ export class AuthController {
       "local",
       { session: false }
     ), this.emitJWT);
+
+    // Inject user context before Apollo server
+    this.router.post("/graphql", this.injectGraphQLUser);
   }
 
   private initPassport() {
@@ -98,5 +101,15 @@ export class AuthController {
       status: 200,
       token: token
     });
+  }
+
+  public injectGraphQLUser = async (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate("jwt", { session: false, failWithError: false }, function (err: unknown, user: User | null) {
+      if (user) {
+        req.login(user, next);
+      } else {
+        next();
+      }
+    })(req, res, next);
   }
 }
