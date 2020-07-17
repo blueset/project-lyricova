@@ -213,34 +213,6 @@ export class MusicFileResolver {
     }, { preserveStreams: true, forceId3v2: forceId3v2 });
   }
 
-  private async writeLyricsToFile(file: MusicFile, lyrics: string) {
-    let key = "lyrics-eng";
-
-    // Use FFmpeg only for FLAC due to its bug on ID3 lyrics.
-    if (file.path.toLowerCase().endsWith(".flac")) {
-      key = "LYRICS";
-      // const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
-      const forceId3v2 = false;
-      await ffMetadataWrite(Path.resolve(MUSIC_FILES_PATH, file.path), {
-        [key]: lyrics
-      }, { preserveStreams: true, forceId3v2: forceId3v2 });
-    } else {
-      // Use node-id3 for ID3
-      const tags: NodeID3.Tags = {
-        unsynchronisedLyrics: {
-          language: ID3_LYRICS_LANGUAGE,
-          text: lyrics,
-        },
-      };
-
-      // Write ID3-Frame into (.mp3) file, returns true or error object
-      const result = NodeID3.update(tags, file.path);
-      if (result !== true) {
-        throw result;
-      }
-    }
-  }
-
   @Mutation(returns => MusicFilesScanOutcome)
   public async scan(): Promise<MusicFilesScanOutcome> {
     // Load
@@ -383,12 +355,13 @@ export class MusicFileResolver {
     try {
       const buffer = fs.readFileSync(lyricsPath);
       return buffer.toString();
-    } catch {
+    } catch (e) {
+      console.error("Error while reading lyrics file:", e);
       return null;
     }
   }
 
-  @Mutation(returns => Boolean, { description: "Write lyrics file" })
+  @Mutation(returns => Boolean, { description: "Write lyrics to a separate file" })
   public async writeLyrics(
     @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
     @Arg("lyrics", () => String, { description: "Lyrics file content" }) lyrics: string,
@@ -402,7 +375,48 @@ export class MusicFileResolver {
     try {
       fs.writeFileSync(lyricsPath, lyrics);
       await file.update({ hasLyrics: true });
-    } catch {
+    } catch (e) {
+      console.error("Error while writing lyrics file:", e);
+      return false;
+    }
+
+    return true;
+  }
+
+  @Mutation(returns => Boolean, { description: "Write lyrics to music file as a tag" })
+  public async writeLyricsToMusicFile(
+    @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
+    @Arg("lyrics", () => String, { description: "Lyrics content" }) lyrics: string,
+  ): Promise<boolean> {
+    const file = await MusicFile.findByPk(fileId);
+    if (file === null) return false;
+
+    try {
+      // Use FFmpeg only for FLAC due to its bug on ID3 lyrics.
+      if (file.path.toLowerCase().endsWith(".flac")) {
+        const key = "LYRICS";
+        // const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
+        const forceId3v2 = false;
+        await ffMetadataWrite(Path.resolve(MUSIC_FILES_PATH, file.path), {
+          [key]: lyrics
+        }, { preserveStreams: true, forceId3v2: forceId3v2 });
+      } else {
+        // Use node-id3 for ID3
+        const tags: NodeID3.Tags = {
+          unsynchronisedLyrics: {
+            language: ID3_LYRICS_LANGUAGE,
+            text: lyrics,
+          },
+        };
+
+        // Write ID3-Frame into (.mp3) file, returns true or error object
+        const result = NodeID3.update(tags, file.path);
+        if (result !== true) {
+          throw result;
+        }
+      }
+    } catch (e) {
+      console.error("Error while writing lyrics tag:", e);
       return false;
     }
 
