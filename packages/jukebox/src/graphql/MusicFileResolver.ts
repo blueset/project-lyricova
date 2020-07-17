@@ -10,13 +10,14 @@ import { Op } from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
-import { Resolver, Query, Args, ObjectType, Field, Int, Arg, Mutation, Ctx, InputType, FieldResolver, Root } from "type-graphql";
+import { Resolver, Query, Args, ObjectType, Field, Int, Arg, Mutation, InputType, FieldResolver, Root } from "type-graphql";
 import { PaginationArgs, PaginationInfo } from "./commons";
 import { UserInputError } from "apollo-server-express";
 import { Playlist } from "../models/Playlist";
 import { Song } from "../models/Song";
 import { Album } from "../models/Album";
 import path from "path";
+import NodeID3 from "node-id3";
 import { swapExt } from "../utils/path";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
@@ -41,12 +42,15 @@ interface GenericMetadata {
   songId: string;
   albumId: string;
   // playlists: string[];
+  lyrics?: string;
 }
 
 const
   SONG_ID_TAG = "LyricovaSongID",
   ALBUM_ID_TAG = "LyricovaAlbumID",
   PLAYLIST_IDS_TAG = "LyricovaPlaylistIDs";
+
+const ID3_LYRICS_LANGUAGE = "eng";
 
 
 @ObjectType()
@@ -141,6 +145,7 @@ export class MusicFileResolver {
       fileSize: parseInt(metadata.format.size),
       songId: tags[SONG_ID_TAG] || undefined,
       albumId: tags[ALBUM_ID_TAG] || undefined,
+      lyrics: tags[`lyrics-${ID3_LYRICS_LANGUAGE}`] || tags.LYRICS || undefined,
       // formatName: get(metadata, "format.format_name", ""),
       // playlists: tags[PLAYLIST_IDS_TAG] ? tags[PLAYLIST_IDS_TAG].split(",") : undefined,
     };
@@ -206,6 +211,34 @@ export class MusicFileResolver {
       [SONG_ID_TAG]: `${data.songId}`,
       [ALBUM_ID_TAG]: `${data.albumId}`
     }, { preserveStreams: true, forceId3v2: forceId3v2 });
+  }
+
+  private async writeLyricsToFile(file: MusicFile, lyrics: string) {
+    let key = "lyrics-eng";
+
+    // Use FFmpeg only for FLAC due to its bug on ID3 lyrics.
+    if (file.path.toLowerCase().endsWith(".flac")) {
+      key = "LYRICS";
+      // const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
+      const forceId3v2 = false;
+      await ffMetadataWrite(Path.resolve(MUSIC_FILES_PATH, file.path), {
+        [key]: lyrics
+      }, { preserveStreams: true, forceId3v2: forceId3v2 });
+    } else {
+      // Use node-id3 for ID3
+      const tags: NodeID3.Tags = {
+        unsynchronisedLyrics: {
+          language: ID3_LYRICS_LANGUAGE,
+          text: lyrics,
+        },
+      };
+
+      // Write ID3-Frame into (.mp3) file, returns true or error object
+      const result = NodeID3.update(tags, file.path);
+      if (result !== true) {
+        throw result;
+      }
+    }
   }
 
   @Mutation(returns => MusicFilesScanOutcome)
