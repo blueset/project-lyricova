@@ -129,7 +129,7 @@ export class DownloadController {
         // console.log("size: " + info.size);
         // console.log("info", info);
         filename = filename || info._filename;
-        const fileStream = fs.createWriteStream(Path.join(VIDEO_FILES_PATH, filename), { flags: "a" });
+        const fileStream = fs.createWriteStream(Path.resolve(VIDEO_FILES_PATH, filename), { flags: "a" });
         video.pipe(fileStream);
         totalSize = info.size;
         resolve({
@@ -195,7 +195,7 @@ export class DownloadController {
         // console.log("size: " + info.size);
         // console.log("info", info);
         filename = filename || info._filename;
-        const fileStream = fs.createWriteStream(Path.join(VIDEO_FILES_PATH, filename + ".$(ext)s"), { flags: "a" });
+        const fileStream = fs.createWriteStream(Path.resolve(VIDEO_FILES_PATH, filename + ".$(ext)s"), { flags: "a" });
         video.pipe(fileStream);
         totalSize = info.size;
         resolve({

@@ -22,7 +22,7 @@ export default async () => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.text({ type: "text/*" }));
-  app.use(bodyParser.raw({ type: "application/octet-stream" }));
+  // app.use(bodyParser.raw({ type: "application/octet-stream" }));
   app.use(
     session({
       resave: false,

@@ -201,7 +201,7 @@ export class MusicFileResolver {
       mapping = { trackSortOrder: "title-sort", artistSortOrder: "artist-sort", albumSortOrder: "album-sort" };
     }
     const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
-    await ffMetadataWrite(Path.resolve(MUSIC_FILES_PATH, file.path), {
+    await ffMetadataWrite(file.fullPath, {
       title: data.trackName,
       [mapping.trackSortOrder]: data.trackSortOrder,
       album: data.albumName,
@@ -319,7 +319,7 @@ export class MusicFileResolver {
   }
 
   @Mutation(returns => MusicFile)
-  public async writeToMusicFile(@Arg("id", type => Int) id: number, @Arg("data") data: MusicFileInput): Promise<MusicFile> {
+  public async writeTagsToMusicFile(@Arg("id", type => Int) id: number, @Arg("data") data: MusicFileInput): Promise<MusicFile> {
     const song = await MusicFile.findByPk(id);
     if (song === null) {
       throw new UserInputError(`Music file with id ${id} is not found.`);
@@ -350,7 +350,7 @@ export class MusicFileResolver {
 
   @FieldResolver(type => String, { nullable: true })
   private async lyrics(@Root() musicFile: MusicFile, @Arg("ext", { defaultValue: "lrc" }) ext: string): Promise<string | null> {
-    const filePath = path.join(MUSIC_FILES_PATH, musicFile.path);
+    const filePath = musicFile.fullPath;
     const lyricsPath = swapExt(filePath, ext);
     try {
       const buffer = fs.readFileSync(lyricsPath);
@@ -369,7 +369,7 @@ export class MusicFileResolver {
   ): Promise<boolean> {
     const file = await MusicFile.findByPk(fileId);
     if (file === null) return false;
-    const filePath = path.join(MUSIC_FILES_PATH, file.path);
+    const filePath = file.fullPath;
     const lyricsPath = swapExt(filePath, ext);
 
     try {
@@ -397,7 +397,7 @@ export class MusicFileResolver {
         const key = "LYRICS";
         // const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
         const forceId3v2 = false;
-        await ffMetadataWrite(Path.resolve(MUSIC_FILES_PATH, file.path), {
+        await ffMetadataWrite(file.fullPath, {
           [key]: lyrics
         }, { preserveStreams: true, forceId3v2: forceId3v2 });
       } else {

@@ -31,7 +31,9 @@ export interface Metadata {
   "album-sort"?: string;
   ALBUMSORT?: string; // FLAC
   ARTISTSORT?: string; // FLAC
-  TITLESORT?: string;
+  TITLESORT?: string; // FLAC
+  LYRICS?: string; // FLAC
+  "lyrics-eng"?: string;
   [key: string]: string;
 }
 
@@ -232,6 +234,29 @@ export function read(src: string, options: ReadOptions | ReadCallback, callback?
   return stream;
 };
 
+export function readAsync(
+  src: string,
+): Promise<Metadata>;
+export function readAsync(
+  src: string,
+  options: ReadOptions
+): Promise<Metadata>;
+export function readAsync(src: string, options?: ReadOptions): Promise<Metadata> {
+  return new Promise((resolve, reject) => {
+    const callback = (err?: Error, data?: Metadata) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(data);
+    };
+    if (!options) {
+      read(src, callback);
+    } else {
+      read(src, options, callback);
+    }
+  });
+}
+
 type WriteCallback = (err?: Error) => void;
 
 export function write(
@@ -335,10 +360,14 @@ export function writeAsync(src: string, data: Metadata, options?: WriteOptions):
       }
       resolve();
     };
-    if (options) {
-      write(src, data, callback);
+    if (!options) {
+      return write(src, data, callback);
     } else {
       write(src, data, options, callback);
     }
   });
 }
+
+export default {
+  read, readAsync, write, writeAsync
+};

@@ -3,7 +3,7 @@ import { Request, Response, NextFunction, Router } from "express";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";
 import ffprobe from "ffprobe-client";
-import { writeAsync as ffMetadataWrite } from "../utils/ffmetadata";
+import ffmetadata from "../utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
@@ -11,6 +11,10 @@ import { Op } from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
+import tempy from "tempy";
+import crypto from "crypto";
+import multer from "multer";
+import { Mutation } from "type-graphql";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -46,11 +50,26 @@ export class MusicFileController {
   public router: Router;
 
   constructor() {
+    const uploadDirectory = tempy.directory();
+    console.log("Cover upload directory", uploadDirectory);
+    const coverUpload = multer({
+      storage: multer.diskStorage({
+        destination: (req, file, callback) => callback(null, uploadDirectory),
+        filename: (req, file, callback) => {
+          callback(null, crypto.randomBytes(16).toString("hex") + Path.extname(file.originalname));
+        }
+      }),
+      fileFilter: (req, file, callback) => {
+        callback(null, file.originalname.match(/\.(gif|jpg|png|webp|bmp|tif|jpeg)$/gi) !== null);
+      }
+    });
     this.router = Router();
     this.router.get("/scan", this.scan);
     this.router.get("/", this.getSongs);
     this.router.get("/:id(\\d+)", this.getSong);
     this.router.patch("/:id(\\d+)", this.writeToSong);
+    this.router.get("/:id(\\d+)/cover", this.getCoverArt);
+    this.router.patch("/:id(\\d+)/cover", coverUpload.single("cover"), this.uploadCoverArt);
   }
 
   /** Get metadata of a song via ffprobe */
@@ -126,7 +145,7 @@ export class MusicFileController {
       mapping = { trackSortOrder: "title-sort", artistSortOrder: "artist-sort", albumSortOrder: "album-sort" };
     }
     const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
-    await ffMetadataWrite(Path.resolve(MUSIC_FILES_PATH, file.path), {
+    await ffmetadata.writeAsync(file.fullPath, {
       title: data.trackName,
       [mapping.trackSortOrder]: data.trackSortOrder,
       album: data.albumName,
@@ -248,5 +267,62 @@ export class MusicFileController {
       await song.save();
       return res.json(song);
     } catch (e) { next(e); }
+  }
+
+  /**
+   * Retrieve cover art of a music file. Should return a file or nothing.
+   * 
+   * Not in GraphQL.
+   */
+  public getCoverArt = async (req: Request, res: Response, next: NextFunction) => {
+    const musicFile = await MusicFile.findByPk(parseInt(req.params.id));
+    if (musicFile === null) {
+      return res.status(404).json({ status: 404, message: "Music file entry not found." });
+    }
+    const coverPath = tempy.file({ extension: "png" });
+    try {
+      await ffmetadata.readAsync(musicFile.fullPath, { coverPath: coverPath });
+    } catch (e) {
+      console.log("Error while extracting cover art from file", e);
+      return res.status(500).json({ status: 404, message: e });
+    }
+    console.debug("Cover path", coverPath);
+
+    if (!fs.existsSync(coverPath)) {
+      return res.status(404).json({ status: 404, message: "Music file has no cover." });
+    }
+
+    res.sendFile(coverPath, () => {
+      fs.unlinkSync(coverPath);
+    });
+  }
+
+  /**
+   * Upload cover art for a music file.
+   *
+   * Not in GraphQL.
+   */
+  public uploadCoverArt = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const musicFile = await MusicFile.findByPk(parseInt(req.params.id));
+      if (musicFile === null) {
+        return res.status(404).json({ status: 404, message: "Music file entry not found." });
+      }
+
+      try {
+        await ffmetadata.writeAsync(musicFile.fullPath, {}, {
+          forceId3v2: musicFile.path.toLowerCase().endsWith(".aiff"),
+          attachments: [req.file.path],
+        });
+      } catch (e) {
+        console.log("Error while saving cover art to file", e);
+        return res.status(500).json({ status: 404, message: e });
+      }
+      console.debug("Cover path", req.file.path);
+      res.status(200).json({ status: 200, message: "Done." });
+
+    } finally {
+      fs.unlinkSync(req.file.path);
+    }
   }
 }

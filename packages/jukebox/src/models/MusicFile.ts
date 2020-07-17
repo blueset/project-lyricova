@@ -5,6 +5,8 @@ import { Model, Column, PrimaryKey, Table, ForeignKey, BelongsTo, AllowNull, Bel
 import { DataTypes } from "sequelize";
 import { FileInPlaylist } from "./FileInPlaylist";
 import { ObjectType, Field, Int, Float } from "type-graphql";
+import { MUSIC_FILES_PATH } from "../utils/secret";
+import path from "path";
 
 @ObjectType({ description: "A music file in the jukebox." })
 @Table
@@ -104,4 +106,8 @@ export class MusicFile extends Model<MusicFile> {
   @Field()
   @UpdatedAt
   updatedOn: Date;
+
+  get fullPath(): string {
+    return path.resolve(MUSIC_FILES_PATH, this.path);
+  }
 }
