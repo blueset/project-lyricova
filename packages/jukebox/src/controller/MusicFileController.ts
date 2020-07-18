@@ -14,7 +14,6 @@ import _ from "lodash";
 import tempy from "tempy";
 import crypto from "crypto";
 import multer from "multer";
-import { Mutation } from "type-graphql";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -242,7 +241,7 @@ export class MusicFileController {
     try {
       const song = await MusicFile.findByPk(parseInt(req.params.id));
       if (song === null) {
-        return res.status(404).json({ status: 404, text: "Not found" });
+        return res.status(404).json({ status: 404, message: "Not found" });
       }
       return res.json(song);
     } catch (e) { next(e); }
@@ -252,7 +251,7 @@ export class MusicFileController {
     try {
       const song = await MusicFile.findByPk(parseInt(req.params.id));
       if (song === null) {
-        return res.status(404).json({ status: 404, text: "Not found" });
+        return res.status(404).json({ status: 404, message: "Not found" });
       }
 
       const data = _.pick(req.body, [
