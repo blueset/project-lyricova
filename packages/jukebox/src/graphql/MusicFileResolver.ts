@@ -6,7 +6,7 @@ import { writeAsync as ffMetadataWrite } from "../utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
-import { Op } from "sequelize";
+import { Op, ARRAY } from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
@@ -16,7 +16,6 @@ import { UserInputError } from "apollo-server-express";
 import { Playlist } from "../models/Playlist";
 import { Song } from "../models/Song";
 import { Album } from "../models/Album";
-import path from "path";
 import NodeID3 from "node-id3";
 import { swapExt } from "../utils/path";
 
@@ -41,7 +40,7 @@ interface GenericMetadata {
   // formatName?: string;
   songId: string;
   albumId: string;
-  // playlists: string[];
+  playlists: string[];
   lyrics?: string;
 }
 
@@ -132,6 +131,12 @@ export class MusicFileResolver {
     const metadata = await ffprobe(path);
     const tags = metadata.format.tags;
     const duration = parseFloat(metadata.format.duration);
+    let playlists: string[] = [];
+
+    if (tags[PLAYLIST_IDS_TAG]) {
+      playlists = tags[PLAYLIST_IDS_TAG].split(",");
+    }
+
     return {
       trackName: tags.title || tags.TITLE || undefined,
       trackSortOrder: tags["title-sort"] || tags.TITLESORT || undefined,
@@ -146,6 +151,7 @@ export class MusicFileResolver {
       songId: tags[SONG_ID_TAG] || undefined,
       albumId: tags[ALBUM_ID_TAG] || undefined,
       lyrics: tags[`lyrics-${ID3_LYRICS_LANGUAGE}`] || tags.LYRICS || undefined,
+      playlists: playlists,
       // formatName: get(metadata, "format.format_name", ""),
       // playlists: tags[PLAYLIST_IDS_TAG] ? tags[PLAYLIST_IDS_TAG].split(",") : undefined,
     };
@@ -421,5 +427,34 @@ export class MusicFileResolver {
     }
 
     return true;
+  }
+
+  @Mutation(returns => MusicFile, { description: "Set which playlist a file belong to, this replaces existing values." })
+  public async setPlaylistsOfSong(
+    @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
+    @Arg("playlistSlugs", () => [String], { description: "Playlists to set" }) playlistSlugs: string[],
+  ): Promise<MusicFile> {
+    let file: MusicFile, playlists: Playlist[];
+    try {
+      file = await MusicFile.findByPk(fileId, { rejectOnEmpty: true });
+    } catch {
+      throw new Error("Music file is not found.");
+    }
+    try {
+      playlists = await Promise.all(playlistSlugs.map((val) => Playlist.findByPk(val, { rejectOnEmpty: true })));
+    } catch (e) {
+      console.log("playlist lookup error", e);
+      throw new Error("Some or all playlist slugs are not found in database.");
+    }
+
+    // TODO: throw custom error here
+
+    await file.$set("playlists", playlists);
+    const result = await MusicFile.findByPk(fileId);
+    const forceId3v2 = result.path.toLowerCase().endsWith(".aiff");
+    await ffMetadataWrite(result.fullPath, {
+      [PLAYLIST_IDS_TAG]: (await result.$get("playlists")).map((i) => i.slug).join(",")
+    }, { preserveStreams: true, forceId3v2: forceId3v2 });
+    return result;
   }
 }

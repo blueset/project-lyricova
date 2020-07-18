@@ -15,7 +15,7 @@ class NewPlayListInput implements Partial<Playlist> {
 }
 
 @InputType()
-class UpdatePlayListInput implements Partial<Playlist> {
+class UpdatePlaylistInput implements Partial<Playlist> {
 
   @Field({ nullable: true })
   slug: string;
@@ -43,7 +43,7 @@ export class PlaylistResolver {
   }
 
   @Mutation(returns => Playlist)
-  public async updatePlaylist(@Arg("slug") slug: string, @Arg("data") data: UpdatePlayListInput): Promise<Playlist> {
+  public async updatePlaylist(@Arg("slug") slug: string, @Arg("data") data: UpdatePlaylistInput): Promise<Playlist> {
     const playlist = await Playlist.findByPk(slug);
     if (playlist === null) {
       throw new UserInputError(`Playlist with ${slug} is not found in database.`);
