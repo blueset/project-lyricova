@@ -21,7 +21,7 @@ export class PlaylistController {
     });
 
     res
-      .contentType("audio/mpegurl")
+      .type("audio/mpegurl")
       .attachment(`${playlist.slug}.m3u8`)
       .send(text);
   }
