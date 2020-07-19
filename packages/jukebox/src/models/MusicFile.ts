@@ -95,7 +95,7 @@ export class MusicFile extends Model<MusicFile> {
   @Column({ type: new DataTypes.FLOAT, defaultValue: -1.0 })
   duration: number;
 
-  @Field({ description: "SHA256 of the file." })
+  @Field({ description: "MD5 of the file." })
   @Column({ type: new DataTypes.STRING(128) })
   hash: string;
 

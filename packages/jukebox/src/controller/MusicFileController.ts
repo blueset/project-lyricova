@@ -278,6 +278,11 @@ export class MusicFileController {
     if (musicFile === null) {
       return res.status(404).json({ status: 404, message: "Music file entry not found." });
     }
+
+    if (!musicFile.hasCover) {
+      return res.status(404).json({ status: 404, message: "Music file has no cover (via database)." });
+    }
+
     const coverPath = tempy.file({ extension: "png" });
     try {
       await ffmetadata.readAsync(musicFile.fullPath, { coverPath: coverPath });
@@ -288,7 +293,7 @@ export class MusicFileController {
     console.debug("Cover path", coverPath);
 
     if (!fs.existsSync(coverPath)) {
-      return res.status(404).json({ status: 404, message: "Music file has no cover." });
+      return res.status(404).json({ status: 404, message: "Music file has no cover (via file)." });
     }
 
     res.sendFile(coverPath, () => {
@@ -318,6 +323,11 @@ export class MusicFileController {
         return res.status(500).json({ status: 404, message: e });
       }
       console.debug("Cover path", req.file.path);
+
+      // Update file hash
+      const md5 = await hasha.fromFile(musicFile.fullPath, { algorithm: "md5" });
+      await musicFile.update({ hash: md5, hasCover: true });
+
       res.status(200).json({ status: 200, message: "Done." });
 
     } finally {

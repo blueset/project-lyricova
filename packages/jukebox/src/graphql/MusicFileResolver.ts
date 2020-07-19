@@ -6,7 +6,7 @@ import { writeAsync as ffMetadataWrite } from "../utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
-import { Op, ARRAY } from "sequelize";
+import { Op } from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
@@ -177,7 +177,7 @@ export class MusicFileResolver {
   /** Update an existing MusicFile object with data in file. */
   private async updateSongEntry(entry: MusicFile): Promise<MusicFile | null> {
     let needUpdate = false;
-    const path = entry.path;
+    const path = entry.fullPath;
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
     const hasLyrics = fs.existsSync(lrcPath);
     needUpdate = needUpdate || hasLyrics !== entry.hasLyrics;
@@ -196,6 +196,11 @@ export class MusicFileResolver {
       ...metadata
     });
     return entry;
+  }
+
+  private async updateMD5(entry: MusicFile): Promise<void> {
+    const md5 = await hasha.fromFile(entry.fullPath, { algorithm: "md5" });
+    await entry.update({ hash: md5 });
   }
 
   /** Write metadata to file partially */
@@ -335,6 +340,10 @@ export class MusicFileResolver {
     await this.writeToFile(song, data);
 
     _.assign(song, data);
+
+    // update hash
+    song.set({ hash: await hasha.fromFile(song.fullPath, { algorithm: "md5" }) });
+
     await song.save();
     return song;
   }
@@ -426,6 +435,7 @@ export class MusicFileResolver {
       return false;
     }
 
+    await this.updateMD5(file);
     return true;
   }
 
@@ -455,6 +465,8 @@ export class MusicFileResolver {
     await ffMetadataWrite(result.fullPath, {
       [PLAYLIST_IDS_TAG]: (await result.$get("playlists")).map((i) => i.slug).join(",")
     }, { preserveStreams: true, forceId3v2: forceId3v2 });
+
+    await this.updateMD5(file);
     return result;
   }
 }
