@@ -40,9 +40,9 @@ export default async () => {
 
   registerRoutes(app);
 
-  app.get("/", async (req: Request, res: Response) => {
-    res.send("Hello world!");
-  });
+  // app.get("/", async (req: Request, res: Response) => {
+  //   res.send("Hello world!");
+  // });
 
   await applyApollo(app);
 

@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["es5", "es6"],
+    "jsx": "preserve",
+    "lib": [
+      "es5",
+      "es6"
+    ],
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es6",
@@ -13,8 +17,22 @@
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "paths": {
-      "*": ["node_modules/*", "src/types/*"]
-    }
+      "*": [
+        "node_modules/*",
+        "src/types/*"
+      ]
+    },
+    "allowJs": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
