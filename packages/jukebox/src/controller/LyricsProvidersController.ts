@@ -158,9 +158,9 @@ export class LyricsProvidersController {
 
   public lyricsKit = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const artists = req.query.artists, title = req.query.title;
-      const useLRCX = parseInt(req.query.useLRCX) === 1;
-      const duration = parseFloat(req.query.duration) || 0;
+      const artists = req.query.artists as string, title = req.query.title as string;
+      const useLRCX = parseInt(req.query.useLRCX as string) === 1;
+      const duration = parseFloat(req.query.duration as string) || 0;
       if (title === undefined || artists === undefined) {
         return res.status(400).json({
           status: 400,

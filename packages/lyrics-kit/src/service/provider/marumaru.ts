@@ -10,11 +10,10 @@ import { LyricsProvider } from ".";
 import { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
-import cheerio from "cheerio";
-import { URL } from "url";
-// import { stringify } from "querystring";
-import request from "request-promise-native";
 import axiosCookieJarSupport from "axios-cookiejar-support";
+import tough from "tough-cookie";
+import cheerio from "cheerio";
+import { URL, URLSearchParams } from "url";
 
 import { LyricsProviderSource } from "../lyricsProviderSource";
 import { TITLE, ARTIST } from "../../core/idTagKey";
@@ -22,7 +21,6 @@ import { Range, AttachmentsContent, FURIGANA, RangeAttribute, TRANSLATION, Plain
 import { LyricsLine } from "../../core/lyricsLine";
 import { MarumaruResponseSingleLyrics } from "../types/marumaru/singleLyrics";
 import { MarumaruEntry } from "../types/marumaru/searchResult";
-// import { RequestAPI } from "request";
 
 axiosCookieJarSupport(axios);
 
@@ -129,12 +127,15 @@ class MarumaruLyrics extends Lyrics {
 export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
     // static source = LyricsProviderSource.marumaru;
 
-    private request = request.defaults({ jar: true });
+    private axios = axios.create({ 
+        jar: new tough.CookieJar(), 
+        withCredentials: true
+    });
 
     constructor() {
         super();
 
-        this.request.get("https://www.jpmarumaru.com/tw/JPSongList.asp")
+        this.axios.get("https://www.jpmarumaru.com/tw/JPSongList.asp")
         // .then(resp => {
             // console.log(resp);
         // })
@@ -160,13 +161,13 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
                 AvgScore: "",
                 OrderBy: "",
                 MySong: "",
-                Page: 1
+                Page: "1"
             };
 
-            const data: string = await this.request.post(
+            const data: string = await this.axios.post(
                 SEARCH_URL,
                 {
-                    form: parameters,
+                    form: new URLSearchParams(parameters).toString(),
                     headers: {
                         Accept: "*/*",
                         "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
@@ -196,12 +197,12 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
     public async fetchLyrics(token: MarumaruEntry): Promise<Lyrics | undefined> {
         try {
             const url = LYRICS_URL;
-            const content: MarumaruResponseSingleLyrics = await this.request.post(
+            const content: MarumaruResponseSingleLyrics = await this.axios.post(
                 url,
                 {
-                    form: {
+                    form: new URLSearchParams({
                         SongPK: token.songPK,
-                    },
+                    }).toString(),
                     headers: { Referer: `https://www.jpmarumaru.com/tw/JPSongPlay-${token.songPK}.html` },
                     json: true
                 }

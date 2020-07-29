@@ -158,8 +158,8 @@ non_negative_integer    ::= zero | positive_integer
     Copyright (C) 2020  ddddxxx
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License.
+    it under the terms of version 3 of the GNU General Public License as 
+    published by the Free Software Foundation.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
