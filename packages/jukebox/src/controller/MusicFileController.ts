@@ -261,8 +261,11 @@ export class MusicFileController {
       if (!fs.existsSync(path)) {
         return res.status(404).json({ status: 404, message: "File not found" });
       }
+
+      if (req.query.download !== undefined) {
+        res.attachment(Path.basename(path));
+      }
       res
-        //.attachment(Path.basename(path))
         .sendFile(path);
     } catch (e) { next(e); }
   }
@@ -277,8 +280,11 @@ export class MusicFileController {
       if (!fs.existsSync(path)) {
         return res.status(404).json({ status: 404, message: "File not found" });
       }
+
+      if (req.query.download !== undefined) {
+        res.attachment(Path.basename(path));
+      }
       res
-        //.attachment(Path.basename(path))
         .contentType("text/lrc")
         .sendFile(path);
     } catch (e) { next(e); }
@@ -294,8 +300,11 @@ export class MusicFileController {
       if (!fs.existsSync(path)) {
         return res.status(404).json({ status: 404, message: "File not found" });
       }
+
+      if (req.query.download !== undefined) {
+        res.attachment(Path.basename(path));
+      }
       res
-        //.attachment(Path.basename(path))
         .contentType("text/lrcx")
         .sendFile(path);
     } catch (e) { next(e); }
