@@ -11,6 +11,12 @@ licenced under GPL v3.
 $ # This package is not yet on npm / yarn.
 ```
 
+### Install locally
+
+```shell
+yarn install
+```
+
 ## Usage
 
 ### Typescript (ES6 import)

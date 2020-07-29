@@ -3,7 +3,7 @@
 # Node dependencies
 
 ```bash
-npm install
+yarn install
 ```
 
 # Python 3 dependencies
