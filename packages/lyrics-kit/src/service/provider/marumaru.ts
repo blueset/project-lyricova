@@ -129,7 +129,11 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
 
     private axios = axios.create({ 
         jar: new tough.CookieJar(), 
-        withCredentials: true
+        withCredentials: true,
+        maxRedirects: 10,
+        validateStatus: function (status) {
+            return status >= 200 && status < 303;
+        }
     });
 
     constructor() {
