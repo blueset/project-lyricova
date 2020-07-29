@@ -14,6 +14,7 @@ import _ from "lodash";
 import tempy from "tempy";
 import crypto from "crypto";
 import multer from "multer";
+import { swapExt } from "../utils/path";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -65,10 +66,13 @@ export class MusicFileController {
     this.router = Router();
     this.router.get("/scan", this.scan);
     this.router.get("/", this.getSongs);
-    this.router.get("/:id(\\d+)", this.getSong);
-    this.router.patch("/:id(\\d+)", this.writeToSong);
+    this.router.get("/:id(\\d+)/file", this.getSongFile);
+    this.router.get("/:id(\\d+)/lrc", this.getSongLRC);
+    this.router.get("/:id(\\d+)/lrcx", this.getSongLRCX);
     this.router.get("/:id(\\d+)/cover", this.getCoverArt);
     this.router.patch("/:id(\\d+)/cover", coverUpload.single("cover"), this.uploadCoverArt);
+    this.router.get("/:id(\\d+)", this.getSong);
+    this.router.patch("/:id(\\d+)", this.writeToSong);
   }
 
   /** Get metadata of a song via ffprobe */
@@ -246,6 +250,58 @@ export class MusicFileController {
       return res.json(song);
     } catch (e) { next(e); }
   }
+
+  public getSongFile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const song = await MusicFile.findByPk(parseInt(req.params.id));
+      if (song === null) {
+        return res.status(404).json({ status: 404, message: "Entry not found" });
+      }
+      const path = song.fullPath;
+      if (!fs.existsSync(path)) {
+        return res.status(404).json({ status: 404, message: "File not found" });
+      }
+      res
+        //.attachment(Path.basename(path))
+        .sendFile(path);
+    } catch (e) { next(e); }
+  }
+
+  public getSongLRC = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const song = await MusicFile.findByPk(parseInt(req.params.id));
+      if (song === null) {
+        return res.status(404).json({ status: 404, message: "Entry not found" });
+      }
+      const path = swapExt(song.fullPath, "lrc");
+      if (!fs.existsSync(path)) {
+        return res.status(404).json({ status: 404, message: "File not found" });
+      }
+      res
+        //.attachment(Path.basename(path))
+        .contentType("text/lrc")
+        .sendFile(path);
+    } catch (e) { next(e); }
+  }
+
+  public getSongLRCX = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const song = await MusicFile.findByPk(parseInt(req.params.id));
+      if (song === null) {
+        return res.status(404).json({ status: 404, message: "Entry not found" });
+      }
+      const path = swapExt(song.fullPath, "lrcx");
+      if (!fs.existsSync(path)) {
+        return res.status(404).json({ status: 404, message: "File not found" });
+      }
+      res
+        //.attachment(Path.basename(path))
+        .contentType("text/lrcx")
+        .sendFile(path);
+    } catch (e) { next(e); }
+  }
+
+
 
   public writeToSong = async (req: Request, res: Response, next: NextFunction) => {
     try {
