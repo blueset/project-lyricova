@@ -37,6 +37,7 @@
   },
   "homepage": "https://github.com/blueset/project-lyricova#readme",
   "dependencies": {
+    "@material-ui/core": "^4.11.0",
     "@types/passport-local": "^1.0.33",
     "@types/pinyin": "^2.8.1",
     "@typescript-eslint/eslint-plugin": "^2.14.0",
@@ -78,6 +79,7 @@
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "pinyin": "^2.9.0",
+    "prop-types": "^15.7.2",
     "python-bridge": "^1.1.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

@@ -1,3 +1,11 @@
+import { Button } from "@material-ui/core";
+
 export default function index() {
-  return <div>Hello!</div>;
+  return (
+    <>
+      <Button variant="contained" color="primary">
+        Hello World
+      </Button>
+    </>
+  );
 }

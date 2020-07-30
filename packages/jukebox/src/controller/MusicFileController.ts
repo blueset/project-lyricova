@@ -42,8 +42,7 @@ interface GenericMetadata {
 
 const
   SONG_ID_TAG = "LyricovaSongID",
-  ALBUM_ID_TAG = "LyricovaAlbumID",
-  PLAYLIST_IDS_TAG = "LyricovaPlaylistIDs";
+  ALBUM_ID_TAG = "LyricovaAlbumID";
 
 export class MusicFileController {
 
