@@ -6,6 +6,7 @@ import {
   Slider,
   IconButton,
   Fab,
+  CircularProgress,
 } from "@material-ui/core";
 import React, { RefObject } from "react";
 import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
@@ -24,6 +25,8 @@ interface State {
   duration: number;
   isPlaying: boolean;
   isDragging: boolean;
+  isLoading: boolean;
+  loadProgress: number;
 }
 export default class Player extends React.Component<Props, State> {
   private playerRef: RefObject<HTMLAudioElement>;
@@ -34,7 +37,9 @@ export default class Player extends React.Component<Props, State> {
       time: 0,
       isPlaying: false,
       isDragging: false,
+      isLoading: false,
       duration: 0,
+      loadProgress: 0,
     };
     this.playerRef = props.playerRef;
 
@@ -46,6 +51,7 @@ export default class Player extends React.Component<Props, State> {
     this.formatTime = this.formatTime.bind(this);
     this.onSliderChange = this.onSliderChange.bind(this);
     this.onSliderChangeCommitted = this.onSliderChangeCommitted.bind(this);
+    this.updateProgress = this.updateProgress.bind(this);
   }
 
   componentDidMount() {
@@ -61,6 +67,7 @@ export default class Player extends React.Component<Props, State> {
         "loadedmetadata",
         this.updateDuration
       );
+      this.playerRef.current.addEventListener("progress", this.updateProgress);
       this.updateTime();
       this.updateDuration();
     }
@@ -78,6 +85,10 @@ export default class Player extends React.Component<Props, State> {
       this.playerRef.current.removeEventListener(
         "loadedmetadata",
         this.updateDuration
+      );
+      this.playerRef.current.removeEventListener(
+        "progress",
+        this.updateProgress
       );
     }
   }
@@ -137,6 +148,23 @@ export default class Player extends React.Component<Props, State> {
     });
   }
 
+  updateProgress() {
+    const duration = this.playerRef.current.duration,
+      buffered = this.playerRef.current.buffered;
+    let loaded = 0;
+    if (duration > 0) {
+      for (let i = 0; i < buffered.length; i++) {
+        loaded += buffered.end(i) - buffered.start(i);
+      }
+      this.setState({
+        loadProgress: (loaded / duration) * 100,
+        isLoading: duration - loaded > 1e-6,
+      });
+    } else {
+      this.setState({ loadProgress: 0, isLoading: false });
+    }
+  }
+
   render() {
     return (
       <Paper className={style.playerPaper}>
@@ -184,14 +212,26 @@ export default class Player extends React.Component<Props, State> {
             <IconButton color="default" aria-label="Previous track">
               <SkipPreviousIcon />
             </IconButton>
-            <Fab
-              color="primary"
-              aria-label={this.state.isPlaying ? "Pause" : "Play"}
-              size="medium"
-              onClick={this.clickPlay}
-            >
-              {this.state.isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-            </Fab>
+            <div className={style.loadProgressContainer}>
+              <Fab
+                color="primary"
+                aria-label={this.state.isPlaying ? "Pause" : "Play"}
+                size="medium"
+                onClick={this.clickPlay}
+              >
+                {this.state.isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+              </Fab>
+              {this.state.isLoading && (
+                <CircularProgress
+                  size={60}
+                  thickness={2.4}
+                  color="secondary"
+                  value={this.state.loadProgress}
+                  className={style.loadProgressSpinner}
+                  variant="static"
+                />
+              )}
+            </div>
             <IconButton color="default" aria-label="Next track">
               <SkipNextIcon />
             </IconButton>
