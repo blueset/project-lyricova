@@ -8,243 +8,182 @@ import {
   Fab,
   CircularProgress,
 } from "@material-ui/core";
-import React, { RefObject } from "react";
+import React, { RefObject, useState, useEffect } from "react";
 import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
 import SkipNextIcon from "@material-ui/icons/SkipNext";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import PauseIcon from "@material-ui/icons/Pause";
 import ShuffleIcon from "@material-ui/icons/Shuffle";
 import RepeatOneIcon from "@material-ui/icons/RepeatOne";
+import { formatTime } from "../../frontendUtils/strings";
 
 interface Props {
   playerRef: RefObject<HTMLAudioElement>;
 }
 
-interface State {
-  time: number;
-  duration: number;
-  isPlaying: boolean;
-  isDragging: boolean;
-  isLoading: boolean;
-  loadProgress: number;
-}
-export default class Player extends React.Component<Props, State> {
-  private playerRef: RefObject<HTMLAudioElement>;
+export default function Player(props: Props) {
+  const [time, setTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [loadProgress, setLoadProgress] = useState(0);
+  const playerRef = props.playerRef;
 
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      time: 0,
-      isPlaying: false,
-      isDragging: false,
-      isLoading: false,
-      duration: 0,
-      loadProgress: 0,
-    };
-    this.playerRef = props.playerRef;
-
-    this.clickPlay = this.clickPlay.bind(this);
-    this.updateTime = this.updateTime.bind(this);
-    this.onPlay = this.onPlay.bind(this);
-    this.onPause = this.onPause.bind(this);
-    this.updateDuration = this.updateDuration.bind(this);
-    this.formatTime = this.formatTime.bind(this);
-    this.onSliderChange = this.onSliderChange.bind(this);
-    this.onSliderChangeCommitted = this.onSliderChangeCommitted.bind(this);
-    this.updateProgress = this.updateProgress.bind(this);
-  }
-
-  componentDidMount() {
-    if (this.playerRef.current !== null) {
-      this.playerRef.current.addEventListener("timeupdate", this.updateTime);
-      this.playerRef.current.addEventListener("playing", this.onPlay);
-      this.playerRef.current.addEventListener("pause", this.onPause);
-      this.playerRef.current.addEventListener(
-        "durationchange",
-        this.updateDuration
-      );
-      this.playerRef.current.addEventListener(
-        "loadedmetadata",
-        this.updateDuration
-      );
-      this.playerRef.current.addEventListener("progress", this.updateProgress);
-      this.updateTime();
-      this.updateDuration();
+  function updateTime() {
+    if (playerRef.current !== null && !isDragging) {
+      setTime(playerRef.current.currentTime);
     }
   }
 
-  componentWillUnmount() {
-    if (this.playerRef.current !== null) {
-      this.playerRef.current.removeEventListener("timeupdate", this.updateTime);
-      this.playerRef.current.removeEventListener("playing", this.onPlay);
-      this.playerRef.current.removeEventListener("pause", this.onPause);
-      this.playerRef.current.removeEventListener(
-        "durationchange",
-        this.updateDuration
-      );
-      this.playerRef.current.removeEventListener(
-        "loadedmetadata",
-        this.updateDuration
-      );
-      this.playerRef.current.removeEventListener(
-        "progress",
-        this.updateProgress
-      );
-    }
-  }
-
-  updateTime() {
-    if (!this.state.isDragging) {
-      const playerRef = this.playerRef;
-      this.setState({
-        time: playerRef.current.currentTime,
-      });
-    }
-  }
-
-  clickPlay() {
-    if (this.state.isPlaying) {
-      this.playerRef.current.pause();
+  function clickPlay() {
+    if (isPlaying) {
+      playerRef.current.pause();
     } else {
-      this.playerRef.current.play();
+      playerRef.current.play();
     }
   }
 
-  onPlay() {
-    this.setState({ isPlaying: true });
+  function onPlay() {
+    setIsPlaying(true);
   }
 
-  onPause() {
-    this.setState({ isPlaying: false });
+  function onPause() {
+    setIsPlaying(false);
   }
 
-  updateDuration() {
-    this.setState({
-      duration: this.playerRef.current.duration,
-    });
+  function updateDuration() {
+    setDuration(playerRef.current.duration);
   }
 
-  padLeft(number: number, places: number): string {
-    return String(number).padStart(places, "0");
+  function onSliderChange(event: unknown, newValue: number) {
+    setTime(newValue);
+    setIsDragging(true);
   }
 
-  formatTime(value: number): string {
-    const minutes = Math.floor(value / 60);
-    const seconds = Math.floor(value % 60);
-    return `${this.padLeft(minutes, 2)}:${this.padLeft(seconds, 2)}`;
+  function onSliderChangeCommitted(event: unknown, newValue: number) {
+    playerRef.current.currentTime = newValue;
+    setTime(newValue);
+    setIsDragging(false);
   }
 
-  onSliderChange(event: unknown, newValue: number) {
-    this.setState({
-      time: newValue,
-      isDragging: true,
-    });
-  }
-  onSliderChangeCommitted(event: unknown, newValue: number) {
-    this.playerRef.current.currentTime = newValue;
-    this.setState({
-      time: newValue,
-      isDragging: false,
-    });
-  }
-
-  updateProgress() {
-    const duration = this.playerRef.current.duration,
-      buffered = this.playerRef.current.buffered;
+  function updateProgress() {
+    const duration = playerRef.current.duration,
+      buffered = playerRef.current.buffered;
     let loaded = 0;
     if (duration > 0) {
       for (let i = 0; i < buffered.length; i++) {
         loaded += buffered.end(i) - buffered.start(i);
       }
-      this.setState({
-        loadProgress: (loaded / duration) * 100,
-        isLoading: duration - loaded > 1e-6,
-      });
+      setLoadProgress((loaded / duration) * 100);
+      setIsLoading(duration - loaded > 1e-6);
     } else {
-      this.setState({ loadProgress: 0, isLoading: false });
+      setLoadProgress(0);
+      setIsLoading(false);
     }
   }
 
-  render() {
-    return (
-      <Paper className={style.playerPaper}>
-        <CardContent>
+  useEffect(() => {
+    if (playerRef.current !== null) {
+      playerRef.current.addEventListener("timeupdate", updateTime);
+      playerRef.current.addEventListener("playing", onPlay);
+      playerRef.current.addEventListener("pause", onPause);
+      playerRef.current.addEventListener("durationchange", updateDuration);
+      playerRef.current.addEventListener("loadedmetadata", updateDuration);
+      playerRef.current.addEventListener("progress", updateProgress);
+      updateTime();
+      updateDuration();
+    }
+    return function cleanUp() {
+      if (playerRef.current !== null) {
+        playerRef.current.removeEventListener("timeupdate", updateTime);
+        playerRef.current.removeEventListener("playing", onPlay);
+        playerRef.current.removeEventListener("pause", onPause);
+        playerRef.current.removeEventListener("durationchange", updateDuration);
+        playerRef.current.removeEventListener("loadedmetadata", updateDuration);
+        playerRef.current.removeEventListener("progress", updateProgress);
+      }
+    };
+  });
+
+  return (
+    <Paper className={style.playerPaper}>
+      <CardContent>
+        <div>
+          {/* <div>image</div> */}
           <div>
-            {/* <div>image</div> */}
-            <div>
-              <Typography variant="h6">Song name</Typography>
-              <Typography variant="subtitle1">Song artist</Typography>
-            </div>
+            <Typography variant="h6">Song name</Typography>
+            <Typography variant="subtitle1">Song artist</Typography>
           </div>
-          <Slider
-            defaultValue={0}
-            value={this.state.time}
-            getAriaValueText={this.formatTime}
-            max={this.state.duration}
-            onChange={this.onSliderChange}
-            onChangeCommitted={this.onSliderChangeCommitted}
-          />
-          <div className={style.sliderLabelContainer}>
-            <Typography
-              variant="body2"
-              component="span"
-              className={style.sliderLabelText}
+        </div>
+        <Slider
+          defaultValue={0}
+          value={time}
+          getAriaValueText={formatTime}
+          max={duration}
+          onChange={onSliderChange}
+          onChangeCommitted={onSliderChangeCommitted}
+        />
+        <div className={style.sliderLabelContainer}>
+          <Typography
+            variant="body2"
+            component="span"
+            className={style.sliderLabelText}
+          >
+            {formatTime(time)}
+          </Typography>
+          <span className={style.sliderLabelStretcher}></span>
+          <Typography
+            variant="body2"
+            component="span"
+            className={style.sliderLabelText}
+          >
+            {formatTime(duration)}
+          </Typography>
+        </div>
+        <div className={style.controlContainer}>
+          <IconButton
+            color="default"
+            aria-label="Shuffle"
+            style={{ opacity: 0.5 }}
+          >
+            <ShuffleIcon />
+          </IconButton>
+          <IconButton color="default" aria-label="Previous track">
+            <SkipPreviousIcon />
+          </IconButton>
+          <div className={style.loadProgressContainer}>
+            <Fab
+              color="primary"
+              aria-label={isPlaying ? "Pause" : "Play"}
+              size="medium"
+              onClick={clickPlay}
             >
-              {this.formatTime(this.state.time)}
-            </Typography>
-            <span className={style.sliderLabelStretcher}></span>
-            <Typography
-              variant="body2"
-              component="span"
-              className={style.sliderLabelText}
-            >
-              {this.formatTime(this.state.duration)}
-            </Typography>
+              {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+            </Fab>
+            {isLoading && (
+              <CircularProgress
+                size={60}
+                thickness={2.4}
+                color="secondary"
+                value={loadProgress}
+                className={style.loadProgressSpinner}
+                variant="static"
+              />
+            )}
           </div>
-          <div className={style.controlContainer}>
-            <IconButton
-              color="default"
-              aria-label="Shuffle"
-              style={{ opacity: 0.5 }}
-            >
-              <ShuffleIcon />
-            </IconButton>
-            <IconButton color="default" aria-label="Previous track">
-              <SkipPreviousIcon />
-            </IconButton>
-            <div className={style.loadProgressContainer}>
-              <Fab
-                color="primary"
-                aria-label={this.state.isPlaying ? "Pause" : "Play"}
-                size="medium"
-                onClick={this.clickPlay}
-              >
-                {this.state.isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-              </Fab>
-              {this.state.isLoading && (
-                <CircularProgress
-                  size={60}
-                  thickness={2.4}
-                  color="secondary"
-                  value={this.state.loadProgress}
-                  className={style.loadProgressSpinner}
-                  variant="static"
-                />
-              )}
-            </div>
-            <IconButton color="default" aria-label="Next track">
-              <SkipNextIcon />
-            </IconButton>
-            <IconButton
-              color="default"
-              aria-label="Repeat one"
-              style={{ opacity: 0.5 }}
-            >
-              <RepeatOneIcon />
-            </IconButton>
-          </div>
-        </CardContent>
-      </Paper>
-    );
-  }
+          <IconButton color="default" aria-label="Next track">
+            <SkipNextIcon />
+          </IconButton>
+          <IconButton
+            color="default"
+            aria-label="Repeat one"
+            style={{ opacity: 0.5 }}
+          >
+            <RepeatOneIcon />
+          </IconButton>
+        </div>
+      </CardContent>
+    </Paper>
+  );
 }
