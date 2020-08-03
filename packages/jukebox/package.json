@@ -38,6 +38,7 @@
   "homepage": "https://github.com/blueset/project-lyricova#readme",
   "dependencies": {
     "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
     "@types/passport-local": "^1.0.33",
     "@types/pinyin": "^2.8.1",
     "@typescript-eslint/eslint-plugin": "^2.14.0",
@@ -84,6 +85,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "reflect-metadata": "^0.1.13",
+    "sass": "^1.26.10",
     "sequelize": "^5.21.3",
     "sequelize-typescript": "^1.1.0",
     "shortid": "^2.2.15",
