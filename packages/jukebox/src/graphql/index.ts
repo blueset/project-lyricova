@@ -59,7 +59,9 @@ class FooResolver {
 export async function applyApollo(app: Application) {
 
   const schema = await buildSchema({
-    resolvers: [FooResolver, `${__dirname}/**/*Resolver.{ts,js}`],
+    // `FooResolver as unknown as string` is a workaround to mitigate the 
+    // strict type check of type-graphql.buildSchema({resolvers})
+    resolvers: [FooResolver as unknown as string, `${__dirname}/**/*Resolver.{ts,js}`],
     dateScalarMode: "timestamp",
     authChecker
   });

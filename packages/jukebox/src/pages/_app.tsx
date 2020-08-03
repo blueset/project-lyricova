@@ -4,6 +4,8 @@ import PropTypes from "prop-types";
 import React from "react";
 import theme from "../utils/theme";
 import Head from "next/head";
+import { ApolloProvider } from "@apollo/client";
+import apolloClient from "../frontendUtils/apollo";
 
 export default function MyApp({ Component, pageProps }: AppProps) {
 
@@ -18,17 +20,19 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>My page</title>
+        <title>Lyricova Jukebox</title>
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
       </Head>
+      <ApolloProvider client={apolloClient}>
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <Component {...pageProps} />
       </ThemeProvider>
+      </ApolloProvider>
     </>
   );
 }
