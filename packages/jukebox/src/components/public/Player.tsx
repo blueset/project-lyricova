@@ -8,7 +8,7 @@ import {
   Fab,
   CircularProgress,
 } from "@material-ui/core";
-import React, { RefObject, useState, useEffect } from "react";
+import React, { useState, useEffect, useDebugValue, RefObject } from "react";
 import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
 import SkipNextIcon from "@material-ui/icons/SkipNext";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
@@ -16,44 +16,48 @@ import PauseIcon from "@material-ui/icons/Pause";
 import ShuffleIcon from "@material-ui/icons/Shuffle";
 import RepeatOneIcon from "@material-ui/icons/RepeatOne";
 import { formatTime } from "../../frontendUtils/strings";
+import { useAppContext } from "./AppContext";
+import { useNamedState } from "../../frontendUtils/hooks";
 
-interface Props {
-  playerRef: RefObject<HTMLAudioElement>;
-}
+export default function Player() {
+  const [time, setTime] = useNamedState(0, "time");
+  const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
+  const [isLoading, setIsLoading] = useNamedState(false, "isLoading");
+  const [duration, setDuration] = useNamedState(0, "duration");
+  const [loadProgress, setLoadProgress] = useNamedState(0, "loadProgress");
 
-export default function Player(props: Props) {
-  const [time, setTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [loadProgress, setLoadProgress] = useState(0);
-  const playerRef = props.playerRef;
+  const { playerRef, playlist } = useAppContext();
 
   function updateTime() {
+    // console.log("updateTime, playerRef", playerRef.current, playerRef);
     if (playerRef.current !== null && !isDragging) {
       setTime(playerRef.current.currentTime);
     }
   }
 
   function clickPlay() {
-    if (isPlaying) {
-      playerRef.current.pause();
-    } else {
+    if (playlist.nowPlaying === null && playlist.tracks.length > 0) {
+      playlist.playTrack(0);
       playerRef.current.play();
+      return;
+    }
+    if (playerRef.current.paused) {
+      playerRef.current.play();
+    } else {
+      playerRef.current.pause();
     }
   }
 
   function onPlay() {
-    setIsPlaying(true);
+    // setIsPlaying(true);
   }
 
   function onPause() {
-    setIsPlaying(false);
+    // setIsPlaying(false);
   }
 
   function updateDuration() {
-    setDuration(playerRef.current.duration);
+    setDuration(playerRef.current?.duration);
   }
 
   function onSliderChange(event: unknown, newValue: number) {
@@ -68,6 +72,11 @@ export default function Player(props: Props) {
   }
 
   function updateProgress() {
+    if (!playerRef.current) {
+      setLoadProgress(0);
+      setIsLoading(false);
+      return;
+    }
     const duration = playerRef.current.duration,
       buffered = playerRef.current.buffered;
     let loaded = 0;
@@ -83,28 +92,52 @@ export default function Player(props: Props) {
     }
   }
 
+  function nextTrack() {
+    const isPlaying = !playerRef.current.paused;
+    if (isPlaying) playerRef.current.pause();
+    playlist.playNext();
+    if (isPlaying && playerRef.current) {
+      // console.log("called play");
+      playerRef.current.play();
+    }
+  }
+  function previousTrack() {
+    const isPlaying = !playerRef.current.paused;
+    if (isPlaying) playerRef.current.pause();
+    playlist.playPrevious();
+    if (isPlaying && playerRef.current) {
+      // console.log("called play");
+      playerRef.current.play();
+    }
+  }
+
   useEffect(() => {
-    if (playerRef.current !== null) {
-      playerRef.current.addEventListener("timeupdate", updateTime);
-      playerRef.current.addEventListener("playing", onPlay);
-      playerRef.current.addEventListener("pause", onPause);
-      playerRef.current.addEventListener("durationchange", updateDuration);
-      playerRef.current.addEventListener("loadedmetadata", updateDuration);
-      playerRef.current.addEventListener("progress", updateProgress);
+    const playerElm = playerRef.current;
+    // console.log("trying to register listeners");
+    if (playerElm !== null) {
+      // console.log("registering listeners");
+      playerElm.addEventListener("timeupdate", updateTime);
+      playerElm.addEventListener("playing", onPlay);
+      playerElm.addEventListener("pause", onPause);
+      playerElm.addEventListener("durationchange", updateDuration);
+      playerElm.addEventListener("loadedmetadata", updateDuration);
+      playerElm.addEventListener("progress", updateProgress);
       updateTime();
       updateDuration();
     }
     return function cleanUp() {
-      if (playerRef.current !== null) {
-        playerRef.current.removeEventListener("timeupdate", updateTime);
-        playerRef.current.removeEventListener("playing", onPlay);
-        playerRef.current.removeEventListener("pause", onPause);
-        playerRef.current.removeEventListener("durationchange", updateDuration);
-        playerRef.current.removeEventListener("loadedmetadata", updateDuration);
-        playerRef.current.removeEventListener("progress", updateProgress);
+      // console.log("trying to remove listeners");
+      if (playerElm !== null) {
+        // console.log("removing listeners");
+        playerElm.removeEventListener("timeupdate", updateTime);
+        playerElm.removeEventListener("playing", onPlay);
+        playerElm.removeEventListener("pause", onPause);
+        playerElm.removeEventListener("durationchange", updateDuration);
+        playerElm.removeEventListener("loadedmetadata", updateDuration);
+        playerElm.removeEventListener("progress", updateProgress);
       }
     };
-  });
+  }, [playerRef]);
 
   return (
     <Paper className={style.playerPaper}>
@@ -112,8 +145,13 @@ export default function Player(props: Props) {
         <div>
           {/* <div>image</div> */}
           <div>
-            <Typography variant="h6">Song name</Typography>
-            <Typography variant="subtitle1">Song artist</Typography>
+            <Typography variant="h6">
+              {playlist.getCurrentSong()?.trackName || "No track"}
+            </Typography>
+            <Typography variant="subtitle1">
+              {playlist.getCurrentSong()?.artistName ||
+                "Select a track to start."}
+            </Typography>
           </div>
         </div>
         <Slider
@@ -149,17 +187,22 @@ export default function Player(props: Props) {
           >
             <ShuffleIcon />
           </IconButton>
-          <IconButton color="default" aria-label="Previous track">
+          <IconButton
+            color="default"
+            aria-label="Previous track"
+            onClick={previousTrack}
+          >
             <SkipPreviousIcon />
           </IconButton>
           <div className={style.loadProgressContainer}>
             <Fab
               color="primary"
-              aria-label={isPlaying ? "Pause" : "Play"}
+              aria-label={playerRef.current?.paused ? "Play" : "Pause"}
               size="medium"
+              className={style.playPauseButton}
               onClick={clickPlay}
             >
-              {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+              {playerRef.current?.paused ? <PlayArrowIcon /> : <PauseIcon />}
             </Fab>
             {isLoading && (
               <CircularProgress
@@ -172,7 +215,11 @@ export default function Player(props: Props) {
               />
             )}
           </div>
-          <IconButton color="default" aria-label="Next track">
+          <IconButton
+            color="default"
+            aria-label="Next track"
+            onClick={nextTrack}
+          >
             <SkipNextIcon />
           </IconButton>
           <IconButton

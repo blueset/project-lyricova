@@ -7,7 +7,7 @@ export class PaginationArgs {
   after?: string;
 
   @Field(type => Int, { defaultValue: 25 })
-  @Min(1)
+  @Min(-1)
   first = 25;
 }
 

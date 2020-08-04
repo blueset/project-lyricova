@@ -304,7 +304,7 @@ export class MusicFileResolver {
 
     const result = await MusicFile.findAndCountAll({
       offset: offset,
-      limit: first
+      limit: first < 0 ? undefined : first
     });
     const edges: MusicFilesPaginationEdge[] = result.rows.map((r, idx) => {
       return {

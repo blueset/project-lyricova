@@ -25,6 +25,10 @@
   justify-content: space-around;
 }
 
+.playPauseButton {
+  z-index: 2;
+}
+
 .loadProgressContainer {
   position: relative;
 }
