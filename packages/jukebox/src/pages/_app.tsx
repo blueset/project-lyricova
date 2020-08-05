@@ -2,7 +2,7 @@ import type { AppProps } from "next/app";
 import { ThemeProvider, CssBaseline } from "@material-ui/core";
 import PropTypes from "prop-types";
 import React from "react";
-import theme from "../utils/theme";
+import theme from "../frontendUtils/theme";
 import Head from "next/head";
 import { ApolloProvider } from "@apollo/client";
 import apolloClient from "../frontendUtils/apollo";

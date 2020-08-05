@@ -82,30 +82,28 @@ export default function Index() {
     loadTracks: (tracks: Track[]) => {
       setPlaylistTracks(tracks);
     },
-    playTrack: (index: number) => {
+    playTrack: (index: number, playNow: boolean = false) => {
       setNowPlaying(index);
       const fileId = playlistTracks[index].id;
       playerRef.current.src = `/api/files/${fileId}/file`;
       playerRef.current.currentTime = 0;
-      // console.log("called load");
       playerRef.current.load();
-      // console.log("called load ... done");
-      // playerRef.current.play();
+      if (playNow) playerRef.current.play();
     },
-    playNext: () => {
+    playNext: (playNow: boolean = false) => {
       if (playlistTracks.length < 1) return;
       if (nowPlaying === null) {
-        playlist.playTrack(0);
+        playlist.playTrack(0, playNow);
       } else {
-        playlist.playTrack(nowPlaying + 1);
+        playlist.playTrack(nowPlaying + 1, playNow);
       }
     },
-    playPrevious: () => {
+    playPrevious: (playNow: boolean = false) => {
       if (playlistTracks.length < 1) return;
       if (nowPlaying === null) {
-        playlist.playTrack(playlistTracks.length - 1);
+        playlist.playTrack(playlistTracks.length - 1, playNow);
       } else {
-        playlist.playTrack(nowPlaying - 1);
+        playlist.playTrack(nowPlaying - 1, playNow);
       }
     },
     addTrackToNext: (track: Track) => {
@@ -204,7 +202,7 @@ export default function Index() {
             <Player />
           </Grid>
           <Grid item lg={9} sm={8} xs={12}>
-            <div>{JSON.stringify(playlistTracks).substring(0, 100)}</div>
+            {/* <div>{JSON.stringify(playlistTracks).substring(0, 100)}</div> */}
             <DetailsPanel></DetailsPanel>
           </Grid>
         </Grid>

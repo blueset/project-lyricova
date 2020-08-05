@@ -7,7 +7,7 @@ import Document, {
 } from "next/document";
 import { ServerStyleSheets } from "@material-ui/core/styles";
 import React from "react";
-import theme from "../utils/theme";
+import theme from "../frontendUtils/theme";
 
 class MyDocument extends Document {
   render() {

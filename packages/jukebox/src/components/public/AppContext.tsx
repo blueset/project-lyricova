@@ -18,11 +18,11 @@ export interface Playlist {
   shuffleMapping?: number[];
 
   loadTracks: (tracks: Track[]) => void;
-  playNext: () => void;
-  playPrevious: () => void;
+  playTrack: (index: number, playNow?: boolean) => void;
+  playNext: (playNow?: boolean) => void;
+  playPrevious: (playNow?: boolean) => void;
   addTrackToNext: (track: Track) => void;
   removeTrack: (index: number) => void;
-  playTrack: (index: number) => void;
   moveTrack: (from: number, to: number) => void;
   toggleShuffle: () => void;
 

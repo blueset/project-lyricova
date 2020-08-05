@@ -37,8 +37,7 @@ export default function Player() {
 
   function clickPlay() {
     if (playlist.nowPlaying === null && playlist.tracks.length > 0) {
-      playlist.playTrack(0);
-      playerRef.current.play();
+      playlist.playTrack(0, /*playNow*/ true);
       return;
     }
     if (playerRef.current.paused) {
@@ -95,20 +94,20 @@ export default function Player() {
   function nextTrack() {
     const isPlaying = !playerRef.current.paused;
     if (isPlaying) playerRef.current.pause();
-    playlist.playNext();
-    if (isPlaying && playerRef.current) {
-      // console.log("called play");
-      playerRef.current.play();
-    }
+    playlist.playNext(/*playNow*/ isPlaying);
+    // if (isPlaying && playerRef.current) {
+    // console.log("called play");
+    // playerRef.current.play();
+    // }
   }
   function previousTrack() {
     const isPlaying = !playerRef.current.paused;
     if (isPlaying) playerRef.current.pause();
-    playlist.playPrevious();
-    if (isPlaying && playerRef.current) {
-      // console.log("called play");
-      playerRef.current.play();
-    }
+    playlist.playPrevious(/*playNow*/ isPlaying);
+    // if (isPlaying && playerRef.current) {
+    // console.log("called play");
+    // playerRef.current.play();
+    // }
   }
 
   useEffect(() => {
@@ -145,12 +144,11 @@ export default function Player() {
         <div>
           {/* <div>image</div> */}
           <div>
-            <Typography variant="h6">
-              {playlist.getCurrentSong()?.trackName || "No track"}
+            <Typography variant="h6" noWrap={true}>
+              {playlist.getCurrentSong()?.trackName || "No title"}
             </Typography>
-            <Typography variant="subtitle1">
-              {playlist.getCurrentSong()?.artistName ||
-                "Select a track to start."}
+            <Typography variant="subtitle1" noWrap={true}>
+              {playlist.getCurrentSong()?.artistName || "Unknown artists"}
             </Typography>
           </div>
         </div>
@@ -197,12 +195,20 @@ export default function Player() {
           <div className={style.loadProgressContainer}>
             <Fab
               color="primary"
-              aria-label={playerRef.current?.paused ? "Play" : "Pause"}
+              aria-label={
+                !playerRef.current || playerRef.current.paused
+                  ? "Play"
+                  : "Pause"
+              }
               size="medium"
               className={style.playPauseButton}
               onClick={clickPlay}
             >
-              {playerRef.current?.paused ? <PlayArrowIcon /> : <PauseIcon />}
+              {!playerRef.current || playerRef.current.paused ? (
+                <PlayArrowIcon />
+              ) : (
+                <PauseIcon />
+              )}
             </Fab>
             {isLoading && (
               <CircularProgress
