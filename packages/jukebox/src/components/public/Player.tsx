@@ -8,7 +8,7 @@ import {
   Fab,
   CircularProgress,
 } from "@material-ui/core";
-import React, { useState, useEffect, useDebugValue, RefObject } from "react";
+import React, { useEffect } from "react";
 import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
 import SkipNextIcon from "@material-ui/icons/SkipNext";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
@@ -18,6 +18,7 @@ import RepeatOneIcon from "@material-ui/icons/RepeatOne";
 import { formatTime } from "../../frontendUtils/strings";
 import { useAppContext } from "./AppContext";
 import { useNamedState } from "../../frontendUtils/hooks";
+import CurrentPlaylist from "./CurrentPlaylist";
 
 export default function Player() {
   const [time, setTime] = useNamedState(0, "time");
@@ -100,6 +101,7 @@ export default function Player() {
     // playerRef.current.play();
     // }
   }
+
   function previousTrack() {
     const isPlaying = !playerRef.current.paused;
     if (isPlaying) playerRef.current.pause();
@@ -108,6 +110,13 @@ export default function Player() {
     // console.log("called play");
     // playerRef.current.play();
     // }
+  }
+
+  function toggleShuffle() {
+    // console.log("Shuffle before", playlist.shuffleMapping);
+    // console.log("Shuffle before", playlist.toggleShuffle);
+    playlist.toggleShuffle();
+    // console.log("Shuffle result", playlist.shuffleMapping);
   }
 
   useEffect(() => {
@@ -139,104 +148,97 @@ export default function Player() {
   }, [playerRef]);
 
   return (
-    <Paper className={style.playerPaper}>
-      <CardContent>
+    <CardContent>
+      <div>
+        {/* <div>image</div> */}
         <div>
-          {/* <div>image</div> */}
-          <div>
-            <Typography variant="h6" noWrap={true}>
-              {playlist.getCurrentSong()?.trackName || "No title"}
-            </Typography>
-            <Typography variant="subtitle1" noWrap={true}>
-              {playlist.getCurrentSong()?.artistName || "Unknown artists"}
-            </Typography>
-          </div>
-        </div>
-        <Slider
-          defaultValue={0}
-          value={time}
-          getAriaValueText={formatTime}
-          max={duration}
-          onChange={onSliderChange}
-          onChangeCommitted={onSliderChangeCommitted}
-        />
-        <div className={style.sliderLabelContainer}>
-          <Typography
-            variant="body2"
-            component="span"
-            className={style.sliderLabelText}
-          >
-            {formatTime(time)}
+          <Typography variant="h6" noWrap={true}>
+            {playlist.getCurrentSong()?.trackName || "No title"}
           </Typography>
-          <span className={style.sliderLabelStretcher}></span>
-          <Typography
-            variant="body2"
-            component="span"
-            className={style.sliderLabelText}
-          >
-            {formatTime(duration)}
+          <Typography variant="subtitle1" noWrap={true}>
+            {playlist.getCurrentSong()?.artistName || "Unknown artists"}
           </Typography>
         </div>
-        <div className={style.controlContainer}>
-          <IconButton
-            color="default"
-            aria-label="Shuffle"
-            style={{ opacity: 0.5 }}
+      </div>
+      <Slider
+        defaultValue={0}
+        value={time}
+        getAriaValueText={formatTime}
+        max={duration}
+        onChange={onSliderChange}
+        onChangeCommitted={onSliderChangeCommitted}
+      />
+      <div className={style.sliderLabelContainer}>
+        <Typography
+          variant="body2"
+          component="span"
+          className={style.sliderLabelText}
+        >
+          {formatTime(time)}
+        </Typography>
+        <span className={style.sliderLabelStretcher}></span>
+        <Typography
+          variant="body2"
+          component="span"
+          className={style.sliderLabelText}
+        >
+          {formatTime(duration)}
+        </Typography>
+      </div>
+      <div className={style.controlContainer}>
+        <IconButton
+          color="default"
+          aria-label="Shuffle"
+          style={{ opacity: playlist.shuffleMapping ? 1 : 0.5 }}
+          onClick={toggleShuffle}
+        >
+          <ShuffleIcon />
+        </IconButton>
+        <IconButton
+          color="default"
+          aria-label="Previous track"
+          onClick={previousTrack}
+        >
+          <SkipPreviousIcon />
+        </IconButton>
+        <div className={style.loadProgressContainer}>
+          <Fab
+            color="primary"
+            aria-label={
+              !playerRef.current || playerRef.current.paused ? "Play" : "Pause"
+            }
+            size="medium"
+            className={style.playPauseButton}
+            onClick={clickPlay}
           >
-            <ShuffleIcon />
-          </IconButton>
-          <IconButton
-            color="default"
-            aria-label="Previous track"
-            onClick={previousTrack}
-          >
-            <SkipPreviousIcon />
-          </IconButton>
-          <div className={style.loadProgressContainer}>
-            <Fab
-              color="primary"
-              aria-label={
-                !playerRef.current || playerRef.current.paused
-                  ? "Play"
-                  : "Pause"
-              }
-              size="medium"
-              className={style.playPauseButton}
-              onClick={clickPlay}
-            >
-              {!playerRef.current || playerRef.current.paused ? (
-                <PlayArrowIcon />
-              ) : (
-                <PauseIcon />
-              )}
-            </Fab>
-            {isLoading && (
-              <CircularProgress
-                size={60}
-                thickness={2.4}
-                color="secondary"
-                value={loadProgress}
-                className={style.loadProgressSpinner}
-                variant="static"
-              />
+            {!playerRef.current || playerRef.current.paused ? (
+              <PlayArrowIcon />
+            ) : (
+              <PauseIcon />
             )}
-          </div>
-          <IconButton
-            color="default"
-            aria-label="Next track"
-            onClick={nextTrack}
-          >
-            <SkipNextIcon />
-          </IconButton>
-          <IconButton
-            color="default"
-            aria-label="Repeat one"
-            style={{ opacity: 0.5 }}
-          >
-            <RepeatOneIcon />
-          </IconButton>
+          </Fab>
+          {isLoading && (
+            <CircularProgress
+              size={60}
+              thickness={2.4}
+              color="secondary"
+              value={loadProgress}
+              className={style.loadProgressSpinner}
+              variant="static"
+            />
+          )}
         </div>
-      </CardContent>
-    </Paper>
+        <IconButton color="default" aria-label="Next track" onClick={nextTrack}>
+          <SkipNextIcon />
+        </IconButton>
+        <IconButton
+          color="default"
+          aria-label="Repeat one"
+          style={{ opacity: 0.5 }}
+        >
+          <RepeatOneIcon />
+        </IconButton>
+      </div>
+    </CardContent>
   );
 }

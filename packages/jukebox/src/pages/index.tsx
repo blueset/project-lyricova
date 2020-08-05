@@ -1,9 +1,9 @@
-import { Grid } from "@material-ui/core";
+import { Grid, Paper } from "@material-ui/core";
 import style from "./index.module.scss";
 import Player from "../components/public/Player";
 import DetailsPanel from "../components/public/DetailsPanel";
-import React, { useState, createRef, useEffect } from "react";
-import { gql, useQuery, useLazyQuery } from "@apollo/client";
+import React, { createRef, useEffect } from "react";
+import { gql, useLazyQuery } from "@apollo/client";
 import {
   AppContext,
   Track,
@@ -12,10 +12,11 @@ import {
 } from "../components/public/AppContext";
 import _ from "lodash";
 import { useNamedState } from "../frontendUtils/hooks";
+import CurrentPlaylist from "../components/public/CurrentPlaylist";
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
-    musicFiles(first: -1) {
+    musicFiles(first: 100) {
       edges {
         node {
           id
@@ -63,15 +64,17 @@ export default function Index() {
     "shuffleMapping"
   );
 
-  function updateShuffleness(toggle: boolean = false) {
+  function updateShuffleness(toggle: boolean = false): number[] | null {
     // if        | shuffleMapping is null |  not null
     // toggle    |        shuffle         | no shuffle
     // no toggle |      no shuffle        |  shuffle
-    if ((shuffleMapping === null) !== toggle) {
-      setShuffleMapping(_.shuffle(_.range(playlistTracks.length)));
-    } else {
-      setShuffleMapping(null);
+    let mapping = null;
+
+    if ((shuffleMapping !== null) !== toggle) {
+      mapping = _.shuffle(_.range(playlistTracks.length));
     }
+    setShuffleMapping(mapping);
+    return mapping;
   }
 
   const playlist: Playlist = {
@@ -94,6 +97,10 @@ export default function Index() {
       if (playlistTracks.length < 1) return;
       if (nowPlaying === null) {
         playlist.playTrack(0, playNow);
+      } else if (nowPlaying === playlistTracks.length - 1) {
+        if (playlist.loopMode === LoopMode.ALL) {
+          playlist.playTrack(0, playNow);
+        }
       } else {
         playlist.playTrack(nowPlaying + 1, playNow);
       }
@@ -102,6 +109,10 @@ export default function Index() {
       if (playlistTracks.length < 1) return;
       if (nowPlaying === null) {
         playlist.playTrack(playlistTracks.length - 1, playNow);
+      } else if (nowPlaying === 0) {
+        if (playlist.loopMode === LoopMode.ALL) {
+          playlist.playTrack(nowPlaying - 1, playNow);
+        }
       } else {
         playlist.playTrack(nowPlaying - 1, playNow);
       }
@@ -143,15 +154,15 @@ export default function Index() {
       }
 
       // Revert back now playing pointer before turning off shuffling
-      if (nowPlaying && shuffleMapping !== null) {
+      if (nowPlaying !== null && shuffleMapping !== null) {
         setNowPlaying(shuffleMapping[nowPlaying]);
       }
 
-      updateShuffleness(/*toggle: */ true);
+      const mapping = updateShuffleness(/*toggle: */ true);
 
       // Map over now playing pointer after turning on shuffling
-      if (nowPlaying && shuffleMapping !== null) {
-        setNowPlaying(shuffleMapping.findIndex((v) => v === nowPlaying));
+      if (nowPlaying !== null && mapping !== null) {
+        setNowPlaying(mapping.findIndex((v) => v === nowPlaying));
       }
     },
     setLoopMode: (loopMode: LoopMode) => {
@@ -198,10 +209,13 @@ export default function Index() {
       <audio ref={playerRef}></audio>
       <AppContext playerRef={playerRef} playlist={playlist}>
         <Grid container spacing={0} className={style.gridContainer}>
-          <Grid item lg={3} sm={4} xs={12} className={style.playerGridItem}>
-            <Player />
+          <Grid item xl={3} sm={4} xs={12} className={style.playerGridItem}>
+            <Paper className={style.playerPaper}>
+              <Player />
+              <CurrentPlaylist />
+            </Paper>
           </Grid>
-          <Grid item lg={9} sm={8} xs={12}>
+          <Grid item xl={9} sm={8} xs={12}>
             {/* <div>{JSON.stringify(playlistTracks).substring(0, 100)}</div> */}
             <DetailsPanel></DetailsPanel>
           </Grid>
