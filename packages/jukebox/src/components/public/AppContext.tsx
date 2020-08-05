@@ -4,10 +4,11 @@ import type {MusicFile} from "../../models/MusicFile";
 export type Track = Pick<MusicFile, "id" | "fileSize" | "trackName" | "trackSortOrder" | "artistName" | "artistSortOrder" | "albumName" | "albumSortOrder" | "hasCover" | "duration" | "hasLyrics">;
 
 export enum LoopMode {
-  SINGLE,
-  ALL,
-  NONE,
+  SINGLE = "SINGLE",
+  ALL = "ALL",
+  NONE = "NONE",
 }
+
 export interface Playlist {
   tracks: Track[];
 
@@ -28,6 +29,7 @@ export interface Playlist {
 
   setLoopMode: (loopMode: LoopMode) => void;
   getCurrentSong: () => Track | null;
+  getSongByIndex: (index: number) => Track | null;
 }
 
 const PlayerRefContext = React.createContext<RefObject<HTMLAudioElement>>(null);
@@ -35,7 +37,7 @@ PlayerRefContext.displayName = "PlayerRefContext";
 const PlaylistContext = React.createContext<Playlist>({
   tracks: [],
   nowPlaying: null,
-  loopMode: LoopMode.SINGLE,
+  loopMode: LoopMode.NONE,
   shuffleMapping: null,
   loadTracks: () => {
     /* do nothing */
@@ -65,6 +67,9 @@ const PlaylistContext = React.createContext<Playlist>({
     /* do nothing */
   },
   getCurrentSong: () => {
+    return null;
+  },
+  getSongByIndex: () => {
     return null;
   },
 });

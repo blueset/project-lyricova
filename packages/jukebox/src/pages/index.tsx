@@ -90,12 +90,16 @@ export default function Index() {
       setPlaylistTracks(tracks);
     },
     playTrack: (index: number, playNow: boolean = false) => {
+      const fileId = playlist.getSongByIndex(index).id;
+      if (playerRef.current) {
+        playerRef.current.src = `/api/files/${fileId}/file`;
+        playerRef.current.currentTime = 0;
+        playerRef.current.load();
+        if (playNow) playerRef.current.play();
+      } else {
+        console.error("PlayerRef is lost!", playerRef);
+      }
       setNowPlaying(index);
-      const fileId = playlistTracks[index].id;
-      playerRef.current.src = `/api/files/${fileId}/file`;
-      playerRef.current.currentTime = 0;
-      playerRef.current.load();
-      if (playNow) playerRef.current.play();
     },
     playNext: (playNow: boolean = false) => {
       if (playlistTracks.length < 1) return;
@@ -172,13 +176,41 @@ export default function Index() {
     setLoopMode: (loopMode: LoopMode) => {
       setLoopMode(loopMode);
     },
+    getSongByIndex: (index: number) => {
+      if (shuffleMapping !== null) return playlistTracks[shuffleMapping[index]];
+      return playlistTracks[index];
+    },
     getCurrentSong: () => {
       if (nowPlaying === null) return null;
-      if (shuffleMapping !== null)
-        return playlistTracks[shuffleMapping[nowPlaying]];
-      return playlistTracks[nowPlaying];
+      return playlist.getSongByIndex(nowPlaying);
     },
   };
+
+  function onPlayEnded() {
+    if (playlist.loopMode === LoopMode.SINGLE) {
+      // Single loop
+      playlist.playTrack(nowPlaying, true);
+    } else if (nowPlaying + 1 < playlistTracks.length) {
+      // Play next
+      playlist.playNext(true);
+    } else if (playlist.loopMode === LoopMode.ALL) {
+      // Loop all, play the first
+      playlist.playTrack(0, true);
+    } else {
+      // Play nothing if no loop and last track ended
+      setNowPlaying(null);
+    }
+  }
+
+  useEffect(() => {
+    if (playerRef.current) {
+      const player = playerRef.current;
+      player.addEventListener("ended", onPlayEnded);
+      return () => {
+        player.removeEventListener("ended", onPlayEnded);
+      };
+    }
+  }, [playerRef]);
 
   const [loadMediaFileQuery, mediaFilesQuery] = useLazyQuery<{
     musicFiles: { edges: { node: Track }[] };

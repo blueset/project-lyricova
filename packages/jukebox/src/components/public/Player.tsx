@@ -15,10 +15,16 @@ import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import PauseIcon from "@material-ui/icons/Pause";
 import ShuffleIcon from "@material-ui/icons/Shuffle";
 import RepeatOneIcon from "@material-ui/icons/RepeatOne";
+import RepeatIcon from "@material-ui/icons/Repeat";
 import { formatTime } from "../../frontendUtils/strings";
-import { useAppContext } from "./AppContext";
+import { useAppContext, LoopMode } from "./AppContext";
 import { useNamedState } from "../../frontendUtils/hooks";
-import CurrentPlaylist from "./CurrentPlaylist";
+
+const LOOP_MODE_SWITCH: { [key in keyof typeof LoopMode]: LoopMode } = {
+  [LoopMode.ALL]: LoopMode.SINGLE,
+  [LoopMode.SINGLE]: LoopMode.NONE,
+  [LoopMode.NONE]: LoopMode.ALL,
+};
 
 export default function Player() {
   const [time, setTime] = useNamedState(0, "time");
@@ -118,6 +124,41 @@ export default function Player() {
     playlist.toggleShuffle();
     // console.log("Shuffle result", playlist.shuffleMapping);
   }
+
+  function switchLoopMode() {
+    playlist.setLoopMode(LOOP_MODE_SWITCH[playlist.loopMode]);
+  }
+
+  const loopModeButton = {
+    [LoopMode.ALL]: (
+      <IconButton
+        color="default"
+        aria-label="Repeat all"
+        onClick={switchLoopMode}
+      >
+        <RepeatIcon />
+      </IconButton>
+    ),
+    [LoopMode.SINGLE]: (
+      <IconButton
+        color="default"
+        aria-label="Repeat one"
+        onClick={switchLoopMode}
+      >
+        <RepeatOneIcon />
+      </IconButton>
+    ),
+    [LoopMode.NONE]: (
+      <IconButton
+        color="default"
+        aria-label="No repeat"
+        style={{ opacity: 0.5 }}
+        onClick={switchLoopMode}
+      >
+        <RepeatIcon />
+      </IconButton>
+    ),
+  };
 
   useEffect(() => {
     const playerElm = playerRef.current;
@@ -231,13 +272,7 @@ export default function Player() {
         <IconButton color="default" aria-label="Next track" onClick={nextTrack}>
           <SkipNextIcon />
         </IconButton>
-        <IconButton
-          color="default"
-          aria-label="Repeat one"
-          style={{ opacity: 0.5 }}
-        >
-          <RepeatOneIcon />
-        </IconButton>
+        {loopModeButton[playlist.loopMode]}
       </div>
     </CardContent>
   );
