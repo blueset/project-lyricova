@@ -16,7 +16,7 @@ import CurrentPlaylist from "../components/public/CurrentPlaylist";
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
-    musicFiles(first: 100) {
+    musicFiles(first: -1) {
       edges {
         node {
           id
