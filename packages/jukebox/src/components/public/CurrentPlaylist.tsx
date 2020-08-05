@@ -10,7 +10,7 @@ import {
 } from "@material-ui/core";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import DragHandleIcon from "@material-ui/icons/DragHandle";
-import { useMemo } from "react";
+import { useMemo, useEffect, createRef, RefObject } from "react";
 // import {
 //   DragDropContext,
 //   DropResult,
@@ -107,11 +107,19 @@ export default function CurrentPlaylist() {
   //   playlist.moveTrack(result.source.index, result.destination.index);
   // }
 
+  const listRef: RefObject<FixedSizeList> = createRef();
+  useEffect(() => {
+    if (listRef.current && playlist.nowPlaying !== null) {
+      listRef.current.scrollToItem(playlist.nowPlaying, "start");
+    }
+  }, [playlist.nowPlaying]);
+
   return (
     <List dense={true} className={style.playlist}>
       <AutoResizer>
         {({ height, width }) => (
           <FixedSizeList
+            ref={listRef}
             height={height}
             width={width}
             itemSize={60}
