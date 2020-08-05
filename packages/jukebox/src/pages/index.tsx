@@ -72,6 +72,10 @@ export default function Index() {
 
     if ((shuffleMapping !== null) !== toggle) {
       mapping = _.shuffle(_.range(playlistTracks.length));
+      if (nowPlaying !== null) {
+        const repIndex = mapping.indexOf(nowPlaying);
+        [mapping[0], mapping[repIndex]] = [mapping[repIndex], mapping[0]];
+      }
     }
     setShuffleMapping(mapping);
     return mapping;
@@ -162,7 +166,7 @@ export default function Index() {
 
       // Map over now playing pointer after turning on shuffling
       if (nowPlaying !== null && mapping !== null) {
-        setNowPlaying(mapping.findIndex((v) => v === nowPlaying));
+        setNowPlaying(mapping.indexOf(nowPlaying));
       }
     },
     setLoopMode: (loopMode: LoopMode) => {
