@@ -13,6 +13,7 @@ import {
 import _ from "lodash";
 import { useNamedState } from "../frontendUtils/hooks";
 import CurrentPlaylist from "../components/public/CurrentPlaylist";
+import { move } from "../frontendUtils/arrays";
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
@@ -139,20 +140,16 @@ export default function Index() {
     },
     moveTrack: (from: number, to: number) => {
       if (shuffleMapping === null) {
-        [playlistTracks[from], playlistTracks[to]] = [
-          playlistTracks[to],
-          playlistTracks[from],
-        ];
-        setPlaylistTracks(playlistTracks);
+        setPlaylistTracks(move(playlistTracks, from, to));
       } else {
-        [shuffleMapping[from], shuffleMapping[to]] = [
-          shuffleMapping[to],
-          shuffleMapping[from],
-        ];
-        setShuffleMapping(shuffleMapping);
+        setShuffleMapping(move(shuffleMapping, from, to));
       }
       if (nowPlaying === from) {
         setNowPlaying(to);
+      } else if (from < nowPlaying && nowPlaying <= to) {
+        setNowPlaying(nowPlaying - 1);
+      } else if (from > nowPlaying && nowPlaying >= to) {
+        setNowPlaying(nowPlaying + 1);
       }
     },
     toggleShuffle: () => {
@@ -234,7 +231,10 @@ export default function Index() {
       console.log(mediaFilesQuery.data);
       if (mediaFilesQuery.data) {
         setPlaylistTracks(
-          mediaFilesQuery.data.musicFiles.edges.map((v) => v.node)
+          _.sortBy(
+            mediaFilesQuery.data.musicFiles.edges.map((v) => v.node),
+            ["trackSortOrder", "artistSortOrder", "albumSortOrder"]
+          )
         );
       }
     }
@@ -252,7 +252,6 @@ export default function Index() {
             </Paper>
           </Grid>
           <Grid item xl={9} sm={8} xs={12}>
-            {/* <div>{JSON.stringify(playlistTracks).substring(0, 100)}</div> */}
             <DetailsPanel></DetailsPanel>
           </Grid>
         </Grid>

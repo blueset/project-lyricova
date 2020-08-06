@@ -7,50 +7,60 @@ import {
   ListItemSecondaryAction,
   IconButton,
   ListItemIcon,
+  RootRef,
 } from "@material-ui/core";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import DragHandleIcon from "@material-ui/icons/DragHandle";
-import { useMemo, useEffect, createRef, RefObject } from "react";
-// import {
-//   DragDropContext,
-//   DropResult,
-//   Droppable,
-//   DraggableProvided,
-//   DraggableStateSnapshot,
-//   DraggableRubric,
-//   DroppableProvided,
-//   Draggable,
-//   DraggableProvidedDragHandleProps,
-// } from "react-beautiful-dnd";
+import { useEffect, createRef, RefObject } from "react";
 import AutoResizer from "react-virtualized-auto-sizer";
-import { FixedSizeList } from "react-window";
-import { CSSProperties } from "react";
+import { FixedSizeList, ListChildComponentProps } from "react-window";
+import React, { CSSProperties } from "react";
 import _ from "lodash";
+import {
+  DragDropContext,
+  DropResult,
+  Droppable,
+  DraggableProvided,
+  DraggableStateSnapshot,
+  DraggableRubric,
+  DroppableProvided,
+  Draggable,
+} from "react-beautiful-dnd";
+import { useNamedState } from "../../frontendUtils/hooks";
 
 function CurrentPlaylistItem({
-  playlist,
+  provided,
+  track,
   index,
-  value,
-  isDragging,
   style,
+  isDragging,
 }: // provided,
 {
-  playlist: Playlist;
+  provided: DraggableProvided;
   index: number;
-  value: Track;
-  isDragging: boolean;
+  track: Track;
   style: CSSProperties;
-  // provided: DraggableProvided;
+  isDragging: boolean;
 }) {
+  const { playlist } = useAppContext();
+  // isDragging = true;
   return (
-    <div style={style}>
+    <RootRef rootRef={provided.innerRef}>
       <ListItem
         button
-        style={{
-          opacity: index < playlist.nowPlaying ? 0.375 : 1,
-          height: 60,
+        ContainerProps={{
+          ...provided.draggableProps,
+          style: {
+            ...style,
+            ...provided.draggableProps.style,
+            opacity: index < playlist.nowPlaying ? 0.375 : 1,
+            height: 60,
+          },
         }}
-        selected={playlist.nowPlaying === index}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        ContainerComponent={isDragging ? "div" : "li"}
+        selected={playlist.nowPlaying === index || isDragging}
         onClick={
           isDragging
             ? null
@@ -59,24 +69,22 @@ function CurrentPlaylistItem({
               }
         }
       >
-        <ListItemIcon style={{ zIndex: 10 }}>
+        <ListItemIcon style={{ zIndex: 10 }} {...provided.dragHandleProps}>
           <DragHandleIcon />
         </ListItemIcon>
         <ListItemText
-          primary={value.trackName}
+          primary={track.trackName}
           primaryTypographyProps={{ noWrap: true }}
-          secondary={value.artistName}
+          secondary={track.artistName}
           secondaryTypographyProps={{ noWrap: true }}
         />
-        {!isDragging && (
-          <ListItemSecondaryAction>
-            <IconButton edge="end" aria-label="More actions">
-              <MoreVertIcon />
-            </IconButton>
-          </ListItemSecondaryAction>
-        )}
+        <ListItemSecondaryAction>
+          <IconButton edge="end" aria-label="More actions">
+            <MoreVertIcon />
+          </IconButton>
+        </ListItemSecondaryAction>
       </ListItem>
-    </div>
+    </RootRef>
   );
 }
 
@@ -85,57 +93,101 @@ CurrentPlaylistItem.defaultProps = {
   style: {},
 };
 
+function Row(props: ListChildComponentProps) {
+  const { data, index, style } = props;
+  const item: Track = data[index];
+
+  return (
+    <Draggable
+      draggableId={`nowPlaying-draggable-${item.id}`}
+      index={index}
+      key={item.id}
+    >
+      {(provided) => (
+        <CurrentPlaylistItem
+          index={index}
+          track={item}
+          isDragging={false}
+          style={style}
+          provided={provided}
+        />
+      )}
+    </Draggable>
+  );
+}
+
 export default function CurrentPlaylist() {
   const { playlist } = useAppContext();
-  const tracks: Track[] = useMemo(() => {
+  const [tracks, setTracks] = useNamedState(playlist.tracks, "tracks");
+
+  function updateTracks() {
+    // console.log("Tracks recalculated");
     if (!playlist.shuffleMapping) {
-      return playlist.tracks;
+      setTracks(_.clone(playlist.tracks));
     } else {
-      console.log("Shuffle mapping is rendered");
-      return playlist.shuffleMapping.map((v) => playlist.tracks[v]);
+      // console.log("Shuffle mapping is rendered");
+      setTracks(playlist.shuffleMapping.map((v) => playlist.tracks[v]));
     }
-  }, [playlist.shuffleMapping, playlist.tracks]);
+  }
+  useEffect(updateTracks, [playlist.shuffleMapping, playlist.tracks]);
 
-  // function onDragEnd(result: DropResult) {
-  //   if (!result.destination) {
-  //     return;
-  //   }
-  //   if (result.source.index === result.destination.index) {
-  //     return;
-  //   }
+  function onDragEnd(result: DropResult) {
+    if (!result.destination) {
+      return;
+    }
+    if (result.source.index === result.destination.index) {
+      return;
+    }
 
-  //   playlist.moveTrack(result.source.index, result.destination.index);
-  // }
+    const src = result.source.index,
+      dest = result.destination.index;
+
+    playlist.moveTrack(src, dest);
+  }
 
   const listRef: RefObject<FixedSizeList> = createRef();
   useEffect(() => {
     if (listRef.current && playlist.nowPlaying !== null) {
       listRef.current.scrollToItem(playlist.nowPlaying, "start");
     }
-  }, [playlist.nowPlaying]);
+  }, [playlist.getCurrentSong()]);
 
   return (
     <List dense={true} className={style.playlist}>
       <AutoResizer>
         {({ height, width }) => (
-          <FixedSizeList
-            ref={listRef}
-            height={height}
-            width={width}
-            itemSize={60}
-            itemCount={tracks.length}
-          >
-            {({ index, style }) => (
-              <CurrentPlaylistItem
-                key={index}
-                playlist={playlist}
-                index={index}
-                value={tracks[index]}
-                isDragging={false}
-                style={style}
-              />
-            )}
-          </FixedSizeList>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable
+              droppableId="droppable-currentPlaylist"
+              mode="virtual"
+              renderClone={(
+                provided: DraggableProvided,
+                snapshot: DraggableStateSnapshot,
+                rubric: DraggableRubric
+              ) => (
+                <CurrentPlaylistItem
+                  index={rubric.source.index}
+                  track={tracks[rubric.source.index]}
+                  isDragging={snapshot.isDragging}
+                  provided={provided}
+                />
+              )}
+            >
+              {(droppableProvided: DroppableProvided) => (
+                <FixedSizeList
+                  ref={listRef}
+                  height={height}
+                  width={width}
+                  itemSize={60}
+                  itemData={tracks}
+                  itemCount={tracks.length}
+                  outerRef={droppableProvided.innerRef}
+                >
+                  {Row}
+                </FixedSizeList>
+              )}
+            </Droppable>
+          </DragDropContext>
         )}
       </AutoResizer>
     </List>
