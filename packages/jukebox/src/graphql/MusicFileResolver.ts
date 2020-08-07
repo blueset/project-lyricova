@@ -62,7 +62,7 @@ class MusicFilesPaginationEdge {
 }
 
 @ObjectType()
-class MusicFilesPagination {
+export class MusicFilesPagination {
   @Field(type => Int)
   totalCount: number;
 

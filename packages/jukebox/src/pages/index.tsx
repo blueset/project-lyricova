@@ -3,17 +3,21 @@ import style from "./index.module.scss";
 import Player from "../components/public/Player";
 import DetailsPanel from "../components/public/DetailsPanel";
 import React, { createRef, useEffect } from "react";
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import {
   AppContext,
   Track,
   Playlist,
   LoopMode,
 } from "../components/public/AppContext";
-import _ from "lodash";
+import _, { random } from "lodash";
 import { useNamedState } from "../frontendUtils/hooks";
 import CurrentPlaylist from "../components/public/CurrentPlaylist";
 import { move } from "../frontendUtils/arrays";
+import { MusicFilesPagination } from "../graphql/MusicFileResolver";
+import { Texture } from "../graphql/TextureResolver";
+import { CSSProperties } from "@material-ui/core/styles/withStyles";
+import { text } from "body-parser";
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
@@ -37,16 +41,37 @@ const MUSIC_FILES_COUNT_QUERY = gql`
   }
 `;
 
+const TEXTURE_QUERY = gql`
+  query GetTexture {
+    randomTexture {
+      name
+      author
+      authorUrl
+      url
+    }
+  }
+`;
+
+function generateBackgroundStyle(
+  track: Track,
+  texture: string | null
+): CSSProperties {
+  if (texture !== null) {
+    return {
+      backgroundImage: `url("/textures/${texture}")`,
+    };
+  } else if (track !== null) {
+    return {
+      backgroundImage: `url("/api/files/${track.id}/cover")`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    };
+  } else {
+    return {};
+  }
+}
+
 export default function Index() {
-  // const playerRef: {
-  //   current: HTMLAudioElement | null;
-  //   setCurrent: (v: HTMLAudioElement | null) => void;
-  // } = {
-  //   current: null,
-  //   setCurrent: (v) => {
-  //     playerRef.current = v;
-  //   },
-  // };
   const playerRef = createRef<HTMLAudioElement>();
   const [playlistTracks, setPlaylistTracks] = useNamedState<Track[]>(
     [],
@@ -203,6 +228,7 @@ export default function Index() {
     }
   }
 
+  // Add onEnded listener
   useEffect(() => {
     if (playerRef.current) {
       const player = playerRef.current;
@@ -214,7 +240,7 @@ export default function Index() {
   }, [playerRef]);
 
   const [loadMediaFileQuery, mediaFilesQuery] = useLazyQuery<{
-    musicFiles: { edges: { node: Track }[] };
+    musicFiles: MusicFilesPagination;
   }>(MUSIC_FILES_COUNT_QUERY);
 
   // Load full song list on load
@@ -244,11 +270,50 @@ export default function Index() {
     }
   }, [mediaFilesQuery]);
 
+  // Random fallback background
+  const [textureURL, setTextureURL] = useNamedState<string | null>(
+    null,
+    "textureURL"
+  );
+  const [loadRandomTexture, randomTextureQuery] = useLazyQuery<{
+    randomTexture: Texture;
+  }>(TEXTURE_QUERY);
+
+  useEffect(() => {
+    if (!playlist.getCurrentSong()?.hasCover) {
+      console.log("Load random texture");
+      if (!randomTextureQuery.called) {
+        loadRandomTexture();
+      } else {
+        randomTextureQuery?.refetch();
+      }
+    } else {
+      console.log("Remove random texture");
+      setTextureURL(null);
+    }
+  }, [playlist.getCurrentSong()]);
+
+  // Store full song list once loaded
+  useEffect(() => {
+    if (randomTextureQuery?.data?.randomTexture) {
+      const texture = randomTextureQuery.data.randomTexture;
+      console.log(
+        `Texture background ${texture.name} by ${texture.author} (${texture.authorUrl}) from https://www.transparenttextures.com/.`
+      );
+      setTextureURL(texture.url);
+    }
+  }, [randomTextureQuery.data]);
+
   return (
     <>
       <audio ref={playerRef}></audio>
       <AppContext playerRef={playerRef} playlist={playlist}>
-        <Grid container spacing={0} className={style.gridContainer}>
+        <Grid
+          container
+          spacing={0}
+          className={style.gridContainer}
+          style={generateBackgroundStyle(playlist.getCurrentSong(), textureURL)}
+        >
           <Grid item xl={3} sm={4} xs={12} className={style.playerGridItem}>
             <Paper className={style.playerPaper}>
               <Player />
@@ -256,7 +321,7 @@ export default function Index() {
             </Paper>
           </Grid>
           <Grid item xl={9} sm={8} xs={12}>
-            <DetailsPanel></DetailsPanel>
+            <DetailsPanel blur={textureURL === null}></DetailsPanel>
           </Grid>
         </Grid>
       </AppContext>
