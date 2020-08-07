@@ -26,6 +26,7 @@ export interface Playlist {
   removeTrack: (index: number) => void;
   moveTrack: (from: number, to: number) => void;
   toggleShuffle: () => void;
+  stop: () => void;
 
   setLoopMode: (loopMode: LoopMode) => void;
   getCurrentSong: () => Track | null;
@@ -64,6 +65,9 @@ const PlaylistContext = React.createContext<Playlist>({
     /* do nothing */
   },
   setLoopMode: () => {
+    /* do nothing */
+  },
+  stop: () => {
     /* do nothing */
   },
   getCurrentSong: () => {

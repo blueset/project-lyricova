@@ -72,7 +72,11 @@ export default function Player() {
   }
 
   function onSliderChangeCommitted(event: unknown, newValue: number) {
-    playerRef.current.currentTime = newValue;
+    if (playerRef.current.fastSeek) {
+      playerRef.current.fastSeek(newValue);
+    } else {
+      playerRef.current.currentTime = newValue;
+    }
     setTime(newValue);
     setIsDragging(false);
   }
