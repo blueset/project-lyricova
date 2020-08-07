@@ -132,8 +132,12 @@ export default function Index() {
       setPlaylistTracks(playlistTracks);
     },
     removeTrack: (index: number) => {
-      playlistTracks.splice(index, 1);
-      setPlaylistTracks(playlistTracks);
+      if (shuffleMapping !== null) {
+        const realIndex = shuffleMapping[index];
+        setShuffleMapping(shuffleMapping.filter((v, idx) => idx !== index));
+        index = realIndex;
+      }
+      setPlaylistTracks(playlistTracks.filter((v, idx) => idx !== index));
       if (nowPlaying === index) {
         playlist.playTrack(index);
       }

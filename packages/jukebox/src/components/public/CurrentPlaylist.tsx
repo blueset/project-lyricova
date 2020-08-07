@@ -8,10 +8,13 @@ import {
   IconButton,
   ListItemIcon,
   RootRef,
+  Menu,
+  MenuItem,
 } from "@material-ui/core";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import DragHandleIcon from "@material-ui/icons/DragHandle";
-import { useEffect, createRef, RefObject } from "react";
+import DeleteIcon from "@material-ui/icons/Delete";
+import { useEffect, createRef, RefObject, useState } from "react";
 import AutoResizer from "react-virtualized-auto-sizer";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import React, { CSSProperties } from "react";
@@ -43,6 +46,22 @@ function CurrentPlaylistItem({
   isDragging: boolean;
 }) {
   const { playlist } = useAppContext();
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleRemoveFromPlaylist = () => {
+    playlist.removeTrack(index);
+    handleMenuClose();
+  };
+
   // isDragging = true;
   return (
     <RootRef rootRef={provided.innerRef}>
@@ -79,9 +98,40 @@ function CurrentPlaylistItem({
           secondaryTypographyProps={{ noWrap: true }}
         />
         <ListItemSecondaryAction>
-          <IconButton edge="end" aria-label="More actions">
+          <IconButton
+            aria-controls={`currentPlaylist-menu-${track.id}`}
+            edge="end"
+            aria-label="More actions"
+            onClick={handleMenuClick}
+          >
             <MoreVertIcon />
           </IconButton>
+          <Menu
+            id={`currentPlaylist-menu-${track.id}`}
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            getContentAnchorEl={null}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+          >
+            <MenuItem onClick={handleRemoveFromPlaylist}>
+              <ListItemIcon>
+                <DeleteIcon color="error" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Remove from playlist"
+                primaryTypographyProps={{ color: "error" }}
+              />
+            </MenuItem>
+          </Menu>
         </ListItemSecondaryAction>
       </ListItem>
     </RootRef>
