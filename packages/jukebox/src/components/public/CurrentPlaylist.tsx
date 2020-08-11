@@ -73,8 +73,10 @@ function CurrentPlaylistItem({
             ...style,
             ...provided.draggableProps.style,
             opacity: index < playlist.nowPlaying ? 0.375 : 1,
-            height: 60,
           },
+        }}
+        style={{
+          height: 60,
         }}
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
         // @ts-ignore
@@ -92,9 +94,9 @@ function CurrentPlaylistItem({
           <DragHandleIcon />
         </ListItemIcon>
         <ListItemText
-          primary={track.trackName}
+          primary={track.trackName || "No title"}
           primaryTypographyProps={{ noWrap: true }}
-          secondary={track.artistName}
+          secondary={track.artistName || "Unknown artist"}
           secondaryTypographyProps={{ noWrap: true }}
         />
         <ListItemSecondaryAction>

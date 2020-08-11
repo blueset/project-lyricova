@@ -16,6 +16,10 @@ type MediaSessionPlaybackState = 'none' | 'paused' | 'playing';
 
 type MediaSessionAction = 'play' | 'pause' | 'seekbackward' | 'seekforward' | 'seekto' | 'previoustrack' | 'nexttrack' | 'skipad' | 'stop';
 
+interface SetPositionState {
+    (playbackState?: MediaPositionState): void;
+}
+
 interface MediaSession {
     // Current media session playback state.
     playbackState: MediaSessionPlaybackState;
@@ -27,7 +31,7 @@ interface MediaSession {
     setActionHandler(action: MediaSessionAction, listener: ((details: MediaSessionActionDetails) => void) | null): void;
 
     // Set/unset position state
-    setPositionState(playbackState?: MediaPositionState = {}): void;
+    setPositionState?: SetPositionState;
 }
 
 interface MediaImage {
@@ -65,20 +69,23 @@ declare class MediaMetadata {
 interface MediaPositionState {
     // Duration of media in seconds
     duration?: number;
+
     // Playback rate of media, positive for forward playback, negative for backward playback. This number should not be zero
     playbackRate?: number;
+
     // Last reported playback position in seconds, should be positive.
     position?: number;
-};
+}
 
 interface MediaSessionActionDetails {
     // The action that the handler is associated with
     action: MediaSessionAction;
+
     // This MAY be provided when the action is seekbackward or seekforward. Stores number of seconds to move the playback time by.
-    seekOffset?: double;
+    seekOffset?: number;
 
     // MUST be provided when action is seekto. Stores the time in seconds to move the playback time to.
-    seekTime?: double;
+    seekTime?: number;
 
     // MAY be provided when action is seekto. Stores true if the action is being called multiple times as part of a sequence and this is not the last call in that sequence.
     fastSeek?: boolean;

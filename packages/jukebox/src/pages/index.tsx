@@ -323,7 +323,7 @@ export default function Index() {
   function updatePositionState() {
     if (playerRef.current) {
       if ("setPositionState" in navigator.mediaSession) {
-        console.log("Updating position state...");
+        // console.log("Updating position state...");
         navigator.mediaSession.setPositionState({
           duration: playerRef.current.duration || 0.0,
           playbackRate: playerRef.current.playbackRate || 1.0,
@@ -389,14 +389,14 @@ export default function Index() {
 
   useEffect(() => {
     if (!playlist.getCurrentSong()?.hasCover) {
-      console.log("Load random texture");
-      if (randomTextureQuery.called === false) {
+      // console.log("Load random texture");
+      if (randomTextureQuery?.called !== true) {
         loadRandomTexture();
       } else {
         randomTextureQuery?.refetch();
       }
     } else {
-      console.log("Remove random texture");
+      // console.log("Remove random texture");
       setTextureURL(null);
     }
   }, [playlist.getCurrentSong()]);
