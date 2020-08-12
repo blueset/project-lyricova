@@ -49,7 +49,7 @@ export default function DetailsPanel({ blur, children }: Props) {
   return (
     <ThemeProvider theme={theme}>
       <Box width="100%" height="100%" bgcolor="rgba(0,0,0,0.6)" style={inlineStyle}>
-        <Box padding={2} display="flex" flexDirection="row" alignItems="center">
+        <Box pt={2} pb={2} pl={4} pr={2} display="flex" flexDirection="row" alignItems="center">
           <Link className={style.link} href="/">Lyrics</Link>
           <Link className={style.link} href="/library/tracks" activeCriteria={(v) => v.startsWith("/library/")}>Library</Link>
           <Link className={style.link} href="/info">Information</Link>
