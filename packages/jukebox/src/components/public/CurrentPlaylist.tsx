@@ -16,7 +16,7 @@ import DragHandleIcon from "@material-ui/icons/DragHandle";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { useEffect, createRef, RefObject, useState } from "react";
 import AutoResizer from "react-virtualized-auto-sizer";
-import { FixedSizeList, ListChildComponentProps } from "react-window";
+import { FixedSizeList, ListChildComponentProps, areEqual } from "react-window";
 import React, { CSSProperties } from "react";
 import _ from "lodash";
 import {
@@ -38,13 +38,13 @@ function CurrentPlaylistItem({
   style,
   isDragging,
 }: // provided,
-{
-  provided: DraggableProvided;
-  index: number;
-  track: Track;
-  style: CSSProperties;
-  isDragging: boolean;
-}) {
+  {
+    provided: DraggableProvided;
+    index: number;
+    track: Track;
+    style: CSSProperties;
+    isDragging: boolean;
+  }) {
   const { playlist } = useAppContext();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -86,8 +86,8 @@ function CurrentPlaylistItem({
           isDragging
             ? null
             : () => {
-                playlist.playTrack(index, true);
-              }
+              playlist.playTrack(index, true);
+            }
         }
       >
         <ListItemIcon style={{ zIndex: 10 }} {...provided.dragHandleProps}>
@@ -145,7 +145,7 @@ CurrentPlaylistItem.defaultProps = {
   style: {},
 };
 
-function Row(props: ListChildComponentProps) {
+const Row = React.memo((props: ListChildComponentProps) => {
   const { data, index, style } = props;
   const item: Track = data[index];
 
@@ -166,7 +166,8 @@ function Row(props: ListChildComponentProps) {
       )}
     </Draggable>
   );
-}
+}, areEqual);
+Row.displayName = "Row";
 
 export default function CurrentPlaylist() {
   const { playlist } = useAppContext();
@@ -217,13 +218,13 @@ export default function CurrentPlaylist() {
                 snapshot: DraggableStateSnapshot,
                 rubric: DraggableRubric
               ) => (
-                <CurrentPlaylistItem
-                  index={rubric.source.index}
-                  track={tracks[rubric.source.index]}
-                  isDragging={snapshot.isDragging}
-                  provided={provided}
-                />
-              )}
+                  <CurrentPlaylistItem
+                    index={rubric.source.index}
+                    track={tracks[rubric.source.index]}
+                    isDragging={snapshot.isDragging}
+                    provided={provided}
+                  />
+                )}
             >
               {(droppableProvided: DroppableProvided) => (
                 <FixedSizeList
