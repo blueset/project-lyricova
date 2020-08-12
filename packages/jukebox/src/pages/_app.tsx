@@ -6,8 +6,17 @@ import theme from "../frontendUtils/theme";
 import Head from "next/head";
 import { ApolloProvider } from "@apollo/client";
 import apolloClient from "../frontendUtils/apollo";
+import IndexLayout from "../components/public/layouts/IndexLayout";
+import { NextComponentType } from "next";
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+type AppPropsExtension = AppProps & {
+  Component: NextComponentType & {
+    getLayout?: (children: React.ReactChild) => React.ReactChild;
+  };
+}
+
+
+export default function MyApp({ Component, pageProps }: AppPropsExtension) {
 
   React.useEffect(() => {
     // Remove the server-side injected CSS.
@@ -16,6 +25,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
   }, []);
+
+  const getLayout = Component.getLayout || (page => <IndexLayout>{page}</IndexLayout>);
 
   return (
     <>
@@ -27,11 +38,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         />
       </Head>
       <ApolloProvider client={apolloClient}>
-      <ThemeProvider theme={theme}>
-        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-        <CssBaseline />
-        <Component {...pageProps} />
-      </ThemeProvider>
+        <ThemeProvider theme={theme}>
+          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+          <CssBaseline />
+          {getLayout(<Component {...pageProps} />)}
+        </ThemeProvider>
       </ApolloProvider>
     </>
   );
