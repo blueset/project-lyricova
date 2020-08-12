@@ -1,9 +1,9 @@
-import Link from "../components/Link";
-import IndexLayout from "../components/public/layouts/IndexLayout";
+import Link from "../../components/Link";
+import IndexLayout from "../../components/public/layouts/IndexLayout";
 
 
 export default function Index() {
-  return <div>Index <Link href="/info">To information</Link></div>;
+  return <div>Library Tracks</div>;
 }
 
 // Persisted layout pattern based on the works of Adam Wathan

@@ -69,8 +69,8 @@ class MyDocument extends Document {
       ...initialProps,
       // Styles fragment is rendered after the app and page rendering finish.
       styles: [
-        ...React.Children.toArray(initialProps.styles),
         sheets.getStyleElement(),
+        ...React.Children.toArray(initialProps.styles),
       ],
     };
   }

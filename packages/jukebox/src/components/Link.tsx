@@ -12,7 +12,7 @@ interface NextComposedProps {
   className?: string;
 }
 
-const NextComposed = React.forwardRef<HTMLAnchorElement, NextComposedProps>(function NextComposed(props, ref) {
+export const NextComposedLink = React.forwardRef<HTMLAnchorElement, NextComposedProps>(function NextComposed(props, ref) {
   const { as, href, ...other } = props;
 
   return (
@@ -22,7 +22,7 @@ const NextComposed = React.forwardRef<HTMLAnchorElement, NextComposedProps>(func
   );
 });
 
-interface LinkProps {
+interface LinkProps extends Omit<React.ComponentProps<typeof MuiLink>, "ref"> {
   activeClassName?: string;
   as?: string;
   className?: string;
@@ -31,8 +31,8 @@ interface LinkProps {
   naked?: boolean;
   onClick?: () => {};
   prefetch?: boolean;
-
   children?: React.ReactChild;
+  activeCriteria?: (pathName: string) => boolean;
 }
 
 
@@ -45,20 +45,22 @@ function Link(props: LinkProps) {
     className: classNameProps,
     innerRef,
     naked,
+    activeCriteria,
     ...other
   } = props;
 
   const router = useRouter();
+  const criteria = activeCriteria || ((v: string) => v === href);
   const className: string = clsx(classNameProps, {
-    [activeClassName]: router.pathname === href && activeClassName,
+    [activeClassName]: criteria(router.pathname) && activeClassName,
   });
 
   if (naked) {
-    return <NextComposed className={className} ref={innerRef} href={href} {...other} />;
+    return <NextComposedLink className={className} ref={innerRef} href={href} {...other} />;
   }
 
   return (
-    <MuiLink component={NextComposed} className={className} ref={innerRef} href={href} {...other} />
+    <MuiLink component={NextComposedLink} className={className} ref={innerRef} href={href} {...other} />
   );
 }
 
