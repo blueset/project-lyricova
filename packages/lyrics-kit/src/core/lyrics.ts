@@ -265,6 +265,7 @@ export class Lyrics {
             return this.noArtistFactor;
         }
         const searchTerm = this.metadata.request?.searchTerm;
+        if (!searchTerm) return this.noArtistFactor;
         if (searchTerm.state === "info") {
             if (artist === searchTerm.artist) {
                 return this.matchedArtistFactor;
@@ -286,6 +287,7 @@ export class Lyrics {
             return this.noTitleFactor;
         }
         const searchTerm = this.metadata.request?.searchTerm;
+        if (!searchTerm) return this.noTitleFactor;
         if (searchTerm.state === "info") {
             if (title === searchTerm.title) {
                 return this.matchedTitleFactor;
