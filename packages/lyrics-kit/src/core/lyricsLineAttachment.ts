@@ -195,7 +195,7 @@ export class Attachments {
 
     public setTranslation(str: string, languageCode: string | undefined = undefined) {
         const tag = makeTranslationTag(languageCode) || TRANSLATION;
-        this.content[tag] = Attachments.createAttachment(str, tag);
+        this.content[tag] = Attachments.createAttachment(tag, str);
     }
 
     public getTag(tag: string): string | undefined {
