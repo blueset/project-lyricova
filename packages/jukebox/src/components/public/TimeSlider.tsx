@@ -4,6 +4,7 @@ import { formatTime } from "../../frontendUtils/strings";
 import { useAppContext } from "./AppContext";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { RefObject, useEffect } from "react";
+import _ from "lodash";
 
 interface Props {
   playerRef: RefObject<HTMLAudioElement>;
@@ -30,7 +31,7 @@ export function TimeSlider({ playerRef }: Props) {
     if (playerRef.current.fastSeek) {
       playerRef.current.fastSeek(newValue);
     } else {
-      playerRef.current.currentTime = newValue;
+      playerRef.current.currentTime = _.floor(newValue, 3);
     }
     setTime(newValue);
     setIsDragging(false);

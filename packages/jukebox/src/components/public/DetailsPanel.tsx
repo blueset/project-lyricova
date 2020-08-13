@@ -44,11 +44,11 @@ export default function DetailsPanel({ blur, children }: Props) {
   const style = useStyle();
   const router = useRouter();
 
-  console.log(router.pathname);
+  // console.log(router.pathname);
 
   return (
     <ThemeProvider theme={theme}>
-      <Box width="100%" height="100%" bgcolor="rgba(0,0,0,0.6)" style={inlineStyle}>
+      <Box width="100%" height="100%" bgcolor="rgba(0,0,0,0.6)" display="flex" flexDirection="column" style={inlineStyle}>
         <Box pt={2} pb={2} pl={4} pr={2} display="flex" flexDirection="row" alignItems="center">
           <Link className={style.link} href="/">Lyrics</Link>
           <Link className={style.link} href="/library/tracks" activeCriteria={(v) => v.startsWith("/library/")}>Library</Link>
@@ -58,7 +58,9 @@ export default function DetailsPanel({ blur, children }: Props) {
             <SearchIcon />
           </IconButton>
         </Box>
-        {children}
+        <Box position="relative" width="1" flexGrow={1}>
+          {children}
+        </Box>
       </Box>
     </ThemeProvider>
   );
