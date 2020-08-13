@@ -206,7 +206,7 @@ export class Attachments {
         this.content[tag] = Attachments.createAttachment(tag, value);
     }
 
-    static createAttachment(str: string, tag: string): LyricsLineAttachment {
+    static createAttachment(tag: string, str: string): LyricsLineAttachment {
         switch (tag) {
             case TIME_TAG:
                 return new WordTimeTag(str);

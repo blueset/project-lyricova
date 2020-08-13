@@ -63,6 +63,9 @@ export class Lyrics {
         }
         lines.sort((a, b) => a.position - b.position);
 
+        // Assing to object property here for the use of lineIndex later.
+        this.lines = lines;
+
         const tags: Set<string> = new Set();
         for (const match of description.matchAll(lyricsLineAttachmentRegex)) {
             const
@@ -77,7 +80,7 @@ export class Lyrics {
                 const indexOutcome = this.lineIndex(timeTag);
                 if (indexOutcome.state === "found") {
                     this.lines[indexOutcome.at]
-                        .attachments[attachmentTagStr] = attachmentStr;
+                        .attachments.setTag(attachmentTagStr, attachmentStr);
                 }
             }
             tags.add(attachmentTagStr);
@@ -96,23 +99,16 @@ export class Lyrics {
      * @param position Time offset in seconds
      */
     private lineIndex(position: number): LyricsMatch {
-        let left = 0, right = this.lines.length - 1;
-        while (left < right) {
-            const mid = (left + right) / 2, candidate = this.lines[mid];
-            if (candidate.position < position) {
-                left = mid + 1;
-            } else if (position < candidate.position) {
-                right = mid - 1;
-            } else {
-                return {
-                    state: "found",
-                    at: mid
-                };
-            }
+        const index = _.sortedIndexBy<{position: number}>(this.lines, {position}, "position");
+        if (index < this.lines.length && this.lines[index].position === position) {
+            return {
+                state: "found",
+                at: index
+            };
         }
         return {
             state: "notFound",
-            insertAt: left
+            insertAt: index
         };
     }
 
