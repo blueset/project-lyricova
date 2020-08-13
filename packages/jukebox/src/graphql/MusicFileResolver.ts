@@ -18,6 +18,8 @@ import { Song } from "../models/Song";
 import { Album } from "../models/Album";
 import NodeID3 from "node-id3";
 import { swapExt } from "../utils/path";
+import { Lyrics } from "lyrics-kit";
+import { LyricsKitLyrics } from "./LyricsKitObjects";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -72,7 +74,6 @@ export class MusicFilesPagination {
   @Field()
   pageInfo: PaginationInfo;
 }
-
 
 @ObjectType()
 class MusicFilesScanOutcome {
@@ -364,7 +365,7 @@ export class MusicFileResolver {
   }
 
   @FieldResolver(type => String, { nullable: true })
-  private async lyrics(@Root() musicFile: MusicFile, @Arg("ext", { defaultValue: "lrc" }) ext: string): Promise<string | null> {
+  private async lyricsText(@Root() musicFile: MusicFile, @Arg("ext", { defaultValue: "lrc" }) ext: string): Promise<string | null> {
     const filePath = musicFile.fullPath;
     const lyricsPath = swapExt(filePath, ext);
     try {
@@ -375,6 +376,36 @@ export class MusicFileResolver {
       return null;
     }
   }
+
+  @FieldResolver(type => LyricsKitLyrics, { nullable: true })
+  private async lyrics(@Root() musicFile: MusicFile): Promise<LyricsKitLyrics | null> {
+    const filePath = musicFile.fullPath;
+    const lrcPath = swapExt(filePath, "lrc");
+    const lrcxPath = swapExt(filePath, "lrcx");
+    let path: string | null = null;
+    if (fs.existsSync(lrcxPath)) {
+      path = lrcxPath;
+    } else if (fs.existsSync(lrcPath)) {
+      path = lrcPath;
+    } else {
+      console.log("no file is found");
+      return null;
+    }
+    try {
+      const buffer = fs.readFileSync(path);
+      let content = buffer.toString();
+
+      // Transform standard " / " type of translation to LyricsX types.
+      content = content.replace(/^((?:\[[0-9:.-]+\])+)(.+?) \/ (.+)$/mg, "$1$2\n$1[tr]$3");
+      console.log(content);
+
+      return new LyricsKitLyrics(new Lyrics(content));
+    } catch (e) {
+      console.error("Error while reading lyrics file:", e);
+      return null;
+    }
+  }
+
 
   @Mutation(returns => Boolean, { description: "Write lyrics to a separate file" })
   public async writeLyrics(
