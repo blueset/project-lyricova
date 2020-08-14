@@ -1,8 +1,6 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useNamedState } from "../../../frontendUtils/hooks";
-import { useEffect } from "react";
-import _ from "lodash";
+import { useLyricsState } from "../../../frontendUtils/hooks";
 
 interface Props {
   lyrics: LyricsKitLyrics;
@@ -10,48 +8,7 @@ interface Props {
 
 export function StaticLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
-  const [line, setLine] = useNamedState<number | null>(null, "line");
-
-  function onTimeUpdate() {
-    const player = playerRef.current;
-    if (player !== null) {
-      const time = player.currentTime;
-      const thisLineIndex = _.sortedIndexBy<{ position: number }>(lyrics.lines, { position: time }, "position");
-      if (thisLineIndex === 0) {
-        if (line !== null) setLine(null);
-      } else {
-        const thisLine =
-          (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position !== time) ?
-            thisLineIndex - 1 :
-            thisLineIndex;
-        if (thisLine != line) {
-          setLine(thisLine);
-        }
-      }
-      if (!player.paused) {
-        window.requestAnimationFrame(() => onTimeUpdate(player));
-      }
-    } else {
-      setLine(null);
-    }
-  }
-
-  function onPlay() {
-    window.requestAnimationFrame(onTimeUpdate);
-  }
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (player) {
-      player.addEventListener("play", onPlay);
-      if (!player.paused) {
-        onPlay();
-      }
-      return () => {
-        player.removeEventListener("play", onPlay);
-      };
-    }
-  }, [playerRef]);
+  const line = useLyricsState(playerRef, lyrics);
 
   function formatLine(line: LyricsKitLyricsLine): string {
     const translated = line?.attachments?.translation ? (` / ${line.attachments.translation}`) : "";
@@ -67,5 +24,5 @@ export function StaticLyrics({ lyrics }: Props) {
   }
 
 
-  return <div>[[[{playerRef.current?.currentTime}]]]{node}</div>;
+  return <div>{node}</div>;
 }

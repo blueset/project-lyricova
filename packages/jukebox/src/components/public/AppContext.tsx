@@ -1,5 +1,5 @@
 import React, { RefObject, ReactChild, ReactNode, useContext } from "react";
-import type {MusicFile} from "../../models/MusicFile";
+import type { MusicFile } from "../../models/MusicFile";
 
 export type Track = Pick<MusicFile, "id" | "fileSize" | "trackName" | "trackSortOrder" | "artistName" | "artistSortOrder" | "albumName" | "albumSortOrder" | "hasCover" | "duration" | "hasLyrics">;
 
@@ -30,6 +30,7 @@ export interface Playlist {
 
   setLoopMode: (loopMode: LoopMode) => void;
   getCurrentSong: () => Track | null;
+  getCurrentCoverUrl: () => string | null;
   getSongByIndex: (index: number) => Track | null;
 }
 
@@ -71,6 +72,9 @@ const PlaylistContext = React.createContext<Playlist>({
     /* do nothing */
   },
   getCurrentSong: () => {
+    return null;
+  },
+  getCurrentCoverUrl: () => {
     return null;
   },
   getSongByIndex: () => {

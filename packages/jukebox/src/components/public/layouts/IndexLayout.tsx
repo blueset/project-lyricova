@@ -55,6 +55,10 @@ const TEXTURE_QUERY = gql`
   }
 `;
 
+function getTrackCoverURL(track: Track): string {
+  return `/api/files/${track.id}/cover`;
+}
+
 function generateBackgroundStyle(
   track: Track,
   texture: string | null
@@ -65,9 +69,10 @@ function generateBackgroundStyle(
     };
   } else if (track !== null) {
     return {
-      backgroundImage: `url("/api/files/${track.id}/cover")`,
+      backgroundImage: `url("${getTrackCoverURL(track)}")`,
       backgroundSize: "cover",
       backgroundPosition: "center",
+      backgroundAttachment: "fixed",
     };
   } else {
     return {};
@@ -212,6 +217,13 @@ export default function IndexLayout({ children }: Props) {
     getCurrentSong: () => {
       if (nowPlaying === null) return null;
       return playlist.getSongByIndex(nowPlaying);
+    },
+    getCurrentCoverUrl: () => {
+      const track = playlist.getCurrentSong();
+      if (track && track.hasCover) {
+        return getTrackCoverURL(track);
+      }
+      return null;
     },
     stop: () => {
       setNowPlaying(null);
@@ -392,15 +404,36 @@ export default function IndexLayout({ children }: Props) {
 
   useEffect(() => {
     if (!playlist.getCurrentSong()?.hasCover) {
-      // console.log("Load random texture");
       if (randomTextureQuery?.called !== true) {
         loadRandomTexture();
       } else {
         randomTextureQuery?.refetch();
       }
     } else {
-      // console.log("Remove random texture");
       setTextureURL(null);
+    }
+
+    if ("mediaSession" in navigator) {
+      const track = playlist.getCurrentSong();
+      if (track) {
+        const data: MediaMetadataInit = {
+          title: track.trackName || "",
+          artist: track.artistName || "",
+          album: track.albumName || "",
+        };
+        if (track.hasCover) {
+          data.artwork = [
+            {
+              src: getTrackCoverURL(track),
+              type: "image/png",
+              sizes: "512x512",
+            },
+          ];
+        }
+        navigator.mediaSession.metadata = new MediaMetadata(data);
+      } else {
+        navigator.mediaSession.metadata = null;
+      }
     }
   }, [playlist.getCurrentSong()]);
 
@@ -414,31 +447,6 @@ export default function IndexLayout({ children }: Props) {
       setTextureURL(texture.url);
     }
   }, [randomTextureQuery.data]);
-
-  useEffect(() => {
-    if ("mediaSession" in navigator) {
-      const track = playlist.getCurrentSong();
-      if (track) {
-        const data: MediaMetadataInit = {
-          title: track.trackName || "",
-          artist: track.artistName || "",
-          album: track.albumName || "",
-        };
-        if (track.hasCover) {
-          data.artwork = [
-            {
-              src: `/api/files/${track.id}/cover`,
-              type: "image/png",
-              sizes: "512x512",
-            },
-          ];
-        }
-        navigator.mediaSession.metadata = new MediaMetadata(data);
-      } else {
-        navigator.mediaSession.metadata = null;
-      }
-    }
-  }, [playlist.getCurrentSong()]);
 
   return (
     <>
@@ -457,7 +465,7 @@ export default function IndexLayout({ children }: Props) {
             </Paper>
           </Grid>
           <Grid item xl={9} sm={8} xs={12}>
-            <DetailsPanel blur={textureURL === null}>
+            <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>
               {children}
             </DetailsPanel>
           </Grid>

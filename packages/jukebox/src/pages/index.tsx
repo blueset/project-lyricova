@@ -6,8 +6,8 @@ import { DynamicLyrics } from "../components/public/lyrics/dynamic";
 import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
 import { gql, useQuery } from "@apollo/client";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
-import { spawn } from "child_process";
 import { ReactNode } from "react";
+import { Box, makeStyles, Theme } from "@material-ui/core";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -37,6 +37,28 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Dynamic": (lyrics: LyricsKitLyrics) => <DynamicLyrics lyrics={lyrics} />,
 };
 
+const useStyle = makeStyles<Theme, { coverUrl: string | null }>({
+  messageBox: {
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 600,
+    fontSize: "2.5em",
+    fontStyle: "italic",
+    filter: ({ coverUrl }) => coverUrl ? "url(#sharpBlurBrighter)" : "url(#brighter)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed",
+    backgroundImage: ({ coverUrl }) => coverUrl ? `url(${coverUrl})` : null,
+    "-webkit-background-clip": ({ coverUrl }) => coverUrl ? "text" : null,
+    backgroundClip: ({ coverUrl }) => coverUrl ? "text" : null,
+    color: ({ coverUrl }) => coverUrl ? "transparent" : "rgba(255,255,255,0.6)",
+    mixBlendMode: ({ coverUrl }) => coverUrl ? null : "hard-light",
+  }
+});
+
 export default function Index() {
   const { playlist } = useAppContext();
   const [module, setModule] = useNamedState<keyof typeof MODULE_LIST>("Static", /* name */"module");
@@ -50,19 +72,27 @@ export default function Index() {
     }
   });
 
-  let node = <div>Default</div>;
+  const styles = useStyle({
+    coverUrl: playlist.getCurrentCoverUrl()
+  });
+
+  const MessageBox = ({ children }: { children: ReactNode }) => (
+    <Box className={styles.messageBox} p={4}>{children}</Box>
+  );
+
+  let node = <MessageBox>Default</MessageBox>;
   if (lyricsQuery.loading) {
-    node = <div>Loading...</div>;
+    node = <MessageBox>Loading...</MessageBox>;
   } else if (lyricsQuery.error) {
     if (playlist.nowPlaying !== null) {
-      node = <div>{`${lyricsQuery.error}`}</div>;
+      node = <MessageBox>{`${lyricsQuery.error}`}</MessageBox>;
     } else {
-      node = <div>No track.</div>;
+      node = <MessageBox>No track.</MessageBox>;
     }
   } else if (lyricsQuery.data.musicFile.lyrics !== null) {
     node = moduleNode(lyricsQuery.data.musicFile.lyrics);
   } else {
-    node = <div>No lyrics</div>;
+    node = <MessageBox>No lyrics</MessageBox>;
   }
 
   return (<>
