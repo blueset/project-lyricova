@@ -64,6 +64,7 @@
     "express-session": "^1.17.1",
     "express-validator": "^6.3.1",
     "ffprobe-client": "^1.1.6",
+    "framer-motion": "^2.4.2",
     "glob": "^7.1.6",
     "graphql": "^15.3.0",
     "graphql-type-json": "^0.3.1",
