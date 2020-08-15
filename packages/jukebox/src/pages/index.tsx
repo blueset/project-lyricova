@@ -8,6 +8,7 @@ import { gql, useQuery } from "@apollo/client";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 import { ReactNode } from "react";
 import { Box, makeStyles, Theme } from "@material-ui/core";
+import { BlendStyleParams, blendStyleProperties } from "../frontendUtils/blendStyle";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -37,7 +38,7 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Dynamic": (lyrics: LyricsKitLyrics) => <DynamicLyrics lyrics={lyrics} />,
 };
 
-const useStyle = makeStyles<Theme, { coverUrl: string | null }>({
+const useStyle = makeStyles<Theme, BlendStyleParams>({
   messageBox: {
     width: "100%",
     height: "100%",
@@ -47,15 +48,7 @@ const useStyle = makeStyles<Theme, { coverUrl: string | null }>({
     fontWeight: 600,
     fontSize: "2.5em",
     fontStyle: "italic",
-    filter: ({ coverUrl }) => coverUrl ? "url(#sharpBlurBrighter)" : "url(#brighter)",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundAttachment: "fixed",
-    backgroundImage: ({ coverUrl }) => coverUrl ? `url(${coverUrl})` : null,
-    "-webkit-background-clip": ({ coverUrl }) => coverUrl ? "text" : null,
-    backgroundClip: ({ coverUrl }) => coverUrl ? "text" : null,
-    color: ({ coverUrl }) => coverUrl ? "transparent" : "rgba(255,255,255,0.6)",
-    mixBlendMode: ({ coverUrl }) => coverUrl ? null : "hard-light",
+    ...blendStyleProperties(),
   }
 });
 

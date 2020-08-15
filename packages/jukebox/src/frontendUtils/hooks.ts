@@ -1,5 +1,6 @@
 import { useState, useDebugValue, useEffect, RefObject } from "react";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
+import _ from "lodash";
 
 
 export function useNamedState<T>(initialValue: T, name: string) {
@@ -11,7 +12,7 @@ export function useNamedState<T>(initialValue: T, name: string) {
 export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics) {
   const [line, setLine] = useNamedState<number | null>(null, "line");
 
-  function onTimeUpdate() {
+  function onTimeUpdate(recur: boolean = true) {
     const player = playerRef.current;
     if (player !== null) {
       const time = player.currentTime;
@@ -27,8 +28,8 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
           setLine(thisLine);
         }
       }
-      if (!player.paused) {
-        window.requestAnimationFrame(onTimeUpdate);
+      if (recur && !player.paused) {
+        window.requestAnimationFrame(() => onTimeUpdate());
       }
     } else {
       setLine(null);
@@ -36,18 +37,23 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
   }
 
   function onPlay() {
-    window.requestAnimationFrame(onTimeUpdate);
+    window.requestAnimationFrame(() => onTimeUpdate());
+  }
+  function onTimeChange() {
+    window.requestAnimationFrame(() => onTimeUpdate(/* recur */false));
   }
 
   useEffect(() => {
     const player = playerRef.current;
     if (player) {
       player.addEventListener("play", onPlay);
+      player.addEventListener("timeupdate", onTimeChange);
       if (!player.paused) {
         onPlay();
       }
       return () => {
         player.removeEventListener("play", onPlay);
+        player.removeEventListener("timeupdate", onTimeChange);
       };
     }
   }, [playerRef]);
