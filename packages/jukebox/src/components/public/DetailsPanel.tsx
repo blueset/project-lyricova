@@ -122,8 +122,8 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
           <filter id="sharpBlurBright">
             <feGaussianBlur stdDeviation="15" result="blur" />
             <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" result="colorMatrix" />
-            <feFlood flood-color="#ffffff" flood-opacity="0.25" result="floodWhite" />
-            <feBlend mode="overlay" in="floodWhite" in2="colorMatrix" result="blend" />
+            <feFlood flood-color="#000000" flood-opacity="0.5" result="floodWhite" />
+            <feBlend mode="darken" in="floodWhite" in2="colorMatrix" result="blend" />
             <feFlood flood-color="#ffffff" flood-opacity="0.2" result="floodWhite25" />
             <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
             <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
