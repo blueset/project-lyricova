@@ -124,29 +124,22 @@ function ready(fn: () => unknown) {
  *
  * @param {Function} func      - The function to debounce
  * @param {number}   threshold - time in ms
- * @param {boolean}  execAsap  - when true, execute immediately
  * @param args
  * @return {Function} Debounced function
  */
-function debounce<Args extends unknown[]>(func: (...args: Args) => unknown, threshold: number, execAsap: boolean, ...args: Args) {
-    let timeout: number | null = null;
-
-    return  () => {
-        function delayed() {
-            if (!execAsap) {
-                func(...args);
-            }
-            timeout = null;
-        }
-
-        if (timeout) {
+function debounce<Args extends unknown[]>(func: (...args: Args) => unknown, wait: number) {
+    let timeout: number | undefined = undefined;
+    
+    return function executedFunction(...args: Args) {
+        const later = () => {
             window.clearTimeout(timeout);
-        } else if (execAsap) {
             func(...args);
-        }
-        timeout = window.setTimeout(delayed, threshold || 100);
+        };
+        
+        window.clearTimeout(timeout);
+        timeout = window.setTimeout(later, wait);
     };
-}
+};
 
 /**
  * Determine whether the document supports TextWrap
@@ -682,7 +675,7 @@ function initHandlers() {
     window.addEventListener("load", updateWatched);
 
     // Reapply on resize
-    window.addEventListener("resize", debounce(updateWatched, 100, false));
+    window.addEventListener("resize", debounce(updateWatched, 100));
 
     handlersInitialized = true;
 }

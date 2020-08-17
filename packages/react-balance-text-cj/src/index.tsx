@@ -28,23 +28,27 @@ THE SOFTWARE.
 
 import React from 'react';
 import balanceText from './balanceText';
+import throttle from "lodash.throttle";
 
-interface Props {
+export interface Props {
     children?: React.ReactNode;
     style?: React.CSSProperties;
+    /**
+     * Reflow the text on window.resize event?
+     */
     resize?: boolean;
     className?: string;
 }
 
-export default function BalanceText({ children, style, className, resize }: Props): React.ReactNode {
+const BalanceText: React.FC<Props> = ({ children, style, className, resize }) => {
     const [visible, setVisible] = React.useState(false);
     const container = React.createRef<HTMLSpanElement>();
 
     function handleResize() {
+        console.log("resized!");
         if (!resize) {
             return;
         }
-
         doBalanceText();
     }
 
@@ -52,7 +56,6 @@ export default function BalanceText({ children, style, className, resize }: Prop
         if (!container.current) {
             return;
         }
-
         balanceText(container.current);
     }
 
@@ -62,11 +65,12 @@ export default function BalanceText({ children, style, className, resize }: Prop
     }
 
     React.useEffect(() => {
-        window.addEventListener('resize', handleResize);
+        const throttled = throttle(handleResize, 100);
+        window.addEventListener('resize', throttled);
         return () => {
-            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('resize', throttled);
         };
-    }, []);
+    });
 
     React.useEffect(() => { makeVisible();});
 
@@ -81,3 +85,5 @@ export default function BalanceText({ children, style, className, resize }: Prop
         </span>
     </div>;
 }
+
+export default BalanceText;
