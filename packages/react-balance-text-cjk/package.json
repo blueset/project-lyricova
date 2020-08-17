@@ -1,0 +1,22 @@
+{
+  "name": "react-balance-text-cjk",
+  "version": "1.0.0",
+  "description": "A fork of balance-text and react-balance-text to support CJK text",
+  "main": "index.js",
+  "author": "Eana Hufwe",
+  "license": "Apache-2.0",
+  "private": false,
+  "scripts": {
+    "build": "tsc",
+    "start:dev": "nodemon",
+    "start": "yarn build && node build/index.js",
+    "lint": "eslint . --ext .ts"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.9.0",
+    "@typescript-eslint/parser": "^3.9.0",
+    "eslint": "^7.7.0",
+    "nodemon": "^2.0.4",
+    "typescript": "^3.9.7"
+  }
+}
