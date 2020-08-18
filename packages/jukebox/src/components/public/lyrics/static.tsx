@@ -2,10 +2,18 @@ import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKit
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { Box, makeStyles, Theme } from "@material-ui/core";
-import { BlendStyleParams } from "../../../frontendUtils/blendStyle";
+import { BlendStyleParams, blendStyleProperties } from "../../../frontendUtils/blendStyle";
 import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import { useState } from "react";
+
+const ANIMATION_THRESHOLD = 0.25;
+
+const LINE_STYLE = {
+  fontWeight: 600,
+  lineHeight: 1.2,
+  textWrap: "balance",
+};
 
 const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
   return {
@@ -17,12 +25,24 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
       flexDirection: "column",
       justifyContent: "center",
     },
-    line: {
-      fontWeight: 600,
-      lineHeight: 1.2,
-      textWrap: "balance",
+    line: LINE_STYLE,
+    currentLine: {
+      ...LINE_STYLE,
+      marginBottom: 32,
+      fontSize: "4em",
+      ...blendStyleProperties({ filterName: "#sharpBlurBrighter", color: "rgba(255, 255, 255, 0.7)" }),
       "& > small": {
         display: "block",
+        fontSize: "0.6em",
+      },
+    },
+    nextLine: {
+      ...LINE_STYLE,
+      fontSize: "2.5em",
+      ...blendStyleProperties({ filterName: "#sharpBlurBrighter", color: "rgba(255, 255, 255, 0.4)" }),
+      "& > small": {
+        display: "block",
+        fontSize: "0.8em",
       },
     },
   };
@@ -98,35 +118,40 @@ interface LyricsLineElementProps {
   line: LyricsKitLyricsLine | null;
   coverUrl: string | null;
   isCurrent: boolean;
+  animate: boolean;
 }
 
 
-function LyricsLineElement({ className, line, coverUrl, isCurrent }: LyricsLineElementProps) {
+function LyricsLineElement({ className, line, coverUrl, isCurrent, animate }: LyricsLineElementProps) {
   if (!line) return null;
-  const [animating, setAnimating] = useState(false);
+  const [reflowTicket, setReflowTicket] = useState(null);
+  const transition = animate ? TRANSITION : { duration: 0 };
   return (
     <motion.div layout
       lang="ja"
       className={className}
-      transition={TRANSITION}
+      transition={transition}
       initial="initial"
       animate={isCurrent ? "current" : "next"}
       exit="exit"
       custom={{ coverUrl }}
       variants={MAIN_LINE_VARIANTS}
-      onAnimationStart={() => setAnimating(true)}
-      onAnimationComplete={() => setAnimating(false)}
+      onAnimationComplete={() => setReflowTicket(Date.now())}
     >
-      <BalancedText animating={animating} resize={true}>{line.content}</BalancedText>
+      {animate ? (
+        <BalancedText reflowTicket={reflowTicket} resize={true}>{line.content}</BalancedText>
+      ) : line.content}
       {line.attachments?.translation && (
         <motion.div
           variants={TRANSLATION_LINE_VARIANTS}
-          transition={TRANSITION}
+          transition={transition}
           initial="initial"
           animate={isCurrent ? "current" : "next"}
           exit="exit"
           lang="zh">
-          <BalancedText animating={animating} resize={true}>{line.attachments.translation}</BalancedText>
+          {animate ? (
+            <BalancedText reflowTicket={reflowTicket} resize={true}>{line.attachments.translation}</BalancedText>
+          ) : line.attachments.translation}
         </motion.div>
       )}
     </motion.div>
@@ -151,7 +176,17 @@ export function StaticLyrics({ lyrics }: Props) {
       <AnimatePresence initial={false}>
         {line !== null && lines.map((l, idx) => {
           if (idx < line || idx > line + 1) return null;
-          return <LyricsLineElement className={styles.line} coverUrl={coverUrl} line={l} key={idx} isCurrent={idx === line} />;
+          const animate =
+            (idx + 1 > lines.length) || (!lines[idx + 1]) ||
+            (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
+          return (
+            <LyricsLineElement
+              className={styles.line}
+              coverUrl={coverUrl}
+              line={l}
+              key={idx}
+              animate={animate}
+              isCurrent={idx === line} />);
         })}
       </AnimatePresence>
     </motion.div>
