@@ -2,13 +2,14 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "ES2015",
+        "declaration": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "removeComments": true,
         "strict": true,
         "preserveConstEnums": true,
         "jsx": "react",
-        "outDir": "dist",
+        "outDir": "./lib",
         "sourceMap": true,
         "esModuleInterop": true
     },
@@ -18,6 +19,7 @@
     ],
     "exclude": [
         "node_modules",
-        "**/*.spec.ts"
+        "**/*.spec.ts",
+        "src/stories/**"
     ]
 }

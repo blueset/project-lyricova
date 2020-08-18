@@ -1,0 +1,18 @@
+.manual-word-boundary {
+    font-size: 2em;
+    width: 12em;
+    font-weight: 600;
+    margin: 0.5em 0;
+    border: 1px solid #999;
+}
+.container {
+    display: flex;
+    flex-direction: row;
+}
+.column {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+.underline {
+    text-decoration: underline;
+}

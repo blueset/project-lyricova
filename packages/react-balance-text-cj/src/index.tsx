@@ -26,9 +26,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import React from 'react';
+import React, { ReactElement } from 'react';
 import balanceText from './balanceText';
 import throttle from "lodash.throttle";
+import { renderToStaticMarkup } from "react-dom/server";
 
 export interface Props {
     children?: React.ReactNode;
@@ -41,27 +42,17 @@ export interface Props {
 }
 
 const BalanceText: React.FC<Props> = ({ children, style, className, resize }) => {
-    const [visible, setVisible] = React.useState(false);
     const container = React.createRef<HTMLSpanElement>();
 
     function handleResize() {
-        console.log("resized!");
         if (!resize) {
             return;
         }
-        doBalanceText();
+        if (container.current) balanceText(container.current);
     }
 
-   function doBalanceText() {
-        if (!container.current) {
-            return;
-        }
-        balanceText(container.current);
-    }
-
-    function makeVisible() {
-        setVisible(true);
-        setTimeout(() => doBalanceText(), 0);
+    function doBalanceText() {
+        if (container.current) balanceText(container.current);
     }
 
     React.useEffect(() => {
@@ -70,20 +61,32 @@ const BalanceText: React.FC<Props> = ({ children, style, className, resize }) =>
         return () => {
             window.removeEventListener('resize', throttled);
         };
-    });
+    }, []);
 
-    React.useEffect(() => { makeVisible();});
+    React.useEffect(() => {
+        doBalanceText();
+    }, [children, className, style]);
 
-    const combinedStyle = {
-        ...style,
-        visible: visible ? 'visible' : 'hidden',
-    };
+    let html: string;
+    if (!children) {
+        html = "";
+    } else if (typeof children === "string") {
+        html = children
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    } else if (typeof children === "number" || typeof children === "boolean") {
+        html = `${children}`;
+    } else {
+        html = renderToStaticMarkup(children as ReactElement);
+    }
 
-    return <div style={combinedStyle} className={className}>
-        <span ref={container}>
-            {children}
+    return (
+        <span style={style} className={className} ref={container} dangerouslySetInnerHTML={{__html: html}}>
         </span>
-    </div>;
+    );
 }
 
 export default BalanceText;

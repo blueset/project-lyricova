@@ -2,10 +2,10 @@
   "name": "react-balance-text-cj",
   "version": "1.0.0",
   "description": "A fork of balance-text and react-balance-text to support Chinese and Japanese text",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "repository": "https://github.com/blueset/project-lyricova",
   "author": "Eana Hufwe",
   "license": "Apache-2.0",
-  "private": false,
   "scripts": {
     "build": "tsc",
     "start:dev": "nodemon",
@@ -21,17 +21,18 @@
     "@storybook/addon-links": "^6.0.10",
     "@storybook/react": "^6.0.10",
     "@types/lodash.throttle": "^4.1.6",
+    "@types/react-dom": "^16.9.8",
     "@typescript-eslint/eslint-plugin": "^3.9.0",
     "@typescript-eslint/parser": "^3.9.0",
     "babel-loader": "^8.1.0",
     "eslint": "^7.7.0",
     "nodemon": "^2.0.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "react-is": "^16.13.1",
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "lodash.throttle": "^4.1.1",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "lodash.throttle": "^4.1.1"
   }
 }

@@ -64,9 +64,9 @@ interface Range { start: number; end: number; }
 /**
  * Line breaking global vars
  */
-let 
-    breakMatches: number[] | null, 
-    wsnwMatches: Range[] = [], 
+let
+    breakMatches: number[] | null,
+    wsnwMatches: Range[] = [],
     wsnwOffset = 0;
 
 /**
@@ -95,7 +95,7 @@ let polyfilled = false;
  * Do nothing
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-function noop(): void {}
+function noop(): void { }
 
 /**
  * Loop that works with array-likes
@@ -129,17 +129,17 @@ function ready(fn: () => unknown) {
  */
 function debounce<Args extends unknown[]>(func: (...args: Args) => unknown, wait: number) {
     let timeout: number | undefined = undefined;
-    
+
     return function executedFunction(...args: Args) {
         const later = () => {
             window.clearTimeout(timeout);
             func(...args);
         };
-        
+
         window.clearTimeout(timeout);
         timeout = window.setTimeout(later, wait);
     };
-};
+}
 
 /**
  * Determine whether the document supports TextWrap
@@ -269,6 +269,12 @@ function removeTags(el: HTMLElement) {
         br.outerHTML = "";
     });
 
+    // Remove ZWS tags
+    brs = el.querySelectorAll('br[data-owner="balance-text-zws"]');
+    forEach(brs, (br) => {
+        br.outerHTML = "";
+    });
+
     // Replace other breaks with whitespace
     brs = el.querySelectorAll('br[data-owner="balance-text"]');
     forEach(brs, (br) => {
@@ -348,13 +354,15 @@ function justify(el: Element, txt: string, conWidth: number): string {
  * Returns true iff char at index is a break char outside of HTML < > tags.
  * Break char can be: whitespace (except non-breaking-space: u00a0),
  * hypen, emdash (u2014), endash (u2013), or soft-hyphen (u00ad).
+ * 
+ * For C-J, Zero Width Space (u200B) is also added.
  *
  * @param {string} txt   - the text to check
  * @param {number} index - the index of the character to check
  * @return {boolean}
  */
 function isBreakChar(txt: string, index: number): boolean {
-    const re = /([^\S\u00a0]|-|\u2014|\u2013|\u00ad)(?![^<]*>)/g;
+    const re = /([^\S\u00a0]|-|\u2014|\u2013|\u00ad|\u200B)(?![^<]*>)/g;
     let match;
 
     if (!breakMatches) {
@@ -507,6 +515,33 @@ function getElementsList(elements: NodesOrName): HTMLElement[] {
 }
 
 /**
+ * Add zero-width space (ZWS, \u200B) to all break chances if there is Chinese
+ * or Japanese text in the string and no ZWS already presented in the string.
+ * @param text Text to process
+ * @returns Processed text and if the text is processed.
+ */
+function preprocessCJ(text: string): [string, boolean] {
+    if (text.match(/\u200B/g) || !text.match(/(\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Han})/ug)) {
+        return [text, false];
+    }
+    const kana = "あアいイうウえエおオかカきキくクけケこコさサしシすスせセそソたタちチつツてテとトなナにニぬヌねネのノはハひヒふフへヘほホまマみミむムめメもモやヤゆユよヨらラりリるルれレろロわワをヲんンがガぎギぐグげゲごゴざザじジずズぜゼぞゾだダぢヂづヅでデどドばバびビぶブべベぼボぱパぴピぷプぺペぽポ";
+    const cj = `\\p{Script=Han}${kana}`;
+    const smallKana = "ぁぃぅぇぉァィゥェォっゃゅょゎゕゖッャュョヮヵヶㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿㇷ゚ー・゠ヽヾゝゞ々〻\u3099-\u309e";
+    const inseparable = "—…‥";
+    const openingBracket = "‘“（〔［｛〈《「『【｟〘〖«〝";
+    const closingBracket = "’”）〕］｝〉》」』】｠〙〗»〟";
+    const hyphens = "‐〜゠–";
+    const puncts = "！？‼⁇⁈⁉・：；。．、，";
+    const notBefore = smallKana + inseparable + closingBracket + hyphens + puncts;
+    const notAfter = openingBracket;
+    const ascIINonSpace = "\x21-\x7E";
+    // eslint-disable-next-line no-misleading-character-class
+    text = text.replace(new RegExp(`([${cj}${notBefore}])([^${notBefore}])`, "ug"), "$1\u200B$2");
+    text = text.replace(new RegExp(`([${ascIINonSpace}])([${cj}${notAfter}])`, "ug"), "$1\u200B$2");
+    return [text, true];
+}
+
+/**
  *  When a browser has native support for the text-wrap property,
  * the text balanceText plugin will let the browser handle it natively,
  * otherwise it will apply its own text balancing code.
@@ -562,8 +597,12 @@ function balanceText(elements: NodesOrName) {
             let remLines = totLines;
             let lineCharOffset = 0;
 
+            // Run C-J preprocess
+            let preprocessed = false;
+            [remainingText, preprocessed] = preprocessCJ(remainingText);
+
             // loop vars
-            let desiredWidth, guessIndex, le, ge, splitIndex, isHyphen, isSoftHyphen;
+            let desiredWidth, guessIndex, le, ge, splitIndex, isHyphen, isSoftHyphen, isZWS;
 
             // Determine where to break:
             while (remLines > 1) {
@@ -573,7 +612,14 @@ function balanceText(elements: NodesOrName) {
                 // Must calc white-space:nowrap offsets before first call to findBreakOpportunity()
                 calcNoWrapOffsetsForLine(el, oldWS, lineCharOffset);
 
+                // Fix C-J custom breakpoints may resulting desiredWidth larger than container width.
+                // This is caused by totLines might not always be equivalent to the
+                // resulting length, as browsers do not take in consideration of custom line break chances.
                 desiredWidth = Math.round((nowrapWidth + spaceWidth) / remLines - spaceWidth);
+                if (desiredWidth > containerWidth) {
+                    remLines++;
+                    desiredWidth = Math.round((nowrapWidth + spaceWidth) / remLines - spaceWidth);
+                }
 
                 // Guessed char index
                 guessIndex = Math.round((remainingText.length + 1) / remLines) - 1;
@@ -619,8 +665,14 @@ function balanceText(elements: NodesOrName) {
                 } else {
                     newText += lineText;
                     isHyphen = isSoftHyphen || Boolean(lineText.match(/(-|\u2014|\u2013)$/));
-                    newText += isHyphen ? '<br data-owner="balance-text-hyphen" />'
-                        : '<br data-owner="balance-text" />';
+                    isZWS = Boolean(lineText.match(/\u200B$/));
+                    let newLineBreak = '<br data-owner="balance-text" />';
+                    if (isHyphen) {
+                        newLineBreak = '<br data-owner="balance-text-hyphen" />';
+                    } else if (isZWS) {
+                        newLineBreak = '<br data-owner="balance-text-zws" />';
+                    }
+                    newText += newLineBreak;
                 }
                 remainingText = remainingText.substr(splitIndex);
                 lineCharOffset = splitIndex;
@@ -629,6 +681,17 @@ function balanceText(elements: NodesOrName) {
                 remLines--;
                 el.innerHTML = remainingText;
                 nowrapWidth = el.offsetWidth;
+
+                // Update remaining lines if remaining text is longer than container width.
+                if (remLines < 2 && el.offsetWidth > containerWidth) {
+                    remLines++;
+                }
+            }
+
+            // Remove added ZWSs.
+            if (preprocessed) {
+                newText = newText.replace(/\u200B/g, "");
+                remainingText = remainingText.replace(/\u200B/g, "");
             }
 
             if (shouldJustify) {
