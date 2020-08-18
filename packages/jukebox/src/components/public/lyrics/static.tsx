@@ -4,6 +4,8 @@ import { useLyricsState } from "../../../frontendUtils/hooks";
 import { Box, makeStyles, Theme } from "@material-ui/core";
 import { BlendStyleParams } from "../../../frontendUtils/blendStyle";
 import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
+import BalancedText from "react-balance-text-cj";
+import { useState } from "react";
 
 const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
   return {
@@ -87,7 +89,7 @@ const TRANSLATION_LINE_VARIANTS: Variants = {
 };
 
 const TRANSITION: Transition = {
-  duration: 0.1,
+  duration: 0.15,
   ease: "easeOut",
 };
 
@@ -101,6 +103,7 @@ interface LyricsLineElementProps {
 
 function LyricsLineElement({ className, line, coverUrl, isCurrent }: LyricsLineElementProps) {
   if (!line) return null;
+  const [animating, setAnimating] = useState(false);
   return (
     <motion.div layout
       lang="ja"
@@ -110,8 +113,11 @@ function LyricsLineElement({ className, line, coverUrl, isCurrent }: LyricsLineE
       animate={isCurrent ? "current" : "next"}
       exit="exit"
       custom={{ coverUrl }}
-      variants={MAIN_LINE_VARIANTS}>
-      {line.content}
+      variants={MAIN_LINE_VARIANTS}
+      onAnimationStart={() => setAnimating(true)}
+      onAnimationComplete={() => setAnimating(false)}
+    >
+      <BalancedText animating={animating} resize={true}>{line.content}</BalancedText>
       {line.attachments?.translation && (
         <motion.div
           variants={TRANSLATION_LINE_VARIANTS}
@@ -120,7 +126,7 @@ function LyricsLineElement({ className, line, coverUrl, isCurrent }: LyricsLineE
           animate={isCurrent ? "current" : "next"}
           exit="exit"
           lang="zh">
-          {line.attachments.translation}
+          <BalancedText animating={animating} resize={true}>{line.attachments.translation}</BalancedText>
         </motion.div>
       )}
     </motion.div>

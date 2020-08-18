@@ -34,14 +34,14 @@ import { renderToStaticMarkup } from "react-dom/server";
 export interface Props {
     children?: React.ReactNode;
     style?: React.CSSProperties;
-    /**
-     * Reflow the text on window.resize event?
-     */
+    /** Update this property to trigger a reflow without changing content. */
+    reflowTicket?: any;
+    /** Reflow the text on window.resize event? */
     resize?: boolean;
     className?: string;
 }
 
-const BalanceText: React.FC<Props> = ({ children, style, className, resize }) => {
+const BalanceText: React.FC<Props> = ({ children, style, className, resize, reflowTicket }) => {
     const container = React.createRef<HTMLSpanElement>();
 
     function handleResize() {
@@ -66,6 +66,12 @@ const BalanceText: React.FC<Props> = ({ children, style, className, resize }) =>
     React.useEffect(() => {
         doBalanceText();
     }, [children, className, style]);
+    
+    React.useEffect(() => {
+        if (reflowTicket) {
+            doBalanceText();
+        }
+    }, [reflowTicket]);
 
     let html: string;
     if (!children) {

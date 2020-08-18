@@ -1,5 +1,5 @@
 import pinyin from "pinyin";
-import nodejieba from "nodejieba";
+import Segment from "novel-segment";
 import MeCab from "mecab-async";
 
 /** List of commonly used characters that is only used in Japanese */
@@ -24,6 +24,9 @@ mecab.parser = function (data) {
   };
 };
 
+const segment = new Segment();
+segment.useDefault();
+
 /**
  * Convert katakana to hiragana.
  * @param str katakana
@@ -47,7 +50,7 @@ export function transliterate(text: string): string {
     }).join("");
   } else if (isHan.test(text)) {
     // transliterate as zh
-    const words: string[] = nodejieba.cut(text);
+    const words: string[] = segment.doSegment(text, { simple: true });
     return words.map(
       word => pinyin(word, { segment: true, heteronym: true }).map(x => x[0]).join("")
     ).join(" ");
