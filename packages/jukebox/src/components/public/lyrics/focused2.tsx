@@ -3,9 +3,10 @@ import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { Box, makeStyles, Theme } from "@material-ui/core";
 import { BlendStyleParams, blendStyleProperties } from "../../../frontendUtils/blendStyle";
-import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
+import { motion, Variants, AnimatePresence, Transition, AnimateSharedLayout } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import { useState } from "react";
+import _ from "lodash";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -13,6 +14,17 @@ const LINE_STYLE = {
   fontWeight: 600,
   lineHeight: 1.2,
   textWrap: "balance",
+  fontSize: "2.5em",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundAttachment: "fixed",
+  "& > div": {
+    display: "block",
+    fontSize: "0.6em",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed",
+  },
 };
 
 const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
@@ -25,13 +37,12 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
       flexDirection: "column",
       justifyContent: "center",
     },
-    line: LINE_STYLE,
     currentLine: {
       ...LINE_STYLE,
       marginBottom: 32,
       fontSize: "4em",
       ...blendStyleProperties({ filterName: "#sharpBlurBrighter", color: "rgba(255, 255, 255, 0.7)" }),
-      "& > small": {
+      "& > div": {
         display: "block",
         fontSize: "0.6em",
       },
@@ -39,8 +50,9 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
     nextLine: {
       ...LINE_STYLE,
       fontSize: "2.5em",
+      width: "60%",
       ...blendStyleProperties({ filterName: "#sharpBlurBrighter", color: "rgba(255, 255, 255, 0.4)" }),
-      "& > small": {
+      "& > div": {
         display: "block",
         fontSize: "0.8em",
       },
@@ -50,27 +62,23 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
 
 type GenericStyle = { [key: string]: string | number };
 
-function setFilterProperties(styles: GenericStyle): GenericStyle {
-  styles.backgroundSize = "cover";
-  styles.backgroundPosition = "center";
-  styles.backgroundAttachment = "fixed";
-  styles.webkitBackgroundClip = "text";
-  styles.backgroundClip = "text";
-  styles.color = "transparent";
-  return styles;
-}
+type RoughStyle = {
+  transitionEnd?: {
+    [key: string]: string | number;
+  };
+  [key: string]: string | number | object;
+};
 
 const MAIN_LINE_VARIANTS: Variants = {
   current: ({ coverUrl }) => {
-    const styles: { [key: string]: string | number } = {
+    const styles: RoughStyle = {
       marginBottom: 32,
       fontSize: 14 * 4,
       opacity: 1,
+      width: "100%",
     };
     if (coverUrl) {
       styles.filter = "url(#sharpBlurBrighter)";
-      styles.backgroundImage = `url(${coverUrl})`;
-      setFilterProperties(styles);
     } else {
       styles.mixBlendMode = "hard-light";
       styles.color = "rgba(255, 255, 255, 0.7)";
@@ -78,23 +86,25 @@ const MAIN_LINE_VARIANTS: Variants = {
     return styles;
   },
   next: ({ coverUrl }) => {
-    const styles: { [key: string]: string | number } = {
+    const styles: RoughStyle = {
       fontSize: 14 * 2.5,
       opacity: 1,
       marginBottom: 0,
+      width: "62.5%",
     };
     if (coverUrl) {
       styles.filter = "url(#sharpBlurBright)";
-      styles.backgroundImage = `url(${coverUrl})`;
-      setFilterProperties(styles);
     } else {
       styles.mixBlendMode = "overlay";
       styles.color = "rgba(255, 255, 255, 0.4)";
     }
     return styles;
   },
-  initial: { opacity: 0, },
-  exit: { opacity: 0, height: 0, marginBottom: 0, },
+  exit: {
+    opacity: 0,
+    marginBottom: 0,
+    height: 0,
+  },
 };
 
 const TRANSLATION_LINE_VARIANTS: Variants = {
@@ -104,12 +114,13 @@ const TRANSLATION_LINE_VARIANTS: Variants = {
   next: {
     fontSize: 14 * 2.5 * 0.8,
   },
-  initial: {},
-  exit: { height: 0, },
+  exit: {
+    height: 0,
+  },
 };
 
 const TRANSITION: Transition = {
-  duration: 0.15,
+  duration: 0.2,
   ease: "easeOut",
 };
 
@@ -124,37 +135,40 @@ interface LyricsLineElementProps {
 
 function LyricsLineElement({ className, line, coverUrl, isCurrent, animate }: LyricsLineElementProps) {
   if (!line) return null;
-  const [reflowTicket, setReflowTicket] = useState(null);
   const transition = animate ? TRANSITION : { duration: 0 };
   return (
-    <motion.div layout
+    <motion.div
+      // layout="position"
+      // layout
       lang="ja"
       className={className}
       transition={transition}
-      initial="initial"
       animate={isCurrent ? "current" : "next"}
       exit="exit"
       custom={{ coverUrl }}
       variants={MAIN_LINE_VARIANTS}
-      onAnimationComplete={() => setReflowTicket(Date.now())}
     >
-      {animate ? (
-        <BalancedText reflowTicket={reflowTicket} resize={true}>{line.content}</BalancedText>
-      ) : line.content}
-      {line.attachments?.translation && (
-        <motion.div
-          variants={TRANSLATION_LINE_VARIANTS}
-          transition={transition}
-          initial="initial"
-          animate={isCurrent ? "current" : "next"}
-          exit="exit"
-          lang="zh">
-          {animate ? (
-            <BalancedText reflowTicket={reflowTicket} resize={true}>{line.attachments.translation}</BalancedText>
-          ) : line.attachments.translation}
-        </motion.div>
-      )}
-    </motion.div>
+      {
+        animate ? (
+          <BalancedText
+            resize={true} > {line.content}</BalancedText>
+        ) : line.content}
+      {
+        line.attachments?.translation && (
+          <motion.div
+            variants={TRANSLATION_LINE_VARIANTS}
+            transition={transition}
+            animate={isCurrent ? "current" : "next"}
+            exit="exit"
+            lang="zh">
+            {animate ? (
+              <BalancedText
+                resize={true}>{line.attachments.translation}</BalancedText>
+            ) : line.attachments.translation}
+          </motion.div>
+        )
+      }
+    </motion.div >
   );
 }
 
@@ -162,7 +176,7 @@ interface Props {
   lyrics: LyricsKitLyrics;
 }
 
-export function StaticLyrics({ lyrics }: Props) {
+export function FocusedLyrics2({ lyrics }: Props) {
   const { playerRef, playlist } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
 
@@ -172,16 +186,19 @@ export function StaticLyrics({ lyrics }: Props) {
   const lines = lyrics.lines;
 
   return (
+    // <AnimateSharedLayout>
     <motion.div className={styles.container}>
+
       <AnimatePresence initial={false}>
         {line !== null && lines.map((l, idx) => {
           if (idx < line || idx > line + 1) return null;
           const animate =
             (idx + 1 > lines.length) || (!lines[idx + 1]) ||
             (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
+          // console.log(animate, l.content);
           return (
             <LyricsLineElement
-              className={styles.line}
+              className={styles.nextLine}
               coverUrl={coverUrl}
               line={l}
               key={idx}
@@ -190,5 +207,6 @@ export function StaticLyrics({ lyrics }: Props) {
         })}
       </AnimatePresence>
     </motion.div>
+    // </AnimateSharedLayout>
   );
 }

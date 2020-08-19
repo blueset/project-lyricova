@@ -1,7 +1,7 @@
 import IndexLayout from "../components/public/layouts/IndexLayout";
 import { useAppContext } from "../components/public/AppContext";
 import { useNamedState } from "../frontendUtils/hooks";
-import { StaticLyrics } from "../components/public/lyrics/static";
+import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
 import { DynamicLyrics } from "../components/public/lyrics/dynamic";
 import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
 import { gql, useQuery } from "@apollo/client";
@@ -9,6 +9,7 @@ import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 import { ReactNode } from "react";
 import { Box, makeStyles, Theme } from "@material-ui/core";
 import { BlendStyleParams, blendStyleProperties } from "../frontendUtils/blendStyle";
+import _ from "lodash";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -34,7 +35,7 @@ const LYRICS_QUERY = gql`
 `;
 
 const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } = {
-  "Static": (lyrics: LyricsKitLyrics) => <StaticLyrics lyrics={lyrics} />,
+  "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
   "Dynamic": (lyrics: LyricsKitLyrics) => <DynamicLyrics lyrics={lyrics} />,
 };
 
@@ -54,7 +55,7 @@ const useStyle = makeStyles<Theme, BlendStyleParams>({
 
 export default function Index() {
   const { playlist } = useAppContext();
-  const [module, setModule] = useNamedState<keyof typeof MODULE_LIST>("Static", /* name */"module");
+  const [module, setModule] = useNamedState<keyof typeof MODULE_LIST>(_.keys(MODULE_LIST)[0], /* name */"module");
 
   const keys = Object.keys(MODULE_LIST) as (keyof typeof MODULE_LIST)[];
   const moduleNode = MODULE_LIST[module];
@@ -89,8 +90,8 @@ export default function Index() {
   }
 
   return (<>
-    <LyricsSwitchButton module={module} setModule={setModule} moduleNames={keys} />
     {node}
+    <LyricsSwitchButton module={module} setModule={setModule} moduleNames={keys} />
   </>);
 }
 
