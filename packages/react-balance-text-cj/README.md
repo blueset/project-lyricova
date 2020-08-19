@@ -39,7 +39,31 @@ or
 - `style` (optional): Inline style for the `<span />` wrapper.
 - `className` (string, optional): Class names for the `<span />` wrapper.
 - `resize` (boolean, default = `false`): Toggles whether to trigger reflow when the viewport resizes.
-- `resizeTicket` (any, optional): Set this value to any distinct truthy value to trigger a reflow without changing the content. This could be useful when the style outside this element changes that affects the line size of the content.
+
+
+## Methods
+- ``doBalanceText(): void``: Triggers a reflow without changing the content. This could be useful when the style outside this element changes that affects the line size of the content.
+
+```tsx
+function MyComponent() {
+  const ref = useRef<BalanceText>();
+    
+  const reflow = useCallback(() => {
+      ref.current?.doBalanceText();
+  }, []);
+
+  return (
+    <div>
+      <button onClick={reflow}>Reflow now</button>
+      <div className="animate">
+        <BalanceText ref={ref} resize={true}>
+          All human beings are born free and <b>equal in dignity and rights</b>.
+        </BalanceText>
+      </div>
+    </div>
+  );
+}
+```
 
 
 ## Default line break logic for Chinese and Japanese

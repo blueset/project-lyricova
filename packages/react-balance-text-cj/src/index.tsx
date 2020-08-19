@@ -41,58 +41,64 @@ export interface Props {
     className?: string;
 }
 
-const BalanceText: React.FC<Props> = ({ children, style, className, resize, reflowTicket }) => {
-    const container = React.useRef<HTMLSpanElement>();
+class BalanceText extends React.PureComponent<Props> {
+    private container: React.RefObject<HTMLSpanElement>;
 
-    function handleResize() {
-        if (!resize) {
+    constructor(props: Props) {
+        super(props);
+        this.container = React.createRef();
+        this.handleResize = throttle(this.handleResize.bind(this), 100);
+        this.doBalanceText = this.doBalanceText.bind(this);
+    }
+
+    private handleResize() {
+        if (!this.props.resize) {
             return;
         }
-        if (container.current) balanceText(container.current);
+        if (this.container.current) balanceText(this.container.current);
     }
 
-    function doBalanceText() {
-        if (container.current) balanceText(container.current);
+    public doBalanceText(): void {
+        if (this.container.current) balanceText(this.container.current);
     }
 
-    React.useEffect(() => {
-        const throttled = throttle(handleResize, 100);
-        window.addEventListener('resize', throttled);
-        return () => {
-            window.removeEventListener('resize', throttled);
-        };
-    }, []);
+    public componentDidMount(): void {
+        window.addEventListener('resize', this.handleResize);
+    }
 
-    React.useEffect(() => {
-        doBalanceText();
-    }, [children, className, style]);
-    
-    React.useEffect(() => {
-        if (reflowTicket) {
-            doBalanceText();
+    public componentWillMount(): void {
+        window.removeEventListener('resize', this.handleResize);
+    }
+
+    public componentDidUpdate(): void {
+        this.doBalanceText();
+    }
+
+    public render(): React.ReactNode {
+        const { children, className, style } = this.props;
+
+        let html: string;
+        if (!children) {
+            html = "";
+        } else if (typeof children === "string") {
+            html = children
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        } else if (typeof children === "number" || typeof children === "boolean") {
+            html = `${children}`;
+        } else {
+            html = renderToStaticMarkup(children as ReactElement);
         }
-    }, [reflowTicket]);
 
-    let html: string;
-    if (!children) {
-        html = "";
-    } else if (typeof children === "string") {
-        html = children
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    } else if (typeof children === "number" || typeof children === "boolean") {
-        html = `${children}`;
-    } else {
-        html = renderToStaticMarkup(children as ReactElement);
+        return (
+            <span style={style} className={className} ref={this.container} dangerouslySetInnerHTML={{ __html: html }}>
+            </span>
+        );
+
     }
-
-    return (
-        <span style={style} className={className} ref={container} dangerouslySetInnerHTML={{__html: html}}>
-        </span>
-    );
 }
 
 export default BalanceText;

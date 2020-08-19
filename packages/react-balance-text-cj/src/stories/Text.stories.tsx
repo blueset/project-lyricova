@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useReducer, useRef, useCallback } from "react";
 import { Story, Meta } from '@storybook/react/types-6-0';
 import "./Text.stories.css";
 
@@ -110,17 +110,17 @@ export const HandleUpdates = () => {
         ja: <>すべての人間は、生まれながらにして自由であり、かつ、<b>尊厳と権利とについて平等である</b>。人間は、理性と良心とを授けられており、互いに同胞の精神をもって行動しなければならない。すべて人は、人種、皮膚の色、性、言語、宗教、政治上その他の意見、国民的もしくは社会的出身、財産、門地その他の地位又はこれに類するいかなる自由による差別をも受けることなく、この宣言に掲げるすべての権利と自由とを享有することができる。さらに、個人の属する国又は地域が独立国であると、信託統治地域であると、非自治地域であると、又は他のなんらかの主権制限の下にあるとを問わず、その国又は地域の政治上、管轄上又は国際上の地位に基ずくいかなる差別もしてはならない。</>,
     };
 
-    function setEn() {
+    const setEn = useCallback(() => {
         setLang("en");
-    }
+    }, []);
 
-    function setZh() {
+    const setZh = useCallback(() => {
         setLang("zh");
-    }
+    }, []);
 
-    function setJa() {
+    const setJa = useCallback(() => {
         setLang("ja");
-    }
+    }, []);
 
     return (
         <div>
@@ -135,5 +135,20 @@ export const HandleUpdates = () => {
 }
 
 export const Styles = () => {
-    return <BalanceText resize={true} className="underline">All human beings are born free and <b>equal in dignity and rights</b>. They are endowed with reason and conscience and should act towards one another in a spirit of brotherhood. Everyone is entitled to all the rights and freedoms set forth in this Declaration, without distinction of any kind, such as race, colour, sex, language, religion, political or other opinion, national or social origin, property, birth or other status.</BalanceText>
+    return <BalanceText resize={true} className="underline">All human beings are born free and <b>equal in dignity and rights</b>. They are endowed with reason and conscience and should act towards one another in a spirit of brotherhood. Everyone is entitled to all the rights and freedoms set forth in this Declaration, without distinction of any kind, such as race, colour, sex, language, religion, political or other opinion, national or social origin, property, birth or other status.</BalanceText>;
+}
+
+export const TriggerReflow = () => {
+    const ref = useRef<BalanceText>();
+    
+    const reflow = useCallback(() => {
+        ref.current?.doBalanceText();
+    }, []);
+
+    return (
+        <div>
+            <button onClick={reflow}>Reflow now</button>
+        <div className="animate"><BalanceText ref={ref} resize={true}>All human beings are born free and <b>equal in dignity and rights</b>.</BalanceText></div>
+        </div>
+    );
 }
