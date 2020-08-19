@@ -10,6 +10,7 @@ import { ReactNode } from "react";
 import { Box, makeStyles, Theme } from "@material-ui/core";
 import { BlendStyleParams, blendStyleProperties } from "../frontendUtils/blendStyle";
 import _ from "lodash";
+import { FocusedLyrics } from "../components/public/lyrics/focused";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -35,6 +36,7 @@ const LYRICS_QUERY = gql`
 `;
 
 const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } = {
+  "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} />,
   "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
   "Dynamic": (lyrics: LyricsKitLyrics) => <DynamicLyrics lyrics={lyrics} />,
 };
