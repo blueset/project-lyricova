@@ -34,8 +34,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 export interface Props {
     children?: React.ReactNode;
     style?: React.CSSProperties;
-    /** Update this property to trigger a reflow without changing content. */
-    reflowTicket?: any;
     /** Reflow the text on window.resize event? */
     resize?: boolean;
     className?: string;
