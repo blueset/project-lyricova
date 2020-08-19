@@ -2,7 +2,7 @@ import IndexLayout from "../components/public/layouts/IndexLayout";
 import { useAppContext } from "../components/public/AppContext";
 import { useNamedState } from "../frontendUtils/hooks";
 import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
-import { DynamicLyrics } from "../components/public/lyrics/dynamic";
+import { PlainLyrics } from "../components/public/lyrics/plain";
 import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
 import { gql, useQuery } from "@apollo/client";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
@@ -38,7 +38,7 @@ const LYRICS_QUERY = gql`
 const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } = {
   "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} />,
   "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
-  "Dynamic": (lyrics: LyricsKitLyrics) => <DynamicLyrics lyrics={lyrics} />,
+  "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
 };
 
 const useStyle = makeStyles<Theme, BlendStyleParams>({

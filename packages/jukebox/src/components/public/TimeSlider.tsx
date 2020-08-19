@@ -3,7 +3,7 @@ import { Slider, Typography } from "@material-ui/core";
 import { formatTime } from "../../frontendUtils/strings";
 import { useAppContext } from "./AppContext";
 import { useNamedState } from "../../frontendUtils/hooks";
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useCallback } from "react";
 import _ from "lodash";
 
 interface Props {
@@ -22,12 +22,12 @@ export function TimeSlider({ playerRef }: Props) {
     }
   }
 
-  function onSliderChange(event: unknown, newValue: number) {
+  const onSliderChange = useCallback((event: unknown, newValue: number) => {
     setTime(newValue);
     setIsDragging(true);
-  }
+  }, []);
 
-  function onSliderChangeCommitted(event: unknown, newValue: number) {
+  const onSliderChangeCommitted = useCallback((event: unknown, newValue: number) => {
     if (playerRef.current.fastSeek) {
       playerRef.current.fastSeek(newValue);
     } else {
@@ -35,11 +35,11 @@ export function TimeSlider({ playerRef }: Props) {
     }
     setTime(newValue);
     setIsDragging(false);
-  }
+  }, [playerRef]);
 
-  function updateDuration() {
+  const updateDuration = useCallback(() => {
     setDuration(playerRef.current?.duration);
-  }
+  }, [playerRef]);
 
   useEffect(() => {
     const playerElm = playerRef.current;

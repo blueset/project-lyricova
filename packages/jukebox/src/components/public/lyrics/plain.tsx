@@ -4,6 +4,6 @@ interface Props {
   lyrics: LyricsKitLyrics;
 }
 
-export function DynamicLyrics({ lyrics }: Props) {
+export function PlainLyrics({ lyrics }: Props) {
   return <div>Dyanmics</div>;
 }

@@ -1,22 +1,16 @@
 import style from "./Player.module.scss";
 import {
-  Paper,
   CardContent,
   Typography,
-  Slider,
   IconButton,
-  Fab,
-  CircularProgress,
 } from "@material-ui/core";
-import React, { useEffect } from "react";
+import React, { useCallback } from "react";
 import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
 import SkipNextIcon from "@material-ui/icons/SkipNext";
 import ShuffleIcon from "@material-ui/icons/Shuffle";
 import RepeatOneIcon from "@material-ui/icons/RepeatOne";
 import RepeatIcon from "@material-ui/icons/Repeat";
-import { formatTime } from "../../frontendUtils/strings";
 import { useAppContext, LoopMode } from "./AppContext";
-import { useNamedState } from "../../frontendUtils/hooks";
 import { TimeSlider } from "./TimeSlider";
 import { PlayButton } from "./PlayButton";
 
@@ -42,13 +36,13 @@ export default function Player() {
     playlist.playPrevious(/*playNow*/ isPlaying);
   }
 
-  function toggleShuffle() {
+  const toggleShuffle = useCallback(() => {
     playlist.toggleShuffle();
-  }
+  }, [playlist]);
 
-  function switchLoopMode() {
+  const switchLoopMode = useCallback(() => {
     playlist.setLoopMode(LOOP_MODE_SWITCH[playlist.loopMode]);
-  }
+  }, [playlist]);
 
   const loopModeButton = {
     [LoopMode.ALL]: (

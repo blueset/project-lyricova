@@ -1,5 +1,5 @@
 import style from "./CurrentPlaylist.module.scss";
-import { useAppContext, Track, Playlist } from "./AppContext";
+import { useAppContext, Track } from "./AppContext";
 import {
   List,
   ListItem,
@@ -14,7 +14,7 @@ import {
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import DragHandleIcon from "@material-ui/icons/DragHandle";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { useEffect, createRef, RefObject, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import AutoResizer from "react-virtualized-auto-sizer";
 import { FixedSizeList, ListChildComponentProps, areEqual } from "react-window";
 import React, { CSSProperties } from "react";
@@ -49,18 +49,18 @@ function CurrentPlaylistItem({
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMenuClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleMenuClose = () => {
+  const handleMenuClose = useCallback(() => {
     setAnchorEl(null);
-  };
+  }, []);
 
-  const handleRemoveFromPlaylist = () => {
+  const handleRemoveFromPlaylist = useCallback(() => {
     playlist.removeTrack(index);
     handleMenuClose();
-  };
+  }, []);
 
   // isDragging = true;
   return (
@@ -198,7 +198,7 @@ export default function CurrentPlaylist() {
     playlist.moveTrack(src, dest);
   }
 
-  const listRef: RefObject<FixedSizeList> = createRef();
+  const listRef = useRef<FixedSizeList>();
   useEffect(() => {
     if (listRef.current && playlist.nowPlaying !== null) {
       listRef.current.scrollToItem(playlist.nowPlaying, "start");

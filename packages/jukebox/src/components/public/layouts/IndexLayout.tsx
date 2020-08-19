@@ -2,7 +2,7 @@ import { Grid, Paper } from "@material-ui/core";
 import style from "./IndexLayout.module.scss";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
-import React, { createRef, useEffect, ReactNode } from "react";
+import React, { useEffect, ReactNode, useRef } from "react";
 import { gql, useLazyQuery } from "@apollo/client";
 import {
   AppContext,
@@ -80,7 +80,7 @@ function generateBackgroundStyle(
 }
 
 export default function IndexLayout({ children }: Props) {
-  const playerRef = createRef<HTMLAudioElement>();
+  const playerRef = useRef<HTMLAudioElement>();
   const [playlistTracks, setPlaylistTracks] = useNamedState<Track[]>(
     [],
     "playlistTracks"

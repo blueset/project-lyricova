@@ -42,7 +42,7 @@ export interface Props {
 }
 
 const BalanceText: React.FC<Props> = ({ children, style, className, resize, reflowTicket }) => {
-    const container = React.createRef<HTMLSpanElement>();
+    const container = React.useRef<HTMLSpanElement>();
 
     function handleResize() {
         if (!resize) {

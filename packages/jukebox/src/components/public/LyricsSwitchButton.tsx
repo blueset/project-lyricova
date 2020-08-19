@@ -1,6 +1,7 @@
 import { Button, Menu, createStyles, makeStyles, Theme, MenuItem } from "@material-ui/core";
 import { useNamedState } from "../../frontendUtils/hooks";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import { useCallback } from "react";
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -24,16 +25,16 @@ export function LyricsSwitchButton<T>({ module, setModule, moduleNames }: Props<
   const styles = useStyles();
   const [anchorEl, setAnchorEl] = useNamedState<null | HTMLElement>(null, "anchorEl");
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleClose = (option: T | null = null) => {
+  const handleClose = useCallback((option: T | null = null) => {
     if (option !== null) {
       setModule(option);
     }
     setAnchorEl(null);
-  };
+  }, []);
 
   return (<>
     <Button
