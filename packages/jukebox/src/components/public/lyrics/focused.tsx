@@ -3,7 +3,7 @@ import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles, Theme } from "@material-ui/core";
 import { BlendStyleParams, blendStyleProperties } from "../../../frontendUtils/blendStyle";
-import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
+import { motion, Transition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import _ from "lodash";
 
@@ -37,17 +37,11 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       },
-      ...blendStyleProperties({ filterName: "#sharpBlurBrighter", color: "rgba(255, 255, 255, 0.4)" }),
+      ...blendStyleProperties({ filterName: "#sharpBlurBrighter", color: "rgba(255, 255, 255, 0.8)" }),
     },
   };
 });
 
-type RoughStyle = {
-  transitionEnd?: {
-    [key: string]: string | number;
-  };
-  [key: string]: string | number | object;
-};
 
 const TRANSITION: Transition = {
   duration: 0.2,

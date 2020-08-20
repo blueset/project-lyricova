@@ -1,5 +1,5 @@
 import style from "./PlayButton.module.scss";
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useCallback } from "react";
 import { Fab, CircularProgress } from "@material-ui/core";
 import { Playlist } from "./AppContext";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
@@ -38,7 +38,7 @@ export function PlayButton({ playerRef, playlist }: Props) {
     }
   }
 
-  function clickPlay() {
+  const clickPlay = useCallback(() => {
     if (playlist.nowPlaying === null && playlist.tracks.length > 0) {
       playlist.playTrack(0, /*playNow*/ true);
       return;
@@ -48,7 +48,7 @@ export function PlayButton({ playerRef, playlist }: Props) {
     } else {
       playerRef.current.pause();
     }
-  }
+  }, [playlist]);
 
   function onPlay() { setIsPlaying(true); }
   function onPause() { setIsPlaying(false); }

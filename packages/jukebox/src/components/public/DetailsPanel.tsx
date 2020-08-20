@@ -101,7 +101,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
             <SearchIcon />
           </IconButton>
         </Box>
-        <Box position="relative" width="1" flexGrow={1} zIndex={2}>
+        <Box position="relative" width="1" flexGrow={1} zIndex={2} overflow="auto">
           {children}
         </Box>
         <svg className={style.hideSvg}>
@@ -113,18 +113,18 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
           <filter id="sharpBlurBrighter">
             <feGaussianBlur stdDeviation="15" result="blur" />
             <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" result="colorMatrix" />
-            <feFlood flood-color="#ffffff" flood-opacity="1" result="floodWhite" />
+            <feFlood floodColor="#ffffff" floodOpacity="1" result="floodWhite" />
             <feBlend mode="overlay" in="floodWhite" in2="colorMatrix" result="blend" />
-            <feFlood flood-color="#ffffff" flood-opacity="0.3" result="floodWhite25" />
+            <feFlood floodColor="#ffffff" floodOpacity="0.3" result="floodWhite25" />
             <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
             <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
           </filter>
           <filter id="sharpBlurBright">
             <feGaussianBlur stdDeviation="15" result="blur" />
             <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" result="colorMatrix" />
-            <feFlood flood-color="#000000" flood-opacity="0.5" result="floodWhite" />
+            <feFlood floodColor="#000000" floodOpacity="0.5" result="floodWhite" />
             <feBlend mode="darken" in="floodWhite" in2="colorMatrix" result="blend" />
-            <feFlood flood-color="#ffffff" flood-opacity="0.2" result="floodWhite25" />
+            <feFlood floodColor="#ffffff" floodOpacity="0.2" result="floodWhite25" />
             <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
             <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
           </filter>

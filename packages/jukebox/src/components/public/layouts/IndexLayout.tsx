@@ -464,7 +464,7 @@ export default function IndexLayout({ children }: Props) {
               <CurrentPlaylist />
             </Paper>
           </Grid>
-          <Grid item xl={9} sm={8} xs={12}>
+          <Grid item xl={9} sm={8} xs={12} className={style.detailsGridItem}>
             <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>
               {children}
             </DetailsPanel>
