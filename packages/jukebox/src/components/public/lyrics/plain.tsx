@@ -4,6 +4,7 @@ import { useLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
 import { useRef, useEffect } from "react";
 import clsx from "clsx";
+import BalanceText from "react-balance-text-cj";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -29,7 +30,7 @@ const useStyle = makeStyles((theme) => {
       fontWeight: 400,
       opacity: 0.7,
       minHeight: "1.2em",
-      fontSize: "1.25em",
+      fontSize: "1.5em",
       textAlign: "center",
       marginBottom: theme.spacing(1),
       "&.active": {
@@ -72,9 +73,9 @@ export function PlainLyrics({ lyrics }: Props) {
     {lyrics.lines.map((v, idx) => {
       return (
         <div key={idx} className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}>
-          {v.content}
+          <BalanceText resize={true}>{v.content}</BalanceText>
           {v.attachments.translation && (
-            <div className="translation">{v.attachments.translation}</div>
+            <div className="translation"><BalanceText resize={true}>{v.attachments.translation}</BalanceText></div>
           )}
         </div>
       );

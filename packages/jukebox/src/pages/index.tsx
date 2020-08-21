@@ -11,6 +11,8 @@ import { Box, makeStyles, Theme } from "@material-ui/core";
 import { BlendStyleParams, blendStyleProperties } from "../frontendUtils/blendStyle";
 import _ from "lodash";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
+import { RingoLyrics } from "../components/public/lyrics/ringo";
+import { RingoUnisizeLyrics } from "../components/public/lyrics/ringoUnisize";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -39,6 +41,8 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} />,
   "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
   "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
+  "Ringo": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} />,
+  "Ringo Unisize": (lyrics: LyricsKitLyrics) => <RingoUnisizeLyrics lyrics={lyrics} />,
 };
 
 const useStyle = makeStyles<Theme, BlendStyleParams>({

@@ -1,4 +1,4 @@
-import { useState, useDebugValue, useEffect, RefObject } from "react";
+import { useState, useDebugValue, useEffect, RefObject, useCallback } from "react";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 import _ from "lodash";
 
@@ -12,7 +12,7 @@ export function useNamedState<T>(initialValue: T, name: string) {
 export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics) {
   const [line, setLine] = useNamedState<number | null>(null, "line");
 
-  function onTimeUpdate(recur: boolean = true) {
+  const onTimeUpdate = useCallback((recur: boolean = true) => {
     const player = playerRef.current;
     if (player !== null) {
       const time = player.currentTime;
@@ -34,14 +34,14 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
     } else {
       setLine(null);
     }
-  }
+  }, [playerRef, lyrics]);
 
-  function onPlay() {
+  const onPlay = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate());
-  }
-  function onTimeChange() {
+  }, [playerRef]);
+  const onTimeChange = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate(/* recur */false));
-  }
+  }, [playerRef]);
 
   useEffect(() => {
     const player = playerRef.current;
