@@ -1,15 +1,15 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles, Theme } from "@material-ui/core";
-import { BlendStyleParams, blendStyleProperties } from "../../../frontendUtils/blendStyle";
+import { makeStyles } from "@material-ui/core";
 import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import _ from "lodash";
+import clsx from "clsx";
 
 const ANIMATION_THRESHOLD = 0.25;
 
-const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
+const useStyle = makeStyles((theme) => {
   return {
     container: {
       padding: theme.spacing(0, 4),
@@ -36,6 +36,8 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
       backgroundAttachment: "fixed",
       display: "flex",
       flexDirection: "column-reverse",
+      color: "rgba(255, 255, 255, 0.4)",
+      filter: "var(--jukebox-cover-filter-bright)",
       "& .translation": {
         display: "block",
         fontSize: "0.7em",
@@ -43,7 +45,6 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       },
-      ...blendStyleProperties({ filterName: "#sharpBlurBright", color: "rgba(255, 255, 255, 0.4)" }),
     },
   };
 });
@@ -164,6 +165,7 @@ export function RingoUnisizeLyrics({ lyrics }: Props) {
   return (
     <motion.div className={styles.container}>
       <AnimatePresence initial={false}>
+        {lineNumber === 0 && <motion.div animate={{ minHeight: 35, }} exit={{ minHeight: 0, }} ></motion.div>}
         {lines.map((l, idx) => {
           if (idx < lineNumber - 1 || idx > lineNumber + 12) return null;
           const animate =
@@ -171,7 +173,7 @@ export function RingoUnisizeLyrics({ lyrics }: Props) {
             (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
           return (
             <LyricsLineElement
-              className={styles.nextLine}
+              className={clsx(styles.nextLine, "coverMask")}
               coverUrl={coverUrl}
               line={l}
               key={idx}

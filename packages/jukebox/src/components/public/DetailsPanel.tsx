@@ -1,12 +1,16 @@
 // import style from "./DetailsPanel.module.scss";
 import { CSSProperties, ReactNode } from "react";
-import { Box, IconButton, makeStyles, createMuiTheme, ThemeProvider } from "@material-ui/core";
+import { Box, IconButton, makeStyles, createMuiTheme, ThemeProvider, Theme as MUITheme } from "@material-ui/core";
 import Link, { NextComposedLink } from "../Link";
 import SearchIcon from "@material-ui/icons/Search";
 import { useRouter } from "next/router";
 import Theme from "../../frontendUtils/theme";
 
-const useStyle = makeStyles({
+const useStyle = makeStyles<
+  MUITheme,
+  { coverUrl: string },
+  "link" | "containerBox" | "backgroundStyle" | "backgroundShade" | "hideSvg" | "@global"
+>({
   link: {
     fontSize: "1.75em",
     fontWeight: 500,
@@ -54,6 +58,21 @@ const useStyle = makeStyles({
     position: "absolute",
     width: "1px",
   },
+  "@global": {
+    ".coverMask": {
+      backgroundImage: ({ coverUrl }) => coverUrl ? `url(${coverUrl})` : null,
+      color: ({ coverUrl }) => coverUrl ? ["transparent", "!important"] : null,
+      mixBlendMode: ({ coverUrl }) => coverUrl ? ["none", "!important"] : null,
+      backgroundClip: ({ coverUrl }) => coverUrl ? "text" : null,
+      "-webkit-background-clip": ({ coverUrl }) => coverUrl ? "text" : null,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundAttachment: "fixed",
+      "--jukebox-cover-filter-blur": ({ coverUrl }) => coverUrl ? "url(#sharpBlur)" : null,
+      "--jukebox-cover-filter-bright": ({ coverUrl }) => coverUrl ? "url(#sharpBlurBright)" : null,
+      "--jukebox-cover-filter-brighter": ({ coverUrl }) => coverUrl ? "url(#sharpBlurBrighter)" : null,
+    }
+  }
 });
 
 const theme = createMuiTheme({
@@ -73,7 +92,7 @@ interface Props {
 }
 
 export default function DetailsPanel({ coverUrl = null, children }: Props) {
-  const style = useStyle();
+  const style = useStyle({ coverUrl });
   const router = useRouter();
 
   let backgroundNode = <div className={style.backgroundShade}></div>;

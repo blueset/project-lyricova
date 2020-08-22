@@ -1,15 +1,15 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles, Theme } from "@material-ui/core";
-import { BlendStyleParams, blendStyleProperties } from "../../../frontendUtils/blendStyle";
+import { makeStyles } from "@material-ui/core";
 import { motion, Transition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import _ from "lodash";
+import clsx from "clsx";
 
 const ANIMATION_THRESHOLD = 0.25;
 
-const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
+const useStyle = makeStyles((theme) => {
   return {
     container: {
       padding: theme.spacing(4),
@@ -30,6 +30,8 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
       position: "absolute",
       top: "50%",
       transform: "translateY(-50%)",
+      color: "rgba(255, 255, 255, 0.8)",
+      filter: "var(--jukebox-cover-filter-brighter)",
       "& > div": {
         display: "block",
         fontSize: "0.6em",
@@ -37,7 +39,6 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       },
-      ...blendStyleProperties({ filterName: "#sharpBlurBrighter", color: "rgba(255, 255, 255, 0.8)" }),
     },
   };
 });
@@ -99,11 +100,10 @@ interface Props {
 }
 
 export function FocusedLyrics({ lyrics }: Props) {
-  const { playerRef, playlist } = useAppContext();
+  const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
 
-  const coverUrl = playlist.getCurrentCoverUrl();
-  const styles = useStyle({ coverUrl });
+  const styles = useStyle();
 
   const lines = lyrics.lines;
 
@@ -116,7 +116,7 @@ export function FocusedLyrics({ lyrics }: Props) {
           (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
         return (
           <LyricsLineElement
-            className={styles.line}
+            className={clsx(styles.line, "coverMask")}
             line={l}
             key={idx}
             animate={animate} />);

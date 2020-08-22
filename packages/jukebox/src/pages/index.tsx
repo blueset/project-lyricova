@@ -7,9 +7,9 @@ import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
 import { gql, useQuery } from "@apollo/client";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 import { ReactNode } from "react";
-import { Box, makeStyles, Theme } from "@material-ui/core";
-import { BlendStyleParams, blendStyleProperties } from "../frontendUtils/blendStyle";
+import { Box, makeStyles } from "@material-ui/core";
 import _ from "lodash";
+import clsx from "clsx";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
 import { RingoLyrics } from "../components/public/lyrics/ringo";
 import { RingoUnisizeLyrics } from "../components/public/lyrics/ringoUnisize";
@@ -45,7 +45,7 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Ringo Unisize": (lyrics: LyricsKitLyrics) => <RingoUnisizeLyrics lyrics={lyrics} />,
 };
 
-const useStyle = makeStyles<Theme, BlendStyleParams>({
+const useStyle = makeStyles({
   messageBox: {
     width: "100%",
     height: "100%",
@@ -55,7 +55,7 @@ const useStyle = makeStyles<Theme, BlendStyleParams>({
     fontWeight: 600,
     fontSize: "2.5em",
     fontStyle: "italic",
-    ...blendStyleProperties(),
+    filter: "var(--jukebox-cover-filter-brighter)",
   }
 });
 
@@ -77,7 +77,7 @@ export default function Index() {
   });
 
   const MessageBox = ({ children }: { children: ReactNode }) => (
-    <Box className={styles.messageBox} p={4}>{children}</Box>
+    <Box className={clsx(styles.messageBox, "coverMask")} p={4}>{children}</Box>
   );
 
   let node = <MessageBox>Default</MessageBox>;

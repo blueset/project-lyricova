@@ -1,15 +1,15 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles, Theme } from "@material-ui/core";
-import { BlendStyleParams, blendStyleProperties } from "../../../frontendUtils/blendStyle";
+import { makeStyles } from "@material-ui/core";
 import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
+import clsx from "clsx";
 import _ from "lodash";
 
 const ANIMATION_THRESHOLD = 0.25;
 
-const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
+const useStyle = makeStyles((theme) => {
   return {
     container: {
       padding: theme.spacing(4),
@@ -28,6 +28,8 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
       backgroundPosition: "center",
       backgroundAttachment: "fixed",
       width: "62.5%",
+      color: "rgba(255, 255, 255, 0.4)",
+      filter: "var(--jukebox-cover-filter-bright)",
       "& > div": {
         display: "block",
         fontSize: "0.8em",
@@ -35,48 +37,28 @@ const useStyle = makeStyles<Theme, BlendStyleParams>((theme) => {
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       },
-      ...blendStyleProperties({ filterName: "#sharpBlurBright", color: "rgba(255, 255, 255, 0.4)" }),
     },
   };
 });
 
-type RoughStyle = {
-  transitionEnd?: {
-    [key: string]: string | number;
-  };
-  [key: string]: string | number | object;
-};
-
 const MAIN_LINE_VARIANTS: Variants = {
-  current: ({ coverUrl }) => {
-    const styles: RoughStyle = {
-      marginBottom: 32,
-      fontSize: 14 * 4,
-      opacity: 1,
-      width: "100%",
-    };
-    if (coverUrl) {
-      styles.filter = "url(#sharpBlurBrighter)";
-    } else {
-      styles.mixBlendMode = "hard-light";
-      styles.color = "rgba(255, 255, 255, 0.7)";
-    }
-    return styles;
+  current: {
+    marginBottom: 32,
+    fontSize: 14 * 4,
+    opacity: 1,
+    width: "100%",
+    mixBlendMode: "hard-light",
+    color: "rgba(255, 255, 255, 0.7)",
+    filter: "var(--jukebox-cover-filter-brighter)",
   },
-  next: ({ coverUrl }) => {
-    const styles: RoughStyle = {
-      fontSize: 14 * 2.5,
-      opacity: 1,
-      marginBottom: 0,
-      width: "62.5%",
-    };
-    if (coverUrl) {
-      styles.filter = "url(#sharpBlurBright)";
-    } else {
-      styles.mixBlendMode = "overlay";
-      styles.color = "rgba(255, 255, 255, 0.4)";
-    }
-    return styles;
+  next: {
+    fontSize: 14 * 2.5,
+    opacity: 1,
+    marginBottom: 0,
+    width: "62.5%",
+    mixBlendMode: "overlay",
+    color: "rgba(255, 255, 255, 0.4)",
+    filter: "var(--jukebox-cover-filter-bright)",
   },
   exit: {
     opacity: 0,
@@ -105,23 +87,21 @@ const TRANSITION: Transition = {
 interface LyricsLineElementProps {
   className: string;
   line: LyricsKitLyricsLine | null;
-  coverUrl: string | null;
   isCurrent: boolean;
   animate: boolean;
 }
 
 
-function LyricsLineElement({ className, line, coverUrl, isCurrent, animate }: LyricsLineElementProps) {
+function LyricsLineElement({ className, line, isCurrent, animate }: LyricsLineElementProps) {
   if (!line) return null;
   const transition = animate ? TRANSITION : { duration: 0 };
   return (
     <motion.div
       lang="ja"
-      className={className}
+      className={clsx(className, "coverMask")}
       transition={transition}
       animate={isCurrent ? "current" : "next"}
       exit="exit"
-      custom={{ coverUrl }}
       variants={MAIN_LINE_VARIANTS}
     >
       {
@@ -153,11 +133,10 @@ interface Props {
 }
 
 export function FocusedLyrics2({ lyrics }: Props) {
-  const { playerRef, playlist } = useAppContext();
+  const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
 
-  const coverUrl = playlist.getCurrentCoverUrl();
-  const styles = useStyle({ coverUrl });
+  const styles = useStyle();
 
   const lines = lyrics.lines;
 
@@ -172,8 +151,7 @@ export function FocusedLyrics2({ lyrics }: Props) {
             (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
           return (
             <LyricsLineElement
-              className={styles.nextLine}
-              coverUrl={coverUrl}
+              className={clsx(styles.nextLine, "coverMask")}
               line={l}
               key={idx}
               animate={animate}
