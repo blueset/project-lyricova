@@ -1,8 +1,8 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles } from "@material-ui/core";
-import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
+import { makeStyles, useTheme } from "@material-ui/core";
+import { motion, Variants, AnimatePresence, Transition, TargetAndTransition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import _ from "lodash";
 import clsx from "clsx";
@@ -30,32 +30,28 @@ const useStyle = makeStyles((theme) => {
       fontWeight: 600,
       lineHeight: 1.2,
       textWrap: "balance",
-      fontSize: "2.5em",
+      fontSize: "3em",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundAttachment: "fixed",
-      width: "62.5%",
       display: "flex",
       flexDirection: "column-reverse",
       color: "rgba(255, 255, 255, 0.4)",
-      filter: "var(--jukebox-cover-filter-bright)",
+      "--jukebox-cover-filter-bright-blur": "var(--jukebox-cover-filter-bright) blur(var(--jukebox-ringo-blur-radius))",
+      filter: "var(--jukebox-cover-filter-bright-blur, blur(var(--jukebox-ringo-blur-radius)))",
       "& .translation": {
         display: "block",
-        fontSize: "0.6em",
+        fontSize: "0.7em",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       },
     },
+    resizable: {
+      width: "62.5%",
+    },
   };
 });
-
-type RoughStyle = {
-  transitionEnd?: {
-    [key: string]: string | number;
-  };
-  [key: string]: string | number | object;
-};
 
 const TRANSLATION_LINE_VARIANTS: Variants = {
   current: {
@@ -79,36 +75,53 @@ interface LyricsLineElementProps {
   line: LyricsKitLyricsLine | null;
   offsetIndex: number;
   animate: boolean;
+  resize: boolean;
 
 }
 
-
-function LyricsLineElement({ className, line, offsetIndex, animate }: LyricsLineElementProps) {
+function LyricsLineElement({ className, line, offsetIndex, animate, resize }: LyricsLineElementProps) {
   if (!line) return null;
   const transition = animate ? TRANSITION : { duration: 0 };
-  const styles: RoughStyle = {
+  const theme = useTheme();
+
+  const styles: TargetAndTransition = {
     opacity: 1,
     height: "auto",
     marginBottom: 50,
+    width: "100%",
+    fontSize: theme.typography.fontSize * 3,
+    transitionEnd: {
+      filter: "var(--jukebox-cover-filter-bright-blur, blur(var(--jukebox-ringo-blur-radius)))",
+    },
   };
 
   if (offsetIndex === 0) {
-    styles.fontSize = 14 * 5;
-    styles.width = "100%";
-    styles.filter = "var(--jukebox-cover-filter-brighter)";
-    styles.mixBlendMode = "hard-light";
+    if (resize) {
+      styles.fontSize = theme.typography.fontSize * 5;
+    } else {
+    }
+    styles.transitionEnd.filter = "var(--jukebox-cover-filter-brighter)";
+    styles.transitionEnd.mixBlendMode = "hard-light";
     styles.color = "rgba(255, 255, 255, 0.7)";
   } else {
-    styles.fontSize = 14 * 3;
-    styles.width = "62.5%";
-    const blurFilter = `blur(${0.4 * Math.abs(offsetIndex)}px)`;
-    styles.filter = `var(--jukebox-cover-filter-bright) ${blurFilter}`;
-    styles.mixBlendMode = "overlay";
+    if (resize) {
+      styles.fontSize = 14 * 3;
+      styles.width = "62.5%";
+    }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    styles["--jukebox-ringo-blur-radius"] = `${0.4 * Math.abs(offsetIndex)}px`;
+    styles.transitionEnd.mixBlendMode = "overlay";
     styles.color = "rgba(255, 255, 255, 0.4)";
     if (offsetIndex < 0) {
       styles.height = 35;
     }
   }
+
+
+  const translationVariants = resize ? TRANSLATION_LINE_VARIANTS : {
+    exit: TRANSLATION_LINE_VARIANTS.exit,
+  };
 
   return (
     <motion.div
@@ -131,7 +144,7 @@ function LyricsLineElement({ className, line, offsetIndex, animate }: LyricsLine
         {
           line.attachments?.translation && (
             <motion.div
-              variants={TRANSLATION_LINE_VARIANTS}
+              variants={translationVariants}
               transition={transition}
               animate={offsetIndex === 0 ? "current" : "next"}
               exit="exit"
@@ -151,9 +164,10 @@ function LyricsLineElement({ className, line, offsetIndex, animate }: LyricsLine
 
 interface Props {
   lyrics: LyricsKitLyrics;
+  resize?: boolean;
 }
 
-export function RingoLyrics({ lyrics }: Props) {
+export function RingoLyrics({ lyrics, resize }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
 
@@ -174,10 +188,11 @@ export function RingoLyrics({ lyrics }: Props) {
             (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
           return (
             <LyricsLineElement
-              className={clsx(styles.nextLine, "coverMask")}
+              className={clsx(styles.nextLine, "coverMask", resize && styles.resizable)}
               line={l}
               key={idx}
               animate={animate}
+              resize={resize}
               offsetIndex={line !== null ? idx - line : idx + 1} />);
         })}
       </AnimatePresence>

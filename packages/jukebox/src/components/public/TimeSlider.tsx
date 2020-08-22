@@ -8,9 +8,10 @@ import _ from "lodash";
 
 interface Props {
   playerRef: RefObject<HTMLAudioElement>;
+  disabled: boolean;
 }
 
-export function TimeSlider({ playerRef }: Props) {
+export function TimeSlider({ playerRef, disabled }: Props) {
   const [time, setTime] = useNamedState(0, "time");
   const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
   const [duration, setDuration] = useNamedState(0, "duration");
@@ -69,6 +70,7 @@ export function TimeSlider({ playerRef }: Props) {
       value={time}
       getAriaValueText={formatTime}
       max={duration}
+      disabled={disabled}
       onChange={onSliderChange}
       onChangeCommitted={onSliderChangeCommitted}
     />

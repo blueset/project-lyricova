@@ -31,7 +31,6 @@ const useStyle = makeStyles((theme) => {
       top: "50%",
       transform: "translateY(-50%)",
       color: "rgba(255, 255, 255, 0.8)",
-      filter: "var(--jukebox-cover-filter-brighter)",
       "& > div": {
         display: "block",
         fontSize: "0.6em",
@@ -40,6 +39,12 @@ const useStyle = makeStyles((theme) => {
         backgroundAttachment: "fixed",
       },
     },
+    blurredBrighter: {
+      filter: "var(--jukebox-cover-filter-brighter)",
+    },
+    brighter: {
+      filter: "var(--jukebox-cover-filter-brighter-blurless)",
+    }
   };
 });
 
@@ -97,15 +102,18 @@ function LyricsLineElement({ className, line, animate }: LyricsLineElementProps)
 
 interface Props {
   lyrics: LyricsKitLyrics;
+  blur?: boolean;
 }
 
-export function FocusedLyrics({ lyrics }: Props) {
+export function FocusedLyrics({ lyrics, blur }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
 
   const styles = useStyle();
 
   const lines = lyrics.lines;
+
+  const blurClass = blur ? styles.blurredBrighter : styles.brighter;
 
   return (
     <motion.div className={styles.container}>
@@ -116,7 +124,7 @@ export function FocusedLyrics({ lyrics }: Props) {
           (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
         return (
           <LyricsLineElement
-            className={clsx(styles.line, "coverMask")}
+            className={clsx(styles.line, blurClass, "coverMask")}
             line={l}
             key={idx}
             animate={animate} />);

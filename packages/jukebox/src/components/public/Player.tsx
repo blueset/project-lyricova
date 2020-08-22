@@ -88,7 +88,7 @@ export default function Player() {
           </Typography>
         </div>
       </div>
-      <TimeSlider playerRef={playerRef} />
+      <TimeSlider playerRef={playerRef} disabled={playlist.nowPlaying === null} />
       <div className={style.controlContainer}>
         <IconButton
           color="default"

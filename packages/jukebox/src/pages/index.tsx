@@ -38,11 +38,12 @@ const LYRICS_QUERY = gql`
 `;
 
 const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } = {
-  "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} />,
+  "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} blur={true} />,
+  "Focused Clear": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} blur={false} />,
   "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
   "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
-  "Ringo": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} />,
-  "Ringo Unisize": (lyrics: LyricsKitLyrics) => <RingoUnisizeLyrics lyrics={lyrics} />,
+  "Ringo": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} resize={true} />,
+  "Ringo Unisize": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} resize={false} />,
 };
 
 const useStyle = makeStyles({

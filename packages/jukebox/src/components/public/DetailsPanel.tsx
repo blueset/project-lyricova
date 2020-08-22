@@ -71,6 +71,7 @@ const useStyle = makeStyles<
       "--jukebox-cover-filter-blur": ({ coverUrl }) => coverUrl ? "url(#sharpBlur)" : null,
       "--jukebox-cover-filter-bright": ({ coverUrl }) => coverUrl ? "url(#sharpBlurBright)" : null,
       "--jukebox-cover-filter-brighter": ({ coverUrl }) => coverUrl ? "url(#sharpBlurBrighter)" : null,
+      "--jukebox-cover-filter-brighter-blurless": ({ coverUrl }) => coverUrl ? "url(#brighter)" : null,
     }
   }
 });
@@ -134,6 +135,13 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
             <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" result="colorMatrix" />
             <feFlood floodColor="#ffffff" floodOpacity="1" result="floodWhite" />
             <feBlend mode="overlay" in="floodWhite" in2="colorMatrix" result="blend" />
+            <feFlood floodColor="#ffffff" floodOpacity="0.3" result="floodWhite25" />
+            <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
+            <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
+          </filter>
+          <filter id="brighter">
+            <feFlood floodColor="#ffffff" floodOpacity="1" result="floodWhite" />
+            <feBlend mode="overlay" in="floodWhite" in2="SourceGraphic" result="blend" />
             <feFlood floodColor="#ffffff" floodOpacity="0.3" result="floodWhite25" />
             <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
             <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
