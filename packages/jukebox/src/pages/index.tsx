@@ -12,7 +12,6 @@ import _ from "lodash";
 import clsx from "clsx";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
 import { RingoLyrics } from "../components/public/lyrics/ringo";
-import { RingoUnisizeLyrics } from "../components/public/lyrics/ringoUnisize";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
