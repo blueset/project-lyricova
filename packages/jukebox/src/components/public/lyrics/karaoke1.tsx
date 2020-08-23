@@ -1,12 +1,11 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState } from "../../../frontendUtils/hooks";
+import { useLyricsState, LyricsFrameCallback } from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
-import { motion, Transition, MotionConfig } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import _ from "lodash";
 import clsx from "clsx";
-import { CSSProperties } from "react";
+import { CSSProperties, useRef, RefObject, useCallback } from "react";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -50,8 +49,8 @@ const useStyle = makeStyles((theme) => {
         },
         "&.cover": {
           backgroundImage: `linear-gradient(
-            transparent 10%,
-            white 10%,
+            transparent 7.5%,
+            white 7.5%,
             white 85%,
             transparent 85%
           )`,
@@ -78,13 +77,14 @@ interface WrapProps {
   children: string;
   className?: string;
   style?: CSSProperties;
+  progressorRef?: RefObject<HTMLSpanElement>;
 }
 
-function BalancedTextSpanWrap({ animate, children, className, style }: WrapProps) {
+function BalancedTextSpanWrap({ animate, children, className, style, progressorRef }: WrapProps) {
   if (animate) {
-    return <BalancedText resize={true} className={className} style={style}>{children}</BalancedText>;
+    return <BalancedText resize={true} className={className} style={style} progressorRef={progressorRef}>{children}</BalancedText>;
   }
-  return <span className={className} style={style}>{children}</span>;
+  return <span className={className} style={style} ref={progressorRef}>{children}</span>;
 }
 
 interface LyricsLineElementProps {
@@ -93,20 +93,18 @@ interface LyricsLineElementProps {
   line: LyricsKitLyricsLine | null;
   animate: boolean;
   theme: string;
-  progress: number;
+  progressorRef?: RefObject<HTMLSpanElement>;
 }
 
 
-function LyricsLineElement({ className, line, animate, translationClassName, progress, theme }: LyricsLineElementProps) {
+function LyricsLineElement({ className, line, animate, translationClassName, theme, progressorRef }: LyricsLineElementProps) {
   if (!line) return null;
 
   return (
     <div>
       <div className={className} lang="ja">
         <BalancedTextSpanWrap animate={animate} className="base coverMask">{line.content}</BalancedTextSpanWrap>
-        <BalancedTextSpanWrap animate={animate} className={`overlay ${theme}`} style={{
-          backgroundSize: `${(progress ?? 1) * 100}% 100%`,
-        }}>{line.content}</BalancedTextSpanWrap>
+        <BalancedTextSpanWrap animate={animate} className={`overlay ${theme}`} progressorRef={progressorRef}>{line.content}</BalancedTextSpanWrap>
       </div>
       {
         line.attachments?.translation && (
@@ -129,7 +127,26 @@ interface Props {
 
 export function Karaoke1Lyrics({ lyrics, cover }: Props) {
   const { playerRef } = useAppContext();
-  const [line, percentage] = useLyricsState(playerRef, lyrics, { usePercentage: true });
+  const progressorRef = useRef<HTMLSpanElement>();
+
+  const progressCallback = useCallback<LyricsFrameCallback>((thisLine, lyrics, player) => {
+    if (progressorRef.current) {
+      const progressorSpan = progressorRef.current;
+      if (thisLine >= lyrics.lines.length) {
+        progressorSpan.style.backgroundSize = "100% 100%";
+      } else {
+        const time = player.currentTime;
+        let endTime = player.duration;
+        if (thisLine + 1 < lyrics.lines.length) {
+          endTime = lyrics.lines[thisLine + 1].position;
+        }
+        const percentage = _.clamp((time - lyrics.lines[thisLine].position) / (endTime - lyrics.lines[thisLine].position), 0, 1);
+        progressorSpan.style.backgroundSize = `${percentage * 100}% 100%`;
+      }
+    }
+  }, []);
+
+  const line = useLyricsState(playerRef, lyrics, progressCallback);
 
   const styles = useStyle();
 
@@ -146,7 +163,7 @@ export function Karaoke1Lyrics({ lyrics, cover }: Props) {
       translationClassName={clsx(styles.translation, "coverMask")}
       line={lines[line]}
       animate={animate}
-      progress={percentage}
+      progressorRef={progressorRef}
     />);
   }
 

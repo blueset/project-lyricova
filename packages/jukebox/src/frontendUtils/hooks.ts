@@ -1,4 +1,4 @@
-import { useState, useDebugValue, useEffect, RefObject, useCallback } from "react";
+import { useState, useDebugValue, useEffect, RefObject, useCallback, useMemo } from "react";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 import _ from "lodash";
 
@@ -9,46 +9,47 @@ export function useNamedState<T>(initialValue: T, name: string) {
   return ret;
 }
 
-interface UseLyricsStateOptions {
-  usePercentage: boolean;
-}
+export type LyricsFrameCallback = (thisLine: number, lyrics: LyricsKitLyrics, player: HTMLAudioElement) => void;
 
-export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, options?: undefined): number;
-export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, options?: UseLyricsStateOptions & { usePercentage: false }): number;
-export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, options?: UseLyricsStateOptions & { usePercentage: true }): [number, number];
-
-export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, options?: UseLyricsStateOptions): number | [number, number] {
+export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, callback?: LyricsFrameCallback): number {
   const [line, setLine] = useNamedState<number | null>(null, "line");
-  const [percentage, setPercentage] = useNamedState<number | null>(null, "line");
+  const [start, end] = useMemo<[number, number]>(() => {
+    if (!playerRef.current) {
+      return [null, null];
+    }
+    if (line === null) {
+      if (lyrics?.lines?.length > 0) {
+        return [0, lyrics.lines[0].position];
+      }
+      return [0, playerRef.current.duration];
+    }
+    if (line + 1 >= lyrics.lines.length) {
+      return [lyrics.lines[line].position, playerRef.current.duration];
+    }
+    return [lyrics.lines[line].position, lyrics.lines[line + 1].position];
+  }, [line, lyrics, playerRef.current]);
 
   const onTimeUpdate = useCallback((recur: boolean = true) => {
     const player = playerRef.current;
     if (player !== null) {
       const time = player.currentTime;
-      const thisLineIndex = _.sortedIndexBy<{ position: number }>(lyrics.lines, { position: time }, "position");
-      if (thisLineIndex === 0) {
-        if (line !== null) setLine(null);
-        if (options?.usePercentage && percentage !== null) setPercentage(null);
-      } else {
-        const thisLine =
-          (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position !== time) ?
-            thisLineIndex - 1 :
-            thisLineIndex;
-        if (thisLine != line) {
-          setLine(thisLine);
-        }
-        if (options?.usePercentage) {
-          if (thisLineIndex >= lyrics.lines.length) {
-            setPercentage(null);
-          } else {
-            let endTime = player.duration;
-            if (thisLine + 1 < lyrics.lines.length) {
-              endTime = lyrics.lines[thisLine + 1].position;
-            }
-            const percentage = (time - lyrics.lines[thisLine].position) / (endTime - lyrics.lines[thisLine].position);
-            setPercentage(_.clamp(percentage, 0, 1));
+      if (start > time || time >= end) {
+        const thisLineIndex = _.sortedIndexBy<{ position: number }>(lyrics.lines, { position: time }, "position");
+        if (thisLineIndex === 0) {
+          if (line !== null) setLine(null);
+          callback && callback(null, lyrics, player);
+        } else {
+          const thisLine =
+            (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position !== time) ?
+              thisLineIndex - 1 :
+              thisLineIndex;
+          if (thisLine != line) {
+            setLine(thisLine);
           }
+          callback && callback(thisLine, lyrics, player);
         }
+      } else {
+        callback && callback(line, lyrics, player);
       }
       if (recur && !player.paused) {
         window.requestAnimationFrame(() => onTimeUpdate());
@@ -79,10 +80,6 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
       };
     }
   }, [playerRef]);
-
-  if (options?.usePercentage) {
-    return [line, percentage];
-  }
 
   return line;
 }

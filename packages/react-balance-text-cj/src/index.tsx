@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import React, { ReactElement } from 'react';
+import React, { ReactElement, RefObject } from 'react';
 import balanceText from './balanceText';
 import throttle from "lodash.throttle";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -37,6 +37,7 @@ export interface Props {
     /** Reflow the text on window.resize event? */
     resize?: boolean;
     className?: string;
+    progressorRef?: React.RefObject<HTMLSpanElement>;
 }
 
 class BalanceText extends React.PureComponent<Props> {
@@ -44,7 +45,7 @@ class BalanceText extends React.PureComponent<Props> {
 
     constructor(props: Props) {
         super(props);
-        this.container = React.createRef();
+        this.container = props.progressorRef || React.createRef();
         this.handleResize = throttle(this.handleResize.bind(this), 100);
         this.doBalanceText = this.doBalanceText.bind(this);
     }
@@ -64,7 +65,7 @@ class BalanceText extends React.PureComponent<Props> {
         window.addEventListener('resize', this.handleResize);
     }
 
-    public componentWillMount(): void {
+    public componentWillUnmount(): void {
         window.removeEventListener('resize', this.handleResize);
     }
 
