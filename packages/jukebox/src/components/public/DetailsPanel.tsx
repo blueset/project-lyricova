@@ -46,7 +46,7 @@ const useStyle = makeStyles<
     width: "100%",
     height: "100%",
     backgroundColor: "rgba(0, 0, 0, 0.7)",
-    zIndex: 1,
+    zIndex: 0,
   },
   hideSvg: {
     border: 0,
@@ -112,7 +112,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
     <ThemeProvider theme={theme}>
       <div className={style.containerBox}>
         {backgroundNode}
-        <Box pt={2} pb={2} pl={4} pr={2} display="flex" flexDirection="row" alignItems="center" zIndex={2}>
+        <Box pt={2} pb={2} pl={4} pr={2} display="flex" flexDirection="row" alignItems="center" zIndex={1}>
           <Link className={style.link} href="/">Lyrics</Link>
           <Link className={style.link} href="/library/tracks" activeCriteria={(v) => v.startsWith("/library/")}>Library</Link>
           <Link className={style.link} href="/info">Information</Link>
@@ -121,7 +121,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
             <SearchIcon />
           </IconButton>
         </Box>
-        <Box position="relative" width="1" flexGrow={1} zIndex={2} overflow="auto">
+        <Box position="relative" width="1" flexGrow={1} overflow="auto">
           {children}
         </Box>
         <svg className={style.hideSvg}>

@@ -9,8 +9,17 @@ export function useNamedState<T>(initialValue: T, name: string) {
   return ret;
 }
 
-export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics) {
+interface UseLyricsStateOptions {
+  usePercentage: boolean;
+}
+
+export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, options?: undefined): number;
+export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, options?: UseLyricsStateOptions & { usePercentage: false }): number;
+export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, options?: UseLyricsStateOptions & { usePercentage: true }): [number, number];
+
+export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, options?: UseLyricsStateOptions): number | [number, number] {
   const [line, setLine] = useNamedState<number | null>(null, "line");
+  const [percentage, setPercentage] = useNamedState<number | null>(null, "line");
 
   const onTimeUpdate = useCallback((recur: boolean = true) => {
     const player = playerRef.current;
@@ -19,6 +28,7 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
       const thisLineIndex = _.sortedIndexBy<{ position: number }>(lyrics.lines, { position: time }, "position");
       if (thisLineIndex === 0) {
         if (line !== null) setLine(null);
+        if (options?.usePercentage && percentage !== null) setPercentage(null);
       } else {
         const thisLine =
           (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position !== time) ?
@@ -26,6 +36,18 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
             thisLineIndex;
         if (thisLine != line) {
           setLine(thisLine);
+        }
+        if (options?.usePercentage) {
+          if (thisLineIndex >= lyrics.lines.length) {
+            setPercentage(null);
+          } else {
+            let endTime = player.duration;
+            if (thisLine + 1 < lyrics.lines.length) {
+              endTime = lyrics.lines[thisLine + 1].position;
+            }
+            const percentage = (time - lyrics.lines[thisLine].position) / (endTime - lyrics.lines[thisLine].position);
+            setPercentage(_.clamp(percentage, 0, 1));
+          }
         }
       }
       if (recur && !player.paused) {
@@ -57,6 +79,10 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
       };
     }
   }, [playerRef]);
+
+  if (options?.usePercentage) {
+    return [line, percentage];
+  }
 
   return line;
 }

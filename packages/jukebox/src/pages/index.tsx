@@ -1,17 +1,18 @@
-import IndexLayout from "../components/public/layouts/IndexLayout";
-import { useAppContext } from "../components/public/AppContext";
-import { useNamedState } from "../frontendUtils/hooks";
-import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
-import { PlainLyrics } from "../components/public/lyrics/plain";
-import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
 import { gql, useQuery } from "@apollo/client";
-import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
-import { ReactNode } from "react";
 import { Box, makeStyles } from "@material-ui/core";
-import _ from "lodash";
 import clsx from "clsx";
+import _ from "lodash";
+import { ReactNode } from "react";
+import { useAppContext } from "../components/public/AppContext";
+import IndexLayout from "../components/public/layouts/IndexLayout";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
+import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
+import { Karaoke1Lyrics } from "../components/public/lyrics/karaoke1";
+import { PlainLyrics } from "../components/public/lyrics/plain";
 import { RingoLyrics } from "../components/public/lyrics/ringo";
+import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
+import { useNamedState } from "../frontendUtils/hooks";
+import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -43,6 +44,8 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
   "Ringo": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} resize={true} />,
   "Ringo Unisize": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} resize={false} />,
+  "Karaoke/1/Underline": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} />,
+  "Karaoke/1/Cover": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} cover />,
 };
 
 const useStyle = makeStyles({
