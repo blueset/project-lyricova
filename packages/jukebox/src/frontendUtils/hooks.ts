@@ -13,6 +13,7 @@ export type LyricsFrameCallback = (thisLine: number, lyrics: LyricsKitLyrics, pl
 
 export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, callback?: LyricsFrameCallback): number {
   const [line, setLine] = useNamedState<number | null>(null, "line");
+
   const [start, end] = useMemo<[number, number]>(() => {
     if (!playerRef.current) {
       return [null, null];
@@ -69,6 +70,7 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
   useEffect(() => {
     const player = playerRef.current;
     if (player) {
+      onTimeUpdate();
       player.addEventListener("play", onPlay);
       player.addEventListener("timeupdate", onTimeChange);
       if (!player.paused) {

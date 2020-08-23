@@ -45,7 +45,7 @@ class BalanceText extends React.PureComponent<Props> {
 
     constructor(props: Props) {
         super(props);
-        this.container = props.progressorRef || React.createRef();
+        this.container = props.progressorRef ?? React.createRef();
         this.handleResize = throttle(this.handleResize.bind(this), 100);
         this.doBalanceText = this.doBalanceText.bind(this);
     }
@@ -63,6 +63,7 @@ class BalanceText extends React.PureComponent<Props> {
 
     public componentDidMount(): void {
         window.addEventListener('resize', this.handleResize);
+        this.doBalanceText();
     }
 
     public componentWillUnmount(): void {
