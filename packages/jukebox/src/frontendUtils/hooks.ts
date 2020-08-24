@@ -18,6 +18,9 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
     if (!playerRef.current) {
       return [null, null];
     }
+    if (!lyrics.lines) {
+      return [null, null];
+    }
     if (line === null) {
       if (lyrics?.lines?.length > 0) {
         return [0, lyrics.lines[0].position];

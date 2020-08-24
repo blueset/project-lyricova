@@ -32,9 +32,11 @@ export default createMuiTheme({
     ].join(","),
   },
   overrides: {
-    MuiTypography: {
-      root: {
-        fontFeatureSettings: "'palt' 1",
+    "MuiCssBaseline": {
+      "@global": {
+        "html": {
+          fontFeatureSettings: "'palt' 1",
+        }
       }
     }
   }

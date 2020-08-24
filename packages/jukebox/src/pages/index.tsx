@@ -14,6 +14,7 @@ import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
 import { useNamedState } from "../frontendUtils/hooks";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 import { FocusedGlowLyrics } from "../components/public/lyrics/focusedGlow";
+import { SlantedLyrics } from "../components/public/lyrics/slanted";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -39,15 +40,16 @@ const LYRICS_QUERY = gql`
 `;
 
 const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } = {
-  "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} blur={true} />,
-  "Focused Clear": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} blur={false} />,
+  "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} blur />,
+  "Focused Clear": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} />,
   "Focused Glow": (lyrics: LyricsKitLyrics) => <FocusedGlowLyrics lyrics={lyrics} />,
   "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
   "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
-  "Ringo": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} resize={true} />,
-  "Ringo Unisize": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} resize={false} />,
+  "Ringo": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} resize />,
+  "Ringo Unisize": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} />,
   "Karaoke/1/Underline": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} />,
   "Karaoke/1/Cover": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} cover />,
+  "Slanted": (lyrics: LyricsKitLyrics) => <SlantedLyrics lyrics={lyrics} />,
 };
 
 const useStyle = makeStyles({
