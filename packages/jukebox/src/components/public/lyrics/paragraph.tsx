@@ -18,7 +18,7 @@ const useStyle = makeStyles((theme) => {
       padding: theme.spacing(4),
       width: "100%",
       height: "100%",
-      overflow: "scroll",
+      overflow: "hidden",
       textAlign: "justify",
       maskBorderImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
       maskBorderImageSlice: "49% 0 fill",
@@ -70,7 +70,7 @@ export function ParagraphLyrics({ lyrics }: Props) {
       const offset = line !== null ? Math.abs(line - idx) : idx;
       return (
         <>
-          {idx !== 0 && <span className={styles.line} style={{ filter: `blur(${offset * 0.1}px)` }}> · </span>}
+          {idx !== 0 && <span className={styles.line} style={{ filter: `blur(${offset * 0.1}px)` }}> ・ </span>}
           <span
             key={idx}
             className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}
