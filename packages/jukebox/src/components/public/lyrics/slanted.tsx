@@ -15,7 +15,7 @@ const useStyle = makeStyles((theme) => {
     container: {
       width: "100%",
       height: "100%",
-      overflow: "hide",
+      overflow: "hidden",
       display: "flex",
       justifyContent: "center",
       flexDirection: "column",
@@ -45,7 +45,7 @@ const useStyle = makeStyles((theme) => {
     line: {
       fontWeight: 600,
       fontStyle: "italic",
-      opacity: 0.6,
+      opacity: 0.5,
       paddingInlineEnd: "1em",
       "&.active": {
         opacity: 1,
