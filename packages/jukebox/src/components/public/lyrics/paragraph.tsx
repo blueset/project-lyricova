@@ -19,26 +19,22 @@ const useStyle = makeStyles((theme) => {
       width: "100%",
       height: "100%",
       overflow: "scroll",
+      textAlign: "justify",
       maskBorderImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
       maskBorderImageSlice: "49% 0 fill",
-      maskBorderImageWidth: "100px 0",
+      maskBorderImageWidth: "40% 0",
       maskBoxImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
       maskBoxImageSlice: "49% 0 fill",
-      maskBoxImageWidth: "100px 0",
+      maskBoxImageWidth: "40% 0",
     },
     line: {
       fontWeight: 400,
-      opacity: 0.7,
-      minHeight: "1.2em",
-      fontSize: "1.5em",
-      textAlign: "center",
+      fontSize: "2.5em",
+      opacity: 0.5,
       marginBottom: theme.spacing(1),
       "&.active": {
         opacity: 1,
-        fontWeight: 600,
-      },
-      "& .translation": {
-        fontSize: "0.8em",
+        fontWeight: 500,
       },
     },
     filler: {
@@ -47,12 +43,12 @@ const useStyle = makeStyles((theme) => {
   };
 });
 
-export function PlainLyrics({ lyrics }: Props) {
+export function ParagraphLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
   const styles = useStyle();
   const container = useRef<HTMLDivElement>();
-  const currentLine = useRef<HTMLDivElement>();
+  const currentLine = useRef<HTMLSpanElement>();
 
   useEffect(() => {
     const cont = container.current, curLine = currentLine.current;
@@ -71,13 +67,18 @@ export function PlainLyrics({ lyrics }: Props) {
   return <div className={styles.container} ref={container}>
     <div className={styles.filler} />
     {lyrics.lines.map((v, idx) => {
+      const offset = line !== null ? Math.abs(line - idx) : idx;
       return (
-        <div key={idx} className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}>
-          <BalanceText resize={true}>{v.content}</BalanceText>
-          {v.attachments.translation && (
-            <div className="translation"><BalanceText resize={true}>{v.attachments.translation}</BalanceText></div>
-          )}
-        </div>
+        <>
+          {idx !== 0 && <span className={styles.line} style={{ filter: `blur(${offset * 0.1}px)` }}> · </span>}
+          <span
+            key={idx}
+            className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}
+            style={{ filter: `blur(${offset * 0.1}px)` }}
+          >
+            {v.content || "＊"}
+          </span>
+        </>
       );
     })}
     <div className={styles.filler} />

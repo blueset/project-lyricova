@@ -31,7 +31,7 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
       return [lyrics.lines[line].position, playerRef.current.duration];
     }
     return [lyrics.lines[line].position, lyrics.lines[line + 1].position];
-  }, [line, lyrics, playerRef.current]);
+  }, [line, lyrics, lyrics.lines, playerRef.current?.src]);
 
   const onTimeUpdate = useCallback((recur: boolean = true) => {
     const player = playerRef.current;

@@ -15,6 +15,7 @@ import { useNamedState } from "../frontendUtils/hooks";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 import { FocusedGlowLyrics } from "../components/public/lyrics/focusedGlow";
 import { SlantedLyrics } from "../components/public/lyrics/slanted";
+import { ParagraphLyrics } from "../components/public/lyrics/paragraph";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -50,6 +51,7 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Karaoke/1/Underline": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} />,
   "Karaoke/1/Cover": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} cover />,
   "Slanted": (lyrics: LyricsKitLyrics) => <SlantedLyrics lyrics={lyrics} />,
+  "Paragraph": (lyrics: LyricsKitLyrics) => <ParagraphLyrics lyrics={lyrics} />,
 };
 
 const useStyle = makeStyles({
