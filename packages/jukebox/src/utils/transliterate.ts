@@ -33,14 +33,14 @@ segment.useDefault();
  * Convert katakana to hiragana.
  * @param str katakana
  */
-function kanaToHira(str: string): string {
+export function kanaToHira(str: string): string {
   return str.replace(/[\u30a1-\u30f6]/g,
     match => String.fromCharCode(match.charCodeAt(0) - 0x60)
   );
 }
 
 interface TransliterateOptions {
-  language?: "zh" | "ja";
+  language?: "zh" | "ja" | "en";
 }
 
 export interface SegmentedTransliterationOptions extends TransliterateOptions {

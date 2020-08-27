@@ -39,7 +39,7 @@ export default (app: express.Express) => {
     res.send(transliterate(req.params.text));
   });
 
-  apiRouter.get("/seg_transliterate", (req: Request, res: Response) => {
+  apiRouter.get("/segTransliterate", (req: Request, res: Response) => {
     try {
       const result = segmentedTransliteration(req.query.text as string, {
         language: req.query.lang as SegmentedTransliterationOptions["language"],
