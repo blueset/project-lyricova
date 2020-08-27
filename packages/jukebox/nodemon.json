@@ -9,7 +9,8 @@
     "ts": "node --require ts-node/register"
   },
   "watch": [
-    "src/"
+    "src/",
+    "dest/"
   ],
   "env": {
     "NODE_ENV": "development"

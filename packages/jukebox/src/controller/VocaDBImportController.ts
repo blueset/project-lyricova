@@ -4,7 +4,7 @@ import { Song } from "../models/Song";
 import { Album } from "../models/Album";
 import { Artist } from "../models/Artist";
 import { Request, Response, NextFunction, Router } from "express";
-import { SongForApiContract } from "vocadb";
+import { SongForApiContract } from "../types/vocadb";
 import axios, { AxiosInstance } from "axios";
 
 export class VocaDBImportController {

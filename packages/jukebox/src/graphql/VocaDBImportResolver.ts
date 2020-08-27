@@ -1,6 +1,6 @@
 
 import { Song } from "../models/Song";
-import { SongForApiContract } from "vocadb";
+import { SongForApiContract } from "../types/vocadb";
 import axios, { AxiosInstance } from "axios";
 import { Resolver, Mutation, Arg, Int } from "type-graphql";
 

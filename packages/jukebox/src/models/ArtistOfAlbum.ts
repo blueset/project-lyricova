@@ -1,5 +1,5 @@
 
-import { VDBArtistRoleType, VDBArtistCategoryType } from "vocadb";
+import { VDBArtistRoleType, VDBArtistCategoryType } from "../types/vocadb";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
 import { Table, Column, PrimaryKey, AutoIncrement, Default, ForeignKey, BelongsTo, CreatedAt, UpdatedAt, DeletedAt, Model } from "sequelize-typescript";

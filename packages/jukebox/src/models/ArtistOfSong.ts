@@ -1,4 +1,4 @@
-import { VDBArtistRoleType, ArtistForSongContract } from "vocadb";
+import { VDBArtistRoleType, ArtistForSongContract } from "../types/vocadb";
 import { Song } from "./Song";
 import { Artist } from "./Artist";
 import { CreatedAt, UpdatedAt, DeletedAt, AllowNull, Column, Default, PrimaryKey, AutoIncrement, Table, Model, Unique, BelongsTo, ForeignKey } from "sequelize-typescript";

@@ -1,5 +1,5 @@
 
-import { ArtistForApiContract, ArtistContract, VDBArtistType } from "vocadb";
+import { ArtistForApiContract, ArtistContract, VDBArtistType } from "../types/vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
 import { transliterate } from "../utils/transliterate";

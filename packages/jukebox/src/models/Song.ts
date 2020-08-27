@@ -1,6 +1,6 @@
 import { MusicFile } from "./MusicFile";
 import { VideoFile } from "./VideoFile";
-import { SongForApiContract } from "vocadb";
+import { SongForApiContract } from "../types/vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { SongInAlbum } from "./SongInAlbum";
 import { Entry } from "./Entry";

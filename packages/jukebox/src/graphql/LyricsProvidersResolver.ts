@@ -1,7 +1,7 @@
 import axios from "axios";
 import cheerio from "cheerio";
 import { Song } from "../models/Song";
-import { SongForApiContract, LyricsForSongContract, VDBTranslationType } from "vocadb";
+import { SongForApiContract, LyricsForSongContract, VDBTranslationType } from "../types/vocadb";
 import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
 import { Resolver, ObjectType, Field, Arg, Query, Int, Float, InputType, Mutation, } from "type-graphql";
 import { ApolloError } from "apollo-server-express";

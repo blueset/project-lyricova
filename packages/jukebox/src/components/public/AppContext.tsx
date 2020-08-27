@@ -1,5 +1,5 @@
 import React, { RefObject, ReactChild, ReactNode, useContext } from "react";
-import type { MusicFile } from "../../models/MusicFile";
+import { MusicFile } from "../../models/MusicFile";
 
 export type Track = Pick<MusicFile, "id" | "fileSize" | "trackName" | "trackSortOrder" | "artistName" | "artistSortOrder" | "albumName" | "albumSortOrder" | "hasCover" | "duration" | "hasLyrics">;
 

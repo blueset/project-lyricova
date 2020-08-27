@@ -89,4 +89,4 @@ interface MediaSessionActionDetails {
 
     // MAY be provided when action is seekto. Stores true if the action is being called multiple times as part of a sequence and this is not the last call in that sequence.
     fastSeek?: boolean;
-};
+}

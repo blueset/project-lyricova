@@ -1,4 +1,4 @@
-import type { AppProps } from "next/app";
+import { AppProps } from "next/app";
 import { ThemeProvider, CssBaseline } from "@material-ui/core";
 import PropTypes from "prop-types";
 import React from "react";

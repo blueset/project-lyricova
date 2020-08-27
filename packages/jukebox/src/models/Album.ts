@@ -1,6 +1,6 @@
 
 import { SongInAlbum } from "./SongInAlbum";
-import { AlbumForApiContract, AlbumContract } from "vocadb";
+import { AlbumForApiContract, AlbumContract } from "../types/vocadb";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
 import { MusicFile } from "./MusicFile";
 import { transliterate } from "../utils/transliterate";

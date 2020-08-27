@@ -73,6 +73,7 @@ export function ParagraphLyrics({ lyrics }: Props) {
           {idx !== 0 && <span className={styles.line} style={{ filter: `blur(${offset * 0.1}px)` }}> ・ </span>}
           <span
             key={idx}
+            lang="ja"
             className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}
             style={{ filter: `blur(${offset * 0.1}px)` }}
           >

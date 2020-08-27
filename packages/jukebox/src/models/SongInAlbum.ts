@@ -1,7 +1,7 @@
 
 import { Song } from "./Song";
 import { Album } from "./Album";
-import { AlbumContract, SongForApiContract } from "vocadb";
+import { AlbumContract, SongForApiContract } from "../types/vocadb";
 import { Model, Table, Column, PrimaryKey, AutoIncrement, BelongsTo, ForeignKey, CreatedAt, UpdatedAt, DeletedAt, Unique, AllowNull } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 

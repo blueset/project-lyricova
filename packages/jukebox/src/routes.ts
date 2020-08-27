@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { MusicFileController } from "./controller/MusicFileController";
 import { VocaDBImportController } from "./controller/VocaDBImportController";
-import { transliterate } from "./utils/transliterate";
+import { transliterate, segmentedTransliteration, SegmentedTransliterationOptions } from "./utils/transliterate";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController";
 import { DownloadController } from "./controller/DownloadController";
 import { AuthController } from "./controller/AuthController";
@@ -37,5 +37,18 @@ export default (app: express.Express) => {
 
   apiRouter.get("/transliterate/:text", (req: Request, res: Response) => {
     res.send(transliterate(req.params.text));
+  });
+
+  apiRouter.get("/seg_transliterate", (req: Request, res: Response) => {
+    try {
+      const result = segmentedTransliteration(req.query.text as string, {
+        language: req.query.lang as SegmentedTransliterationOptions["language"],
+        type: req.query.type as SegmentedTransliterationOptions["type"],
+      });
+      res.json(result);
+    } catch (e) {
+      console.error(e);
+      res.status(502);
+    }
   });
 };
