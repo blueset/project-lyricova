@@ -192,12 +192,18 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
   }
 }
 
+export function getLanguage(text: string): "ja" | "zh" | "en" {
+  if (jaOnly.test(text)) return "ja";
+  if (isHan.test(text)) return "zh";
+  return "en";
+}
 
 export function transliterate(text: string, options?: TransliterateOptions): string {
-  if (options?.language === "ja" || (options?.language == null && jaOnly.test(text))) {
+  const language = options?.language ?? getLanguage(text);
+  if (language === "ja") {
     // transliterate as ja
     return segmentedTransliteration(text, { type: "plain", language: "ja" }).map((v) => v[1]).join("");
-  } else if (options?.language === "zh" || (options?.language == null && isHan.test(text))) {
+  } else if (language === "zh") {
     // transliterate as zh
     return segmentedTransliteration(text, { type: "plain", language: "zh" }).map((v) => v[1]).join(" ");
   } else {

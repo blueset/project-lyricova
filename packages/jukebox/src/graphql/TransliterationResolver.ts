@@ -1,6 +1,7 @@
 import { Resolver, Query, ObjectType, Field, Arg, InputType } from "type-graphql";
 import { GraphQLString } from "graphql";
-import { segmentedTransliteration } from "../utils/transliterate";
+import { segmentedTransliteration, getLanguage } from "../utils/transliterate";
+import { AnimatedWord, buildAnimationSequence } from "../utils/typingSequence";
 
 const LanguageArgOptions = {
   nullable: true,
@@ -36,6 +37,14 @@ class TransliterationResult {
   typing(@Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"): [string, string][] {
     return segmentedTransliteration(this.text, { language, type: "typing" });
   }
+
+  @Field(type => [AnimatedWord])
+  typingSequence(@Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"): AnimatedWord[] {
+    language = language ?? getLanguage(this.text);
+    const words = segmentedTransliteration(this.text, { language, type: "typing" });
+    return buildAnimationSequence(words, language);
+  }
+
 }
 
 @Resolver()

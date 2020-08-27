@@ -1,4 +1,6 @@
 import { kanaToHira } from "./transliterate";
+import { ObjectType, Field } from "type-graphql";
+import { GraphQLString } from "graphql";
 
 const JA_MAP = {
   romanMapSingle: {
@@ -43,11 +45,12 @@ const JA_MAP = {
   }
 };
 
-interface AnimatedWord {
-  /** True if the word shows a conversion-type of animation. False if it is just typing. */
+@ObjectType({ description: "Describes the animation sequence for a word." })
+export class AnimatedWord {
+  @Field({ description: "True if the word shows a conversion-type of animation. False if it is just typing." })
   convert: boolean;
 
-  /** Actual sequence to show, one frame at a time. */
+  @Field(type => [GraphQLString], { description: "Actual sequence to show, one frame at a time." })
   sequence: string[];
 }
 
@@ -60,15 +63,15 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
     while (remainingHira.length > 0) {
       // Matching double kana set.
       const twoKanas = remainingHira.substr(0, 2);
-      const oneKana = remainingHira[1];
+      const oneKana = remainingHira[0];
       if (remainingHira.length >= 2 && (twoKanas in JA_MAP.romanMapDouble)) {
         const key = twoKanas as keyof (typeof JA_MAP)["romanMapDouble"];
         const romajiSeq = JA_MAP.romanMapDouble[key];
         for (var i = 1; i <= romajiSeq.length; i++) {
           sequence.push(done + romajiSeq.substr(0, i));
         }
-        sequence.push(done + remainingHira.substr(0, 2));
-        done += remainingHira.substr(0, 2);
+        sequence.push(done + key);
+        done += key;
         remainingHira = remainingHira.substring(2, remainingHira.length);
       } else if (remainingHira.length >= 2 && remainingHira[0] == "っ" && oneKana in JA_MAP.romanMapSingle) {
         const key = oneKana as keyof (typeof JA_MAP)["romanMapSingle"];
@@ -81,8 +84,8 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
         for (var i = 1; i <= JA_MAP.romanMapSingle[key].length; i++) {
           sequence.push(done + JA_MAP.romanMapSingle[key].substr(0, i));
         }
-        sequence.push(done + remainingHira[0]);
-        done += remainingHira[0];
+        sequence.push(done + key);
+        done += key;
         remainingHira = remainingHira.substring(1, remainingHira.length);
       } else {
         done += remainingHira[0];
@@ -127,7 +130,7 @@ function animateEn(words: [string, string][]): AnimatedWord[] {
   }];
 }
 
-export function buildAnimationSequence(text: [string, string][], language: "en" | "ja" | "zh" = "en"): AnimatedWord[] {
+export function buildAnimationSequence(text: [string, string][], language: "en" | "ja" | "zh"): AnimatedWord[] {
   if (language === "ja") {
     return animateJa(text);
   } else if (language === "zh") {
