@@ -154,6 +154,7 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
   } else if (options?.language === "zh" || (options?.language == null && isHan.test(text))) {
     // transliterate as zh
     const words: string[] = segment.doSegment(text, { simple: true });
+
     switch (type) {
       case "karaoke":
         return words.map(
@@ -165,7 +166,16 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
             }
             return [[word, py.join(" ")]] as [string, string][];
           }
-        ).reduce((prev, curr) => prev.concat(curr), []);
+        ).reduce((prev, curr) => prev.concat(curr), [])
+          .reduce<[string, string][]>((prev, curr) => {
+            if (curr[0] !== curr[1] || prev.length < 1 || prev[prev.length - 1][0] !== prev[prev.length - 1][1]) {
+              prev.push(curr);
+            } else {
+              prev[prev.length - 1][0] += curr[0];
+              prev[prev.length - 1][1] += curr[1];
+            }
+            return prev;
+          }, []);
       case "typing":
         return words.map(
           word => [word, pinyin(word, { segment: true, heteronym: true, style: pinyin.STYLE_NORMAL }).map(x => x[0]).join("'")]
