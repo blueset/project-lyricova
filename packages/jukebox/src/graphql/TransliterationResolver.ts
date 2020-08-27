@@ -9,10 +9,12 @@ const LanguageArgOptions = {
 
 @ObjectType({ description: "Result of a transliteration request." })
 class TransliterationResult {
-  text: string;
   constructor(text: string) {
     this.text = text;
   }
+
+  @Field({ description: "Original text." })
+  text: string;
 
   @Field()
   plain(@Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"): string {
@@ -41,5 +43,10 @@ export class TextureResolver {
   @Query(returns => TransliterationResult)
   transliterate(@Arg("text") text: string): TransliterationResult {
     return new TransliterationResult(text);
+  }
+
+  @Query(returns => [TransliterationResult])
+  batchTransliterate(@Arg("texts", type => [GraphQLString]) texts: string[]): TransliterationResult[] {
+    return texts.map(text => new TransliterationResult(text));
   }
 }
