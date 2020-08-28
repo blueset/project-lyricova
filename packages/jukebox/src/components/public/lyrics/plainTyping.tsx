@@ -10,8 +10,8 @@ import { gql, useQuery } from "@apollo/client";
 import { AnimatedWord } from "../../../utils/typingSequence";
 
 const SEQUENCE_QUERY = gql`
-  query TypingSequence($texts: [String!]!) {
-    batchTransliterate(texts: $texts) {
+  query TypingSequence($text: String!) {
+    transliterate(text: $text) {
       text
       typingSequence {
         convert
@@ -22,10 +22,10 @@ const SEQUENCE_QUERY = gql`
 `;
 
 interface SequenceQueryResult {
-  batchTransliterate: {
+  transliterate: {
     text: string;
-    typingSequence: AnimatedWord[];
-  }[];
+    typingSequence: AnimatedWord[][];
+  };
 }
 
 const ANIMATION_THRESHOLD = 0.25;
@@ -64,7 +64,7 @@ export function PlainTypingLyrics({ lyrics }: Props) {
     SEQUENCE_QUERY,
     {
       variables: {
-        texts: lyrics.lines.map((v) => v.content)
+        text: lyrics.lines.map((v) => v.content).join("\n")
       },
     }
   );
@@ -73,18 +73,17 @@ export function PlainTypingLyrics({ lyrics }: Props) {
   if (sequenceQuery.loading) node = <span>loading</span>;
   else if (sequenceQuery.error) node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
   else {
-    const seq = sequenceQuery.data.batchTransliterate[line];
+    const seq = sequenceQuery.data.transliterate.typingSequence[line];
     if (seq) {
       node = <div>
-        <div>{seq.text}</div>
         <ol>
-          {seq.typingSequence.map((v, k) => <li key={k}>{v.convert ? "Convert" : "Plain"}
+          {seq.map((v, k) => <li key={k}>{v.convert ? "Convert" : "Plain"}
             <ol>{v.sequence.map((vs, ks) => <li key={`${k}-${ks}`}>{vs}</li>)}</ol>
           </li>)}
         </ol>
       </div>;
     }
-  };
+  }
 
   return (
     <div className={styles.container}>

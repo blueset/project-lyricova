@@ -293,7 +293,7 @@ export class MusicFileResolver {
       updated: updatedCount,
       unchanged: toUpdate.size - updatedCount
     };
-  };
+  }
 
   @Query(returns => MusicFilesPagination)
   public async musicFiles(@Args() { first, after }: PaginationArgs): Promise<MusicFilesPagination> {
@@ -397,6 +397,7 @@ export class MusicFileResolver {
 
       // Transform standard " / " type of translation to LyricsX types.
       content = content.replace(/^((?:\[[0-9:.-]+\])+)(.+?) \/ (.+)$/mg, "$1$2\n$1[tr]$3");
+      content = content.replace(/^((?:\[[0-9:.-]+\])+)(.+?)\/(.+)$/mg, "$1$2\n$1[tr]“$3”");
 
       return new LyricsKitLyrics(new Lyrics(content));
     } catch (e) {

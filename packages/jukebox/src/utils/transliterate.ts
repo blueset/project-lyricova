@@ -154,12 +154,12 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
         return answer;
       }
     );
-
     const words = mecab.parseSyncFormat(text);
     const lines: MecabParsedResult[][] = words.reduce((prev, curr) => {
       if (curr.isLineBreak) {
         prev.push([]);
       } else {
+        curr.kanji = curr.kanji.replace(/\\!/g, "!");
         prev[prev.length - 1].push(curr);
       }
       return prev;

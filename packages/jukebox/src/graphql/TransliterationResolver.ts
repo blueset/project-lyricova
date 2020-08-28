@@ -30,11 +30,7 @@ export class TransliterationResult {
 
   @Field(type => [[[GraphQLString]]])
   karaoke(@Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"): [string, string][][] {
-    try {
-      return segmentedTransliteration(this.text, { language, type: "karaoke" });
-    } catch (e) {
-      console.error(e);
-    }
+    return segmentedTransliteration(this.text, { language, type: "karaoke" });
   }
 
   @Field(type => [[[GraphQLString]]])
