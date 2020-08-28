@@ -30,6 +30,8 @@ const useStyle = makeStyles((theme) => {
       whiteSpace: "nowrap",
       overflow: "hidden",
       transform: "rotate(-5deg)",
+    },
+    wrapper: {
       "&:before, &:after": {
         content: "\" \"",
         width: "50%",
@@ -58,8 +60,10 @@ export function SlantedLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const styles = useStyle();
   const container = useRef<HTMLDivElement>();
+  const wrapper = useRef<HTMLDivElement>();
   const currentLine = useRef<HTMLSpanElement>();
   const translationContainer = useRef<HTMLDivElement>();
+  const translationWrapper = useRef<HTMLDivElement>();
   const currentTranslation = useRef<HTMLSpanElement>();
 
   const lineDurations = useMemo(() => lyrics.lines.map((v, idx, arr) => {
@@ -89,14 +93,16 @@ export function SlantedLyrics({ lyrics }: Props) {
       currentLine.current.offsetLeft -
       (container.current.offsetWidth / 2) +
       percentage * currentLine.current.offsetWidth;
-    container.current.scrollTo({ left: offset });
+    wrapper.current.style.transform = `translateX(-${offset}px)`;
 
-    if (hasTranslation && translationContainer.current && currentTranslation.current) {
+
+    if (hasTranslation && translationContainer.current && currentTranslation.current && translationWrapper.current) {
       const offset =
         currentTranslation.current.offsetLeft -
         (translationContainer.current.offsetWidth / 2) +
         percentage * currentTranslation.current.offsetWidth;
-      translationContainer.current.scrollTo({ left: offset });
+      translationWrapper.current.style.transform = `translateX(-${offset}px)`;
+
     }
   }, [lyrics]);
 
@@ -104,23 +110,27 @@ export function SlantedLyrics({ lyrics }: Props) {
 
   return <div className={styles.container}>
     <div className={clsx(styles.lines, styles.lyrics)} lang="ja" ref={container}>
-      {lyrics.lines.map((v, idx) => {
-        return (
-          <span key={idx} className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}>
-            {v.content}
-          </span>
-        );
-      })}
-    </div>
-    {hasTranslation &&
-      <div className={clsx(styles.lines, styles.translations)} lang="zh" ref={translationContainer}>
+      <div ref={wrapper} className={styles.wrapper}>
         {lyrics.lines.map((v, idx) => {
           return (
-            <span key={idx} className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentTranslation : null}>
-              {v.attachments.translation}
+            <span key={idx} className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}>
+              {v.content}
             </span>
           );
         })}
+      </div>
+    </div>
+    {hasTranslation &&
+      <div className={clsx(styles.lines, styles.translations)} lang="zh" ref={translationContainer}>
+        <div ref={translationWrapper} className={styles.wrapper}>
+          {lyrics.lines.map((v, idx) => {
+            return (
+              <span key={idx} className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentTranslation : null}>
+                {v.attachments.translation}
+              </span>
+            );
+          })}
+        </div>
       </div>
     }
   </div>;
