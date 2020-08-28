@@ -9,7 +9,7 @@ const LanguageArgOptions = {
 }
 
 @ObjectType({ description: "Result of a transliteration request." })
-class TransliterationResult {
+export class TransliterationResult {
   constructor(text: string) {
     this.text = text;
   }

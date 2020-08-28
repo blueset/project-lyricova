@@ -64,6 +64,7 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
       // Matching double kana set.
       const twoKanas = remainingHira.substr(0, 2);
       const oneKana = remainingHira[0];
+      const secondKana = remainingHira[1];
       if (remainingHira.length >= 2 && (twoKanas in JA_MAP.romanMapDouble)) {
         const key = twoKanas as keyof (typeof JA_MAP)["romanMapDouble"];
         const romajiSeq = JA_MAP.romanMapDouble[key];
@@ -73,8 +74,8 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
         sequence.push(done + key);
         done += key;
         remainingHira = remainingHira.substring(2, remainingHira.length);
-      } else if (remainingHira.length >= 2 && remainingHira[0] == "っ" && oneKana in JA_MAP.romanMapSingle) {
-        const key = oneKana as keyof (typeof JA_MAP)["romanMapSingle"];
+      } else if (remainingHira.length >= 2 && remainingHira[0] == "っ" && secondKana in JA_MAP.romanMapSingle) {
+        const key = secondKana as keyof (typeof JA_MAP)["romanMapSingle"];
         sequence.push(done + JA_MAP.romanMapSingle[key][0]);
         done += "っ";
         remainingHira = remainingHira.substring(1, remainingHira.length);
@@ -93,6 +94,7 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
         remainingHira = remainingHira.substring(1, remainingHira.length);
       }
     }
+    if (sequence.length === 0 || sequence[sequence.length - 1] !== word[0]) sequence.push(word[0]);
     return { sequence, convert: true };
   });
 };

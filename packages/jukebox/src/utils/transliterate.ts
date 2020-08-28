@@ -65,6 +65,20 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
   const type = options?.type ?? "plain";
   if (options?.language === "ja" || (options?.language == null && jaOnly.test(text))) {
     // transliterate as ja
+
+    // Convert inline furigana to tokens.
+    let nextToken = 0xE000;
+    const tokenMapping: { [token: string]: [string, string, string] } = {};
+    text = text.replace(
+      /(\p{Script=Hani}+)[\(（]([\p{Script=Kana}ー]+|[\p{Script=Hira}ー]+)[\)）](\p{Script=Hira}*)/ug,
+      (match, p1, p2, p3): string => {
+        const answer = String.fromCharCode(nextToken);
+        tokenMapping[answer] = [p1, p2, p3];
+        nextToken++;
+        return answer;
+      }
+    );
+
     const words = mecab.parseSyncFormat(text);
 
     const result: [string, string][] = [];
@@ -74,17 +88,32 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
         let lastScore = 0;
         let currDiff = 0;
         if (words.length < 1) return [];
-        words.forEach((x, idx) => {
-          if (idx !== 0) {
-            currDiff = lastScore - x.alphaForwardLogRate - 1000;
-            if (currDiff > 0 && notPunct(x.kanji)) {
+        words.forEach((x) => {
+          if (/[\uE000-\uF8FF]/.test(x.kanji)) {
+            if (pending[0] !== "" && pending[1] !== "") {
               result.push(pending);
               pending = ["", ""];
             }
+            [...x.kanji].forEach((v) => {
+              if (v in tokenMapping) {
+                const [kanji, kana, okuri] = tokenMapping[v];
+                result.push([`${kanji}${okuri}`, `${kana}${okuri}`]);
+              } else {
+                console.error(`key ${v.charCodeAt(0)} is not found in the mapping list.`);
+              }
+            });
+          } else {
+            if (pending[0] !== "" && pending[1] !== "") {
+              currDiff = lastScore - x.alphaForwardLogRate - 1000;
+              if (currDiff > 0 && notPunct(x.kanji)) {
+                result.push(pending);
+                pending = ["", ""];
+              }
+            }
+            lastScore = x.alphaForwardLogRate;
+            pending[0] += x.kanji;
+            pending[1] += kanaToHira(x.reading === "*" ? x.kanji : x.reading);
           }
-          lastScore = x.alphaForwardLogRate;
-          pending[0] += x.kanji;
-          pending[1] += kanaToHira(x.reading === "*" ? x.kanji : x.reading);
         });
 
         if (pending[0] !== "" || pending[1] !== "") {
@@ -94,9 +123,18 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
       case "karaoke":
         return words.map(x => {
           const result: (string | [string, string])[] = [];
-          let pending: [string, string] = ["", ""];
           let isPending = false;
-          if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
+          if (/[\uE000-\uF8FF]/.test(x.kanji)) {
+            [...x.kanji].forEach((v) => {
+              if (v in tokenMapping) {
+                const [kanji, kana, okuri] = tokenMapping[v];
+                result.push([kanji, kana]);
+                result.push(okuri);
+              } else {
+                console.error(`key ${v.charCodeAt(0)} is not found in the mapping.`);
+              }
+            });
+          } else if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
             const hira = kanaToHira(x.reading || x.kanji);
             if (hira === x.kanji) {
               result.push(x.kanji);
@@ -144,7 +182,17 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
       case "plain":
       default:
         return words.map(x => {
-          if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
+          if (/[\uE000-\uF8FF]/.test(x.kanji)) {
+            [...x.kanji].forEach((v) => {
+              if (v in tokenMapping) {
+                const [kanji, kana, okuri] = tokenMapping[v];
+                result.push([kanji, kana]);
+                result.push([okuri, okuri]);
+              } else {
+                console.error(`key ${v.charCodeAt(0)} is not found in the mapping.`);
+              }
+            });
+          } else if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
             return [x.kanji, kanaToHira(x.reading || x.kanji)];
           }
           return [x.kanji, x.kanji];

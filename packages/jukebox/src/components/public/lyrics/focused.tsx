@@ -27,9 +27,6 @@ const useStyle = makeStyles((theme) => {
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundAttachment: "fixed",
-      position: "absolute",
-      top: "50%",
-      transform: "translateY(-50%)",
       color: "rgba(255, 255, 255, 0.8)",
       "& > div": {
         display: "block",
