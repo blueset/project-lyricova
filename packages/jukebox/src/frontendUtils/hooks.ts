@@ -55,7 +55,7 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
           callback && callback(thisLine, lyrics, player, start, end);
         }
       } else {
-        callback && callback(line, lyrics, player, start, end);
+        callback && callback(lineRef.current, lyrics, player, start, end);
       }
       if (recur && !player.paused) {
         window.requestAnimationFrame(() => onTimeUpdate());
