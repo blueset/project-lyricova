@@ -1,4 +1,4 @@
-import { Resolver, Query, ObjectType, Field, Arg, InputType } from "type-graphql";
+import { Resolver, Query, ObjectType, Field, Arg } from "type-graphql";
 import { GraphQLString } from "graphql";
 import { segmentedTransliteration, getLanguage } from "../utils/transliterate";
 import { AnimatedWord, buildAnimationSequence } from "../utils/typingSequence";

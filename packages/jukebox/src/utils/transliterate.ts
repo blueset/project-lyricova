@@ -252,16 +252,19 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
         case "plain":
         default:
           return words.map(x => {
-            if (/[\uE000-\uF8FF]/.test(x.kanji)) {
-              [...x.kanji].forEach((v) => {
+            if (/[\uE000-\uF8FF]/g.test(x.kanji)) {
+              return [...x.kanji].map((v) => {
                 if (v in tokenMapping) {
                   const [kanji, kana, okuri] = tokenMapping[v];
-                  result.push([kanji, kana]);
-                  result.push([okuri, okuri]);
+                  return [`${kanji}${okuri}`, `${kana}${okuri}`];
                 } else {
                   console.error(`key ${v.charCodeAt(0)} is not found in the mapping.`);
                 }
-              });
+              }).reduce<[string, string]>((prev, curr) => {
+                prev[0] += curr[0];
+                prev[1] += curr[1];
+                return prev;
+              }, ["", ""]);
             } else if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
               return [x.kanji, kanaToHira(x.reading || x.kanji)];
             }
