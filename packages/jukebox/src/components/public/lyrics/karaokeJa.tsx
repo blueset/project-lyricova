@@ -237,7 +237,9 @@ function useKaraokeJaLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics:
       const time = player.currentTime;
       let thisPage = pageRef.current, thisLine = lineRef.current;
       const start = pages[thisPage]?.start ?? 0;
-      const end = thisPage !== null ? (pages[thisPage + 1]?.start ?? pages[thisPage]?.end) : (pages.length > 0 ? pages[0].start : player.duration);
+      const end = thisPage !== null ?
+        (pages[thisPage + 1]?.start != null ? (pages[thisPage + 1]?.start + pages[thisPage]?.end) / 2 : pages[thisPage]?.end) :
+        (pages.length > 0 ? pages[0].start : player.duration);
       let thisShowNext = showNextRef.current;
 
       // If not on the same page...
@@ -250,7 +252,9 @@ function useKaraokeJaLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics:
           thisPage = null; thisLine = null;
         } else {
           thisPage = thisPageIndex;
-          if (thisPage >= pages.length || pages[thisPage].start > time) thisPage--;
+          if (thisPage >= pages.length ||
+            (thisPage > 0 && pages[thisPage - 1].end >= time)
+          ) thisPage--;
           if (thisPage !== pageRef.current) {
             setPage(thisPage);
           }
@@ -388,7 +392,7 @@ function LyricsLineHTML({ textLine, furiganaLine, className }: LyricsLineProps):
   return `<span class="${className}">${content}</span>`;
 }
 
-const LINE_OVERLAP = 50;
+const LINE_OVERLAP_FACTOR = 0.1;
 
 interface PageClassInfo {
   index: number;
@@ -417,9 +421,9 @@ function buildPageClasses(lines: number[], lyrics: LyricsKitLyrics, furigana?: [
       right: null,
     });
   });
-  const stretchedWidth = _.sum(lineWidths) - LINE_OVERLAP * (lineWidths.length - 1);
+  const lineOverlap = containerWidth * LINE_OVERLAP_FACTOR;
+  const stretchedWidth = _.sum(lineWidths) - lineOverlap * (lineWidths.length - 1);
   const padding = (containerWidth - stretchedWidth) / 2;
-  console.log("line width", lineWidths, "stretchedWidth", stretchedWidth, "contianerWidth", containerWidth, "padding", padding);
   if (result.length === 1) {
     result[0].left = 1;
     result[0].right = 1;
@@ -429,7 +433,7 @@ function buildPageClasses(lines: number[], lyrics: LyricsKitLyrics, furigana?: [
       while (i < result.length) {
         result[i].left = left;
         result[i].right = containerWidth - lineWidths[i] - left;
-        left += lineWidths[i] - LINE_OVERLAP;
+        left += lineWidths[i] - lineOverlap;
         i++;
       }
     } else {

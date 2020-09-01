@@ -15,7 +15,7 @@ export function getStartEnd(playerRef: RefObject<HTMLAudioElement>, lyrics: Lyri
   if (playerRef.current === null || lyrics.lines.length === 0) {
     return [null, null];
   }
-  if (line === null) {
+  if (line === null || !lyrics.lines[line]) {
     if (lyrics?.lines?.length > 0) {
       return [0, lyrics.lines[0].position];
     }
@@ -41,8 +41,8 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
       const [start, end] = getStartEnd(playerRef, lyrics, lineRef.current);
       if (start > time || time >= end) {
         const thisLineIndex = _.sortedIndexBy<{ position: number }>(lyrics.lines, { position: time }, "position");
-        if (lineRef.current === 0) {
-          if (line !== null) setLine(null);
+        if (thisLineIndex === 0) {
+          if (lineRef.current !== null) setLine(null);
           callback && callback(null, lyrics, player, start, end);
         } else {
           const thisLine =
@@ -63,14 +63,14 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
     } else {
       setLine(null);
     }
-  }, [playerRef, lyrics]);
+  }, [playerRef, lyrics, callback]);
 
   const onPlay = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate());
-  }, [playerRef]);
+  }, [playerRef, requestAnimationFrame]);
   const onTimeChange = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate(/* recur */false));
-  }, [playerRef]);
+  }, [playerRef, requestAnimationFrame]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -86,7 +86,7 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
         player.removeEventListener("timeupdate", onTimeChange);
       };
     }
-  }, [playerRef]);
+  }, [playerRef, onPlay, onTimeChange]);
 
   return line;
 }
@@ -202,10 +202,10 @@ export function useLyricsSegmentState(playerRef: RefObject<HTMLAudioElement>, ly
 
   const onPlay = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate());
-  }, [playerRef]);
+  }, [playerRef, onTimeUpdate]);
   const onTimeChange = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate(/* recur */false));
-  }, [playerRef]);
+  }, [playerRef, onTimeUpdate]);
 
   useEffect(() => {
     const player = playerRef.current;

@@ -277,8 +277,8 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
     // transliterate as zh
     const words: string[] = segment.doSegment(text, { simple: true });
     const lines: string[][] = words.reduce((prev, curr) => {
-      if (curr === "\n") {
-        prev.push([]);
+      if (/\n+/.test(curr)) {
+        for (let i = 0; i < curr.length; i++) prev.push([]);
       } else {
         prev[prev.length - 1].push(curr);
       }
