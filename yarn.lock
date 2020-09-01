@@ -1591,7 +1591,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.4.4, @babel/runtime@npm:^7.5.0, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.7.6, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
+"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.2.0, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.4.4, @babel/runtime@npm:^7.5.0, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.7.6, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
   version: 7.11.2
   resolution: "@babel/runtime@npm:7.11.2"
   dependencies:
@@ -4048,6 +4048,15 @@ __metadata:
   dependencies:
     "@types/react": "*"
   checksum: 53a223c0266178bca9161301d18ee6199e8f75f88caed5c4601c5aaedaf4c68f03bd72f6aafa979254beb20759f0b68a542ce04295d704eb67ae179769c50813
+  languageName: node
+  linkType: hard
+
+"@types/react-measure@npm:^2.0.6":
+  version: 2.0.6
+  resolution: "@types/react-measure@npm:2.0.6"
+  dependencies:
+    "@types/react": "*"
+  checksum: df81e56cb14c0f1e8ecaca7e595a97281d2bda6183ab7770d1044818aeeb14b38844de6a2105a09521ae77d6db9ad2827d09f996b7299bb878858f808f7b4a9f
   languageName: node
   linkType: hard
 
@@ -10866,6 +10875,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"get-node-dimensions@npm:^1.2.1":
+  version: 1.2.2
+  resolution: "get-node-dimensions@npm:1.2.2"
+  checksum: 3ab31ec9a36798f03cedf7bf043f8f33f015691a8f7c717d4ab79526629a764d3894268fc1b3b1c388d050a3f4076510e5e24d2400a2949eab9d94f30b523198
+  languageName: node
+  linkType: hard
+
 "get-package-type@npm:^0.1.0":
   version: 0.1.0
   resolution: "get-package-type@npm:0.1.0"
@@ -14063,6 +14079,7 @@ fsevents@^1.2.7:
     "@types/pinyin": ^2.8.1
     "@types/react": ^16.9.43
     "@types/react-beautiful-dnd": ^13.0.0
+    "@types/react-measure": ^2.0.6
     "@types/react-virtualized-auto-sizer": ^1.0.0
     "@types/react-window": ^1.8.2
     "@types/shortid": 0.0.29
@@ -14123,6 +14140,7 @@ fsevents@^1.2.7:
     react-balance-text-cj: "workspace:*"
     react-beautiful-dnd: ^13.0.0
     react-dom: ^16.13.1
+    react-measure: ^2.5.0
     react-virtualized-auto-sizer: ^1.0.2
     react-window: ^1.8.5
     reflect-metadata: ^0.1.13
@@ -17565,6 +17583,21 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"react-measure@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "react-measure@npm:2.5.0"
+  dependencies:
+    "@babel/runtime": ^7.2.0
+    get-node-dimensions: ^1.2.1
+    prop-types: ^15.6.2
+    resize-observer-polyfill: ^1.5.0
+  peerDependencies:
+    react: ">0.13.0"
+    react-dom: ">0.13.0"
+  checksum: c2b31cfc33f8d5f6649953617a016b327dc44426ee3ad6b9298bc301e6cc352715cad5c9968c982e31b13b273a3fe0f030e20d6b0d82be1d60ef8749a6f30c6a
+  languageName: node
+  linkType: hard
+
 "react-popper-tooltip@npm:^2.11.0":
   version: 2.11.1
   resolution: "react-popper-tooltip@npm:2.11.1"
@@ -18373,6 +18406,13 @@ fsevents@^1.2.7:
   version: 2.0.0
   resolution: "require-main-filename@npm:2.0.0"
   checksum: 8d3633149a7fef67d14613146247137fe1dc4cc969bf2d1adcd40e3c28056de503229f41e78cba5efebad3a223cbfb4215fd220d879148df10c6d9a877099dbd
+  languageName: node
+  linkType: hard
+
+"resize-observer-polyfill@npm:^1.5.0":
+  version: 1.5.1
+  resolution: "resize-observer-polyfill@npm:1.5.1"
+  checksum: ba14bfaf584eda299eafd6a06233a65c76586bc2bab3cdfdd1edd25fc6479f4270788ddd082e65390049b3ed542558f02bdf1f123bd912624de5b11d48857ac8
   languageName: node
   linkType: hard
 
