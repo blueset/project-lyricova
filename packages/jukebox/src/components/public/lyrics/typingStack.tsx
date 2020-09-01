@@ -5,6 +5,7 @@ import _ from "lodash";
 import { AnimatedWord } from "../../../utils/typingSequence";
 import { useMemo } from "react";
 import { useLyricsSegmentState } from "../../../frontendUtils/hooks";
+import clsx from "clsx";
 
 const useStyle = makeStyles((theme) => {
   return {
@@ -80,7 +81,7 @@ function TypingLine({ sequence, currentStep, className }: TypingLineProps) {
             {word.sequence.length > 0 ? word.sequence[word.sequence.length - 1] : ""}
           </span>;
         } else if (idx === curWord) {
-          return <span className="word typing" key={idx}>
+          return <span className={clsx("word", word.convert && "typing")} key={idx}>
             {word.sequence[curStep]}
           </span>;
         }

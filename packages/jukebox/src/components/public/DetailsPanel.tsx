@@ -155,6 +155,34 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
             <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
             <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
           </filter>
+          <filter id="nicokaraBefore">
+            <feMorphology operator="dilate" radius="2" in="SourceGraphic" result="morphologyStroke" />
+            <feFlood floodColor="#000000" floodOpacity="1" result="floodStroke" />
+            <feComposite in="floodStroke" in2="morphologyStroke" operator="in" result="compositeStroke" />
+            <feMorphology operator="dilate" radius="4" in="SourceGraphic" result="morphologyShadow" />
+            <feGaussianBlur stdDeviation="4" in="morphologyShadow" edgeMode="wrap" result="blurShadow" />
+            <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
+            <feComposite in="floodShadow" in2="blurShadow" operator="in" result="compositeShadow" />
+            <feMerge result="merge">
+              <feMergeNode in="compositeShadow" />
+              <feMergeNode in="compositeStroke" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="nicokaraAfter">
+            <feMorphology operator="dilate" radius="2" in="SourceGraphic" result="morphologyStroke" />
+            <feFlood floodColor="#ffffff" floodOpacity="1" result="floodStroke" />
+            <feComposite in="floodStroke" in2="morphologyStroke" operator="in" result="compositeStroke" />
+            <feMorphology operator="dilate" radius="4" in="SourceGraphic" result="morphologyShadow" />
+            <feGaussianBlur stdDeviation="4" in="morphologyShadow" edgeMode="wrap" result="blurShadow" />
+            <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
+            <feComposite in="floodShadow" in2="blurShadow" operator="in" result="compositeShadow" />
+            <feMerge result="merge">
+              <feMergeNode in="compositeShadow" />
+              <feMergeNode in="compositeStroke" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </svg>
       </div>
     </ThemeProvider>

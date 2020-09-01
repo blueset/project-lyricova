@@ -41,15 +41,15 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
       const [start, end] = getStartEnd(playerRef, lyrics, lineRef.current);
       if (start > time || time >= end) {
         const thisLineIndex = _.sortedIndexBy<{ position: number }>(lyrics.lines, { position: time }, "position");
-        if (thisLineIndex === 0) {
+        if (lineRef.current === 0) {
           if (line !== null) setLine(null);
           callback && callback(null, lyrics, player, start, end);
         } else {
           const thisLine =
-            (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position !== time) ?
+            (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position > time) ?
               thisLineIndex - 1 :
               thisLineIndex;
-          if (thisLine != line) {
+          if (thisLine != lineRef.current) {
             setLine(thisLine);
           }
           callback && callback(thisLine, lyrics, player, start, end);
@@ -159,7 +159,7 @@ export function useLyricsSegmentState(playerRef: RefObject<HTMLAudioElement>, ly
         } else {
           // Set line index
           const thisLine =
-            (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position !== time) ?
+            (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position > time) ?
               thisLineIndex - 1 :
               thisLineIndex;
           if (thisLine != lineRef.current) {
