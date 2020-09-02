@@ -70,7 +70,7 @@ export function ParagraphLyrics({ lyrics }: Props) {
       const offset = line !== null ? Math.abs(line - idx) : idx;
       return (
         <>
-          {idx !== 0 && <span className={styles.line} style={{ filter: `blur(${offset * 0.1}px)` }}> ・ </span>}
+          {idx !== 0 && <span className={styles.line} key={`${idx}-divider`} style={{ filter: `blur(${offset * 0.1}px)` }}> ・ </span>}
           <span
             key={idx}
             lang="ja"

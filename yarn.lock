@@ -1732,6 +1732,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daybrush/utils@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@daybrush/utils@npm:1.0.0"
+  checksum: 9b93057f13c5d81a371977b67fdd265dc04ed154f73bc5d5b1926f361553caa4f2599c788b6b723a7dcada7b05adbb7c496eb04d7c7f28fc4237aba27e47f0d6
+  languageName: node
+  linkType: hard
+
 "@emotion/cache@npm:^10.0.27":
   version: 10.0.29
   resolution: "@emotion/cache@npm:10.0.29"
@@ -3902,6 +3909,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^12.0.0":
+  version: 12.12.54
+  resolution: "@types/node@npm:12.12.54"
+  checksum: 9e6ff179fd8b5118f353f8ed4a16eea105636414557cb6acee40325c26c00d7d54e2cb5a5f18778ecfc820c964f09673c16de67e2b55283fc64c5283685c1055
+  languageName: node
+  linkType: hard
+
 "@types/normalize-package-data@npm:^2.4.0":
   version: 2.4.0
   resolution: "@types/normalize-package-data@npm:2.4.0"
@@ -4042,7 +4056,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^16.9.8":
+"@types/react-dom@npm:^16.0.0, @types/react-dom@npm:^16.9.8":
   version: 16.9.8
   resolution: "@types/react-dom@npm:16.9.8"
   dependencies:
@@ -4096,7 +4110,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^16.9.43":
+"@types/react@npm:*, @types/react@npm:^16.0.0, @types/react@npm:^16.9.43":
   version: 16.9.46
   resolution: "@types/react@npm:16.9.46"
   dependencies:
@@ -8319,6 +8333,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"css-styled@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "css-styled@npm:0.2.3"
+  dependencies:
+    "@daybrush/utils": ^1.0.0
+    string-hash: ^1.1.3
+  peerDependencies:
+    "@daybrush/utils": ">=1.0.0"
+  checksum: 57f99a3f4fe5baa7afe2deb37ef183e7ca912fb04c5d5d47bc52af1059cb5ce85de13f34e222b48da7fd0728972cddc65887a8eac216beb907ba9e397f976760
+  languageName: node
+  linkType: hard
+
 "css-tree@npm:1.0.0-alpha.37":
   version: 1.0.0-alpha.37
   resolution: "css-tree@npm:1.0.0-alpha.37"
@@ -9636,6 +9662,15 @@ __metadata:
     escodegen: bin/escodegen.js
     esgenerate: bin/esgenerate.js
   checksum: 548c5a83a81a51122f1006309a392e1412bb00657f15aca60f01f9d4553851bdaf0519d898fd3ee2bb46f116e03ee48757f4d9a28a7b58bc8c096fd4b33f6cbc
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-react-hooks@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "eslint-plugin-react-hooks@npm:4.1.0"
+  peerDependencies:
+    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
+  checksum: 7ef1a971b2eb499cdad118f6b6d504e22e2e46bec6a815dd4c4eae0d8db7fe8a6cbbdd5e6dd94f44a7a09fad61e92e44c8dc0fe0de6ec56356bea9414d2e258a
   languageName: node
   linkType: hard
 
@@ -14105,6 +14140,7 @@ fsevents@^1.2.7:
     dotenv: ^8.2.0
     errorhandler: ^1.5.1
     eslint: ^6.8.0
+    eslint-plugin-react-hooks: ^4.1.0
     express: ^4.17.1
     express-flash: 0.0.2
     express-session: ^1.17.1
@@ -14141,6 +14177,7 @@ fsevents@^1.2.7:
     react-beautiful-dnd: ^13.0.0
     react-dom: ^16.13.1
     react-measure: ^2.5.0
+    react-scenejs: ^1.1.0
     react-virtualized-auto-sizer: ^1.0.2
     react-window: ^1.8.5
     reflect-metadata: ^0.1.13
@@ -16025,6 +16062,17 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"order-map@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "order-map@npm:0.2.2"
+  dependencies:
+    "@daybrush/utils": ^1.0.0
+  peerDependencies:
+    "@daybrush/utils": ">=1.0.0"
+  checksum: 60c4a9b50865f4d7a67e882906fb5b62d8f2a3dd2da739dc8f3c6ed731b1d9931a67ba941be806a514438af1c051185d769b28edf0b617d240a430fea4e1ffa9
+  languageName: node
+  linkType: hard
+
 "os-browserify@npm:^0.3.0":
   version: 0.3.0
   resolution: "os-browserify@npm:0.3.0"
@@ -17658,6 +17706,18 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"react-scenejs@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "react-scenejs@npm:1.1.0"
+  dependencies:
+    "@types/node": ^12.0.0
+    "@types/react": ^16.0.0
+    "@types/react-dom": ^16.0.0
+    scenejs: ^1.0.1
+  checksum: b3154cb491d03e29a6a97fb04fc2158ebe00caefeb47d241ec996936f4db2b6a2f08b79153f815bbd98c903350500e83c34f455633fdc09ed6432f6753052b7b
+  languageName: node
+  linkType: hard
+
 "react-sizeme@npm:^2.6.7":
   version: 2.6.12
   resolution: "react-sizeme@npm:2.6.12"
@@ -18777,6 +18837,20 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"scenejs@npm:^1.0.1":
+  version: 1.4.1
+  resolution: "scenejs@npm:1.4.1"
+  dependencies:
+    "@daybrush/utils": ^1.0.0
+    css-styled: ^0.2.3
+    order-map: ^0.2.2
+  peerDependencies:
+    css-styled: ">=0.2.3"
+    order-map: ">=0.2.2"
+  checksum: 6a322304bccc98352067edfd7e46ed89ae7155d6179f6ac553f6ac033b08625d00d596a981cc8e193962925cbff7f14eca51c8476615a559a77a9aeddfe67e8d
+  languageName: node
+  linkType: hard
+
 "scheduler@npm:^0.19.1":
   version: 0.19.1
   resolution: "scheduler@npm:0.19.1"
@@ -19751,7 +19825,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"string-hash@npm:1.1.3":
+"string-hash@npm:1.1.3, string-hash@npm:^1.1.3":
   version: 1.1.3
   resolution: "string-hash@npm:1.1.3"
   checksum: 178d855be2999a4ae2070d578e872574370224d86ca5d7b45bd709562a9acca61ac165a866c0b8b39e1cf2c181d781b96735725b7036e10b94196b261eb8229e

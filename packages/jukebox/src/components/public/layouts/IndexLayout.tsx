@@ -2,7 +2,7 @@ import { Grid, Paper } from "@material-ui/core";
 import style from "./IndexLayout.module.scss";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
-import React, { useEffect, ReactNode, useRef } from "react";
+import React, { useEffect, ReactNode, useRef, useCallback } from "react";
 import { gql, useLazyQuery } from "@apollo/client";
 import {
   AppContext,
@@ -234,7 +234,7 @@ export default function IndexLayout({ children }: Props) {
     },
   };
 
-  function onPlayEnded() {
+  const onPlayEnded = useCallback(() => {
     if (playlist.loopMode === LoopMode.SINGLE) {
       // Single loop
       playlist.playTrack(nowPlaying, true);
@@ -248,7 +248,7 @@ export default function IndexLayout({ children }: Props) {
       // Play nothing if no loop and last track ended
       setNowPlaying(null);
     }
-  }
+  }, [playlist, setNowPlaying]);
 
   // Add onEnded listener
   useEffect(() => {
@@ -259,7 +259,7 @@ export default function IndexLayout({ children }: Props) {
         player.removeEventListener("ended", onPlayEnded);
       };
     }
-  }, [playerRef]);
+  }, [playerRef, onPlayEnded]);
 
   const [loadMediaFileQuery, mediaFilesQuery] = useLazyQuery<{
     musicFiles: MusicFilesPagination;

@@ -1,6 +1,6 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState, useNamedState } from "../../../frontendUtils/hooks";
+import { useNamedState } from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
@@ -401,7 +401,7 @@ interface PageClassInfo {
   right: number | null;
 }
 
-function buildPageClasses(lines: number[], lyrics: LyricsKitLyrics, furigana?: [string, string][][], containerWidth: number, lineClassName: string) {
+function buildPageClasses(lines: number[], lyrics: LyricsKitLyrics, furigana: [string, string][][] | null, containerWidth: number, lineClassName: string) {
   const lineWidths = lines.map(v =>
     measureElement(LyricsLineHTML({
       textLine: lyrics.lines[v].content,

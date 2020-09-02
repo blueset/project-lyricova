@@ -63,14 +63,14 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
     } else {
       setLine(null);
     }
-  }, [playerRef, lyrics, callback]);
+  }, [playerRef, lyrics, lyrics.lines, callback]);
 
   const onPlay = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate());
-  }, [playerRef, requestAnimationFrame]);
+  }, [playerRef, onTimeUpdate]);
   const onTimeChange = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate(/* recur */false));
-  }, [playerRef, requestAnimationFrame]);
+  }, [playerRef, onTimeUpdate]);
 
   useEffect(() => {
     const player = playerRef.current;

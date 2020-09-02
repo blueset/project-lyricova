@@ -20,6 +20,7 @@ import { TypingFocusedLyrics } from "../components/public/lyrics/typingFocused";
 import { TypingStackedLyrics } from "../components/public/lyrics/typingStack";
 import { PlainFuriganaLyrics } from "../components/public/lyrics/plainFurigana";
 import { KaraokeJaLyrics } from "../components/public/lyrics/karaokeJa";
+import { StrokeLyrics } from "../components/public/lyrics/stroke";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -54,12 +55,13 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Ringo Unisize": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} />,
   "Karaoke/1/Underline": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} />,
   "Karaoke/1/Cover": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} cover />,
-  "Karaoke/Ja": (lyrics: LyricsKitLyrics) => <KaraokeJaLyrics lyrics={lyrics} />,
+  "Nicokara": (lyrics: LyricsKitLyrics) => <KaraokeJaLyrics lyrics={lyrics} />,
   "Slanted": (lyrics: LyricsKitLyrics) => <SlantedLyrics lyrics={lyrics} />,
   "Paragraph": (lyrics: LyricsKitLyrics) => <ParagraphLyrics lyrics={lyrics} />,
   "Typing/Focused": (lyrics: LyricsKitLyrics) => <TypingFocusedLyrics lyrics={lyrics} />,
   "Typing/Stacked": (lyrics: LyricsKitLyrics) => <TypingStackedLyrics lyrics={lyrics} />,
   "Furigana/Plain": (lyrics: LyricsKitLyrics) => <PlainFuriganaLyrics lyrics={lyrics} />,
+  "Stroke": (lyrics: LyricsKitLyrics) => <StrokeLyrics lyrics={lyrics} />,
 };
 
 const useStyle = makeStyles({

@@ -80,7 +80,7 @@ export function SlantedLyrics({ lyrics }: Props) {
 
   const hasTranslation = useMemo(
     () => _.reduce(lyrics.lines, (res, val) => res || Boolean(val?.attachments?.translation), false),
-    [lyrics]
+    [lyrics.lines]
   );
 
   const frameCallback = useCallback((thisLine: number, lyrics: LyricsKitLyrics, player: HTMLAudioElement) => {
