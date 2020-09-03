@@ -123,7 +123,7 @@ function LyricsLineElement({ className, line, duration, translationClassName, wi
   return (
     <div>
       <div lang="ja">
-        <Scene keyframes={animate && keyframes} ref={animate && progressorRef}>
+        <Scene keyframes={animate ? keyframes : null} ref={animate ? progressorRef : null}>
           <svg width={width} height="300" style={{ maxWidth: "100%" }} ref={canvasRef}>
             <text x="0" y="1em" id="svgText" lang="ja" className={className} ref={textRef}></text>
           </svg>
