@@ -363,7 +363,22 @@ interface LyricsLineProps {
 
 function LyricsLine({ textLine, furiganaLine, done, activeRef, className }: LyricsLineProps) {
   const content = furiganaLine ?
-    furiganaLine.map(([text, ruby], k) => {
+    furiganaLine.reduce<[string, string][]>((prev, [text, ruby]) => {
+      const [_t, textL, textC, textR] = text.match(/^(\s*)(.+?)(\s*)$/u);
+      const [_r, rubyL, rubyC, rubyR] = ruby.match(/^(\s*)(.+?)(\s*)$/u);
+      if (textL.length > 0 || rubyL.length > 0) {
+        if (textL.length === 0) prev.push([rubyL, rubyL]);
+        else if (ruby.length === 0) prev.push([textL, textL]);
+        else prev.push([textL, rubyL]);
+      }
+      prev.push([textC, rubyC]);
+      if (textR.length > 0 || rubyR.length > 0) {
+        if (textR.length === 0) prev.push([rubyR, rubyR]);
+        else if (ruby.length === 0) prev.push([textR, textR]);
+        else prev.push([textR, rubyR]);
+      }
+      return prev;
+    }, []).map(([text, ruby], k) => {
       if (text === ruby) {
         return <span key={k}>{text}</span>;
       } else {
