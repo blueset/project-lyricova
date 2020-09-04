@@ -1,7 +1,5 @@
-import style from "./TimeSlider.module.scss";
-import { Slider, Typography } from "@material-ui/core";
+import { Slider, Typography, makeStyles } from "@material-ui/core";
 import { formatTime } from "../../frontendUtils/strings";
-import { useAppContext } from "./AppContext";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { RefObject, useEffect, useCallback } from "react";
 import _ from "lodash";
@@ -9,12 +7,42 @@ import _ from "lodash";
 interface Props {
   playerRef: RefObject<HTMLAudioElement>;
   disabled: boolean;
+  isCollapsed: boolean;
 }
 
-export function TimeSlider({ playerRef, disabled }: Props) {
+const useStyle = makeStyles((theme) => ({
+  expandedSliderContainer: {
+    width: "100%",
+  },
+  collapsedSliderContainer: {
+    [theme.breakpoints.up("md")]: {
+      flexGrow: 1,
+    },
+    [theme.breakpoints.down("sm")]: {
+      width: "100%",
+    },
+  },
+  sliderLabelContainer: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    marginTop: "-1em",
+  },
+  sliderLabelStretcher: {
+    flexGrow: 1,
+  },
+  sliderLabelText: {
+    opacity: 0.5,
+    fontVariantNumeric: "tabular-nums",
+  },
+}));
+
+export function TimeSlider({ playerRef, disabled, isCollapsed }: Props) {
   const [time, setTime] = useNamedState(0, "time");
   const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
   const [duration, setDuration] = useNamedState(0, "duration");
+
+  const style = useStyle();
 
   function updateTime() {
     // console.log("updateTime, playerRef", playerRef.current, playerRef);
@@ -64,7 +92,7 @@ export function TimeSlider({ playerRef, disabled }: Props) {
     };
   }, [playerRef]);
 
-  return (<>
+  return (<div className={isCollapsed ? style.collapsedSliderContainer : style.expandedSliderContainer} id="player-time-slider">
     <Slider
       defaultValue={0}
       value={time}
@@ -91,5 +119,5 @@ export function TimeSlider({ playerRef, disabled }: Props) {
         {formatTime(duration)}
       </Typography>
     </div>
-  </>);
+  </div>);
 }

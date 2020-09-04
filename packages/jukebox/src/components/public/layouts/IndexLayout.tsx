@@ -1,5 +1,4 @@
-import { Grid, Paper } from "@material-ui/core";
-import style from "./IndexLayout.module.scss";
+import { Grid, Paper, IconButton, makeStyles } from "@material-ui/core";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
 import React, { useEffect, ReactNode, useRef, useCallback } from "react";
@@ -17,10 +16,81 @@ import { move } from "../../../frontendUtils/arrays";
 import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import { Texture } from "../../../graphql/TextureResolver";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
+import { motion, AnimatePresence } from "framer-motion";
+import clsx from "clsx";
 
 interface Props {
   children: ReactNode;
 }
+
+const useStyle = makeStyles((theme) => ({
+  gridContainer: {
+    height: "100vh",
+    display: "flex",
+  },
+  expandedContainer: {
+    [theme.breakpoints.up("md")]: {
+      flexDirection: "row",
+    },
+    [theme.breakpoints.down("sm")]: {
+      flexDirection: "column",
+    },
+  },
+  collapsedContainer: {
+    [theme.breakpoints.up("md")]: {
+      flexDirection: "column",
+    },
+    [theme.breakpoints.down("sm")]: {
+      flexDirection: "column",
+    },
+  },
+  playerGridItem: {
+    zIndex: 2,
+  },
+  detailsGridItem: {
+    flexGrow: 1,
+    [theme.breakpoints.down("sm")]: {
+      maxHeight: "calc(100% - 13rem)",
+    }
+  },
+  collapsedDetails: {
+    [theme.breakpoints.up("md")]: {
+      height: 0,
+    },
+    [theme.breakpoints.down("sm")]: {
+      height: "100%",
+    },
+  },
+  expandedDetails: {
+    height: "100%",
+    [theme.breakpoints.up("md")]: {
+      width: 0,
+    },
+  },
+  playerPaper: {
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+  },
+  expandedPlayer: {
+    [theme.breakpoints.up("md")]: {
+      width: "clamp(25em, 33%, 45em)",
+      padding: "24px",
+      height: "100%",
+    },
+    [theme.breakpoints.down("sm")]: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+    },
+  },
+  collapsedPlayer: {
+    order: 1,
+  },
+}));
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
@@ -81,6 +151,7 @@ function generateBackgroundStyle(
 
 export default function IndexLayout({ children }: Props) {
   const playerRef = useRef<HTMLAudioElement>();
+
   const [playlistTracks, setPlaylistTracks] = useNamedState<Track[]>(
     [],
     "playlistTracks"
@@ -97,6 +168,12 @@ export default function IndexLayout({ children }: Props) {
     null,
     "shuffleMapping"
   );
+  const [isCollapsed, setCollapsed] = useNamedState<boolean>(
+    false,
+    "isCollapsed"
+  );
+
+  const styles = useStyle();
 
   function updateShuffleness(toggle: boolean = false): number[] | null {
     // if        | shuffleMapping is null |  not null
@@ -391,7 +468,7 @@ export default function IndexLayout({ children }: Props) {
         );
       }
     }
-  }, [mediaFilesQuery]);
+  }, [mediaFilesQuery, setPlaylistTracks]);
 
   // Random fallback background
   const [textureURL, setTextureURL] = useNamedState<string | null>(
@@ -406,8 +483,8 @@ export default function IndexLayout({ children }: Props) {
     if (!playlist.getCurrentSong()?.hasCover) {
       if (randomTextureQuery?.called !== true) {
         loadRandomTexture();
-      } else {
-        randomTextureQuery?.refetch();
+      } else if (randomTextureQuery !== undefined) {
+        randomTextureQuery.refetch();
       }
     } else {
       setTextureURL(null);
@@ -452,24 +529,25 @@ export default function IndexLayout({ children }: Props) {
     <>
       <audio ref={playerRef}></audio>
       <AppContext playerRef={playerRef} playlist={playlist}>
-        <Grid
-          container
-          spacing={0}
-          className={style.gridContainer}
-          style={generateBackgroundStyle(playlist.getCurrentSong(), textureURL)}
-        >
-          <Grid item xl={3} sm={4} xs={12} className={style.playerGridItem}>
-            <Paper className={style.playerPaper}>
-              <Player />
-              <CurrentPlaylist />
-            </Paper>
-          </Grid>
-          <Grid item xl={9} sm={8} xs={12} className={style.detailsGridItem}>
-            <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>
-              {children}
-            </DetailsPanel>
-          </Grid>
-        </Grid>
+        <AnimatePresence>
+          <motion.div
+            layout
+            className={clsx(styles.gridContainer, isCollapsed ? styles.collapsedContainer : styles.expandedContainer)}
+            style={generateBackgroundStyle(playlist.getCurrentSong(), textureURL)}
+          >
+            <motion.div layout className={clsx(styles.playerGridItem, isCollapsed ? styles.collapsedPlayer : styles.expandedPlayer)}>
+              <Paper className={styles.playerPaper}>
+                <Player isCollapsed={isCollapsed} setCollapsed={setCollapsed} />
+                {!isCollapsed && <CurrentPlaylist />}
+              </Paper>
+            </motion.div>
+            <motion.div layout className={clsx(styles.detailsGridItem, isCollapsed ? styles.collapsedDetails : styles.expandedDetails)}>
+              <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>
+                {children}
+              </DetailsPanel>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
       </AppContext>
     </>
   );

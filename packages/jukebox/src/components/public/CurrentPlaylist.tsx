@@ -182,7 +182,7 @@ export default function CurrentPlaylist() {
       setTracks(playlist.shuffleMapping.map((v) => playlist.tracks[v]));
     }
   }
-  useEffect(updateTracks, [playlist.shuffleMapping, playlist.tracks]);
+  useEffect(updateTracks, [playlist.shuffleMapping, playlist.tracks, setTracks]);
 
   function onDragEnd(result: DropResult) {
     if (!result.destination) {
@@ -203,7 +203,7 @@ export default function CurrentPlaylist() {
     if (listRef.current && playlist.nowPlaying !== null) {
       listRef.current.scrollToItem(playlist.nowPlaying, "start");
     }
-  }, [playlist.getCurrentSong()]);
+  }, [playlist.nowPlaying, playlist.tracks]);
 
   return (
     <List dense={true} className={style.playlist}>
@@ -234,6 +234,8 @@ export default function CurrentPlaylist() {
                   itemSize={60}
                   itemData={tracks}
                   itemCount={tracks.length}
+                  initialScrollOffset={playlist.nowPlaying && playlist.nowPlaying * 60}
+                  itemKey={(i, d) => `${i}-${d.id}`}
                   outerRef={droppableProvided.innerRef}
                 >
                   {Row}

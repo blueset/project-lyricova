@@ -1,6 +1,6 @@
 import style from "./PlayButton.module.scss";
 import { RefObject, useEffect, useCallback } from "react";
-import { Fab, CircularProgress } from "@material-ui/core";
+import { Fab, CircularProgress, useMediaQuery, Theme } from "@material-ui/core";
 import { Playlist } from "./AppContext";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import PauseIcon from "@material-ui/icons/Pause";
@@ -9,13 +9,15 @@ import { useNamedState } from "../../frontendUtils/hooks";
 interface Props {
   playerRef: RefObject<HTMLAudioElement>;
   playlist: Playlist;
+  isCollapsed: boolean;
 }
 
-export function PlayButton({ playerRef, playlist }: Props) {
+export function PlayButton({ playerRef, playlist, isCollapsed }: Props) {
   // Using state to keep this button rerendered on state change.
   const [isPlaying, setIsPlaying] = useNamedState(false, "isPlaying");
   const [isLoading, setIsLoading] = useNamedState(false, "isLoading");
   const [loadProgress, setLoadProgress] = useNamedState(0, "loadProgress");
+  const useSmallSize = useMediaQuery<Theme>((theme) => theme.breakpoints.up("md")) && isCollapsed;
 
   function updateProgress() {
     if (!playerRef.current) {
@@ -73,13 +75,13 @@ export function PlayButton({ playerRef, playlist }: Props) {
     };
   }, [playerRef]);
 
-  return (<div className={style.loadProgressContainer}>
+  return (<div className={style.loadProgressContainer} id="player-play-pause">
     <Fab
       color="primary"
       aria-label={
         !isPlaying ? "Play" : "Pause"
       }
-      size="medium"
+      size={useSmallSize ? "small" : "medium"}
       className={style.playPauseButton}
       onClick={clickPlay}
     >
@@ -91,7 +93,7 @@ export function PlayButton({ playerRef, playlist }: Props) {
     </Fab>
     {isLoading && (
       <CircularProgress
-        size={60}
+        size={useSmallSize ? 51 : 60}
         thickness={2.4}
         color="secondary"
         value={loadProgress}
