@@ -109,6 +109,7 @@ function generateBackgroundStyle(
       backgroundImage: `url(/api/files/${track.id}/cover)`,
     };
   } else {
+    console.log("Disk photo by Giorgio Trovato on Unsplash (https://unsplash.com/photos/_H4uyF7ZlV0).");
     return {
       backgroundImage: "url(/images/disk-256.jpg)",
     };
