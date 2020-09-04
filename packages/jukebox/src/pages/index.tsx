@@ -4,7 +4,7 @@ import clsx from "clsx";
 import _ from "lodash";
 import { ReactNode } from "react";
 import { useAppContext } from "../components/public/AppContext";
-import IndexLayout from "../components/public/layouts/IndexLayout";
+import { getLayout } from "../components/public/layouts/IndexLayout";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
 import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
 import { Karaoke1Lyrics } from "../components/public/lyrics/karaoke1";
@@ -122,4 +122,4 @@ export default function Index() {
 
 // Persisted layout pattern based on the works of Adam Wathan
 // https://adamwathan.me/2019/10/17/persistent-layout-patterns-in-nextjs/
-Index.layout = IndexLayout;
+Index.layout = getLayout;

@@ -6,12 +6,12 @@ import theme from "../frontendUtils/theme";
 import Head from "next/head";
 import { ApolloProvider } from "@apollo/client";
 import apolloClient from "../frontendUtils/apollo";
-import IndexLayout from "../components/public/layouts/IndexLayout";
 import { NextComponentType } from "next";
+import { getLayout as getPlainLayout } from "../components/public/layouts/PlainLayout";
 
 type AppPropsExtension = AppProps & {
   Component: NextComponentType & {
-    getLayout?: (children: React.ReactChild) => React.ReactChild;
+    layout?: (children: React.ReactChild) => React.ReactChild;
   };
 }
 
@@ -26,7 +26,7 @@ export default function MyApp({ Component, pageProps }: AppPropsExtension) {
     }
   }, []);
 
-  const getLayout = Component.getLayout || (page => <IndexLayout>{page}</IndexLayout>);
+  const getLayout = Component.layout || getPlainLayout;
 
   return (
     <>
