@@ -34,6 +34,7 @@ export default (app: express.Express) => {
 
   const authController = new AuthController();
   apiRouter.use("/", authController.router);
+  app.use("/", authController.injectionRouter);
 
   apiRouter.get("/transliterate/:text", (req: Request, res: Response) => {
     res.send(transliterate(req.params.text));

@@ -10,11 +10,13 @@ const JWT_ISSUER = "lyricova";
 
 export class AuthController {
   public router: Router;
+  public injectionRouter: Router;
 
   constructor() {
     this.initPassport();
 
     this.router = Router();
+    this.injectionRouter = Router();
     this.router.post("/login/local/session", passport.authenticate(
       "local",
       {
@@ -30,7 +32,7 @@ export class AuthController {
     ), this.emitJWT);
 
     // Inject user context before Apollo server
-    this.router.post("/graphql", this.injectGraphQLUser);
+    this.injectionRouter.post("/graphql", this.injectGraphQLUser);
   }
 
   private initPassport() {

@@ -88,7 +88,7 @@ class MusicDlSearchResult {
 }
 
 @Resolver()
-export class DownloadController {
+export class DownloadResolver {
 
   constructor() {
     // TODO: find a way to open a global web socket/socket.io

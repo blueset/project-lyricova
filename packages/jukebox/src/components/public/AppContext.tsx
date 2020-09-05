@@ -98,25 +98,6 @@ export function AppContext({ playerRef, playlist, children }: ContextProps) {
   );
 }
 
-export function AppContextConsumer({
-  children,
-}: {
-  children: (
-    playerRef: RefObject<HTMLAudioElement>,
-    playlist: Playlist
-  ) => ReactNode;
-}) {
-  return (
-    <PlayerRefContext.Consumer>
-      {(playerRef) => (
-        <PlaylistContext.Consumer>
-          {(playlist) => children(playerRef, playlist)}
-        </PlaylistContext.Consumer>
-      )}
-    </PlayerRefContext.Consumer>
-  );
-}
-
 export function useAppContext() {
   return {
     playerRef: useContext(PlayerRefContext),

@@ -9,7 +9,6 @@ export type ContextType = {
 
 export const authChecker: AuthChecker<ContextType> = ({ context }, roles) => {
   if (roles.indexOf("ADMIN") >= 0) {
-    console.log("context.user", context.user);
     if (context.user !== null && context.user !== undefined) {
       return context.user.role === "admin";
     }

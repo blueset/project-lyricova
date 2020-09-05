@@ -5,9 +5,9 @@ import { ArtistOfSong } from "./ArtistOfSong";
 import { SongInAlbum } from "./SongInAlbum";
 import { Entry } from "./Entry";
 import { transliterate } from "../utils/transliterate";
-import { DataTypes, BelongsToManySetAssociationsMixin, BelongsToManySetAssociationsMixinOptions } from "sequelize";
+import { DataTypes } from "sequelize";
 import { Includeable } from "sequelize/types";
-import { Model, CreatedAt, UpdatedAt, DeletedAt, Column, Table, BelongsTo, PrimaryKey, ForeignKey, HasMany, AllowNull, BelongsToMany, AssociationActionOptions } from "sequelize-typescript";
+import { Model, CreatedAt, UpdatedAt, DeletedAt, Column, Table, BelongsTo, PrimaryKey, ForeignKey, HasMany, AllowNull, BelongsToMany } from "sequelize-typescript";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
 import { SongOfEntry } from "./SongOfEntry";
@@ -16,7 +16,7 @@ import { ObjectType, Int, Field } from "type-graphql";
 @ObjectType()
 @Table
 export class Song extends Model<Song> {
-  @Field(type => Int)
+  @Field(() => Int)
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER })
   public id!: number;
@@ -41,16 +41,16 @@ export class Song extends Model<Song> {
   )
   albums: Array<Album & { SongInAlbum: SongInAlbum }>;
 
-  @Field(type => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   @AllowNull
-  @ForeignKey(type => Song)
+  @ForeignKey(() => Song)
   @Column({ type: DataTypes.INTEGER })
   originalId!: number | null;
 
-  @BelongsTo(type => Song, "originalId")
+  @BelongsTo(() => Song, "originalId")
   original: Song | null;
 
-  @HasMany(type => Song, "originalId")
+  @HasMany(() => Song, "originalId")
   readonly derivedSongs: Song[];
 
   @AllowNull
