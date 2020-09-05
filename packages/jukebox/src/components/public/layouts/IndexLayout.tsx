@@ -50,7 +50,7 @@ const useStyle = makeStyles((theme) => ({
   detailsGridItem: {
     flexGrow: 1,
     [theme.breakpoints.down("sm")]: {
-      maxHeight: "calc(100% - 13rem)",
+      maxHeight: "calc(100% - 12.5rem)",
     }
   },
   collapsedDetails: {

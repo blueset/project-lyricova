@@ -33,6 +33,11 @@ const useStyle = makeStyles((theme) => ({
       padding: theme.spacing(2),
     }
   },
+  collapsedContainer: {
+    [theme.breakpoints.down("sm")]: {
+      height: "12.5rem",
+    },
+  },
   controlContainer: {
     display: "flex",
     flexDirection: "row",
@@ -182,7 +187,7 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
   };
 
   return (
-    <CardContent className={styles.container}>
+    <CardContent className={clsx(styles.container, isCollapsed && styles.collapsedContainer)}>
       <ButtonBase
         className={styles.collapseButton}
         aria-label={isCollapsed ? "Expand player" : "Collapse player"}
