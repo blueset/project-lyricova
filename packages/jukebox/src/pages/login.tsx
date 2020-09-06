@@ -5,7 +5,7 @@ import { Formik, Field, Form } from "formik";
 import { TextField } from "formik-material-ui";
 import { useRouter } from "next/router";
 import { LS_JWT_KEY } from "../frontendUtils/localStorage";
-
+import apolloClient from "../frontendUtils/apollo";
 
 
 const useStyle = makeStyles((theme) => ({
@@ -78,6 +78,7 @@ export default function Login() {
             } else {
               const token: string = (await resp.json()).token;
               window.localStorage.setItem(LS_JWT_KEY, token);
+              await apolloClient.resetStore();
               router.push("/dashboard");
             }
             setSubmitting(false);

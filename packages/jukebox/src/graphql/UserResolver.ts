@@ -6,7 +6,6 @@ import { User } from "../models/User";
 export class UserResolver {
   @Query(returns => User, { nullable: true })
   public async currentUser(@Ctx() ctx: ContextType): Promise<User | null> {
-    console.log("ctx", ctx.user);
     return ctx.user;
   }
 }

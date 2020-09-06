@@ -1,3 +1,5 @@
+import { AuthContext } from "../../components/public/AuthContext";
+
 export default function DashboardIndex() {
-  return <div>Dashboard index</div>;
+  return <AuthContext><div>Dashboard index</div></AuthContext>;
 }

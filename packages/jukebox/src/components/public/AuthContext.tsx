@@ -43,7 +43,8 @@ export function AuthContext({ authRedirect, children, noRedirect }: AuthContextP
     if (noRedirect) return;
 
     const needAuth = !Boolean(authRedirect);
-    let hasToken = Boolean(localStorage?.getItem(LS_JWT_KEY) ?? null);
+    const token = window.localStorage?.getItem(LS_JWT_KEY);
+    let hasToken = Boolean(token ?? null);
     if (hasToken === needAuth) { // If checking local storage token is not decisive
       if (loading) return;
       if (error) {
@@ -57,7 +58,7 @@ export function AuthContext({ authRedirect, children, noRedirect }: AuthContextP
     } else if (!hasToken && needAuth) {
       router.push("/login");
     }
-  }, [loading, error, data]);
+  }, [loading, error, data, noRedirect, authRedirect]);
 
   return <AuthContextReact.Provider value={data?.currentUser ?? null}>
     {children}
@@ -65,3 +66,4 @@ export function AuthContext({ authRedirect, children, noRedirect }: AuthContextP
 }
 
 export const useAuthContext = () => useContext(AuthContextReact);
+export const AuthContextConsumer = AuthContextReact.Consumer;

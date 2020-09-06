@@ -1,11 +1,11 @@
-import React from "react";
+import React, { AnchorHTMLAttributes } from "react";
 import NextLink from "next/link";
 import { Link as MuiLink } from "@material-ui/core";
 import { useRouter } from "next/router";
 import clsx from "clsx";
 
 
-interface NextComposedProps {
+interface NextComposedProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   as?: string;
   href: string;
   prefetch?: boolean;

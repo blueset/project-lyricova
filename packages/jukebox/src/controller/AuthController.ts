@@ -107,8 +107,9 @@ export class AuthController {
 
   public injectGraphQLUser = async (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate("jwt", { session: false, failWithError: false }, function (err: unknown, user: User | null) {
+      console.log("Passport", user, err);
       if (user) {
-        req.login(user, next);
+        req.logIn(user, { session: false }, next);
       } else {
         next();
       }

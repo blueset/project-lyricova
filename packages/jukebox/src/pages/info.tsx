@@ -6,7 +6,7 @@ import { Box, Chip } from "@material-ui/core";
 export default function Information() {
   return <Box p={4} pt={2}>
     Information <Link href="/">To lyrics</Link>.
-     <Chip label="Admin panel" component={NextComposedLink} href="login" clickable variant="outlined" />
+    <Chip label="Admin panel" component={NextComposedLink} target="_blank" href="login" clickable variant="outlined" />
   </Box>;
 }
 
