@@ -64,8 +64,4 @@ function Link(props: LinkProps) {
   );
 }
 
-Link.propTypes = {
-
-};
-
 export default React.forwardRef<HTMLAnchorElement, Omit<LinkProps, "innerRef">>((props, ref) => <Link {...props} innerRef={ref} />);

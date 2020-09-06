@@ -1,4 +1,4 @@
-import { ReactChild, createContext, useEffect, useContext } from "react";
+import { ReactChild, createContext, useEffect, useContext, ReactNode } from "react";
 import { User } from "../../models/User";
 import { useQuery, gql } from "@apollo/client";
 import { useRouter } from "next/router";
@@ -12,7 +12,7 @@ interface AuthContextProps {
   authRedirect?: string;
 
   noRedirect?: boolean;
-  children?: ReactChild;
+  children?: ReactNode;
 }
 
 const CURRENT_USER_QUERY = gql`
@@ -21,21 +21,23 @@ const CURRENT_USER_QUERY = gql`
       id
       username
       displayName
-      email
       role
       creationDate
+      emailMD5
     }
   }
 `;
 
-const AuthContextReact = createContext<Partial<User>>(null);
+type QueriedUser = Pick<User, "id" | "username" | "displayName" | "role" | "creationDate" | "emailMD5">;
+
+const AuthContextReact = createContext<QueriedUser>(null);
 
 export function AuthContext({ authRedirect, children, noRedirect }: AuthContextProps) {
   const {
     loading,
     error,
     data,
-  } = useQuery<{ currentUser: User }>(CURRENT_USER_QUERY);
+  } = useQuery<{ currentUser: QueriedUser }>(CURRENT_USER_QUERY);
 
   const router = useRouter();
 
@@ -58,7 +60,7 @@ export function AuthContext({ authRedirect, children, noRedirect }: AuthContextP
     } else if (!hasToken && needAuth) {
       router.push("/login");
     }
-  }, [loading, error, data, noRedirect, authRedirect]);
+  }, [loading, error, data, noRedirect, authRedirect, router]);
 
   return <AuthContextReact.Provider value={data?.currentUser ?? null}>
     {children}

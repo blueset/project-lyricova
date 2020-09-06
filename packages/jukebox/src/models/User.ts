@@ -1,6 +1,7 @@
 import { Model, Table, Column, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, DeletedAt, Default } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { ObjectType, Field, Int } from "type-graphql";
 
 @ObjectType()
@@ -47,6 +48,11 @@ export class User extends Model<User> {
 
   @DeletedAt
   deletionDate: Date;
+
+  @Field()
+  get emailMD5(): string {
+    return crypto.createHash("md5").update(this.email || "").digest("hex");
+  }
 
   public async checkPassword(plaintextPassword: string): Promise<boolean> {
     return await bcrypt.compare(plaintextPassword, this.password);

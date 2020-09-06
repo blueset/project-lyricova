@@ -18,6 +18,7 @@ import { Texture } from "../../../graphql/TextureResolver";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
+import { AuthContext } from "../AuthContext";
 
 interface Props {
   children: ReactNode;
@@ -529,25 +530,27 @@ export default function IndexLayout({ children }: Props) {
     <>
       <audio ref={playerRef}></audio>
       <AppContext playerRef={playerRef} playlist={playlist}>
-        <AnimatePresence>
-          <motion.div
-            layout
-            className={clsx(styles.gridContainer, isCollapsed ? styles.collapsedContainer : styles.expandedContainer)}
-            style={generateBackgroundStyle(playlist.getCurrentSong(), textureURL)}
-          >
-            <motion.div layout className={clsx(styles.playerGridItem, isCollapsed ? styles.collapsedPlayer : styles.expandedPlayer)}>
-              <Paper className={styles.playerPaper}>
-                <Player isCollapsed={isCollapsed} setCollapsed={setCollapsed} />
-                {!isCollapsed && <CurrentPlaylist />}
-              </Paper>
+        <AuthContext noRedirect>
+          <AnimatePresence>
+            <motion.div
+              layout
+              className={clsx(styles.gridContainer, isCollapsed ? styles.collapsedContainer : styles.expandedContainer)}
+              style={generateBackgroundStyle(playlist.getCurrentSong(), textureURL)}
+            >
+              <motion.div layout className={clsx(styles.playerGridItem, isCollapsed ? styles.collapsedPlayer : styles.expandedPlayer)}>
+                <Paper className={styles.playerPaper}>
+                  <Player isCollapsed={isCollapsed} setCollapsed={setCollapsed} />
+                  {!isCollapsed && <CurrentPlaylist />}
+                </Paper>
+              </motion.div>
+              <motion.div layout className={clsx(styles.detailsGridItem, isCollapsed ? styles.collapsedDetails : styles.expandedDetails)}>
+                <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>
+                  {children}
+                </DetailsPanel>
+              </motion.div>
             </motion.div>
-            <motion.div layout className={clsx(styles.detailsGridItem, isCollapsed ? styles.collapsedDetails : styles.expandedDetails)}>
-              <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>
-                {children}
-              </DetailsPanel>
-            </motion.div>
-          </motion.div>
-        </AnimatePresence>
+          </AnimatePresence>
+        </AuthContext>
       </AppContext>
     </>
   );

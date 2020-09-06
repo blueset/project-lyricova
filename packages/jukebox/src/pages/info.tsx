@@ -1,12 +1,17 @@
 import Link, { NextComposedLink } from "../components/Link";
 import { getLayout } from "../components/public/layouts/IndexLayout";
 import { Box, Chip } from "@material-ui/core";
+import { useAuthContext } from "../components/public/AuthContext";
 
 
 export default function Information() {
+  const user = useAuthContext();
   return <Box p={4} pt={2}>
     Information <Link href="/">To lyrics</Link>.
-    <Chip label="Admin panel" component={NextComposedLink} target="_blank" href="login" clickable variant="outlined" />
+    <div>
+      <Chip label="Admin panel" component={NextComposedLink} target="_blank" href="login" clickable variant="outlined" />
+      {user && <Chip label="Log out" component={NextComposedLink} href="logout" clickable variant="outlined" />}
+    </div>
   </Box>;
 }
 

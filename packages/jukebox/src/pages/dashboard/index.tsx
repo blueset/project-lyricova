@@ -1,5 +1,7 @@
-import { AuthContext } from "../../components/public/AuthContext";
+import { getLayout } from "../../components/public/layouts/DashboardLayout";
 
 export default function DashboardIndex() {
-  return <AuthContext><div>Dashboard index</div></AuthContext>;
+  return <div>Dashboard index</div>;
 }
+
+DashboardIndex.layout = getLayout();

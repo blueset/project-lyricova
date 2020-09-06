@@ -23,7 +23,7 @@ const useStyle = makeStyles((theme) => ({
     [theme.breakpoints.up("sm")]: {
       width: "min(50rem, 35%)",
     },
-    padding: theme.spacing(3),
+    padding: theme.spacing(4),
   },
   input: {
     marginTop: theme.spacing(2),
