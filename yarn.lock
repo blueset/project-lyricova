@@ -8746,6 +8746,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"deepmerge@npm:^2.1.1":
+  version: 2.2.1
+  resolution: "deepmerge@npm:2.2.1"
+  checksum: 8394eb5ab19010e4e856e96ffb570528cad00e4af35e1e774898b52fd986fa6840dbce3e9217a7a1e38683c170cf0cbfe19c67323b89d329afad0ffa72db382e
+  languageName: node
+  linkType: hard
+
 "deepmerge@npm:^4.2.2":
   version: 4.2.2
   resolution: "deepmerge@npm:4.2.2"
@@ -10658,6 +10665,36 @@ __metadata:
   version: 0.2.2
   resolution: "format@npm:0.2.2"
   checksum: 0740f5212144e63dad4b3b2156d84a875c0649f4976ecfa91f21b086ad007e9af575e88cf782b202c5f5783fb6d4ee3cebcd357b79aa82d556f8401dc1762f55
+  languageName: node
+  linkType: hard
+
+"formik-material-ui@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "formik-material-ui@npm:2.0.1"
+  peerDependencies:
+    "@material-ui/core": ">=4.0.0"
+    formik: ">=2.0.0"
+    react: ^16.8.0
+    tiny-warning: ">=1.0.2"
+  checksum: a6659fe885a0a838f35970e5fd41cb77dc9d22f114914d8f4782d1d85a17906c0d691c4e1f7034c3dbd654092771192fd08e20bab5af45d12d161b3a9b6fbd08
+  languageName: node
+  linkType: hard
+
+"formik@npm:^2.1.5":
+  version: 2.1.5
+  resolution: "formik@npm:2.1.5"
+  dependencies:
+    deepmerge: ^2.1.1
+    hoist-non-react-statics: ^3.3.0
+    lodash: ^4.17.14
+    lodash-es: ^4.17.14
+    react-fast-compare: ^2.0.1
+    scheduler: ^0.18.0
+    tiny-warning: ^1.0.2
+    tslib: ^1.10.0
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 5a84001cc471afd4b214bf470b93038a46ebe89c4f90c43c59f1093262dd3cf8a21bdc95f656cc7034e1883c0706a5ace7ac6178bc211cfe0afb5716276a1f05
   languageName: node
   linkType: hard
 
@@ -13844,6 +13881,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"lodash-es@npm:^4.17.14":
+  version: 4.17.15
+  resolution: "lodash-es@npm:4.17.15"
+  checksum: ee2871b76deefd1754527e659a8c8b688f2e427e67b30709296878e18ad9cb54b4f0fc16a7161298156b4e0ebc2a37dfe501a3ea8725f195763f9de8a7ba6da6
+  languageName: node
+  linkType: hard
+
 "lodash._reinterpolate@npm:^3.0.0":
   version: 3.0.0
   resolution: "lodash._reinterpolate@npm:3.0.0"
@@ -14196,6 +14240,8 @@ fsevents@^1.2.7:
     express-session: ^1.17.1
     express-validator: ^6.3.1
     ffprobe-client: ^1.1.6
+    formik: ^2.1.5
+    formik-material-ui: ^2.0.1
     framer-motion: ^2.4.2
     glob: ^7.1.6
     graphql: ^15.3.0
@@ -17629,6 +17675,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"react-fast-compare@npm:^2.0.1":
+  version: 2.0.4
+  resolution: "react-fast-compare@npm:2.0.4"
+  checksum: 4e4bfc3597414a36ee35977259012fff30c4f13a0e5dcabf958e91991bef8e9a3faee9dd666cfbdb0c2a0f0ddaf242ac2912054caa956a793c4cdff274dc5aec
+  languageName: node
+  linkType: hard
+
 "react-fast-compare@npm:^3.0.1":
   version: 3.2.0
   resolution: "react-fast-compare@npm:3.2.0"
@@ -18907,6 +18960,16 @@ fsevents@^1.2.7:
     css-styled: ">=0.2.3"
     order-map: ">=0.2.2"
   checksum: 6a322304bccc98352067edfd7e46ed89ae7155d6179f6ac553f6ac033b08625d00d596a981cc8e193962925cbff7f14eca51c8476615a559a77a9aeddfe67e8d
+  languageName: node
+  linkType: hard
+
+"scheduler@npm:^0.18.0":
+  version: 0.18.0
+  resolution: "scheduler@npm:0.18.0"
+  dependencies:
+    loose-envify: ^1.1.0
+    object-assign: ^4.1.1
+  checksum: 007678c559669029a5f8a029022548c2f39258b8087d1da0a3f5c5360abf3aa2794a87f56998151432f48910eca53331206cd712b751188623ca3d1bcab38b9f
   languageName: node
   linkType: hard
 
