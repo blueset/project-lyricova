@@ -14252,6 +14252,7 @@ fsevents@^1.2.7:
     lusca: ^1.6.1
     lyrics-kit: "workspace:*"
     mecab-async: ^0.1.2
+    moment: ^2.27.0
     multer: ^1.4.2
     mysql: ^2.17.1
     mysql2: ^2.1.0
@@ -15084,7 +15085,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"moment@npm:>= 2.9.0, moment@npm:^2.24.0":
+"moment@npm:>= 2.9.0, moment@npm:^2.24.0, moment@npm:^2.27.0":
   version: 2.27.0
   resolution: "moment@npm:2.27.0"
   checksum: 72d9a7d8dba59e3d538440cdc0b59fa895b123361e370be231896478aaf157a484355ce32bd8daf6f731d6d1636d3a67ecb67531e536e093ca18b43e0cbae194

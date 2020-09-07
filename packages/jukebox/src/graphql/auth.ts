@@ -8,12 +8,11 @@ export type ContextType = {
 };
 
 export const authChecker: AuthChecker<ContextType> = ({ context }, roles) => {
-  if (roles.indexOf("ADMIN") >= 0) {
-    if (context.user !== null && context.user !== undefined) {
+  if (context.user ?? false) {
+    if (roles.indexOf("ADMIN") >= 0) {
       return context.user.role === "admin";
     }
-    return false;
+    return true;
   }
-
-  return true;
+  return false;
 };

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect } from "react";
-import { AppBar, Toolbar, IconButton, Typography, makeStyles, Hidden, Drawer, Divider, List, ListItem, ListItemIcon, ListItemText, useMediaQuery, Theme, Menu, MenuItem, Avatar } from "@material-ui/core";
+import { AppBar, Toolbar, IconButton, Typography, makeStyles, Hidden, Drawer, Divider, List, ListItem, ListItemIcon, ListItemText, useMediaQuery, Theme, Menu, MenuItem, Avatar, ListSubheader } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import DashboardIcon from "@material-ui/icons/Dashboard";
@@ -89,6 +89,12 @@ const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
   },
+  filler: {
+    flexGrow: 1,
+  },
+  main: {
+    flexGrow: 1,
+  },
 }));
 
 interface NavMenuItemProps {
@@ -163,10 +169,17 @@ export default function DashabordLayout({ title, children }: Props) {
       </List>
       <Divider />
       <List>
+        <ListSubheader inset>Sections</ListSubheader>
         <NavMenuItem text="Review" href="/dashboard/review" icon={<RateReviewIcon />} />
         <NavMenuItem text="Music files" href="/dashboard/musicFiles" icon={<FileCopyIcon />} />
         <NavMenuItem text="Music entries" href="/dashboard/entries" icon={<MusicNoteIcon />} />
         <NavMenuItem text="Playlists" href="/dashboard/playlists" icon={<QueueMusicIcon />} />
+      </List>
+      <div className={styles.filler}></div>
+      <List dense>
+        <ListItem>
+          <ListItemText inset primaryTypographyProps={{ color: "textSecondary" }}>Project Lyricova<br />since 2013<br />by 1A23 Studio</ListItemText>
+        </ListItem>
       </List>
     </>
   );
@@ -267,7 +280,7 @@ export default function DashabordLayout({ title, children }: Props) {
             </Drawer>
           </Hidden>
         </nav>
-        <main>
+        <main class={styles.main}>
           <div className={styles.toolbar} />
           {children}
         </main>
