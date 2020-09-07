@@ -280,7 +280,7 @@ export default function DashabordLayout({ title, children }: Props) {
             </Drawer>
           </Hidden>
         </nav>
-        <main class={styles.main}>
+        <main className={styles.main}>
           <div className={styles.toolbar} />
           {children}
         </main>
