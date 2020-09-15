@@ -20,7 +20,7 @@ const useStyle = makeStyles((theme) => {
       justifyContent: "center",
     },
     line: {
-      fontWeight: 200,
+      fontWeight: 100,
       lineHeight: 1.2,
       textWrap: "balance",
       fontSize: "4em",
@@ -28,7 +28,8 @@ const useStyle = makeStyles((theme) => {
       top: "50%",
       transform: "translateY(-50%)",
       color: "white",
-      fontFamily: theme.typography.fontFamily.replace("FiraGO", "\"FiraGO UltraLight\""),
+      fontVariationSettings: "'wght' 150, 'palt' 1",
+      // fontFamily: theme.typography.fontFamily.replace("Inter", "\"Inter UltraLight\""),
       "& .translate": {
         display: "block",
         fontSize: "0.6em",

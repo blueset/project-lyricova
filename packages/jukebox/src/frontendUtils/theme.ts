@@ -17,7 +17,8 @@ export default createMuiTheme({
   },
   typography: {
     fontFamily: [
-      "FiraGO",
+      "Inter V",
+      "Inter",
       "Source Han Sans",
       "-apple-system",
       "BlinkMacSystemFont",
