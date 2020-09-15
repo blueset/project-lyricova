@@ -47,13 +47,16 @@ export function AuthContext({ authRedirect, children, noRedirect }: AuthContextP
     const needAuth = !Boolean(authRedirect);
     const token = window.localStorage?.getItem(LS_JWT_KEY);
     let hasToken = Boolean(token ?? null);
-    if (hasToken === needAuth) { // If checking local storage token is not decisive
+    if (hasToken) {
       if (loading) return;
       if (error) {
         console.error("Check auth error", error);
         return;
       }
-      hasToken = Boolean(data.currentUser);
+      hasToken = data.currentUser !== null;
+      if (hasToken === false) {
+        window.localStorage?.removeItem(LS_JWT_KEY);
+      }
     }
     if (hasToken && !needAuth) {
       router.push(authRedirect);
