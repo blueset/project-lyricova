@@ -118,7 +118,7 @@ export function TypingStackedLyrics({ lyrics }: Props) {
     <div className={styles.container}>
       {node}
       {sequenceQuery.data && sequenceQuery.data.transliterate.typingSequence.map((v, idx) => {
-        if (idx >= line || idx < line - 15) return null;
+        if (idx >= line || idx < line - 20) return null;
         return (
           <div className={styles.pastLine} key={idx}>
             {v.map((vv) => vv.sequence.length > 0 ? vv.sequence[vv.sequence.length - 1] : "").join("")}
