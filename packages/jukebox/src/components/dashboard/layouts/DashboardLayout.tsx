@@ -1,5 +1,24 @@
-import { ReactNode, useEffect } from "react";
-import { AppBar, Toolbar, IconButton, Typography, makeStyles, Hidden, Drawer, Divider, List, ListItem, ListItemIcon, ListItemText, useMediaQuery, Theme, Menu, MenuItem, Avatar, ListSubheader } from "@material-ui/core";
+import {ReactNode, useEffect} from "react";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  makeStyles,
+  Hidden,
+  Drawer,
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  useMediaQuery,
+  Theme,
+  Menu,
+  MenuItem,
+  Avatar,
+  ListSubheader
+} from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import DashboardIcon from "@material-ui/icons/Dashboard";
@@ -7,11 +26,12 @@ import RateReviewIcon from "@material-ui/icons/RateReview";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import QueueMusicIcon from "@material-ui/icons/QueueMusic";
+import CachedIcon from "@material-ui/icons/Cached";
 import clsx from "clsx";
-import { useNamedState } from "../../../frontendUtils/hooks";
-import { AuthContext, AuthContextConsumer } from "../AuthContext";
-import { useRouter } from "next/router";
-import { NextComposedLink } from "../../Link";
+import {useNamedState} from "../../../frontendUtils/hooks";
+import {AuthContext, AuthContextConsumer} from "../../public/AuthContext";
+import {useRouter} from "next/router";
+import {NextComposedLink} from "../../Link";
 import Head from "next/head";
 
 const DRAWER_WIDTH = 240;
@@ -105,18 +125,18 @@ interface NavMenuItemProps {
   activeCriteria?: (pathName: string) => boolean;
 }
 
-function NavMenuItem({ href, text, icon, activeCriteria, as }: NavMenuItemProps) {
+function NavMenuItem({href, text, icon, activeCriteria, as}: NavMenuItemProps) {
   const router = useRouter();
   const criteria = activeCriteria || ((v: string) => v === href);
 
   return <ListItem button
-    component={NextComposedLink}
-    selected={criteria(router.pathname)}
-    href={href}
-    as={as}
+                   component={NextComposedLink}
+                   selected={criteria(router.pathname)}
+                   href={href}
+                   as={as}
   >
     {icon && <ListItemIcon>{icon}</ListItemIcon>}
-    <ListItemText primary={text} />
+    <ListItemText primary={text}/>
   </ListItem>;
 }
 
@@ -125,7 +145,7 @@ interface Props {
   children: ReactNode;
 }
 
-export default function DashabordLayout({ title, children }: Props) {
+export default function DashboardLayout({title, children}: Props) {
   const styles = useStyles();
   const router = useRouter();
 
@@ -158,27 +178,29 @@ export default function DashabordLayout({ title, children }: Props) {
 
   const drawer = (
     <>
-      <div className={styles.toolbar} >
+      <div className={styles.toolbar}>
         <IconButton onClick={handleDrawerToggle}>
-          <ChevronLeftIcon />
+          <ChevronLeftIcon/>
         </IconButton>
       </div>
-      <Divider />
+      <Divider/>
       <List>
-        <NavMenuItem text="Dashboard" href="/dashboard" icon={<DashboardIcon />} />
+        <NavMenuItem text="Dashboard" href="/dashboard" icon={<DashboardIcon/>}/>
       </List>
-      <Divider />
+      <Divider/>
       <List>
         <ListSubheader inset>Sections</ListSubheader>
-        <NavMenuItem text="Review" href="/dashboard/review" icon={<RateReviewIcon />} />
-        <NavMenuItem text="Music files" href="/dashboard/musicFiles" icon={<FileCopyIcon />} />
-        <NavMenuItem text="Music entries" href="/dashboard/entries" icon={<MusicNoteIcon />} />
-        <NavMenuItem text="Playlists" href="/dashboard/playlists" icon={<QueueMusicIcon />} />
+        <NavMenuItem text="Review" href="/dashboard/review" icon={<RateReviewIcon/>}/>
+        <NavMenuItem text="Music files" href="/dashboard/musicFiles" icon={<FileCopyIcon/>}/>
+        <NavMenuItem text="Music entries" href="/dashboard/entries" icon={<MusicNoteIcon/>}/>
+        <NavMenuItem text="Playlists" href="/dashboard/playlists" icon={<QueueMusicIcon/>}/>
+        <NavMenuItem text="Scan" href="/dashboard/scan" icon={<CachedIcon/>}/>
       </List>
-      <div className={styles.filler}></div>
+      <div className={styles.filler}/>
       <List dense>
         <ListItem>
-          <ListItemText inset primaryTypographyProps={{ color: "textSecondary" }}>Project Lyricova<br />since 2013<br />by 1A23 Studio</ListItemText>
+          <ListItemText inset primaryTypographyProps={{color: "textSecondary"}}>Project Lyricova<br/>since 2013<br/>by
+            1A23 Studio</ListItemText>
         </ListItem>
       </List>
     </>
@@ -190,7 +212,7 @@ export default function DashabordLayout({ title, children }: Props) {
   return <AuthContext>
     <Head>
       <title>{pageTitle}</title>
-      <meta property="og:title" content={pageTitle} key="title" />
+      <meta property="og:title" content={pageTitle} key="title"/>
     </Head>
     <AuthContextConsumer>{(user) =>
       <div className={styles.container}>
@@ -205,7 +227,7 @@ export default function DashabordLayout({ title, children }: Props) {
               className={clsx(styles.menuButton, isDrawerOpen && styles.hideToggle)}
               onClick={handleDrawerToggle}
             >
-              <MenuIcon />
+              <MenuIcon/>
             </IconButton>
             <Typography variant="h6" className={styles.title} noWrap>
               {title}
@@ -217,7 +239,7 @@ export default function DashabordLayout({ title, children }: Props) {
               onClick={handleUserMenu}
               color="inherit"
             >
-              <Avatar alt={user?.displayName} src={`https://www.gravatar.com/avatar/${user?.emailMD5}`} />
+              <Avatar alt={user?.displayName} src={`https://www.gravatar.com/avatar/${user?.emailMD5}`}/>
             </IconButton>
             <Menu
               id="menu-appbar"
@@ -238,7 +260,7 @@ export default function DashabordLayout({ title, children }: Props) {
               <MenuItem onClick={logOut}>
                 <ListItemText
                   primary="Log out"
-                  primaryTypographyProps={{ color: "error" }}
+                  primaryTypographyProps={{color: "error"}}
                 />
               </MenuItem>
             </Menu>
@@ -281,7 +303,7 @@ export default function DashabordLayout({ title, children }: Props) {
           </Hidden>
         </nav>
         <main className={styles.main}>
-          <div className={styles.toolbar} />
+          <div className={styles.toolbar}/>
           {children}
         </main>
       </div>
@@ -289,4 +311,5 @@ export default function DashabordLayout({ title, children }: Props) {
   </AuthContext>;
 }
 
-export const getLayout = (title?: string) => ((page: ReactNode) => <DashabordLayout title={title}>{page}</DashabordLayout>);
+export const getLayout = (title?: string) => ((page: ReactNode) => <DashboardLayout
+  title={title}>{page}</DashboardLayout>);

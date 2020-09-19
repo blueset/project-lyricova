@@ -1,25 +1,38 @@
-import { MusicFile } from "../models/MusicFile";
+import {MusicFile} from "../models/MusicFile";
 import glob from "glob";
-import { MUSIC_FILES_PATH } from "../utils/secret";
+import {MUSIC_FILES_PATH} from "../utils/secret";
 import ffprobe from "ffprobe-client";
-import { writeAsync as ffMetadataWrite } from "../utils/ffmetadata";
+import {writeAsync as ffMetadataWrite} from "../utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
-import { Op } from "sequelize";
+import {Op, WhereOptions} from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
-import { Resolver, Query, Args, ObjectType, Field, Int, Arg, Mutation, InputType, FieldResolver, Root } from "type-graphql";
-import { PaginationArgs, PaginationInfo } from "./commons";
-import { UserInputError } from "apollo-server-express";
-import { Playlist } from "../models/Playlist";
-import { Song } from "../models/Song";
-import { Album } from "../models/Album";
+import {
+  Arg,
+  Args,
+  Field,
+  FieldResolver,
+  InputType,
+  Int,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+  Root
+} from "type-graphql";
+import {PaginationArgs, PaginationInfo} from "./commons";
+import {UserInputError} from "apollo-server-express";
+import {Playlist} from "../models/Playlist";
+import {Song} from "../models/Song";
+import {Album} from "../models/Album";
 import NodeID3 from "node-id3";
-import { swapExt } from "../utils/path";
-import { Lyrics } from "lyrics-kit";
-import { LyricsKitLyrics } from "./LyricsKitObjects";
+import {swapExt} from "../utils/path";
+import {Lyrics} from "lyrics-kit";
+import {LyricsKitLyrics} from "./LyricsKitObjects";
+import {bool} from "prop-types";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -76,7 +89,7 @@ export class MusicFilesPagination {
 }
 
 @ObjectType()
-class MusicFilesScanOutcome {
+export class MusicFilesScanOutcome {
   @Field(type => Int)
   added: number;
 
@@ -122,15 +135,20 @@ class MusicFileInput implements Partial<MusicFile> {
 
 }
 
+@InputType({description: "Music files query options"})
+class MusicFilesQueryOptions {
+  @Field({description: "Filter by review status of files", nullable: true})
+  needReview?: boolean;
+}
 
 @Resolver(of => MusicFile)
 export class MusicFileResolver {
 
 
   /** Get metadata of a song via ffprobe */
-  private async getSongMetadata(path: string): Promise<GenericMetadata> {
+  private static async getSongMetadata(path: string): Promise<GenericMetadata> {
     const metadata = await ffprobe(path);
-    const tags = metadata.format.tags;
+    const tags = metadata.format.tags ?? {};
     const duration = parseFloat(metadata.format.duration);
     let playlists: string[] = [];
 
@@ -159,9 +177,9 @@ export class MusicFileResolver {
   }
 
   /** Make a new MusicFile object from file path. */
-  private async buildSongEntry(path: string): Promise<object> {
+  private static async buildSongEntry(path: string): Promise<object> {
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
-    const metadataPromise = this.getSongMetadata(path);
+    const metadataPromise = MusicFileResolver.getSongMetadata(path);
     const md5 = await md5Promise,
       metadata = await metadataPromise;
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
@@ -176,36 +194,40 @@ export class MusicFileResolver {
   }
 
   /** Update an existing MusicFile object with data in file. */
-  private async updateSongEntry(entry: MusicFile): Promise<MusicFile | null> {
-    let needUpdate = false;
-    const path = entry.fullPath;
-    const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
-    const hasLyrics = fs.existsSync(lrcPath);
-    needUpdate = needUpdate || hasLyrics !== entry.hasLyrics;
-    const fileSize = fs.statSync(path).size;
-    const md5 = await hasha.fromFile(path, { algorithm: "md5" });
-    needUpdate = needUpdate || md5 !== entry.hash;
-    if (!needUpdate) return null;
+  private static async updateSongEntry(entry: MusicFile): Promise<MusicFile | null> {
+    try {
+      let needUpdate = false;
+      const path = entry.fullPath;
+      const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
+      const hasLyrics = fs.existsSync(lrcPath);
+      needUpdate = needUpdate || hasLyrics !== entry.hasLyrics;
+      const fileSize = fs.statSync(path).size;
+      const md5 = await hasha.fromFile(path, {algorithm: "md5"});
+      needUpdate = needUpdate || md5 !== entry.hash;
+      if (!needUpdate) return null;
 
-    const metadata = await this.getSongMetadata(path);
-    entry = await entry.update({
-      path: Path.relative(MUSIC_FILES_PATH, path),
-      hasLyrics: hasLyrics,
-      fileSize: fileSize,
-      hash: md5,
-      needReview: true,
-      ...metadata
-    });
+      const metadata = await MusicFileResolver.getSongMetadata(path);
+      entry = await entry.update({
+        path: Path.relative(MUSIC_FILES_PATH, path),
+        hasLyrics: hasLyrics,
+        fileSize: fileSize,
+        hash: md5,
+        needReview: true,
+        ...metadata
+      });
+    } catch (e) {
+      console.error("Error occurred while updating song entry", e);
+    }
     return entry;
   }
 
-  private async updateMD5(entry: MusicFile): Promise<void> {
+  private static async updateMD5(entry: MusicFile): Promise<void> {
     const md5 = await hasha.fromFile(entry.fullPath, { algorithm: "md5" });
     await entry.update({ hash: md5 });
   }
 
   /** Write metadata to file partially */
-  private async writeToFile(file: MusicFile, data: Partial<MusicFile>) {
+  private static async writeToFile(file: MusicFile, data: Partial<MusicFile>) {
     let mapping;
     if (file.path.toLowerCase().endsWith(".flac")) {
       mapping = { trackSortOrder: "TITLESORT", artistSortOrder: "ARTISTSORT", albumSortOrder: "ALBUMSORT" };
@@ -260,7 +282,7 @@ export class MusicFileResolver {
     const limit = pLimit(10);
 
     const entriesToAdd = await Promise.all(
-      [...toAdd].map(path => limit(async () => this.buildSongEntry(path)))
+      [...toAdd].map(path => limit(async () => MusicFileResolver.buildSongEntry(path)))
     );
 
     console.log("entries_to_add done.");
@@ -277,7 +299,7 @@ export class MusicFileResolver {
     );
     const updateResults = await Promise.all(
       toUpdateEntries.map(entry =>
-        limit(async () => this.updateSongEntry(entry))
+        limit(async () => MusicFileResolver.updateSongEntry(entry))
       )
     );
 
@@ -296,16 +318,27 @@ export class MusicFileResolver {
   }
 
   @Query(returns => MusicFilesPagination)
-  public async musicFiles(@Args() { first, after }: PaginationArgs): Promise<MusicFilesPagination> {
+  public async musicFiles(
+    @Args() { first, after }: PaginationArgs,
+    @Arg("options", {nullable: true}) options: MusicFilesQueryOptions
+  ): Promise<MusicFilesPagination> {
     if (after === null || after === undefined) {
       after = "-1";
     }
 
     const offset = parseInt(after) + 1;
 
+    const where: WhereOptions = {};
+    if (options) {
+      if (options.needReview !== undefined) {
+        where.needReview = options.needReview;
+      }
+    }
+
     const result = await MusicFile.findAndCountAll({
       offset: offset,
-      limit: first < 0 ? undefined : first
+      limit: first < 0 ? undefined : first,
+      where
     });
     const edges: MusicFilesPaginationEdge[] = result.rows.map((r, idx) => {
       return {
@@ -326,8 +359,7 @@ export class MusicFileResolver {
 
   @Query(returns => MusicFile, { nullable: true })
   public async musicFile(@Arg("id", type => Int) id: number): Promise<MusicFile | null> {
-    const song = await MusicFile.findByPk(id);
-    return song;
+    return MusicFile.findByPk(id);
   }
 
   @Mutation(returns => MusicFile)
@@ -338,7 +370,7 @@ export class MusicFileResolver {
     }
 
     // write song file
-    await this.writeToFile(song, data);
+    await MusicFileResolver.writeToFile(song, data);
 
     _.assign(song, data);
 
@@ -351,17 +383,17 @@ export class MusicFileResolver {
 
   @FieldResolver(type => [Playlist])
   private async playlists(@Root() musicFile: MusicFile): Promise<Playlist[]> {
-    return await musicFile.$get("playlists");
+    return musicFile.$get("playlists");
   }
 
   @FieldResolver(type => Song, { nullable: true })
   private async song(@Root() musicFile: MusicFile): Promise<Song | null> {
-    return await musicFile.$get("song");
+    return musicFile.$get("song");
   }
 
   @FieldResolver(type => Album, { nullable: true })
   private async album(@Root() musicFile: MusicFile): Promise<Album | null> {
-    return await musicFile.$get("album");
+    return musicFile.$get("album");
   }
 
   @FieldResolver(type => String, { nullable: true })
@@ -396,8 +428,8 @@ export class MusicFileResolver {
       let content = buffer.toString();
 
       // Transform standard " / " type of translation to LyricsX types.
-      content = content.replace(/^((?:\[[0-9:.-]+\])+)(.+?) \/ (.+)$/mg, "$1$2\n$1[tr]$3");
-      content = content.replace(/^((?:\[[0-9:.-]+\])+)(.+?)[\/／](.+)$/mg, "$1$2\n$1[tr]〝$3〟");
+      content = content.replace(/^((?:\[[0-9:.-]+])+)(.+?) \/ (.+)$/mg, "$1$2\n$1[tr]$3");
+      content = content.replace(/^((?:\[[0-9:.-]+])+)(.+?)[\/／](.+)$/mg, "$1$2\n$1[tr]〝$3〟");
 
       return new LyricsKitLyrics(new Lyrics(content));
     } catch (e) {
@@ -466,7 +498,7 @@ export class MusicFileResolver {
       return false;
     }
 
-    await this.updateMD5(file);
+    await MusicFileResolver.updateMD5(file);
     return true;
   }
 
@@ -497,7 +529,7 @@ export class MusicFileResolver {
       [PLAYLIST_IDS_TAG]: (await result.$get("playlists")).map((i) => i.slug).join(",")
     }, { preserveStreams: true, forceId3v2: forceId3v2 });
 
-    await this.updateMD5(file);
+    await MusicFileResolver.updateMD5(file);
     return result;
   }
 }

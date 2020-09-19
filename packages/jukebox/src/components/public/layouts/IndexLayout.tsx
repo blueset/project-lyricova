@@ -352,7 +352,7 @@ export default function IndexLayout({ children }: Props) {
 
   // Set media session controllers
   useEffect(() => {
-    if ("mediaSession" in navigator) {
+    if (navigator.mediaSession !== undefined) {
       navigator.mediaSession.setActionHandler("play", function () {
         console.log("Media session action: play");
         playerRef.current?.play();
