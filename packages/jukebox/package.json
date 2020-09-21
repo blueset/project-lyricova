@@ -68,6 +68,7 @@
     "ffprobe-client": "^1.1.6",
     "formik": "^2.1.5",
     "formik-material-ui": "^2.0.1",
+    "formik-material-ui-lab": "^0.0.5",
     "framer-motion": "^2.4.2",
     "glob": "^7.1.6",
     "graphql": "^15.3.0",

@@ -11030,6 +11030,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"formik-material-ui-lab@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "formik-material-ui-lab@npm:0.0.5"
+  peerDependencies:
+    "@material-ui/core": ">=4.0.0"
+    "@material-ui/lab": ^4.0.0-alpha.56
+    formik: ">=2.0.0"
+    react: ^16.8.0
+    tiny-warning: ">=1.0.2"
+  checksum: 223502cbc55cd34865f4ca906995604efcc22f8b7c8f89a2b44fc792d49ad74e1844d7df04a8947bdd07edab98b16ac097600523e494c6b6d40333dd9caf3e9e
+  languageName: node
+  linkType: hard
+
 "formik-material-ui@npm:^2.0.1":
   version: 2.0.1
   resolution: "formik-material-ui@npm:2.0.1"
@@ -14657,6 +14670,7 @@ fsevents@^1.2.7:
     ffprobe-client: ^1.1.6
     formik: ^2.1.5
     formik-material-ui: ^2.0.1
+    formik-material-ui-lab: ^0.0.5
     framer-motion: ^2.4.2
     glob: ^7.1.6
     graphql: ^15.3.0

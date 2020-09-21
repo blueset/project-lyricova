@@ -7,7 +7,21 @@ import { Entry } from "./Entry";
 import { transliterate } from "../utils/transliterate";
 import { DataTypes } from "sequelize";
 import { Includeable } from "sequelize/types";
-import { Model, CreatedAt, UpdatedAt, DeletedAt, Column, Table, BelongsTo, PrimaryKey, ForeignKey, HasMany, AllowNull, BelongsToMany } from "sequelize-typescript";
+import {
+  Model,
+  CreatedAt,
+  UpdatedAt,
+  DeletedAt,
+  Column,
+  Table,
+  BelongsTo,
+  PrimaryKey,
+  ForeignKey,
+  HasMany,
+  AllowNull,
+  BelongsToMany,
+  Index
+} from "sequelize-typescript";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
 import { SongOfEntry } from "./SongOfEntry";
@@ -23,10 +37,20 @@ export class Song extends Model<Song> {
 
   @Field()
   @Column({ type: new DataTypes.STRING(4096) })
+  @Index({
+    name: "Song_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   public name!: string;
 
   @Field()
   @Column({ type: new DataTypes.STRING(4096) })
+  @Index({
+    name: "Song_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   public sortOrder!: string;
 
   @BelongsToMany(

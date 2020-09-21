@@ -20,7 +20,9 @@ export class TransliterationResult {
   @Field()
   plain(@Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"): string {
     return segmentedTransliteration(this.text, { language, type: "plain" })
-      .map(v => v.reduce((prev, curr) => prev + curr[1], ""))
+      .map(v => v.reduce((prev, curr) => {
+        return prev + curr[1];
+      }, ""))
       .join("\n");
   }
 

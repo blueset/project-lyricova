@@ -17,7 +17,7 @@ interface MecabParsedResult {
 }
 
 const mecab = new MeCab<MecabParsedResult>();
-mecab.command = "mecab -d /usr/local/lib/mecab/dic/mecab-ipadic-neologd --node-format=\"%M\u200C%f[7]\u200C%pA\n\" --unk-format=\"%M\u200C%M\u200C%pA\n\" --marginal";
+mecab.command = "mecab --node-format=\"%M\u200C%f[7]\u200C%pA\n\" --unk-format=\"%M\u200C%M\u200C%pA\n\" --marginal";
 mecab.parser = function (data): MecabParsedResult {
   const [kanji, reading, alphaForwardLogRateStr] = data[0].split("\u200C");
   return {
@@ -266,6 +266,11 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
                 return prev;
               }, ["", ""]);
             } else if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
+              // Solve problem where output maybe like [" 初音ミク", "はつねみく"]
+              const leadingSpaces = /^\s+/.exec(x.kanji);
+              if (leadingSpaces && !/^\s+/.exec(x.reading)) {
+                x.reading = leadingSpaces[0] + x.reading;
+              }
               return [x.kanji, kanaToHira(x.reading || x.kanji)];
             }
             return [x.kanji, x.kanji];

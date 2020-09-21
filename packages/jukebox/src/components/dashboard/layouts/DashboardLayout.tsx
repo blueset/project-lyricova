@@ -1,4 +1,4 @@
-import {ReactNode, useEffect} from "react";
+import {ReactNode, useEffect, MouseEvent} from "react";
 import {
   AppBar,
   Toolbar,
@@ -114,6 +114,7 @@ const useStyles = makeStyles((theme) => ({
   },
   main: {
     flexGrow: 1,
+    width: 0,
   },
 }));
 
@@ -163,7 +164,7 @@ export default function DashboardLayout({title, children}: Props) {
     setDrawerOpen(!isDrawerOpen);
   };
 
-  const handleUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleUserMenu = (event: MouseEvent<HTMLElement>) => {
     setUserMenuAnchorEl(event.currentTarget);
   };
 
@@ -171,8 +172,8 @@ export default function DashboardLayout({title, children}: Props) {
     setUserMenuAnchorEl(null);
   };
 
-  const logOut = () => {
-    router.push("/logout");
+  const logOut = async () => {
+    await router.push("/logout");
     handleUserMenuClose();
   };
 
@@ -190,7 +191,7 @@ export default function DashboardLayout({title, children}: Props) {
       <Divider/>
       <List>
         <ListSubheader inset>Sections</ListSubheader>
-        <NavMenuItem text="Review" href="/dashboard/review" icon={<RateReviewIcon/>}/>
+        <NavMenuItem text="Review" href="/dashboard/review" activeCriteria={v => v.startsWith("/dashboard/review")} icon={<RateReviewIcon/>}/>
         <NavMenuItem text="Music files" href="/dashboard/musicFiles" icon={<FileCopyIcon/>}/>
         <NavMenuItem text="Music entries" href="/dashboard/entries" icon={<MusicNoteIcon/>}/>
         <NavMenuItem text="Playlists" href="/dashboard/playlists" icon={<QueueMusicIcon/>}/>
@@ -311,5 +312,6 @@ export default function DashboardLayout({title, children}: Props) {
   </AuthContext>;
 }
 
+// eslint-disable-next-line react/display-name
 export const getLayout = (title?: string) => ((page: ReactNode) => <DashboardLayout
   title={title}>{page}</DashboardLayout>);

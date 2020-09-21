@@ -1,7 +1,20 @@
 import { Song } from "./Song";
 import { Album } from "./Album";
 import { Playlist } from "./Playlist";
-import { Model, Column, PrimaryKey, Table, ForeignKey, BelongsTo, AllowNull, BelongsToMany, CreatedAt, UpdatedAt, DeletedAt, AutoIncrement } from "sequelize-typescript";
+import {
+  Model,
+  Column,
+  PrimaryKey,
+  Table,
+  ForeignKey,
+  BelongsTo,
+  AllowNull,
+  BelongsToMany,
+  CreatedAt,
+  UpdatedAt,
+  AutoIncrement,
+  Index
+} from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { FileInPlaylist } from "./FileInPlaylist";
 import { ObjectType, Field, Int, Float } from "type-graphql";
@@ -19,6 +32,11 @@ export class MusicFile extends Model<MusicFile> {
 
   @Field({ description: "Local path to the song." })
   @Column({ type: new DataTypes.STRING(768), unique: true })
+  @Index({
+    name: "MusicFile_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   path: string;
 
   @Field(type => Int, { description: "Size of file in bytes." })
@@ -52,31 +70,61 @@ export class MusicFile extends Model<MusicFile> {
   @Field({ description: "Name of the track stored in file.", nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
+  @Index({
+    name: "MusicFile_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   trackName: string | null;
 
   @Field({ description: "Sort order key of name of the track stored in file.", nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
+  @Index({
+    name: "MusicFile_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   trackSortOrder: string | null;
 
   @Field({ description: "Album of the track stored in file.", nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
+  @Index({
+    name: "MusicFile_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   albumName: string | null;
 
   @Field({ description: "Sort order key of album of the track stored in file.", nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
+  @Index({
+    name: "MusicFile_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   albumSortOrder: string | null;
 
   @Field({ description: "Artist of the track stored in file.", nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
+  @Index({
+    name: "MusicFile_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   artistName: string | null;
 
   @Field({ description: "Sort order key of artist of the track stored in file.", nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
+  @Index({
+    name: "MusicFile_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   artistSortOrder: string | null;
 
   @Field({ description: "If the file is accompanied with a lyrics file." })

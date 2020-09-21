@@ -6,7 +6,7 @@ import {writeAsync as ffMetadataWrite} from "../utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
-import {Op, WhereOptions} from "sequelize";
+import { literal, Op, WhereOptions } from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
@@ -355,6 +355,16 @@ export class MusicFileResolver {
         hasNextPage: offset + first < result.count
       }
     };
+  }
+
+  @Query(returns => [MusicFile])
+  public async searchMusicFiles(@Arg("keywords") keywords: string): Promise<MusicFile[]> {
+    return MusicFile.findAll({
+      where: literal("match (path, trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder) against (:keywords in boolean mode)"),
+      replacements: {
+        keywords,
+      },
+    });
   }
 
   @Query(returns => MusicFile, { nullable: true })

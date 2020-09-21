@@ -1,10 +1,13 @@
 import { gql, useLazyQuery } from "@apollo/client";
 import { MusicFile } from "../../models/MusicFile";
-import { AppBar, Button, Card, CardActions, CardContent, Tab, Tabs } from "@material-ui/core";
+import { AppBar, Button, Card, CardActions, Tab, Tabs } from "@material-ui/core";
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core/styles";
 import { TabContext, TabPanel } from "@material-ui/lab";
+import { Field, Form, Formik } from "formik";
+import { TextField } from "formik-material-ui";
+import InfoPanel from "./musicFilesDetails/info";
 
 const SINGLE_FILE_DATA = gql`
   query($id: Int!) {
@@ -16,6 +19,10 @@ const SINGLE_FILE_DATA = gql`
       artistSortOrder
       albumName
       albumSortOrder
+      songId
+      song {
+        name
+      }
     }
   }
 `;
@@ -51,7 +58,6 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
   }, [setTabIndex]);
 
   return <>
-    {fileData.data?.musicFile.trackName ?? "..."}, {fileData.data?.musicFile.trackSortOrder ?? "..."}
     <Card className={styles.card}>
       <TabContext value={tabIndex}>
       <AppBar position="static" color="default">
@@ -59,6 +65,8 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
               aria-label="Music file details tabs"
               indicatorColor="secondary"
               textColor="secondary"
+              variant="scrollable"
+              scrollButtons="auto"
         >
           <Tab label="Info" value="info"/>
           <Tab label="VocaDB" value="voca-db"/>
@@ -67,10 +75,20 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
           <Tab label="Playlists" value="playlists"/>
         </Tabs>
       </AppBar>
-      <TabPanel value="info">Info</TabPanel>
+      <TabPanel value="info">
+        <InfoPanel
+          trackName={fileData.data?.musicFile.trackName ?? ""}
+          trackSortOrder={fileData.data?.musicFile.trackSortOrder ?? ""}
+          artistName={fileData.data?.musicFile.artistName ?? ""}
+          artistSortOrder={fileData.data?.musicFile.artistSortOrder ?? ""}
+          albumName={fileData.data?.musicFile.albumName ?? ""}
+          albumSortOrder={fileData.data?.musicFile.albumSortOrder ?? ""}
+          song={fileData.data?.musicFile.song}
+          fileId={fileId} />
+      </TabPanel>
       <TabPanel value="voca-db">VocaDB</TabPanel>
       <TabPanel value="cover-art">Cover art</TabPanel>
-      <TabPanel value="lyrics">Lyrcs</TabPanel>
+      <TabPanel value="lyrics">Lyrics</TabPanel>
       <TabPanel value="playlists">Playlists</TabPanel>
       </TabContext>
       <CardActions>

@@ -411,3 +411,8 @@ export interface SongInAlbumForApiContract {
   song: SongForApiContract;
   trackNumber: number;
 }
+export interface PartialFindResult<T> {
+  items?: T[];
+  term?: string;
+  totalCount?: number;
+}
