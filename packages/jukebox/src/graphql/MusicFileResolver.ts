@@ -32,7 +32,6 @@ import NodeID3 from "node-id3";
 import {swapExt} from "../utils/path";
 import {Lyrics} from "lyrics-kit";
 import {LyricsKitLyrics} from "./LyricsKitObjects";
-import {bool} from "prop-types";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -177,7 +176,12 @@ export class MusicFileResolver {
   }
 
   /** Make a new MusicFile object from file path. */
-  private static async buildSongEntry(path: string): Promise<object> {
+  private static async buildSongEntry(path: string): Promise<GenericMetadata & {
+    path: string;
+    hasLyrics: boolean;
+    hash: string;
+    needReview: boolean;
+  }> {
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
     const metadataPromise = MusicFileResolver.getSongMetadata(path);
     const md5 = await md5Promise,
