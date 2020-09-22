@@ -1,24 +1,11 @@
 import { Field, Form, Formik } from "formik";
 import { TextField } from "formik-material-ui";
 import { makeStyles } from "@material-ui/core/styles";
-import {
-  Divider,
-  Grid,
-  IconButton,
-  InputAdornment,
-  Typography,
-  TextField as MuiTextField,
-  Button, DialogActions, Dialog, DialogTitle, DialogContent, DialogContentText
-} from "@material-ui/core";
+import { Button, Divider, Grid, IconButton, InputAdornment } from "@material-ui/core";
 import { gql, useApolloClient } from "@apollo/client";
 import AutorenewIcon from "@material-ui/icons/Autorenew";
-import { MouseEventHandler, useCallback, useEffect } from "react";
-import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-lab";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { MouseEventHandler } from "react";
 import { Song } from "../../../models/Song";
-import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
-import _ from "lodash";
-import axios from "axios";
 import VocaDBIntegrationBox from "./vocaDBIntegrationBox";
 
 const TRANSLITRATION_QUERY = gql`

@@ -1,10 +1,5 @@
 import {
   Box,
-  Button,
-  Dialog, DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Grid,
   TextField as MuiTextField,
   Typography
@@ -14,7 +9,7 @@ import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { Song } from "../../../models/Song";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
@@ -23,6 +18,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import { makeStyles } from "@material-ui/core/styles";
 import VocaDBSearchSongDialog from "./vocaDBSearchSongDialog";
+import { SongFragments } from "../../../graphql/fragments";
 
 export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
@@ -32,11 +28,11 @@ export type ExtendedSong = Partial<Song> & {
 const LOCAL_SONG_ENTITY_QUERY = gql`
   query($text: String!) {
     searchSongs(keywords: $text) {
-      id
-      name
-      sortOrder
+      ...MusicFileDetails
     }
   }
+  
+  ${SongFragments.MusicFileDetails}
 `;
 
 const useStyles = makeStyles((theme) => ({

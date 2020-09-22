@@ -83,7 +83,7 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
           artistSortOrder={fileData.data?.musicFile.artistSortOrder ?? ""}
           albumName={fileData.data?.musicFile.albumName ?? ""}
           albumSortOrder={fileData.data?.musicFile.albumSortOrder ?? ""}
-          song={fileData.data?.musicFile.song}
+          song={fileData.data?.musicFile.song ?? null}
           fileId={fileId} />
       </TabPanel>
       <TabPanel value="voca-db">VocaDB</TabPanel>

@@ -33,6 +33,7 @@ import {AuthContext, AuthContextConsumer} from "../../public/AuthContext";
 import {useRouter} from "next/router";
 import {NextComposedLink} from "../../Link";
 import Head from "next/head";
+import { SnackbarProvider } from "notistack";
 
 const DRAWER_WIDTH = 240;
 const DASHBOARD_TITLE = "Jukebox Dashboard";
@@ -215,7 +216,8 @@ export default function DashboardLayout({title, children}: Props) {
       <title>{pageTitle}</title>
       <meta property="og:title" content={pageTitle} key="title"/>
     </Head>
-    <AuthContextConsumer>{(user) =>
+    <SnackbarProvider maxSnack={4}>
+      <AuthContextConsumer>{(user) =>
       <div className={styles.container}>
         <AppBar position="fixed" className={clsx(styles.appBar, {
           [styles.appBarShift]: isDrawerOpen,
@@ -309,6 +311,7 @@ export default function DashboardLayout({title, children}: Props) {
         </main>
       </div>
     }</AuthContextConsumer>
+    </SnackbarProvider>
   </AuthContext>;
 }
 
