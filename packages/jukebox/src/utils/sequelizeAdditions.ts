@@ -1,13 +1,13 @@
-import { DataTypes, AbstractDataType } from "sequelize";
+import { DataTypes, AbstractDataType, Utils } from "sequelize";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const UnproxyAbstract: DataTypes.ABSTRACT = (new DataTypes.ABSTRACT()).constructor;
 
 class SimpleEnumArray extends UnproxyAbstract implements AbstractDataType {
 
-  private _enum: string[];
-  private _length: number;
+  private readonly _enum: string[];
+  private readonly _length: number;
   public key = "SIMPLE_ENUM_ARRAY";
   public static key = "SIMPLE_ENUM_ARRAY";
 
@@ -28,13 +28,13 @@ class SimpleEnumArray extends UnproxyAbstract implements AbstractDataType {
   }
 
   // Mandatory, complete definition of the new type in the database
-  public toSql() {
+  public toSql(): string {
     // console.log("----------- TOSQL");
     return `VARCHAR(${this._length})`;
   }
 
   // Optional, validator function
-  public validate(value: any): boolean {
+  public validate(value: unknown): boolean {
     if (!Array.isArray(value)) {
       throw new Error(`${value} is not a valid array.`);
     }
@@ -46,26 +46,40 @@ class SimpleEnumArray extends UnproxyAbstract implements AbstractDataType {
     return true;
   }
 
-  public toString() {
+  public toString(): string {
     return this.toSql();
   }
 
   // Optional, value stringifier before sending to database
-  public stringify(value: string[]) {
+  public _stringify(value: string[]): string {
+    return value.join(",");
+  }
+
+  // Optional: sanitizer
+  public _sanitize(value: unknown): string[] {
+    if (typeof value === "string") {
+      return value.split(",");
+    }
+    if (Array.isArray(value)) return value;
+    return [`${value}`];
+  }
+
+  public stringify(value: string[]): string {
     return value.join(",");
   }
 
   // Optional, parser for values received from the database
-  static parse(value: string) {
+  public static parse(value: string): string[] {
     return value.split(",");
   }
 }
 
 export const SIMPLE_ENUM_ARRAY = SimpleEnumArray;
+export const SIMPLE_ENUM_ARRAY_INVOCABLE = Utils.classToInvokable(SimpleEnumArray);
 
 export function sequelizeAdditions(Sequelize: any) {
 
   const DataTypes = Sequelize.DataTypes;
 
-  DataTypes.SIMPLE_ENUM_ARRAY = SimpleEnumArray;
+  DataTypes.SIMPLE_ENUM_ARRAY = SIMPLE_ENUM_ARRAY_INVOCABLE;
 }

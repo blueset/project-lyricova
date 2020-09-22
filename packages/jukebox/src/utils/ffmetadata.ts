@@ -232,7 +232,7 @@ export function read(src: string, options: ReadOptions | ReadCallback, callback?
   }
 
   return stream;
-};
+}
 
 export function readAsync(
   src: string,
@@ -341,7 +341,7 @@ export function write(src: string, data: Metadata, options: WriteOptions | Write
   }
 
   // return stream;
-};
+}
 
 export function writeAsync(
   src: string,

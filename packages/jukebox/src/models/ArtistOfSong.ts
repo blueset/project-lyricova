@@ -1,10 +1,25 @@
-import { VDBArtistRoleType, ArtistForSongContract } from "../types/vocadb";
+import { ArtistForSongContract, VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { Song } from "./Song";
 import { Artist } from "./Artist";
-import { CreatedAt, UpdatedAt, DeletedAt, AllowNull, Column, Default, PrimaryKey, AutoIncrement, Table, Model, Unique, BelongsTo, ForeignKey } from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-import { SIMPLE_ENUM_ARRAY } from "../utils/sequelizeAdditions";
+import {
+  AllowNull,
+  AutoIncrement,
+  BelongsTo,
+  Column,
+  CreatedAt,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Table,
+  Unique,
+  UpdatedAt
+} from "sequelize-typescript";
+import { DataTypes, ENUM } from "sequelize";
+import { SIMPLE_ENUM_ARRAY_INVOCABLE } from "../utils/sequelizeAdditions";
+import { Field, Int, ObjectType } from "type-graphql";
 
+@ObjectType()
 @Table
 export class ArtistOfSong extends Model<ArtistOfSong> {
   @AutoIncrement
@@ -12,15 +27,17 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
   @Column({ type: new DataTypes.INTEGER })
   artistOfSongId: number;
 
+  @Field(type => Int, { nullable: true })
   @Unique
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   vocaDbId: number | null;
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  @Field(type => [String])
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  @Column({
-    type: new SIMPLE_ENUM_ARRAY(["Default",
+  @Column(SIMPLE_ENUM_ARRAY_INVOCABLE([
+      "Default",
       "Animator",
       "Arranger",
       "Composer",
@@ -36,14 +53,34 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
       "Mixer",
       "Chorus",
       "Encoder",
-      "VocalDataProvider"])
-  })
+      "VocalDataProvider"
+    ])
+  )
   artistRoles: VDBArtistRoleType[];
 
+  @Field(type => [String])
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  @Column(SIMPLE_ENUM_ARRAY_INVOCABLE([
+    "Nothing",
+    "Vocalist",
+    "Producer",
+    "Animator",
+    "Label",
+    "Circle",
+    "Other",
+    "Band",
+    "Illustrator",
+    "Subject",
+  ]))
+  categories: VDBArtistCategoryType[];
+
+  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(4096) })
   customName: string | null;
 
+  @Field()
   @Default(false)
   @Column
   isSupport: boolean;
@@ -62,24 +99,28 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
   @Column
   artistId: number;
 
+  @Field()
   @CreatedAt
   creationDate: Date;
 
+  @Field()
   @UpdatedAt
   updatedOn: Date;
 
   /** Incomplete build. */
-  static async artistFromVocaDB(entity: ArtistForSongContract): Promise<Artist & { ArtistOfSong: ArtistOfSong }> {
-    const artist = await Artist.fromVocaDBArtistContract(entity.artist) as (Artist & { ArtistOfSong: ArtistOfSong });
-    const [artistOfSong, _] = await ArtistOfSong.findOrCreate({
-      where: { vocaDbId: entity.id },
-      defaults: {
-        artistRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
-        customName: entity.isCustomName ? entity.name : null,
-        isSupport: entity.isSupport,
-      }
-    });
-    artist.ArtistOfSong = artistOfSong;
+  static async artistFromVocaDB(entity: ArtistForSongContract): Promise<Artist> {
+    const artist = await Artist.fromVocaDBArtistContract(entity.artist);
+    const artistOfSongAttrs = {
+      artistRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
+      categories: entity.categories.split(", ") as VDBArtistCategoryType[],
+      customName: entity.isCustomName ? entity.name : null,
+      isSupport: entity.isSupport,
+    };
+    if (artist.ArtistOfSong === undefined) {
+      artist.ArtistOfSong = artistOfSongAttrs;
+    } else if (artist.ArtistOfSong.set) {
+      artist.ArtistOfSong.set(artistOfSongAttrs);
+    }
     return artist;
   }
 }

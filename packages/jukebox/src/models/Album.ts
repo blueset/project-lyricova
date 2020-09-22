@@ -63,6 +63,10 @@ export class Album extends Model<Album> {
   @DeletedAt
   deletionDate: Date;
 
+  /** SongInAlbum reflected by Song.$get("albums"), added for GraphQL queries. */
+  @Field(type => SongInAlbum,{nullable: true})
+  SongInAlbum?: Partial<SongInAlbum>;
+
   /** Incomplete build. */
   static async fromVocaDBAlbumContract(entity: AlbumContract): Promise<Album> {
     const obj = (await Album.findOrCreate({

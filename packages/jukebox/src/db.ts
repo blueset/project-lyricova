@@ -10,7 +10,6 @@ const sequelize = new Sequelize(DB_URI, {
   // logging: (sql) => logger.debug(sql)
 });
 
-
 (async () => {
   try {
     await sequelize.authenticate();

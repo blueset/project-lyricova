@@ -1,10 +1,12 @@
 import { Song } from "./Song";
 import { Model, Table, Column, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, DeletedAt, AllowNull, Default, BelongsTo, ForeignKey } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
+import { Field, Int, ObjectType } from "type-graphql";
 
-
+@ObjectType()
 @Table
 export class VideoFile extends Model<VideoFile> {
+  @Field(() => Int)
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER })

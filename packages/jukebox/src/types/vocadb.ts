@@ -185,7 +185,8 @@ export interface AlbumContract {
 }
 export interface ArtistForSongContract {
   artist: ArtistContract;
-  categories: VDBArtistCategoryType;
+  /** VDBArtistCategoryType[].join(", ") */
+  categories: string;
   /** VDBArtistRoleType[].join(", ") */
   effectiveRoles: string;
   id: number;

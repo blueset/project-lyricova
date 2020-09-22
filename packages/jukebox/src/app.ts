@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import compression from "compression"; // compresses requests
 import bodyParser from "body-parser";
 import flash from "express-flash";
@@ -10,6 +10,7 @@ import { SESSION_SECRET } from "./utils/secret";
 import sequelize from "./db";
 import SequelizeStoreConstructor from "connect-session-sequelize";
 import { applyApollo } from "./graphql";
+import { Sequelize } from "sequelize";
 
 const SequelizeStore = SequelizeStoreConstructor(session.Store);
 

@@ -5589,6 +5589,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"array-filter@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "array-filter@npm:1.0.0"
+  checksum: e0edbae5296e6904f369b5ad2919e932b6aa4ac525951b8713f4379183bbeb2f73c3e788dca1104b95c5ed919c430ba0a4b036dfb32be492665ba5213e80791c
+  languageName: node
+  linkType: hard
+
 "array-find-index@npm:^1.0.1":
   version: 1.0.2
   resolution: "array-find-index@npm:1.0.2"
@@ -5952,6 +5959,15 @@ __metadata:
   bin:
     ava: cli.js
   checksum: 282cb94428db669d37d24a7d904ddf2270a63386d761392751ddfb096cab3002df821f12eac395ee424a0df52dc1e412477ff28ddac17859b870e95dcadc7a67
+  languageName: node
+  linkType: hard
+
+"available-typed-arrays@npm:^1.0.0, available-typed-arrays@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "available-typed-arrays@npm:1.0.2"
+  dependencies:
+    array-filter: ^1.0.0
+  checksum: 1f01d36fa3f25a06fd00968a1bc32fa75e5b56268828be5a7c6d0bdf37be0d7517d1b9aa5f1a6d2626725cb59708e280c5a9cf9a1b4d86f5e571d48168904061
   languageName: node
   linkType: hard
 
@@ -7641,17 +7657,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cls-bluebird@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "cls-bluebird@npm:2.1.0"
-  dependencies:
-    is-bluebird: ^1.0.2
-    shimmer: ^1.1.0
-  checksum: f3b31004a9ff9cc86eb86bd8e9287bc969670e2b60508c95e98e1bac969423c480318b224662f78e6fc0ffeaf1e1e36d1156acfeb002a67e417dd4263c270fc6
-  languageName: node
-  linkType: hard
-
-"clsx@npm:^1.0.2, clsx@npm:^1.0.4":
+"clsx@npm:^1.0.2, clsx@npm:^1.0.4, clsx@npm:^1.1.0":
   version: 1.1.1
   resolution: "clsx@npm:1.1.1"
   checksum: d8ae10ac0546da19fe8c9516886f6582a64a382cf4d09ea7d36d5287cafbdab1192ab249adc2cdf0310e0b0aeac4f4142cf7c738c98d9cb68c19ba24b6f673d5
@@ -8000,15 +8006,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"connect-session-sequelize@npm:^6.1.1":
-  version: 6.1.1
-  resolution: "connect-session-sequelize@npm:6.1.1"
+"connect-session-sequelize@npm:^7.0.2":
+  version: 7.0.2
+  resolution: "connect-session-sequelize@npm:7.0.2"
   dependencies:
-    debug: ^3.1.0
-    deep-equal: ^1.0.1
+    debug: ^4.1.1
+    deep-equal: ^2.0.3
   peerDependencies:
-    sequelize: ">= 3.24.5"
-  checksum: c56e15159f12dc7186a4bc2e829014cdfe8a612ef414f54575422ad2c8c7f922dc84307d0018ef358679fdf8e19dddd8b7861df3d1c3b8a7f45957dd27350415
+    sequelize: ">= 6.1.0"
+  checksum: fb57220f505a976c7d0af40663bf77f233ee00c1dec2333948750430e5b569ed2db616784dcd8467fe4ca44abe6dd2f050011d3813a7fd0d31c9152c709c0123
   languageName: node
   linkType: hard
 
@@ -8946,7 +8952,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:^3.0.0, debug@npm:^3.1.0, debug@npm:^3.2.6":
+"debug@npm:^3.0.0, debug@npm:^3.2.6":
   version: 3.2.6
   resolution: "debug@npm:3.2.6"
   dependencies:
@@ -9013,7 +9019,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"deep-equal@npm:^1.0.1, deep-equal@npm:^1.1.1":
+"deep-equal@npm:^1.1.1":
   version: 1.1.1
   resolution: "deep-equal@npm:1.1.1"
   dependencies:
@@ -9024,6 +9030,28 @@ __metadata:
     object-keys: ^1.1.1
     regexp.prototype.flags: ^1.2.0
   checksum: cc6a0009ce73a10230758d50795211fb3ceb7eb7f2cf8baed1c4a4cb2a06dc28857ce11e641c95ca9abb5edc1f1e86a4bb6bcffaadf9fe9d310c102d346d043b
+  languageName: node
+  linkType: hard
+
+"deep-equal@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "deep-equal@npm:2.0.3"
+  dependencies:
+    es-abstract: ^1.17.5
+    es-get-iterator: ^1.1.0
+    is-arguments: ^1.0.4
+    is-date-object: ^1.0.2
+    is-regex: ^1.0.5
+    isarray: ^2.0.5
+    object-is: ^1.1.2
+    object-keys: ^1.1.1
+    object.assign: ^4.1.0
+    regexp.prototype.flags: ^1.3.0
+    side-channel: ^1.0.2
+    which-boxed-primitive: ^1.0.1
+    which-collection: ^1.0.1
+    which-typed-array: ^1.1.2
+  checksum: 68f1fa69dd179578bcece15e5325acc3976857393730361209c668c7d068912833e2896c166efd0b63922875f45aceffbf0a6083defbb22e797588205f0777d0
   languageName: node
   linkType: hard
 
@@ -9885,7 +9913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es-get-iterator@npm:^1.0.2":
+"es-get-iterator@npm:^1.0.2, es-get-iterator@npm:^1.1.0":
   version: 1.1.0
   resolution: "es-get-iterator@npm:1.1.0"
   dependencies:
@@ -10939,6 +10967,13 @@ __metadata:
   dependencies:
     for-in: ^1.0.1
   checksum: 7b9778a9197ab519e2c94aec35b44efb467d1867c181cea5a28d7a819480ce5ffcae0b4ae63f15d42f16312d72e63c3cdb1acbc407528ea0ba27afb9df4c958a
+  languageName: node
+  linkType: hard
+
+"foreach@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "foreach@npm:2.0.5"
+  checksum: 890d6c3dec185be6b1f7a94003d67d1b36a068fd7ac5a89f92818c3459d7d43e040a0b228a632e2e50d8a5aa804da6a5d27258ccbc1b7b724fe39eea3834f240
   languageName: node
   linkType: hard
 
@@ -12890,6 +12925,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"is-bigint@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "is-bigint@npm:1.0.0"
+  checksum: 88a68a7d2982ebb9033c277ece5c35c343e794750f4f02312d9a9396cd76ebe7538187f5ede15e58d5ee8ad4d5936fc41457117847ce1616779614dabdc38d09
+  languageName: node
+  linkType: hard
+
 "is-binary-path@npm:^1.0.0":
   version: 1.0.1
   resolution: "is-binary-path@npm:1.0.1"
@@ -12908,10 +12950,10 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"is-bluebird@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "is-bluebird@npm:1.0.2"
-  checksum: 88981b25d84294916cdfb2e5ea081a21ffbc9a9e325f38d3330991413306c638e4813fe2a336fa98e37d9a0b2b3ba59179034306af072a4459b2102d62538cf4
+"is-boolean-object@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "is-boolean-object@npm:1.0.1"
+  checksum: 903b6ce93c64dd22fb7eb878c5d4a20c5ec7bf273ee921a9e506a8c77b511037be708f215a080387bc4a422b88c21b38debae637ca95f09ab8cb5fec81a8324a
   languageName: node
   linkType: hard
 
@@ -12965,7 +13007,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"is-date-object@npm:^1.0.1":
+"is-date-object@npm:^1.0.1, is-date-object@npm:^1.0.2":
   version: 1.0.2
   resolution: "is-date-object@npm:1.0.2"
   checksum: 0e322699464a99da638c8a583b74dfb791732b6bc9c102bc0b7ac6303d83c86b9935f19b8d2ed4de52092241190c8826b099cb31972dea49a99b755293c0b1cf
@@ -13180,6 +13222,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"is-number-object@npm:^1.0.3":
+  version: 1.0.4
+  resolution: "is-number-object@npm:1.0.4"
+  checksum: 5bae52129f0e097485da25cbe89307dd46cf5ce7640edb6fcf40350d59c9f909039713d35fbeb0f1de1df817da6ec6e88aceca41b01e5ac989f6fdfc15c438a7
+  languageName: node
+  linkType: hard
+
 "is-number@npm:^3.0.0":
   version: 3.0.0
   resolution: "is-number@npm:3.0.0"
@@ -13291,7 +13340,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"is-regex@npm:^1.0.4, is-regex@npm:^1.1.0, is-regex@npm:^1.1.1":
+"is-regex@npm:^1.0.4, is-regex@npm:^1.0.5, is-regex@npm:^1.1.0, is-regex@npm:^1.1.1":
   version: 1.1.1
   resolution: "is-regex@npm:1.1.1"
   dependencies:
@@ -13353,6 +13402,18 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"is-typed-array@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "is-typed-array@npm:1.1.3"
+  dependencies:
+    available-typed-arrays: ^1.0.0
+    es-abstract: ^1.17.4
+    foreach: ^2.0.5
+    has-symbols: ^1.0.1
+  checksum: 9e4d525e831fd4f577ea1a74e103508d4ef1a138ffcd2f2ed7335eb513bde315b5e1ee6f82556e8414c14b414ecc1f6fd306129dd3a74370fc7209b8e26b75a4
+  languageName: node
+  linkType: hard
+
 "is-typedarray@npm:^1.0.0, is-typedarray@npm:~1.0.0":
   version: 1.0.0
   resolution: "is-typedarray@npm:1.0.0"
@@ -13364,6 +13425,20 @@ fsevents@^1.2.7:
   version: 0.2.1
   resolution: "is-utf8@npm:0.2.1"
   checksum: c72f604d72b72f6a57f9b2e22c9b6f480e869b3f0efe141bd1dfbc36655225043ca8c1316ff8e343ef641cf80868c9e4a37345492f31402abd5ab68e09367977
+  languageName: node
+  linkType: hard
+
+"is-weakmap@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "is-weakmap@npm:2.0.1"
+  checksum: 24b61f05fd1588cdfcd977d09329393cec13999ab43d8dd9d29b004040630a2db323834f8cd5a8c2f10be8da852a76db087a3d24903d69e5bdd3039688aca236
+  languageName: node
+  linkType: hard
+
+"is-weakset@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "is-weakset@npm:2.0.1"
+  checksum: 54dfba319b340841f9cdaf84de7eda91508415697220e74d01cf3860027102930effec7253f490967092416a741ec7051ac06ef077071148e63920ee299a1266
   languageName: node
   linkType: hard
 
@@ -14656,7 +14731,7 @@ fsevents@^1.2.7:
     compression: ^1.7.4
     concat-stream: ^2.0.0
     concurrently: ^5.3.0
-    connect-session-sequelize: ^6.1.1
+    connect-session-sequelize: ^7.0.2
     connect-typeorm: ^1.1.3
     dotenv: ^8.2.0
     errorhandler: ^1.5.1
@@ -14691,6 +14766,7 @@ fsevents@^1.2.7:
     node-pre-gyp: ^0.15.0
     node-sass: ^4.13.1
     nodemon: ^2.0.2
+    notistack: ^1.0.0
     novel-segment: ^2.7.53
     p-limit: ^2.2.2
     passport: ^0.4.1
@@ -14709,8 +14785,8 @@ fsevents@^1.2.7:
     react-window: ^1.8.5
     reflect-metadata: ^0.1.13
     sass: ^1.26.10
-    sequelize: ^5.21.3
-    sequelize-typescript: ^1.1.0
+    sequelize: 6.1.1
+    sequelize-typescript: 2.0.0-beta.0
     shortid: ^2.2.15
     split: ^1.0.1
     stream-combiner: ^0.2.2
@@ -15517,7 +15593,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"moment-timezone@npm:^0.5.21":
+"moment-timezone@npm:^0.5.31":
   version: 0.5.31
   resolution: "moment-timezone@npm:0.5.31"
   dependencies:
@@ -15526,7 +15602,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"moment@npm:>= 2.9.0, moment@npm:^2.24.0, moment@npm:^2.27.0":
+"moment@npm:>= 2.9.0, moment@npm:^2.26.0, moment@npm:^2.27.0":
   version: 2.27.0
   resolution: "moment@npm:2.27.0"
   checksum: 72d9a7d8dba59e3d538440cdc0b59fa895b123361e370be231896478aaf157a484355ce32bd8daf6f731d6d1636d3a67ecb67531e536e093ca18b43e0cbae194
@@ -16163,6 +16239,20 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"notistack@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "notistack@npm:1.0.0"
+  dependencies:
+    clsx: ^1.1.0
+    hoist-non-react-statics: ^3.3.0
+  peerDependencies:
+    "@material-ui/core": ^4.0.0
+    react: ^16.8.0
+    react-dom: ^16.8.0
+  checksum: c02380a1456c9ce1d8cdb01512b4ec2d35e79b7ec0c3e3c757edafd005e077cd238ff5a5e10a60692f8bdc14c16959fea5419fba798c72a0ec74033875d81180
+  languageName: node
+  linkType: hard
+
 "novel-segment@npm:2.7.53, novel-segment@npm:^2.7.53":
   version: 2.7.53
   resolution: "novel-segment@npm:2.7.53"
@@ -16372,7 +16462,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"object-is@npm:^1.0.1":
+"object-is@npm:^1.0.1, object-is@npm:^1.1.2":
   version: 1.1.2
   resolution: "object-is@npm:1.1.2"
   dependencies:
@@ -19592,16 +19682,16 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"sequelize-pool@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "sequelize-pool@npm:2.3.0"
-  checksum: a6fc8cc5ef189671efb9964c702796fc00d49092e764d79d1f79a02673b3a6c006721e724d3a1f78baab9eb2605539e3e389841407c199631b82a0c6fd6187f4
+"sequelize-pool@npm:^6.0.0":
+  version: 6.1.0
+  resolution: "sequelize-pool@npm:6.1.0"
+  checksum: 80d730f6f4620bd9575cf051bb93f3f8ef29d7c808ca3c31d8177d62a8ab01af09ca9b53b19f7ad91fdf42dbb0cac7ddfb0c799606aec059154b1917f8f4354e
   languageName: node
   linkType: hard
 
-"sequelize-typescript@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "sequelize-typescript@npm:1.1.0"
+"sequelize-typescript@npm:2.0.0-beta.0":
+  version: 2.0.0-beta.0
+  resolution: "sequelize-typescript@npm:2.0.0-beta.0"
   dependencies:
     glob: 7.1.2
   peerDependencies:
@@ -19609,31 +19699,29 @@ fsevents@^1.2.7:
     "@types/node": "*"
     "@types/validator": "*"
     reflect-metadata: "*"
-    sequelize: ^5.1.0
-  checksum: 7538d342f8adf4ac1416e1c69dc94d3552e077f1814f26668ccf9cdee790229d3497cfb41f298e5abed5ed9b91efda9f6151bde0e0efef27cec4dba29263621b
+    sequelize: ^6.0.0
+  checksum: ce9ffbb0a755918478ca714f05646ebb9b517d6ab50fb86d902290cb2558ece4558c05deda30f733961979e254605c6d278a8ae7f86bdb298472d10b05454911
   languageName: node
   linkType: hard
 
-"sequelize@npm:^5.21.3":
-  version: 5.22.3
-  resolution: "sequelize@npm:5.22.3"
+"sequelize@npm:6.1.1":
+  version: 6.1.1
+  resolution: "sequelize@npm:6.1.1"
   dependencies:
-    bluebird: ^3.5.0
-    cls-bluebird: ^2.1.0
     debug: ^4.1.1
     dottie: ^2.0.0
     inflection: 1.12.0
     lodash: ^4.17.15
-    moment: ^2.24.0
-    moment-timezone: ^0.5.21
+    moment: ^2.26.0
+    moment-timezone: ^0.5.31
     retry-as-promised: ^3.2.0
-    semver: ^6.3.0
-    sequelize-pool: ^2.3.0
+    semver: ^7.3.2
+    sequelize-pool: ^6.0.0
     toposort-class: ^1.0.1
-    uuid: ^3.3.3
+    uuid: ^8.1.0
     validator: ^10.11.0
-    wkx: ^0.4.8
-  checksum: 6c5c2650072da71f76197dfb26a93c992b79453002621c1575c7627422eb2e7ba84fd84f57c29e74fcc6bb6964aee2a021564ada143d11b8b9e063aa5d4655b1
+    wkx: ^0.5.0
+  checksum: 2b9850c39dcbea717e55f61fe4a2fd1b6b3d754e5f2900c8bcd8abab5821bec6d9165dd8f49a04b072d15e41036e3ac19845a60dd1cfdd1bc061f6a9c5a7d2b1
   languageName: node
   linkType: hard
 
@@ -19807,13 +19895,6 @@ fsevents@^1.2.7:
   bin:
     shjs: bin/shjs
   checksum: bdf68e3c2a8a6d191dde3be2800bfcfd688c126344ccaf6cf7024cdaf824d0d3523b8e514cd52264f739cbabd2b0569637dd5a8183377347225af918e03ff5dc
-  languageName: node
-  linkType: hard
-
-"shimmer@npm:^1.1.0":
-  version: 1.2.1
-  resolution: "shimmer@npm:1.2.1"
-  checksum: 23431fc4c5cf2df4c4ffca20a415ac18fbc989bdec595b97b541c65b08cf04da55c5b4e1d7b7ea73d17fc92d4c33bd6e97e4da356adbf0349e06813068263d87
   languageName: node
   linkType: hard
 
@@ -22395,7 +22476,7 @@ typescript@^4.0.2:
   languageName: node
   linkType: hard
 
-"uuid@npm:^3.1.0, uuid@npm:^3.3.2, uuid@npm:^3.3.3":
+"uuid@npm:^3.1.0, uuid@npm:^3.3.2":
   version: 3.4.0
   resolution: "uuid@npm:3.4.0"
   bin:
@@ -22404,7 +22485,7 @@ typescript@^4.0.2:
   languageName: node
   linkType: hard
 
-"uuid@npm:^8.0.0":
+"uuid@npm:^8.0.0, uuid@npm:^8.1.0":
   version: 8.3.0
   resolution: "uuid@npm:8.3.0"
   bin:
@@ -22740,10 +22821,49 @@ typescript@^4.0.2:
   languageName: node
   linkType: hard
 
+"which-boxed-primitive@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "which-boxed-primitive@npm:1.0.1"
+  dependencies:
+    is-bigint: ^1.0.0
+    is-boolean-object: ^1.0.0
+    is-number-object: ^1.0.3
+    is-string: ^1.0.4
+    is-symbol: ^1.0.2
+  checksum: 16c7648861ceba4532b201a0e9e4800f5733c735c26bf6fd9a3ae83468abca8c7e5b4e923b5838f3413e84137ba43e33ff7394d1873cf56f00e645bd84cf322f
+  languageName: node
+  linkType: hard
+
+"which-collection@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "which-collection@npm:1.0.1"
+  dependencies:
+    is-map: ^2.0.1
+    is-set: ^2.0.1
+    is-weakmap: ^2.0.1
+    is-weakset: ^2.0.1
+  checksum: 839a5aca35337ccb0bcc0da4131145e5dd65abfd90a5e932cf8804103eb1117ec216c1bde2ed9abccbe7b9b4ab869bd68735ad863d8b44fcfab718dc36fa1771
+  languageName: node
+  linkType: hard
+
 "which-module@npm:^2.0.0":
   version: 2.0.0
   resolution: "which-module@npm:2.0.0"
   checksum: 3d2107ab18c3c2a0ffa4f1a2a0a8862d0bb3fd5c72b10df9cbd75a15b496533bf4c4dc6fa65cefba6fdb8af7935ffb939ef4c8f2eb7835b03d1b93680e9101e9
+  languageName: node
+  linkType: hard
+
+"which-typed-array@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "which-typed-array@npm:1.1.2"
+  dependencies:
+    available-typed-arrays: ^1.0.2
+    es-abstract: ^1.17.5
+    foreach: ^2.0.5
+    function-bind: ^1.1.1
+    has-symbols: ^1.0.1
+    is-typed-array: ^1.1.3
+  checksum: 577bfb6457f70f8c9ee117ef243c69d00fa0c92ffb82f1700c6fd8bf0a85de5f0582555f6259f250e2fb712d6dab04d3d140362555ccf116cdcfcf6b9bc41a99
   languageName: node
   linkType: hard
 
@@ -22814,12 +22934,12 @@ typescript@^4.0.2:
   languageName: node
   linkType: hard
 
-"wkx@npm:^0.4.8":
-  version: 0.4.8
-  resolution: "wkx@npm:0.4.8"
+"wkx@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "wkx@npm:0.5.0"
   dependencies:
     "@types/node": "*"
-  checksum: b18c150a870dc62a6e4cb35666698a9ae1ffc6e629d8ae2a09e5c2dc65ab1f7df3075c91b8d8291091895fef6e8f8df853e214c14b6d27263508f7e6364844ef
+  checksum: ea38c886b89cc80e04093965d46e9995deb56e5e09b6166f108d20a719cba02266b5a3228286565068baa99fdc88de11eb5be31fa1d18a8b8214dde8a3f246dc
   languageName: node
   linkType: hard
 

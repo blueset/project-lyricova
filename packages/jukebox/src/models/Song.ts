@@ -8,24 +8,25 @@ import { transliterate } from "../utils/transliterate";
 import { DataTypes } from "sequelize";
 import { Includeable } from "sequelize/types";
 import {
-  Model,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-  Column,
-  Table,
+  AllowNull,
   BelongsTo,
-  PrimaryKey,
+  BelongsToMany,
+  Column,
+  CreatedAt,
+  DeletedAt,
   ForeignKey,
   HasMany,
-  AllowNull,
-  BelongsToMany,
-  Index
+  Index,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt
 } from "sequelize-typescript";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
 import { SongOfEntry } from "./SongOfEntry";
-import { ObjectType, Int, Field } from "type-graphql";
+import { Field, Int, ObjectType } from "type-graphql";
+import { GraphQLJSONObject } from "graphql-type-json";
 
 @ObjectType()
 @Table
@@ -77,6 +78,7 @@ export class Song extends Model<Song> {
   @HasMany(() => Song, "originalId")
   readonly derivedSongs: Song[];
 
+  @Field(type => GraphQLJSONObject)
   @AllowNull
   @Column({ type: DataTypes.JSON })
   vocaDbJson!: SongForApiContract | null;
@@ -121,6 +123,7 @@ export class Song extends Model<Song> {
       name: entity.name,
       sortOrder: transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
+      coverPath: entity.thumbUrl,
       incomplete: false,
     });
 
