@@ -177,6 +177,9 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
             onChange={(event: unknown, newValue: ExtendedSong | null, reason: string) => {
               if (newValue === null) {
                 setVocaDBAutoCompleteOptions([]);
+                if (reason === "clear") {
+                  setFieldValue(fieldName, null);
+                }
                 return;
               }
               if (newValue.vocaDBSuggestion) {
