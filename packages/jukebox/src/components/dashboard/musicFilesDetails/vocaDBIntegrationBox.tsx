@@ -154,6 +154,7 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
             selectOnFocus
             clearOnBlur
             handleHomeEndKeys
+            freeSolo
             filterOptions={(v: ExtendedSong[], params: FilterOptionsState<ExtendedSong>) => {
               if (params.inputValue !== "") {
                 v.push({
@@ -205,7 +206,6 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
                 </Box>
               );
             }}
-            debug
             getOptionLabel={(option: ExtendedSong | null) => {
               // Prevent ”Manually add ...” item from being rendered
               if (option === null || option.id === null) return "";
