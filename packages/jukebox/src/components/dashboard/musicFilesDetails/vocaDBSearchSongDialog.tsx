@@ -69,7 +69,7 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
     toggleImporting(false);
     setSelectedSong(null);
     toggleLoaded(false);
-  }, [toggleOpen, setKeyword, setResults, toggleLoaded]);
+  }, [toggleOpen, setKeyword, setResults, toggleImporting, setSelectedSong, toggleLoaded]);
 
   const handleSubmit = useCallback(async () => {
     if (selectedSong === null) {
@@ -89,18 +89,18 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
     if (result.data) {
       setSong(result.data.enrolSongFromVocaDB);
       snackbar.enqueueSnackbar(`Song “${result.data.enrolSongFromVocaDB.name}” is successfully enrolled.`, {
-        variant: "success"
+        variant: "success",
       });
       handleClose();
     } else {
       console.error(`Error occurred while importing song #${selectedSong}.`, result.errors);
       snackbar.enqueueSnackbar(`Error occurred while importing song #${selectedSong}. (${result.errors})`, {
-        variant: "error"
+        variant: "error",
       });
       toggleImporting(false);
     }
 
-  }, [selectedSong]);
+  }, [apolloClient, handleClose, selectedSong, setSong, snackbar, toggleImporting]);
 
   const handleChooseRadio = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setSelectedSong(parseInt(event.target.value));
@@ -145,7 +145,7 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
     return () => {
       active = false;
     };
-  }, [keyword, setResults, toggleLoaded]);
+  }, [keyword, setResults, snackbar, toggleLoaded]);
 
   return (
     <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">

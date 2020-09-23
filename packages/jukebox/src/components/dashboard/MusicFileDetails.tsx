@@ -1,6 +1,6 @@
 import { gql, useLazyQuery } from "@apollo/client";
 import { MusicFile } from "../../models/MusicFile";
-import { AppBar, Button, Card, CardActions, Tab, Tabs } from "@material-ui/core";
+import { AppBar, Button, Card, CardActions, Divider, Tab, Tabs } from "@material-ui/core";
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core/styles";
@@ -69,7 +69,6 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
               scrollButtons="auto"
         >
           <Tab label="Info" value="info"/>
-          <Tab label="VocaDB" value="voca-db"/>
           <Tab label="Cover art" value="cover-art"/>
           <Tab label="Lyrics" value="lyrics"/>
           <Tab label="Playlists" value="playlists"/>
@@ -86,11 +85,11 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
           song={fileData.data?.musicFile.song ?? null}
           fileId={fileId} />
       </TabPanel>
-      <TabPanel value="voca-db">VocaDB</TabPanel>
       <TabPanel value="cover-art">Cover art</TabPanel>
       <TabPanel value="lyrics">Lyrics</TabPanel>
       <TabPanel value="playlists">Playlists</TabPanel>
       </TabContext>
+      <Divider />
       <CardActions>
         <Button color="secondary">Mark as reviewed</Button>
       </CardActions>

@@ -1,6 +1,7 @@
 import {
-  Box,
-  Grid,
+  Avatar,
+  Box, Chip,
+  Grid, IconButton,
   TextField as MuiTextField,
   Typography
 } from "@material-ui/core";
@@ -19,6 +20,9 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import { makeStyles } from "@material-ui/core/styles";
 import VocaDBSearchSongDialog from "./vocaDBSearchSongDialog";
 import { SongFragments } from "../../../graphql/fragments";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import EditIcon from "@material-ui/icons/Edit";
+import CreateSongEntityDialog from "./createSongEntityDialog";
 
 export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
@@ -40,6 +44,27 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.text.secondary,
     marginRight: theme.spacing(2),
   },
+  detailsBox: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  detailsThumbnail: {
+    height: "4em",
+    width: "4em",
+    marginRight: "1em",
+  },
+  textBox: {
+    flexGrow: 1,
+  },
+  chipsRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  featLabel: {
+    margin: theme.spacing(0, 1),
+  },
 }));
 
 interface Props<T extends string> {
@@ -58,9 +83,13 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
   const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useNamedState<ExtendedSong[]>([], "vocaDBAutoCompleteOptions");
   const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState("", "vocaDBAutoCompleteText");
 
+  const [importDialogKeyword, setImportDialogKeyword] = useNamedState("", "importDialogKeyword");
+
   // Confirm import pop-up
   const [isImportDialogOpen, toggleImportDialogOpen] = useNamedState(false, "importDialogOpen");
-  const [importDialogKeyword, setImportDialogKeyword] = useNamedState("", "importDialogKeyword");
+
+  // Confirm manual enrol pop-up
+  const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(false, "manualDialogOpen");
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -114,7 +143,7 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
 
   return (
     <>
-      <Typography variant="h6" component="h3">VocaDB Integration</Typography>
+      <Typography variant="h6" component="h3" gutterBottom>VocaDB Integration</Typography>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Field
@@ -154,8 +183,13 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
                 setImportDialogKeyword(newValue.sortOrder);
                 toggleImportDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
+              } else if (newValue.manual) {
+                setImportDialogKeyword(newValue.sortOrder);
+                toggleManualDialogOpen(true);
+                setVocaDBAutoCompleteOptions([]);
+              } else {
+                setFieldValue(fieldName, newValue);
               }
-              // setTimeout(() => setFieldValue("song", null));
               console.log("on change", newValue, reason);
             }}
             renderOption={(option: ExtendedSong | null) => {
@@ -187,10 +221,62 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
             )}
           />
         </Grid>
+        {value && (
+          <Grid item xs={12}>
+            <div className={styles.detailsBox}>
+              <div>
+                <Avatar
+                  src={value.coverPath} variant="rounded"
+                  className={styles.detailsThumbnail}
+                >
+                  <MusicNoteIcon />
+                </Avatar>
+              </div>
+              <div className={styles.textBox}>
+                <div>
+                  <Typography component="span">
+                    {value.name}
+                  </Typography>
+                  {" "}
+                  <Typography color="textSecondary" component="span">
+                    ({value.sortOrder}) #{value.id}
+                  </Typography>
+                </div>
+                <div className={styles.chipsRow}>
+                  {value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Producer") >= 0).map(v => (
+                    <Chip variant="outlined" size="small" key={v.sortOrder} label={v.name} />
+                  ))}
+                  {_.some(value.artists, v => v.ArtistOfSong.categories.indexOf("Vocalist")) &&
+                  <Typography color="textSecondary" component="span" className={styles.featLabel}>feat.</Typography>}
+                  {value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0).map(v => (
+                    <Chip variant="outlined" size="small" key={v.sortOrder} label={v.name} />
+                  ))}
+                </div>
+              </div>
+              <div>
+                {value.id >= 0 && (
+                  <IconButton href={`https://vocadb.net/S/${value.id}`} target="_blank">
+                    <OpenInNewIcon />
+                  </IconButton>
+                )}
+                <IconButton>
+                  <EditIcon />
+                </IconButton>
+              </div>
+            </div>
+          </Grid>
+        )}
       </Grid>
       <VocaDBSearchSongDialog
         isOpen={isImportDialogOpen}
         toggleOpen={toggleImportDialogOpen}
+        keyword={importDialogKeyword}
+        setKeyword={setImportDialogKeyword}
+        setSong={(v) => setFieldValue(fieldName, v)}
+      />
+      <CreateSongEntityDialog
+        isOpen={isManualDialogOpen}
+        toggleOpen={toggleManualDialogOpen}
         keyword={importDialogKeyword}
         setKeyword={setImportDialogKeyword}
         setSong={(v) => setFieldValue(fieldName, v)}
