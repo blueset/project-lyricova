@@ -7,32 +7,15 @@ import AutorenewIcon from "@material-ui/icons/Autorenew";
 import { MouseEventHandler } from "react";
 import { Song } from "../../../models/Song";
 import VocaDBIntegrationBox from "./vocaDBIntegrationBox";
-
-const TRANSLITRATION_QUERY = gql`
-  query($text: String!) {
-    transliterate(text: $text) {
-      plain
-    }
-  }
-`;
-
-const TransliterationAdornment = ({ onClick }: {
-  onClick: MouseEventHandler;
-}) => (
-  <InputAdornment position="end">
-    <IconButton
-      aria-label="generate transliteration"
-      onClick={onClick}
-    >
-      <AutorenewIcon />
-    </IconButton>
-  </InputAdornment>
-);
+import TransliterationAdornment from "../TransliterationAdornment";
 
 const useStyles = makeStyles((theme) => ({
   divider: {
     margin: theme.spacing(2, 0),
   },
+  formButtons: {
+    marginTop: theme.spacing(2),
+  }
 }));
 
 interface Props {
@@ -66,24 +49,6 @@ export default function InfoPanel(
     >{(formikProps) => {
       const { isSubmitting, submitForm, setFieldValue, values } = formikProps;
 
-      const transliterateField = (
-        sourceId: "trackName" | "artistName" | "albumName",
-        fieldId: "trackSortOrder" | "artistSortOrder" | "albumSortOrder"
-      ) => async () => {
-        const text = values[sourceId];
-        const result = await apolloClient.query<{
-          transliterate: { plain: string; };
-        }>({
-          query: TRANSLITRATION_QUERY,
-          variables: {
-            text
-          }
-        });
-        if (!result.error) {
-          setFieldValue(fieldId, result.data.transliterate.plain);
-        }
-      };
-
       return (
         <Form>
           <Grid container spacing={3}>
@@ -104,7 +69,9 @@ export default function InfoPanel(
                 name="trackSortOrder" type="text" label="Track sort order"
                 InputProps={{
                   endAdornment: <TransliterationAdornment
-                    onClick={transliterateField("trackName", "trackSortOrder")} />,
+                    value={formikProps.values.trackName}
+                    setField={(v) => formikProps.setFieldValue("trackSortOrder", v)}
+                  />,
                 }}
               />
             </Grid>
@@ -125,7 +92,9 @@ export default function InfoPanel(
                 name="artistSortOrder" type="text" label="Artist sort order"
                 InputProps={{
                   endAdornment: <TransliterationAdornment
-                    onClick={transliterateField("artistName", "artistSortOrder")} />,
+                    value={formikProps.values.artistName}
+                    setField={(v) => formikProps.setFieldValue("artistSortOrder", v)}
+                  />,
                 }}
               />
             </Grid>
@@ -146,14 +115,18 @@ export default function InfoPanel(
                 name="albumSortOrder" type="text" label="Album sort order"
                 InputProps={{
                   endAdornment: <TransliterationAdornment
-                    onClick={transliterateField("albumName", "albumSortOrder")} />,
+                    value={formikProps.values.albumName}
+                    setField={(v) => formikProps.setFieldValue("albumSortOrder", v)}
+                  />,
                 }}
               />
             </Grid>
           </Grid>
           <Divider className={styles.divider} />
           <VocaDBIntegrationBox fieldName="song" formikProps={formikProps} labelName="Linked song" />
-          <Button disabled={isSubmitting} onClick={submitForm}>Save</Button>
+          <div className={styles.formButtons}>
+            <Button disabled={isSubmitting} onClick={submitForm}>Save</Button>
+          </div>
         </Form>
       );
     }}</Formik>
