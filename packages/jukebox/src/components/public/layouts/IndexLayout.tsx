@@ -398,7 +398,8 @@ export default function IndexLayout({ children }: Props) {
         navigator.mediaSession.setActionHandler("stop", function () {
           playlist.stop();
         });
-      } catch (error) { }
+      } catch (error) {
+      }
 
       try {
         navigator.mediaSession.setActionHandler("seekto", function (event) {
@@ -409,23 +410,26 @@ export default function IndexLayout({ children }: Props) {
             playerRef.current.currentTime = event.seekTime;
           }
         });
-      } catch (error) { }
+      } catch (error) {
+      }
     }
   });
 
   function updatePositionState() {
     if (playerRef.current) {
-      if ("setPositionState" in navigator.mediaSession) {
-        // console.log("Updating position state...");
-        navigator.mediaSession.setPositionState({
-          duration: playerRef.current.duration || 0.0,
-          playbackRate: playerRef.current.playbackRate || 1.0,
-          position: playerRef.current.currentTime || 0.0,
-        });
+      if (navigator.mediaSession !== undefined) {
+        if (navigator.mediaSession.setPositionState !== undefined) {
+          // console.log("Updating position state...");
+          navigator.mediaSession.setPositionState({
+            duration: playerRef.current.duration || 0.0,
+            playbackRate: playerRef.current.playbackRate || 1.0,
+            position: playerRef.current.currentTime || 0.0,
+          });
+        }
+        navigator.mediaSession.playbackState = playerRef.current.paused
+          ? "paused"
+          : "playing";
       }
-      navigator.mediaSession.playbackState = playerRef.current.paused
-        ? "paused"
-        : "playing";
     }
   }
 
@@ -537,13 +541,15 @@ export default function IndexLayout({ children }: Props) {
               className={clsx(styles.gridContainer, isCollapsed ? styles.collapsedContainer : styles.expandedContainer)}
               style={generateBackgroundStyle(playlist.getCurrentSong(), textureURL)}
             >
-              <motion.div layout className={clsx(styles.playerGridItem, isCollapsed ? styles.collapsedPlayer : styles.expandedPlayer)}>
+              <motion.div layout
+                          className={clsx(styles.playerGridItem, isCollapsed ? styles.collapsedPlayer : styles.expandedPlayer)}>
                 <Paper className={styles.playerPaper}>
                   <Player isCollapsed={isCollapsed} setCollapsed={setCollapsed} />
                   {!isCollapsed && <CurrentPlaylist />}
                 </Paper>
               </motion.div>
-              <motion.div layout className={clsx(styles.detailsGridItem, isCollapsed ? styles.collapsedDetails : styles.expandedDetails)}>
+              <motion.div layout
+                          className={clsx(styles.detailsGridItem, isCollapsed ? styles.collapsedDetails : styles.expandedDetails)}>
                 <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>
                   {children}
                 </DetailsPanel>

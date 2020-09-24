@@ -2,7 +2,7 @@ import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
-import { useRef, useEffect, useMemo, useCallback } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import clsx from "clsx";
 import _ from "lodash";
 

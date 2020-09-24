@@ -96,12 +96,12 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
   const style = useStyle({ coverUrl });
   const router = useRouter();
 
-  let backgroundNode = <div className={style.backgroundShade}></div>;
+  let backgroundNode = <div className={style.backgroundShade}/>;
 
   if (coverUrl) {
     backgroundNode = (<>
-      <div className={style.backgroundStyle} style={{ backgroundImage: `url(${coverUrl})` }}></div>
-      <div className={style.backgroundShade}></div>
+      <div className={style.backgroundStyle} style={{ backgroundImage: `url(${coverUrl})` }}/>
+      <div className={style.backgroundShade}/>
     </>);
   }
 
@@ -116,12 +116,12 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
           <Link className={style.link} href="/">Lyrics</Link>
           <Link className={style.link} href="/library/tracks" activeCriteria={(v) => v.startsWith("/library/")}>Library</Link>
           <Link className={style.link} href="/info">Info</Link>
-          <Box flexGrow={1}></Box>
+          <Box flexGrow={1}/>
           <IconButton component={NextComposedLink} color={router.pathname === "/search" ? "primary" : "default"} href="/search" aria-label="delete">
             <SearchIcon />
           </IconButton>
         </Box>
-        <Box position="relative" width="1" flexGrow={1} overflow="auto">
+        <Box position="relative" width="1" flexGrow={1} flexBasis={0} overflow="auto">
           {children}
         </Box>
         <svg className={style.hideSvg}>

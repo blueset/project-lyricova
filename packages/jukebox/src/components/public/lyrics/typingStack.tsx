@@ -1,7 +1,6 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { makeStyles } from "@material-ui/core";
-import _ from "lodash";
 import { AnimatedWord } from "../../../utils/typingSequence";
 import { useMemo } from "react";
 import { useLyricsSegmentState } from "../../../frontendUtils/hooks";
@@ -15,6 +14,12 @@ const useStyle = makeStyles((theme) => {
       height: "100%",
       display: "flex",
       flexDirection: "column-reverse",
+      maskBorderImageSource: "linear-gradient(0deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+      maskBorderImageSlice: "49% 0 fill",
+      maskBorderImageWidth: "40px 0 0 0",
+      maskBoxImageSource: "linear-gradient(0deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+      maskBoxImageSlice: "49% 0 fill",
+      maskBoxImageWidth: "40px 0 0 0",
     },
     line: {
       fontSize: "3em",
