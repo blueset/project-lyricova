@@ -1,13 +1,28 @@
 
 import { SongInAlbum } from "./SongInAlbum";
-import { AlbumForApiContract, AlbumContract } from "../types/vocadb";
+import { AlbumForApiContract, AlbumContract, SongForApiContract } from "../types/vocadb";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
 import { MusicFile } from "./MusicFile";
 import { transliterate } from "../utils/transliterate";
-import { HasMany, Table, Model, Column, PrimaryKey, BelongsToMany, CreatedAt, UpdatedAt, DeletedAt, Default, AllowNull } from "sequelize-typescript";
+import {
+  HasMany,
+  Table,
+  Model,
+  Column,
+  PrimaryKey,
+  BelongsToMany,
+  CreatedAt,
+  UpdatedAt,
+  DeletedAt,
+  Default,
+  AllowNull,
+  Index
+} from "sequelize-typescript";
 import { Song } from "./Song";
 import { DataTypes } from "sequelize";
 import { ObjectType, Field, Int } from "type-graphql";
+import { Artist } from "./Artist";
+import { ArtistOfSong } from "./ArtistOfSong";
 
 @ObjectType()
 @Table
@@ -19,10 +34,20 @@ export class Album extends Model<Album> {
 
   @Field()
   @Column({ type: new DataTypes.STRING(4096) })
+  @Index({
+    name: "Album_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   name: string;
 
   @Field()
   @Column({ type: new DataTypes.STRING(4096) })
+  @Index({
+    name: "Album_SearchText",
+    type: "FULLTEXT",
+    parser: "ngram",
+  })
   sortOrder: string;
 
   @BelongsToMany(
@@ -32,10 +57,15 @@ export class Album extends Model<Album> {
   songs: Array<Song & { SongInAlbum: SongInAlbum }>;
 
   @BelongsToMany(
-    () => Album,
+    () => Artist,
     () => ArtistOfAlbum
   )
-  albums: Array<Album & { ArtistOfAlbum: ArtistOfAlbum }>;
+  artists: Array<Artist & { ArtistOfAlbum: ArtistOfAlbum }>;
+
+  @Field({ nullable: true })
+  @AllowNull
+  @Column({ type: new DataTypes.STRING(4096) })
+  coverUrl: string;
 
   @HasMany(
     () => MusicFile
@@ -78,5 +108,24 @@ export class Album extends Model<Album> {
       }
     }))[0];
     return obj;
+  }
+
+  static async saveFromVocaDBEntity(entity: AlbumForApiContract): Promise<Album> {
+    await Album.upsert({
+      id: entity.id,
+      name: entity.name,
+      sortOrder: transliterate(entity.name), // prompt user to check this upon import
+      vocaDbJson: entity,
+      coverPath: entity.mainPicture?.urlOriginal ?? null,
+      incomplete: false,
+    });
+
+    const album = await Album.findByPk(entity.id);
+
+    const artists = await Promise.all(entity.artists.map(x => ArtistOfAlbum.artistFromVocaDB(x))),
+      tracks = await Promise.all(entity.tracks.map(x => SongInAlbum.songFromVocaDB(x)));
+    await album.$set("artists", artists);
+    await album.$set("songs", tracks);
+    return album;
   }
 }

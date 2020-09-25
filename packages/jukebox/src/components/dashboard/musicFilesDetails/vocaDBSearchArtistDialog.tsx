@@ -14,10 +14,10 @@ import {
   Radio
 } from "@material-ui/core";
 import { ChangeEvent, useCallback, useEffect } from "react";
-import { Song} from "../../../models/Song";
+import { Artist } from "../../../models/Artist";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import axios from "axios";
-import { PartialFindResult, SongForApiContract } from "../../../types/vocadb";
+import { PartialFindResult, ArtistForApiContract } from "../../../types/vocadb";
 import _ from "lodash";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
@@ -25,16 +25,16 @@ import { Skeleton } from "@material-ui/lab";
 import { makeStyles } from "@material-ui/core/styles";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
-import { SongFragments } from "../../../graphql/fragments";
+import { ArtistFragments } from "../../../graphql/fragments";
 
 const IMPORT_SONG_MUTATION = gql`
   mutation($id: Int!) {
-    enrolSongFromVocaDB(songId: $id) {
-      ...SelectSongEntry
+    enrolArtistFromVocaDB(artistId: $id) {
+      ...SelectArtistEntry
     }
   }
   
-  ${SongFragments.SelectSongEntry}
+  ${ArtistFragments.SelectArtistEntry}
 `;
 
 const useStyles = makeStyles({
@@ -48,15 +48,15 @@ interface Props {
   toggleOpen: (value: boolean) => void;
   keyword: string;
   setKeyword: (value: string) => void;
-  setSong: (value: Partial<Song>) => void;
+  setArtist: (value: Partial<Artist>) => void;
 }
 
-export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, setKeyword, setSong }: Props) {
+export default function VocaDBSearchArtistDialog({ isOpen, toggleOpen, keyword, setKeyword, setArtist }: Props) {
   const styles = useStyles();
 
-  const [results, setResults] = useNamedState<SongForApiContract[]>([], "results");
+  const [results, setResults] = useNamedState<ArtistForApiContract[]>([], "results");
   const [isLoaded, toggleLoaded] = useNamedState(false, "loaded");
-  const [selectedSong, setSelectedSong] = useNamedState<number | null>(null, "selectedSong");
+  const [selectedArtist, setSelectedArtist] = useNamedState<number | null>(null, "selectedArtist");
   const [isImporting, toggleImporting] = useNamedState(false, "importing");
 
   const snackbar = useSnackbar();
@@ -67,44 +67,44 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
     setKeyword("");
     setResults([]);
     toggleImporting(false);
-    setSelectedSong(null);
+    setSelectedArtist(null);
     toggleLoaded(false);
-  }, [toggleOpen, setKeyword, setResults, toggleImporting, setSelectedSong, toggleLoaded]);
+  }, [toggleOpen, setKeyword, setResults, toggleImporting, setSelectedArtist, toggleLoaded]);
 
   const handleSubmit = useCallback(async () => {
-    if (selectedSong === null) {
-      snackbar.enqueueSnackbar("Please choose a song to import.", {
+    if (selectedArtist === null) {
+      snackbar.enqueueSnackbar("Please choose a artist to import.", {
         variant: "error",
       });
     }
 
     toggleImporting(true);
-    const result = await apolloClient.mutate<{enrolSongFromVocaDB: Partial<Song>}>({
+    const result = await apolloClient.mutate<{ enrolArtistFromVocaDB: Partial<Artist> }>({
       mutation: IMPORT_SONG_MUTATION,
       variables: {
-        id: selectedSong,
+        id: selectedArtist,
       }
     });
 
     if (result.data) {
-      setSong(result.data.enrolSongFromVocaDB);
-      snackbar.enqueueSnackbar(`Song “${result.data.enrolSongFromVocaDB.name}” is successfully enrolled.`, {
+      setArtist(result.data.enrolArtistFromVocaDB);
+      snackbar.enqueueSnackbar(`Artist “${result.data.enrolArtistFromVocaDB.name}” is successfully enrolled.`, {
         variant: "success",
       });
       handleClose();
     } else {
-      console.error(`Error occurred while importing song #${selectedSong}.`, result.errors);
-      snackbar.enqueueSnackbar(`Error occurred while importing song #${selectedSong}. (${result.errors})`, {
+      console.error(`Error occurred while importing artist #${selectedArtist}.`, result.errors);
+      snackbar.enqueueSnackbar(`Error occurred while importing artist #${selectedArtist}. (${result.errors})`, {
         variant: "error",
       });
       toggleImporting(false);
     }
 
-  }, [apolloClient, handleClose, selectedSong, setSong, snackbar, toggleImporting]);
+  }, [apolloClient, handleClose, selectedArtist, setArtist, snackbar, toggleImporting]);
 
   const handleChooseRadio = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setSelectedSong(parseInt(event.target.value));
-  }, [setSelectedSong]);
+    setSelectedArtist(parseInt(event.target.value));
+  }, [setSelectedArtist]);
 
   useEffect(() => {
     if (keyword === "") return;
@@ -112,14 +112,14 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
     let active = true;
 
     (async () => {
-      const response = await axios.get<PartialFindResult<SongForApiContract>>(
-        "https://vocadb.net/api/songs",
+      const response = await axios.get<PartialFindResult<ArtistForApiContract>>(
+        "https://vocadb.net/api/artists",
         {
           params: {
             query: keyword,
-            sort: "FavoritedTimes",
+            sort: "SongCount",
             nameMatchMode: "Auto",
-            fields: "ThumbUrl",
+            fields: "MainPicture",
           }
         }
       );
@@ -158,24 +158,24 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
                   secondaryAction: styles.secondaryAction
                 }}>
                   <ListItemAvatar>
-                    <Avatar variant="rounded" src={v.thumbUrl}>
+                    <Avatar variant="rounded" src={v.mainPicture?.urlOriginal}>
                       <MusicNoteIcon />
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
                     primary={v.name}
-                    secondary={v.artistString}
+                    secondary={v.artistType}
                   />
                   <ListItemSecondaryAction>
-                    <IconButton href={`https://vocadb.net/S/${v.id}`} target="_blank">
+                    <IconButton href={`https://vocadb.net/Ar/${v.id}`} target="_blank">
                       <OpenInNewIcon />
                     </IconButton>
                     <Radio
-                      checked={selectedSong === v.id}
+                      checked={selectedArtist === v.id}
                       value={v.id}
                       onChange={handleChooseRadio}
-                      name="selectedSong"
-                      inputProps={{ "aria-label": `${v.name} / ${v.artistString}` }}
+                      name="selectedArtist"
+                      inputProps={{ "aria-label": `${v.name} is a ${v.artistType}` }}
                     />
                   </ListItemSecondaryAction>
                 </ListItem>

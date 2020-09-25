@@ -1,6 +1,6 @@
 import { Song } from "./Song";
 import { Album } from "./Album";
-import { AlbumContract, SongForApiContract } from "../types/vocadb";
+import { AlbumContract, SongForApiContract, SongInAlbumForApiContract } from "../types/vocadb";
 import {
   Model,
   Table,
@@ -73,7 +73,11 @@ export class SongInAlbum extends Model<SongInAlbum> {
   @UpdatedAt
   updatedOn: Date;
 
-  /** Incomplete build. */
+  /**
+   * Import a song-in-album relationship from a “song” query from VocaDB.
+   *
+   * Incomplete build.
+   */
   static async albumFromVocaDB(song: SongForApiContract, entity: AlbumContract): Promise<Album> {
     const album = await Album.fromVocaDBAlbumContract(entity);
     const songInAlbumAttrs = {
@@ -85,5 +89,26 @@ export class SongInAlbum extends Model<SongInAlbum> {
       album.SongInAlbum.set(songInAlbumAttrs);
     }
     return album;
+  }
+
+  /**
+   * Import a song-in-album relationship from an “album” query from VocaDB.
+   *
+   * Complete build.
+   */
+  static async songFromVocaDB(entity: SongInAlbumForApiContract): Promise<Song> {
+    const song = await Song.saveFromVocaDBEntity(entity.song, null, true);
+    const songInAlbumAttrs = {
+      name: entity.name,
+      diskNumber: entity.discNumber,
+      trackNumber: entity.trackNumber,
+      vocaDbId: entity.id,
+    };
+    if (song.SongInAlbum === undefined) {
+      song.SongInAlbum = songInAlbumAttrs;
+    } else if (song.SongInAlbum?.update) {
+      song.SongInAlbum.set(songInAlbumAttrs);
+    }
+    return song;
   }
 }

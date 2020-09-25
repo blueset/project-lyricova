@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const SongFragments = {
-  MusicFileDetails: gql`
-    fragment MusicFileDetails on Song {
+  SelectSongEntry: gql`
+    fragment SelectSongEntry on Song {
       id
       name
       sortOrder
@@ -18,6 +18,29 @@ export const SongFragments = {
           categories
         }
       }
+    }
+  `,
+};
+
+export const ArtistFragments = {
+  SelectArtistEntry: gql`
+    fragment SelectArtistEntry on Artist {
+      id
+      name
+      sortOrder
+      type
+      mainPictureUrl
+    }
+  `,
+};
+
+
+export const AlbumFragments = {
+  SelectAlbumEntry: gql`
+    fragment SelectAlbumEntry on Album {
+      id
+      name
+      sortOrder
     }
   `,
 };

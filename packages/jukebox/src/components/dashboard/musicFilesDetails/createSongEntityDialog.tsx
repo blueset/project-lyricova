@@ -8,7 +8,7 @@ import {
   Grid,
   IconButton,
   InputAdornment, InputLabel, MenuItem, Typography,
-  Checkbox as MUICheckbox
+  Checkbox as MUICheckbox, Divider
 } from "@material-ui/core";
 import { useCallback } from "react";
 import { useApolloClient } from "@apollo/client";
@@ -20,8 +20,9 @@ import { useSnackbar } from "notistack";
 import AutorenewIcon from "@material-ui/icons/Autorenew";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
-import VocaDBIntegrationBox from "./vocaDBIntegrationBox";
+import SelectSongEntityBox from "./selectSongEntityBox";
 import { makeStyles } from "@material-ui/core/styles";
+import SelectArtistEntityBox from "./selectArtistEntityBox";
 
 const useStyles = makeStyles((theme) => ({
   artistRow: {
@@ -34,6 +35,9 @@ const useStyles = makeStyles((theme) => ({
       marginRight: 0,
     },
   },
+  divider: {
+    margin: theme.spacing(1, 0),
+  }
 }));
 
 interface Props {
@@ -98,6 +102,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
           }}>
           {(formikProps) => {
 
+
             return (
               <Form>
                 <Grid container spacing={1}>
@@ -143,13 +148,21 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                       name="coverPath" type="text" label="Cover path" />
                   </Grid>
                 </Grid>
-                <VocaDBIntegrationBox fieldName="originalSong" formikProps={formikProps} labelName="Original song" />
-                <Typography variant="h6" component="h3" gutterBottom>Artists</Typography>
+                <SelectSongEntityBox fieldName="originalSong" formikProps={formikProps} labelName="Original song" />
+                <Typography variant="h6" component="h3" className={styles.divider}>Artists</Typography>
                 <FieldArray name="artists">
                   {({ push, remove }) => (
                     <Grid container spacing={1}>
                       {formikProps.values.artists?.length > 0 && formikProps.values.artists.map((v, idx) => (
                         <Grid item xs={12} key={idx}>
+                          <SelectArtistEntityBox
+                            fieldName={`artists.${idx}.artist`}
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            formikProps={formikProps}
+                            labelName="Artist"
+                            value={formikProps.values.artists[idx].artist}
+                          />
                           <div className={styles.artistRow}>
                             <FormControl variant="outlined" margin="dense" fullWidth>
                               <InputLabel htmlFor={`artists.${idx}.artistRoles`}>Roles</InputLabel>
@@ -220,6 +233,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                               <DeleteIcon />
                             </Button>
                           </div>
+                          <Divider className={styles.divider}/>
                         </Grid>
                       ))}
                       <Grid item xs={12}>
@@ -241,7 +255,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                     </Grid>
                   )}
                 </FieldArray>
-                <Typography variant="h6" component="h3" gutterBottom>Albums</Typography>
+                <Typography variant="h6" component="h3" className={styles.divider}>Albums</Typography>
                 <FieldArray name="albums">
                   {({ push, remove }) => (
                     <Grid container spacing={1}>
@@ -268,10 +282,11 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                               margin="dense"
                               fullWidth
                               name={`albums.${idx}.name`} type="text" label="Track name" />
-                            <Button color="primary" aria-label="Delete artist item" onClick={() => remove(idx)}>
+                            <Button color="primary" aria-label="Delete album item" onClick={() => remove(idx)}>
                               <DeleteIcon />
                             </Button>
                           </div>
+                          <Divider className={styles.divider}/>
                         </Grid>
                       ))}
                       <Grid item xs={12}>

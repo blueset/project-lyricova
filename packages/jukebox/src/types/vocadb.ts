@@ -206,8 +206,9 @@ export interface LyricsForSongContract {
 }
 export interface EntryThumbForApiContract {
   mime?: string;
+  urlOriginal?: string;
+  urlThumb?: string;
   urlSmallThumb?: string;
-  urlThumb: string;
   urlTinyThumb?: string;
 }
 export interface LocalizedStringContract {

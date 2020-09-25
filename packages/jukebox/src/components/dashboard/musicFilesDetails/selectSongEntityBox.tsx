@@ -32,11 +32,11 @@ export type ExtendedSong = Partial<Song> & {
 const LOCAL_SONG_ENTITY_QUERY = gql`
   query($text: String!) {
     searchSongs(keywords: $text) {
-      ...MusicFileDetails
+      ...SelectSongEntry
     }
   }
   
-  ${SongFragments.MusicFileDetails}
+  ${SongFragments.SelectSongEntry}
 `;
 
 const useStyles = makeStyles((theme) => ({
@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
   detailsThumbnail: {
     height: "4em",
     width: "4em",
-    marginRight: "1em",
+    marginRight: theme.spacing(2),
   },
   textBox: {
     flexGrow: 1,
@@ -74,7 +74,7 @@ interface Props<T extends string> {
   title?: string;
 }
 
-export default function VocaDBIntegrationBox<T extends string>({ fieldName, formikProps, labelName, title }: Props<T>) {
+export default function SelectSongEntityBox<T extends string>({ fieldName, formikProps, labelName, title }: Props<T>) {
   const styles = useStyles();
 
   const apolloClient = useApolloClient();
@@ -198,7 +198,6 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
               } else {
                 setFieldValue(fieldName, newValue);
               }
-              console.log("on change", newValue, reason);
             }}
             renderOption={(option: ExtendedSong | null) => {
               let icon = <MusicNoteIcon className={styles.icon} />;

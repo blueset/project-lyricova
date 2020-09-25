@@ -116,7 +116,8 @@ export class SongResolver {
   public async newSong(@Arg("data") { name, sortOrder, coverPath, originalId, artistsOfSong, songInAlbums }: NewSongInput): Promise<Song> {
     const id = _.random(-2147483648, -1, false);
     const song = await Song.create({
-      id, name, sortOrder, coverPath, originalId
+      id, name, sortOrder, coverPath, originalId,
+      incomplete: false,
     });
     await Promise.all(artistsOfSong.map(v => song.$add("artist", v.artistId, {
       through: {

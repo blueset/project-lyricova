@@ -112,19 +112,18 @@ export class Song extends Model<Song> {
   @DeletedAt
   deletionDate: Date;
 
-  static async saveFromVocaDBEntity(entity: SongForApiContract, original: Song | null): Promise<Song> {
-    const include: Includeable[] = [Artist, Album];
-    if (original !== null) {
-      include.push({ model: Song, as: "original" });
-    }
-    /* const inserted: boolean = */
+  /** ArtistOfSong reflected by Album.$get("songs"), added for GraphQL queries. */
+  @Field(type => ArtistOfSong,{nullable: true})
+  SongInAlbum?: Partial<SongInAlbum>;
+
+  static async saveFromVocaDBEntity(entity: SongForApiContract, original: Song | null, intermediate = false): Promise<Song> {
     await Song.upsert({
       id: entity.id,
       name: entity.name,
       sortOrder: transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
       coverPath: entity.thumbUrl,
-      incomplete: false,
+      incomplete: intermediate,
     });
 
     const song = await Song.findByPk(entity.id);
@@ -134,8 +133,6 @@ export class Song extends Model<Song> {
 
     const artists = await Promise.all(entity.artists.map(x => ArtistOfSong.artistFromVocaDB(x))),
       albums = await Promise.all(entity.albums.map(x => SongInAlbum.albumFromVocaDB(entity, x)));
-    // await Promise.all(artists.map(x => x.save()));
-    // await Promise.all(albums.map(x => x.save()));
     await song.$set("artists", artists);
     await song.$set("albums", albums);
     return song;

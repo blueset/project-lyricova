@@ -1,10 +1,16 @@
 
-import { VDBArtistRoleType, VDBArtistCategoryType } from "../types/vocadb";
+import {
+  VDBArtistRoleType,
+  VDBArtistCategoryType,
+  ArtistForSongContract,
+  ArtistForAlbumForApiContract
+} from "../types/vocadb";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
 import { Table, Column, PrimaryKey, AutoIncrement, Default, ForeignKey, BelongsTo, CreatedAt, UpdatedAt, DeletedAt, Model } from "sequelize-typescript";
 import { SIMPLE_ENUM_ARRAY } from "../utils/sequelizeAdditions";
 import { DataTypes } from "sequelize";
+import { Field, Int, ObjectType } from "type-graphql";
 
 const ROLES = [
   "Default",
@@ -38,27 +44,32 @@ const CATEGORIES = [
   "Subject"
 ];
 
+@ObjectType()
 @Table
 export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
+  @Field(type => Int)
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER })
   artistOfAlbumId: number;
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  @Field(type => [String])
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @Column({
     type: new SIMPLE_ENUM_ARRAY(ROLES)
   })
   roles: VDBArtistRoleType[];
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  @Field(type => [String])
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @Column({
     type: new SIMPLE_ENUM_ARRAY(ROLES)
   })
   effectiveRoles: VDBArtistRoleType[];
 
+  @Field(type => String)
   @Default("Nothing")
   @Column({
     type: DataTypes.ENUM(...CATEGORIES)
@@ -84,4 +95,20 @@ export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
 
   @UpdatedAt
   updatedOn: Date;
+
+  /** Incomplete build. */
+  static async artistFromVocaDB(entity: ArtistForAlbumForApiContract): Promise<Artist> {
+    const artist = await Artist.fromVocaDBArtistContract(entity.artist);
+    const artistOfAlbumAttrs = {
+      effectiveRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
+      roles: entity.roles.split(", ") as VDBArtistRoleType[],
+      categories: entity.categories,
+    };
+    if (artist.ArtistOfAlbum === undefined) {
+      artist.ArtistOfAlbum = artistOfAlbumAttrs;
+    } else if (artist.ArtistOfAlbum.set) {
+      artist.ArtistOfAlbum.set(artistOfAlbumAttrs);
+    }
+    return artist;
+  }
 }

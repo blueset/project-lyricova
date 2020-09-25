@@ -6,7 +6,7 @@ import { gql, useApolloClient } from "@apollo/client";
 import AutorenewIcon from "@material-ui/icons/Autorenew";
 import { MouseEventHandler } from "react";
 import { Song } from "../../../models/Song";
-import VocaDBIntegrationBox from "./vocaDBIntegrationBox";
+import SelectSongEntityBox from "./selectSongEntityBox";
 import TransliterationAdornment from "../TransliterationAdornment";
 
 const useStyles = makeStyles((theme) => ({
@@ -123,7 +123,7 @@ export default function InfoPanel(
             </Grid>
           </Grid>
           <Divider className={styles.divider} />
-          <VocaDBIntegrationBox fieldName="song" formikProps={formikProps} labelName="Linked song" title="Link to a song entity" />
+          <SelectSongEntityBox fieldName="song" formikProps={formikProps} labelName="Linked song" title="Link to a song entity" />
           <div className={styles.formButtons}>
             <Button disabled={isSubmitting} onClick={submitForm}>Save</Button>
           </div>
