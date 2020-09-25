@@ -116,7 +116,7 @@ export class Album extends Model<Album> {
       name: entity.name,
       sortOrder: transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
-      coverPath: entity.mainPicture?.urlOriginal ?? null,
+      coverUrl: entity.mainPicture?.urlOriginal ?? null,
       incomplete: false,
     });
 

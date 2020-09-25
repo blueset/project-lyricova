@@ -23,6 +23,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import SelectSongEntityBox from "./selectSongEntityBox";
 import { makeStyles } from "@material-ui/core/styles";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
+import SelectAlbumEntityBox from "./selectAlbumEntityBox";
 
 const useStyles = makeStyles((theme) => ({
   artistRow: {
@@ -261,6 +262,14 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                     <Grid container spacing={1}>
                       {formikProps.values.albums?.length > 0 && formikProps.values.albums.map((v, idx) => (
                         <Grid item xs={12} key={idx}>
+                          <SelectAlbumEntityBox
+                            fieldName={`albums.${idx}.album`}
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            formikProps={formikProps}
+                            labelName="Album"
+                            value={formikProps.values.albums[idx].album}
+                          />
                           <div className={styles.artistRow}>
                             <Field
                               component={TextField}

@@ -41,6 +41,7 @@ export const AlbumFragments = {
       id
       name
       sortOrder
+      coverUrl
     }
   `,
 };
