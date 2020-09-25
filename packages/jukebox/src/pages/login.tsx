@@ -118,7 +118,7 @@ export default function Login() {
           </Form>)}
         </Formik>
       </div>
-      <div className={styles.pattern}></div>
+      <div className={styles.pattern}/>
     </div>
   </AuthContext>;
 }

@@ -123,7 +123,7 @@ export default function InfoPanel(
             </Grid>
           </Grid>
           <Divider className={styles.divider} />
-          <VocaDBIntegrationBox fieldName="song" formikProps={formikProps} labelName="Linked song" />
+          <VocaDBIntegrationBox fieldName="song" formikProps={formikProps} labelName="Linked song" title="Link to a song entity" />
           <div className={styles.formButtons}>
             <Button disabled={isSubmitting} onClick={submitForm}>Save</Button>
           </div>

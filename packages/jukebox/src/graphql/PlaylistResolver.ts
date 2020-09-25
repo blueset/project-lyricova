@@ -5,7 +5,7 @@ import { UserInputError } from "apollo-server-express";
 import { GraphQLBoolean } from "graphql";
 
 @InputType()
-class NewPlayListInput implements Partial<Playlist> {
+class NewPlaylistInput implements Partial<Playlist> {
 
   @Field()
   slug: string;
@@ -38,7 +38,7 @@ export class PlaylistResolver {
   }
 
   @Mutation(returns => Playlist)
-  public async newPlaylist(@Arg("data") data: NewPlayListInput): Promise<Playlist> {
+  public async newPlaylist(@Arg("data") data: NewPlaylistInput): Promise<Playlist> {
     return await Playlist.create(data);
   }
 

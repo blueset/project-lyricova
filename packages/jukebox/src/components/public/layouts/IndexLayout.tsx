@@ -1,7 +1,7 @@
 import { Grid, Paper, IconButton, makeStyles } from "@material-ui/core";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
-import React, { useEffect, ReactNode, useRef, useCallback } from "react";
+import React, { useEffect, ReactNode, useRef, useCallback, useMemo } from "react";
 import { gql, useLazyQuery } from "@apollo/client";
 import {
   AppContext,
@@ -193,7 +193,7 @@ export default function IndexLayout({ children }: Props) {
     return mapping;
   }
 
-  const playlist: Playlist = {
+  const playlist: Playlist = useMemo(() => ({
     tracks: playlistTracks,
     nowPlaying,
     loopMode,
@@ -310,7 +310,7 @@ export default function IndexLayout({ children }: Props) {
         playerRef.current.src = "";
       }
     },
-  };
+  }), [loopMode, nowPlaying, playlistTracks, setLoopMode, setNowPlaying, setPlaylistTracks, setShuffleMapping, shuffleMapping, updateShuffleness]);
 
   const onPlayEnded = useCallback(() => {
     if (playlist.loopMode === LoopMode.SINGLE) {
@@ -326,7 +326,7 @@ export default function IndexLayout({ children }: Props) {
       // Play nothing if no loop and last track ended
       setNowPlaying(null);
     }
-  }, [playlist, setNowPlaying]);
+  }, [nowPlaying, playlist, playlistTracks.length, setNowPlaying]);
 
   // Add onEnded listener
   useEffect(() => {
@@ -419,7 +419,7 @@ export default function IndexLayout({ children }: Props) {
     if (playerRef.current) {
       if (navigator.mediaSession !== undefined) {
         if (navigator.mediaSession.setPositionState !== undefined) {
-          // console.log("Updating position state...");
+          // Updating position state...
           navigator.mediaSession.setPositionState({
             duration: playerRef.current.duration || 0.0,
             playbackRate: playerRef.current.playbackRate || 1.0,
@@ -435,18 +435,18 @@ export default function IndexLayout({ children }: Props) {
 
   useEffect(() => {
     const playerElm = playerRef.current;
-    // console.log("trying to register listeners");
+    // trying to register listeners
     if (playerElm !== null) {
-      // console.log("registering listeners");
+      // registering listeners
       playerElm.addEventListener("timeupdate", updatePositionState);
       playerElm.addEventListener("playing", updatePositionState);
       playerElm.addEventListener("pause", updatePositionState);
       playerElm.addEventListener("durationchange", updatePositionState);
     }
     return function cleanUp() {
-      // console.log("trying to remove listeners");
+      // trying to remove listeners
       if (playerElm !== null) {
-        // console.log("removing listeners");
+        // removing listeners
         playerElm.removeEventListener("timeupdate", updatePositionState);
         playerElm.removeEventListener("playing", updatePositionState);
         playerElm.removeEventListener("pause", updatePositionState);
@@ -489,7 +489,7 @@ export default function IndexLayout({ children }: Props) {
       if (randomTextureQuery?.called !== true) {
         loadRandomTexture();
       } else if (randomTextureQuery !== undefined) {
-        randomTextureQuery.refetch();
+        randomTextureQuery && randomTextureQuery.refetch();
       }
     } else {
       setTextureURL(null);
@@ -517,7 +517,8 @@ export default function IndexLayout({ children }: Props) {
         navigator.mediaSession.metadata = null;
       }
     }
-  }, [playlist.getCurrentSong()]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadRandomTexture, setTextureURL, playlist.getCurrentSong()]);
 
   // Store full song list once loaded
   useEffect(() => {
@@ -528,11 +529,11 @@ export default function IndexLayout({ children }: Props) {
       );
       setTextureURL(texture.url);
     }
-  }, [randomTextureQuery.data]);
+  }, [randomTextureQuery.data, setTextureURL]);
 
   return (
     <>
-      <audio ref={playerRef}></audio>
+      <audio ref={playerRef} />
       <AppContext playerRef={playerRef} playlist={playlist}>
         <AuthContext noRedirect>
           <AnimatePresence>

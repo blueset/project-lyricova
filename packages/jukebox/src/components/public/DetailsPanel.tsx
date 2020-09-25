@@ -1,6 +1,6 @@
 // import style from "./DetailsPanel.module.scss";
-import { CSSProperties, ReactNode } from "react";
-import { Box, IconButton, makeStyles, createMuiTheme, ThemeProvider, Theme as MUITheme } from "@material-ui/core";
+import { ReactNode } from "react";
+import { Box, createMuiTheme, IconButton, makeStyles, Theme as MUITheme, ThemeProvider } from "@material-ui/core";
 import Link, { NextComposedLink } from "../Link";
 import SearchIcon from "@material-ui/icons/Search";
 import { useRouter } from "next/router";

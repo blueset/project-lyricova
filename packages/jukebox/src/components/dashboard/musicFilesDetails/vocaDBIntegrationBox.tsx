@@ -71,9 +71,10 @@ interface Props<T extends string> {
   fieldName: T;
   formikProps: FormikProps<{ [key in T]: ExtendedSong }>;
   labelName: string;
+  title?: string;
 }
 
-export default function VocaDBIntegrationBox<T extends string>({ fieldName, formikProps, labelName }: Props<T>) {
+export default function VocaDBIntegrationBox<T extends string>({ fieldName, formikProps, labelName, title }: Props<T>) {
   const styles = useStyles();
 
   const apolloClient = useApolloClient();
@@ -120,7 +121,7 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
       const vocaDBResult = await vocaDBPromise;
 
       if (active) {
-        let result: ExtendedSong[] = value ? [value] : [];
+        let result: ExtendedSong[] = [];
         if (apolloResult.data?.searchSongs) {
           result = result.concat(apolloResult.data?.searchSongs);
         }
@@ -131,6 +132,9 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
             sortOrder: `"${v}"`,
             vocaDBSuggestion: true,
           })));
+        }
+        if (value && !_.some(result, v => v.id === value.id)) {
+          result = [value, ...result];
         }
         setVocaDBAutoCompleteOptions(result);
       }
@@ -143,7 +147,7 @@ export default function VocaDBIntegrationBox<T extends string>({ fieldName, form
 
   return (
     <>
-      <Typography variant="h6" component="h3" gutterBottom>VocaDB Integration</Typography>
+      {title && <Typography variant="h6" component="h3" gutterBottom>{title}</Typography>}
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Field
