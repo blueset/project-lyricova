@@ -25,6 +25,8 @@ import EditIcon from "@material-ui/icons/Edit";
 import CreateSongEntityDialog from "./createSongEntityDialog";
 import { Artist } from "../../../models/Artist";
 import VocaDBSearchArtistDialog from "./vocaDBSearchArtistDialog";
+import CreateArtistEntityDialog from "./createArtistEntityDialog";
+import { ExtendedAlbum } from "./selectAlbumEntityBox";
 
 export type ExtendedArtist = Partial<Artist> & {
   vocaDBSuggestion?: boolean;
@@ -120,25 +122,31 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
         }
       );
 
-      const apolloResult = await apolloPromise;
-      const vocaDBResult = await vocaDBPromise;
-
       if (active) {
         let result: ExtendedArtist[] = [];
-        if (apolloResult.data?.searchArtists) {
-          result = result.concat(apolloResult.data?.searchArtists);
-        }
-        if (vocaDBResult.status === 200 && vocaDBResult.data) {
-          result = result.concat(vocaDBResult.data.map(v => ({
-            id: null,
-            name: v,
-            sortOrder: `"${v}"`,
-            vocaDBSuggestion: true,
-          })));
-        }
-        if (value && !_.some(result, v => v.id === value.id)) {
-          result = [value, ...result];
-        }
+
+        try {
+          const apolloResult = await apolloPromise;
+          if (apolloResult.data?.searchArtists) {
+            result = result.concat(apolloResult.data?.searchArtists);
+          }
+        } catch (e) { /* No-Op. */ }
+
+        try {
+          const vocaDBResult = await vocaDBPromise;
+          if (vocaDBResult.status === 200 && vocaDBResult.data) {
+            result = result.concat(vocaDBResult.data.map(v => ({
+              id: null,
+              name: v,
+              sortOrder: `"${v}"`,
+              vocaDBSuggestion: true,
+            })));
+          }
+          if (value && !_.some(result, v => v.id === value.id)) {
+            result = [value, ...result];
+          }
+        } catch (e) { /* No-Op. */ }
+
         setVocaDBAutoCompleteOptions(result);
       }
     }, 200)();
@@ -270,12 +278,12 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
         setKeyword={setImportDialogKeyword}
         setArtist={(v) => setFieldValue(fieldName, v)}
       />
-      <CreateSongEntityDialog
+      <CreateArtistEntityDialog
         isOpen={isManualDialogOpen}
         toggleOpen={toggleManualDialogOpen}
         keyword={importDialogKeyword}
         setKeyword={setImportDialogKeyword}
-        setSong={(v) => setFieldValue(fieldName, v)}
+        setArtist={(v) => setFieldValue(fieldName, v)}
       />
     </>
   );

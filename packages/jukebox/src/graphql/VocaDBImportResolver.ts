@@ -1,7 +1,7 @@
 import { Song } from "../models/Song";
 import { AlbumForApiContract, ArtistForApiContract, SongForApiContract } from "../types/vocadb";
 import axios, { AxiosInstance } from "axios";
-import { Arg, Int, Mutation, Resolver } from "type-graphql";
+import { Arg, Authorized, Int, Mutation, Resolver } from "type-graphql";
 import { Artist } from "../models/Artist";
 import { Album } from "../models/Album";
 
@@ -66,6 +66,7 @@ export class VocaDBImportResolver {
     return voicebank;
   }
 
+  @Authorized("ADMIN")
   @Mutation(() => Song, { description: "Insert or update a song from VocaDB." })
   public async enrolSongFromVocaDB(@Arg("songId", () => Int, { description: "Song ID in VocaDB" }) songId: number): Promise<Song> {
     // Fetch song data
@@ -80,6 +81,7 @@ export class VocaDBImportResolver {
     return await Song.saveFromVocaDBEntity(song, originalSongEntity);
   }
 
+  @Authorized("ADMIN")
   @Mutation(() => Artist, { description: "Insert or update an artist from VocaDB." })
   public async enrolArtistFromVocaDB(@Arg("artistId", () => Int, { description: "Artist ID in VocaDB" }) artistId: number): Promise<Artist> {
     // Fetch song data
@@ -95,6 +97,7 @@ export class VocaDBImportResolver {
     return await Artist.saveFromVocaDBEntity(artist, baseVoicebankEntity);
   }
 
+  @Authorized("ADMIN")
   @Mutation(() => Album, { description: "Insert or update an album from VocaDB." })
   public async enrolAlbumFromVocaDB(@Arg("albumId", () => Int, { description: "Album ID in VocaDB" }) albumId: number): Promise<Album> {
     // Fetch song data

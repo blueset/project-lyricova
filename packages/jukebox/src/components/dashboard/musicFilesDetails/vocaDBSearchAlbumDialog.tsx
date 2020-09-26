@@ -79,22 +79,26 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
     }
 
     toggleImporting(true);
-    const result = await apolloClient.mutate<{ enrolAlbumFromVocaDB: Partial<Album> }>({
-      mutation: IMPORT_SONG_MUTATION,
-      variables: {
-        id: selectedAlbum,
-      }
-    });
-
-    if (result.data) {
-      setAlbum(result.data.enrolAlbumFromVocaDB);
-      snackbar.enqueueSnackbar(`Album “${result.data.enrolAlbumFromVocaDB.name}” is successfully enrolled.`, {
-        variant: "success",
+    try {
+      const result = await apolloClient.mutate<{ enrolAlbumFromVocaDB: Partial<Album> }>({
+        mutation: IMPORT_SONG_MUTATION,
+        variables: {
+          id: selectedAlbum,
+        }
       });
-      handleClose();
-    } else {
-      console.error(`Error occurred while importing album #${selectedAlbum}.`, result.errors);
-      snackbar.enqueueSnackbar(`Error occurred while importing album #${selectedAlbum}. (${result.errors})`, {
+
+      if (result.data) {
+        setAlbum(result.data.enrolAlbumFromVocaDB);
+        snackbar.enqueueSnackbar(`Album “${result.data.enrolAlbumFromVocaDB.name}” is successfully enrolled.`, {
+          variant: "success",
+        });
+        handleClose();
+      } else {
+        toggleImporting(false);
+      }
+    } catch (e) {
+      console.error(`Error occurred while importing album #${selectedAlbum}.`, e);
+      snackbar.enqueueSnackbar(`Error occurred while importing album #${selectedAlbum}. (${e})`, {
         variant: "error",
       });
       toggleImporting(false);

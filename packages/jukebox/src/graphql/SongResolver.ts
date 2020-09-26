@@ -1,4 +1,4 @@
-import { Arg, Field, FieldResolver, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
+import { Arg, Authorized, Field, FieldResolver, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
 import { Song } from "../models/Song";
 import { literal } from "sequelize";
 import { Album } from "../models/Album";
@@ -112,6 +112,7 @@ export class SongResolver {
     return song.$get("videos");
   }
 
+  @Authorized("ADMIN")
   @Mutation(returns => Song)
   public async newSong(@Arg("data") { name, sortOrder, coverPath, originalId, artistsOfSong, songInAlbums }: NewSongInput): Promise<Song> {
     const id = _.random(-2147483648, -1, false);

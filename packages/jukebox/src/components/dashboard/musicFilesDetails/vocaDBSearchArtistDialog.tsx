@@ -79,22 +79,23 @@ export default function VocaDBSearchArtistDialog({ isOpen, toggleOpen, keyword, 
     }
 
     toggleImporting(true);
-    const result = await apolloClient.mutate<{ enrolArtistFromVocaDB: Partial<Artist> }>({
-      mutation: IMPORT_SONG_MUTATION,
-      variables: {
-        id: selectedArtist,
-      }
-    });
-
-    if (result.data) {
-      setArtist(result.data.enrolArtistFromVocaDB);
-      snackbar.enqueueSnackbar(`Artist “${result.data.enrolArtistFromVocaDB.name}” is successfully enrolled.`, {
-        variant: "success",
+    try {
+      const result = await apolloClient.mutate<{ enrolArtistFromVocaDB: Partial<Artist> }>({
+        mutation: IMPORT_SONG_MUTATION,
+        variables: {
+          id: selectedArtist,
+        }
       });
-      handleClose();
-    } else {
-      console.error(`Error occurred while importing artist #${selectedArtist}.`, result.errors);
-      snackbar.enqueueSnackbar(`Error occurred while importing artist #${selectedArtist}. (${result.errors})`, {
+      if (result.data) {
+        setArtist(result.data.enrolArtistFromVocaDB);
+        snackbar.enqueueSnackbar(`Artist “${result.data.enrolArtistFromVocaDB.name}” is successfully enrolled.`, {
+          variant: "success",
+        });
+        handleClose();
+      }
+    } catch (e) {
+      console.error(`Error occurred while importing artist #${selectedArtist}.`, e);
+      snackbar.enqueueSnackbar(`Error occurred while importing artist #${selectedArtist}. (${e})`, {
         variant: "error",
       });
       toggleImporting(false);

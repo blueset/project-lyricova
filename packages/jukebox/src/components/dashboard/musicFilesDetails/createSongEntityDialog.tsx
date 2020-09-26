@@ -1,14 +1,19 @@
 import { Song } from "../../../models/Song";
 import {
-  Button, Chip,
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle, FormControl, FormControlLabel,
+  DialogTitle,
+  Divider,
+  FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
-  InputAdornment, InputLabel, MenuItem, Typography,
-  Checkbox as MUICheckbox, Divider
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Typography
 } from "@material-ui/core";
 import { useCallback } from "react";
 import { useApolloClient } from "@apollo/client";
@@ -53,20 +58,12 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
 
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
-  const [isSaving, toggleSaving] = useNamedState(false, "saving");
   const styles = useStyles();
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
     setKeyword("");
-    toggleSaving(false);
-  }, [toggleOpen, setKeyword, toggleSaving]);
-
-  const handleSubmit = useCallback(() => {
-    toggleSaving(true);
-
-    handleClose();
-  }, [toggleSaving, handleClose]);
+  }, [toggleOpen, setKeyword]);
 
   const convertUrl = useCallback((sourceUrl: string): string => {
     if (sourceUrl.match(/(nicovideo.jp\/watch|nico.ms)\/([a-z]{2}\d{4,10}|\d{6,12})/g)) {
@@ -86,25 +83,24 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
 
   return (
     <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
-      <DialogTitle id="form-dialog-title">Create new song entity</DialogTitle>
-      <DialogContent dividers>
-        <Formik
-          initialValues={{
-            name: keyword,
-            sortOrder: "",
-            coverPath: "",
-            originalSong: null,
-            artists: [],
-            albums: [],
-          }}
-          onSubmit={(values, formikHelpers) => {
-            /* TODO */
-            formikHelpers.setSubmitting(false);
-          }}>
-          {(formikProps) => {
-
-
-            return (
+      <Formik
+        initialValues={{
+          name: keyword,
+          sortOrder: "",
+          coverPath: "",
+          originalSong: null,
+          artists: [],
+          albums: [],
+        }}
+        onSubmit={(values, formikHelpers) => {
+          /* TODO */
+          formikHelpers.setSubmitting(false);
+          handleClose();
+        }}>
+        {(formikProps) => (
+          <>
+            <DialogTitle id="form-dialog-title">Create new song entity</DialogTitle>
+            <DialogContent dividers>
               <Form>
                 <Grid container spacing={1}>
                   <Grid item xs={12}>
@@ -173,7 +169,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                                 label="Roles"
                                 name={`artists.${idx}.artistRoles`}
                                 multiple
-                                inputProps={{name: `artists.${idx}.artistRoles`, id: `artists.${idx}.artistRoles`}}
+                                inputProps={{ name: `artists.${idx}.artistRoles`, id: `artists.${idx}.artistRoles` }}
                               >
                                 <MenuItem value="Default">Default</MenuItem>
                                 <MenuItem value="Animator">Animator</MenuItem>
@@ -202,7 +198,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                                 label="Categories"
                                 name={`artists.${idx}.categories`}
                                 multiple
-                                inputProps={{name: `artists.${idx}.categories`, id: `artists.${idx}.categories`}}
+                                inputProps={{ name: `artists.${idx}.categories`, id: `artists.${idx}.categories` }}
                               >
                                 <MenuItem value="Nothing">Nothing</MenuItem>
                                 <MenuItem value="Vocalist">Vocalist</MenuItem>
@@ -234,7 +230,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                               <DeleteIcon />
                             </Button>
                           </div>
-                          <Divider className={styles.divider}/>
+                          <Divider className={styles.divider} />
                         </Grid>
                       ))}
                       <Grid item xs={12}>
@@ -285,7 +281,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                               name={`albums.${idx}.diskNumber`} type="number" label="Disk number" />
                           </div>
                           <div className={styles.artistRow}>
-                           <Field
+                            <Field
                               component={TextField}
                               variant="outlined"
                               margin="dense"
@@ -295,7 +291,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                               <DeleteIcon />
                             </Button>
                           </div>
-                          <Divider className={styles.divider}/>
+                          <Divider className={styles.divider} />
                         </Grid>
                       ))}
                       <Grid item xs={12}>
@@ -316,38 +312,19 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                     </Grid>
                   )}
                 </FieldArray>
-                <pre>{`
-                  Name
-                  Sort order
-                  Cover path from video site
-    
-                  Original song
-    
-                  Artists (multiple)
-                    search = import + add
-                      name, sortOrder, type
-                    artistOfSong
-                      roles, categories, custom name
-                                        
-                  Albums (multiple)
-                    search = import + add
-                      name, sortOrder
-                    songInAlbums
-                      disk number, track number, name
-                `}</pre>
               </Form>
-            );
-          }}
-        </Formik>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="primary">
-          Cancel
-        </Button>
-        <Button disabled={isSaving} onClick={handleSubmit} color="primary">
-          Create
-        </Button>
-      </DialogActions>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose} color="primary">
+                Cancel
+              </Button>
+              <Button disabled={formikProps.isSubmitting} onClick={formikProps.submitForm} color="primary">
+                Create
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Formik>
     </Dialog>
   );
 }

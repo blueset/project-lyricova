@@ -14,7 +14,7 @@ import {
   Radio
 } from "@material-ui/core";
 import { ChangeEvent, useCallback, useEffect } from "react";
-import { Song} from "../../../models/Song";
+import { Song } from "../../../models/Song";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import axios from "axios";
 import { PartialFindResult, SongForApiContract } from "../../../types/vocadb";
@@ -79,22 +79,26 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
     }
 
     toggleImporting(true);
-    const result = await apolloClient.mutate<{enrolSongFromVocaDB: Partial<Song>}>({
-      mutation: IMPORT_SONG_MUTATION,
-      variables: {
-        id: selectedSong,
-      }
-    });
-
-    if (result.data) {
-      setSong(result.data.enrolSongFromVocaDB);
-      snackbar.enqueueSnackbar(`Song “${result.data.enrolSongFromVocaDB.name}” is successfully enrolled.`, {
-        variant: "success",
+    try {
+      const result = await apolloClient.mutate<{ enrolSongFromVocaDB: Partial<Song> }>({
+        mutation: IMPORT_SONG_MUTATION,
+        variables: {
+          id: selectedSong,
+        }
       });
-      handleClose();
-    } else {
-      console.error(`Error occurred while importing song #${selectedSong}.`, result.errors);
-      snackbar.enqueueSnackbar(`Error occurred while importing song #${selectedSong}. (${result.errors})`, {
+
+      if (result.data) {
+        setSong(result.data.enrolSongFromVocaDB);
+        snackbar.enqueueSnackbar(`Song “${result.data.enrolSongFromVocaDB.name}” is successfully enrolled.`, {
+          variant: "success",
+        });
+        handleClose();
+      } else {
+        toggleImporting(false);
+      }
+    } catch (e) {
+      console.error(`Error occurred while importing song #${selectedSong}.`, e);
+      snackbar.enqueueSnackbar(`Error occurred while importing song #${selectedSong}. (${e})`, {
         variant: "error",
       });
       toggleImporting(false);

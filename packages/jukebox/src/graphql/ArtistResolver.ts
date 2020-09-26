@@ -1,8 +1,25 @@
-import { Arg, FieldResolver, Int, Query, Resolver, Root } from "type-graphql";
+import { Arg, Authorized, Field, FieldResolver, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
 import { Artist } from "../models/Artist";
 import { literal } from "sequelize";
 import { Song } from "../models/Song";
 import { Album } from "../models/Album";
+import _ from "lodash";
+import { VDBArtistType } from "../types/vocadb";
+
+@InputType()
+class NewArtistInput implements Partial<Artist> {
+  @Field()
+  name: string;
+
+  @Field()
+  sortOrder: string;
+
+  @Field({nullable: true})
+  mainPictureUrl?: string;
+
+  @Field()
+  type: VDBArtistType;
+}
 
 @Resolver(of => Artist)
 export class ArtistResolver {
@@ -39,5 +56,15 @@ export class ArtistResolver {
   @FieldResolver(type => [Album], { nullable: true })
   private async albums(@Root() artist: Artist): Promise<Album[] | null> {
     return artist.$get("albums");
+  }
+
+  @Authorized("ADMIN")
+  @Mutation(type => Artist)
+  public async newArtist(@Arg("data") data: NewArtistInput): Promise<Artist> {
+    const id = _.random(-2147483648, -1, false);
+    return Artist.create({
+      id, ...data,
+      incomplete: false,
+    });
   }
 }

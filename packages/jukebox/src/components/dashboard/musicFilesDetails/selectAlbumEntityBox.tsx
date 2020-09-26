@@ -120,26 +120,31 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, form
           }
         }
       );
-
-      const apolloResult = await apolloPromise;
-      const vocaDBResult = await vocaDBPromise;
-
       if (active) {
         let result: ExtendedAlbum[] = [];
-        if (apolloResult.data?.searchAlbums) {
-          result = result.concat(apolloResult.data?.searchAlbums);
-        }
-        if (vocaDBResult.status === 200 && vocaDBResult.data) {
-          result = result.concat(vocaDBResult.data.map(v => ({
-            id: null,
-            name: v,
-            sortOrder: `"${v}"`,
-            vocaDBSuggestion: true,
-          })));
-        }
-        if (value && !_.some(result, v => v.id === value.id)) {
-          result = [value, ...result];
-        }
+
+        try {
+          const apolloResult = await apolloPromise;
+          if (apolloResult.data?.searchAlbums) {
+            result = result.concat(apolloResult.data?.searchAlbums);
+          }
+        } catch (e) { /* No-Op. */ }
+
+        try {
+          const vocaDBResult = await vocaDBPromise;
+          if (vocaDBResult.status === 200 && vocaDBResult.data) {
+            result = result.concat(vocaDBResult.data.map(v => ({
+              id: null,
+              name: v,
+              sortOrder: `"${v}"`,
+              vocaDBSuggestion: true,
+            })));
+          }
+          if (value && !_.some(result, v => v.id === value.id)) {
+            result = [value, ...result];
+          }
+        } catch (e) { /* No-Op. */ }
+
         setVocaDBAutoCompleteOptions(result);
       }
     }, 200)();

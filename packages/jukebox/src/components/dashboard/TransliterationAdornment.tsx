@@ -44,17 +44,21 @@ export default function TransliterationAdornment({ value, setField }: Props) {
   }, [setMenuAnchor]);
 
   const transliterateCallback = useCallback((language?: "zh" | "ja") => async () => {
-    const result = await apolloClient.query<{
-      transliterate: { plain: string; };
-    }>({
-      query: TRANSLITRATION_QUERY,
-      variables: {
-        text: value,
-        language,
-      }
-    });
-    if (!result.error) {
+    try {
+      const result = await apolloClient.query<{
+        transliterate: { plain: string; };
+      }>({
+        query: TRANSLITRATION_QUERY,
+        variables: {
+          text: value,
+          language,
+        },
+        fetchPolicy: "no-cache",
+      });
+
       setField(result.data.transliterate.plain);
+    } catch (e) {
+      // No-op.
     }
 
     if (language !== null) {

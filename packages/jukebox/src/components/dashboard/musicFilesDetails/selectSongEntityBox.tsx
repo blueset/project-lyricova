@@ -117,25 +117,31 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
         }
       );
 
-      const apolloResult = await apolloPromise;
-      const vocaDBResult = await vocaDBPromise;
-
       if (active) {
         let result: ExtendedSong[] = [];
-        if (apolloResult.data?.searchSongs) {
-          result = result.concat(apolloResult.data?.searchSongs);
-        }
-        if (vocaDBResult.status === 200 && vocaDBResult.data) {
-          result = result.concat(vocaDBResult.data.map(v => ({
-            id: null,
-            name: v,
-            sortOrder: `"${v}"`,
-            vocaDBSuggestion: true,
-          })));
-        }
-        if (value && !_.some(result, v => v.id === value.id)) {
-          result = [value, ...result];
-        }
+
+        try {
+          const apolloResult = await apolloPromise;
+          if (apolloResult.data?.searchSongs) {
+            result = result.concat(apolloResult.data?.searchSongs);
+          }
+        } catch (e) { /* No-Op. */ }
+
+        try {
+          const vocaDBResult = await vocaDBPromise;
+          if (vocaDBResult.status === 200 && vocaDBResult.data) {
+            result = result.concat(vocaDBResult.data.map(v => ({
+              id: null,
+              name: v,
+              sortOrder: `"${v}"`,
+              vocaDBSuggestion: true,
+            })));
+          }
+          if (value && !_.some(result, v => v.id === value.id)) {
+            result = [value, ...result];
+          }
+        } catch (e) { /* No-Op. */ }
+
         setVocaDBAutoCompleteOptions(result);
       }
     }, 200)();
