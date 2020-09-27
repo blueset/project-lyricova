@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Divider,
   FormControl,
-  FormControlLabel,
+  FormControlLabel, FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
@@ -16,8 +16,8 @@ import {
   MenuItem,
   Typography
 } from "@material-ui/core";
-import { useCallback } from "react";
-import { useApolloClient } from "@apollo/client";
+import { useCallback, Fragment } from "react";
+import { gql, useApolloClient } from "@apollo/client";
 import { Field, FieldArray, Form, Formik } from "formik";
 import { Checkbox, Select, TextField } from "formik-material-ui";
 import TransliterationAdornment from "../TransliterationAdornment";
@@ -25,18 +25,31 @@ import { useSnackbar } from "notistack";
 import AutorenewIcon from "@material-ui/icons/Autorenew";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
+import AlbumIcon from "@material-ui/icons/Album";
+import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import SelectSongEntityBox from "./selectSongEntityBox";
 import { makeStyles } from "@material-ui/core/styles";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
 import SelectAlbumEntityBox from "./selectAlbumEntityBox";
 import TrackNameAdornment from "../TrackNameAdornment";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
+import * as yup from "yup";
+import { SongFragments } from "../../../graphql/fragments";
+
+const NEW_SONG_MUTATION = gql`
+  mutation($data: NewSongInput!) {
+    newSong(data: $data) {
+      ...SelectSongEntry
+    }
+  }
+  
+  ${SongFragments.SelectSongEntry}
+`;
 
 const useStyles = makeStyles((theme) => ({
   artistRow: {
     display: "flex",
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     "& > *": {
       marginRight: theme.spacing(1),
     },
@@ -53,6 +66,15 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(2),
     height: "3em",
     width: "3em",
+  },
+  numberField: {
+    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+      "-webkit-appearance": "none",
+      margin: 0,
+    },
+    "input[type=number]": {
+      "-moz-appearance": "textfield",
+    },
   },
   divider: {
     margin: theme.spacing(1, 0),
@@ -105,10 +127,69 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
           artists: [],
           albums: [],
         }}
-        onSubmit={(values, formikHelpers) => {
-          /* TODO */
-          formikHelpers.setSubmitting(false);
-          handleClose();
+        validationSchema={yup.object({
+          name: yup.string().required(),
+          sortOrder: yup.string().required(),
+          coverUrl: yup.string().url(),
+          originalSong: yup.object().nullable(),
+          artists: yup.array(yup.object({
+            artist: yup.object().typeError("Artist entity must be selected."),
+            artistRoles: yup.array(yup.string()).required(),
+            categories: yup.array(yup.string()).required(),
+            customName: yup.string(),
+            isSupport: yup.boolean().required(),
+          })).required("At least one artist is required."),
+          albums: yup.array(yup.object({
+            album: yup.object().typeError("Album entity must be selected."),
+            diskNumber: yup.number().nullable().positive().integer(),
+            trackNumber: yup.number().nullable().positive().integer(),
+            name: yup.string().required(),
+          })),
+        })}
+        onSubmit={async (values, formikHelpers) => {
+          try {
+            const result = await apolloClient.mutate<{ newSong: Partial<Song> }>({
+              mutation: NEW_SONG_MUTATION,
+              variables: {
+                data: {
+                  name: values.name,
+                  sortOrder: values.sortOrder,
+                  coverUrl: values.coverUrl,
+                  originalId: values.originalSong?.id ?? null,
+                  songInAlbums: values.albums.map(v => ({
+                    name: v.name,
+                    diskNumber: v.diskNumber,
+                    trackNumber: v.trackNumber,
+                    albumId: v.album.id,
+                  })),
+                  artistsOfSong: values.artists.map(v => ({
+                    categories: v.categories,
+                    artistRoles: v.artistRoles,
+                    isSupport: v.isSupport,
+                    customName: v.customName,
+                    artistId: v.artist.id,
+                  })),
+                }
+              }
+            });
+
+            if (result.data) {
+              setSong(result.data.newSong);
+              snackbar.enqueueSnackbar(`Song “${result.data.newSong.name}” is successfully created.`, {
+                variant: "success",
+              });
+              formikHelpers.setSubmitting(false);
+              handleClose();
+            } else {
+              formikHelpers.setSubmitting(false);
+            }
+          } catch (e) {
+            console.error(`Error occurred while creating artist #${values.name}.`, e);
+            snackbar.enqueueSnackbar(`Error occurred while creating song ${values.name}. (${e})`, {
+              variant: "error",
+            });
+            formikHelpers.setSubmitting(false);
+          }
         }}>
         {(formikProps) => (
           <>
@@ -122,6 +203,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                       variant="outlined"
                       margin="dense"
                       fullWidth
+                      required
                       name="name" type="text" label="Track name" />
                   </Grid>
                   <Grid item xs={12}>
@@ -130,6 +212,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                       variant="outlined"
                       margin="dense"
                       fullWidth
+                      required
                       InputProps={{
                         endAdornment: <TransliterationAdornment
                           value={formikProps.values.name}
@@ -172,7 +255,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                   {({ push, remove }) => (
                     <>
                       {formikProps.values.artists?.length > 0 && formikProps.values.artists.map((v, idx) => (
-                        <>
+                        <Fragment key={idx}>
                           <SelectArtistEntityBox
                             fieldName={`artists.${idx}.artist`}
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -251,7 +334,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                             </IconButton>
                           </div>
                           <Divider className={styles.divider} />
-                        </>
+                        </Fragment>
                       ))}
                       <Button
                         fullWidth variant="outlined"
@@ -267,6 +350,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                       >
                         Add artist
                       </Button>
+                      {(formikProps.touched.artists && typeof formikProps.errors.artists === "string") ? <FormHelperText error>{formikProps.errors.artists}</FormHelperText> : false}
                     </>
                   )}
                 </FieldArray>
@@ -275,7 +359,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                   {({ push, remove }) => (
                     <>
                       {formikProps.values.albums.length > 0 && formikProps.values.albums.map((v, idx) => (
-                        <>
+                        <Fragment key={idx}>
                           <SelectAlbumEntityBox
                             fieldName={`albums.${idx}.album`}
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -286,16 +370,24 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                           <div className={styles.artistRow}>
                             <Field
                               component={TextField}
+                              className={styles.numberField}
                               variant="outlined"
                               margin="dense"
                               fullWidth
-                              name={`albums.${idx}.trackNumber`} type="number" label="Track number" />
+                              InputProps={{
+                                startAdornment: <InputAdornment position="start"><AlbumIcon /></InputAdornment>,
+                              }}
+                              name={`albums.${idx}.diskNumber`} type="number" label="Disk number" />
                             <Field
                               component={TextField}
+                              className={styles.numberField}
                               variant="outlined"
                               margin="dense"
                               fullWidth
-                              name={`albums.${idx}.diskNumber`} type="number" label="Disk number" />
+                              InputProps={{
+                                startAdornment: <InputAdornment position="start"><MusicNoteIcon /></InputAdornment>,
+                              }}
+                              name={`albums.${idx}.trackNumber`} type="number" label="Track number" />
                           </div>
                           <div className={styles.artistRow}>
                             <Field
@@ -303,6 +395,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                               variant="outlined"
                               margin="dense"
                               fullWidth
+                              required
                               name={`albums.${idx}.name`} type="text" label="Track name"
                               InputProps={{
                                 endAdornment: <TrackNameAdornment
@@ -317,7 +410,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                             </IconButton>
                           </div>
                           <Divider className={styles.divider} />
-                        </>
+                        </Fragment>
                       ))}
                       <Button
                         fullWidth variant="outlined"
@@ -325,8 +418,8 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                         startIcon={<AddIcon />}
                         onClick={() => push({
                           album: null,
-                          trackNumber: null,
-                          diskNumber: null,
+                          trackNumber: "",
+                          diskNumber: "",
                           name: formikProps.values.name ?? "",
                         })}
                       >

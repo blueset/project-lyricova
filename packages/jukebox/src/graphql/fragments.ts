@@ -18,6 +18,12 @@ export const SongFragments = {
           categories
         }
       }
+      albums {
+        id
+        name
+        sortOrder
+        coverUrl
+      }
     }
   `,
 };

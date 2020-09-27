@@ -227,7 +227,7 @@ export default function CreateAlbumEntityDialog({ isOpen, toggleOpen, keyword, s
             }
           } catch (e) {
             console.error(`Error occurred while creating artist #${values.name}.`, e);
-            snackbar.enqueueSnackbar(`Error occurred while creating artist #${values.name}. (${e})`, {
+            snackbar.enqueueSnackbar(`Error occurred while creating album ${values.name}. (${e})`, {
               variant: "error",
             });
             formikHelpers.setSubmitting(false);

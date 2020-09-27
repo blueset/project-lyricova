@@ -83,6 +83,7 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
           albumName={fileData.data?.musicFile.albumName ?? ""}
           albumSortOrder={fileData.data?.musicFile.albumSortOrder ?? ""}
           song={fileData.data?.musicFile.song ?? null}
+          album={fileData.data?.musicFile.album ?? null}
           fileId={fileId} />
       </TabPanel>
       <TabPanel value="cover-art">Cover art</TabPanel>
