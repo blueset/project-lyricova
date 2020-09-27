@@ -1,14 +1,7 @@
-import {
-  Avatar,
-  Box, Chip,
-  Grid, IconButton,
-  TextField as MuiTextField,
-  Typography
-} from "@material-ui/core";
-import { Field, FormikProps } from "formik";
+import { Avatar, Box, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
+import { Field, FormikProps, getIn } from "formik";
 import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-lab";
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
-import { Song } from "../../../models/Song";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useEffect } from "react";
 import _ from "lodash";
@@ -18,13 +11,12 @@ import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import SearchIcon from "@material-ui/icons/Search";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import { makeStyles } from "@material-ui/core/styles";
-import VocaDBSearchSongDialog from "./vocaDBSearchSongDialog";
 import { AlbumFragments } from "../../../graphql/fragments";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import EditIcon from "@material-ui/icons/Edit";
-import CreateSongEntityDialog from "./createSongEntityDialog";
 import { Album } from "../../../models/Album";
 import VocaDBSearchAlbumDialog from "./vocaDBSearchAlbumDialog";
+import CreateAlbumEntityDialog from "./createAlbumEntityDialog";
 
 export type ExtendedAlbum = Partial<Album> & {
   vocaDBSuggestion?: boolean;
@@ -76,14 +68,14 @@ interface Props<T extends string> {
   formikProps: FormikProps<{ [key in T]: ExtendedAlbum }>;
   labelName: string;
   title?: string;
-  value: ExtendedAlbum | null;
 }
 
-export default function SelectAlbumEntityBox<T extends string>({ fieldName, formikProps, labelName, title, value }: Props<T>) {
+export default function SelectAlbumEntityBox<T extends string>({ fieldName, formikProps, labelName, title }: Props<T>) {
   const styles = useStyles();
 
   const apolloClient = useApolloClient();
-  const { touched, errors, setFieldValue } = formikProps;
+  const { touched, errors, setFieldValue, values } = formikProps;
+  const value = getIn(values, fieldName) as ExtendedAlbum;
 
   const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useNamedState<ExtendedAlbum[]>([], "vocaDBAutoCompleteOptions");
   const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState("", "vocaDBAutoCompleteText");
@@ -223,17 +215,21 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, form
               if (option === null || option.id === null) return "";
               return option.name;
             }}
-            renderInput={(params: AutocompleteRenderInputParams) => (
-              <MuiTextField
-                {...params}
-                error={touched[fieldName] && !!errors[fieldName]}
-                helperText={errors[fieldName]}
-                label={labelName}
-                variant="outlined"
-                margin="dense"
-                fullWidth
-              />
-            )}
+            renderInput={(params: AutocompleteRenderInputParams) => {
+              const fieldError = getIn(errors, fieldName);
+              const showError = getIn(touched, fieldName) && !!fieldError;
+              return (
+                <MuiTextField
+                  {...params}
+                  error={showError}
+                  helperText={showError ? fieldError : null}
+                  label={labelName}
+                  variant="outlined"
+                  margin="dense"
+                  fullWidth
+                />
+              );
+            }}
           />
         </Grid>
         {value && (
@@ -276,12 +272,12 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, form
         setKeyword={setImportDialogKeyword}
         setAlbum={(v) => setFieldValue(fieldName, v)}
       />
-      <CreateSongEntityDialog
+      <CreateAlbumEntityDialog
         isOpen={isManualDialogOpen}
         toggleOpen={toggleManualDialogOpen}
         keyword={importDialogKeyword}
         setKeyword={setImportDialogKeyword}
-        setSong={(v) => setFieldValue(fieldName, v)}
+        setAlbum={(v) => setFieldValue(fieldName, v)}
       />
     </>
   );

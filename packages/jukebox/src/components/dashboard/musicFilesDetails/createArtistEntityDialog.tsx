@@ -79,7 +79,6 @@ export default function CreateArtistEntityDialog({ isOpen, toggleOpen, keyword, 
           type: yup.string().required("Type must be selected."),
         })}
         onSubmit={async (values, formikHelpers) => {
-          /* TODO */
           try {
             const result = await apolloClient.mutate<{ newArtist: Partial<Artist> }>({
               mutation: NEW_ARTIST_MUTATION,

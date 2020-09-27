@@ -1,24 +1,20 @@
-// import style from "./DetailsPanel.module.scss";
 import { ReactNode } from "react";
-import { Box, createMuiTheme, IconButton, makeStyles, Theme as MUITheme, ThemeProvider } from "@material-ui/core";
+import { Box, IconButton, makeStyles, Theme as MUITheme } from "@material-ui/core";
 import Link, { NextComposedLink } from "../Link";
 import SearchIcon from "@material-ui/icons/Search";
 import { useRouter } from "next/router";
-import Theme from "../../frontendUtils/theme";
 
-const useStyle = makeStyles<
-  MUITheme,
+const useStyle = makeStyles<MUITheme,
   { coverUrl: string },
-  "link" | "containerBox" | "backgroundStyle" | "backgroundShade" | "hideSvg" | "@global"
->({
+  "link" | "containerBox" | "backgroundStyle" | "backgroundShade" | "hideSvg" | "@global">((theme) => ({
   link: {
     fontSize: "1.75em",
     fontWeight: 500,
     marginRight: "1em",
     fontStyle: "italic",
-    color: Theme.palette.text.secondary,
+    color: theme.palette.text.secondary,
     "&.active": {
-      color: Theme.palette.primary.light,
+      color: theme.palette.primary.light,
     }
   },
   containerBox: {
@@ -74,18 +70,7 @@ const useStyle = makeStyles<
       "--jukebox-cover-filter-brighter-blurless": ({ coverUrl }) => coverUrl ? "url(#brighter)" : null,
     }
   }
-});
-
-const theme = createMuiTheme({
-  ...Theme,
-  palette: {
-    ...Theme.palette,
-    primary: {
-      ...Theme.palette.primary,
-      main: Theme.palette.primary.light
-    }
-  }
-});
+}));
 
 interface Props {
   coverUrl: string | null;
@@ -96,12 +81,12 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
   const style = useStyle({ coverUrl });
   const router = useRouter();
 
-  let backgroundNode = <div className={style.backgroundShade}/>;
+  let backgroundNode = <div className={style.backgroundShade} />;
 
   if (coverUrl) {
     backgroundNode = (<>
-      <div className={style.backgroundStyle} style={{ backgroundImage: `url(${coverUrl})` }}/>
-      <div className={style.backgroundShade}/>
+      <div className={style.backgroundStyle} style={{ backgroundImage: `url(${coverUrl})` }} />
+      <div className={style.backgroundShade} />
     </>);
   }
 
@@ -109,82 +94,84 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
   // console.log(router.pathname);
 
   return (
-    <ThemeProvider theme={theme}>
-      <div className={style.containerBox}>
-        {backgroundNode}
-        <Box pt={2} pb={2} pl={4} pr={2} display="flex" flexDirection="row" alignItems="center" zIndex={1}>
-          <Link className={style.link} href="/">Lyrics</Link>
-          <Link className={style.link} href="/library/tracks" activeCriteria={(v) => v.startsWith("/library/")}>Library</Link>
-          <Link className={style.link} href="/info">Info</Link>
-          <Box flexGrow={1}/>
-          <IconButton component={NextComposedLink} color={router.pathname === "/search" ? "primary" : "default"} href="/search" aria-label="delete">
-            <SearchIcon />
-          </IconButton>
-        </Box>
-        <Box position="relative" width="1" flexGrow={1} flexBasis={0} overflow="auto">
-          {children}
-        </Box>
-        <svg className={style.hideSvg}>
-          <filter id="sharpBlur">
-            <feGaussianBlur stdDeviation="15" result="blur" />
-            <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" />
-            <feComposite in2="SourceGraphic" operator="in" />
-          </filter>
-          <filter id="sharpBlurBrighter">
-            <feGaussianBlur stdDeviation="15" result="blur" />
-            <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" result="colorMatrix" />
-            <feFlood floodColor="#ffffff" floodOpacity="1" result="floodWhite" />
-            <feBlend mode="overlay" in="floodWhite" in2="colorMatrix" result="blend" />
-            <feFlood floodColor="#ffffff" floodOpacity="0.3" result="floodWhite25" />
-            <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
-            <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
-          </filter>
-          <filter id="brighter">
-            <feFlood floodColor="#ffffff" floodOpacity="1" result="floodWhite" />
-            <feBlend mode="overlay" in="floodWhite" in2="SourceGraphic" result="blend" />
-            <feFlood floodColor="#ffffff" floodOpacity="0.3" result="floodWhite25" />
-            <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
-            <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
-          </filter>
-          <filter id="sharpBlurBright">
-            <feGaussianBlur stdDeviation="15" result="blur" />
-            <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" result="colorMatrix" />
-            <feFlood floodColor="#000000" floodOpacity="0.5" result="floodWhite" />
-            <feBlend mode="darken" in="floodWhite" in2="colorMatrix" result="blend" />
-            <feFlood floodColor="#ffffff" floodOpacity="0.2" result="floodWhite25" />
-            <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
-            <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
-          </filter>
-          <filter id="nicokaraBefore">
-            <feMorphology operator="dilate" radius="2" in="SourceGraphic" result="morphologyStroke" />
-            <feFlood floodColor="#000000" floodOpacity="1" result="floodStroke" />
-            <feComposite in="floodStroke" in2="morphologyStroke" operator="in" result="compositeStroke" />
-            <feMorphology operator="dilate" radius="4" in="SourceGraphic" result="morphologyShadow" />
-            <feGaussianBlur stdDeviation="4" in="morphologyShadow" edgeMode="wrap" result="blurShadow" />
-            <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
-            <feComposite in="floodShadow" in2="blurShadow" operator="in" result="compositeShadow" />
-            <feMerge result="merge">
-              <feMergeNode in="compositeShadow" />
-              <feMergeNode in="compositeStroke" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter id="nicokaraAfter">
-            <feMorphology operator="dilate" radius="2" in="SourceGraphic" result="morphologyStroke" />
-            <feFlood floodColor="#ffffff" floodOpacity="1" result="floodStroke" />
-            <feComposite in="floodStroke" in2="morphologyStroke" operator="in" result="compositeStroke" />
-            <feMorphology operator="dilate" radius="4" in="SourceGraphic" result="morphologyShadow" />
-            <feGaussianBlur stdDeviation="4" in="morphologyShadow" edgeMode="wrap" result="blurShadow" />
-            <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
-            <feComposite in="floodShadow" in2="blurShadow" operator="in" result="compositeShadow" />
-            <feMerge result="merge">
-              <feMergeNode in="compositeShadow" />
-              <feMergeNode in="compositeStroke" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </svg>
-      </div>
-    </ThemeProvider>
+    <div className={style.containerBox}>
+      {backgroundNode}
+      <Box pt={2} pb={2} pl={4} pr={2} display="flex" flexDirection="row" alignItems="center" zIndex={1}>
+        <Link className={style.link} href="/">Lyrics</Link>
+        <Link className={style.link} href="/library/tracks"
+              activeCriteria={(v) => v.startsWith("/library/")}>Library</Link>
+        <Link className={style.link} href="/info">Info</Link>
+        <Box flexGrow={1} />
+        <IconButton component={NextComposedLink} color={router.pathname === "/search" ? "primary" : "default"}
+                    href="/search" aria-label="delete">
+          <SearchIcon />
+        </IconButton>
+      </Box>
+      <Box position="relative" width="1" flexGrow={1} flexBasis={0} overflow="auto">
+        {children}
+      </Box>
+      <svg className={style.hideSvg}>
+        <filter id="sharpBlur">
+          <feGaussianBlur stdDeviation="15" result="blur" />
+          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" />
+          <feComposite in2="SourceGraphic" operator="in" />
+        </filter>
+        <filter id="sharpBlurBrighter">
+          <feGaussianBlur stdDeviation="15" result="blur" />
+          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0"
+                         result="colorMatrix" />
+          <feFlood floodColor="#ffffff" floodOpacity="1" result="floodWhite" />
+          <feBlend mode="overlay" in="floodWhite" in2="colorMatrix" result="blend" />
+          <feFlood floodColor="#ffffff" floodOpacity="0.3" result="floodWhite25" />
+          <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
+          <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
+        </filter>
+        <filter id="brighter">
+          <feFlood floodColor="#ffffff" floodOpacity="1" result="floodWhite" />
+          <feBlend mode="overlay" in="floodWhite" in2="SourceGraphic" result="blend" />
+          <feFlood floodColor="#ffffff" floodOpacity="0.3" result="floodWhite25" />
+          <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
+          <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
+        </filter>
+        <filter id="sharpBlurBright">
+          <feGaussianBlur stdDeviation="15" result="blur" />
+          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0"
+                         result="colorMatrix" />
+          <feFlood floodColor="#000000" floodOpacity="0.5" result="floodWhite" />
+          <feBlend mode="darken" in="floodWhite" in2="colorMatrix" result="blend" />
+          <feFlood floodColor="#ffffff" floodOpacity="0.2" result="floodWhite25" />
+          <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
+          <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
+        </filter>
+        <filter id="nicokaraBefore">
+          <feMorphology operator="dilate" radius="2" in="SourceGraphic" result="morphologyStroke" />
+          <feFlood floodColor="#000000" floodOpacity="1" result="floodStroke" />
+          <feComposite in="floodStroke" in2="morphologyStroke" operator="in" result="compositeStroke" />
+          <feMorphology operator="dilate" radius="4" in="SourceGraphic" result="morphologyShadow" />
+          <feGaussianBlur stdDeviation="4" in="morphologyShadow" edgeMode="wrap" result="blurShadow" />
+          <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
+          <feComposite in="floodShadow" in2="blurShadow" operator="in" result="compositeShadow" />
+          <feMerge result="merge">
+            <feMergeNode in="compositeShadow" />
+            <feMergeNode in="compositeStroke" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <filter id="nicokaraAfter">
+          <feMorphology operator="dilate" radius="2" in="SourceGraphic" result="morphologyStroke" />
+          <feFlood floodColor="#ffffff" floodOpacity="1" result="floodStroke" />
+          <feComposite in="floodStroke" in2="morphologyStroke" operator="in" result="compositeStroke" />
+          <feMorphology operator="dilate" radius="4" in="SourceGraphic" result="morphologyShadow" />
+          <feGaussianBlur stdDeviation="4" in="morphologyShadow" edgeMode="wrap" result="blurShadow" />
+          <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
+          <feComposite in="floodShadow" in2="blurShadow" operator="in" result="compositeShadow" />
+          <feMerge result="merge">
+            <feMergeNode in="compositeShadow" />
+            <feMergeNode in="compositeStroke" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </svg>
+    </div>
   );
 }

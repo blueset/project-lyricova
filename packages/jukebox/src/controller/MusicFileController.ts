@@ -347,21 +347,21 @@ export class MusicFileController {
       return res.status(404).json({ status: 404, message: "Music file has no cover (via database)." });
     }
 
-    const coverPath = tempy.file({ extension: "png" });
+    const coverUrl = tempy.file({ extension: "png" });
     try {
-      await ffmetadata.readAsync(musicFile.fullPath, { coverPath: coverPath });
+      await ffmetadata.readAsync(musicFile.fullPath, { coverUrl: coverUrl });
     } catch (e) {
       console.log("Error while extracting cover art from file", e);
       return res.status(500).json({ status: 404, message: e });
     }
-    console.debug("Cover path", coverPath);
+    console.debug("Cover path", coverUrl);
 
-    if (!fs.existsSync(coverPath)) {
+    if (!fs.existsSync(coverUrl)) {
       return res.status(404).json({ status: 404, message: "Music file has no cover (via file)." });
     }
 
-    res.sendFile(coverPath, () => {
-      fs.unlinkSync(coverPath);
+    res.sendFile(coverUrl, () => {
+      fs.unlinkSync(coverUrl);
     });
   }
 

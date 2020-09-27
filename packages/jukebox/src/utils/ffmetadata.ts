@@ -12,7 +12,7 @@ const ffmpeg = spawn.bind(null, process.env.FFMPEG_PATH || "ffmpeg");
 
 export interface ReadOptions {
   dryRun?: boolean;
-  coverPath?: string;
+  coverUrl?: string;
 }
 export interface WriteOptions {
   dryRun?: boolean;
@@ -51,11 +51,11 @@ function getTempPath(src: string): string {
 // -- Child process helpers
 
 function getReadArgs(src: string, options: ReadOptions) {
-  if (typeof options.coverPath !== "undefined") {
+  if (typeof options.coverUrl !== "undefined") {
     return [
       "-i",
       src,
-      options.coverPath
+      options.coverUrl
     ];
   }
 

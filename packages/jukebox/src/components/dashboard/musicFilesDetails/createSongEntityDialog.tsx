@@ -1,5 +1,6 @@
 import { Song } from "../../../models/Song";
 import {
+  Avatar,
   Button,
   Dialog,
   DialogActions,
@@ -17,7 +18,6 @@ import {
 } from "@material-ui/core";
 import { useCallback } from "react";
 import { useApolloClient } from "@apollo/client";
-import { useNamedState } from "../../../frontendUtils/hooks";
 import { Field, FieldArray, Form, Formik } from "formik";
 import { Checkbox, Select, TextField } from "formik-material-ui";
 import TransliterationAdornment from "../TransliterationAdornment";
@@ -29,17 +29,30 @@ import SelectSongEntityBox from "./selectSongEntityBox";
 import { makeStyles } from "@material-ui/core/styles";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
 import SelectAlbumEntityBox from "./selectAlbumEntityBox";
+import TrackNameAdornment from "../TrackNameAdornment";
+import MusicNoteIcon from "@material-ui/icons/MusicNote";
 
 const useStyles = makeStyles((theme) => ({
   artistRow: {
     display: "flex",
     flexDirection: "row",
+    alignItems: "flex-start",
     "& > *": {
       marginRight: theme.spacing(1),
     },
     "& > *:last-child": {
       marginRight: 0,
     },
+  },
+  mainPictureRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  mainPictureThumbnail: {
+    marginRight: theme.spacing(2),
+    height: "3em",
+    width: "3em",
   },
   divider: {
     margin: theme.spacing(1, 0),
@@ -87,7 +100,7 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
         initialValues={{
           name: keyword,
           sortOrder: "",
-          coverPath: "",
+          coverUrl: "",
           originalSong: null,
           artists: [],
           albums: [],
@@ -126,39 +139,46 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                       name="sortOrder" type="text" label="Sort order" />
                   </Grid>
                   <Grid item xs={12}>
-                    <Field
-                      component={TextField}
-                      variant="outlined"
-                      margin="dense"
-                      fullWidth
-                      InputProps={{
-                        endAdornment: <InputAdornment position="end">
-                          <IconButton
-                            size="small"
-                            aria-label="Convert from video site link"
-                            onClick={() => formikProps.setFieldValue("coverPath", convertUrl(formikProps.values.coverPath))}
-                          >
-                            <AutorenewIcon />
-                          </IconButton>
-                        </InputAdornment>,
-                      }}
-                      name="coverPath" type="text" label="Cover path" />
+                    <div className={styles.mainPictureRow}>
+                      <Avatar
+                        src={formikProps.values.coverUrl} variant="rounded"
+                        className={styles.mainPictureThumbnail}
+                      >
+                        <MusicNoteIcon />
+                      </Avatar>
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        margin="dense"
+                        fullWidth
+                        InputProps={{
+                          endAdornment: <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              aria-label="Convert from video site link"
+                              onClick={() => formikProps.setFieldValue("coverUrl", convertUrl(formikProps.values.coverUrl))}
+                            >
+                              <AutorenewIcon />
+                            </IconButton>
+                          </InputAdornment>,
+                        }}
+                        name="coverUrl" type="text" label="Cover URL" />
+                    </div>
                   </Grid>
                 </Grid>
                 <SelectSongEntityBox fieldName="originalSong" formikProps={formikProps} labelName="Original song" />
                 <Typography variant="h6" component="h3" className={styles.divider}>Artists</Typography>
                 <FieldArray name="artists">
                   {({ push, remove }) => (
-                    <Grid container spacing={1}>
+                    <>
                       {formikProps.values.artists?.length > 0 && formikProps.values.artists.map((v, idx) => (
-                        <Grid item xs={12} key={idx}>
+                        <>
                           <SelectArtistEntityBox
                             fieldName={`artists.${idx}.artist`}
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                             // @ts-ignore
                             formikProps={formikProps}
                             labelName="Artist"
-                            value={formikProps.values.artists[idx].artist}
                           />
                           <div className={styles.artistRow}>
                             <FormControl variant="outlined" margin="dense" fullWidth>
@@ -226,45 +246,42 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                               margin="dense"
                               fullWidth
                               name={`artists.${idx}.customName`} type="text" label="Custom name" />
-                            <Button color="primary" aria-label="Delete artist item" onClick={() => remove(idx)}>
+                            <IconButton color="primary" aria-label="Delete artist item" onClick={() => remove(idx)}>
                               <DeleteIcon />
-                            </Button>
+                            </IconButton>
                           </div>
                           <Divider className={styles.divider} />
-                        </Grid>
+                        </>
                       ))}
-                      <Grid item xs={12}>
-                        <Button
-                          fullWidth variant="outlined"
-                          color="secondary"
-                          startIcon={<AddIcon />}
-                          onClick={() => push({
-                            artist: null,
-                            artistRoles: ["Default"],
-                            categories: ["Nothing"],
-                            customName: "",
-                            isSupport: false,
-                          })}
-                        >
-                          Add artist
-                        </Button>
-                      </Grid>
-                    </Grid>
+                      <Button
+                        fullWidth variant="outlined"
+                        color="secondary"
+                        startIcon={<AddIcon />}
+                        onClick={() => push({
+                          artist: null,
+                          artistRoles: ["Default"],
+                          categories: ["Nothing"],
+                          customName: "",
+                          isSupport: false,
+                        })}
+                      >
+                        Add artist
+                      </Button>
+                    </>
                   )}
                 </FieldArray>
                 <Typography variant="h6" component="h3" className={styles.divider}>Albums</Typography>
                 <FieldArray name="albums">
                   {({ push, remove }) => (
-                    <Grid container spacing={1}>
-                      {formikProps.values.albums?.length > 0 && formikProps.values.albums.map((v, idx) => (
-                        <Grid item xs={12} key={idx}>
+                    <>
+                      {formikProps.values.albums.length > 0 && formikProps.values.albums.map((v, idx) => (
+                        <>
                           <SelectAlbumEntityBox
                             fieldName={`albums.${idx}.album`}
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                             // @ts-ignore
                             formikProps={formikProps}
                             labelName="Album"
-                            value={formikProps.values.albums[idx].album}
                           />
                           <div className={styles.artistRow}>
                             <Field
@@ -286,30 +303,36 @@ export default function CreateSongEntityDialog({ isOpen, toggleOpen, keyword, se
                               variant="outlined"
                               margin="dense"
                               fullWidth
-                              name={`albums.${idx}.name`} type="text" label="Track name" />
-                            <Button color="primary" aria-label="Delete album item" onClick={() => remove(idx)}>
+                              name={`albums.${idx}.name`} type="text" label="Track name"
+                              InputProps={{
+                                endAdornment: <TrackNameAdornment
+                                  trackName={formikProps.values.name ?? ""}
+                                  value={formikProps.values.albums[idx].name}
+                                  setField={(v: string) => formikProps.setFieldValue(`albums.${idx}.name`, v)}
+                                />,
+                              }}
+                            />
+                            <IconButton color="primary" aria-label="Delete album item" onClick={() => remove(idx)}>
                               <DeleteIcon />
-                            </Button>
+                            </IconButton>
                           </div>
                           <Divider className={styles.divider} />
-                        </Grid>
+                        </>
                       ))}
-                      <Grid item xs={12}>
-                        <Button
-                          fullWidth variant="outlined"
-                          color="secondary"
-                          startIcon={<AddIcon />}
-                          onClick={() => push({
-                            album: null,
-                            trackNumber: null,
-                            diskNumber: null,
-                            name: "",
-                          })}
-                        >
-                          Add Album
-                        </Button>
-                      </Grid>
-                    </Grid>
+                      <Button
+                        fullWidth variant="outlined"
+                        color="secondary"
+                        startIcon={<AddIcon />}
+                        onClick={() => push({
+                          album: null,
+                          trackNumber: null,
+                          diskNumber: null,
+                          name: formikProps.values.name ?? "",
+                        })}
+                      >
+                        Add Album
+                      </Button>
+                    </>
                   )}
                 </FieldArray>
               </Form>

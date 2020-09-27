@@ -1,11 +1,5 @@
-import {
-  Avatar,
-  Box, Chip,
-  Grid, IconButton,
-  TextField as MuiTextField,
-  Typography
-} from "@material-ui/core";
-import { Field, FormikProps } from "formik";
+import { Avatar, Box, Chip, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
+import { Field, FormikProps, getIn } from "formik";
 import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-lab";
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { Song } from "../../../models/Song";
@@ -79,7 +73,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
 
   const apolloClient = useApolloClient();
   const { touched, errors, values, setFieldValue } = formikProps;
-  const value = values[fieldName];
+  const value = getIn(values, fieldName) as ExtendedSong;
 
   const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useNamedState<ExtendedSong[]>([], "vocaDBAutoCompleteOptions");
   const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState("", "vocaDBAutoCompleteText");
@@ -220,17 +214,21 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
               if (option === null || option.id === null) return "";
               return option.name;
             }}
-            renderInput={(params: AutocompleteRenderInputParams) => (
-              <MuiTextField
-                {...params}
-                error={touched[fieldName] && !!errors[fieldName]}
-                helperText={errors[fieldName]}
-                label={labelName}
-                variant="outlined"
-                margin="dense"
-                fullWidth
-              />
-            )}
+            renderInput={(params: AutocompleteRenderInputParams) => {
+              const fieldError = getIn(errors, fieldName);
+              const showError = getIn(touched, fieldName) && !!fieldError;
+              return (
+                <MuiTextField
+                  {...params}
+                  error={showError}
+                  helperText={showError ? fieldError : null}
+                  label={labelName}
+                  variant="outlined"
+                  margin="dense"
+                  fullWidth
+                />
+              );
+            }}
           />
         </Grid>
         {value && (
@@ -238,7 +236,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
             <div className={styles.detailsBox}>
               <div>
                 <Avatar
-                  src={value.coverPath} variant="rounded"
+                  src={value.coverUrl} variant="rounded"
                   className={styles.detailsThumbnail}
                 >
                   <MusicNoteIcon />

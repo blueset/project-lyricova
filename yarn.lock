@@ -2357,20 +2357,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-ui/icons@npm:^4.9.1":
-  version: 4.9.1
-  resolution: "@material-ui/icons@npm:4.9.1"
+"@material-ui/icons@npm:next":
+  version: 5.0.0-alpha.7
+  resolution: "@material-ui/icons@npm:5.0.0-alpha.7"
   dependencies:
     "@babel/runtime": ^7.4.4
   peerDependencies:
-    "@material-ui/core": ^4.0.0
+    "@material-ui/core": ^5.0.0-alpha.7
     "@types/react": ^16.8.6
     react: ^16.8.0
     react-dom: ^16.8.0
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 110bb77f0758d16ad85b6a91f23fe05bac6790b30b6b1889b0578d7d42050c63c76e2764ec4991bdf342073de43e14ebfc171f1c63296a6dd8d523cc6c07d2bb
+  checksum: 923141111827b03a132a647722a4435cb43ec6bd12f0e1f724c2c2174aef7bb02325c529324331bfba5d73141c6614714387e429621481ec03152579d15545b0
   languageName: node
   linkType: hard
 
@@ -14700,7 +14700,7 @@ fsevents@^1.2.7:
   dependencies:
     "@apollo/client": ^3.1.1
     "@material-ui/core": ^4.11.0
-    "@material-ui/icons": ^4.9.1
+    "@material-ui/icons": next
     "@material-ui/lab": ^4.0.0-alpha.56
     "@next/bundle-analyzer": ^9.5.3
     "@types/async": ^3.0.3

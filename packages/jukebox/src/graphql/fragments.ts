@@ -6,7 +6,7 @@ export const SongFragments = {
       id
       name
       sortOrder
-      coverPath
+      coverUrl
       artists {
         name
         sortOrder

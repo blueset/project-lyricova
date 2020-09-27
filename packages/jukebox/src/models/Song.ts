@@ -89,7 +89,7 @@ export class Song extends Model<Song> {
   @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(4096) })
-  coverPath!: string | null;
+  coverUrl!: string | null;
 
   @HasMany(() => MusicFile)
   files: MusicFile[];
@@ -122,7 +122,7 @@ export class Song extends Model<Song> {
       name: entity.name,
       sortOrder: transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
-      coverPath: entity.thumbUrl,
+      coverUrl: entity.thumbUrl,
       incomplete: intermediate,
     });
 

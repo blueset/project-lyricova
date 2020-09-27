@@ -1,14 +1,7 @@
-import {
-  Avatar,
-  Box, Chip,
-  Grid, IconButton,
-  TextField as MuiTextField,
-  Typography
-} from "@material-ui/core";
-import { Field, FormikProps } from "formik";
+import { Avatar, Box, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
+import { Field, FormikProps, getIn } from "formik";
 import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-lab";
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
-import { Song } from "../../../models/Song";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useEffect } from "react";
 import _ from "lodash";
@@ -18,15 +11,12 @@ import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import SearchIcon from "@material-ui/icons/Search";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import { makeStyles } from "@material-ui/core/styles";
-import VocaDBSearchSongDialog from "./vocaDBSearchSongDialog";
 import { ArtistFragments } from "../../../graphql/fragments";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import EditIcon from "@material-ui/icons/Edit";
-import CreateSongEntityDialog from "./createSongEntityDialog";
 import { Artist } from "../../../models/Artist";
 import VocaDBSearchArtistDialog from "./vocaDBSearchArtistDialog";
 import CreateArtistEntityDialog from "./createArtistEntityDialog";
-import { ExtendedAlbum } from "./selectAlbumEntityBox";
 
 export type ExtendedArtist = Partial<Artist> & {
   vocaDBSuggestion?: boolean;
@@ -77,14 +67,14 @@ interface Props<T extends string> {
   formikProps: FormikProps<{ [key in T]: ExtendedArtist }>;
   labelName: string;
   title?: string;
-  value: ExtendedArtist | null;
 }
 
-export default function SelectArtistEntityBox<T extends string>({ fieldName, formikProps, labelName, title, value }: Props<T>) {
+export default function SelectArtistEntityBox<T extends string>({ fieldName, formikProps, labelName, title, }: Props<T>) {
   const styles = useStyles();
 
   const apolloClient = useApolloClient();
-  const { touched, errors, setFieldValue } = formikProps;
+  const { touched, errors, setFieldValue, values } = formikProps;
+  const value = getIn(values, fieldName) as ExtendedArtist;
 
   const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useNamedState<ExtendedArtist[]>([], "vocaDBAutoCompleteOptions");
   const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState("", "vocaDBAutoCompleteText");
@@ -225,17 +215,21 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
               if (option === null || option.id === null) return "";
               return option.name;
             }}
-            renderInput={(params: AutocompleteRenderInputParams) => (
-              <MuiTextField
-                {...params}
-                error={touched[fieldName] && !!errors[fieldName]}
-                helperText={errors[fieldName]}
-                label={labelName}
-                variant="outlined"
-                margin="dense"
-                fullWidth
-              />
-            )}
+            renderInput={(params: AutocompleteRenderInputParams) => {
+              const fieldError = getIn(errors, fieldName);
+              const showError = getIn(touched, fieldName) && !!fieldError;
+              return (
+                <MuiTextField
+                  {...params}
+                  error={showError}
+                  helperText={showError ? fieldError : null}
+                  label={labelName}
+                  variant="outlined"
+                  margin="dense"
+                  fullWidth
+                />
+              );
+            }}
           />
         </Grid>
         {value && (

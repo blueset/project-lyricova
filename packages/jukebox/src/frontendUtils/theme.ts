@@ -1,18 +1,23 @@
-import { createMuiTheme } from "@material-ui/core";
+import { createMuiTheme, fade } from "@material-ui/core";
+
+const palette = {
+  primary: {
+    main: "#c56cf0",
+    light: "#fa9dff",
+    dark: "#923cbd",
+    contrastText: "#000",
+  },
+  secondary: {
+    main: "#38d1c4",
+    light: "#77fff7",
+    dark: "#009f94",
+    contrastText: "#000",
+  },
+};
+
 export default createMuiTheme({
   palette: {
-    primary: {
-      main: "#c56cf0",
-      light: "#fa9dff",
-      dark: "#923cbd",
-      contrastText: "#000",
-    },
-    secondary: {
-      main: "#38d1c4",
-      light: "#77fff7",
-      dark: "#009f94",
-      contrastText: "#000",
-    },
+    ...palette,
     type: "dark"
   },
   typography: {
@@ -33,12 +38,33 @@ export default createMuiTheme({
     ].join(","),
   },
   overrides: {
-    "MuiCssBaseline": {
+    MuiCssBaseline: {
       "@global": {
         "html": {
           fontFeatureSettings: "'palt' 1",
         }
       }
-    }
+    },
+    MuiButton: {
+      outlinedPrimary: {
+        color: palette.primary.light,
+        borderColor: fade(palette.primary.main, 0.5),
+      },
+      textPrimary: {
+        color: palette.primary.light,
+      },
+    },
+    MuiTypography: {
+      colorPrimary: {
+        color: palette.primary.light,
+      },
+    },
+    MuiFormLabel: {
+      root: {
+        "&$focused": {
+          color: palette.primary.light,
+        },
+      },
+    },
   }
 });

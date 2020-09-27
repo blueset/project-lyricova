@@ -29,7 +29,7 @@ class NewArtistOfSong implements Partial<ArtistOfSong> {
 }
 
 @InputType()
-class NewSongInAlbum implements Partial<SongInAlbum> {
+class NewSongInAlbumOnSong implements Partial<SongInAlbum> {
   @Field(type => Int)
   albumId: number;
 
@@ -52,7 +52,7 @@ class NewSongInput implements Partial<Song> {
   sortOrder: string;
 
   @Field()
-  coverPath: string;
+  coverUrl: string;
 
   @Field(type => Int, { nullable: true })
   originalId?: number;
@@ -60,8 +60,8 @@ class NewSongInput implements Partial<Song> {
   @Field(type => [NewArtistOfSong])
   artistsOfSong: NewArtistOfSong[];
 
-  @Field(type => [NewSongInAlbum])
-  songInAlbums: NewSongInAlbum[];
+  @Field(type => [NewSongInAlbumOnSong])
+  songInAlbums: NewSongInAlbumOnSong[];
 }
 
 @Resolver(of => Song)
@@ -114,10 +114,10 @@ export class SongResolver {
 
   @Authorized("ADMIN")
   @Mutation(returns => Song)
-  public async newSong(@Arg("data") { name, sortOrder, coverPath, originalId, artistsOfSong, songInAlbums }: NewSongInput): Promise<Song> {
+  public async newSong(@Arg("data") { name, sortOrder, coverUrl, originalId, artistsOfSong, songInAlbums }: NewSongInput): Promise<Song> {
     const id = _.random(-2147483648, -1, false);
     const song = await Song.create({
-      id, name, sortOrder, coverPath, originalId,
+      id, name, sortOrder, coverUrl, originalId,
       incomplete: false,
     });
     await Promise.all(artistsOfSong.map(v => song.$add("artist", v.artistId, {
