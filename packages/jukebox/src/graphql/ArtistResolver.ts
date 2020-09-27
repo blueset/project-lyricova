@@ -7,7 +7,7 @@ import _ from "lodash";
 import { VDBArtistType } from "../types/vocadb";
 
 @InputType()
-class NewArtistInput implements Partial<Artist> {
+class ArtistInput implements Partial<Artist> {
   @Field()
   name: string;
 
@@ -60,11 +60,29 @@ export class ArtistResolver {
 
   @Authorized("ADMIN")
   @Mutation(type => Artist)
-  public async newArtist(@Arg("data") data: NewArtistInput): Promise<Artist> {
+  public async newArtist(@Arg("data") data: ArtistInput): Promise<Artist> {
     const id = _.random(-2147483648, -1, false);
     return Artist.create({
       id, ...data,
       incomplete: false,
     });
+  }
+
+  @Authorized("ADMIN")
+  @Mutation(type => Artist)
+  public async updateArtist(
+    @Arg("id", type => Int) id: number,
+    @Arg("data") data: ArtistInput
+  ): Promise<Artist> {
+    const artist = await Artist.findByPk(id);
+    if (artist === null) {
+      throw new Error(`Artist entity with id ${id} is not found.`);
+    }
+
+    await artist.update({
+      id, ...data,
+    });
+
+    return artist;
   }
 }

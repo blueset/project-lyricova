@@ -12,7 +12,7 @@ import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
 import {
   Arg,
-  Args,
+  Args, Authorized,
   Field,
   FieldResolver,
   InputType,
@@ -251,6 +251,7 @@ export class MusicFileResolver {
     }, { preserveStreams: true, forceId3v2: forceId3v2 });
   }
 
+  @Authorized("ADMIN")
   @Mutation(returns => MusicFilesScanOutcome)
   public async scan(): Promise<MusicFilesScanOutcome> {
     // Load
@@ -376,6 +377,7 @@ export class MusicFileResolver {
     return MusicFile.findByPk(id);
   }
 
+  @Authorized("ADMIN")
   @Mutation(returns => MusicFile)
   public async writeTagsToMusicFile(@Arg("id", type => Int) id: number, @Arg("data") data: MusicFileInput): Promise<MusicFile> {
     const song = await MusicFile.findByPk(id);
@@ -452,7 +454,7 @@ export class MusicFileResolver {
     }
   }
 
-
+  @Authorized("ADMIN")
   @Mutation(returns => Boolean, { description: "Write lyrics to a separate file" })
   public async writeLyrics(
     @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
@@ -475,6 +477,7 @@ export class MusicFileResolver {
     return true;
   }
 
+  @Authorized("ADMIN")
   @Mutation(returns => Boolean, { description: "Write lyrics to music file as a tag" })
   public async writeLyricsToMusicFile(
     @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
@@ -516,6 +519,7 @@ export class MusicFileResolver {
     return true;
   }
 
+  @Authorized("ADMIN")
   @Mutation(returns => MusicFile, { description: "Set which playlist a file belong to, this replaces existing values." })
   public async setPlaylistsOfSong(
     @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
@@ -533,8 +537,6 @@ export class MusicFileResolver {
       console.log("playlist lookup error", e);
       throw new Error("Some or all playlist slugs are not found in database.");
     }
-
-    // TODO: throw custom error here
 
     await file.$set("playlists", playlists);
     const result = await MusicFile.findByPk(fileId);

@@ -1,9 +1,9 @@
 import { Avatar, Box, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
-import { Field, FormikProps, getIn } from "formik";
+import { FastField, Field, FormikProps, getIn } from "formik";
 import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-lab";
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
@@ -64,7 +64,7 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props<T extends string> {
   fieldName: T;
-  formikProps: FormikProps<{ [key in T]: ExtendedArtist }>;
+  formikProps: FormikProps<{ [key in T]?: ExtendedArtist }>;
   labelName: string;
   title?: string;
 }
@@ -86,6 +86,8 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
 
   // Confirm manual enrol pop-up
   const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(false, "manualDialogOpen");
+
+  const setArtist = useCallback((v) => setFieldValue(fieldName, v), [fieldName, setFieldValue]);
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -120,7 +122,8 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
           if (apolloResult.data?.searchArtists) {
             result = result.concat(apolloResult.data?.searchArtists);
           }
-        } catch (e) { /* No-Op. */ }
+        } catch (e) { /* No-Op. */
+        }
 
         try {
           const vocaDBResult = await vocaDBPromise;
@@ -135,7 +138,8 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
           if (value && !_.some(result, v => v.id === value.id)) {
             result = [value, ...result];
           }
-        } catch (e) { /* No-Op. */ }
+        } catch (e) { /* No-Op. */
+        }
 
         setVocaDBAutoCompleteOptions(result);
       }
@@ -151,7 +155,7 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
       {title && <Typography variant="h6" component="h3" gutterBottom>{title}</Typography>}
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <Field
+          <FastField
             component={Autocomplete}
             variant="outlined"
             name={fieldName}
@@ -265,20 +269,20 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
           </Grid>
         )}
       </Grid>
-      <VocaDBSearchArtistDialog
-        isOpen={isImportDialogOpen}
-        toggleOpen={toggleImportDialogOpen}
-        keyword={importDialogKeyword}
-        setKeyword={setImportDialogKeyword}
-        setArtist={(v) => setFieldValue(fieldName, v)}
-      />
-      <CreateArtistEntityDialog
-        isOpen={isManualDialogOpen}
-        toggleOpen={toggleManualDialogOpen}
-        keyword={importDialogKeyword}
-        setKeyword={setImportDialogKeyword}
-        setArtist={(v) => setFieldValue(fieldName, v)}
-      />
+      {isImportDialogOpen && <VocaDBSearchArtistDialog
+          isOpen={isImportDialogOpen}
+          toggleOpen={toggleImportDialogOpen}
+          keyword={importDialogKeyword}
+          setKeyword={setImportDialogKeyword}
+          setArtist={setArtist}
+      />}
+      {isManualDialogOpen && <CreateArtistEntityDialog
+          isOpen={isManualDialogOpen}
+          toggleOpen={toggleManualDialogOpen}
+          keyword={importDialogKeyword}
+          setKeyword={setImportDialogKeyword}
+          setArtist={setArtist}
+      />}
     </>
   );
 }

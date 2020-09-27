@@ -7,9 +7,17 @@ export const SongFragments = {
       name
       sortOrder
       coverUrl
-      artists {
+      original {
+        id
         name
         sortOrder
+        coverUrl
+      }
+      artists {
+        id
+        name
+        sortOrder
+        mainPictureUrl
         type
         ArtistOfSong {
           isSupport
@@ -23,6 +31,11 @@ export const SongFragments = {
         name
         sortOrder
         coverUrl
+        SongInAlbum {
+          diskNumber
+          trackNumber
+          name
+        }
       }
     }
   `,

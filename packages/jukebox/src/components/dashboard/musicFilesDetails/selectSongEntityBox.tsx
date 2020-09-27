@@ -1,5 +1,5 @@
 import { Avatar, Box, Chip, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
-import { Field, FormikProps, getIn } from "formik";
+import { FastField, Field, FormikProps, getIn } from "formik";
 import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-lab";
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { Song } from "../../../models/Song";
@@ -16,7 +16,7 @@ import VocaDBSearchSongDialog from "./vocaDBSearchSongDialog";
 import { SongFragments } from "../../../graphql/fragments";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import EditIcon from "@material-ui/icons/Edit";
-import CreateSongEntityDialog from "./createSongEntityDialog";
+import SongEntityDialog from "./songEntityDialog";
 
 export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props<T extends string> {
   fieldName: T;
-  formikProps: FormikProps<{ [key in T]: ExtendedSong }>;
+  formikProps: FormikProps<{ [key in T]?: ExtendedSong }>;
   labelName: string;
   title?: string;
 }
@@ -85,6 +85,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
 
   // Confirm manual enrol pop-up
   const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(false, "manualDialogOpen");
+  const [isManualDialogForCreate, toggleManualDialogForCreate] = useNamedState(true, "manualDialogForCreate");
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -119,7 +120,8 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
           if (apolloResult.data?.searchSongs) {
             result = result.concat(apolloResult.data?.searchSongs);
           }
-        } catch (e) { /* No-Op. */ }
+        } catch (e) { /* No-Op. */
+        }
 
         try {
           const vocaDBResult = await vocaDBPromise;
@@ -134,7 +136,8 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
           if (value && !_.some(result, v => v.id === value.id)) {
             result = [value, ...result];
           }
-        } catch (e) { /* No-Op. */ }
+        } catch (e) { /* No-Op. */
+        }
 
         setVocaDBAutoCompleteOptions(result);
       }
@@ -150,7 +153,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
       {title && <Typography variant="h6" component="h3" gutterBottom>{title}</Typography>}
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Field
+          <FastField
             component={Autocomplete}
             variant="outlined"
             name={fieldName}
@@ -193,6 +196,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
                 setVocaDBAutoCompleteOptions([]);
               } else if (newValue.manual) {
                 setImportDialogKeyword(newValue.sortOrder);
+                toggleManualDialogForCreate(true);
                 toggleManualDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
               } else {
@@ -254,12 +258,12 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
                 </div>
                 <div className={styles.chipsRow}>
                   {value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Producer") >= 0).map(v => (
-                    <Chip variant="outlined" size="small" key={v.sortOrder} label={v.name} />
+                    <Chip variant="outlined" size="small" key={v.sortOrder} label={v.ArtistOfSong.customName || v.name} />
                   ))}
                   {_.some(value.artists, v => v.ArtistOfSong.categories.indexOf("Vocalist")) &&
                   <Typography color="textSecondary" component="span" className={styles.featLabel}>feat.</Typography>}
                   {value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0).map(v => (
-                    <Chip variant="outlined" size="small" key={v.sortOrder} label={v.name} />
+                    <Chip variant="outlined" size="small" key={v.sortOrder} label={v.ArtistOfSong.customName || v.name} />
                   ))}
                 </div>
               </div>
@@ -269,7 +273,10 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
                     <OpenInNewIcon />
                   </IconButton>
                 )}
-                <IconButton>
+                <IconButton onClick={() => {
+                  toggleManualDialogForCreate(false);
+                  toggleManualDialogOpen(true);
+                }}>
                   <EditIcon />
                 </IconButton>
               </div>
@@ -277,20 +284,22 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
           </Grid>
         )}
       </Grid>
-      <VocaDBSearchSongDialog
-        isOpen={isImportDialogOpen}
-        toggleOpen={toggleImportDialogOpen}
-        keyword={importDialogKeyword}
-        setKeyword={setImportDialogKeyword}
-        setSong={(v) => setFieldValue(fieldName, v)}
-      />
-      <CreateSongEntityDialog
-        isOpen={isManualDialogOpen}
-        toggleOpen={toggleManualDialogOpen}
-        keyword={importDialogKeyword}
-        setKeyword={setImportDialogKeyword}
-        setSong={(v) => setFieldValue(fieldName, v)}
-      />
+      {isImportDialogOpen && <VocaDBSearchSongDialog
+          isOpen={isImportDialogOpen}
+          toggleOpen={toggleImportDialogOpen}
+          keyword={importDialogKeyword}
+          setKeyword={setImportDialogKeyword}
+          setSong={(v) => setFieldValue(fieldName, v)}
+      />}
+      {isManualDialogOpen && <SongEntityDialog
+          isOpen={isManualDialogOpen}
+          toggleOpen={toggleManualDialogOpen}
+          keyword={importDialogKeyword}
+          songToEdit={value}
+          create={isManualDialogForCreate}
+          setKeyword={setImportDialogKeyword}
+          setSong={(v) => setFieldValue(fieldName, v)}
+      />}
     </>
   );
 }

@@ -11,7 +11,7 @@ import { ArtistOfAlbum } from "../models/ArtistOfAlbum";
 
 
 @InputType()
-class NewArtistOfAlbum implements Partial<ArtistOfAlbum> {
+class ArtistOfAlbumInput implements Partial<ArtistOfAlbum> {
   @Field(type => Int)
   artistId: number;
 
@@ -26,7 +26,7 @@ class NewArtistOfAlbum implements Partial<ArtistOfAlbum> {
 }
 
 @InputType()
-class NewSongInAlbumOnAlbum implements Partial<SongInAlbum> {
+class SongInAlbumOnAlbumInput implements Partial<SongInAlbum> {
   @Field(type => Int)
   songId: number;
 
@@ -41,7 +41,7 @@ class NewSongInAlbumOnAlbum implements Partial<SongInAlbum> {
 }
 
 @InputType()
-class NewAlbumInput implements Partial<Album> {
+class AlbumInput implements Partial<Album> {
   @Field()
   name: string;
 
@@ -51,11 +51,11 @@ class NewAlbumInput implements Partial<Album> {
   @Field()
   coverUrl: string;
 
-  @Field(type => [NewSongInAlbumOnAlbum])
-  songsInAlbum: NewSongInAlbumOnAlbum[];
+  @Field(type => [SongInAlbumOnAlbumInput])
+  songsInAlbum: SongInAlbumOnAlbumInput[];
 
-  @Field(type => [NewArtistOfAlbum])
-  artistsOfAlbum: NewArtistOfAlbum[];
+  @Field(type => [ArtistOfAlbumInput])
+  artistsOfAlbum: ArtistOfAlbumInput[];
 }
 
 @Resolver(of => Album)
@@ -94,7 +94,7 @@ export class AlbumResolver {
   @Mutation(type => Album)
   public async newAlbum(@Arg("data") {
     name, sortOrder, coverUrl, artistsOfAlbum, songsInAlbum
-  }: NewAlbumInput): Promise<Album> {
+  }: AlbumInput): Promise<Album> {
     const id = _.random(-2147483648, -1, false);
     const album = await Album.create({
       id, name, sortOrder, coverUrl,
@@ -115,6 +115,51 @@ export class AlbumResolver {
         trackNumber: v.trackNumber,
       }
     })));
+
+    return album;
+  }
+
+  @Authorized("ADMIN")
+  @Mutation(type => Album)
+  public async updateAlbum(
+    @Arg("id", type => Int) id: number,
+    @Arg("data") {
+      name, sortOrder, coverUrl, artistsOfAlbum, songsInAlbum
+    }: AlbumInput
+  ): Promise<Album> {
+
+    const album = await Album.findByPk(id);
+    if (album === null) {
+      throw new Error(`Album entity with id ${id} is not found.`);
+    }
+
+    await album.update({
+      id, name, sortOrder, coverUrl,
+    });
+
+    await album.$set("artists", artistsOfAlbum.map(v => {
+      const inst = Artist.build({
+        id: v.artistId,
+      }, { isNewRecord: false });
+      inst.ArtistOfAlbum = {
+        categories: v.categories,
+        roles: v.roles,
+        effectiveRoles: v.effectiveRoles,
+      };
+      return inst;
+    }));
+
+    await album.$set("songs", songsInAlbum.map(v => {
+      const inst = Song.build({
+        id: v.songId,
+      }, { isNewRecord: false });
+      inst.SongInAlbum = {
+        name: v.name,
+        diskNumber: v.diskNumber,
+        trackNumber: v.trackNumber,
+      };
+      return inst;
+    }));
 
     return album;
   }

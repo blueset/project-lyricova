@@ -34,9 +34,10 @@ import SelectArtistEntityBox from "./selectArtistEntityBox";
 import _ from "lodash";
 import * as yup from "yup";
 import { AlbumFragments } from "../../../graphql/fragments";
+import VideoThumbnailAdornment from "../VideoThumbnailAdornment";
 
 const NEW_ALBUM_MUTATION = gql`
-  mutation($data: NewAlbumInput!) {
+  mutation($data: AlbumInput!) {
     newAlbum(data: $data) {
       ...SelectAlbumEntry
     }
@@ -146,22 +147,6 @@ export default function CreateAlbumEntityDialog({ isOpen, toggleOpen, keyword, s
     toggleOpen(false);
     setKeyword("");
   }, [toggleOpen, setKeyword]);
-
-  const convertUrl = useCallback((sourceUrl: string): string => {
-    if (sourceUrl.match(/(nicovideo.jp\/watch|nico.ms)\/([a-z]{2}\d{4,10}|\d{6,12})/g)) {
-      const numId = sourceUrl.match(/\d{6,12}/g);
-      if (numId) return `https://tn.smilevideo.jp/smile?i=${numId[0]}`;
-    } else if (sourceUrl.match(/(youtu.be\/|youtube.com\/watch\?\S*?v=)\S{11}/g)) {
-      const id = /(youtu.be\/|youtube.com\/watch\?\S*?v=)(\S{11})/g.exec(sourceUrl);
-      return `https://img.youtube.com/vi/${id[2]}/hqdefault.jpg`;
-    }
-
-    snackbar.enqueueSnackbar("URL is not from a known site, no thumbnail is converted.", {
-      variant: "info",
-    });
-
-    return sourceUrl;
-  }, [snackbar]);
 
   return (
     <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
@@ -277,15 +262,10 @@ export default function CreateAlbumEntityDialog({ isOpen, toggleOpen, keyword, s
                         margin="dense"
                         fullWidth
                         InputProps={{
-                          endAdornment: <InputAdornment position="end">
-                            <IconButton
-                              size="small"
-                              aria-label="Convert from video site link"
-                              onClick={() => formikProps.setFieldValue("coverUrl", convertUrl(formikProps.values.coverUrl))}
-                            >
-                              <AutorenewIcon />
-                            </IconButton>
-                          </InputAdornment>,
+                          endAdornment: <VideoThumbnailAdornment
+                            value={formikProps.values.coverUrl}
+                            setField={(v) => formikProps.setFieldValue("coverUrl", v)}
+                          />,
                         }}
                         name="coverUrl" type="text" label="Cover URL" />
                     </div>

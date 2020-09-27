@@ -22,7 +22,7 @@ import * as yup from "yup";
 import { ArtistFragments } from "../../../graphql/fragments";
 
 const NEW_ARTIST_MUTATION = gql`
-  mutation($data: NewArtistInput!) {
+  mutation($data: ArtistInput!) {
     newArtist(data: $data) {
       ...SelectArtistEntry
     }

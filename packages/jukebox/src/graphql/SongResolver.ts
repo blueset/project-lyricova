@@ -11,7 +11,7 @@ import { SongInAlbum } from "../models/SongInAlbum";
 import _ from "lodash";
 
 @InputType()
-class NewArtistOfSong implements Partial<ArtistOfSong> {
+class ArtistOfSongInput implements Partial<ArtistOfSong> {
   @Field(type => Int)
   artistId: number;
 
@@ -29,7 +29,7 @@ class NewArtistOfSong implements Partial<ArtistOfSong> {
 }
 
 @InputType()
-class NewSongInAlbumOnSong implements Partial<SongInAlbum> {
+class SongInAlbumOnSongInput implements Partial<SongInAlbum> {
   @Field(type => Int)
   albumId: number;
 
@@ -44,7 +44,7 @@ class NewSongInAlbumOnSong implements Partial<SongInAlbum> {
 }
 
 @InputType()
-class NewSongInput implements Partial<Song> {
+class SongInput implements Partial<Song> {
   @Field()
   name: string;
 
@@ -57,11 +57,11 @@ class NewSongInput implements Partial<Song> {
   @Field(type => Int, { nullable: true })
   originalId?: number;
 
-  @Field(type => [NewArtistOfSong])
-  artistsOfSong: NewArtistOfSong[];
+  @Field(type => [ArtistOfSongInput])
+  artistsOfSong: ArtistOfSongInput[];
 
-  @Field(type => [NewSongInAlbumOnSong])
-  songInAlbums: NewSongInAlbumOnSong[];
+  @Field(type => [SongInAlbumOnSongInput])
+  songInAlbums: SongInAlbumOnSongInput[];
 }
 
 @Resolver(of => Song)
@@ -114,7 +114,7 @@ export class SongResolver {
 
   @Authorized("ADMIN")
   @Mutation(returns => Song)
-  public async newSong(@Arg("data") { name, sortOrder, coverUrl, originalId, artistsOfSong, songInAlbums }: NewSongInput): Promise<Song> {
+  public async newSong(@Arg("data") { name, sortOrder, coverUrl, originalId, artistsOfSong, songInAlbums }: SongInput): Promise<Song> {
     const id = _.random(-2147483648, -1, false);
     const song = await Song.create({
       id, name, sortOrder, coverUrl, originalId,
@@ -135,6 +135,49 @@ export class SongResolver {
         trackNumber: v.trackNumber,
       }
     })));
+    return song;
+  }
+
+  @Authorized("ADMIN")
+  @Mutation(returns => Song)
+  public async updateSong(
+    @Arg("id", type => Int) id: number,
+    @Arg("data") { name, sortOrder, coverUrl, originalId, artistsOfSong, songInAlbums }: SongInput): Promise<Song> {
+
+    const song = await Song.findByPk(id);
+    if (song === null) {
+      throw new Error(`Song entity with id ${id} is not found.`);
+    }
+
+    await song.update({
+      id, name, sortOrder, coverUrl, originalId,
+    });
+
+    await song.$set("artists", artistsOfSong.map(v => {
+      const inst = Artist.build({
+        id: v.artistId,
+      }, { isNewRecord: false });
+      inst.ArtistOfSong = {
+        categories: v.categories,
+        artistRoles: v.artistRoles,
+        customName: v.customName,
+        isSupport: v.isSupport,
+      };
+      return inst;
+    }));
+
+    await song.$set("albums", songInAlbums.map(v => {
+      const inst = Album.build({
+        id: v.albumId,
+      }, { isNewRecord: false });
+      inst.SongInAlbum = {
+        name: v.name,
+        diskNumber: v.diskNumber,
+        trackNumber: v.trackNumber,
+      };
+      return inst;
+    }));
+
     return song;
   }
 }
