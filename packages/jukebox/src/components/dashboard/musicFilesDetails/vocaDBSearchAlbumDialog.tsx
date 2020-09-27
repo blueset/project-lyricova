@@ -205,7 +205,7 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
         <Button onClick={handleClose} color="primary">
           Cancel
         </Button>
-        <Button disabled={isImporting} onClick={handleSubmit} color="primary">
+        <Button disabled={selectedAlbum === null || isImporting} onClick={handleSubmit} color="primary">
           Import
         </Button>
       </DialogActions>
