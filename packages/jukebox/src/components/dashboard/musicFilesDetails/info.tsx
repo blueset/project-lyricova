@@ -1,16 +1,23 @@
 import { makeStyles } from "@material-ui/core/styles";
-import { Avatar, Button, Chip, Divider, Grid, MenuItem, Typography } from "@material-ui/core";
-import { useApolloClient } from "@apollo/client";
+import { Avatar, Button, Divider, Grid, MenuItem, TextField as MuiTextField } from "@material-ui/core";
+import { gql, useApolloClient } from "@apollo/client";
 import { Song } from "../../../models/Song";
 import SelectSongEntityBox from "./selectSongEntityBox";
 import TransliterationAdornment from "../TransliterationAdornment";
-import { Album } from "../../../models/Album";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import { Field, Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
 import finalFormMutators from "../../../frontendUtils/finalFormMutators";
 import * as yup from "yup";
-import _ from "lodash";
+import { useSnackbar } from "notistack";
+
+const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
+  mutation($id: Int!, $data: MusicFileInput!) {
+    writeTagsToMusicFile(id: $id, data: $data) {
+      trackName
+    }
+  }
+`;
 
 const useStyles = makeStyles((theme) => ({
   divider: {
@@ -30,31 +37,37 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-interface Props {
+interface FormProps {
   trackName: string;
   trackSortOrder: string;
   artistName: string;
   artistSortOrder: string;
   albumName: string;
   albumSortOrder: string;
-  fileId: number;
   song?: Partial<Song>;
-  album?: Partial<Album>;
+  albumId?: number;
+}
+
+interface Props extends FormProps {
+  path: string;
+  fileId: number;
+  refresh: () => unknown | Promise<unknown>;
 }
 
 export default function InfoPanel(
-  { trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder, song, album, fileId, }: Props
+  { trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder, song, albumId, path, fileId, refresh, }: Props
 ) {
   const styles = useStyles();
   const apolloClient = useApolloClient();
+  const snackbar = useSnackbar();
 
   return (
-    <Form
+    <Form<FormProps>
       mutators={{
         ...finalFormMutators,
       }}
       initialValues={{
-        trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder, song, album,
+        trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder, song, albumId,
       }}
       validate={makeValidate(yup.object({
         trackName: yup.string(),
@@ -78,9 +91,36 @@ export default function InfoPanel(
         song: yup.object().nullable(),
         album: yup.number().nullable().integer(),
       }))}
-      onSubmit={(values, formApi) => {
-        /* TODO */
-        console.log("SUBMIT", values);
+      onSubmit={async (values, formApi) => {
+        try {
+          const result = await apolloClient.mutate<{ writeTagsToMusicFile: { trackName: string; }; }>({
+            mutation: UPDATE_MUSIC_FILE_INFO_MUTATION,
+            variables: {
+              id: fileId,
+              data: {
+                trackName: values.trackName,
+                trackSortOrder: values.trackSortOrder,
+                artistName: values.artistName,
+                artistSortOrder: values.artistSortOrder,
+                albumName: values.albumName,
+                albumSortOrder: values.albumSortOrder,
+                songId: values.song.id,
+                albumId: values.albumId
+              }
+            }
+          });
+          if (result.data?.writeTagsToMusicFile?.trackName != null) {
+            snackbar.enqueueSnackbar(`Music file “${path}” is successfully updated.`, {
+              variant: "success",
+            });
+            await refresh();
+          }
+        } catch (e) {
+          console.error(`Error occurred while updating music file ${path}.`, e);
+          snackbar.enqueueSnackbar(`Error occurred while updating music file ${path}. (${e})`, {
+            variant: "error",
+          });
+        }
       }}
       subscription={{
         touched: true,
@@ -91,6 +131,15 @@ export default function InfoPanel(
       return (
         <>
           <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <MuiTextField
+                variant="outlined"
+                margin="dense"
+                fullWidth
+                disabled
+                label="File path"
+                value={path} />
+            </Grid>
             <Grid item xs={12} md={6}>
               <TextField
                 variant="outlined"
@@ -169,7 +218,7 @@ export default function InfoPanel(
                       <Select
                           type="text"
                           label="Album"
-                          name="album"
+                          name="albumId"
                           formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
                           inputProps={{
                             name: "album",
@@ -228,12 +277,12 @@ export default function InfoPanel(
                             setValue("artistSortOrder", artistSortOrder);
                           }}
                       >Update artist name</Button>
-                      <Field name="album">{
+                      <Field name="albumId">{
                         ({input: {value: albumId}}) =>
                           <Button
                             className={styles.updateButtons}
                             variant="outlined"
-                            disabled={albumId == null}
+                            disabled={albumId == null || albumId === ""}
                             onClick={() => {
                               const album = value.albums.find(i => i.id === albumId);
                               setValue("albumName", album.name);
@@ -246,7 +295,7 @@ export default function InfoPanel(
             )}
           </Field>
           <div className={styles.formButtons}>
-            <Button disabled={submitting} onClick={handleSubmit}>Save</Button>
+            <Button disabled={submitting} variant="outlined" color="secondary" onClick={handleSubmit}>Save</Button>
           </div>
         </>
       );

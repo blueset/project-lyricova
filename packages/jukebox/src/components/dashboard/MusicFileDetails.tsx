@@ -6,11 +6,13 @@ import { useNamedState } from "../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core/styles";
 import { TabContext, TabPanel } from "@material-ui/lab";
 import InfoPanel from "./musicFilesDetails/info";
+import { SongFragments } from "../../graphql/fragments";
 
 const SINGLE_FILE_DATA = gql`
   query($id: Int!) {
     musicFile(id: $id) {
       id
+      path
       trackName
       trackSortOrder
       artistName
@@ -19,10 +21,15 @@ const SINGLE_FILE_DATA = gql`
       albumSortOrder
       songId
       song {
-        name
+        ...SelectSongEntry
+      }
+      album {
+        id
       }
     }
   }
+  
+  ${SongFragments.SelectSongEntry}
 `;
 
 const useStyle = makeStyles((theme) => ({
@@ -74,6 +81,7 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
       </AppBar>
       <TabPanel value="info">
         <InfoPanel
+          path={fileData.data?.musicFile.path ?? ""}
           trackName={fileData.data?.musicFile.trackName ?? ""}
           trackSortOrder={fileData.data?.musicFile.trackSortOrder ?? ""}
           artistName={fileData.data?.musicFile.artistName ?? ""}
@@ -81,8 +89,10 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
           albumName={fileData.data?.musicFile.albumName ?? ""}
           albumSortOrder={fileData.data?.musicFile.albumSortOrder ?? ""}
           song={fileData.data?.musicFile.song ?? null}
-          album={fileData.data?.musicFile.album ?? null}
-          fileId={fileId} />
+          albumId={fileData.data?.musicFile.album?.id ?? null}
+          fileId={fileId}
+          refresh={fileData.refetch}
+        />
       </TabPanel>
       <TabPanel value="cover-art">Cover art</TabPanel>
       <TabPanel value="lyrics">Lyrics</TabPanel>

@@ -148,14 +148,14 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
     sortOrder: songToEdit.sortOrder,
     coverUrl: songToEdit.coverUrl,
     originalSong: songToEdit.original,
-    artists: songToEdit.artists.map(v => ({
+    artists: songToEdit.artists?.map(v => ({
       ...v.ArtistOfSong,
       artist: v,
-    })),
-    albums: songToEdit.albums.map(v => ({
+    })) ?? [],
+    albums: songToEdit.albums?.map(v => ({
       ...v.SongInAlbum,
       album: v,
-    })),
+    })) ?? [],
   };
 
   const songId = songToEdit?.id ?? null;
@@ -172,7 +172,7 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
         validate={makeValidate<FormValues>(yup.object({
           name: yup.string().required(),
           sortOrder: yup.string().required(),
-          coverUrl: yup.string().url(),
+          coverUrl: yup.string().nullable().url(),
           originalSong: yup.object<Song>().nullable(),
           artists: yup.array(yup.object({
             artist: yup.object().typeError("Artist entity must be selected."),
@@ -180,7 +180,7 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
             categories: yup.array(yup.string<VDBArtistCategoryType>()).required(),
             customName: yup.string().nullable(),
             isSupport: yup.boolean().required(),
-          })).required("At least one artist is required."),
+          })),
           albums: yup.array(yup.object({
             album: yup.object().typeError("Album entity must be selected."),
             diskNumber: yup.number().optional().nullable().positive().integer(),
