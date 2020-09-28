@@ -1,5 +1,5 @@
 import { makeStyles } from "@material-ui/core/styles";
-import { Avatar, Button, Divider, Grid, MenuItem } from "@material-ui/core";
+import { Avatar, Button, Chip, Divider, Grid, MenuItem, Typography } from "@material-ui/core";
 import { useApolloClient } from "@apollo/client";
 import { Song } from "../../../models/Song";
 import SelectSongEntityBox from "./selectSongEntityBox";
@@ -10,6 +10,7 @@ import { Field, Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
 import finalFormMutators from "../../../frontendUtils/finalFormMutators";
 import * as yup from "yup";
+import _ from "lodash";
 
 const useStyles = makeStyles((theme) => ({
   divider: {
@@ -23,6 +24,10 @@ const useStyles = makeStyles((theme) => ({
     width: "2em",
     marginRight: theme.spacing(2),
   },
+  updateButtons: {
+    marginRight: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  }
 }));
 
 interface Props {
@@ -82,6 +87,7 @@ export default function InfoPanel(
         pristine: true,
       }}
     >{({ form, submitting, handleSubmit }) => {
+      const setValue = form.mutators.setValue;
       return (
         <>
           <Grid container spacing={3}>
@@ -157,38 +163,86 @@ export default function InfoPanel(
           />
           <Field<Partial<Song>> name="song" subscription={{ value: true }}>
             {({ input: { value } }) => (
-              value && value.id && <Select
-                  type="text"
-                  label="Album"
-                  name="album"
-                  formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
-                  inputProps={{
-                    name: "album",
-                    id: "album",
-                    renderValue: (v: number) => {
-                      const album = value.albums.find(i => i.id === v);
-                      if (album) return album.name;
-                      return v;
-                    }
-                  }}
-              >
-                {[
-                  // Workaround for mui-rff.Select to accept an array of elements.
-                  <MenuItem value={null} key={null}><em>No album</em></MenuItem>
-                ].concat(
-                  value.albums?.map((v) => (
-                    <MenuItem value={v.id} key={v.id}>
-                      <Avatar
-                        src={v.coverUrl} variant="rounded"
-                        className={styles.listThumbnail}
+              value && value.id &&
+              <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                      <Select
+                          type="text"
+                          label="Album"
+                          name="album"
+                          formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
+                          inputProps={{
+                            name: "album",
+                            id: "album",
+                            renderValue: (v: number) => {
+                              const album = value.albums.find(i => i.id === v);
+                              if (album) return album.name;
+                              return v;
+                            }
+                          }}
                       >
-                        <MusicNoteIcon />
-                      </Avatar>
-                      {v.name}
-                    </MenuItem>
-                  )) ?? []
-                )}
-              </Select>
+                        {[
+                          // Workaround for mui-rff.Select to accept an array of elements.
+                          <MenuItem value={null} key={null}><em>No album</em></MenuItem>
+                        ].concat(
+                          value.albums?.map((v) => (
+                            <MenuItem value={v.id} key={v.id}>
+                              <Avatar
+                                src={v.coverUrl} variant="rounded"
+                                className={styles.listThumbnail}
+                              >
+                                <MusicNoteIcon />
+                              </Avatar>
+                              {v.name}
+                            </MenuItem>
+                          )) ?? []
+                        )}
+                      </Select>
+                  </Grid>
+                  <Grid item xs={12}>
+                      <Button
+                          className={styles.updateButtons}
+                          variant="outlined"
+                          onClick={() => {
+                            setValue("trackName", value.name);
+                            setValue("trackSortOrder", value.sortOrder);
+                          }}
+                      >Update track name</Button>
+                      <Button
+                          className={styles.updateButtons}
+                          variant="outlined"
+                          onClick={() => {
+                            let artistName = "", artistSortOrder = "";
+
+                            const producers = value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Producer") >= 0);
+                            artistName += producers.map(v => (v.ArtistOfSong.customName || v.name)).join(", ");
+                            artistSortOrder += producers.map(v => (v.ArtistOfSong.customName || v.sortOrder)).join(", ");
+
+                            const vocalists = value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0);
+                            if (vocalists.length > 0) {
+                              artistName += " feat. " + vocalists.map(v => (v.ArtistOfSong.customName || v.name)).join(", ");
+                              artistSortOrder += " feat. " + vocalists.map(v => (v.ArtistOfSong.customName || v.sortOrder)).join(", ");
+                            }
+
+                            setValue("artistName", artistName);
+                            setValue("artistSortOrder", artistSortOrder);
+                          }}
+                      >Update artist name</Button>
+                      <Field name="album">{
+                        ({input: {value: albumId}}) =>
+                          <Button
+                            className={styles.updateButtons}
+                            variant="outlined"
+                            disabled={albumId == null}
+                            onClick={() => {
+                              const album = value.albums.find(i => i.id === albumId);
+                              setValue("albumName", album.name);
+                              setValue("albumSortOrder", album.sortOrder);
+                            }}
+                          >Update album name</Button>
+                      }</Field>
+                  </Grid>
+              </Grid>
             )}
           </Field>
           <div className={styles.formButtons}>

@@ -42,6 +42,9 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
+    [theme.breakpoints.down("xs")]: {
+      flexWrap: "wrap",
+    }
   },
   detailsThumbnail: {
     height: "4em",
@@ -50,6 +53,12 @@ const useStyles = makeStyles((theme) => ({
   },
   textBox: {
     flexGrow: 1,
+    flexBasis: 0,
+    overflow: "hidden",
+    [theme.breakpoints.down("xs")]: {
+      order: 3,
+      flexBasis: "100%",
+    }
   },
   chipsRow: {
     display: "flex",
