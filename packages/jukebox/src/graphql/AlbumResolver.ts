@@ -48,7 +48,7 @@ class AlbumInput implements Partial<Album> {
   @Field()
   sortOrder: string;
 
-  @Field()
+  @Field({nullable: true})
   coverUrl: string;
 
   @Field(type => [SongInAlbumOnAlbumInput])
@@ -61,7 +61,7 @@ class AlbumInput implements Partial<Album> {
 @Resolver(of => Album)
 export class AlbumResolver {
   @Query(returns => Album, { nullable: true })
-  public async artist(@Arg("id", type => Int) id: number): Promise<Album | null> {
+  public async album(@Arg("id", type => Int) id: number): Promise<Album | null> {
     return Album.findByPk(id);
   }
 

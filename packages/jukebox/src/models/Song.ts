@@ -113,7 +113,7 @@ export class Song extends Model<Song> {
   deletionDate: Date;
 
   /** ArtistOfSong reflected by Album.$get("songs"), added for GraphQL queries. */
-  @Field(type => ArtistOfSong,{nullable: true})
+  @Field(type => SongInAlbum,{nullable: true})
   SongInAlbum?: Partial<SongInAlbum>;
 
   static async saveFromVocaDBEntity(entity: SongForApiContract, original: Song | null, intermediate = false): Promise<Song> {
