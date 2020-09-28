@@ -14,9 +14,10 @@ import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import EditIcon from "@material-ui/icons/Edit";
 import { Album } from "../../../models/Album";
 import VocaDBSearchAlbumDialog from "./vocaDBSearchAlbumDialog";
-import CreateAlbumEntityDialog from "./createAlbumEntityDialog";
+import AlbumEntityDialog from "./albumEntityDialog";
 import { useField, useForm } from "react-final-form";
 import { Autocomplete } from "mui-rff";
+import SongEntityDialog from "./songEntityDialog";
 
 export type ExtendedAlbum = Partial<Album> & {
   vocaDBSuggestion?: boolean;
@@ -86,6 +87,7 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, labe
 
   // Confirm manual enrol pop-up
   const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(false, "manualDialogOpen");
+  const [isManualDialogForCreate, toggleManualDialogForCreate] = useNamedState(true, "manualDialogForCreate");
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -195,6 +197,7 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, labe
                 setVocaDBAutoCompleteOptions([]);
               } else if (newValue.manual) {
                 setImportDialogKeyword(newValue.sortOrder);
+                toggleManualDialogForCreate(true);
                 toggleManualDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
               } else {
@@ -243,7 +246,10 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, labe
                     <OpenInNewIcon />
                   </IconButton>
                 )}
-                <IconButton>
+                <IconButton onClick={() => {
+                  toggleManualDialogForCreate(false);
+                  toggleManualDialogOpen(true);
+                }}>
                   <EditIcon />
                 </IconButton>
               </div>
@@ -258,11 +264,13 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, labe
           setKeyword={setImportDialogKeyword}
           setAlbum={(v) => setValue(fieldName, v)}
       />}
-      {isManualDialogOpen && <CreateAlbumEntityDialog
+      {isManualDialogOpen && <AlbumEntityDialog
           isOpen={isManualDialogOpen}
           toggleOpen={toggleManualDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
+          albumToEdit={value}
+          create={isManualDialogForCreate}
           setAlbum={(v) => setValue(fieldName, v)}
       />}
     </>

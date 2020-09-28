@@ -24,7 +24,7 @@ import TrackNameAdornment from "../TrackNameAdornment";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
 import _ from "lodash";
 import * as yup from "yup";
-import { AlbumFragments } from "../../../graphql/fragments";
+import { AlbumFragments, SongFragments } from "../../../graphql/fragments";
 import VideoThumbnailAdornment from "../VideoThumbnailAdornment";
 import { Artist } from "../../../models/Artist";
 import { Field, Form } from "react-final-form";
@@ -46,6 +46,16 @@ const NEW_ALBUM_MUTATION = gql`
   ${AlbumFragments.SelectAlbumEntry}
 `;
 
+const UPDATE_ALBUM_MUTATION = gql`
+  mutation($id: Int!, $data: AlbumInput!) {
+    updateAlbum(id: $id, data: $data) {
+      ...SelectAlbumEntry
+    }
+  }
+  
+  ${AlbumFragments.SelectAlbumEntry}
+`;
+
 interface RoleFieldProps {
   name: string;
   label: string;
@@ -58,6 +68,7 @@ function RoleField<T extends string>({ name, label }: RoleFieldProps) {
       label={label}
       name={name}
       multiple
+      formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
       inputProps={{ name: name, id: name }}
     >
       <MenuItem value="Default">Default</MenuItem>
@@ -148,7 +159,7 @@ interface Props {
   albumToEdit?: Partial<Album>;
 }
 
-export default function CreateAlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyword, setAlbum }: Props) {
+export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyword, setAlbum, create, albumToEdit }: Props) {
 
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
@@ -159,16 +170,33 @@ export default function CreateAlbumEntityDialog({ isOpen, toggleOpen, keyword, s
     setKeyword("");
   }, [toggleOpen, setKeyword]);
 
+
+  const initialValues: FormValues = (create || !albumToEdit) ? {
+    name: keyword,
+    sortOrder: "",
+    coverUrl: "",
+    songs: [],
+    artists: [],
+  } : {
+    name: albumToEdit.name,
+    sortOrder: albumToEdit.sortOrder,
+    coverUrl: albumToEdit.coverUrl,
+    artists: albumToEdit.artists.map(v => ({
+      ...v.ArtistOfAlbum,
+      artist: v,
+    })),
+    songs: albumToEdit.songs.map(v => ({
+      ...v.SongInAlbum,
+      song: v,
+    })),
+  };
+
+  const albumId = albumToEdit?.id ?? null;
+
   return (
     <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
       <Form<FormValues>
-        initialValues={{
-          name: keyword,
-          sortOrder: "",
-          coverUrl: "",
-          songs: [],
-          artists: [],
-        }}
+        initialValues={initialValues}
         mutators={{
           ...finalFormMutators,
           ...arrayMutators,
@@ -193,46 +221,65 @@ export default function CreateAlbumEntityDialog({ isOpen, toggleOpen, keyword, s
         }))}
         onSubmit={async (values) => {
           try {
-            const result = await apolloClient.mutate<{ newAlbum: Partial<Album> }>({
-              mutation: NEW_ALBUM_MUTATION,
-              variables: {
-                data: {
-                  name: values.name,
-                  sortOrder: values.sortOrder,
-                  coverUrl: values.coverUrl,
-                  songsInAlbum: values.songs.map(v => ({
-                    name: v.name,
-                    diskNumber: v.diskNumber,
-                    trackNumber: v.trackNumber,
-                    songId: v.song.id,
-                  })),
-                  artistsOfAlbum: values.artists.map(v => ({
-                    categories: v.categories,
-                    roles: v.roles,
-                    effectiveRoles: v.effectiveRoles,
-                    artistId: v.artist.id,
-                  })),
-                }
-              }
-            });
+            const data = {
+              name: values.name,
+              sortOrder: values.sortOrder,
+              coverUrl: values.coverUrl,
+              songsInAlbum: values.songs.map(v => ({
+                name: v.name,
+                diskNumber: v.diskNumber,
+                trackNumber: v.trackNumber,
+                songId: v.song.id,
+              })),
+              artistsOfAlbum: values.artists.map(v => ({
+                categories: v.categories,
+                roles: v.roles,
+                effectiveRoles: v.effectiveRoles,
+                artistId: v.artist.id,
+              })),
+            };
 
-            if (result.data) {
-              setAlbum(result.data.newAlbum);
-              snackbar.enqueueSnackbar(`Album “${result.data.newAlbum.name}” is successfully created.`, {
-                variant: "success",
+            if (create) {
+              const result = await apolloClient.mutate<{ newAlbum: Partial<Album> }>({
+                mutation: NEW_ALBUM_MUTATION,
+                variables: {
+                  data
+                }
               });
-              handleClose();
+
+              if (result.data) {
+                setAlbum(result.data.newAlbum);
+                snackbar.enqueueSnackbar(`Album “${result.data.newAlbum.name}” is successfully created.`, {
+                  variant: "success",
+                });
+                handleClose();
+              }
+            } else {
+              const result = await apolloClient.mutate<{ updateAlbum: Partial<Album> }>({
+                mutation: UPDATE_ALBUM_MUTATION,
+                variables: {
+                  data
+                }
+              });
+
+              if (result.data) {
+                setAlbum(result.data.updateAlbum);
+                snackbar.enqueueSnackbar(`Album “${result.data.updateAlbum.name}” is successfully updated.`, {
+                  variant: "success",
+                });
+                handleClose();
+              }
             }
           } catch (e) {
-            console.error(`Error occurred while creating artist #${values.name}.`, e);
-            snackbar.enqueueSnackbar(`Error occurred while creating album ${values.name}. (${e})`, {
+            console.error(`Error occurred while ${create ? "creating" : "updating"} artist #${values.name}.`, e);
+            snackbar.enqueueSnackbar(`Error occurred while ${create ? "creating" : "updating"} album ${values.name}. (${e})`, {
               variant: "error",
             });
           }
         }}>
         {({ form, submitting, handleSubmit }) => (
           <>
-            <DialogTitle id="form-dialog-title">Create new album entity</DialogTitle>
+            <DialogTitle id="form-dialog-title">{create ? "Create new album entity" : `Edit album entity #${albumId}`}</DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
                 <Grid item xs={12}>

@@ -198,6 +198,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
                 toggleManualDialogForCreate(true);
                 toggleManualDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
+                setValue(fieldName, null);
               } else {
                 setValue(fieldName, newValue);
               }
@@ -219,7 +220,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
             }}
           />
         </Grid>
-        {value && (
+        {value && value.id && (
           <Grid item xs={12}>
             <div className={styles.detailsBox}>
               <div>

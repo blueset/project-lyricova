@@ -6,12 +6,10 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  FormControl,
   FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
-  InputLabel,
   MenuItem,
   Typography
 } from "@material-ui/core";
@@ -35,7 +33,7 @@ import { VDBArtistCategoryType, VDBArtistRoleType } from "../../../types/vocadb"
 import { Album } from "../../../models/Album";
 import VideoThumbnailAdornment from "../VideoThumbnailAdornment";
 import { Field, Form } from "react-final-form";
-import { Checkboxes, makeValidate, Select, TextField } from "mui-rff";
+import { Checkboxes, makeValidate, Select, showErrorOnChange, TextField } from "mui-rff";
 import finalFormMutators from "../../../frontendUtils/finalFormMutators";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
@@ -245,8 +243,8 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
               }
             }
           } catch (e) {
-            console.error(`Error occurred while ${create ? "creating" : "editing"} song #${values?.name}.`, e);
-            snackbar.enqueueSnackbar(`Error occurred while ${create ? "creating" : "editing"} song ${values?.name}. (${e})`, {
+            console.error(`Error occurred while ${create ? "creating" : "updating"} song #${values?.name}.`, e);
+            snackbar.enqueueSnackbar(`Error occurred while ${create ? "creating" : "updating"} song ${values?.name}. (${e})`, {
               variant: "error",
             });
           }
@@ -295,8 +293,8 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
               </Grid>
               <SelectSongEntityBox fieldName="originalSong" labelName="Original song" />
               <Typography variant="h6" component="h3" className={styles.divider}>Artists</Typography>
-              <FieldArray name="artists" subscription={{ error: true }}>
-                {({ fields, }) => (
+              <FieldArray name="artists" subscription={{ error: true, touched: true, modified: true, dirtySinceLastSubmit: true, submitError: true}}>
+                {({ fields, meta, }) => (
                   <>
                     {fields.map((name, idx) => (
                       <Fragment key={name}>
@@ -381,8 +379,8 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                     >
                       Add artist
                     </Button>
-                    {(fields.touched && fields.error) ?
-                      <FormHelperText error>{fields.error}</FormHelperText> : false}
+                    {showErrorOnChange({meta}) ?
+                      <FormHelperText error>{meta.submitError ?? meta.error?.[0]}</FormHelperText> : false}
                   </>
                 )}
               </FieldArray>

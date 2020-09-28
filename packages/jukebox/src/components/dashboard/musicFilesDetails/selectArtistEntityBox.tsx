@@ -14,7 +14,7 @@ import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import EditIcon from "@material-ui/icons/Edit";
 import { Artist } from "../../../models/Artist";
 import VocaDBSearchArtistDialog from "./vocaDBSearchArtistDialog";
-import CreateArtistEntityDialog from "./createArtistEntityDialog";
+import ArtistEntityDialog from "./artistEntityDialog";
 import { useField, useForm } from "react-final-form";
 import { ExtendedSong } from "./selectSongEntityBox";
 import { Autocomplete } from "mui-rff";
@@ -86,6 +86,7 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
 
   // Confirm manual enrol pop-up
   const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(false, "manualDialogOpen");
+  const [isManualDialogForCreate, toggleManualDialogForCreate] = useNamedState(true, "manualDialogForCreate");
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -197,6 +198,7 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
               } else if (newValue.manual) {
                 setImportDialogKeyword(newValue.sortOrder);
                 toggleManualDialogOpen(true);
+                toggleManualDialogForCreate(true);
                 setVocaDBAutoCompleteOptions([]);
               } else {
                 setValue(fieldName, newValue);
@@ -244,7 +246,10 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
                     <OpenInNewIcon />
                   </IconButton>
                 )}
-                <IconButton>
+                <IconButton onClick={() => {
+                  toggleManualDialogForCreate(false);
+                  toggleManualDialogOpen(true);
+                }}>
                   <EditIcon />
                 </IconButton>
               </div>
@@ -259,10 +264,12 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
           setKeyword={setImportDialogKeyword}
           setArtist={(v) => setValue(fieldName, v)}
       />}
-      {isManualDialogOpen && <CreateArtistEntityDialog
+      {isManualDialogOpen && <ArtistEntityDialog
           isOpen={isManualDialogOpen}
           toggleOpen={toggleManualDialogOpen}
           keyword={importDialogKeyword}
+          create={isManualDialogForCreate}
+          artistToEdit={value}
           setKeyword={setImportDialogKeyword}
           setArtist={(v) => setValue(fieldName, v)}
       />}

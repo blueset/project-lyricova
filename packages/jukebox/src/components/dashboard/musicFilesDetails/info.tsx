@@ -1,17 +1,15 @@
 import { makeStyles } from "@material-ui/core/styles";
-import { Avatar, Button, Divider, Grid, IconButton, InputAdornment, MenuItem } from "@material-ui/core";
-import { gql, useApolloClient } from "@apollo/client";
-import AutorenewIcon from "@material-ui/icons/Autorenew";
-import { MouseEventHandler } from "react";
+import { Avatar, Button, Divider, Grid, MenuItem } from "@material-ui/core";
+import { useApolloClient } from "@apollo/client";
 import { Song } from "../../../models/Song";
 import SelectSongEntityBox from "./selectSongEntityBox";
 import TransliterationAdornment from "../TransliterationAdornment";
-import SelectAlbumEntityBox from "./selectAlbumEntityBox";
 import { Album } from "../../../models/Album";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import { Field, FieldProps, FieldRenderProps, Form } from "react-final-form";
-import { Select, TextField } from "mui-rff";
+import { Field, Form } from "react-final-form";
+import { makeValidate, Select, TextField } from "mui-rff";
 import finalFormMutators from "../../../frontendUtils/finalFormMutators";
+import * as yup from "yup";
 
 const useStyles = makeStyles((theme) => ({
   divider: {
@@ -53,6 +51,28 @@ export default function InfoPanel(
       initialValues={{
         trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder, song, album,
       }}
+      validate={makeValidate(yup.object({
+        trackName: yup.string(),
+        trackSortOrder: yup.string().when("trackName", {
+          is: (v) => !!v,
+          then: yup.string().required(),
+          otherwise: yup.string().optional()
+        }),
+        artistName: yup.string(),
+        artistSortOrder: yup.string().when("artistName", {
+          is: (v) => !!v,
+          then: yup.string().required(),
+          otherwise: yup.string().optional()
+        }),
+        albumName: yup.string(),
+        albumSortOrder: yup.string().when("albumName", {
+          is: (v) => !!v,
+          then: yup.string().required(),
+          otherwise: yup.string().optional()
+        }),
+        song: yup.object().nullable(),
+        album: yup.number().nullable().integer(),
+      }))}
       onSubmit={(values, formApi) => {
         /* TODO */
         console.log("SUBMIT", values);
@@ -137,7 +157,7 @@ export default function InfoPanel(
           />
           <Field<Partial<Song>> name="song" subscription={{ value: true }}>
             {({ input: { value } }) => (
-              value && <Select
+              value && value.id && <Select
                   type="text"
                   label="Album"
                   name="album"
