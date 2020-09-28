@@ -1767,7 +1767,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:7.11.2, @babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.10.5, @babel/runtime@npm:^7.2.0, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.4.4, @babel/runtime@npm:^7.5.0, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.6.0, @babel/runtime@npm:^7.6.3, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.7.6, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
+"@babel/runtime@npm:7.11.2, @babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.0, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.10.5, @babel/runtime@npm:^7.2.0, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.4.4, @babel/runtime@npm:^7.4.5, @babel/runtime@npm:^7.5.0, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.6.0, @babel/runtime@npm:^7.6.3, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.7.6, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
   version: 7.11.2
   resolution: "@babel/runtime@npm:7.11.2"
   dependencies:
@@ -1915,7 +1915,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@date-io/date-fns@npm:^1.1.0":
+"@date-io/date-fns@npm:^1.1.0, @date-io/date-fns@npm:^1.3.13":
   version: 1.3.13
   resolution: "@date-io/date-fns@npm:1.3.13"
   dependencies:
@@ -2395,7 +2395,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-ui/pickers@npm:^3.2.2":
+"@material-ui/pickers@npm:^3.2.10, @material-ui/pickers@npm:^3.2.2":
   version: 3.2.10
   resolution: "@material-ui/pickers@npm:3.2.10"
   dependencies:
@@ -8890,7 +8890,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^2.0.0-alpha.27":
+"date-fns@npm:*, date-fns@npm:^2.0.0-alpha.27":
   version: 2.16.1
   resolution: "date-fns@npm:2.16.1"
   checksum: fbe5d9aa1dc4c92c7cf9c0b31e58f532ac9fe059f85fc622641b1ac9c673150329620ea6bf941a8ba10e8e677aa0b6ccdc04ce001f81e70fd49acd1760edcba0
@@ -9089,13 +9089,6 @@ __metadata:
   dependencies:
     is-mergeable-object: 1.1.0
   checksum: 3307c1b821a076867d073c141769cd91ce9bac4e61d53e6bda18ca6f8c0a2290edc6441261896a38a9e7eb1357aa6940ecd37e4917e25005ce815f1e5a3c0c58
-  languageName: node
-  linkType: hard
-
-"deepmerge@npm:^2.1.1":
-  version: 2.2.1
-  resolution: "deepmerge@npm:2.2.1"
-  checksum: 8394eb5ab19010e4e856e96ffb570528cad00e4af35e1e774898b52fd986fa6840dbce3e9217a7a1e38683c170cf0cbfe19c67323b89d329afad0ffa72db382e
   languageName: node
   linkType: hard
 
@@ -10828,6 +10821,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"final-form-arrays@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "final-form-arrays@npm:3.0.2"
+  peerDependencies:
+    final-form: ^4.18.2
+  checksum: 16a7fb6e68929b0581447302116c473eeb23f70dd856379230edb22c23fe93167a5ace5ac730292b327b740552586e211d313e29308e0d9b5c1bc4825a722f52
+  languageName: node
+  linkType: hard
+
+"final-form@npm:^4.20.1":
+  version: 4.20.1
+  resolution: "final-form@npm:4.20.1"
+  dependencies:
+    "@babel/runtime": ^7.10.0
+  checksum: 007bc31ead06ad92ec9a3a917183c8e36cbf2f4a5a7188fa938b8212953e16580db61eedbfca443edcc8402d671b7828b3514f82f5ab03886611f8ccf8f3f847
+  languageName: node
+  linkType: hard
+
 "finalhandler@npm:~1.1.2":
   version: 1.1.2
   resolution: "finalhandler@npm:1.1.2"
@@ -11076,49 +11087,6 @@ __metadata:
   version: 0.2.2
   resolution: "format@npm:0.2.2"
   checksum: 0740f5212144e63dad4b3b2156d84a875c0649f4976ecfa91f21b086ad007e9af575e88cf782b202c5f5783fb6d4ee3cebcd357b79aa82d556f8401dc1762f55
-  languageName: node
-  linkType: hard
-
-"formik-material-ui-lab@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "formik-material-ui-lab@npm:0.0.5"
-  peerDependencies:
-    "@material-ui/core": ">=4.0.0"
-    "@material-ui/lab": ^4.0.0-alpha.56
-    formik: ">=2.0.0"
-    react: ^16.8.0
-    tiny-warning: ">=1.0.2"
-  checksum: 223502cbc55cd34865f4ca906995604efcc22f8b7c8f89a2b44fc792d49ad74e1844d7df04a8947bdd07edab98b16ac097600523e494c6b6d40333dd9caf3e9e
-  languageName: node
-  linkType: hard
-
-"formik-material-ui@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "formik-material-ui@npm:2.0.1"
-  peerDependencies:
-    "@material-ui/core": ">=4.0.0"
-    formik: ">=2.0.0"
-    react: ^16.8.0
-    tiny-warning: ">=1.0.2"
-  checksum: a6659fe885a0a838f35970e5fd41cb77dc9d22f114914d8f4782d1d85a17906c0d691c4e1f7034c3dbd654092771192fd08e20bab5af45d12d161b3a9b6fbd08
-  languageName: node
-  linkType: hard
-
-"formik@npm:^2.1.5":
-  version: 2.1.5
-  resolution: "formik@npm:2.1.5"
-  dependencies:
-    deepmerge: ^2.1.1
-    hoist-non-react-statics: ^3.3.0
-    lodash: ^4.17.14
-    lodash-es: ^4.17.14
-    react-fast-compare: ^2.0.1
-    scheduler: ^0.18.0
-    tiny-warning: ^1.0.2
-    tslib: ^1.10.0
-  peerDependencies:
-    react: ">=16.8.0"
-  checksum: 5a84001cc471afd4b214bf470b93038a46ebe89c4f90c43c59f1093262dd3cf8a21bdc95f656cc7034e1883c0706a5ace7ac6178bc211cfe0afb5716276a1f05
   languageName: node
   linkType: hard
 
@@ -14396,7 +14364,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"lodash-es@npm:^4.17.11, lodash-es@npm:^4.17.14":
+"lodash-es@npm:^4.17.11":
   version: 4.17.15
   resolution: "lodash-es@npm:4.17.15"
   checksum: ee2871b76deefd1754527e659a8c8b688f2e427e67b30709296878e18ad9cb54b4f0fc16a7161298156b4e0ebc2a37dfe501a3ea8725f195763f9de8a7ba6da6
@@ -14758,9 +14726,8 @@ fsevents@^1.2.7:
     express-session: ^1.17.1
     express-validator: ^6.3.1
     ffprobe-client: ^1.1.6
-    formik: ^2.1.5
-    formik-material-ui: ^2.0.1
-    formik-material-ui-lab: ^0.0.5
+    final-form: ^4.20.1
+    final-form-arrays: ^3.0.2
     framer-motion: ^2.4.2
     glob: ^7.1.6
     graphql: ^15.3.0
@@ -14773,6 +14740,7 @@ fsevents@^1.2.7:
     material-table: ^1.69.0
     mecab-async: ^0.1.2
     moment: ^2.27.0
+    mui-rff: ^2.5.5
     multer: ^1.4.2
     mysql: ^2.17.1
     mysql2: ^2.1.0
@@ -14794,6 +14762,8 @@ fsevents@^1.2.7:
     react-balance-text-cj: "workspace:*"
     react-beautiful-dnd: ^13.0.0
     react-dom: ^16.13.1
+    react-final-form: ^6.5.1
+    react-final-form-arrays: ^3.1.2
     react-measure: ^2.5.0
     react-scenejs: ^1.1.0
     react-virtualized-auto-sizer: ^1.0.2
@@ -15679,6 +15649,35 @@ fsevents@^1.2.7:
   version: 2.1.2
   resolution: "ms@npm:2.1.2"
   checksum: 9b65fb709bc30c0c07289dcbdb61ca032acbb9ea5698b55fa62e2cebb04c5953f1876a1f3f7f4bc2e91d4bf4d86003f3e207c3bc6ee2f716f99827e62389cd0e
+  languageName: node
+  linkType: hard
+
+"mui-rff@npm:^2.5.5":
+  version: 2.5.5
+  resolution: "mui-rff@npm:2.5.5"
+  dependencies:
+    "@date-io/core": ^1.3.13
+    "@date-io/date-fns": ^1.3.13
+    "@material-ui/lab": ^4.0.0-alpha.56
+    "@material-ui/pickers": ^3.2.10
+    date-fns: "*"
+  peerDependencies:
+    "@material-ui/core": ^4.11.0
+    final-form: ">=4.19.1 < 5"
+    react: ">=16"
+    react-final-form: ^6.5.1
+  dependenciesMeta:
+    "@date-io/core":
+      optional: true
+    "@date-io/date-fns":
+      optional: true
+    "@material-ui/lab":
+      optional: true
+    "@material-ui/pickers":
+      optional: true
+    date-fns:
+      optional: true
+  checksum: d922d2b149d8f1eceedff2b6642761b38c22b39464c23c7df4d3dde86f0ece2124c2ec17d186d2c4ab1df475527f9b61e9d4ca9f4f88ba2a03396454892eb102
   languageName: node
   linkType: hard
 
@@ -18236,17 +18235,36 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-fast-compare@npm:^2.0.1":
-  version: 2.0.4
-  resolution: "react-fast-compare@npm:2.0.4"
-  checksum: 4e4bfc3597414a36ee35977259012fff30c4f13a0e5dcabf958e91991bef8e9a3faee9dd666cfbdb0c2a0f0ddaf242ac2912054caa956a793c4cdff274dc5aec
-  languageName: node
-  linkType: hard
-
 "react-fast-compare@npm:^3.0.1":
   version: 3.2.0
   resolution: "react-fast-compare@npm:3.2.0"
   checksum: 6fe65c889eb4f326e97769135f97b3d63ac68737866f9c37f9625c9de4f5eaa9abed6f748eb3fd6a66808392118842916309cab7cfa99c67991f0c837433d6d2
+  languageName: node
+  linkType: hard
+
+"react-final-form-arrays@npm:^3.1.2":
+  version: 3.1.2
+  resolution: "react-final-form-arrays@npm:3.1.2"
+  dependencies:
+    "@babel/runtime": ^7.4.5
+  peerDependencies:
+    final-form: ^4.15.0
+    final-form-arrays: ">=1.0.4"
+    react: ^16.8.0
+    react-final-form: ^6.2.1
+  checksum: cf4bd9211998f6baf8bb867c4b3e9c40f72fbb19a819540d05df0d00719cee1e11ce5974ea1660698ec665ecf091102a1036441d124307fdad4105706ca116e7
+  languageName: node
+  linkType: hard
+
+"react-final-form@npm:^6.5.1":
+  version: 6.5.1
+  resolution: "react-final-form@npm:6.5.1"
+  dependencies:
+    "@babel/runtime": ^7.10.0
+  peerDependencies:
+    final-form: ^4.20.0
+    react: ^16.8.0
+  checksum: cc4c0f880afb9e31d70fede69fb104a87799f86ca1e0d75f39b7e84808901d0df455984fb0a294a60997f443500760d84f9841c059cf520d53fe4cf9f49ca6ec
   languageName: node
   linkType: hard
 
@@ -19532,16 +19550,6 @@ fsevents@^1.2.7:
     css-styled: ">=0.2.3"
     order-map: ">=0.2.2"
   checksum: 6a322304bccc98352067edfd7e46ed89ae7155d6179f6ac553f6ac033b08625d00d596a981cc8e193962925cbff7f14eca51c8476615a559a77a9aeddfe67e8d
-  languageName: node
-  linkType: hard
-
-"scheduler@npm:^0.18.0":
-  version: 0.18.0
-  resolution: "scheduler@npm:0.18.0"
-  dependencies:
-    loose-envify: ^1.1.0
-    object-assign: ^4.1.1
-  checksum: 007678c559669029a5f8a029022548c2f39258b8087d1da0a3f5c5360abf3aa2794a87f56998151432f48910eca53331206cd712b751188623ca3d1bcab38b9f
   languageName: node
   linkType: hard
 

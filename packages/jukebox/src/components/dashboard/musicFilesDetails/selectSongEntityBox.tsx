@@ -1,6 +1,4 @@
 import { Avatar, Box, Chip, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
-import { FastField, Field, FormikProps, getIn } from "formik";
-import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-lab";
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { Song } from "../../../models/Song";
 import { useNamedState } from "../../../frontendUtils/hooks";
@@ -17,6 +15,8 @@ import { SongFragments } from "../../../graphql/fragments";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import EditIcon from "@material-ui/icons/Edit";
 import SongEntityDialog from "./songEntityDialog";
+import { useField, useForm } from "react-final-form";
+import { Autocomplete } from "mui-rff";
 
 export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
@@ -63,17 +63,16 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props<T extends string> {
   fieldName: T;
-  formikProps: FormikProps<{ [key in T]?: ExtendedSong }>;
   labelName: string;
   title?: string;
 }
 
-export default function SelectSongEntityBox<T extends string>({ fieldName, formikProps, labelName, title }: Props<T>) {
+export default function SelectSongEntityBox<T extends string>({ fieldName, labelName, title }: Props<T>) {
   const styles = useStyles();
 
   const apolloClient = useApolloClient();
-  const { touched, errors, values, setFieldValue } = formikProps;
-  const value = getIn(values, fieldName) as ExtendedSong;
+  const { input: { value } } = useField<ExtendedSong>(fieldName);
+  const setValue = useForm().mutators.setValue;
 
   const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useNamedState<ExtendedSong[]>([], "vocaDBAutoCompleteOptions");
   const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState("", "vocaDBAutoCompleteText");
@@ -153,15 +152,15 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
       {title && <Typography variant="h6" component="h3" gutterBottom>{title}</Typography>}
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <FastField
-            component={Autocomplete}
-            variant="outlined"
+          <Autocomplete
             name={fieldName}
             options={vocaDBAutoCompleteOptions}
+            label={labelName}
             selectOnFocus
             clearOnBlur
             handleHomeEndKeys
             freeSolo
+            textFieldProps={{variant: "outlined", size: "small"}}
             filterOptions={(v: ExtendedSong[], params: FilterOptionsState<ExtendedSong>) => {
               if (params.inputValue !== "") {
                 v.push({
@@ -186,7 +185,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
               if (newValue === null) {
                 setVocaDBAutoCompleteOptions([]);
                 if (reason === "clear") {
-                  setFieldValue(fieldName, null);
+                  setValue(fieldName, null);
                 }
                 return;
               }
@@ -200,7 +199,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
                 toggleManualDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
               } else {
-                setFieldValue(fieldName, newValue);
+                setValue(fieldName, newValue);
               }
             }}
             renderOption={(option: ExtendedSong | null) => {
@@ -216,22 +215,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
             getOptionLabel={(option: ExtendedSong | null) => {
               // Prevent ”Manually add ...” item from being rendered
               if (option === null || option.id === null) return "";
-              return option.name;
-            }}
-            renderInput={(params: AutocompleteRenderInputParams) => {
-              const fieldError = getIn(errors, fieldName);
-              const showError = getIn(touched, fieldName) && !!fieldError;
-              return (
-                <MuiTextField
-                  {...params}
-                  error={showError}
-                  helperText={showError ? fieldError : null}
-                  label={labelName}
-                  variant="outlined"
-                  margin="dense"
-                  fullWidth
-                />
-              );
+              return option.name || "";
             }}
           />
         </Grid>
@@ -289,7 +273,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
           toggleOpen={toggleImportDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
-          setSong={(v) => setFieldValue(fieldName, v)}
+          setSong={(v) => setValue(fieldName, v)}
       />}
       {isManualDialogOpen && <SongEntityDialog
           isOpen={isManualDialogOpen}
@@ -298,7 +282,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, formi
           songToEdit={value}
           create={isManualDialogForCreate}
           setKeyword={setImportDialogKeyword}
-          setSong={(v) => setFieldValue(fieldName, v)}
+          setSong={(v) => setValue(fieldName, v)}
       />}
     </>
   );

@@ -1,6 +1,5 @@
 import { Song } from "../../../models/Song";
 import {
-  Avatar,
   Button,
   Dialog,
   DialogActions,
@@ -8,7 +7,6 @@ import {
   DialogTitle,
   Divider,
   FormControl,
-  FormControlLabel,
   FormHelperText,
   Grid,
   IconButton,
@@ -19,8 +17,6 @@ import {
 } from "@material-ui/core";
 import { Fragment, useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
-import { FastField, Field, FieldArray, Form, Formik } from "formik";
-import { Checkbox, Select, TextField } from "formik-material-ui";
 import TransliterationAdornment from "../TransliterationAdornment";
 import { useSnackbar } from "notistack";
 import AddIcon from "@material-ui/icons/Add";
@@ -38,7 +34,12 @@ import { Artist } from "../../../models/Artist";
 import { VDBArtistCategoryType, VDBArtistRoleType } from "../../../types/vocadb";
 import { Album } from "../../../models/Album";
 import VideoThumbnailAdornment from "../VideoThumbnailAdornment";
-import { ArtistOfSong } from "../../../models/ArtistOfSong";
+import { Field, Form } from "react-final-form";
+import { Checkboxes, makeValidate, Select, TextField } from "mui-rff";
+import finalFormMutators from "../../../frontendUtils/finalFormMutators";
+import arrayMutators from "final-form-arrays";
+import { FieldArray } from "react-final-form-arrays";
+import AvatarField from "./AvatarField";
 
 const NEW_SONG_MUTATION = gql`
   mutation($data: SongInput!) {
@@ -97,7 +98,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface FormValues {
-  id: number;
   name: string;
   sortOrder: string;
   coverUrl: string;
@@ -138,7 +138,7 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
     setKeyword("");
   }, [toggleOpen, setKeyword]);
 
-  const initialValues: Omit<FormValues, "id"> = (create || !songToEdit) ? {
+  const initialValues: FormValues = (create || !songToEdit) ? {
     name: keyword ?? "",
     sortOrder: "",
     coverUrl: "",
@@ -164,28 +164,33 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
 
   return (
     <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
-      <Formik
+      <Form<FormValues>
         initialValues={initialValues}
-        validationSchema={yup.object({
+        mutators={{
+          ...finalFormMutators,
+          ...arrayMutators,
+        }}
+        subscription={{}}
+        validate={makeValidate<FormValues>(yup.object({
           name: yup.string().required(),
           sortOrder: yup.string().required(),
           coverUrl: yup.string().url(),
-          originalSong: yup.object().nullable(),
+          originalSong: yup.object<Song>().nullable(),
           artists: yup.array(yup.object({
             artist: yup.object().typeError("Artist entity must be selected."),
-            artistRoles: yup.array(yup.string()).required(),
-            categories: yup.array(yup.string()).required(),
+            artistRoles: yup.array(yup.string<VDBArtistRoleType>()).required(),
+            categories: yup.array(yup.string<VDBArtistCategoryType>()).required(),
             customName: yup.string().nullable(),
             isSupport: yup.boolean().required(),
           })).required("At least one artist is required."),
           albums: yup.array(yup.object({
             album: yup.object().typeError("Album entity must be selected."),
-            diskNumber: yup.number().nullable().positive().integer(),
-            trackNumber: yup.number().nullable().positive().integer(),
+            diskNumber: yup.number().optional().nullable().positive().integer(),
+            trackNumber: yup.number().optional().nullable().positive().integer(),
             name: yup.string().required(),
           })),
-        })}
-        onSubmit={async (values, formikHelpers) => {
+        }))}
+        onSubmit={async (values) => {
           try {
             const data = {
               name: values.name,
@@ -220,10 +225,7 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                 snackbar.enqueueSnackbar(`Song “${result.data.newSong.name}” is successfully created.`, {
                   variant: "success",
                 });
-                formikHelpers.setSubmitting(false);
                 handleClose();
-              } else {
-                formikHelpers.setSubmitting(false);
               }
             } else {
               const result = await apolloClient.mutate<{ updateSong: Partial<Song> }>({
@@ -239,266 +241,238 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                 snackbar.enqueueSnackbar(`Song “${result.data.updateSong.name}” is successfully updated.`, {
                   variant: "success",
                 });
-                formikHelpers.setSubmitting(false);
                 handleClose();
-              } else {
-                formikHelpers.setSubmitting(false);
               }
             }
           } catch (e) {
-            console.error(`Error occurred while ${create ? "creating" : "editing"} song #${values.name}.`, e);
-            snackbar.enqueueSnackbar(`Error occurred while ${create ? "creating" : "editing"} song ${values.name}. (${e})`, {
+            console.error(`Error occurred while ${create ? "creating" : "editing"} song #${values?.name}.`, e);
+            snackbar.enqueueSnackbar(`Error occurred while ${create ? "creating" : "editing"} song ${values?.name}. (${e})`, {
               variant: "error",
             });
-            formikHelpers.setSubmitting(false);
           }
         }}>
-        {(formikProps) => (
+        {({ form, values, submitting, handleSubmit }) => (
           <>
-            <DialogTitle id="form-dialog-title">{create ? "Create new song entity" : `Edit song entity #${songId}`}</DialogTitle>
+            <DialogTitle
+              id="form-dialog-title">{create ? "Create new song entity" : `Edit song entity #${songId}`}</DialogTitle>
             <DialogContent dividers>
-              <Form>
-                <Grid container spacing={1}>
-                  <Grid item xs={12}>
-                    <FastField
-                      component={TextField}
-                      variant="outlined"
-                      margin="dense"
-                      fullWidth
-                      required
-                      name="name" type="text" label="Track name" />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FastField
-                      component={TextField}
-                      variant="outlined"
-                      margin="dense"
-                      fullWidth
-                      required
-                      InputProps={{
-                        endAdornment: <TransliterationAdornment
-                          value={formikProps.values.name}
-                          setField={(v) => formikProps.setFieldValue("sortOrder", v)}
-                        />,
-                      }}
-                      name="sortOrder" type="text" label="Sort order" />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <div className={styles.mainPictureRow}>
-                      <Avatar
-                        src={formikProps.values.coverUrl} variant="rounded"
-                        className={styles.mainPictureThumbnail}
-                      >
-                        <MusicNoteIcon />
-                      </Avatar>
-                      <FastField
-                        component={TextField}
-                        variant="outlined"
-                        margin="dense"
-                        fullWidth
-                        InputProps={{
-                          endAdornment: <VideoThumbnailAdornment
-                            value={formikProps.values.coverUrl}
-                            setField={(v) => formikProps.setFieldValue("coverUrl", v)}
-                          />,
-                        }}
-                        name="coverUrl" type="text" label="Cover URL" />
-                    </div>
-                  </Grid>
+              <Grid container spacing={1}>
+                <Grid item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    margin="dense"
+                    fullWidth
+                    required
+                    name="name" type="text" label="Track name" />
                 </Grid>
-                <SelectSongEntityBox fieldName="originalSong" formikProps={formikProps} labelName="Original song" />
-                <Typography variant="h6" component="h3" className={styles.divider}>Artists</Typography>
-                <FieldArray name="artists">
-                  {({ push, remove }) => (
-                    <>
-                      {formikProps.values.artists?.length > 0 && formikProps.values.artists.map((v, idx) => (
-                        <Fragment key={idx}>
-                          <SelectArtistEntityBox
-                            fieldName={`artists.${idx}.artist`}
-                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                            // @ts-ignore
-                            formikProps={formikProps}
-                            labelName="Artist"
-                          />
-                          <div className={styles.artistRow}>
-                            <FormControl variant="outlined" margin="dense" fullWidth>
-                              <InputLabel htmlFor={`artists.${idx}.artistRoles`}>Roles</InputLabel>
-                              <FastField
-                                component={Select}
-                                type="text"
-                                label="Roles"
-                                name={`artists.${idx}.artistRoles`}
-                                multiple
-                                inputProps={{ name: `artists.${idx}.artistRoles`, id: `artists.${idx}.artistRoles` }}
-                              >
-                                <MenuItem value="Default">Default</MenuItem>
-                                <MenuItem value="Animator">Animator</MenuItem>
-                                <MenuItem value="Arranger">Arranger</MenuItem>
-                                <MenuItem value="Composer">Composer</MenuItem>
-                                <MenuItem value="Distributor">Distributor</MenuItem>
-                                <MenuItem value="Illustrator">Illustrator</MenuItem>
-                                <MenuItem value="Instrumentalist">Instrumentalist</MenuItem>
-                                <MenuItem value="Lyricist">Lyricist</MenuItem>
-                                <MenuItem value="Mastering">Mastering</MenuItem>
-                                <MenuItem value="Publisher">Publisher</MenuItem>
-                                <MenuItem value="Vocalist">Vocalist</MenuItem>
-                                <MenuItem value="VoiceManipulator">Voice Manipulator</MenuItem>
-                                <MenuItem value="Other">Other</MenuItem>
-                                <MenuItem value="Mixer">Mixer</MenuItem>
-                                <MenuItem value="Chorus">Chorus</MenuItem>
-                                <MenuItem value="Encoder">Encoder</MenuItem>
-                                <MenuItem value="VocalDataProvider">Vocal Data Provider</MenuItem>
-                              </FastField>
-                            </FormControl>
-                            <FormControl variant="outlined" margin="dense" fullWidth>
-                              <InputLabel htmlFor={`artists.${idx}.categories`}>Categories</InputLabel>
-                              <FastField
-                                component={Select}
-                                type="text"
-                                label="Categories"
-                                name={`artists.${idx}.categories`}
-                                multiple
-                                inputProps={{ name: `artists.${idx}.categories`, id: `artists.${idx}.categories` }}
-                              >
-                                <MenuItem value="Nothing">Nothing</MenuItem>
-                                <MenuItem value="Vocalist">Vocalist</MenuItem>
-                                <MenuItem value="Producer">Producer</MenuItem>
-                                <MenuItem value="Animator">Animator</MenuItem>
-                                <MenuItem value="Label">Label</MenuItem>
-                                <MenuItem value="Circle">Circle</MenuItem>
-                                <MenuItem value="Other">Other</MenuItem>
-                                <MenuItem value="Band">Band</MenuItem>
-                                <MenuItem value="Illustrator">Illustrator</MenuItem>
-                                <MenuItem value="Subject">Subject</MenuItem>
-                              </FastField>
-                            </FormControl>
-                          </div>
-                          <div className={styles.artistRow}>
-                            <FormControlLabel
-                              control={
-                                <Fields component={Checkbox} indeterminate={false} type="checkbox" name={`artists.${idx}.isSupport`} />
-                              }
-                              label="Support"
+                <Grid item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    margin="dense"
+                    fullWidth
+                    required
+                    InputProps={{
+                      endAdornment: <TransliterationAdornment sourceName="name" destinationName="sortOrder" />,
+                    }}
+                    name="sortOrder" type="text" label="Sort order" />
+                </Grid>
+                <Grid item xs={12}>
+                  <div className={styles.mainPictureRow}>
+                    <AvatarField
+                      name="coverUrl"
+                      className={styles.mainPictureThumbnail}
+                    />
+                    <TextField
+                      variant="outlined"
+                      margin="dense"
+                      fullWidth
+                      InputProps={{
+                        endAdornment: <VideoThumbnailAdornment name="coverUrl" />,
+                      }}
+                      name="coverUrl" type="text" label="Cover URL" />
+                  </div>
+                </Grid>
+              </Grid>
+              <SelectSongEntityBox fieldName="originalSong" labelName="Original song" />
+              <Typography variant="h6" component="h3" className={styles.divider}>Artists</Typography>
+              <FieldArray name="artists" subscription={{ error: true }}>
+                {({ fields, }) => (
+                  <>
+                    {fields.map((name, idx) => (
+                      <Fragment key={name}>
+                        <SelectArtistEntityBox
+                          fieldName={`${name}.artist`}
+                          labelName="Artist"
+                        />
+                        <div className={styles.artistRow}>
+                          <Select
+                            type="text"
+                            label="Roles"
+                            name={`${name}.artistRoles`}
+                            multiple
+                            formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
+                            inputProps={{ name: `${name}.artistRoles`, id: `${name}.artistRoles` }}
+                          >
+                            <MenuItem value="Default">Default</MenuItem>
+                            <MenuItem value="Animator">Animator</MenuItem>
+                            <MenuItem value="Arranger">Arranger</MenuItem>
+                            <MenuItem value="Composer">Composer</MenuItem>
+                            <MenuItem value="Distributor">Distributor</MenuItem>
+                            <MenuItem value="Illustrator">Illustrator</MenuItem>
+                            <MenuItem value="Instrumentalist">Instrumentalist</MenuItem>
+                            <MenuItem value="Lyricist">Lyricist</MenuItem>
+                            <MenuItem value="Mastering">Mastering</MenuItem>
+                            <MenuItem value="Publisher">Publisher</MenuItem>
+                            <MenuItem value="Vocalist">Vocalist</MenuItem>
+                            <MenuItem value="VoiceManipulator">Voice Manipulator</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
+                            <MenuItem value="Mixer">Mixer</MenuItem>
+                            <MenuItem value="Chorus">Chorus</MenuItem>
+                            <MenuItem value="Encoder">Encoder</MenuItem>
+                            <MenuItem value="VocalDataProvider">Vocal Data Provider</MenuItem>
+                          </Select>
+                          <Select
+                            type="text"
+                            label="Categories"
+                            name={`${name}.categories`}
+                            multiple
+                            formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
+                            inputProps={{ name: `${name}.categories`, id: `${name}.categories` }}
+                          >
+                            <MenuItem value="Nothing">Nothing</MenuItem>
+                            <MenuItem value="Vocalist">Vocalist</MenuItem>
+                            <MenuItem value="Producer">Producer</MenuItem>
+                            <MenuItem value="Animator">Animator</MenuItem>
+                            <MenuItem value="Label">Label</MenuItem>
+                            <MenuItem value="Circle">Circle</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
+                            <MenuItem value="Band">Band</MenuItem>
+                            <MenuItem value="Illustrator">Illustrator</MenuItem>
+                            <MenuItem value="Subject">Subject</MenuItem>
+                          </Select>
+                        </div>
+                        <div className={styles.artistRow}>
+                          <Checkboxes indeterminate={false} data={{ label: "Support", value: true }}
+                                      name={`${name}.isSupport`} />
+                          <TextField
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                            name={`${name}.customName`} type="text" label="Custom name" />
+                          <IconButton color="primary" aria-label="Delete artist item"
+                                      onClick={() => fields.remove(idx)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </div>
+                        <Divider className={styles.divider} />
+                      </Fragment>
+                    ))}
+                    <Button
+                      fullWidth variant="outlined"
+                      color="secondary"
+                      startIcon={<AddIcon />}
+                      onClick={() => fields.push({
+                        artist: null,
+                        artistRoles: ["Default"],
+                        categories: ["Nothing"],
+                        customName: "",
+                        isSupport: false,
+                      })}
+                    >
+                      Add artist
+                    </Button>
+                    {(fields.touched && fields.error) ?
+                      <FormHelperText error>{fields.error}</FormHelperText> : false}
+                  </>
+                )}
+              </FieldArray>
+              <Typography variant="h6" component="h3" className={styles.divider}>Albums</Typography>
+              <FieldArray name="albums" subscription={{}}>
+                {({ fields }) => (
+                  <>
+                    {fields.map((name, idx) => (
+                      <Fragment key={name}>
+                        <Field name={`${name}.album`} subscription={{ value: true, touched: true, error: true }}>{
+                          () =>
+                            <SelectAlbumEntityBox
+                              fieldName={`${name}.album`}
+                              labelName="Album"
                             />
-                            <FastField
-                              component={TextField}
-                              variant="outlined"
-                              margin="dense"
-                              fullWidth
-                              name={`artists.${idx}.customName`} type="text" label="Custom name" />
-                            <IconButton color="primary" aria-label="Delete artist item" onClick={() => remove(idx)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </div>
-                          <Divider className={styles.divider} />
-                        </Fragment>
-                      ))}
-                      <Button
+                        }</Field>
+                        <div className={styles.artistRow}>
+                          <TextField
+                            className={styles.numberField}
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                            InputProps={{
+                              startAdornment: <InputAdornment position="start"><AlbumIcon /></InputAdornment>,
+                            }}
+                            name={`${name}.diskNumber`} type="number" label="Disk number" />
+                          <TextField
+                            className={styles.numberField}
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                            InputProps={{
+                              startAdornment: <InputAdornment position="start"><MusicNoteIcon /></InputAdornment>,
+                            }}
+                            name={`${name}.trackNumber`} type="number" label="Track number" />
+                        </div>
+                        <div className={styles.artistRow}>
+                          <TextField
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                            required
+                            name={`${name}.name`} type="text" label="Track name"
+                            InputProps={{
+                              endAdornment: <TrackNameAdornment
+                                sourceName="name"
+                                destinationName={`${name}.name`}
+                              />,
+                            }}
+                          />
+                          <IconButton color="primary" aria-label="Delete album item" onClick={() => fields.remove(idx)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </div>
+                        <Divider className={styles.divider} />
+                      </Fragment>
+                    ))}
+                    <Field name="name" subscription={{ value: true }}>
+                      {({ input: { value } }) => <Button
                         fullWidth variant="outlined"
                         color="secondary"
                         startIcon={<AddIcon />}
-                        onClick={() => push({
-                          artist: null,
-                          artistRoles: ["Default"],
-                          categories: ["Nothing"],
-                          customName: "",
-                          isSupport: false,
-                        })}
-                      >
-                        Add artist
-                      </Button>
-                      {(formikProps.touched.artists && typeof formikProps.errors.artists === "string") ?
-                        <FormHelperText error>{formikProps.errors.artists}</FormHelperText> : false}
-                    </>
-                  )}
-                </FieldArray>
-                <Typography variant="h6" component="h3" className={styles.divider}>Albums</Typography>
-                <FieldArray name="albums">
-                  {({ push, remove }) => (
-                    <>
-                      {formikProps.values.albums.length > 0 && formikProps.values.albums.map((v, idx) => (
-                        <Fragment key={idx}>
-                          <SelectAlbumEntityBox
-                            fieldName={`albums.${idx}.album`}
-                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                            // @ts-ignore
-                            formikProps={formikProps}
-                            labelName="Album"
-                          />
-                          <div className={styles.artistRow}>
-                            <FastField
-                              component={TextField}
-                              className={styles.numberField}
-                              variant="outlined"
-                              margin="dense"
-                              fullWidth
-                              InputProps={{
-                                startAdornment: <InputAdornment position="start"><AlbumIcon /></InputAdornment>,
-                              }}
-                              name={`albums.${idx}.diskNumber`} type="number" label="Disk number" />
-                            <FastField
-                              component={TextField}
-                              className={styles.numberField}
-                              variant="outlined"
-                              margin="dense"
-                              fullWidth
-                              InputProps={{
-                                startAdornment: <InputAdornment position="start"><MusicNoteIcon /></InputAdornment>,
-                              }}
-                              name={`albums.${idx}.trackNumber`} type="number" label="Track number" />
-                          </div>
-                          <div className={styles.artistRow}>
-                            <FastField
-                              component={TextField}
-                              variant="outlined"
-                              margin="dense"
-                              fullWidth
-                              required
-                              name={`albums.${idx}.name`} type="text" label="Track name"
-                              InputProps={{
-                                endAdornment: <TrackNameAdornment
-                                  trackName={formikProps.values.name ?? ""}
-                                  value={formikProps.values.albums[idx].name}
-                                  setField={(v: string) => formikProps.setFieldValue(`albums.${idx}.name`, v)}
-                                />,
-                              }}
-                            />
-                            <IconButton color="primary" aria-label="Delete album item" onClick={() => remove(idx)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </div>
-                          <Divider className={styles.divider} />
-                        </Fragment>
-                      ))}
-                      <Button
-                        fullWidth variant="outlined"
-                        color="secondary"
-                        startIcon={<AddIcon />}
-                        onClick={() => push({
-                          album: null,
-                          trackNumber: "",
-                          diskNumber: "",
-                          name: formikProps.values.name ?? "",
-                        })}
+                        onClick={() => {
+                          console.log(values);
+                          fields.push({
+                            album: null,
+                            trackNumber: null,
+                            diskNumber: null,
+                            name: value ?? "",
+                          });
+                        }}
                       >
                         Add Album
-                      </Button>
-                    </>
-                  )}
-                </FieldArray>
-              </Form>
+                      </Button>}
+                    </Field>
+                  </>
+                )}
+              </FieldArray>
             </DialogContent>
             <DialogActions>
               <Button onClick={handleClose} color="primary">
                 Cancel
               </Button>
-              <Button disabled={formikProps.isSubmitting} onClick={formikProps.submitForm} color="primary">
+              <Button disabled={submitting} onClick={handleSubmit} color="primary">
                 {create ? "Create" : "Update"}
               </Button>
             </DialogActions>
           </>
         )}
-      </Formik>
+      </Form>
     </Dialog>
   );
 }

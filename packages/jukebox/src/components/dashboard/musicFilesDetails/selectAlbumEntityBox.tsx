@@ -1,6 +1,4 @@
 import { Avatar, Box, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
-import { FastField, Field, FormikProps, getIn } from "formik";
-import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-lab";
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useCallback, useEffect } from "react";
@@ -17,6 +15,8 @@ import EditIcon from "@material-ui/icons/Edit";
 import { Album } from "../../../models/Album";
 import VocaDBSearchAlbumDialog from "./vocaDBSearchAlbumDialog";
 import CreateAlbumEntityDialog from "./createAlbumEntityDialog";
+import { useField, useForm } from "react-final-form";
+import { Autocomplete } from "mui-rff";
 
 export type ExtendedAlbum = Partial<Album> & {
   vocaDBSuggestion?: boolean;
@@ -65,17 +65,16 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props<T extends string> {
   fieldName: T;
-  formikProps: FormikProps<{ [key in T]?: ExtendedAlbum }>;
   labelName: string;
   title?: string;
 }
 
-export default function SelectAlbumEntityBox<T extends string>({ fieldName, formikProps, labelName, title }: Props<T>) {
+export default function SelectAlbumEntityBox<T extends string>({ fieldName, labelName, title }: Props<T>) {
   const styles = useStyles();
 
   const apolloClient = useApolloClient();
-  const { touched, errors, setFieldValue, values } = formikProps;
-  const value = getIn(values, fieldName) as ExtendedAlbum;
+  const { input: { value } } = useField<ExtendedAlbum>(fieldName);
+  const setValue = useForm().mutators.setValue;
 
   const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useNamedState<ExtendedAlbum[]>([], "vocaDBAutoCompleteOptions");
   const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState("", "vocaDBAutoCompleteText");
@@ -87,8 +86,6 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, form
 
   // Confirm manual enrol pop-up
   const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(false, "manualDialogOpen");
-
-  const setAlbum = useCallback((v) => setFieldValue(fieldName, v), [fieldName, setFieldValue]);
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -155,15 +152,15 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, form
       {title && <Typography variant="h6" component="h3" gutterBottom>{title}</Typography>}
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <FastField
-            component={Autocomplete}
-            variant="outlined"
+          <Autocomplete
             name={fieldName}
             options={vocaDBAutoCompleteOptions}
+            label={labelName}
             selectOnFocus
             clearOnBlur
             handleHomeEndKeys
             freeSolo
+            textFieldProps={{variant: "outlined", size: "small"}}
             filterOptions={(v: ExtendedAlbum[], params: FilterOptionsState<ExtendedAlbum>) => {
               if (params.inputValue !== "") {
                 v.push({
@@ -188,7 +185,7 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, form
               if (newValue === null) {
                 setVocaDBAutoCompleteOptions([]);
                 if (reason === "clear") {
-                  setFieldValue(fieldName, null);
+                  setValue(fieldName, null);
                 }
                 return;
               }
@@ -201,7 +198,7 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, form
                 toggleManualDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
               } else {
-                setFieldValue(fieldName, newValue);
+                setValue(fieldName, newValue);
               }
             }}
             renderOption={(option: ExtendedAlbum | null) => {
@@ -217,22 +214,7 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, form
             getOptionLabel={(option: ExtendedAlbum | null) => {
               // Prevent ”Manually add ...” item from being rendered
               if (option === null || option.id === null) return "";
-              return option.name;
-            }}
-            renderInput={(params: AutocompleteRenderInputParams) => {
-              const fieldError = getIn(errors, fieldName);
-              const showError = getIn(touched, fieldName) && !!fieldError;
-              return (
-                <MuiTextField
-                  {...params}
-                  error={showError}
-                  helperText={showError ? fieldError : null}
-                  label={labelName}
-                  variant="outlined"
-                  margin="dense"
-                  fullWidth
-                />
-              );
+              return option.name || "";
             }}
           />
         </Grid>
@@ -274,14 +256,14 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, form
           toggleOpen={toggleImportDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
-          setAlbum={setAlbum}
+          setAlbum={(v) => setValue(fieldName, v)}
       />}
       {isManualDialogOpen && <CreateAlbumEntityDialog
           isOpen={isManualDialogOpen}
           toggleOpen={toggleManualDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
-          setAlbum={setAlbum}
+          setAlbum={(v) => setValue(fieldName, v)}
       />}
     </>
   );

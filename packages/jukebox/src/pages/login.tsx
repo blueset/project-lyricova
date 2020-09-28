@@ -1,12 +1,12 @@
 import Link from "../components/Link";
 import { AuthContext } from "../components/public/AuthContext";
 import { makeStyles, Button } from "@material-ui/core";
-import { Formik, Field, Form } from "formik";
-import { TextField } from "formik-material-ui";
 import { useRouter } from "next/router";
 import { LS_JWT_KEY } from "../frontendUtils/localStorage";
 import apolloClient from "../frontendUtils/apollo";
-
+import { makeValidate, TextField } from "mui-rff";
+import * as yup from "yup";
+import { Form } from "react-final-form";
 
 const useStyle = makeStyles((theme) => ({
   container: {
@@ -53,15 +53,13 @@ export default function Login() {
       <div className={styles.form}>
         <img src="/images/logo.svg" alt="Project Lyricova" className={styles.logo} />
         <h1>Log in</h1>
-        <Formik
+        <Form
           initialValues={{ username: "", password: "" }}
-          validate={values => {
-            const errors: { username?: string, password?: string } = {};
-            if (!values.username) errors.username = "Required";
-            if (!values.password) errors.password = "Required";
-            return errors;
-          }}
-          onSubmit={async (values, { setSubmitting, setErrors }) => {
+          validate={makeValidate(yup.object({
+            username: yup.string().required("Username is required."),
+            password: yup.string().required("Password is required."),
+          }))}
+          onSubmit={async (values) => {
             const resp = await fetch("/api/login/local/jwt", {
               method: "POST",
               headers: {
@@ -70,23 +68,19 @@ export default function Login() {
               body: JSON.stringify(values),
             });
             if (resp.status === 401) {
-              const errorMsg = "Username and password is not matching.";
-              setErrors({ username: errorMsg, password: errorMsg });
+              throw new Error("Username and password is not matching.");
             } else if (resp.status !== 200) {
-              const errorMsg = `Unknown error occurred (${resp.status} ${resp.statusText})`;
-              setErrors({ username: errorMsg, password: errorMsg });
+              throw new Error(`Unknown error occurred (${resp.status} ${resp.statusText})`);
             } else {
               const token: string = (await resp.json()).token;
               window.localStorage.setItem(LS_JWT_KEY, token);
               await apolloClient.resetStore();
-              router.push("/dashboard");
+              await router.push("/dashboard");
             }
-            setSubmitting(false);
           }}
         >
-          {({ isSubmitting }) => (<Form>
-            <Field
-              component={TextField}
+          {({ submitting }) => (<>
+            <TextField
               className={styles.input}
               variant="outlined"
               required
@@ -95,8 +89,7 @@ export default function Login() {
               spellCheck={false}
               name="username" type="text" label="Username"
             />
-            <Field
-              component={TextField}
+            <TextField
               className={styles.input}
               variant="outlined"
               required
@@ -111,12 +104,12 @@ export default function Login() {
               variant="contained"
               color="primary"
               type="submit"
-              disabled={isSubmitting}
+              disabled={submitting}
             >
               Log in
             </Button>
-          </Form>)}
-        </Formik>
+          </>)}
+        </Form>
       </div>
       <div className={styles.pattern}/>
     </div>

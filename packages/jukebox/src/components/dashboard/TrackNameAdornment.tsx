@@ -2,22 +2,25 @@ import { IconButton, InputAdornment } from "@material-ui/core";
 import ContentCopyIcon from "@material-ui/icons/ContentCopy";
 import ClearIcon from "@material-ui/icons/Clear";
 import { useCallback } from "react";
+import { useField, useForm } from "react-final-form";
 
 interface Props {
-  trackName: string;
-  value: string;
-  setField: (value: string) => void;
+  sourceName: string;
+  destinationName: string;
 }
 
-export default function TrackNameAdornment({ value, setField, trackName }: Props) {
+export default function TrackNameAdornment({ sourceName, destinationName }: Props) {
+  const { input: { trackName }} = useField(sourceName);
+  const { input: { value }} = useField(destinationName);
+  const setValue = useForm().mutators.setValue;
 
   const trackNameButtonCallback = useCallback(() => {
     if (value === "" || value == null) {
-      setField(trackName);
+      setValue(destinationName, trackName);
     } else {
-      setField("");
+      setValue(destinationName, "");
     }
-  }, [setField, value, trackName]);
+  }, [value, setValue, destinationName, trackName]);
 
   return (
     <InputAdornment position="end">

@@ -1,6 +1,4 @@
 import { Avatar, Box, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
-import { FastField, Field, FormikProps, getIn } from "formik";
-import { Autocomplete, AutocompleteRenderInputParams } from "formik-material-ui-lab";
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useCallback, useEffect } from "react";
@@ -17,6 +15,9 @@ import EditIcon from "@material-ui/icons/Edit";
 import { Artist } from "../../../models/Artist";
 import VocaDBSearchArtistDialog from "./vocaDBSearchArtistDialog";
 import CreateArtistEntityDialog from "./createArtistEntityDialog";
+import { useField, useForm } from "react-final-form";
+import { ExtendedSong } from "./selectSongEntityBox";
+import { Autocomplete } from "mui-rff";
 
 export type ExtendedArtist = Partial<Artist> & {
   vocaDBSuggestion?: boolean;
@@ -64,17 +65,16 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props<T extends string> {
   fieldName: T;
-  formikProps: FormikProps<{ [key in T]?: ExtendedArtist }>;
   labelName: string;
   title?: string;
 }
 
-export default function SelectArtistEntityBox<T extends string>({ fieldName, formikProps, labelName, title, }: Props<T>) {
+export default function SelectArtistEntityBox<T extends string>({ fieldName, labelName, title, }: Props<T>) {
   const styles = useStyles();
 
   const apolloClient = useApolloClient();
-  const { touched, errors, setFieldValue, values } = formikProps;
-  const value = getIn(values, fieldName) as ExtendedArtist;
+  const { input: { value } } = useField<ExtendedArtist>(fieldName);
+  const setValue = useForm().mutators.setValue;
 
   const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useNamedState<ExtendedArtist[]>([], "vocaDBAutoCompleteOptions");
   const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState("", "vocaDBAutoCompleteText");
@@ -86,8 +86,6 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
 
   // Confirm manual enrol pop-up
   const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(false, "manualDialogOpen");
-
-  const setArtist = useCallback((v) => setFieldValue(fieldName, v), [fieldName, setFieldValue]);
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -155,15 +153,15 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
       {title && <Typography variant="h6" component="h3" gutterBottom>{title}</Typography>}
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <FastField
-            component={Autocomplete}
-            variant="outlined"
+          <Autocomplete
             name={fieldName}
             options={vocaDBAutoCompleteOptions}
+            label={labelName}
             selectOnFocus
             clearOnBlur
             handleHomeEndKeys
             freeSolo
+            textFieldProps={{variant: "outlined", size: "small"}}
             filterOptions={(v: ExtendedArtist[], params: FilterOptionsState<ExtendedArtist>) => {
               if (params.inputValue !== "") {
                 v.push({
@@ -188,7 +186,7 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
               if (newValue === null) {
                 setVocaDBAutoCompleteOptions([]);
                 if (reason === "clear") {
-                  setFieldValue(fieldName, null);
+                  setValue(fieldName, null);
                 }
                 return;
               }
@@ -201,7 +199,7 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
                 toggleManualDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
               } else {
-                setFieldValue(fieldName, newValue);
+                setValue(fieldName, newValue);
               }
             }}
             renderOption={(option: ExtendedArtist | null) => {
@@ -218,21 +216,6 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
               // Prevent ”Manually add ...” item from being rendered
               if (option === null || option.id === null) return "";
               return option.name;
-            }}
-            renderInput={(params: AutocompleteRenderInputParams) => {
-              const fieldError = getIn(errors, fieldName);
-              const showError = getIn(touched, fieldName) && !!fieldError;
-              return (
-                <MuiTextField
-                  {...params}
-                  error={showError}
-                  helperText={showError ? fieldError : null}
-                  label={labelName}
-                  variant="outlined"
-                  margin="dense"
-                  fullWidth
-                />
-              );
             }}
           />
         </Grid>
@@ -274,14 +257,14 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, for
           toggleOpen={toggleImportDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
-          setArtist={setArtist}
+          setArtist={(v) => setValue(fieldName, v)}
       />}
       {isManualDialogOpen && <CreateArtistEntityDialog
           isOpen={isManualDialogOpen}
           toggleOpen={toggleManualDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
-          setArtist={setArtist}
+          setArtist={(v) => setValue(fieldName, v)}
       />}
     </>
   );

@@ -1,25 +1,29 @@
 import { Artist } from "../../../models/Artist";
 import {
-  Avatar,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle, FormControl,
+  DialogTitle,
+  FormControl,
   Grid,
   InputLabel,
   MenuItem
 } from "@material-ui/core";
 import { useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
-import { Field, Form, Formik } from "formik";
-import { Select, TextField } from "formik-material-ui";
 import TransliterationAdornment from "../TransliterationAdornment";
 import { useSnackbar } from "notistack";
 import { makeStyles } from "@material-ui/core/styles";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import * as yup from "yup";
 import { ArtistFragments } from "../../../graphql/fragments";
+import { Form } from "react-final-form";
+import { makeValidate, Select, TextField } from "mui-rff";
+import AvatarField from "./AvatarField";
+import finalFormMutators from "../../../frontendUtils/finalFormMutators";
+import { Song } from "../../../models/Song";
+import { VDBArtistCategoryType, VDBArtistRoleType } from "../../../types/vocadb";
+import { Album } from "../../../models/Album";
 
 const NEW_ARTIST_MUTATION = gql`
   mutation($data: ArtistInput!) {
@@ -44,12 +48,21 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+interface FormValues {
+  name: string;
+  sortOrder: string;
+  mainPictureUrl?: string;
+  type: string;
+}
+
 interface Props {
   isOpen: boolean;
+  create?: boolean;
   toggleOpen: (value: boolean) => void;
   keyword: string;
   setKeyword: (value: string) => void;
   setArtist: (value: Partial<Artist>) => void;
+  artistToEdit?: Partial<Artist>;
 }
 
 export default function CreateArtistEntityDialog({ isOpen, toggleOpen, keyword, setKeyword, setArtist }: Props) {
@@ -65,20 +78,24 @@ export default function CreateArtistEntityDialog({ isOpen, toggleOpen, keyword, 
 
   return (
     <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
-      <Formik
+      <Form<FormValues>
         initialValues={{
           name: keyword,
           sortOrder: "",
           mainPictureUrl: "",
           type: "Unknown",
         }}
-        validationSchema={yup.object({
+        mutators={{
+          ...finalFormMutators,
+        }}
+        subscription={{}}
+        validate={makeValidate(yup.object({
           name: yup.string().required("Artist name is required"),
           sortOrder: yup.string().required("Artist sort order is required"),
           mainPictureUrl: yup.string().nullable().url("Main picture URL is not a valid URL."),
           type: yup.string().required("Type must be selected."),
-        })}
-        onSubmit={async (values, formikHelpers) => {
+        }))}
+        onSubmit={async (values) => {
           try {
             const result = await apolloClient.mutate<{ newArtist: Partial<Artist> }>({
               mutation: NEW_ARTIST_MUTATION,
@@ -92,28 +109,22 @@ export default function CreateArtistEntityDialog({ isOpen, toggleOpen, keyword, 
               snackbar.enqueueSnackbar(`Artist “${result.data.newArtist.name}” is successfully created.`, {
                 variant: "success",
               });
-              formikHelpers.setSubmitting(false);
               handleClose();
-            } else {
-              formikHelpers.setSubmitting(false);
             }
           } catch (e) {
             console.error(`Error occurred while creating artist #${values.name}.`, e);
             snackbar.enqueueSnackbar(`Error occurred while creating artist #${values.name}. (${e})`, {
               variant: "error",
             });
-            formikHelpers.setSubmitting(false);
           }
         }}>
-        {(formikProps) => (
+        {({submitting, handleSubmit}) => (
           <>
             <DialogTitle id="form-dialog-title">Create new artist entity</DialogTitle>
             <DialogContent dividers>
-              <Form>
                 <Grid container spacing={1}>
                   <Grid item xs={12}>
-                    <Field
-                      component={TextField}
+                    <TextField
                       variant="outlined"
                       margin="dense"
                       required
@@ -121,30 +132,23 @@ export default function CreateArtistEntityDialog({ isOpen, toggleOpen, keyword, 
                       name="name" type="text" label="Name" />
                   </Grid>
                   <Grid item xs={12}>
-                    <Field
-                      component={TextField}
+                    <TextField
                       variant="outlined"
                       margin="dense"
                       required
                       fullWidth
                       InputProps={{
-                        endAdornment: <TransliterationAdornment
-                          value={formikProps.values.name}
-                          setField={(v) => formikProps.setFieldValue("sortOrder", v)}
-                        />,
+                        endAdornment: <TransliterationAdornment sourceName="name" destinationName="sortOrder" />,
                       }}
                       name="sortOrder" type="text" label="Sort order" />
                   </Grid>
                   <Grid item xs={12}>
                     <div className={styles.mainPictureRow}>
-                      <Avatar
-                        src={formikProps.values.mainPictureUrl} variant="rounded"
+                      <AvatarField
+                        name="mainPictureUrl"
                         className={styles.mainPictureThumbnail}
-                      >
-                        <MusicNoteIcon />
-                      </Avatar>
-                      <Field
-                        component={TextField}
+                      />
+                      <TextField
                         variant="outlined"
                         margin="dense"
                         fullWidth
@@ -154,12 +158,10 @@ export default function CreateArtistEntityDialog({ isOpen, toggleOpen, keyword, 
                   <Grid item xs={12}>
                     <FormControl variant="outlined" margin="dense" fullWidth>
                       <InputLabel htmlFor="type">Type</InputLabel>
-                      <Field
-                        component={Select}
+                      <Select
                         type="text"
                         label="Type"
                         name="type"
-                        select
                         inputProps={{ name: "type", id: "type" }}
                       >
                         <MenuItem value="Unknown">Unknown</MenuItem>
@@ -180,23 +182,22 @@ export default function CreateArtistEntityDialog({ isOpen, toggleOpen, keyword, 
                         <MenuItem value="Band">Band</MenuItem>
                         <MenuItem value="Vocalist">Vocalist</MenuItem>
                         <MenuItem value="Character">Character</MenuItem>
-                      </Field>
+                      </Select>
                     </FormControl>
                   </Grid>
                 </Grid>
-              </Form>
             </DialogContent>
             <DialogActions>
               <Button onClick={handleClose} color="primary">
                 Cancel
               </Button>
-              <Button disabled={formikProps.isSubmitting} onClick={formikProps.submitForm} color="primary">
+              <Button disabled={submitting} onClick={handleSubmit} color="primary">
                 Create
               </Button>
             </DialogActions>
           </>
         )}
-      </Formik>
+      </Form>
     </Dialog>
   );
 }

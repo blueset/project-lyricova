@@ -4,26 +4,28 @@ import ClearIcon from "@material-ui/icons/Clear";
 import { useCallback } from "react";
 import { useSnackbar } from "notistack";
 import AutorenewIcon from "@material-ui/icons/Autorenew";
+import { useField, useForm } from "react-final-form";
 
 interface Props {
-  value: string;
-  setField: (value: string) => void;
+  name: string
 }
 
-export default function VideoThumbnailAdornment({ value, setField }: Props) {
+export default function VideoThumbnailAdornment({ name }: Props) {
   const snackbar = useSnackbar();
+  const { input: { value }} = useField(name);
+  const setValue = useForm().mutators.setValue;
 
   const convertUrl = useCallback(() => {
 
     if (value.match(/(nicovideo.jp\/watch|nico.ms)\/([a-z]{2}\d{4,10}|\d{6,12})/g)) {
       const numId = value.match(/\d{6,12}/g);
       if (numId) {
-        setField(`https://tn.smilevideo.jp/smile?i=${numId[0]}`);
+        setValue(name, `https://tn.smilevideo.jp/smile?i=${numId[0]}`);
         return;
       }
     } else if (value.match(/(youtu.be\/|youtube.com\/watch\?\S*?v=)\S{11}/g)) {
       const id = /(youtu.be\/|youtube.com\/watch\?\S*?v=)(\S{11})/g.exec(value);
-      setField(`https://img.youtube.com/vi/${id[2]}/hqdefault.jpg`);
+      setValue(name, `https://img.youtube.com/vi/${id[2]}/hqdefault.jpg`);
       return;
     }
 

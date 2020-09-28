@@ -5,8 +5,6 @@ import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core/styles";
 import { TabContext, TabPanel } from "@material-ui/lab";
-import { Field, Form, Formik } from "formik";
-import { TextField } from "formik-material-ui";
 import InfoPanel from "./musicFilesDetails/info";
 
 const SINGLE_FILE_DATA = gql`

@@ -5,6 +5,7 @@ import { gql, useApolloClient } from "@apollo/client";
 import { useCallback, MouseEvent } from "react";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core/styles";
+import { useField, useForm, useFormState } from "react-final-form";
 
 const TRANSLITRATION_QUERY = gql`
   query($text: String!, $language: String) {
@@ -25,13 +26,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  value: string;
-  setField: (value: string) => void;
+  sourceName: string;
+  destinationName: string;
 }
 
-export default function TransliterationAdornment({ value, setField }: Props) {
+export default function TransliterationAdornment({ sourceName, destinationName }: Props) {
   const apolloClient = useApolloClient();
   const [menuAnchor, setMenuAnchor] = useNamedState<null | HTMLElement>(null, "menuAnchor");
+  const { input: { value }} = useField(sourceName);
+  const setValue = useForm().mutators.setValue;
 
   const styles = useStyles();
 
@@ -56,7 +59,7 @@ export default function TransliterationAdornment({ value, setField }: Props) {
         fetchPolicy: "no-cache",
       });
 
-      setField(result.data.transliterate.plain);
+      setValue(destinationName, result.data.transliterate.plain);
     } catch (e) {
       // No-op.
     }
@@ -64,7 +67,7 @@ export default function TransliterationAdornment({ value, setField }: Props) {
     if (language !== null) {
       closeMenu();
     }
-  }, [apolloClient, closeMenu, setField, value]);
+  }, [apolloClient, closeMenu, destinationName, setValue, value]);
 
   return (
     <InputAdornment position="end" className={styles.adornment}>
