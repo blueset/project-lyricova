@@ -220,7 +220,7 @@ export default function ArtistEntityDialog({ isOpen, toggleOpen, keyword, setKey
                 Cancel
               </Button>
               <Button disabled={submitting} onClick={handleSubmit} color="primary">
-                Create
+                {create ? "Create" : "Update"}
               </Button>
             </DialogActions>
           </>

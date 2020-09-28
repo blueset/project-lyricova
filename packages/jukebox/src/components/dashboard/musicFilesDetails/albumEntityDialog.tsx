@@ -18,13 +18,14 @@ import { useSnackbar } from "notistack";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import SortIcon from "@material-ui/icons/Sort";
+import AutorenewIcon from "@material-ui/icons/Autorenew";
 import { makeStyles } from "@material-ui/core/styles";
 import SelectSongEntityBox from "./selectSongEntityBox";
 import TrackNameAdornment from "../TrackNameAdornment";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
 import _ from "lodash";
 import * as yup from "yup";
-import { AlbumFragments, SongFragments } from "../../../graphql/fragments";
+import { AlbumFragments } from "../../../graphql/fragments";
 import VideoThumbnailAdornment from "../VideoThumbnailAdornment";
 import { Artist } from "../../../models/Artist";
 import { Field, Form } from "react-final-form";
@@ -35,6 +36,7 @@ import { FieldArray } from "react-final-form-arrays";
 import AvatarField from "./AvatarField";
 import { Song } from "../../../models/Song";
 import { VDBArtistCategoryType, VDBArtistRoleType } from "../../../types/vocadb";
+import { useNamedState } from "../../../frontendUtils/hooks";
 
 const NEW_ALBUM_MUTATION = gql`
   mutation($data: AlbumInput!) {
@@ -54,6 +56,16 @@ const UPDATE_ALBUM_MUTATION = gql`
   }
   
   ${AlbumFragments.SelectAlbumEntry}
+`;
+
+const FULL_ALBUM_QUERY = gql`
+  query($id: Int!) {
+    album(id: $id) {
+      ...FullAlbumEntry
+    }
+  }
+  
+  ${AlbumFragments.FullAlbumEntry}
 `;
 
 interface RoleFieldProps {
@@ -115,6 +127,11 @@ const useStyles = makeStyles((theme) => ({
     height: "3em",
     width: "3em",
   },
+  refreshButton: {
+    position: "absolute",
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+  },
   numberField: {
     width: "10em",
     "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
@@ -171,7 +188,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
   }, [toggleOpen, setKeyword]);
 
 
-  const initialValues: FormValues = (create || !albumToEdit) ? {
+  const buildInitialValues: FormValues = (create || !albumToEdit) ? {
     name: keyword,
     sortOrder: "",
     coverUrl: "",
@@ -181,17 +198,54 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
     name: albumToEdit.name,
     sortOrder: albumToEdit.sortOrder,
     coverUrl: albumToEdit.coverUrl,
-    artists: albumToEdit.artists.map(v => ({
+    artists: albumToEdit.artists?.map(v => ({
       ...v.ArtistOfAlbum,
       artist: v,
-    })),
-    songs: albumToEdit.songs.map(v => ({
+    })) ?? [],
+    songs: albumToEdit.songs?.map(v => ({
       ...v.SongInAlbum,
       song: v,
-    })),
+    })) ?? [],
   };
 
+  const [initialValues, setInitialValues] = useNamedState(buildInitialValues, "initialValues");
   const albumId = albumToEdit?.id ?? null;
+
+  const refresh = useCallback(async () => {
+    try {
+      const result = await apolloClient.query<{album: Album}>({
+        query: FULL_ALBUM_QUERY,
+        variables: {
+          id: albumId,
+        },
+      });
+      if (result.data.album) {
+        const album = result.data.album;
+        setInitialValues({
+          name: album.name,
+          sortOrder: album.sortOrder,
+          coverUrl: album.coverUrl,
+          artists: album.artists?.map(v => ({
+            ...v.ArtistOfAlbum,
+            artist: v,
+          })) ?? [],
+          songs: album.songs?.map(v => ({
+            ...v.SongInAlbum,
+            song: v,
+          })) ?? [],
+        });
+
+        snackbar.enqueueSnackbar(`Successfully refreshing album #${albumId}.`, {
+          variant: "success",
+        });
+      }
+    } catch (e) {
+      console.error(`Error occurred refreshing album #${albumId}.`, e);
+      snackbar.enqueueSnackbar(`Error occurred refreshing album #${albumId}. (${e})`, {
+        variant: "error",
+      });
+    }
+  }, [albumId, apolloClient, setInitialValues, snackbar]);
 
   return (
     <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
@@ -205,7 +259,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
         validate={makeValidate<FormValues>(yup.object({
           name: yup.string().required(),
           sortOrder: yup.string().required(),
-          coverUrl: yup.string().url(),
+          coverUrl: yup.string().nullable().url(),
           songs: yup.array().of(yup.object({
             song: yup.object().typeError("Song entity must be selected."),
             diskNumber: yup.number().optional().nullable().positive().integer(),
@@ -242,9 +296,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
             if (create) {
               const result = await apolloClient.mutate<{ newAlbum: Partial<Album> }>({
                 mutation: NEW_ALBUM_MUTATION,
-                variables: {
-                  data
-                }
+                variables: { data }
               });
 
               if (result.data) {
@@ -257,9 +309,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
             } else {
               const result = await apolloClient.mutate<{ updateAlbum: Partial<Album> }>({
                 mutation: UPDATE_ALBUM_MUTATION,
-                variables: {
-                  data
-                }
+                variables: { id: albumId, data }
               });
 
               if (result.data) {
@@ -279,7 +329,10 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
         }}>
         {({ form, submitting, handleSubmit }) => (
           <>
-            <DialogTitle id="form-dialog-title">{create ? "Create new album entity" : `Edit album entity #${albumId}`}</DialogTitle>
+            <DialogTitle id="form-dialog-title">
+              {create ? "Create new album entity" : `Edit album entity #${albumId}`}
+              {!create && <IconButton className={styles.refreshButton} onClick={refresh}><AutorenewIcon /></IconButton>}
+            </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
                 <Grid item xs={12}>
@@ -459,7 +512,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                 Cancel
               </Button>
               <Button disabled={submitting} onClick={handleSubmit} color="primary">
-                Create
+                {create ? "Create" : "Update"}
               </Button>
             </DialogActions>
           </>

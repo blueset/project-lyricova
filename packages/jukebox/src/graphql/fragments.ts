@@ -63,4 +63,50 @@ export const AlbumFragments = {
       coverUrl
     }
   `,
+  FullAlbumEntry: gql`
+    fragment FullAlbumEntry on Album {
+      id
+      name
+      sortOrder
+      coverUrl
+      
+      songs {
+        id
+        name
+        sortOrder
+        coverUrl
+        
+        artists {
+          id
+          name
+          sortOrder
+          type
+          ArtistOfSong {
+            isSupport
+            customName
+            artistRoles
+            categories
+          }
+        }
+        
+        SongInAlbum {
+          diskNumber
+          trackNumber
+          name
+        }
+      }
+      
+      artists {
+        id
+        name
+        sortOrder
+        type
+        ArtistOfAlbum {
+          roles
+          effectiveRoles
+          categories
+        }
+      }
+    }
+  `,
 };
