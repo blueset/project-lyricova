@@ -79,7 +79,7 @@ export default function Login() {
             }
           }}
         >
-          {({ submitting }) => (<>
+          {({ submitting, handleSubmit }) => (<>
             <TextField
               className={styles.input}
               variant="outlined"
@@ -105,6 +105,7 @@ export default function Login() {
               color="primary"
               type="submit"
               disabled={submitting}
+              onClick={handleSubmit}
             >
               Log in
             </Button>

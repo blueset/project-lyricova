@@ -100,6 +100,7 @@
     "react-balance-text-cj": "workspace:*",
     "react-beautiful-dnd": "^13.0.0",
     "react-dom": "^16.13.1",
+    "react-dropzone": "^11.2.0",
     "react-final-form": "^6.5.1",
     "react-final-form-arrays": "^3.1.2",
     "react-measure": "^2.5.0",

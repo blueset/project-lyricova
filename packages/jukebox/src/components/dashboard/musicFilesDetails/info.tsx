@@ -261,20 +261,22 @@ export default function InfoPanel(
                           className={styles.updateButtons}
                           variant="outlined"
                           onClick={() => {
-                            let artistName = "", artistSortOrder = "";
+                            if (value.artists) {
+                              let artistName = "", artistSortOrder = "";
 
-                            const producers = value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Producer") >= 0);
-                            artistName += producers.map(v => (v.ArtistOfSong.customName || v.name)).join(", ");
-                            artistSortOrder += producers.map(v => (v.ArtistOfSong.customName || v.sortOrder)).join(", ");
+                              const producers = value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Producer") >= 0);
+                              artistName += producers.map(v => (v.ArtistOfSong.customName || v.name)).join(", ");
+                              artistSortOrder += producers.map(v => (v.ArtistOfSong.customName || v.sortOrder)).join(", ");
 
-                            const vocalists = value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0);
-                            if (vocalists.length > 0) {
-                              artistName += " feat. " + vocalists.map(v => (v.ArtistOfSong.customName || v.name)).join(", ");
-                              artistSortOrder += " feat. " + vocalists.map(v => (v.ArtistOfSong.customName || v.sortOrder)).join(", ");
+                              const vocalists = value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0);
+                              if (vocalists.length > 0) {
+                                artistName += " feat. " + vocalists.map(v => (v.ArtistOfSong.customName || v.name)).join(", ");
+                                artistSortOrder += " feat. " + vocalists.map(v => (v.ArtistOfSong.customName || v.sortOrder)).join(", ");
+                              }
+
+                              setValue("artistName", artistName);
+                              setValue("artistSortOrder", artistSortOrder);
                             }
-
-                            setValue("artistName", artistName);
-                            setValue("artistSortOrder", artistSortOrder);
                           }}
                       >Update artist name</Button>
                       <Field name="albumId">{

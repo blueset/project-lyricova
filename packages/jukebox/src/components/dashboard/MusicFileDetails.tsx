@@ -7,6 +7,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { TabContext, TabPanel } from "@material-ui/lab";
 import InfoPanel from "./musicFilesDetails/info";
 import { SongFragments } from "../../graphql/fragments";
+import CoverArtPanel from "./musicFilesDetails/coverArt";
 
 const SINGLE_FILE_DATA = gql`
   query($id: Int!) {
@@ -20,11 +21,13 @@ const SINGLE_FILE_DATA = gql`
       albumName
       albumSortOrder
       songId
+      hasCover
       song {
         ...SelectSongEntry
       }
       album {
         id
+        coverUrl
       }
     }
   }
@@ -81,6 +84,7 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
       </AppBar>
       <TabPanel value="info">
         <InfoPanel
+          fileId={fileId}
           path={fileData.data?.musicFile.path ?? ""}
           trackName={fileData.data?.musicFile.trackName ?? ""}
           trackSortOrder={fileData.data?.musicFile.trackSortOrder ?? ""}
@@ -90,11 +94,21 @@ export default function MusicFileDetails({fileId}: MusicFileDetailsProps) {
           albumSortOrder={fileData.data?.musicFile.albumSortOrder ?? ""}
           song={fileData.data?.musicFile.song ?? null}
           albumId={fileData.data?.musicFile.album?.id ?? null}
-          fileId={fileId}
           refresh={fileData.refetch}
         />
       </TabPanel>
-      <TabPanel value="cover-art">Cover art</TabPanel>
+      <TabPanel value="cover-art">
+        <CoverArtPanel
+          fileId={fileId}
+          trackName={fileData.data?.musicFile.trackName ?? ""}
+          hasCover={fileData.data?.musicFile.hasCover ?? false}
+          hasSong={(fileData.data?.musicFile.song ?? null) !== null}
+          hasAlbum={(fileData.data?.musicFile.album ?? null) !== null}
+          songCoverUrl={fileData.data?.musicFile.song?.coverUrl ?? null}
+          albumCoverUrl={fileData.data?.musicFile.album?.coverUrl ?? null}
+          refresh={fileData.refetch}
+        />
+      </TabPanel>
       <TabPanel value="lyrics">Lyrics</TabPanel>
       <TabPanel value="playlists">Playlists</TabPanel>
       </TabContext>

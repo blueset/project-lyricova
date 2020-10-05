@@ -27,6 +27,7 @@ import { Album } from "./Album";
 import { SongOfEntry } from "./SongOfEntry";
 import { Field, Int, ObjectType } from "type-graphql";
 import { GraphQLJSONObject } from "graphql-type-json";
+import _ from "lodash";
 
 @ObjectType()
 @Table

@@ -169,7 +169,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
             clearOnBlur
             handleHomeEndKeys
             freeSolo
-            textFieldProps={{variant: "outlined", size: "small"}}
+            textFieldProps={{ variant: "outlined", size: "small" }}
             filterOptions={(v: ExtendedSong[], params: FilterOptionsState<ExtendedSong>) => {
               if (params.inputValue !== "") {
                 v.push({
@@ -250,16 +250,18 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
                     ({value.sortOrder}) #{value.id}
                   </Typography>
                 </div>
-                <div className={styles.chipsRow}>
+                {value.artists && <div className={styles.chipsRow}>
                   {value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Producer") >= 0).map(v => (
-                    <Chip variant="outlined" size="small" key={v.sortOrder} label={v.ArtistOfSong.customName || v.name} />
+                    <Chip variant="outlined" size="small" key={v.sortOrder}
+                          label={v.ArtistOfSong.customName || v.name} />
                   ))}
                   {_.some(value.artists, v => v.ArtistOfSong.categories.indexOf("Vocalist")) &&
                   <Typography color="textSecondary" component="span" className={styles.featLabel}>feat.</Typography>}
                   {value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0).map(v => (
-                    <Chip variant="outlined" size="small" key={v.sortOrder} label={v.ArtistOfSong.customName || v.name} />
+                    <Chip variant="outlined" size="small" key={v.sortOrder}
+                          label={v.ArtistOfSong.customName || v.name} />
                   ))}
-                </div>
+                </div>}
               </div>
               <div>
                 {value.id >= 0 && (

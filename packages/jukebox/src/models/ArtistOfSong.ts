@@ -109,6 +109,8 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
 
   /** Incomplete build. */
   static async artistFromVocaDB(entity: ArtistForSongContract): Promise<Artist> {
+    // Ignore cases where an artist entity is not found.
+    if (entity.artist === undefined) return;
     const artist = await Artist.fromVocaDBArtistContract(entity.artist);
     const artistOfSongAttrs = {
       artistRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],

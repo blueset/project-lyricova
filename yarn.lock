@@ -5887,6 +5887,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"attr-accept@npm:^2.0.0":
+  version: 2.2.2
+  resolution: "attr-accept@npm:2.2.2"
+  checksum: e9c5d3580f6cae9c5c25c5c9c8660d344dd8bed25e77df7515c046864fe1aa4bb245e743ad46f55b85443ff53c95e378b3203c3e83f2168a2557e94d0552d458
+  languageName: node
+  linkType: hard
+
 "autoprefixer@npm:^9.7.2":
   version: 9.8.6
   resolution: "autoprefixer@npm:9.8.6"
@@ -10712,6 +10719,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"file-selector@npm:^0.1.12":
+  version: 0.1.13
+  resolution: "file-selector@npm:0.1.13"
+  dependencies:
+    tslib: ^2.0.1
+  checksum: 261cda059af9e34bdc661ce4f3624afed0c6244e2c138391907b12ce06108bbbecbbbec51ae11972121654e9d9503d4e53f909c0eada8f758bbd9987226fbf73
+  languageName: node
+  linkType: hard
+
 "file-system-cache@npm:^1.0.5":
   version: 1.0.5
   resolution: "file-system-cache@npm:1.0.5"
@@ -14762,6 +14778,7 @@ fsevents@^1.2.7:
     react-balance-text-cj: "workspace:*"
     react-beautiful-dnd: ^13.0.0
     react-dom: ^16.13.1
+    react-dropzone: ^11.2.0
     react-final-form: ^6.5.1
     react-final-form-arrays: ^3.1.2
     react-measure: ^2.5.0
@@ -18212,6 +18229,19 @@ fsevents@^1.2.7:
     classnames: ^2.2.5
     prop-types: ^15.6.0
   checksum: 72f9e36019a76ea2e9ccf36e8d8c6d74e53d2ca52efcb102e8edb4bedf7c636a3fed4ffa17ea397df01603c6dd5c534190ab697f6e8378d04c4e546d04a6e612
+  languageName: node
+  linkType: hard
+
+"react-dropzone@npm:^11.2.0":
+  version: 11.2.0
+  resolution: "react-dropzone@npm:11.2.0"
+  dependencies:
+    attr-accept: ^2.0.0
+    file-selector: ^0.1.12
+    prop-types: ^15.7.2
+  peerDependencies:
+    react: ">= 16.8"
+  checksum: 1465815c25c6419fe9934a6848f27bce9789837f4d79f894e4906c3fffaf0b32052ded6b67470cb704d8fc23813f2e267376c0e90641ec75db6657261bcb80d8
   languageName: node
   linkType: hard
 
@@ -21675,7 +21705,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"tslib@npm:>=1.9.0, tslib@npm:^2.0.0":
+"tslib@npm:>=1.9.0, tslib@npm:^2.0.0, tslib@npm:^2.0.1":
   version: 2.0.1
   resolution: "tslib@npm:2.0.1"
   checksum: 7b42337a07f536c9650c72471cdf51317f07eb981692e91b8979fee3f6e20136a8f047e6ecdc5f2f3201132a6cc4e0096fa3c58655eba3803bf7fe739ccd088e
