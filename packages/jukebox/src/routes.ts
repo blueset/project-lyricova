@@ -7,14 +7,6 @@ import { DownloadController } from "./controller/DownloadController";
 import { AuthController } from "./controller/AuthController";
 
 export default (app: express.Express) => {
-  // const userRouter = express.Router();
-  // const userController = new UserController();
-
-  // userRouter.get("/users", userController.all);
-  // userRouter.get("/users/:id", userController.one);
-  // userRouter.post("/users", userController.save);
-  // userRouter.delete("/users/:id", userController.remove);
-  // app.use("/", userRouter);
 
   const apiRouter = express.Router();
   app.use("/api", apiRouter);

@@ -15,12 +15,17 @@ import tempy from "tempy";
 import crypto from "crypto";
 import multer from "multer";
 import { swapExt } from "../utils/path";
+import axios from "axios";
+import mime from "mime";
+import * as Stream from "stream";
+import { downloadFromStream } from "../utils/download";
+import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
 }
 
-function setUnion<T>(self: Set<T>, other: Set<T>): Set<T> {
+function setIntersect<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => other.has(val)));
 }
 
@@ -35,8 +40,8 @@ interface GenericMetadata {
   duration: number;
   fileSize: number;
   // formatName?: string;
-  songId: string;
-  albumId: string;
+  songId: number;
+  albumId: number;
   // playlists: string[];
 }
 
@@ -47,15 +52,19 @@ const
 export class MusicFileController {
 
   public router: Router;
+  private readonly uploadDirectory: string;
+
+  private static randomName(): string {
+    return crypto.randomBytes(16).toString("hex");
+  }
 
   constructor() {
-    const uploadDirectory = tempy.directory();
-    console.log("Cover upload directory", uploadDirectory);
+    this.uploadDirectory = tempy.directory();
     const coverUpload = multer({
       storage: multer.diskStorage({
-        destination: (req, file, callback) => callback(null, uploadDirectory),
+        destination: (req, file, callback) => callback(null, this.uploadDirectory),
         filename: (req, file, callback) => {
-          callback(null, crypto.randomBytes(16).toString("hex") + Path.extname(file.originalname));
+          callback(null, MusicFileController.randomName() + Path.extname(file.originalname));
         }
       }),
       fileFilter: (req, file, callback) => {
@@ -69,9 +78,9 @@ export class MusicFileController {
     this.router.get("/:id(\\d+)/lrc", this.getSongLRC);
     this.router.get("/:id(\\d+)/lrcx", this.getSongLRCX);
     this.router.get("/:id(\\d+)/cover", this.getCoverArt);
-    this.router.patch("/:id(\\d+)/cover", coverUpload.single("cover"), this.uploadCoverArt);
+    this.router.patch("/:id(\\d+)/cover", adminOnlyMiddleware, coverUpload.single("cover"), this.uploadCoverArt);
     this.router.get("/:id(\\d+)", this.getSong);
-    this.router.patch("/:id(\\d+)", this.writeToSong);
+    this.router.patch("/:id(\\d+)", adminOnlyMiddleware, this.writeToSong);
   }
 
   /** Get metadata of a song via ffprobe */
@@ -90,15 +99,15 @@ export class MusicFileController {
       hasCover: metadata.streams.some(val => val.codec_type === "video"),
       duration: isNaN(duration) ? -1 : duration,
       fileSize: parseInt(metadata.format.size),
-      songId: tags[SONG_ID_TAG] || undefined,
-      albumId: tags[ALBUM_ID_TAG] || undefined,
+      songId: parseInt(tags[SONG_ID_TAG]) || undefined,
+      albumId: parseInt(tags[ALBUM_ID_TAG]) || undefined,
       // formatName: get(metadata, "format.format_name", ""),
       // playlists: tags[PLAYLIST_IDS_TAG] ? tags[PLAYLIST_IDS_TAG].split(",") : undefined,
     };
   }
 
   /** Make a new MusicFile object from file path. */
-  private async buildSongEntry(path: string): Promise<object> {
+  private async buildSongEntry(path: string): Promise<Partial<MusicFile>> {
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
     const metadataPromise = this.getSongMetadata(path);
     const md5 = await md5Promise,
@@ -178,7 +187,7 @@ export class MusicFileController {
       const filePathsSet: Set<string> = new Set(filePaths);
 
       const toAdd = setDifference(filePathsSet, knownPathsSet);
-      const toUpdate = setUnion(knownPathsSet, filePathsSet);
+      const toUpdate = setIntersect(knownPathsSet, filePathsSet);
       const toDelete = setDifference(knownPathsSet, filePathsSet);
 
       console.log(`toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`);
@@ -369,8 +378,18 @@ export class MusicFileController {
    * Upload cover art for a music file.
    *
    * Not in GraphQL.
+   *
+   * PATCH request of multipart-form
+   * Fields:
+   * - cover (optional) picture file
+   * - url (optional) path to remote picture file
+   *
+   * Note:
+   *   Either cover or url must be supplied.
    */
   public uploadCoverArt = async (req: Request, res: Response, next: NextFunction) => {
+    let coverPath = "";
+
     try {
       const musicFile = await MusicFile.findByPk(parseInt(req.params.id));
       if (musicFile === null) {
@@ -378,15 +397,32 @@ export class MusicFileController {
       }
 
       try {
+        if (req.body.url) {
+          const response = await axios.get<Stream>(req.body.url, {responseType: "stream"});
+          if (response.status !== 200) {
+            return res.status(504).json({ status: 594, message: `Request to download the cover has returned a ${response.status} error.` });
+          }
+          const contentType = response.headers?.["content-type"] ?? "";
+          if (!contentType.startsWith("image/")) {
+            return res.status(415).json({ status: 415, message: `${contentType} is not an acceptable MIME type.` });
+          }
+          coverPath = Path.join(this.uploadDirectory, `${MusicFileController.randomName()}.${mime.getExtension(contentType)}`);
+          await downloadFromStream(response.data, coverPath);
+        } else if (req.file) {
+          coverPath = req.file.path;
+        } else {
+          return res.status(422).json({ status: 422, message: "Either `cover` or `url` must be provided." });
+        }
+
         await ffmetadata.writeAsync(musicFile.fullPath, {}, {
           forceId3v2: musicFile.path.toLowerCase().endsWith(".aiff"),
-          attachments: [req.file.path],
+          attachments: [coverPath],
         });
       } catch (e) {
         console.log("Error while saving cover art to file", e);
-        return res.status(500).json({ status: 404, message: e });
+        return res.status(500).json({ status: 500, message: e });
       }
-      console.debug("Cover path", req.file.path);
+      console.debug("Cover path", coverPath);
 
       // Update file hash
       const md5 = await hasha.fromFile(musicFile.fullPath, { algorithm: "md5" });
@@ -395,7 +431,9 @@ export class MusicFileController {
       res.status(200).json({ status: 200, message: "Done." });
 
     } finally {
-      fs.unlinkSync(req.file.path);
+      if (coverPath && fs.existsSync(coverPath)) {
+        fs.unlinkSync(coverPath);
+      }
     }
   }
 }

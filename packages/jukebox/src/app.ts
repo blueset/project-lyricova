@@ -10,7 +10,6 @@ import { SESSION_SECRET } from "./utils/secret";
 import sequelize from "./db";
 import SequelizeStoreConstructor from "connect-session-sequelize";
 import { applyApollo } from "./graphql";
-import { Sequelize } from "sequelize";
 
 const SequelizeStore = SequelizeStoreConstructor(session.Store);
 

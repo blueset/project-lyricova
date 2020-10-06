@@ -37,7 +37,7 @@ function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
 }
 
-function setUnion<T>(self: Set<T>, other: Set<T>): Set<T> {
+function setIntersect<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => other.has(val)));
 }
 
@@ -271,7 +271,7 @@ export class MusicFileResolver {
     const filePathsSet: Set<string> = new Set(filePaths);
 
     const toAdd = setDifference(filePathsSet, knownPathsSet);
-    const toUpdate = setUnion(knownPathsSet, filePathsSet);
+    const toUpdate = setIntersect(knownPathsSet, filePathsSet);
     const toDelete = setDifference(knownPathsSet, filePathsSet);
 
     console.log(`toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`);

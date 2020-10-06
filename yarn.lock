@@ -4099,7 +4099,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mime@npm:*":
+"@types/mime@npm:*, @types/mime@npm:^2.0.3":
   version: 2.0.3
   resolution: "@types/mime@npm:2.0.3"
   checksum: 6df548a912494f8579d548cd883be0425f30eaa2922283335c405e270600f49045a06d766460c0f0edabb41dff570c614d174d3c52215de3bddd11f190ec9ae9
@@ -14700,6 +14700,7 @@ fsevents@^1.2.7:
     "@types/express-session": ^1.15.16
     "@types/glob": ^7.1.1
     "@types/lodash": ^4.14.149
+    "@types/mime": ^2.0.3
     "@types/multer": ^1.4.3
     "@types/node": ^13.1.6
     "@types/passport": ^1.0.2
@@ -14755,6 +14756,7 @@ fsevents@^1.2.7:
     lyrics-kit: "workspace:*"
     material-table: ^1.69.0
     mecab-async: ^0.1.2
+    mime: ^2.4.6
     moment: ^2.27.0
     mui-rff: ^2.5.5
     multer: ^1.4.2
@@ -15358,7 +15360,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"mime@npm:^2.4.4":
+"mime@npm:^2.4.4, mime@npm:^2.4.6":
   version: 2.4.6
   resolution: "mime@npm:2.4.6"
   bin:

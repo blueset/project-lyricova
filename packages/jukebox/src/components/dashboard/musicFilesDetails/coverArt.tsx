@@ -4,8 +4,10 @@ import ImageNotSupportedIcon from "@material-ui/icons/ImageNotSupported";
 import { makeStyles } from "@material-ui/core/styles";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { ChangeEvent, useCallback, useEffect } from "react";
-import { response } from "express";
+import axios from "axios";
 import { useDropzone } from "react-dropzone";
+import { useAuthContext } from "../../public/AuthContext";
+import { useSnackbar } from "notistack";
 
 const useStyles = makeStyles((theme) => ({
   coverAvatar: {
@@ -69,17 +71,22 @@ export default function CoverArtPanel({
                                         fileId, hasCover, trackName,
                                         hasSong, songCoverUrl,
                                         hasAlbum, albumCoverUrl,
+                                        refresh,
                                       }: Props) {
   const styles = useStyles();
 
   const [selectedImage, setSelectedImage] = useNamedState<SelectedImage>(null, "selectedImage");
   const [urlField, setUrlField] = useNamedState<string>("", "urlField");
+  const [isSubmitting, toggleSubmitting] = useNamedState(false, "isSubmitting");
+  const [cacheBustingToken, setCacheBustingToken] = useNamedState(new Date().getTime(), "cacheBustingToken");
 
+  // Apply URL.
   const setImageUrl = useCallback((url: string) => () => setSelectedImage({ url }), [setSelectedImage]);
   const handleUrlFieldOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setUrlField(event.target.value);
   }, [setUrlField]);
 
+  // Apply file selection
   const handleFileFieldOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files.length > 0) {
       setSelectedImage({ blob: event.target.files[0] });
@@ -119,12 +126,53 @@ export default function CoverArtPanel({
     };
   }, [onPaste]);
 
+  // Submit button action
+  const authContext = useAuthContext();
+  const snackBar = useSnackbar();
+  const applyCover = useCallback(async () => {
+    toggleSubmitting(true);
+
+    if (!selectedImage) return;
+    const token = authContext.jwt();
+    const data = new FormData();
+
+    if (selectedImage.url) {
+      data.append("url", selectedImage.url);
+    } else if (selectedImage.blob) {
+      data.append("cover", selectedImage.blob);
+    } else {
+      return;
+    }
+
+    try {
+      const result = await axios.patch(`/api/files/${fileId}/cover`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        }
+      });
+
+      if (result.status === 200) {
+        snackBar.enqueueSnackbar("Cover image updated.", { variant: "success" });
+        refresh();
+        setCacheBustingToken(new Date().getTime());
+        toggleSubmitting(false);
+      } else {
+        snackBar.enqueueSnackbar(result.data.message, { variant: "error" });
+        toggleSubmitting(false);
+      }
+    } catch (e) {
+      snackBar.enqueueSnackbar(`Error occurred while saving cover: ${e}`, { variant: "error" });
+      toggleSubmitting(false);
+    }
+  }, [authContext, fileId, selectedImage]);
+
   return <Grid container className={styles.container} spacing={3} {...getRootProps()}>
     <div className={styles.dragCover} style={{ display: isDragActive ? "flex" : "none" }}>Drag here to set cover.</div>
     <Grid item xs={12} md={3}>
       <Typography variant="h5" gutterBottom>Current cover</Typography>
       <Avatar
-        src={hasCover ? `/api/files/${fileId}/cover` : null} variant="rounded"
+        src={hasCover ? `/api/files/${fileId}/cover?t=${cacheBustingToken}` : null} variant="rounded"
         className={styles.coverAvatar}
       >
         <MusicNoteIcon />
@@ -166,7 +214,10 @@ export default function CoverArtPanel({
       >
         {hasAlbum ? <MusicNoteIcon /> : <ImageNotSupportedIcon />}
       </Avatar>
-      <Button variant="outlined" color="secondary">Apply</Button>
+      <Button variant="outlined" color="secondary" disabled={selectedImage !== null && isSubmitting}
+              onClick={applyCover}>
+        Apply
+      </Button>
     </Grid>
     <Grid item xs={12}>
       <Box display="flex" alignItems="center">
