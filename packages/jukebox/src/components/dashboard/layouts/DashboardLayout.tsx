@@ -217,7 +217,7 @@ export default function DashboardLayout({title, children}: Props) {
       <meta property="og:title" content={pageTitle} key="title"/>
     </Head>
     <SnackbarProvider maxSnack={4}>
-      <AuthContextConsumer>{(user) =>
+      <AuthContextConsumer>{(userContext) =>
       <div className={styles.container}>
         <AppBar position="fixed" className={clsx(styles.appBar, {
           [styles.appBarShift]: isDrawerOpen,
@@ -242,7 +242,7 @@ export default function DashboardLayout({title, children}: Props) {
               onClick={handleUserMenu}
               color="inherit"
             >
-              <Avatar alt={user?.displayName} src={`https://www.gravatar.com/avatar/${user?.emailMD5}`}/>
+              <Avatar alt={userContext.user?.displayName} src={`https://www.gravatar.com/avatar/${userContext.user?.emailMD5}`}/>
             </IconButton>
             <Menu
               id="menu-appbar"

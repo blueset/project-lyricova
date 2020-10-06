@@ -5,7 +5,7 @@ import { useAuthContext } from "../components/public/AuthContext";
 
 
 export default function Information() {
-  const user = useAuthContext();
+  const user = useAuthContext().user;
   return <Box p={4} pt={2}>
     Information <Link href="/">To lyrics</Link>.
     <div>

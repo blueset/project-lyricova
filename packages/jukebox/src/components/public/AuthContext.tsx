@@ -1,6 +1,6 @@
 import { ReactChild, createContext, useEffect, useContext, ReactNode } from "react";
 import { User } from "../../models/User";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, gql, useApolloClient } from "@apollo/client";
 import { useRouter } from "next/router";
 import { LS_JWT_KEY } from "../../frontendUtils/localStorage";
 
@@ -27,10 +27,14 @@ const CURRENT_USER_QUERY = gql`
     }
   }
 `;
-
 type QueriedUser = Pick<User, "id" | "username" | "displayName" | "role" | "creationDate" | "emailMD5">;
 
-const AuthContextReact = createContext<QueriedUser>(null);
+type UserContextType = {
+  user?: QueriedUser
+  jwt: () => string | null;
+};
+
+const AuthContextReact = createContext<UserContextType>(null);
 
 export function AuthContext({ authRedirect, children, noRedirect }: AuthContextProps) {
   const {
@@ -65,7 +69,12 @@ export function AuthContext({ authRedirect, children, noRedirect }: AuthContextP
     }
   }, [loading, error, data, noRedirect, authRedirect, router]);
 
-  return <AuthContextReact.Provider value={data?.currentUser ?? null}>
+  const value = {
+    user: data?.currentUser ?? null,
+    jwt: () => window.localStorage?.getItem(LS_JWT_KEY)
+  };
+
+  return <AuthContextReact.Provider value={value}>
     {children}
   </AuthContextReact.Provider>;
 }
