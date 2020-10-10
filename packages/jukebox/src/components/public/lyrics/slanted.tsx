@@ -1,9 +1,10 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState } from "../../../frontendUtils/hooks";
+import { useLyricsState, usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
+import gsap from "gsap";
 import _ from "lodash";
 
 interface Props {
@@ -66,54 +67,76 @@ export function SlantedLyrics({ lyrics }: Props) {
   const translationWrapper = useRef<HTMLDivElement>();
   const currentTranslation = useRef<HTMLSpanElement>();
 
-  const lineDurations = useMemo(() => lyrics.lines.map((v, idx, arr) => {
-    if (idx + 1 < arr.length) {
-      return [v.position, arr[idx + 1].position];
-    } else if (lyrics.length) {
-      return [v.position, lyrics.length];
-    } else if (playerRef.current) {
-      return [v.position, playerRef.current.duration];
-    } else {
-      return [v.position, v.position + 1];
-    }
-  }), [lyrics.lines]);
-
   const hasTranslation = useMemo(
     () => _.reduce(lyrics.lines, (res, val) => res || Boolean(val?.attachments?.translation), false),
     [lyrics.lines]
   );
 
-  const frameCallback = useCallback((thisLine: number, lyrics: LyricsKitLyrics, player: HTMLAudioElement) => {
-    if (!currentLine.current || !container.current || thisLine === null) return;
-    const [start, end] = lineDurations[thisLine];
-    const time = player.currentTime;
-    const percentage = (start <= time && time <= end) ? (time - start) / (end - start) : 0;
-
-    const offset =
-      currentLine.current.offsetLeft -
-      (container.current.offsetWidth / 2) +
-      percentage * currentLine.current.offsetWidth;
-    wrapper.current.style.transform = `translateX(-${offset}px)`;
+  const {playerState, currentFrameId, startTimes, endTimes} = usePlainPlayerLyricsState(lyrics, playerRef);
 
 
-    if (hasTranslation && translationContainer.current && currentTranslation.current && translationWrapper.current) {
-      const offset =
-        currentTranslation.current.offsetLeft -
-        (translationContainer.current.offsetWidth / 2) +
-        percentage * currentTranslation.current.offsetWidth;
-      translationWrapper.current.style.transform = `translateX(-${offset}px)`;
-
+  const timeline = useMemo(() => {
+    const tl = gsap.timeline({
+      paused: true,
+    });
+    console.log("wrapper-current", wrapper.current);
+    if (wrapper.current && container.current) {
+      const lines = wrapper.current.children;
+      tl.set(wrapper.current, {x: 0}, 0);
+      for (let i = 0; i < lines.length; i++) {
+        const el = lines[i] as HTMLDivElement;
+        tl.to(wrapper.current, {
+          x: -(el.offsetLeft - (container.current.offsetWidth / 2) + el.offsetWidth),
+          duration: endTimes[i + 1] - startTimes[i],
+          ease: "none",
+        }, startTimes[i]);
+      }
     }
-  }, [lyrics]);
+    if (translationWrapper.current && translationContainer.current) {
+      const lines = translationWrapper.current.children;
+      tl.set(translationWrapper.current, {x: 0}, 0);
+      for (let i = 0; i < lines.length; i++) {
+        const el = lines[i] as HTMLDivElement;
+        tl.to(translationWrapper.current, {
+          x: -(el.offsetLeft - (translationContainer.current.offsetWidth / 2) + el.offsetWidth),
+          duration: endTimes[i + 1] - startTimes[i],
+          ease: "none",
+        }, startTimes[i]);
+      }
+    }
+    return tl;
 
-  const line = useLyricsState(playerRef, lyrics, frameCallback);
+    // Adding wrapper.current, translationWrapper.current for the timeline to change along with the lyrics.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wrapper.current, translationWrapper.current, startTimes, endTimes]);
+
+  // Controls the progress of timeline
+  useEffect(() => {
+    const now = performance.now();
+
+    if (playerState.state === "playing") {
+      const progress = (now - playerState.startingAt) / 1000;
+      timeline.seek(progress);
+      timeline.play();
+    } else {
+      timeline.pause();
+      timeline.seek(playerState.progress);
+    }
+  }, [playerState, timeline]);
+
+  // Stop a timeline when its lifespan ends.
+  useEffect(() => {
+    return () => {
+      timeline.pause();
+    };
+  }, [timeline]);
 
   return <div className={styles.container}>
     <div className={clsx(styles.lines, styles.lyrics)} lang="ja" ref={container}>
       <div ref={wrapper} className={styles.wrapper}>
         {lyrics.lines.map((v, idx) => {
           return (
-            <span key={idx} className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}>
+            <span key={idx} className={clsx(styles.line, idx === currentFrameId && "active")} ref={idx === currentFrameId ? currentLine : null}>
               {v.content}
             </span>
           );
@@ -125,7 +148,7 @@ export function SlantedLyrics({ lyrics }: Props) {
         <div ref={translationWrapper} className={styles.wrapper}>
           {lyrics.lines.map((v, idx) => {
             return (
-              <span key={idx} className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentTranslation : null}>
+              <span key={idx} className={clsx(styles.line, idx === currentFrameId && "active")} ref={idx === currentFrameId ? currentTranslation : null}>
                 {v.attachments.translation}
               </span>
             );

@@ -38,6 +38,11 @@ const LYRICS_QUERY = gql`
                 timeTag
               }
             }
+            furigana {
+              content
+              leftIndex
+              rightIndex
+            }
           }
         }
       }

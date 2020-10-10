@@ -1,10 +1,9 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState } from "../../../frontendUtils/hooks";
+import { useLyricsState, usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
 import { motion, Transition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
-import _ from "lodash";
 import clsx from "clsx";
 
 const ANIMATION_THRESHOLD = 0.25;
@@ -104,7 +103,7 @@ interface Props {
 
 export function FocusedLyrics({ lyrics, blur }: Props) {
   const { playerRef } = useAppContext();
-  const line = useLyricsState(playerRef, lyrics);
+  const {currentFrame, currentFrameId, endTime} = usePlainPlayerLyricsState(lyrics, playerRef);
 
   const styles = useStyle();
 
@@ -114,11 +113,9 @@ export function FocusedLyrics({ lyrics, blur }: Props) {
 
   return (
     <motion.div className={styles.container}>
-      {line !== null && lines.map((l, idx) => {
-        if (idx < line || idx > line) return null;
-        const animate =
-          (idx + 1 > lines.length) || (!lines[idx + 1]) ||
-          (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
+      {currentFrame !== null && lines.map((l, idx) => {
+        if (idx !== currentFrameId) return null;
+        const animate = (endTime - currentFrame.start) >= ANIMATION_THRESHOLD;
         return (
           <LyricsLineElement
             className={clsx(styles.line, blurClass, "coverMask")}

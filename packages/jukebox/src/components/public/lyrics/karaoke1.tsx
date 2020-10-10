@@ -1,11 +1,14 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState, LyricsFrameCallback } from "../../../frontendUtils/hooks";
+import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
 import BalancedText from "react-balance-text-cj";
-import _ from "lodash";
+import gsap from "gsap";
 import clsx from "clsx";
-import { CSSProperties, useRef, RefObject, useCallback } from "react";
+import { CSSProperties, RefObject, useEffect, useMemo, useRef } from "react";
+import { measureTextWidths } from "../../../frontendUtils/measure";
+
+type Timeline = gsap.core.Timeline;
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -36,7 +39,7 @@ const useStyle = makeStyles((theme) => {
       "& span.overlay": {
         color: "transparent",
         backgroundRepeat: "no-repeat",
-        backgroundSize: "20% 100%",
+        backgroundSize: "0% 100%",
         mixBlendMode: "overlay",
         // transition: "background-size 0.1s",
         "&.underline": {
@@ -82,9 +85,10 @@ interface WrapProps {
 
 function BalancedTextSpanWrap({ animate, children, className, style, progressorRef }: WrapProps) {
   if (animate) {
-    return <BalancedText resize={true} className={className} style={style} progressorRef={progressorRef}>{children}</BalancedText>;
+    return <BalancedText resize={true} className={className} style={style}
+                         progressorRef={progressorRef}><span>{children}</span></BalancedText>;
   }
-  return <span className={className} style={style} ref={progressorRef}>{children}</span>;
+  return <span className={className} style={style} ref={progressorRef}><span>{children}</span></span>;
 }
 
 interface LyricsLineElementProps {
@@ -96,7 +100,6 @@ interface LyricsLineElementProps {
   progressorRef?: RefObject<HTMLSpanElement>;
 }
 
-
 function LyricsLineElement({ className, line, animate, translationClassName, theme, progressorRef }: LyricsLineElementProps) {
   if (!line) return null;
 
@@ -104,7 +107,8 @@ function LyricsLineElement({ className, line, animate, translationClassName, the
     <div>
       <div className={className} lang="ja">
         <BalancedTextSpanWrap animate={animate} className="base coverMask">{line.content}</BalancedTextSpanWrap>
-        <BalancedTextSpanWrap animate={animate} className={`overlay ${theme}`} progressorRef={progressorRef}>{line.content}</BalancedTextSpanWrap>
+        <BalancedTextSpanWrap animate={animate} className={`overlay ${theme}`}
+                              progressorRef={progressorRef}>{line.content}</BalancedTextSpanWrap>
       </div>
       {
         line.attachments?.translation && (
@@ -129,39 +133,77 @@ export function Karaoke1Lyrics({ lyrics, cover }: Props) {
   const { playerRef } = useAppContext();
   const progressorRef = useRef<HTMLSpanElement>();
 
-  const progressCallback = useCallback<LyricsFrameCallback>((thisLine, lyrics, player) => {
+  const { playerState, currentFrame, endTime } = usePlainPlayerLyricsState(lyrics, playerRef);
+
+  const timelineRef = useRef<Timeline>();
+  useEffect(() => {
+    if (timelineRef.current) timelineRef.current.kill();
+    const tl = gsap.timeline({ paused: playerState.state === "paused" });
     if (progressorRef.current) {
-      const progressorSpan = progressorRef.current;
-      if (thisLine >= lyrics.lines.length) {
-        progressorSpan.style.backgroundSize = "100% 100%";
+      const duration = endTime - (currentFrame?.start ?? 0);
+      if (currentFrame.data.attachments?.timeTag) {
+        progressorRef.current.style.backgroundSize = "0% 100%";
+        const lengths = measureTextWidths(progressorRef.current);
+        const length = lengths[lengths.length - 1];
+        const percentages = lengths.map(v => v / length * 100);
+        const tags = currentFrame.data.attachments.timeTag.tags;
+        tags.forEach((v, idx) => {
+          const duration = idx > 0 ? v.timeTag - tags[idx - 1].timeTag : v.timeTag;
+          const start = idx > 0 ? tags[idx - 1].timeTag : 0;
+          let percentage = 0;
+          if (v.index > 0) percentage = percentages[v.index - 1];
+          tl.to(progressorRef.current, {
+            backgroundSize: `${percentage}% 100%`,
+            ease: "none",
+            duration
+          }, start);
+        });
       } else {
-        const time = player.currentTime;
-        let endTime = player.duration;
-        if (thisLine + 1 < lyrics.lines.length) {
-          endTime = lyrics.lines[thisLine + 1].position;
-        }
-        const percentage = _.clamp((time - lyrics.lines[thisLine].position) / (endTime - lyrics.lines[thisLine].position), 0, 1);
-        progressorSpan.style.backgroundSize = `${percentage * 100}% 100%`;
+        tl.fromTo(progressorRef.current, {
+          backgroundSize: "0% 100%",
+        }, {
+          backgroundSize: "100% 100%",
+          ease: "none",
+          duration,
+        });
       }
     }
-  }, []);
+    timelineRef.current = tl;
+  }, [currentFrame, endTime, playerState.state]);
 
-  const line = useLyricsState(playerRef, lyrics, progressCallback);
+  useEffect(() => {
+    if (progressorRef.current) progressorRef.current.style.backgroundSize = "0% 100%";
+  }, [currentFrame]);
+
+  // Controls the progress of timeline
+  useEffect(() => {
+    const timeline = timelineRef.current;
+    const now = performance.now();
+    const startTime = currentFrame?.start ?? 0;
+
+    if (timeline) {
+      if (playerState.state === "playing") {
+        const inlineProgress = (now - playerState.startingAt) / 1000 - startTime;
+        timeline.seek(inlineProgress);
+        timeline.play();
+      } else {
+        const inlineProgress = playerState.progress - startTime;
+        timeline.pause();
+        timeline.seek(inlineProgress);
+      }
+    }
+  }, [playerState]);
 
   const styles = useStyle();
 
-  const lines = lyrics.lines;
-
   let lineElement = null;
-  if (line !== null) {
-    const animate =
-      (line + 1 > lines.length) || (!lines[line + 1]) ||
-      (lines[line + 1].position - lines[line].position >= ANIMATION_THRESHOLD);
+  if (currentFrame !== null) {
+    const animate = endTime - currentFrame.start >= ANIMATION_THRESHOLD;
     lineElement = (<LyricsLineElement
       className={styles.line}
       theme={cover ? "cover" : "underline"}
       translationClassName={clsx(styles.translation, "coverMask")}
-      line={lines[line]}
+      line={currentFrame.data}
       animate={animate}
       progressorRef={progressorRef}
     />);
