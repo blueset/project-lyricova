@@ -27,7 +27,7 @@ export class LyricsKitWordTimeTag {
     this.timeTag = tag.timeTag;
     this.index = tag.index;
   }
-  @Field(type => Float, { description: "Time when the time tag happens." })
+  @Field(type => Float, { description: "Time when the time tag happens, in seconds." })
   timeTag: number;
 
   @Field(type => Int, { description: "Starting character per Extended Grapheme Cluster of this tag" })
@@ -38,7 +38,7 @@ export class LyricsKitWordTimeTag {
 export class LyricsKitWordTimeAttachment {
   constructor(wordTime: WordTimeTag) {
     this.duration = wordTime.duration;
-    this.tags = wordTime.tags.map((v) => new LyricsKitWordTimeTag(v));
+    this.tags = wordTime.tags.map((v: WordTimeTagLabel) => new LyricsKitWordTimeTag(v));
   }
   @Field(type => Float, { description: "Duration of line in seconds.", nullable: true })
   duration: number;

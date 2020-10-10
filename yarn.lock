@@ -11924,6 +11924,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"gsap@npm:^3.5.1":
+  version: 3.5.1
+  resolution: "gsap@npm:3.5.1"
+  checksum: e4a95c74610ccebe2ef94efd97547e29cc0f5d9dd9030378d3061fb65e2a0283ba0cd70d87d129c9304eb924ef633f9cb1274b9b64a0d6ee988292cf094e3b80
+  languageName: node
+  linkType: hard
+
 "gud@npm:^1.0.0":
   version: 1.0.0
   resolution: "gud@npm:1.0.0"
@@ -14749,6 +14756,7 @@ fsevents@^1.2.7:
     glob: ^7.1.6
     graphql: ^15.3.0
     graphql-type-json: ^0.3.1
+    gsap: ^3.5.1
     hasha: ^5.1.0
     jsonwebtoken: ^8.5.1
     lodash: ^4.17.15

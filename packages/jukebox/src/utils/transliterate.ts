@@ -248,6 +248,28 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
               }
             });
             return prev;
+          }, []).reduce<[string, string][]>((prev, [text, ruby]) => {
+            // Normalize whitespaces around a ruby item.
+            const [_t, textL, textC, textR] = text.match(/^(\s*)(.*?)(\s*)$/u);
+            const [_r, rubyL, rubyC, rubyR] = ruby.match(/^(\s*)(.*?)(\s*)$/u);
+            if (textL.length > 0 || rubyL.length > 0) {
+              const spaceL = [textL, rubyL];
+              if (textL.length === 0) spaceL[0] = rubyL;
+              else if (rubyL.length === 0) spaceL[1] = textL;
+              if (prev.length > 0 && prev[prev.length - 1][0] === prev[prev.length - 1][1]) {
+                prev[prev.length - 1][0] += spaceL[0];
+                prev[prev.length - 1][1] += spaceL[1];
+              } else {
+                prev.push(spaceL);
+              }
+            }
+            prev.push([textC, rubyC]);
+            if (textR.length > 0 || rubyR.length > 0) {
+              if (textR.length === 0) prev.push([rubyR, rubyR]);
+              else if (rubyR.length === 0) prev.push([textR, textR]);
+              else prev.push([textR, rubyR]);
+            }
+            return prev;
           }, []);
         case "plain":
         default:
