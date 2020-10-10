@@ -27,3 +27,61 @@ export function measureElement(element: string): { height: number, width: number
 }
 
 export default measureElement;
+
+/**
+ * Measure width per character in an element.
+ *
+ * The element must only have children of a mix of the following types
+ * - `<span>text</span>`
+ * - `<ruby>text<rt>...</rt></ruby>`
+ *
+ * Length is measured in a single line with `pre` wrap settings.
+ *
+ * @returns list of length in pixels for for the sum of length up to n-th character in the element.
+ */
+export function measureTextWidths(el: HTMLElement): number[] {
+  if (!el) return [];
+
+  const result: number[] = [];
+  const oldWS = el.style.whiteSpace;
+  const oldDisplay = el.style.display;
+  const oldWidth = el.style.width;
+  el.style.whiteSpace = "pre";
+  el.style.display = "inline";
+  el.style.width = "fit-content";
+
+  const children = Array.from(el.childNodes);
+  const baseOffsetLeft = el.offsetLeft;
+  el.innerHTML = "";
+  children.forEach(childNode => {
+    if (childNode.nodeName === "RUBY") {
+      const child = childNode as HTMLElement;
+      el.appendChild(child);
+      const widthBefore = child.offsetLeft - baseOffsetLeft;
+      const textLength = [...child.childNodes[0].textContent].length;
+      const width = child.offsetWidth;
+      for (let i = 0; i < textLength; i++) {
+        result.push(widthBefore + (width / textLength * (i + 1)));
+      }
+    } else if (childNode.nodeName === "SPAN") {
+      const child = childNode as HTMLSpanElement;
+      const chars = [...child.innerText];
+      const clone = child.cloneNode() as HTMLSpanElement;
+      el.appendChild(clone);
+      chars.forEach(c => {
+        clone.innerText += c;
+        result.push(clone.offsetLeft - baseOffsetLeft + clone.offsetWidth);
+      });
+      el.removeChild(clone);
+      el.appendChild(child);
+    } else {
+      throw new Error(`Unexpected element found during measurement: ${childNode}`);
+    }
+  });
+
+  el.style.whiteSpace = oldWS;
+  el.style.display = oldDisplay;
+  el.style.width = oldWidth;
+
+  return result;
+}
