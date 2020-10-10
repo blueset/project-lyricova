@@ -28,7 +28,7 @@ export const lyricsLineAttachmentRegex = /^(\[[+-]?\d+:\d+(?:\.\d+)?\])+\[(.+?)\
 
 export const timeLineAttachmentRegex = /<(\d+,\d+)>/g;
 
-export const timeLineAttachmentDurationRegex = /<(\d+)>/g;
+export const timeLineAttachmentDurationRegex = /<(\d+)>/;
 
 export const rangeAttachmentRegex = /<([^,]+,\d+,\d+)>/g;
 

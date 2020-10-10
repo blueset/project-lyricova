@@ -178,7 +178,7 @@ export class Lyrics {
         if (len === undefined) {
             return undefined;
         }
-        const match = base60TimeRegex.exec(len);
+        const match = len.match(base60TimeRegex);
         if (match === null) {
             console.error(`"${len}" (${typeof len}) is an invalid length.`);
             return undefined;

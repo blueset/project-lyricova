@@ -1,4 +1,4 @@
-import { timeLineAttachmentRegex, rangeAttachmentRegex } from "../utils/regexPattern";
+import { timeLineAttachmentRegex, rangeAttachmentRegex, timeLineAttachmentDurationRegex } from "../utils/regexPattern";
 
 /** Range: [a, b) */
 export type Range = [number, number];
@@ -78,15 +78,13 @@ export class WordTimeTag extends LyricsLineAttachment {
         super();
         if (typeof arg0 === "string") {
             const description: string = arg0;
-            const matches = description.matchAll(timeLineAttachmentRegex);
-            const tags = [];
-            for (const match of matches) {
-                tags.push(match[1]);
-            }
+            const tags = [...description.matchAll(timeLineAttachmentRegex)].map(v => new WordTimeTagLabel(v[1]));
             if (tags.length === 0) {
                 throw new Error(`Word time tag attribute has no attachment: ${description}`);
             }
-            const match = timeLineAttachmentRegex.exec(description);
+            this.tags = tags;
+
+            const match = description.match(timeLineAttachmentDurationRegex);
             if (match !== null) {
                 this.durationMSec = parseInt(match[1]);
             }
