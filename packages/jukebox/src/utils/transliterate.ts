@@ -253,7 +253,7 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
             const [_t, textL, textC, textR] = text.match(/^(\s*)(.*?)(\s*)$/u);
             const [_r, rubyL, rubyC, rubyR] = ruby.match(/^(\s*)(.*?)(\s*)$/u);
             if (textL.length > 0 || rubyL.length > 0) {
-              const spaceL = [textL, rubyL];
+              const spaceL: [string, string] = [textL, rubyL];
               if (textL.length === 0) spaceL[0] = rubyL;
               else if (rubyL.length === 0) spaceL[1] = textL;
               if (prev.length > 0 && prev[prev.length - 1][0] === prev[prev.length - 1][1]) {
