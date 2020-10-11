@@ -92,6 +92,10 @@ const useStyles = makeStyles((theme) => ({
   },
   divider: {
     margin: theme.spacing(1, 0),
+  },
+  supportBox: {
+    minWidth: "auto",
+    marginRight: 0,
   }
 }));
 
@@ -351,6 +355,7 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                         </div>
                         <div className={styles.artistRow}>
                           <Checkboxes indeterminate={false} data={{ label: "Support", value: true }}
+                                      formControlProps={{className: styles.supportBox}}
                                       name={`${name}.isSupport`} />
                           <TextField
                             variant="outlined"
