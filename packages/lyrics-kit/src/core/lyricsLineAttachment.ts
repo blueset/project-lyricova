@@ -1,4 +1,4 @@
-import { timeLineAttachmentRegex, rangeAttachmentRegex, timeLineAttachmentDurationRegex } from "../utils/regexPattern";
+import { rangeAttachmentRegex, timeLineAttachmentDurationRegex, timeLineAttachmentRegex } from "../utils/regexPattern";
 
 /** Range: [a, b) */
 export type Range = [number, number];
@@ -43,8 +43,8 @@ export class WordTimeTagLabel {
     constructor(timeTag: number, index: number);
     constructor(arg0: number | string, arg1: number | undefined = undefined) {
         if (typeof arg0 == "number") {
-            const timeTag = arg0 as number, index = arg1 as number;
-            this.timeTag = timeTag;
+            const index = arg1 as number;
+            this.timeTag = arg0 as number;
             this.index = index;
         } else {
             const description = arg0 as string;
@@ -110,8 +110,8 @@ export class RangeAttributeLabel {
     constructor(content: string, range: Range);
     constructor(arg0: string, arg1: Range = undefined) {
         if (Array.isArray(arg1)) {
-            const content = arg0, range = arg1 as Range;
-            this.content = content;
+            const range = arg1 as Range;
+            this.content = arg0;
             this.range = range;
         } else {
             const description = arg0;
@@ -191,7 +191,7 @@ export class Attachments {
         return this.content[tag] && (this.content[tag] as PlainText).text;
     }
 
-    public setTranslation(str: string, languageCode: string | undefined = undefined) {
+    public setTranslation(str: string, languageCode: string | undefined = undefined): void {
         const tag = makeTranslationTag(languageCode) || TRANSLATION;
         this.content[tag] = Attachments.createAttachment(tag, str);
     }
@@ -200,7 +200,7 @@ export class Attachments {
         return this.content[tag] && this.content[tag].toString();
     }
 
-    public setTag(tag: string, value: string) {
+    public setTag(tag: string, value: string): void {
         this.content[tag] = Attachments.createAttachment(tag, value);
     }
 
