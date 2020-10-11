@@ -175,7 +175,7 @@ export default function CoverArtPanel({
         src={hasCover ? `/api/files/${fileId}/cover?t=${cacheBustingToken}` : null} variant="rounded"
         className={styles.coverAvatar}
       >
-        <MusicNoteIcon />
+        {hasCover ? <MusicNoteIcon /> : <ImageNotSupportedIcon />}
       </Avatar>
       <Button href={`https://www.google.com/search?q=${encodeURIComponent(trackName)}`} target="_blank"
               variant="outlined" color="secondary">
@@ -214,7 +214,7 @@ export default function CoverArtPanel({
       >
         {hasAlbum ? <MusicNoteIcon /> : <ImageNotSupportedIcon />}
       </Avatar>
-      <Button variant="outlined" color="secondary" disabled={selectedImage !== null && isSubmitting}
+      <Button variant="outlined" color="secondary" disabled={selectedImage === null || isSubmitting}
               onClick={applyCover}>
         Apply
       </Button>
