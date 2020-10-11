@@ -171,10 +171,6 @@ export function Karaoke1Lyrics({ lyrics, cover }: Props) {
     timelineRef.current = tl;
   }, [currentFrame, endTime, playerState.state]);
 
-  useEffect(() => {
-    if (progressorRef.current) progressorRef.current.style.backgroundSize = "0% 100%";
-  }, [currentFrame]);
-
   // Controls the progress of timeline
   useEffect(() => {
     const timeline = timelineRef.current;
@@ -192,6 +188,8 @@ export function Karaoke1Lyrics({ lyrics, cover }: Props) {
         timeline.seek(inlineProgress);
       }
     }
+    // Removing currentFrame?.start as we don’t want it to trigger for every line update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerState]);
 
   const styles = useStyle();
