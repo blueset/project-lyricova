@@ -3,7 +3,9 @@ import {gql, useQuery} from "@apollo/client";
 import {Grid, makeStyles, CardContent, Card, Typography, CircularProgress, Box, Button} from "@material-ui/core";
 import {DashboardStats} from "../../graphql/StatsResolver";
 import {useNamedState} from "../../frontendUtils/hooks";
-import moment from "moment";
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+import localizedFormat from "dayjs/plugin/localizedFormat";
 import {useEffect} from "react";
 import RateReviewIcon from "@material-ui/icons/RateReview";
 import GetAppIcon from "@material-ui/icons/GetApp";
@@ -68,7 +70,7 @@ const useStyles = makeStyles((theme) => ({
 
 interface CountUpCardProps {
   title: string;
-  now: moment.Moment;
+  now: dayjs.Dayjs;
   time?: number;
   className?: string;
 }
@@ -76,9 +78,12 @@ interface CountUpCardProps {
 const COUNT_UP_LEVELS: ("years" | "months" | "days")[] = ["years", "months", "days"];
 
 function CountUpCard({title, now, time, className}: CountUpCardProps) {
+  dayjs.extend(duration);
+  dayjs.extend(localizedFormat);
+
   let countUpValue = <>...</>;
   if (time) {
-    const duration = moment.duration(now.diff(time));
+    const duration = dayjs.duration(now.diff(time));
 
     let highestLevel = 0;
     while (highestLevel + 1 < COUNT_UP_LEVELS.length && duration.as(COUNT_UP_LEVELS[highestLevel]) < 1) {
@@ -96,7 +101,7 @@ function CountUpCard({title, now, time, className}: CountUpCardProps) {
     <CardContent>
       <Typography color="textSecondary" gutterBottom>{title}</Typography>
       <Typography variant="h3">{countUpValue}</Typography>
-      <Typography color="textSecondary">since {time ? moment(time).format("LL") : "..."}</Typography>
+      <Typography color="textSecondary">since {time ? dayjs(time).format("LL") : "..."}</Typography>
     </CardContent>
   </Card>;
 }
@@ -159,14 +164,14 @@ function PercentageCard({title, value, total, className}: PercentageCardProps) {
 }
 
 export default function DashboardIndex() {
-  const [now, setNow] = useNamedState(moment(), "now");
+  const [now, setNow] = useNamedState(dayjs(), "now");
   const {error, data} = useQuery<{ dashboardStats: ConvertedDashboardStats }>(DASHBOARD_STATS_QUERY);
 
   const styles = useStyles();
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setNow(moment());
+      setNow(dayjs());
     }, 1000);
     return () => {
       clearInterval(timer);
