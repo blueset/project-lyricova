@@ -41,7 +41,6 @@ const useStyle = makeStyles((theme) => {
         backgroundRepeat: "no-repeat",
         backgroundSize: "0% 100%",
         mixBlendMode: "overlay",
-        // transition: "background-size 0.1s",
         "&.underline": {
           backgroundImage: `linear-gradient(
             transparent 60%,

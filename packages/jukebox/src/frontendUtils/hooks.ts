@@ -163,7 +163,8 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
     });
 
     if (playerRef.current) endTimes[keyframes.length] = playerRef.current.duration;
-    endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
+    else if (keyframes.length > 0) endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
+    else endTimes[keyframes.length] = 0;
 
     return endTimes;
   }, [keyframes, playerRef]);
