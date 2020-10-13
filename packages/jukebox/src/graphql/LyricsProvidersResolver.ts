@@ -46,16 +46,16 @@ class VocaDBLyricsEntry implements LyricsForSongContract {
   @Field({ description: "Language/culture code.", nullable: true })
   cultureCode: string;
 
-  @Field({ description: "Language/culture code.", nullable: true })
+  @Field({ description: "Source of lyrics.", nullable: true })
   source: string;
 
-  @Field({ description: "Language/culture code.", nullable: true })
+  @Field({ description: "Type of translation.", nullable: true })
   translationType: VDBTranslationType;
 
-  @Field({ description: "Language/culture code.", nullable: true })
+  @Field({ description: "URL of the source.", nullable: true })
   url: string;
 
-  @Field({ description: "Language/culture code.", nullable: true })
+  @Field({ description: "Lyrics content.", nullable: true })
   value: string;
 }
 
@@ -69,7 +69,7 @@ class LyricsKitSearchOptions {
 }
 
 @ObjectType({ description: "A lyrics entry from lyrics-kit search engine." })
-class LyricsKitLyricsEntry {
+export class LyricsKitLyricsEntry {
   @Field()
   lyrics: string;
 
@@ -83,7 +83,7 @@ class LyricsKitLyricsEntry {
   metadata: LyricsMetadata;
 
   @Field(type => GraphQLJSONObject)
-  tags: object;
+  tags: Record<string, unknown>;
 }
 
 
