@@ -1,5 +1,5 @@
 import { Lyrics } from "./lyrics";
-import { Attachments } from "./lyricsLineAttachment";
+import { Attachments, FURIGANA } from "./lyricsLineAttachment";
 
 export class LyricsLine {
     public content: string;
@@ -36,13 +36,30 @@ export class LyricsLine {
             ...Object.entries(this.attachments.content).map((v) => `[${v[0].toString()}]${v[1].toString()}`)
         ].map((v) => `[${this.timeTag.toString()}]${v}`).join("\n");
     }
-    public toLegacyString(): string {
+    public toLegacyString(before = " / ", after = ""): string {
         let translation = this.attachments.translation();
         if (translation) {
-            translation = `【${translation}】`;
+            translation = `${before}${translation}${after}`;
         } else {
             translation = "";
         }
-        return `[${this.timeTag}]${this.content}` + translation;
+
+        // Apply furigana
+        let content = "";
+        if (this?.attachments?.content?.[FURIGANA]) {
+            const base = this.content;
+            let lastIndex = 0;
+            for (const label of this.attachments.content[FURIGANA].attachment) {
+                content += base.substring(lastIndex, label.range[1]) + `(${label.content})`;
+                lastIndex = label.range[1];
+            }
+            if (lastIndex < base.length) {
+                content += base.substring(lastIndex, base.length);
+            }
+        } else {
+            content = this.content;
+        }
+
+        return `[${this.timeTag}]${content}` + translation;
     }
 }

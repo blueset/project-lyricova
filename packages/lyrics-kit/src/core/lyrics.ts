@@ -63,7 +63,7 @@ export class Lyrics {
         }
         lines.sort((a, b) => a.position - b.position);
 
-        // Assing to object property here for the use of lineIndex later.
+        // Assign to object property here for the use of lineIndex later.
         this.lines = lines;
 
         const tags: Set<string> = new Set();
@@ -144,15 +144,7 @@ export class Lyrics {
      */
     public toPlainLRC(separator: string = " / "): string {
         return this.toCustomSyntax({
-            line: line => {
-                let translation = line.attachments.translation();
-                if (translation) {
-                    translation = separator + translation;
-                } else {
-                    translation = "";
-                }
-                return `[${line.timeTag}]${line.content}` + translation;
-            }
+            line: line => line.toLegacyString(separator),
         });
     }
 

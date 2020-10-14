@@ -8,6 +8,7 @@ import { TITLE, ARTIST, ALBUM } from "../../core/idTagKey";
 import { LyricsProviderSource } from "../lyricsProviderSource";
 import { QQSongItem, QQResponseSearchResult } from "../types/qqMusic/searchResult";
 import { QQResponseSingleLyrics } from "../types/qqMusic/singleLyrics";
+import { FURIGANA, Range, RangeAttribute } from "../../core/lyricsLineAttachment";
 
 const SEARCH_URL = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp";
 const LYRICS_URL = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg";
@@ -41,7 +42,6 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         try {
             const parameters = {
                 songmid: token.songmid,
-                // eslint-disable-next-line @typescript-eslint/camelcase
                 g_tk: 5381
             };
             const response = await axios.get<QQResponseSingleLyrics>(LYRICS_URL, _.defaults({
@@ -60,6 +60,43 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
                 throw new Error("lyric is empty");
             }
             const lrc = new Lyrics(lrcContent);
+
+            // Apply Furigana
+            if (lrc.idTags.kana) {
+                const furiganaReplacements = [...lrc.idTags.kana.matchAll(/(\d)(\D*)/g)];
+                for (const line of lrc.lines) {
+                    if (furiganaReplacements.length < 1) break;
+
+                    // Matches either single kanji or a group of full-width digits together.
+                    const kanjis = [...line.content.matchAll(/(\p{Script=Han}|[０-９]+)/ug)];
+                    const furigana: [string, Range][] = [];
+
+                    while (kanjis.length > 0 && furiganaReplacements.length > 0) {
+                        const rep = furiganaReplacements.shift();
+                        let count = parseInt(rep[1]);
+                        const content = rep[2];
+
+                        let startIndex = Infinity, endIndex = -Infinity;
+
+                        while (count > 0 && kanjis.length > 0) {
+                            count--;
+                            const kanji = kanjis.shift();
+                            startIndex = Math.min(startIndex, kanji.index);
+                            endIndex = Math.max(endIndex, kanji.index + kanji[0].length);
+                        }
+
+                        if (content.length < 1) continue;
+                        furigana.push([content, [startIndex, endIndex]]);
+                    }
+
+                    if (furigana.length > 0) {
+                        line.attachments.content[FURIGANA] = new RangeAttribute(furigana);
+                    }
+                }
+
+                lrc.idTags.kana = undefined;
+            }
+
             const transLrcContent = data.trans ? decodeLyrics(data.trans) : null;
             if (transLrcContent) {
                 const transLrc = new Lyrics(transLrcContent);
