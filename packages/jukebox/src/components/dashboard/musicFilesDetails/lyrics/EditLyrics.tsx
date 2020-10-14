@@ -5,6 +5,41 @@ import { useNamedState } from "../../../../frontendUtils/hooks";
 import VocaDBLyricsDialog from "./VocaDBLyricsDialog";
 import HMikuWikiSearchDialog from "./HMikuWikiSearchDialog";
 
+function replaceWithPattern(lines: [string, string][], pattern: RegExp): string | null {
+  const linesMatchPattern = lines.map(v => v[1].match(pattern) ? 1 : 0).reduce((prev, curr) => prev + curr, 0);
+  if (linesMatchPattern / lines.length > 0.25) {
+    const result: string[] = [];
+    for (const [tag, text] of lines) {
+      const match = text.match(pattern);
+      if (match) {
+        result.push(`${tag}${match[1]}`);
+        result.push(`${tag}[tr]${match[2]}`);
+      } else {
+        result.push(`${tag}${text}`);
+      }
+    }
+    return result.join("\n");
+  }
+  return null;
+}
+
+function smartTranslationSeparation(text: string): string {
+  const lines = text.split("\n").map((v): [string, string] => {
+    const groups = v.match(/^(\[.+\])?(.*)$/);
+    if (groups) return [groups[1], groups[2]];
+    return ["", ""];
+  });
+  // Cases:
+  // Most lines has " / ", /, 【】
+  let result = replaceWithPattern(lines, /^(.*?) \/ (.*)$/);
+  if (result !== null) return result;
+  result = replaceWithPattern(lines, /^(.*?)\/(.*)$/);
+  if (result !== null) return result;
+  result = replaceWithPattern(lines, /^(.*?)【(.*)】$/);
+  if (result !== null) return result;
+  return text;
+}
+
 const useStyle = makeStyles((theme) => ({
   textField: {
     fontFamily: "monospace",
@@ -33,6 +68,10 @@ export default function EditLyrics({ lyrics, setLyrics, songId, title }: Props) 
     setLyrics(lyrics.replace(/^(\[.+\])(?:[ 　\t]*)(.*?)(?:[ 　\t]*)$/gm, "$1$2"));
   }, [lyrics, setLyrics]);
 
+  const separateTranslations = useCallback(() => {
+    setLyrics(smartTranslationSeparation(lyrics || ""));
+  }, [lyrics, setLyrics]);
+
   const [showVocaDBDialog, toggleVocaDBDialog] = useNamedState(false, "showVocaDBDialog");
   const [showHMikuWikiDialog, toggleHMikuWikiDialog] = useNamedState(false, "showHMikuWikiDialog");
 
@@ -46,8 +85,8 @@ export default function EditLyrics({ lyrics, setLyrics, songId, title }: Props) 
       <Grid item xs={12} lg={4}>
         <Typography variant="overline" display="block">Common operations</Typography>
         <Button className={styles.button} variant="outlined" onClick={trimSpaces}>Trim spaces</Button>
-        <Button className={styles.button} variant="outlined">Smart translation extraction</Button>
-        <Button className={styles.button} variant="outlined">Clear</Button>
+        <Button className={styles.button} variant="outlined" onClick={separateTranslations}>Smart translation extraction</Button>
+        <Button className={styles.button} variant="outlined" onClick={() => setLyrics("")}>Clear</Button>
       </Grid>
     </Grid>
     <TextField

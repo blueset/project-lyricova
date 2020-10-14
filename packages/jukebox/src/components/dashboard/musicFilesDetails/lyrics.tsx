@@ -1,5 +1,5 @@
-import { Button, duration, Grid, Typography } from "@material-ui/core";
-import { useCallback, useMemo, useRef } from "react";
+import { Button, Grid, Typography } from "@material-ui/core";
+import { useCallback, useMemo } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import LyricsPreview from "./LyricsPreview";
 import { lyricsAnalysis } from "../../../utils/lyricsCheck";
@@ -18,6 +18,9 @@ const useStyle = makeStyles((theme) => ({
     marginRight: theme.spacing(1),
     marginBottom: theme.spacing(1),
   },
+  section: {
+    marginBottom: theme.spacing(2),
+  }
 }));
 
 interface Props {
@@ -65,7 +68,7 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
         </Grid>
         <Grid item xs={12} sm={3}>
           <Typography variant="h6" component="h3">Lyric state</Typography>
-          <p>
+          <section className={styles.section}>
             <Typography>Lyrics type: {lrcxLyrics ?
               <Typography component="span" color="secondary">LRCX</Typography> : lrcLyrics ? "LRC" :
                 <Typography component="span" color="textSecondary">No lyrics</Typography>}</Typography>
@@ -87,7 +90,7 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
               <Typography>Last
                 timestamp: {dayjs.utc(analysisResult.lastTimestamp * 1000).format("HH:mm:ss")}</Typography>
             </>)}
-          </p>
+          </section>
           <Typography variant="h6" component="h3">What to do?</Typography>
           <Button className={styles.button} variant="outlined" onClick={handleOpenLyricsEditDialog}>Adjust</Button>
         </Grid>

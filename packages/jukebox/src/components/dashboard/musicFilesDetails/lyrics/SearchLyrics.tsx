@@ -31,7 +31,7 @@ import ContentCopyIcon from "@material-ui/icons/ContentCopy";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { lyricsAnalysis, LyricsAnalysisResult } from "../../../../utils/lyricsCheck";
 import { Lyrics } from "lyrics-kit";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import TooltipIconButton from "../../TooltipIconButton";
 
 
@@ -162,10 +162,7 @@ interface FormValues {
   duration: number;
 }
 
-interface Props extends FormValues {
-}
-
-export default function SearchLyrics({ title, artists, duration }: Props) {
+export default function SearchLyrics({ title, artists, duration }: FormValues) {
   const styles = useStyles();
 
   const apolloClient = useApolloClient();
