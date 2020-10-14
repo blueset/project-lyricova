@@ -255,7 +255,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
                     <Chip variant="outlined" size="small" key={v.sortOrder}
                           label={v.ArtistOfSong.customName || v.name} />
                   ))}
-                  {_.some(value.artists, v => v.ArtistOfSong.categories.indexOf("Vocalist")) &&
+                  {_.some(value.artists, v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0) &&
                   <Typography color="textSecondary" component="span" className={styles.featLabel}>feat.</Typography>}
                   {value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0).map(v => (
                     <Chip variant="outlined" size="small" key={v.sortOrder}

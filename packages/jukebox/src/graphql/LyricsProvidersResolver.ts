@@ -10,7 +10,7 @@ import { LyricsMetadata } from "lyrics-kit/build/main/core/lyricsMetadata";
 
 
 @ObjectType({ description: "A search result from 初音ミク@wiki." })
-class HmikuAtWikiSearchResultEntry {
+export class HmikuAtWikiSearchResultEntry {
   @Field({ description: "Entry ID." })
   id: string;
 
@@ -22,7 +22,7 @@ class HmikuAtWikiSearchResultEntry {
 }
 
 @ObjectType({ description: "A lyrics entry from 初音ミク@wiki." })
-class HmikuAtWikiEntry {
+export class HmikuAtWikiEntry {
   @Field({ description: "Entry ID." })
   id: string;
 
@@ -38,7 +38,7 @@ class HmikuAtWikiEntry {
 }
 
 @ObjectType({ description: "A lyrics entry from VocaDB." })
-class VocaDBLyricsEntry implements LyricsForSongContract {
+export class VocaDBLyricsEntry implements LyricsForSongContract {
 
   @Field(type => Int, { description: "Lyrics entry ID." })
   id: number;
@@ -178,7 +178,7 @@ export class LyricsProvidersResolver {
   }
 
   @Query(returns => [VocaDBLyricsEntry])
-  public async vocaDBSingle(@Arg("id", type => Int) id: number): Promise<VocaDBLyricsEntry[]> {
+  public async vocaDBLyrics(@Arg("id", type => Int) id: number): Promise<VocaDBLyricsEntry[]> {
     try {
       const elm = await Song.findByPk(id);
       if (elm) {
@@ -186,7 +186,7 @@ export class LyricsProvidersResolver {
           return elm.vocaDbJson.lyrics;
         } else {
           if (elm.vocaDbJson.originalVersionId) {
-            return this.vocaDBSingle(elm.vocaDbJson.originalVersionId);
+            return this.vocaDBLyrics(elm.vocaDbJson.originalVersionId);
           }
           return [];
         }
@@ -198,7 +198,7 @@ export class LyricsProvidersResolver {
         return resp.data.lyrics;
       } else {
         if (resp.data.originalVersionId) {
-          return this.vocaDBSingle(resp.data.originalVersionId);
+          return this.vocaDBLyrics(resp.data.originalVersionId);
         }
         return [];
       }

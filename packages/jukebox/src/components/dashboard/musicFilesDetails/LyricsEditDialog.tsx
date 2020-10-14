@@ -36,9 +36,10 @@ interface Props {
   title?: string;
   artists?: string;
   duration: number;
+  songId?: number;
 }
 
-export default function LyricsEditDialog({ initialLyrics, refresh, fileId, isOpen, toggleOpen, title, artists, duration }: Props) {
+export default function LyricsEditDialog({ initialLyrics, refresh, fileId, isOpen, toggleOpen, title, artists, duration, songId }: Props) {
 
   const [lyrics, setLyrics] = useNamedState(initialLyrics || "", "lyrics");
 
@@ -90,7 +91,7 @@ export default function LyricsEditDialog({ initialLyrics, refresh, fileId, isOpe
           <SearchLyrics title={title} artists={artists} duration={duration} />
         </TabPanel>
         <TabPanel value="edit">
-          <EditLyrics lyrics={lyrics} setLyrics={setLyrics} />
+          <EditLyrics lyrics={lyrics} setLyrics={setLyrics} songId={songId} title={title} />
         </TabPanel>
         <TabPanel value="tagging">Tagging</TabPanel>
         <TabPanel value="inline">Inline</TabPanel>

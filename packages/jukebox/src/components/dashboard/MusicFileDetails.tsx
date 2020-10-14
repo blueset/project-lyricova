@@ -129,6 +129,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
             lrcLyrics={fileData.data?.musicFile.lrcLyrics}
             lrcxLyrics={fileData.data?.musicFile.lrcxLyrics}
             duration={fileData.data?.musicFile.duration ?? 0}
+            songId={fileData.data?.musicFile.song?.id ?? null}
             refresh={fileData.refetch}
           />
         </TabPanel>
