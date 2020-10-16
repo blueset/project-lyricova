@@ -135,10 +135,46 @@ export interface PlayerLyricsState<T> {
 }
 
 
-export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], playerRef: RefObject<HTMLAudioElement>): PlayerLyricsState<T> {
+export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
   const [playerState, setPlayerState] = useNamedState<PlayerState>({ state: "paused", progress: 0 }, "playerState");
   const playerStateRef = useRef<PlayerState>();
   playerStateRef.current = playerState;
+
+  const updatePlayerState = useCallback(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    if (player.paused) {
+      setPlayerState({ state: "paused", progress: player.currentTime });
+    } else {
+      setPlayerState({ state: "playing", startingAt: performance.now() - (player.currentTime * 1000) });
+    }
+  }, [playerRef, setPlayerState]);
+
+  // Register event listeners
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    player.addEventListener("play", updatePlayerState);
+    player.addEventListener("pause", updatePlayerState);
+    player.addEventListener("seeked", updatePlayerState);
+    updatePlayerState();
+
+    return () => {
+      player.removeEventListener("play", updatePlayerState);
+      player.removeEventListener("pause", updatePlayerState);
+      player.removeEventListener("seeked", updatePlayerState);
+    };
+  }, [playerRef, updatePlayerState]);
+
+  return playerState;
+}
+
+export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], playerRef: RefObject<HTMLAudioElement>): PlayerLyricsState<T> {
+  const playerState = usePlayerState(playerRef);
+  const playerStateRef = useRef<PlayerState>();
+  playerStateRef.current = playerState;
+
   const frameCallbackRef = useRef<number>();
 
   // Added to prevent operation on unmounted components
@@ -171,6 +207,7 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
 
   const startTimes = useMemo(() => keyframes.map(v => v.start), [keyframes]);
 
+  // Advance a frame when the current frame ends
   const onFrame = useCallback((timestamp: number) => {
     // Out of current lifespan, stop.
     if (!thisLifespan.current) return;
@@ -195,14 +232,11 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
     }
   }, [endTimes, setCurrentFrameId]);
 
-  const updatePlayerState = useCallback(() => {
+  // Search for the frame for current time
+  const restartFrameCallback = useCallback(() => {
     const player = playerRef.current;
     if (!player) return;
-    if (player.paused) {
-      setPlayerState({ state: "paused", progress: player.currentTime });
-    } else {
-      setPlayerState({ state: "playing", startingAt: performance.now() - (player.currentTime * 1000) });
-    }
+
     // Clear existing loop.
     if (frameCallbackRef.current !== null) {
       cancelAnimationFrame(frameCallbackRef.current);
@@ -212,27 +246,18 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
 
     // Start a new loop.
     frameCallbackRef.current = requestAnimationFrame(onFrame);
-  }, [onFrame, playerRef, setCurrentFrameId, setPlayerState, startTimes]);
+  }, [onFrame, playerRef, setCurrentFrameId, startTimes]);
 
-  // Register event listeners
+  useEffect(() => restartFrameCallback(), [playerState, restartFrameCallback]);
+
+  // Update this lifespan
   useEffect(() => {
     thisLifespan.current = true;
 
-    const player = playerRef.current;
-    if (!player) return;
-
-    player.addEventListener("play", updatePlayerState);
-    player.addEventListener("pause", updatePlayerState);
-    player.addEventListener("seeked", updatePlayerState);
-    updatePlayerState();
-
     return () => {
       thisLifespan.current = false;
-      player.removeEventListener("play", updatePlayerState);
-      player.removeEventListener("pause", updatePlayerState);
-      player.removeEventListener("seeked", updatePlayerState);
     };
-  }, [playerRef, updatePlayerState]);
+  }, [playerRef]);
 
   return {
     playerState,

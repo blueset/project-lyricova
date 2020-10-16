@@ -12,10 +12,10 @@ function replaceWithPattern(lines: [string, string][], pattern: RegExp): string 
     for (const [tag, text] of lines) {
       const match = text.match(pattern);
       if (match) {
-        result.push(`${tag}${match[1]}`);
-        result.push(`${tag}[tr]${match[2]}`);
+        result.push(`${tag || ""}${match[1]}`);
+        result.push(`${tag || ""}[tr]${match[2]}`);
       } else {
-        result.push(`${tag}${text}`);
+        result.push(`${tag || ""}${text || ""}`);
       }
     }
     return result.join("\n");

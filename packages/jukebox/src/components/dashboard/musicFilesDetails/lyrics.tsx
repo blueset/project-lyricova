@@ -36,7 +36,10 @@ interface Props {
 
 export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, title, artists, duration, songId }: Props) {
   const [isLyricsEditDialogOpen, toggleLyricsEditDialogOpen] = useNamedState(false, "isLyricsEditDialogOpen");
-  const handleOpenLyricsEditDialog = useCallback(() => toggleLyricsEditDialogOpen(true), [toggleLyricsEditDialogOpen]);
+  const handleOpenLyricsEditDialog = useCallback(() => {
+
+    toggleLyricsEditDialogOpen(true)
+  }, [toggleLyricsEditDialogOpen]);
 
   const styles = useStyle();
   dayjs.extend(utc);

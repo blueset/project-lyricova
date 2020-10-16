@@ -11,7 +11,7 @@ type Timeline = gsap.core.Timeline;
 
 const useStyle = makeStyles((theme) => ({
   lyricsContainer: {
-    height: "calc(100vh - 20rem)",
+    height: "calc(100vh - 15rem)",
     overflow: "scroll",
     "&:before, &:after": {
       content: "\"\"",
@@ -26,7 +26,7 @@ const useStyle = makeStyles((theme) => ({
     color: theme.palette.text.secondary,
     marginBottom: theme.spacing(2),
     textAlign: "center",
-    fontSize: "1inrem",
+    fontSize: "1rem",
     minHeight: "1.5em",
   },
   activeLine: {
@@ -90,12 +90,8 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
   }, [currentFrame, endTime, playerState.state]);
 
   useEffect(() => {
-    if (currentLineRef.current && containerRef) {
-      const curTop = currentLineRef.current.offsetTop -  containerRef.current.offsetTop;
-      containerRef.current.scrollTo({
-        top: curTop - containerRef.current.offsetHeight / 2 + currentLineRef.current.offsetHeight / 2,
-        behavior: "smooth",
-      });
+    if (currentLineRef.current) {
+      currentLineRef.current.scrollIntoView({ block: "center", behavior: "smooth" });
     }
   }, [currentFrame]);
 

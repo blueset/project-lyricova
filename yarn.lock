@@ -14808,6 +14808,7 @@ fsevents@^1.2.7:
     sequelize: 6.1.1
     sequelize-typescript: 2.0.0-beta.0
     shortid: ^2.2.15
+    simple-statistics: ^7.3.0
     split: ^1.0.1
     stream-combiner: ^0.2.2
     stream-filter: ^2.1.0
@@ -20007,6 +20008,13 @@ fsevents@^1.2.7:
   version: 3.0.3
   resolution: "signal-exit@npm:3.0.3"
   checksum: f8f3fec95c8d1f9ad7e3cce07e1195f84e7a85cdcb4e825e8a2b76aa5406a039083d2bc9662b3cf40e6948262f41277047d20e6fbd58c77edced0b18fab647d8
+  languageName: node
+  linkType: hard
+
+"simple-statistics@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "simple-statistics@npm:7.3.0"
+  checksum: f2c865bd9959b8424562467a0fab67607903d89413bbce3193f4885f001e0f4b275fab9e7c8420456db28b43f6548604c440a2d2e94c1d88186068e0709d69cf
   languageName: node
   linkType: hard
 
