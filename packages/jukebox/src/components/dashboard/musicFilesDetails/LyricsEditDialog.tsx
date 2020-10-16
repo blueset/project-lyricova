@@ -22,6 +22,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
 import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
+import EditTranslations from "./lyrics/EditTranslations";
 
 const useStyles = makeStyles(() => ({
   content: {
@@ -114,7 +115,8 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
               <Tab label="Edit" value="edit" />
               <Tab label="Edit Plain" value="editLrc" />
               <Tab label="Tagging" value="tagging" />
-              <Tab label="Inline" value="inline" />
+              <Tab label="Translation" value="translation" />
+              <Tab label="Furigana" value="furigana" />
             </Tabs>
             <IconButton color="inherit" onClick={handleClose} aria-label="close">
               <CloseIcon />
@@ -137,7 +139,12 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
           <TabPanel value="tagging">
             <TaggingLyrics lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
           </TabPanel>
-          <TabPanel value="inline">Inline</TabPanel>
+          <TabPanel value="translation">
+            <EditTranslations lyrics={lrcx} setLyrics={setLrcx} />
+          </TabPanel>
+          <TabPanel value="furigana">
+            generate and/or edit furigana
+          </TabPanel>
         </DialogContent>
       </TabContext>
       <DialogActions>

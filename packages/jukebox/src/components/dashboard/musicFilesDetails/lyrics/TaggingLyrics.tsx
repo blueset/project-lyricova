@@ -22,6 +22,7 @@ import _ from "lodash";
 import { buildTimeTag, resolveTimeTag } from "lyrics-kit/build/main/utils/regexPattern";
 import { linearRegression } from "simple-statistics";
 import clsx from "clsx";
+import DismissibleAlert from "../../DismissibleAlert";
 
 type LinesPerTag = [number, string[]][];
 
@@ -44,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
       marginBottom: 0,
     }
   },
-  player: {
+  mainControlItem: {
     flexGrow: 1,
   },
   controlElement: {
@@ -203,7 +204,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
     if (playerState.state === "playing") {
       requestAnimationFrame(onFrame);
     }
-  }, []);
+  }, [setCurrentLine]);
 
   useEffect(() => {
     requestAnimationFrame(onFrame);
@@ -374,13 +375,16 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
     return (): void => {
       document.removeEventListener("keydown", listener);
     };
-  }, [linesPerTag, moveCursor, setLinesPerTag, setPlaybackRate]);
+  }, [linesPerTag, moveCursor, setCurrentLine, setExtrapolateTags, setLinesPerTag, setPlaybackRate]);
 
   return <>
     <div>
       <div className={styles.controls}>
         <div className={styles.controlsRow}>
-          <audio ref={playerRef} src={`/api/files/${fileId}/file`} controls className={styles.player} />
+          <DismissibleAlert severity="warning" collapseProps={{className: styles.mainControlItem}}>Switch to another tab to save changes.</DismissibleAlert>
+        </div>
+        <div className={styles.controlsRow}>
+          <audio ref={playerRef} src={`/api/files/${fileId}/file`} controls className={styles.mainControlItem} />
           <Typography variant="body1" className={clsx(styles.controlElement, styles.tabularNumbers)}>@{playbackRate.toFixed(2)}x</Typography>
           <FormControlLabel
             control={
