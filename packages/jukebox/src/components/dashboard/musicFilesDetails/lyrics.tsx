@@ -37,8 +37,7 @@ interface Props {
 export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, title, artists, duration, songId }: Props) {
   const [isLyricsEditDialogOpen, toggleLyricsEditDialogOpen] = useNamedState(false, "isLyricsEditDialogOpen");
   const handleOpenLyricsEditDialog = useCallback(() => {
-
-    toggleLyricsEditDialogOpen(true)
+    toggleLyricsEditDialogOpen(true);
   }, [toggleLyricsEditDialogOpen]);
 
   const styles = useStyle();
@@ -103,7 +102,8 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
         fileId={fileId}
         isOpen={isLyricsEditDialogOpen}
         toggleOpen={toggleLyricsEditDialogOpen}
-        initialLyrics={effectiveLyricsText}
+        initialLrc={lrcLyrics}
+        initialLrcx={lrcxLyrics}
         title={title}
         artists={artists}
         duration={duration}

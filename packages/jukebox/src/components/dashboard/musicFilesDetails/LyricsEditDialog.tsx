@@ -21,6 +21,7 @@ import SearchLyrics from "./lyrics/SearchLyrics";
 import { makeStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
 import TaggingLyrics from "./lyrics/TaggingLyrics";
+import EditPlainLyrics from "./lyrics/EditPlainLyrics";
 
 const useStyles = makeStyles(() => ({
   content: {
@@ -49,7 +50,8 @@ function PreviewPanel({ lyricsString, fileId }: {
 }
 
 interface Props {
-  initialLyrics?: string;
+  initialLrc?: string;
+  initialLrcx?: string;
   refresh: () => void;
   fileId: number;
   isOpen: boolean;
@@ -61,15 +63,19 @@ interface Props {
   songId?: number;
 }
 
-export default function LyricsEditDialog({ initialLyrics, refresh, fileId, isOpen, toggleOpen, title, artists, duration, songId }: Props) {
+export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fileId, isOpen, toggleOpen, title, artists, duration, songId }: Props) {
 
-  const [lyrics, setLyrics] = useNamedState(initialLyrics || "", "lyrics");
+  const [lrc, setLrc] = useNamedState(initialLrc || "", "lrc");
+  const [lrcx, setLrcx] = useNamedState(initialLrcx || "", "lrcx");
   const styles = useStyles();
+
+  const effectiveLyrics = lrcx || lrc;
 
   const [submitting, toggleSubmitting] = useNamedState(false, "submitting");
   useEffect(() => {
-    setLyrics(initialLyrics);
-  }, [initialLyrics, setLyrics, isOpen]);
+    setLrc(initialLrc);
+    setLrcx(initialLrcx || initialLrc);
+  }, [isOpen, initialLrc, initialLrcx, setLrc, setLrcx]);
 
   // Tab status
   const [tabIndex, setTabIndex] = useNamedState("preview", "tabIndex");
@@ -79,8 +85,9 @@ export default function LyricsEditDialog({ initialLyrics, refresh, fileId, isOpe
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
-    setLyrics("");
-  }, [toggleOpen, setLyrics]);
+    setLrc("");
+    setLrcx("");
+  }, [toggleOpen, setLrc, setLrcx]);
 
   const handleSubmit = useCallback(() => {
     // toggleOpen(false);
@@ -105,6 +112,7 @@ export default function LyricsEditDialog({ initialLyrics, refresh, fileId, isOpe
               <Tab label="Preview" value="preview" />
               <Tab label="Download" value="download" />
               <Tab label="Edit" value="edit" />
+              <Tab label="Edit Plain" value="editLrc" />
               <Tab label="Tagging" value="tagging" />
               <Tab label="Inline" value="inline" />
             </Tabs>
@@ -115,16 +123,19 @@ export default function LyricsEditDialog({ initialLyrics, refresh, fileId, isOpe
         </AppBar>
         <DialogContent dividers className={styles.content}>
           <TabPanel value="preview">
-            <PreviewPanel lyricsString={lyrics} fileId={fileId} />
+            <PreviewPanel lyricsString={effectiveLyrics} fileId={fileId} />
           </TabPanel>
           <TabPanel value="download">
             <SearchLyrics title={title} artists={artists} duration={duration} />
           </TabPanel>
           <TabPanel value="edit">
-            <EditLyrics lyrics={lyrics} setLyrics={setLyrics} songId={songId} title={title} />
+            <EditLyrics lyrics={lrcx} setLyrics={setLrcx} songId={songId} title={title} />
+          </TabPanel>
+          <TabPanel value="editLrc">
+            <EditPlainLyrics lyrics={lrc} lrcx={lrcx} setLyrics={setLrc} />
           </TabPanel>
           <TabPanel value="tagging">
-            <TaggingLyrics lyrics={lyrics} setLyrics={setLyrics} fileId={fileId} />
+            <TaggingLyrics lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
           </TabPanel>
           <TabPanel value="inline">Inline</TabPanel>
         </DialogContent>
