@@ -39,6 +39,7 @@ export function distance(
 /** similarity(s1: string, s2: string) */
 export function similarity(s1: string, s2: string): number {
     const len = Math.min(s1.length, s2.length);
+    if (len === 0) return 0;
     const diff = Math.min(
         distance(s1, s2, {insertionCost: 0}),
         distance(s1, s2, {deletionCost: 0}),
@@ -49,6 +50,7 @@ export function similarity(s1: string, s2: string): number {
 /** similarity(s1: string, in s2: string) */
 export function similarityIn(s1: string, s2: string): number {
     const len = Math.min(s1.length, s2.length);
+    if (len === 0) return 0;
     const diff = distance(s1, s2, { insertionCost: 0 });
     return (len - diff) / len;
 }

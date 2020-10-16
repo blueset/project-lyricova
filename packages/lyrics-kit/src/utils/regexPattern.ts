@@ -18,6 +18,21 @@ export function resolveTimeTag(str: string): number[] {
     return results;
 }
 
+/**
+ * Build a time tag from a timestamp.
+ * @param position Number of seconds.
+ * @returns time tag without bracket.
+ * @example
+ * buildTimeTag(1.25); // returns "00:01.250"
+ * buildTimeTag(121.9423); // returns "02:01.942"
+ */
+export function buildTimeTag(position: number): string {
+    const
+      min = Math.floor(position / 60),
+      sec = position - min * 60;
+    return `${min.toString().padStart(2, "0")}:${sec.toFixed(3).padStart(6, "0")}`;
+}
+
 export const id3TagRegex = /^(?!\[[+-]?\d+:\d+(?:\.\d+)?\])\[(.+?):(.+)\]$/gm;
 
 export const lyricsLineRegex = /^(\[[+-]?\d+:\d+(?:\.\d+)?\])+(?!\[)([^\n\r]*?)(?:【([^【】]*)】)?$/gm;
