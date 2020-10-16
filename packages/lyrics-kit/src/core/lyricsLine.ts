@@ -2,6 +2,18 @@ import { Lyrics } from "./lyrics";
 import { Attachments, FURIGANA } from "./lyricsLineAttachment";
 import { buildTimeTag } from "../utils/regexPattern";
 
+export interface ToLegacyStringOptions {
+    before?: string;
+    after?: string;
+    useFurigana?: boolean;
+}
+
+const DefaultToLegacyStringOptions = {
+    before: " / ",
+    after: "",
+    useFurigana: true,
+};
+
 export class LyricsLine {
     public content: string;
     public position: number;
@@ -34,7 +46,8 @@ export class LyricsLine {
             ...Object.entries(this.attachments.content).map((v) => `[${v[0].toString()}]${v[1].toString()}`)
         ].map((v) => `[${this.timeTag.toString()}]${v}`).join("\n");
     }
-    public toLegacyString(before = " / ", after = ""): string {
+    public toLegacyString(options: ToLegacyStringOptions = {}): string {
+        const {before, after, useFurigana} = Object.assign({}, DefaultToLegacyStringOptions, options);
         let translation = this.attachments.translation();
         if (translation) {
             translation = `${before}${translation}${after}`;
@@ -44,7 +57,7 @@ export class LyricsLine {
 
         // Apply furigana
         let content = "";
-        if (this?.attachments?.content?.[FURIGANA]) {
+        if (useFurigana && this?.attachments?.content?.[FURIGANA]) {
             const base = this.content;
             let lastIndex = 0;
             for (const label of this.attachments.content[FURIGANA].attachment) {
