@@ -62,13 +62,13 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
             const downloadLink = $("a[href*=download]").attr("href");
             let lyricsText = "";
             
-            const lyricsRequest = await axios.get(downloadLink, {
+            const lyricsRequest = await axios.get<string>(downloadLink, {
                 baseURL: LYRICS_URL,
                 headers: {
                     "Cookie": response.headers["set-cookie"][0].split(";")[0]
                 }
             });
-            if (lyricsRequest.data !== "This URL is invalid or has expired.") {
+            if (lyricsRequest.data.trim() !== "This URL is invalid or has expired.") {
                 lyricsText = lyricsRequest.data;
             }
             if (!lyricsText) {

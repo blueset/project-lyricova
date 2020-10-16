@@ -63,7 +63,7 @@ class TTPodXtrcLyrics extends Lyrics {
                     dt += timeTag;
                     timetagAttachment.tags.push(new WordTimeTagLabel(dt, lineContent.length));
                 }
-                const att = new Attachments({ TIME_TAG: timetagAttachment });
+                const att = new Attachments({ [TIME_TAG]: timetagAttachment });
                 line = new LyricsLine(lineContent, 0, att);
             }
             

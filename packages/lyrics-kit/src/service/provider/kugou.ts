@@ -81,7 +81,7 @@ class KugouKRCLyrics extends Lyrics {
                 }
             }
 
-            const att = new Attachments({ TIME_TAG: attachment });
+            const att = new Attachments({ [TIME_TAG]: attachment });
             const line = new LyricsLine(lineContent, timeTag, att);
             line.lyrics = this;
             lines.push(line);
