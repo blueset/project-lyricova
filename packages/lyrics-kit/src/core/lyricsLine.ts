@@ -1,5 +1,6 @@
 import { Lyrics } from "./lyrics";
 import { Attachments, FURIGANA } from "./lyricsLineAttachment";
+import { buildTimeTag } from "../utils/regexPattern";
 
 export class LyricsLine {
     public content: string;
@@ -10,10 +11,7 @@ export class LyricsLine {
     public lyrics?: Lyrics;
 
     public get timeTag(): string {
-        const 
-            min = Math.floor(this.position / 60), 
-            sec = this.position - min * 60;
-        return `${min.toString().padStart(2, "0")}:${sec.toFixed(3).padStart(6, "0")}`;
+        return buildTimeTag(this.position);
     }
 
     constructor(content: string, position: number, attachments: Attachments = new Attachments()) {

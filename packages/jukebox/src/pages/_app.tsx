@@ -8,6 +8,7 @@ import { ApolloProvider } from "@apollo/client";
 import apolloClient from "../frontendUtils/apollo";
 import { NextComponentType } from "next";
 import { getLayout as getPlainLayout } from "../components/public/layouts/PlainLayout";
+import { polyfill } from "seamless-scroll-polyfill";
 
 type AppPropsExtension = AppProps & {
   Component: NextComponentType & {
@@ -19,6 +20,7 @@ type AppPropsExtension = AppProps & {
 export default function MyApp({ Component, pageProps }: AppPropsExtension) {
 
   React.useEffect(() => {
+    polyfill();
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector("#jss-server-side");
     if (jssStyles) {

@@ -14804,6 +14804,7 @@ fsevents@^1.2.7:
     react-window: ^1.8.5
     reflect-metadata: ^0.1.13
     sass: ^1.26.10
+    seamless-scroll-polyfill: ^1.2.3
     sequelize: 6.1.1
     sequelize-typescript: 2.0.0-beta.0
     shortid: ^2.2.15
@@ -19649,6 +19650,13 @@ fsevents@^1.2.7:
     js-base64: ^2.1.8
     source-map: ^0.4.2
   checksum: c7765c38cdc8835d9733b6e230e87caee075d43b96284b8637c1ef531c3384f8454d78ecf6be6954b92ed1bd65299e3232ff510f1f62b9ddb0174e2dceb85f01
+  languageName: node
+  linkType: hard
+
+"seamless-scroll-polyfill@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "seamless-scroll-polyfill@npm:1.2.3"
+  checksum: 1853f0b1ea0e102041cd82e11ef6c7f0fae00b6e768c586d8ea8e6288ffb90682a50670877c3485a9f04a306b49c6d83b0a5c571d370d59f34f167391d5c7e2f
   languageName: node
   linkType: hard
 

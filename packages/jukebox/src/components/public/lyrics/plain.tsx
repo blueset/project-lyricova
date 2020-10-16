@@ -51,24 +51,20 @@ export function PlainLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
   const styles = useStyle();
-  const container = useRef<HTMLDivElement>();
   const currentLine = useRef<HTMLDivElement>();
 
   useEffect(() => {
-    const cont = container.current, curLine = currentLine.current;
+    const curLine = currentLine.current;
     const lines = lyrics.lines;
     const animate = lines && line !== null &&
       ((line + 1 > lines.length) || (!lines[line + 1]) ||
         (lines[line + 1].position - lines[line].position >= ANIMATION_THRESHOLD));
-    if (cont && curLine) {
-      cont.scrollTo({
-        top: curLine.offsetTop - cont.offsetHeight / 2 + curLine.offsetHeight / 2,
-        behavior: animate ? "smooth" : "auto",
-      });
+    if (curLine) {
+      curLine.scrollIntoView({ block: "center", behavior: animate ? "smooth" : "auto" });
     }
-  }, [container, currentLine, line]);
+  }, [currentLine, line, lyrics.lines]);
 
-  return <div className={styles.container} ref={container}>
+  return <div className={styles.container}>
     <div className={styles.filler} />
     {lyrics.lines.map((v, idx) => {
       return (

@@ -111,6 +111,7 @@
     "react-window": "^1.8.5",
     "reflect-metadata": "^0.1.13",
     "sass": "^1.26.10",
+    "seamless-scroll-polyfill": "^1.2.3",
     "sequelize": "6.1.1",
     "sequelize-typescript": "2.0.0-beta.0",
     "shortid": "^2.2.15",
