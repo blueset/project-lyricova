@@ -25,14 +25,6 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     }
   }, [lyrics, snackbar]);
 
-  const mainLyrics = useMemo(() => {
-    if (parsedLyrics) {
-      return parsedLyrics.lines.map(v => v.content || "");
-    } else {
-      return [];
-    }
-  }, [parsedLyrics]);
-
   const [translatedLines, setTranslatedLines] = useNamedState<(string | null)[]>([], "translatedLines");
   const translatedLinesRef = useRef<(string | null)[]>();
   translatedLinesRef.current = translatedLines;

@@ -228,9 +228,8 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
         <TextField
           className={clsx(styles.textField, styles.durationField)}
           variant="outlined"
-          disabled
           margin="dense"
-          InputProps={{ endAdornment: <InputAdornment position="end">sec</InputAdornment> }}
+          InputProps={{ endAdornment: <InputAdornment position="end">sec</InputAdornment>, readOnly: true }}
           name="duration" type="number" label="Duration"
         />
         <Button

@@ -195,7 +195,7 @@ export function Karaoke1Lyrics({ lyrics, cover }: Props) {
 
   let lineElement = null;
   if (currentFrame !== null) {
-    const animate = endTime - currentFrame.start >= ANIMATION_THRESHOLD;
+    const animate = endTime - (currentFrame?.start ?? 0) >= ANIMATION_THRESHOLD;
     lineElement = (<LyricsLineElement
       className={styles.line}
       theme={cover ? "cover" : "underline"}

@@ -23,6 +23,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
 import EditTranslations from "./lyrics/EditTranslations";
+import EditFurigana from "./lyrics/EditFurigana";
 
 const useStyles = makeStyles(() => ({
   content: {
@@ -143,7 +144,7 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
             <EditTranslations lyrics={lrcx} setLyrics={setLrcx} />
           </TabPanel>
           <TabPanel value="furigana">
-            generate and/or edit furigana
+            <EditFurigana lyrics={lrcx} setLyrics={setLrcx} />
           </TabPanel>
         </DialogContent>
       </TabContext>
