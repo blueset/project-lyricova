@@ -520,6 +520,35 @@ export class MusicFileResolver {
   }
 
   @Authorized("ADMIN")
+  @Mutation(returns => Boolean, { description: "Remove lyrics of a file" })
+  public async removeLyrics(
+    @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
+  ): Promise<boolean> {
+    const file = await MusicFile.findByPk(fileId);
+    if (file === null) return false;
+    const filePath = file.fullPath;
+    const lrcPath = swapExt(filePath, "lrc");
+    const lrcxPath = swapExt(filePath, "lrcx");
+
+    try {
+      // Delete lyrics files
+      fs.unlinkSync(lrcPath);
+      fs.unlinkSync(lrcxPath);
+
+      // Clear metadata tags
+      const outcome = await this.writeLyricsToMusicFile(fileId, "");
+      if (!outcome) return false;
+
+      await file.update({ hasLyrics: false });
+    } catch (e) {
+      console.error("Error while writing lyrics file:", e);
+      return false;
+    }
+
+    return true;
+  }
+
+  @Authorized("ADMIN")
   @Mutation(returns => MusicFile, { description: "Set which playlist a file belong to, this replaces existing values." })
   public async setPlaylistsOfSong(
     @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,

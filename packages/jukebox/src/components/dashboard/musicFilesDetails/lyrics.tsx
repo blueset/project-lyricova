@@ -9,6 +9,13 @@ import { useSnackbar } from "notistack";
 import { Lyrics } from "lyrics-kit";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import LyricsEditDialog from "./LyricsEditDialog";
+import { gql, useApolloClient } from "@apollo/client";
+
+const REMOVE_LYRICS_MUTATION = gql`
+  mutation($fileId: Int!) {
+    removeLyrics(fileId: $fileId)
+  }
+`;
 
 const useStyle = makeStyles((theme) => ({
   player: {
@@ -35,16 +42,37 @@ interface Props {
 }
 
 export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, title, artists, duration, songId }: Props) {
+  const styles = useStyle();
+  const snackbar = useSnackbar();
+  const apolloClient = useApolloClient();
+  dayjs.extend(utc);
+
   const [isLyricsEditDialogOpen, toggleLyricsEditDialogOpen] = useNamedState(false, "isLyricsEditDialogOpen");
+
   const handleOpenLyricsEditDialog = useCallback(() => {
     toggleLyricsEditDialogOpen(true);
   }, [toggleLyricsEditDialogOpen]);
 
-  const styles = useStyle();
-  dayjs.extend(utc);
+  const handleRemoveLyrics = useCallback(async () => {
+    try {
+      const result = await apolloClient.mutate<{removeLyrics: boolean}>({
+        mutation: REMOVE_LYRICS_MUTATION,
+        variables: {fileId},
+      });
+      if (result) {
+        snackbar.enqueueSnackbar(`Lyrics removed for ${title}.`, {variant: "success"});
+        refresh();
+      } else {
+        snackbar.enqueueSnackbar(`Lyrics not removed for ${title}.`, {variant: "error"});
+      }
+    } catch (e) {
+      console.error("Lyrics removal failed", e);
+      snackbar.enqueueSnackbar(`Lyrics not removed for ${title}: ${e}`, {variant: "error"});
+    }
+  }, [apolloClient, fileId, refresh, snackbar, title]);
 
   const effectiveLyricsText = lrcxLyrics || lrcLyrics || null;
-  const snackbar = useSnackbar();
+
   const lyrics = useMemo(() => {
     if (!effectiveLyricsText) return null;
     try {
@@ -96,6 +124,7 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
           </section>
           <Typography variant="h6" component="h3">What to do?</Typography>
           <Button className={styles.button} variant="outlined" onClick={handleOpenLyricsEditDialog}>Adjust</Button>
+          <Button className={styles.button} variant="outlined" color="primary" onClick={handleRemoveLyrics}>Remove</Button>
         </Grid>
       </Grid>
       <LyricsEditDialog

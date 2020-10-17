@@ -128,6 +128,7 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
     }
     try {
       await Promise.all(promises);
+      snackbar.enqueueSnackbar("Lyrics saved.", {variant: "success"});
       handleClose();
       refresh();
     } catch (e) {
