@@ -50,6 +50,7 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
     try {
       return new Lyrics(effectiveLyricsText);
     } catch (e) {
+      console.error("Error while parsing lyrics", e);
       snackbar.enqueueSnackbar(`Error while parsing lyrics: ${e}`, { variant: "error" });
       return null;
     }

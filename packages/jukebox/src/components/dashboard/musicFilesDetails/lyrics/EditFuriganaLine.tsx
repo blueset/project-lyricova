@@ -144,17 +144,13 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
     ;
 
     if (show) {
-      // TODO: Show the window
       const rect = selection.getRangeAt(0).getBoundingClientRect();
       const id = parseInt(selection.anchorNode.parentElement.dataset.index);
       const
         start = Math.min(selection.anchorOffset, selection.focusOffset),
         end = Math.max(selection.anchorOffset, selection.focusOffset);
-      console.log(`Show window for ${selection.toString()} of elm #${id} from ${start} to ${end} at top ${rect.top} and left ${rect.left}`);
       setFloatingWindow({ nodeIdx: id, start, end, top: rect.top + rect.height, left: rect.left });
     } else {
-      // TODO: Hide the window
-      console.log("Hide window.");
       setFloatingWindow(null);
       setFloatingWindowInput("");
     }

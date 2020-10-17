@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme) => ({
     top: theme.spacing(2),
     left: 0,
     height: "fit-content",
+    zIndex: 2,
   },
   row: {
     margin: theme.spacing(2, 0),
@@ -48,7 +49,7 @@ export default function EditFurigana({ lyrics, setLyrics }: Props) {
     try {
       return new Lyrics(lyrics);
     } catch (e) {
-      console.error(`Error occurred while loading lyrics text: ${e}`);
+      console.error(`Error occurred while loading lyrics text: ${e}`, e);
       snackbar.enqueueSnackbar(`Error occurred while loading lyrics text: ${e}`, { variant: "error" });
       return null;
     }
@@ -114,7 +115,14 @@ export default function EditFurigana({ lyrics, setLyrics }: Props) {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12}>
+      <Grid item xs={12} sm={6} className={styles.sidePanel}>
+        <div className={styles.row}>
+          <Button variant="outlined" onClick={overrideFurigana}>Override with generated furigana</Button>
+        </div>
+        <div className={styles.row}>
+          {selectedLine != null && selectedLine < lines.length &&
+          <EditFuriganaLine line={lines[selectedLine]} setLine={saveCurrentLine(selectedLine)} />}
+        </div>
       </Grid>
       <Grid item xs={12} sm={6}>
         <List dense>
@@ -126,15 +134,6 @@ export default function EditFurigana({ lyrics, setLyrics }: Props) {
             </ListItem>
           )}
         </List>
-      </Grid>
-      <Grid item xs={12} sm={6} className={styles.sidePanel}>
-        <div className={styles.row}>
-          <Button variant="outlined" onClick={overrideFurigana}>Override with generated furigana</Button>
-        </div>
-        <div className={styles.row}>
-          {selectedLine != null && selectedLine < lines.length &&
-          <EditFuriganaLine line={lines[selectedLine]} setLine={saveCurrentLine(selectedLine)} />}
-        </div>
       </Grid>
     </Grid>
   );

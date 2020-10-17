@@ -19,7 +19,7 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     try {
       return new Lyrics(lyrics);
     } catch (e) {
-      console.error(`Error while loading lyrics text: ${e}`);
+      console.error(`Error while loading lyrics text: ${e}`, e);
       snackbar.enqueueSnackbar(`Error while loading lyrics text: ${e}`, { variant: "error" });
       return null;
     }

@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  Divider,
   IconButton,
   Tab,
   Tabs, Toolbar
@@ -14,7 +13,6 @@ import { useNamedState } from "../../../frontendUtils/hooks";
 import { TabContext, TabPanel } from "@material-ui/lab";
 import LyricsPreview from "./LyricsPreview";
 import { Lyrics } from "lyrics-kit";
-import lyrics from "./lyrics";
 import { useSnackbar } from "notistack";
 import EditLyrics from "./lyrics/EditLyrics";
 import SearchLyrics from "./lyrics/SearchLyrics";
@@ -24,6 +22,19 @@ import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
 import EditTranslations from "./lyrics/EditTranslations";
 import EditFurigana from "./lyrics/EditFurigana";
+import { gql, useApolloClient } from "@apollo/client";
+
+const WRITE_LYRICS_MUTATION = gql`
+  mutation($fileId: Int!, $lyrics: String!, $ext: String!) {
+    writeLyrics(fileId: $fileId, lyrics: $lyrics, ext: $ext)
+  } 
+`;
+
+const WRITE_LYRICS_TO_FILE_MUTATION = gql`
+  mutation($fileId: Int!, $lyrics: String!) {
+    writeLyricsToMusicFile(fileId: $fileId, lyrics: $lyrics)
+  } 
+`;
 
 const useStyles = makeStyles(() => ({
   content: {
@@ -40,10 +51,11 @@ function PreviewPanel({ lyricsString, fileId }: {
 }) {
   const snackbar = useSnackbar();
   const lyricsObj = useMemo(() => {
-    if (!lyrics) return null;
+    if (!lyricsString) return null;
     try {
       return new Lyrics(lyricsString);
     } catch (e) {
+      console.error("Error while parsing lyrics", e);
       snackbar.enqueueSnackbar(`Error while parsing lyrics: ${e}`, { variant: "error" });
       return null;
     }
@@ -70,6 +82,8 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
   const [lrc, setLrc] = useNamedState(initialLrc || "", "lrc");
   const [lrcx, setLrcx] = useNamedState(initialLrcx || "", "lrcx");
   const styles = useStyles();
+  const apolloClient = useApolloClient();
+  const snackbar = useSnackbar();
 
   const effectiveLyrics = lrcx || lrc;
 
@@ -91,11 +105,37 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
     setLrcx("");
   }, [toggleOpen, setLrc, setLrcx]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     // toggleOpen(false);
     toggleSubmitting(true);
+    const promises = [];
+    if (lrc) {
+      promises.push(apolloClient.mutate<{writeLyrics: boolean}>({
+        mutation: WRITE_LYRICS_MUTATION,
+        variables: {fileId, lyrics: lrc, ext: "lrc"},
+      }));
+      const tagsStripped = lrc.replace(/^(\[[0-9:.]+\])/gm, "");
+      promises.push(apolloClient.mutate<{writeLyrics: boolean}>({
+        mutation: WRITE_LYRICS_TO_FILE_MUTATION,
+        variables: {fileId, lyrics: tagsStripped},
+      }));
+    }
+    if (lrcx && lrcx !== lrc) {
+      promises.push(apolloClient.mutate<{writeLyrics: boolean}>({
+        mutation: WRITE_LYRICS_MUTATION,
+        variables: {fileId, lyrics: lrcx, ext: "lrcx"},
+      }));
+    }
+    try {
+      await Promise.all(promises);
+      handleClose();
+      refresh();
+    } catch (e) {
+      console.error(`Error occurred while saving: ${e}`, e);
+      snackbar.enqueueSnackbar(`Error occurred while saving: ${e}`, { variant: "error" });
+    }
     toggleSubmitting(false);
-  }, [toggleSubmitting]);
+  }, [apolloClient, fileId, handleClose, lrc, lrcx, refresh, snackbar, toggleSubmitting]);
 
   return (
     <Dialog open={isOpen} onClose={handleClose} fullScreen maxWidth={false} scroll="paper"

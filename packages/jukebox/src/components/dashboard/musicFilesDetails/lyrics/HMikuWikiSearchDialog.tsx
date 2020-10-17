@@ -97,7 +97,7 @@ export default function HMikuWikiSearchDialog({ isOpen, toggleOpen, keyword }: P
                   setSearchResults([]);
               } catch (e) {
                 setSearchResults([]);
-                console.error(`Error while loading search result; ${e}`);
+                console.error(`Error while loading search result; ${e}`, e);
                 snackbar.enqueueSnackbar(`Failed to load search results: ${e}`, { variant: "error" });
               }
             }}
