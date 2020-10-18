@@ -66,7 +66,7 @@ function PreviewPanel({ lyricsString, fileId }: {
 interface Props {
   initialLrc?: string;
   initialLrcx?: string;
-  refresh: () => void;
+  refresh: () => unknown | Promise<unknown>;
   fileId: number;
   isOpen: boolean;
   toggleOpen: (value: boolean) => void;
@@ -130,7 +130,7 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
       await Promise.all(promises);
       snackbar.enqueueSnackbar("Lyrics saved.", {variant: "success"});
       handleClose();
-      refresh();
+      await refresh();
     } catch (e) {
       console.error(`Error occurred while saving: ${e}`, e);
       snackbar.enqueueSnackbar(`Error occurred while saving: ${e}`, { variant: "error" });

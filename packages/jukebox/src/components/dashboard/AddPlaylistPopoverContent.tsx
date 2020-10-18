@@ -27,7 +27,7 @@ interface FormValues {
 }
 
 interface Props {
-  refresh: () => void;
+  refresh: () => unknown | Promise<unknown>;
   dismiss: () => void;
 }
 
@@ -60,7 +60,7 @@ export default function AddPlaylistPopoverContent({ refresh, dismiss }: Props) {
             mutation: NEW_PLAYLIST_MUTATION,
             variables: values
           });
-          refresh();
+          await refresh();
           dismiss();
         } catch (e) {
           console.error("Error occurred while creating playlist:", e);

@@ -61,7 +61,7 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
       });
       if (result) {
         snackbar.enqueueSnackbar(`Lyrics removed for ${title}.`, {variant: "success"});
-        refresh();
+        await refresh();
       } else {
         snackbar.enqueueSnackbar(`Lyrics not removed for ${title}.`, {variant: "error"});
       }

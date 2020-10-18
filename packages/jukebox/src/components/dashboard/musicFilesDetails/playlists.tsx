@@ -52,7 +52,7 @@ const SET_PLAYLISTS_MUTATION = gql`
 interface Props {
   fileId: number;
   playlists: Playlist[];
-  refresh: () => void;
+  refresh: () => unknown | Promise<unknown>;
 }
 
 export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
@@ -76,7 +76,7 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
       if (result.data) {
         setCheckedPlaylists(result.data.setPlaylistsOfFile.playlists.map(v => v.slug));
         snackbar.enqueueSnackbar("Playlists saved", { variant: "success" });
-        refresh();
+        await refresh();
       }
     } catch (e) {
       console.error("Error occurred while updating playlists", e);

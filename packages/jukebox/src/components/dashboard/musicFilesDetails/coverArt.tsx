@@ -154,7 +154,7 @@ export default function CoverArtPanel({
 
       if (result.status === 200) {
         snackBar.enqueueSnackbar("Cover image updated.", { variant: "success" });
-        refresh();
+        await refresh();
         setCacheBustingToken(new Date().getTime());
         toggleSubmitting(false);
       } else {
