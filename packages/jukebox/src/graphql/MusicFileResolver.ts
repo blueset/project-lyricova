@@ -505,7 +505,7 @@ export class MusicFileResolver {
         };
 
         // Write ID3-Frame into (.mp3) file, returns true or error object
-        const result = NodeID3.update(tags, file.path);
+        const result = NodeID3.update(tags, file.fullPath);
         if (result !== true) {
           throw result;
         }
@@ -550,7 +550,7 @@ export class MusicFileResolver {
 
   @Authorized("ADMIN")
   @Mutation(returns => MusicFile, { description: "Set which playlist a file belong to, this replaces existing values." })
-  public async setPlaylistsOfSong(
+  public async setPlaylistsOfFile(
     @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
     @Arg("playlistSlugs", () => [String], { description: "Playlists to set" }) playlistSlugs: string[],
   ): Promise<MusicFile> {
