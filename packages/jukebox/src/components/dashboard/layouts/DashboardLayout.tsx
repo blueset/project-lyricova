@@ -27,6 +27,7 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import QueueMusicIcon from "@material-ui/icons/QueueMusic";
 import CachedIcon from "@material-ui/icons/Cached";
+import GetAppIcon from "@material-ui/icons/GetApp";
 import clsx from "clsx";
 import {useNamedState} from "../../../frontendUtils/hooks";
 import {AuthContext, AuthContextConsumer} from "../../public/AuthContext";
@@ -184,12 +185,16 @@ export default function DashboardLayout({title, children}: Props) {
       </List>
       <Divider/>
       <List>
-        <ListSubheader inset>Sections</ListSubheader>
+        <ListSubheader inset>Databank</ListSubheader>
         <NavMenuItem text="Review" href="/dashboard/review" activeCriteria={v => v.startsWith("/dashboard/review")} icon={<RateReviewIcon/>}/>
         <NavMenuItem text="Music files" href="/dashboard/musicFiles" icon={<FileCopyIcon/>}/>
         <NavMenuItem text="Music entries" href="/dashboard/entries" icon={<MusicNoteIcon/>}/>
         <NavMenuItem text="Playlists" href="/dashboard/playlists" icon={<QueueMusicIcon/>}/>
         <NavMenuItem text="Scan" href="/dashboard/scan" icon={<CachedIcon/>}/>
+      </List><Divider/>
+      <List>
+        <ListSubheader inset>Files</ListSubheader>
+        <NavMenuItem text="Download" href="/dashboard/download" icon={<GetAppIcon/>}/>
       </List>
       <div className={styles.filler}/>
       <List dense>

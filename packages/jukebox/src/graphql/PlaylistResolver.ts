@@ -1,4 +1,4 @@
-import { Resolver, Query, FieldResolver, Root, Arg, Mutation, InputType, Field } from "type-graphql";
+import { Resolver, Query, FieldResolver, Root, Arg, Mutation, InputType, Field, Int } from "type-graphql";
 import { Playlist } from "../models/Playlist";
 import { MusicFile } from "../models/MusicFile";
 import { UserInputError } from "apollo-server-express";
@@ -60,5 +60,10 @@ export class PlaylistResolver {
   @FieldResolver(type => [MusicFile])
   public async files(@Root() playlist: Playlist): Promise<MusicFile[]> {
     return await playlist.$get("files");
+  }
+
+  @FieldResolver(type => Int)
+  public async filesCount(@Root() playlist: Playlist): Promise<number> {
+    return await playlist.$count("files");
   }
 }
