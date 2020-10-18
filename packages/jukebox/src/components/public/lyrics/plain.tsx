@@ -5,6 +5,7 @@ import { makeStyles } from "@material-ui/core";
 import { useRef, useEffect } from "react";
 import clsx from "clsx";
 import BalanceText from "react-balance-text-cj";
+import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -69,7 +70,7 @@ export function PlainLyrics({ lyrics }: Props) {
     {lyrics.lines.map((v, idx) => {
       return (
         <div key={idx} className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}>
-          <BalanceText resize={true}>{v.content}</BalanceText>
+          <BalanceText resize={true}><FuriganaLyricsLine graphQLSourceLine={v} /></BalanceText>
           {v.attachments.translation && (
             <div className="translation"><BalanceText resize={true}>{v.attachments.translation}</BalanceText></div>
           )}

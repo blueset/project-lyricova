@@ -176,7 +176,7 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
     addFurigana(nodeIdx, start, end, floatingWindowInput);
     setFloatingWindow(null);
     setFloatingWindowInput("");
-  }, [addFurigana, floatingWindow, floatingWindowInput]);
+  }, [addFurigana, floatingWindow, floatingWindowInput, setFloatingWindow, setFloatingWindowInput]);
 
   return (
     <div>
