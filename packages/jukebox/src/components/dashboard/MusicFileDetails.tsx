@@ -9,6 +9,7 @@ import InfoPanel from "./musicFilesDetails/info";
 import { SongFragments } from "../../graphql/fragments";
 import CoverArtPanel from "./musicFilesDetails/coverArt";
 import LyricsPanel from "./musicFilesDetails/lyrics";
+import PlaylistsPanel from "./musicFilesDetails/playlists";
 
 const SINGLE_FILE_DATA = gql`
   query($id: Int!) {
@@ -34,6 +35,11 @@ const SINGLE_FILE_DATA = gql`
       
       lrcxLyrics: lyricsText(ext: "lrcx")
       lrcLyrics: lyricsText(ext: "lrc")
+      
+      playlists {
+        slug
+        name
+      }
     }
   }
   
@@ -47,7 +53,7 @@ const useStyle = makeStyles((theme) => ({
 }));
 
 type ExtendedMusicFile =
-  Pick<MusicFile, "id" | "path" | "trackName" | "trackSortOrder" | "artistName" | "artistSortOrder" | "albumName" | "albumSortOrder" | "songId" | "hasCover" | "song" | "album" | "duration">
+  Pick<MusicFile, "id" | "path" | "trackName" | "trackSortOrder" | "artistName" | "artistSortOrder" | "albumName" | "albumSortOrder" | "songId" | "hasCover" | "song" | "album" | "duration" | "playlists">
   & {
   lrcLyrics?: string;
   lrcxLyrics?: string;
@@ -133,7 +139,9 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
             refresh={fileData.refetch}
           />
         </TabPanel>
-        <TabPanel value="playlists">Playlists</TabPanel>
+        <TabPanel value="playlists">
+          <PlaylistsPanel fileId={fileId} playlists={fileData.data?.musicFile.playlists ?? []} refresh={fileData.refetch} />
+        </TabPanel>
       </TabContext>
       <Divider />
       <CardActions>
