@@ -60,12 +60,14 @@ export default function EditFurigana({ lyrics, setLyrics }: Props) {
   const linesRef = useRef<LyricsLine[]>();
   linesRef.current = lines;
   useEffect(() => {
-    if (parsedLyrics !== null) setLines(parsedLyrics.lines);
+    if (parsedLyrics !== null) {
+      setLines(parsedLyrics.lines);
 
-    return () => {
-      parsedLyrics.lines = linesRef.current;
-      setLyrics(parsedLyrics.toString());
-    };
+      return () => {
+        parsedLyrics.lines = linesRef.current;
+        setLyrics(parsedLyrics.toString());
+      };
+    }
   }, [parsedLyrics, setLines, setLyrics]);
 
   // Generate furigana

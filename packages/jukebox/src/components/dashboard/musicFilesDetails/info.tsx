@@ -136,8 +136,9 @@ export default function InfoPanel(
                 variant="outlined"
                 margin="dense"
                 fullWidth
-                disabled
                 label="File path"
+                disabled
+                inputProps={{ readOnly: true }}
                 value={path} />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -280,7 +281,7 @@ export default function InfoPanel(
                           }}
                       >Update artist name</Button>
                       <Field name="albumId">{
-                        ({input: {value: albumId}}) =>
+                        ({ input: { value: albumId } }) =>
                           <Button
                             className={styles.updateButtons}
                             variant="outlined"

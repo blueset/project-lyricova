@@ -2,6 +2,7 @@ import { Button, Menu, createStyles, makeStyles, Theme, MenuItem } from "@materi
 import { useNamedState } from "../../frontendUtils/hooks";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import { useCallback } from "react";
+import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -23,18 +24,14 @@ interface Props<T> {
 export function LyricsSwitchButton<T>({ module, setModule, moduleNames }: Props<T>) {
 
   const styles = useStyles();
-  const [anchorEl, setAnchorEl] = useNamedState<null | HTMLElement>(null, "anchorEl");
-
-  const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  }, []);
+  const popupState = usePopupState({ variant: "popover", popupId: "lyrics-style-menu" });
 
   const handleClose = useCallback((option: T | null = null) => {
     if (option !== null) {
       setModule(option);
     }
-    setAnchorEl(null);
-  }, []);
+    popupState.close();
+  }, [popupState, setModule]);
 
   return (<>
     <Button
@@ -43,16 +40,13 @@ export function LyricsSwitchButton<T>({ module, setModule, moduleNames }: Props<
       color="primary"
       endIcon={<ArrowDropDownIcon />}
       className={styles.menuButton}
-      aria-controls="lyrics-style-menu" aria-haspopup="true" onClick={handleClick}
+      {...bindTrigger(popupState)}
     >
       {module}
     </Button>
     <Menu
       id="lyrics-style-menu"
-      anchorEl={anchorEl}
-      keepMounted
-      open={Boolean(anchorEl)}
-      onClose={() => handleClose()}
+      {...bindMenu(popupState)}
     >
       {moduleNames.map((v) => <MenuItem key={`${v}`} onClick={() => handleClose(v)}>{v}</MenuItem>)}
     </Menu>

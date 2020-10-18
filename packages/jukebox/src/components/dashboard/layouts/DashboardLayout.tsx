@@ -34,6 +34,7 @@ import {useRouter} from "next/router";
 import {NextComposedLink} from "../../Link";
 import Head from "next/head";
 import { SnackbarProvider } from "notistack";
+import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 
 const DRAWER_WIDTH = 240;
 const DASHBOARD_TITLE = "Jukebox Dashboard";
@@ -155,7 +156,7 @@ export default function DashboardLayout({title, children}: Props) {
 
   const defaultDrawerOpen = useMediaQuery<Theme>((theme) => theme.breakpoints.up("sm"));
   const [isDrawerOpen, setDrawerOpen] = useNamedState(defaultDrawerOpen, "isDrawerOpen");
-  const [userMenuAnchorEl, setUserMenuAnchorEl] = useNamedState<HTMLElement>(null, "userMenuAnchorEl");
+  const popupState = usePopupState({ variant: "popover", popupId: "appbar-menu" });
 
   useEffect(() => {
     setDrawerOpen(defaultDrawerOpen);
@@ -165,17 +166,9 @@ export default function DashboardLayout({title, children}: Props) {
     setDrawerOpen(!isDrawerOpen);
   };
 
-  const handleUserMenu = (event: MouseEvent<HTMLElement>) => {
-    setUserMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleUserMenuClose = () => {
-    setUserMenuAnchorEl(null);
-  };
-
   const logOut = async () => {
     await router.push("/logout");
-    handleUserMenuClose();
+    popupState.close();
   };
 
   const drawer = (
@@ -237,16 +230,12 @@ export default function DashboardLayout({title, children}: Props) {
             </Typography>
             <IconButton
               aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleUserMenu}
               color="inherit"
+              {...bindTrigger(popupState)}
             >
               <Avatar alt={userContext.user?.displayName} src={`https://www.gravatar.com/avatar/${userContext.user?.emailMD5}`}/>
             </IconButton>
             <Menu
-              id="menu-appbar"
-              anchorEl={userMenuAnchorEl}
               anchorOrigin={{
                 vertical: "bottom",
                 horizontal: "right",
@@ -257,8 +246,7 @@ export default function DashboardLayout({title, children}: Props) {
                 horizontal: "right",
               }}
               getContentAnchorEl={null}
-              open={Boolean(userMenuAnchorEl)}
-              onClose={handleUserMenuClose}
+              {...bindMenu(popupState)}
             >
               <MenuItem onClick={logOut}>
                 <ListItemText

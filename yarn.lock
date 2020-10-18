@@ -1776,6 +1776,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.1.5":
+  version: 7.12.1
+  resolution: "@babel/runtime@npm:7.12.1"
+  dependencies:
+    regenerator-runtime: ^0.13.4
+  checksum: 979d1c099c386031f96a952ee903e7bc3c60ae6e4eefe2bf49e4224014542d4ac2b1e2fb708031da36501a3842d4442dfdab38ab359ab3f46634b3c7cb5f6c6e
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.10.4, @babel/template@npm:^7.4.0, @babel/template@npm:^7.7.4":
   version: 7.10.4
   resolution: "@babel/template@npm:7.10.4"
@@ -2462,6 +2471,15 @@ __metadata:
     "@types/react":
       optional: true
   checksum: f1be6f4564e1c1ec023885b2bf72e6b5cc1354a929d95dcf10640efcdef3763d877b58c1b84f660eaacad4a21478da62e21aaa20b871b0bc40a41a64037c19a2
+  languageName: node
+  linkType: hard
+
+"@material-ui/types@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "@material-ui/types@npm:4.1.1"
+  dependencies:
+    "@types/react": "*"
+  checksum: b5ee63a8967e2209a24ce3ddde103e54e6dd75b0ffbd35307ac90a32807bc322b50ff781c3add447b547f8a0ae90c06e9c87da8278e5cd31f6a2b6f0a06f46b0
   languageName: node
   linkType: hard
 
@@ -4313,6 +4331,15 @@ __metadata:
   dependencies:
     "@types/react": "*"
   checksum: 53a223c0266178bca9161301d18ee6199e8f75f88caed5c4601c5aaedaf4c68f03bd72f6aafa979254beb20759f0b68a542ce04295d704eb67ae179769c50813
+  languageName: node
+  linkType: hard
+
+"@types/react-final-form-listeners@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@types/react-final-form-listeners@npm:1.0.0"
+  dependencies:
+    "@types/react": "*"
+  checksum: 754c6edbb6df26710f2fc5783ed50046e059ca5e92481f0023d0958f608694bf269bfc08cb6c9a7291aadefe3e7999597ddec5185af479f934c706bcc3b38233
   languageName: node
   linkType: hard
 
@@ -14723,6 +14750,7 @@ fsevents@^1.2.7:
     "@types/pinyin": ^2.8.1
     "@types/react": ^16.9.43
     "@types/react-beautiful-dnd": ^13.0.0
+    "@types/react-final-form-listeners": ^1.0.0
     "@types/react-measure": ^2.0.6
     "@types/react-virtualized-auto-sizer": ^1.0.0
     "@types/react-window": ^1.8.2
@@ -14771,6 +14799,7 @@ fsevents@^1.2.7:
     lusca: ^1.6.1
     lyrics-kit: "workspace:*"
     material-table: ^1.69.0
+    material-ui-popup-state: ^1.7.0
     mecab-async: ^0.1.2
     mime: ^2.4.6
     mui-rff: ^2.5.5
@@ -14798,6 +14827,7 @@ fsevents@^1.2.7:
     react-dropzone: ^11.2.0
     react-final-form: ^6.5.1
     react-final-form-arrays: ^3.1.2
+    react-final-form-listeners: ^1.0.2
     react-measure: ^2.5.0
     react-scenejs: ^1.1.0
     react-virtualized-auto-sizer: ^1.0.2
@@ -14809,6 +14839,7 @@ fsevents@^1.2.7:
     sequelize-typescript: 2.0.0-beta.0
     shortid: ^2.2.15
     simple-statistics: ^7.3.0
+    slugify: ^1.4.5
     split: ^1.0.1
     stream-combiner: ^0.2.2
     stream-filter: ^2.1.0
@@ -15015,6 +15046,20 @@ fsevents@^1.2.7:
     react: ^16.8.4
     react-dom: ^16.8.4
   checksum: 855423ccd639be31a717fd622589a471139164056b1f8d1593744a10a3d403300909480e386a041fafdb75e6ccd4d8f40cd45b134a6797e811dd22c153f277eb
+  languageName: node
+  linkType: hard
+
+"material-ui-popup-state@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "material-ui-popup-state@npm:1.7.0"
+  dependencies:
+    "@babel/runtime": ^7.1.5
+    "@material-ui/types": ^4.1.1
+    classnames: ^2.2.6
+    prop-types: ^15.0.0
+  peerDependencies:
+    react: ^15.0.0 || ^16.0.0
+  checksum: 49b89dc3221ecc7dd01d1997ee7adc43adce079c140d1f9f2eab0ae577580cc1121e45040b2810d3d58801aa716874ff2f633fd63534cf5caf1ff9175cbe570d
   languageName: node
   linkType: hard
 
@@ -17765,7 +17810,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"prop-types@npm:15.7.2, prop-types@npm:^15.5.10, prop-types@npm:^15.6.0, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2":
+"prop-types@npm:15.7.2, prop-types@npm:^15.0.0, prop-types@npm:^15.5.10, prop-types@npm:^15.6.0, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2":
   version: 15.7.2
   resolution: "prop-types@npm:15.7.2"
   dependencies:
@@ -18302,6 +18347,20 @@ fsevents@^1.2.7:
     react: ^16.8.0
     react-final-form: ^6.2.1
   checksum: cf4bd9211998f6baf8bb867c4b3e9c40f72fbb19a819540d05df0d00719cee1e11ce5974ea1660698ec665ecf091102a1036441d124307fdad4105706ca116e7
+  languageName: node
+  linkType: hard
+
+"react-final-form-listeners@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "react-final-form-listeners@npm:1.0.2"
+  dependencies:
+    "@babel/runtime": ^7.1.5
+  peerDependencies:
+    final-form: ">=4.0.0"
+    prop-types: ^15.6.0
+    react: ^15.3.0 || ^16.0.0-0
+    react-final-form: ">=3.0.0"
+  checksum: 273a22314fc0646aec76a8e228efc74bb913bad498d36639bc7fb37d702ac982a22a081b3452d2404ab0a2c4ed0b7b6c377707c12eb16c5e987c9079d846b75d
   languageName: node
   linkType: hard
 
@@ -20060,6 +20119,13 @@ fsevents@^1.2.7:
     astral-regex: ^2.0.0
     is-fullwidth-code-point: ^3.0.0
   checksum: a31bd5c48a4997dcfc9494613cbf38157ae956b05ccdeedf905113e6ff81fd2b7d3b5c3f368e36fe941be28e0031ead4ea39355e9d647915357ce96ce70ace5b
+  languageName: node
+  linkType: hard
+
+"slugify@npm:^1.4.5":
+  version: 1.4.5
+  resolution: "slugify@npm:1.4.5"
+  checksum: d402a9163144e6e5c904a3409383e0c780422fea93d32c023622cc8eaeab34e2ed0e28c69402704038ef771f6f4bb636619b142db6913165fa9f5328229773da
   languageName: node
   linkType: hard
 

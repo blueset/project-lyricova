@@ -32,7 +32,7 @@ export default function VideoThumbnailAdornment({ name }: Props) {
     snackbar.enqueueSnackbar("URL is not from a known site, no thumbnail is converted.", {
       variant: "info",
     });
-  }, [snackbar]);
+  }, [name, setValue, snackbar, value]);
 
 
   return (

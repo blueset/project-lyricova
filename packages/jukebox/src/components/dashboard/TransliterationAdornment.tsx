@@ -3,9 +3,9 @@ import AutorenewIcon from "@material-ui/icons/Autorenew";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import { gql, useApolloClient } from "@apollo/client";
 import { useCallback, MouseEvent } from "react";
-import { useNamedState } from "../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core/styles";
 import { useField, useForm, useFormState } from "react-final-form";
+import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 
 const TRANSLITRATION_QUERY = gql`
   query($text: String!, $language: String) {
@@ -32,19 +32,11 @@ interface Props {
 
 export default function TransliterationAdornment({ sourceName, destinationName }: Props) {
   const apolloClient = useApolloClient();
-  const [menuAnchor, setMenuAnchor] = useNamedState<null | HTMLElement>(null, "menuAnchor");
+  const popupState = usePopupState({ variant: "popover", popupId: "transliteration-menu" });
   const { input: { value }} = useField(sourceName);
   const setValue = useForm().mutators.setValue;
 
   const styles = useStyles();
-
-  const openMenu = useCallback((event: MouseEvent<HTMLElement>) => {
-    setMenuAnchor(event.currentTarget);
-  }, [setMenuAnchor]);
-
-  const closeMenu = useCallback(() => {
-    setMenuAnchor(null);
-  }, [setMenuAnchor]);
 
   const transliterateCallback = useCallback((language?: "zh" | "ja") => async () => {
     try {
@@ -65,9 +57,9 @@ export default function TransliterationAdornment({ sourceName, destinationName }
     }
 
     if (language !== null) {
-      closeMenu();
+      popupState.close();
     }
-  }, [apolloClient, closeMenu, destinationName, setValue, value]);
+  }, [apolloClient, destinationName, popupState, setValue, value]);
 
   return (
     <InputAdornment position="end" className={styles.adornment}>
@@ -82,20 +74,14 @@ export default function TransliterationAdornment({ sourceName, destinationName }
         <Button
           size="small"
           aria-label="Generate transliteration by languages"
-          aria-haspopup="true"
-          aria-controls="transliteration-menu"
-          onClick={openMenu}
           className={styles.dropDownButton}
+          {...bindTrigger(popupState)}
         >
           <ArrowDropDownIcon />
         </Button>
       </ButtonGroup>
       <Menu
         id="transliteration-menu"
-        anchorEl={menuAnchor}
-        keepMounted
-        open={Boolean(menuAnchor)}
-        onClose={closeMenu}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "right",
@@ -105,6 +91,7 @@ export default function TransliterationAdornment({ sourceName, destinationName }
           horizontal: "right",
         }}
         getContentAnchorEl={null}
+        {...bindMenu(popupState)}
       >
         <MenuItem onClick={transliterateCallback("zh")}>中文 → zhōngwén</MenuItem>
         <MenuItem onClick={transliterateCallback("ja")}>日本語 → にほんご</MenuItem>

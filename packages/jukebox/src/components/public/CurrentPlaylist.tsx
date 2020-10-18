@@ -30,6 +30,7 @@ import {
   Draggable,
 } from "react-beautiful-dnd";
 import { useNamedState } from "../../frontendUtils/hooks";
+import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 
 function CurrentPlaylistItem({
   provided,
@@ -47,20 +48,12 @@ function CurrentPlaylistItem({
   }) {
   const { playlist } = useAppContext();
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleMenuClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  }, []);
-
-  const handleMenuClose = useCallback(() => {
-    setAnchorEl(null);
-  }, []);
+  const popupState = usePopupState({ variant: "popover", popupId: `current-playlist-menu-${track.id}` });
 
   const handleRemoveFromPlaylist = useCallback(() => {
     playlist.removeTrack(index);
-    handleMenuClose();
-  }, []);
+    popupState.close();
+  }, [index, playlist, popupState]);
 
   // isDragging = true;
   return (
@@ -78,7 +71,7 @@ function CurrentPlaylistItem({
         style={{
           height: 60,
         }}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         ContainerComponent={isDragging ? "div" : "li"}
         selected={playlist.nowPlaying === index || isDragging}
@@ -101,19 +94,14 @@ function CurrentPlaylistItem({
         />
         <ListItemSecondaryAction>
           <IconButton
-            aria-controls={`currentPlaylist-menu-${track.id}`}
             edge="end"
             aria-label="More actions"
-            onClick={handleMenuClick}
+            {...bindTrigger(popupState)}
           >
             <MoreVertIcon />
           </IconButton>
           <Menu
             id={`currentPlaylist-menu-${track.id}`}
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
             getContentAnchorEl={null}
             anchorOrigin={{
               vertical: "bottom",
@@ -123,6 +111,7 @@ function CurrentPlaylistItem({
               vertical: "top",
               horizontal: "right",
             }}
+            {...bindMenu(popupState)}
           >
             <MenuItem onClick={handleRemoveFromPlaylist}>
               <ListItemIcon>
