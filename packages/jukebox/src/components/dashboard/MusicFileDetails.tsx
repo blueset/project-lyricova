@@ -1,4 +1,4 @@
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import { MusicFile } from "../../models/MusicFile";
 import { AppBar, Button, Card, CardActions, Divider, Tab, Tabs } from "@material-ui/core";
 import { useCallback, useEffect } from "react";
@@ -10,6 +10,7 @@ import { SongFragments } from "../../graphql/fragments";
 import CoverArtPanel from "./musicFilesDetails/coverArt";
 import LyricsPanel from "./musicFilesDetails/lyrics";
 import PlaylistsPanel from "./musicFilesDetails/playlists";
+import { useSnackbar } from "notistack";
 
 const SINGLE_FILE_DATA = gql`
   query($id: Int!) {
@@ -25,6 +26,7 @@ const SINGLE_FILE_DATA = gql`
       songId
       hasCover
       duration
+      needReview
       song {
         ...SelectSongEntry
       }
@@ -46,6 +48,14 @@ const SINGLE_FILE_DATA = gql`
   ${SongFragments.SelectSongEntry}
 `;
 
+const TOGGLE_NEED_REVIEW_MUTATION = gql`
+  mutation ($fileId: Int!, $needReview: Boolean!) {
+    toggleMusicFileReviewStatus(fileId: $fileId, needReview: $needReview) {
+      needReview
+    }
+  }
+`;
+
 const useStyle = makeStyles((theme) => ({
   card: {
     margin: theme.spacing(2),
@@ -53,7 +63,7 @@ const useStyle = makeStyles((theme) => ({
 }));
 
 type ExtendedMusicFile =
-  Pick<MusicFile, "id" | "path" | "trackName" | "trackSortOrder" | "artistName" | "artistSortOrder" | "albumName" | "albumSortOrder" | "songId" | "hasCover" | "song" | "album" | "duration" | "playlists">
+  Pick<MusicFile, "id" | "path" | "trackName" | "trackSortOrder" | "artistName" | "artistSortOrder" | "albumName" | "albumSortOrder" | "songId" | "hasCover" | "song" | "album" | "duration" | "playlists" | "needReview">
   & {
   lrcLyrics?: string;
   lrcxLyrics?: string;
@@ -66,6 +76,8 @@ interface MusicFileDetailsProps {
 export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
 
   const styles = useStyle();
+  const apolloClient = useApolloClient();
+  const snackbar = useSnackbar();
 
   const [getFile, fileData] = useLazyQuery<{
     musicFile: ExtendedMusicFile,
@@ -78,10 +90,30 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
   }, [fileId, getFile]);
 
   const [tabIndex, setTabIndex] = useNamedState("info", "tabIndex");
+  const [submittingReview, toggleSubmittingReview] = useNamedState(false, "submittingReview");
 
   const onTabSwitch = useCallback((event, newValue: string) => {
     setTabIndex(newValue);
   }, [setTabIndex]);
+
+  const toggleReviewStatus = useCallback(async () => {
+    toggleSubmittingReview(true);
+    if (!fileData.data) return;
+    const needReview = !fileData.data.musicFile.needReview;
+    try {
+      await apolloClient.mutate({
+        mutation: TOGGLE_NEED_REVIEW_MUTATION,
+        variables: {fileId, needReview}
+      });
+      await fileData.refetch();
+    } catch (e) {
+      console.error("Error occurred while toggling review status.", e);
+      snackbar.enqueueSnackbar(`Error occurred while toggling review status: ${e}`, {
+        variant: "error",
+      });
+    }
+    toggleSubmittingReview(false);
+  }, [toggleSubmittingReview, apolloClient, fileData, fileId, snackbar]);
 
   return <>
     <Card className={styles.card}>
@@ -145,7 +177,13 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
       </TabContext>
       <Divider />
       <CardActions>
-        <Button color="secondary">Mark as reviewed</Button>
+        <Button
+          disabled={!fileData.data || submittingReview}
+          color={(fileData.data?.musicFile.needReview ?? false) ? "secondary" : "default"}
+          onClick={toggleReviewStatus}
+        >
+          {fileData.data?.musicFile.needReview ? "Mark as reviewed" : "Mark as need review"}
+        </Button>
       </CardActions>
     </Card>
   </>;

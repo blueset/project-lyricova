@@ -577,4 +577,21 @@ export class MusicFileResolver {
     await MusicFileResolver.updateMD5(file);
     return result;
   }
+
+  @Authorized("ADMIN")
+  @Mutation(returns => MusicFile, { description: "Write lyrics to music file as a tag" })
+  public async toggleMusicFileReviewStatus(
+    @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
+    @Arg("needReview", () => Boolean, { description: "If the file still needs review" }) needReview: boolean,
+  ): Promise<MusicFile> {
+    let file: MusicFile;
+    try {
+      file = await MusicFile.findByPk(fileId, { rejectOnEmpty: true });
+    } catch {
+      throw new Error("Music file is not found.");
+    }
+    await file.update({ needReview });
+
+    return file;
+  }
 }
