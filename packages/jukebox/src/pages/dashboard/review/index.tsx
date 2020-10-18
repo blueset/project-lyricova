@@ -131,6 +131,7 @@ export default function Review() {
       ]}
       options={{
         actionsColumnIndex: -1,
+        pageSize: 20,
       }}
     />
   </Box>;
