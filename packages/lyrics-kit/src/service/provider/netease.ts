@@ -118,12 +118,16 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
       const transLrc = data?.tlyric?.lyric ? new Lyrics(data.tlyric.lyric) : null;
       const kLrc = data?.klyric?.lyric ? new NeteaseKLyrics(data.klyric.lyric) : null;
       if (kLrc) {
-        kLrc.forceMerge(transLrc);
+        if (transLrc) {
+          kLrc.forceMerge(transLrc);
+        }
         lyrics = kLrc;
       } else {
         const lrc = data?.lrc?.lyric ? new Lyrics(data.lrc.lyric) : null;
         if (lrc) {
-          lrc.merge(transLrc);
+          if (transLrc) {
+            lrc.merge(transLrc);
+          }
           lyrics = lrc;
         } else {
           return undefined;
