@@ -5,6 +5,7 @@ import { AnimatedWord } from "../utils/typingSequence";
 import { gql, QueryResult, useQuery } from "@apollo/client";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
+
 type Timeline = gsap.core.Timeline;
 
 export function useNamedState<T>(initialValue: T, name: string) {
@@ -333,7 +334,9 @@ export function usePlayerLyricsTypingState(
     {
       variables: {
         text: useMemo(() => lyrics.lines.map((v) => v.content).join("\n"), [lyrics.lines]),
-        furigana: []
+        furigana: lyrics.lines.map(v => v.attachments?.furigana?.map(
+          ({ content, leftIndex, rightIndex }) => ({ content, leftIndex, rightIndex })
+        ) ?? []),
       },
     }
   );
@@ -375,7 +378,7 @@ export function usePlayerLyricsTypingState(
 
   useTrackwiseTimelineControl(playerState, timeline);
 
-  return {...state, timeline, sequenceQuery};
+  return { ...state, timeline, sequenceQuery };
 }
 
 export function useLyricsSegmentState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, perLineThreshold: number): LyricsSegmentStateResult {

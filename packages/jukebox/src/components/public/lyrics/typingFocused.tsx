@@ -1,10 +1,8 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { makeStyles } from "@material-ui/core";
-import _ from "lodash";
-import { AnimatedWord } from "../../../utils/typingSequence";
-import { useMemo, useRef } from "react";
-import { useLyricsSegmentState, usePlayerLyricsTypingState } from "../../../frontendUtils/hooks";
+import { useRef } from "react";
+import { usePlayerLyricsTypingState } from "../../../frontendUtils/hooks";
 
 const useStyle = makeStyles((theme) => {
   return {
