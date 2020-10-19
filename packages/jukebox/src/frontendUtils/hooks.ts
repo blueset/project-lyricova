@@ -303,12 +303,6 @@ export interface SequenceQueryResult {
 /** Maximum time in second for one key stroke to take in the typing animation */
 const LONGEST_STEP_SECONDS = 1;
 
-interface LyricsSegmentStateResult {
-  line: number | null;
-  currentStep: number | null;
-  sequenceQuery: QueryResult<SequenceQueryResult>;
-}
-
 interface PlayerLyricsTypingState extends PlayerLyricsState<LyricsKitLyricsLine> {
   sequenceQuery: QueryResult<SequenceQueryResult>;
   timeline: Timeline;
@@ -379,115 +373,6 @@ export function usePlayerLyricsTypingState(
   useTrackwiseTimelineControl(playerState, timeline);
 
   return { ...state, timeline, sequenceQuery };
-}
-
-export function useLyricsSegmentState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, perLineThreshold: number): LyricsSegmentStateResult {
-  const [line, setLine] = useNamedState<number | null>(null, "line");
-  const [currentStep, setCurrentStep] = useNamedState<number | null>(null, "line");
-  const lineRef = useRef<number>();
-  const currentStepRef = useRef<number>();
-  lineRef.current = line;
-  currentStepRef.current = currentStep;
-
-  const sequenceQuery = useQuery<SequenceQueryResult>(
-    SEQUENCE_QUERY,
-    {
-      variables: {
-        text: useMemo(() => lyrics.lines.map((v) => v.content).join("\n"), [lyrics.lines]),
-        furigana: []
-      },
-    }
-  );
-
-  const segmentSizes = useMemo(() => {
-    if (!sequenceQuery.data) return null;
-    return sequenceQuery.data.transliterate.typingSequence.map((v) =>
-      _.sum(v.map((vv) => vv.sequence.length))
-    );
-  }, [sequenceQuery.data]);
-
-  const segmentSizesRef = useRef<number[] | null>();
-  segmentSizesRef.current = segmentSizes;
-
-  const onTimeUpdate = useCallback((recur: boolean = true) => {
-    const player = playerRef.current;
-    const thisLine = lineRef.current;
-    if (player !== null) {
-      const time = player.currentTime;
-      let [start, end] = getStartEnd(playerRef, lyrics, lineRef.current);
-      if (start > time || time >= end) {
-        const thisLineIndex = _.sortedIndexBy<{ position: number }>(lyrics.lines, { position: time }, "position");
-        if (thisLineIndex === 0) {
-          if (lineRef.current !== null) setLine(null);
-          if (currentStep !== null) setCurrentStep(null);
-        } else {
-          // Set line index
-          const thisLine =
-            (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position > time) ?
-              thisLineIndex - 1 :
-              thisLineIndex;
-          if (thisLine != lineRef.current) {
-            setLine(thisLine);
-          }
-
-          [start, end] = getStartEnd(playerRef, lyrics, thisLine);
-        }
-      }
-
-      // set segment index.
-      if (segmentSizesRef.current && thisLine < segmentSizesRef.current.length) {
-        const stepCount = segmentSizesRef.current[thisLine];
-        // Correct end time to cap step length at LONGEST_STEP_SECONDS.
-        const correctedEnd = (stepCount === 0 || (end - start) * perLineThreshold / stepCount > LONGEST_STEP_SECONDS) ?
-          start + (stepCount * LONGEST_STEP_SECONDS) / perLineThreshold :
-          end;
-        const percentage = (time - start) / (correctedEnd - start);
-        if (percentage >= perLineThreshold) {
-          if (currentStepRef.current !== stepCount) {
-            setCurrentStep(stepCount);
-          }
-        } else {
-          // Get segment index
-          // Math.floor((percentage / perLineThreshold) / segments.length)
-          const index = Math.floor(percentage * stepCount / perLineThreshold);
-          if (index !== currentStepRef.current) {
-            setCurrentStep(index);
-          }
-        }
-      }
-
-      if (recur && !player.paused) {
-        window.requestAnimationFrame(() => onTimeUpdate());
-      }
-    } else {
-      setLine(null);
-    }
-  }, [playerRef, lyrics]);
-
-  const onPlay = useCallback(() => {
-    window.requestAnimationFrame(() => onTimeUpdate());
-  }, [playerRef, onTimeUpdate]);
-  const onTimeChange = useCallback(() => {
-    window.requestAnimationFrame(() => onTimeUpdate(/* recur */false));
-  }, [playerRef, onTimeUpdate]);
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (player) {
-      onTimeUpdate();
-      player.addEventListener("play", onPlay);
-      player.addEventListener("timeupdate", onTimeChange);
-      if (!player.paused) {
-        onPlay();
-      }
-      return () => {
-        player.removeEventListener("play", onPlay);
-        player.removeEventListener("timeupdate", onTimeChange);
-      };
-    }
-  }, [playerRef, lyrics.lines]);
-
-  return { line, currentStep, sequenceQuery };
 }
 
 /**

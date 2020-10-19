@@ -1,17 +1,21 @@
-import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
+import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { PlayerLyricsKeyframe, PlayerLyricsState, usePlayerLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
 import clsx from "clsx";
-import { useMemo, RefObject, useRef, useCallback, useEffect } from "react";
+import { RefObject, useEffect, useMemo, useRef } from "react";
 import Measure from "react-measure";
-import measureElement from "../../../frontendUtils/measure";
+import measureElement, { measureTextWidths } from "../../../frontendUtils/measure";
+import FuriganaLyricsLine from "../../FuriganaLyricsLine";
+import gsap from "gsap";
+
+type Timeline = gsap.core.Timeline;
 
 const SEQUENCE_QUERY = gql`
-  query TypingSequence($text: String!) {
-    transliterate(text: $text) {
+  query TypingSequence($text: String!, $furigana: [[FuriganaLabel!]!]! = []) {
+    transliterate(text: $text, furigana: $furigana) {
       text
       karaoke
     }
@@ -41,10 +45,6 @@ const useStyle = makeStyles((theme) => {
         position: "relative",
         alignItems: "flex-end",
       },
-      // "& .line-1-1:before, & .line-3-2:before, & .line-1-1:after, & .line-3-2:after": { content: "\"\"", flexGrow: 1 },
-      // "& .line-4-2:before, & .line-4-3:after": { content: "\"\"", flexGrow: 1 },
-      // "& .line-4-2:after, & .line-4-3:before": { content: "\"\"", flexGrow: 2 },
-      // "& .line-2-2:before, & .line-3-3:before, & .line-4-4:before": { content: "\"\"", flexGrow: 1 },
       "& .countdown": {
         position: "absolute",
         top: "-1em",
@@ -66,11 +66,8 @@ const useStyle = makeStyles((theme) => {
       position: "relative",
       fontWeight: 800,
       fontSize: "3.5rem",
-      fontFamily: "serif",
+      fontFamily: "\"Source Han Serif\", \"Noto Serif CJK\", \"Noto Serif JP\", serif",
       whiteSpace: "pre",
-      "& rt": {
-        transform: "translateY(0.5em)",
-      },
       "& > span.after": {
         color: theme.palette.primary.dark,
         clipPath: "inset(-30% 102% 0 -2%)",
@@ -118,7 +115,8 @@ function lookAhead(index: number, lineLengths: number[], secPerChar: number[]) {
   const lines: number[] = [];
 
   while (i < secPerChar.length && total < 4) {
-    total++; belowThreshold += (secPerChar[i] < FOUR_LINE_PAGE_SEC_PER_CHAR_THRESHOLD) ? 1 : 0;
+    total++;
+    belowThreshold += (secPerChar[i] < FOUR_LINE_PAGE_SEC_PER_CHAR_THRESHOLD) ? 1 : 0;
     lines.push(i);
     i++;
     if (total === 2 && belowThreshold === 0) return lines;
@@ -193,164 +191,77 @@ function buildPages(lyrics: LyricsKitLyrics, duration: number): KaraokePage[] {
 
   return pages;
 }
+
 //#endregion Page builders
 
 //#region Lyrics state
 
 // Line = -1 means countdown
 export type KaraokeJaFrameCallback = (page: number, line: number, lyrics: LyricsKitLyrics, player: HTMLAudioElement, lineStart: number | null, lineEnd: number | null) => void;
-interface KaraokeJaState {
+
+type KaraokeJaState = {
+  /**
+   * Null to hide the page.
+   */
   pageIdx: number;
-  lineIdx: number;
-  showNext: boolean
-}
+  /**
+   * Line Index.
+   * * -1 for countdown
+   * * `lines.length` to stay on the end of the page
+   * * `null` to stay on the beginning of the page
+   */
+  lineIdx: number | null;
+  showNext: boolean;
+} | {
+  pageIdx: null;
+  lineIdx: null;
+  showNext: false;
+};
 
-function getLineStartEnd(thisLine: number, page: KaraokePage, lyrics: LyricsKitLyrics): [number | null, number | null] {
-  if (thisLine === null) {
-    return [null, null];
-  } else if (thisLine < 0) {
-    return [
-      page.start,
-      page.lines.length > 0 ? lyrics.lines[page.lines[0]].position : page.end
-    ];
-  } else {
-    return [
-      lyrics.lines[page.lines[thisLine]].position,
-      thisLine + 1 < page.lines.length ?
-        lyrics.lines[page.lines[thisLine + 1]].position : page.end
-    ];
-  }
-}
+function useNicokaraLyricsState(
+  lyrics: LyricsKitLyrics,
+  playerRef: RefObject<HTMLAudioElement>,
+  pages: KaraokePage[]
+): PlayerLyricsState<KaraokeJaState> {
+  const keyframes = useMemo<PlayerLyricsKeyframe<KaraokeJaState>[]>(() => {
+    const frames: PlayerLyricsKeyframe<KaraokeJaState>[] = [];
+    pages.forEach((v, idx) => {
+      const gapAfter =
+        ((idx + 1 < pages.length) ? pages[idx + 1].start :   // Has next page
+          (playerRef.current?.duration) ? playerRef.current.duration :   // Has duration
+            v.end + 11)  // fallback to 11
+        - v.end;
 
-function useKaraokeJaLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, pages: KaraokePage[], callback?: KaraokeJaFrameCallback): KaraokeJaState {
-  const [pageIdx, setPage] = useNamedState<number | null>(null, "page");
-  const [lineIdx, setLine] = useNamedState<number | null>(null, "line");
-  const [showNext, setShowNext] = useNamedState(false, "showNext");
-  const [startedTime, setStartedTime] = useNamedState<number>(performance.now(), "startedTime");
-  const pageRef = useRef<number>();
-  pageRef.current = pageIdx;
-  const lineRef = useRef<number>();
-  lineRef.current = lineIdx;
-  const showNextRef = useRef<boolean>();
-  showNextRef.current = showNext;
-  const startedTimeRef = useRef<number>();
-  startedTimeRef.current = startedTime;
-
-  const onTimeUpdate = useCallback((frameTime: number, recur: boolean = true) => {
-    const player = playerRef.current;
-    if (player !== null) {
-      const time =  (frameTime - startedTimeRef.current) / 1000;
-      let thisPage = pageRef.current, thisLine = lineRef.current;
-      const start = pages[thisPage]?.start ?? 0;
-      const end = thisPage !== null ?
-        (pages[thisPage + 1]?.start != null ? (pages[thisPage + 1]?.start + pages[thisPage]?.end) / 2 : pages[thisPage]?.end) :
-        (pages.length > 0 ? pages[0].start : player.duration);
-      let thisShowNext = showNextRef.current;
-
-      // If not on the same page...
-      if (start > time || time >= end) {
-        // Locate new page...
-        const thisPageIndex = _.sortedIndexBy<{ start: number }>(pages, { start: time }, "start");
-        if (thisPageIndex === 0 && pages[0].start > time) {
-          if (pageRef.current !== null) setPage(null);
-          if (lineRef.current !== null) setLine(null);
-          thisPage = null; thisLine = null;
-        } else {
-          thisPage = thisPageIndex;
-          if (thisPage >= pages.length ||
-            (thisPage > 0 && pages[thisPage - 1].end >= time)
-          ) thisPage--;
-          if (thisPage !== pageRef.current) {
-            setPage(thisPage);
+      if (v.countdown) {
+        frames.push({ start: v.start - 5, data: { pageIdx: idx, lineIdx: -1, showNext: false } });
+      }
+      for (let i = 0; i < v.lines.length; i++) {
+        const line = lyrics.lines[v.lines[i]];
+        frames.push({ start: line.position, data: { pageIdx: idx, lineIdx: i, showNext: false } });
+        if (i + 1 === v.lines.length) {
+          if (gapAfter < 5) {
+            frames.push({
+              start: line.position + (v.end - line.position) / 2,
+              data: { pageIdx: idx, lineIdx: i, showNext: true }
+            });
+            if (gapAfter > 0 && idx + 1 < pages.length) {
+              frames.push({ start: v.end, data: { pageIdx: idx + 1, lineIdx: null, showNext: false } });
+            }
+          } else { // >= 5 seconds gap after
+            frames.push({ start: v.end, data: { pageIdx: idx, lineIdx: v.lines.length, showNext: false } });
+            if (gapAfter > 10) {
+              frames.push({ start: v.end + 5, data: { pageIdx: null, lineIdx: null, showNext: false } });
+            }
           }
-          thisLine = null;
         }
       }
+    });
+    return frames;
+  }, [lyrics.lines, pages, playerRef]);
 
-      let lineStart: number | null = null, lineEnd: number | null = null;
-      // If page is not null...
-      if (thisPage !== null) {
-        const page = pages[thisPage];
-
-        // Get current line timing;
-        [lineStart, lineEnd] = getLineStartEnd(thisLine, page, lyrics);
-
-        // If not on the same line...
-        if (lineStart > time || time >= lineEnd) {
-          // Find new line.
-          if (time > page.end) {
-            thisLine = page.lines.length - 1;
-          } else {
-            thisLine = 0;
-            while (thisLine < page.lines.length && lyrics.lines[page.lines[thisLine]].position < time) thisLine++;
-            thisLine--;
-          }
-          if (lineRef.current !== thisLine) {
-            setLine(thisLine);
-          }
-          [lineStart, lineEnd] = getLineStartEnd(thisLine, page, lyrics);
-        }
-      }
-
-      // Update showNext.
-      if (
-        thisPage !== null && thisLine !== null &&
-        thisLine === pages[thisPage].lines.length - 1 &&
-        time > (lineStart + (lineEnd - lineStart) / 2)
-      ) {
-        thisShowNext = true;
-      } else {
-        thisShowNext = false;
-      }
-      if (showNextRef.current !== thisShowNext) setShowNext(thisShowNext);
-
-      // run callback.
-      if (thisPage !== null && thisLine !== null) {
-        callback && callback(thisPage, thisLine, lyrics, player, lineStart, lineEnd);
-      } else {
-        callback && callback(null, null, lyrics, player, null, null);
-      }
-      if (recur && !player.paused) {
-        window.requestAnimationFrame((t) => onTimeUpdate(t));
-      }
-    } else {
-      setLine(null);
-    }
-  }, [playerRef, startedTime, pages, setShowNext, setPage, setLine, lyrics, callback]);
-
-  const onPlay = useCallback(() => {
-    setStartedTime(performance.now() - (playerRef.current.currentTime * 1000));
-    window.requestAnimationFrame((t) => onTimeUpdate(t));
-  }, [onTimeUpdate, playerRef, setStartedTime]);
-
-  const onSeeked = useCallback(() => {
-    setStartedTime(performance.now() - (playerRef.current.currentTime * 1000));
-  }, [playerRef, setStartedTime]);
-
-  const onTimeChange = useCallback(() => {
-    window.requestAnimationFrame((t) => onTimeUpdate(t, false));
-  }, [onTimeUpdate]);
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (player) {
-      onTimeUpdate(performance.now());
-      player.addEventListener("play", onPlay);
-      player.addEventListener("timeupdate", onTimeChange);
-      player.addEventListener("seeked", onSeeked);
-      if (!player.paused) {
-        onPlay();
-      }
-      return () => {
-        player.removeEventListener("play", onPlay);
-        player.removeEventListener("timeupdate", onTimeChange);
-        player.removeEventListener("seeked", onSeeked);
-      };
-    }
-  }, [playerRef]);
-
-  return { pageIdx, lineIdx, showNext };
+  return usePlayerLyricsState(keyframes, playerRef);
 }
+
 //#endregion Lyrics state
 
 interface CountdownProps {
@@ -378,15 +289,7 @@ interface LyricsLineProps {
 
 function LyricsLine({ textLine, furiganaLine, done, activeRef, className }: LyricsLineProps) {
   const content = furiganaLine !== null ?
-    furiganaLine.map(([text, ruby], k) => {
-      if (text === ruby) {
-        return <span key={k}>{text}</span>;
-      } else {
-        return <ruby key={k}>
-          {text}<rp>(</rp><rt>{ruby}</rt><rp>)</rp>
-        </ruby>;
-      }
-    }) :
+    <FuriganaLyricsLine transliterationLine={furiganaLine} /> :
     <span>{textLine}</span>;
   return <div className={clsx(className, done && "done", !done && !activeRef && "pending")}>
     <span className="before">{content}</span>
@@ -495,66 +398,67 @@ function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana,
       linesToShow = linesToShow.concat(thisPageWithClass);
     }
     linesToShow = linesToShow.slice(linesToShow.length - 4);
-    offsetLineIdx = lineIdx < 0 || lineIdx === null ? lineIdx : 4 - thisPage.lines.length + lineIdx;
+    offsetLineIdx = (lineIdx === null || lineIdx < 0) ? lineIdx : (4 - thisPage.lines.length + lineIdx);
     if (thisPage.lines.length === 1) {
       offsetLineIdx--;
     }
   }
 
-  const countdown = (thisPage && thisPage.countdown && lineIdx === -1) ? <Countdown activeRef={activeRef} className={lineClassName} /> : null;
+  const countdown = (thisPage && thisPage.countdown && lineIdx === -1) ?
+    <Countdown activeRef={activeRef} className={lineClassName} /> : null;
   const firstNotNull = linesToShow.reduce<number | null>((prev, curr, idx) => prev === null && curr !== null ? idx : prev, null);
 
   return <>
     <div className={clsx("row", "row-4")}>{
       linesToShow[0] !== null && <>
-        {linesToShow[0].left !== null && <div style={{ flexGrow: linesToShow[0].left, }}/>}
+        {linesToShow[0].left !== null && <div style={{ flexGrow: linesToShow[0].left, }} />}
         {firstNotNull === 0 && countdown}
-        <LyricsLine
-          className={lineClassName}
-          textLine={lyrics.lines[linesToShow[0].index].content}
-          furiganaLine={furigana && furigana[linesToShow[0].index]}
-          done={!showNext && (offsetLineIdx > 0 || offsetLineIdx === null)}
-          activeRef={offsetLineIdx === 0 ? activeRef : null} />
-        {linesToShow[0].right !== null && <div style={{ flexGrow: linesToShow[0].right, }}/>}
+          <LyricsLine
+              className={lineClassName}
+              textLine={lyrics.lines[linesToShow[0].index].content}
+              furiganaLine={furigana && furigana[linesToShow[0].index]}
+              done={!showNext && (offsetLineIdx > 0)}
+              activeRef={offsetLineIdx === 0 ? activeRef : null} />
+        {linesToShow[0].right !== null && <div style={{ flexGrow: linesToShow[0].right, }} />}
       </>
     }</div>
     <div className={clsx("row", "row-3")}>{
       linesToShow[1] !== null && <>
-        {linesToShow[1].left !== null && <div style={{ flexGrow: linesToShow[1].left, }}/>}
+        {linesToShow[1].left !== null && <div style={{ flexGrow: linesToShow[1].left, }} />}
         {firstNotNull === 1 && countdown}
-        <LyricsLine
-          className={lineClassName}
-          textLine={lyrics.lines[linesToShow[1].index].content}
-          furiganaLine={furigana && furigana[linesToShow[1].index]}
-          done={!showNext && (offsetLineIdx > 1 || offsetLineIdx === null)}
-          activeRef={offsetLineIdx === 1 ? activeRef : null} />
-        {linesToShow[1].right !== null && <div style={{ flexGrow: linesToShow[1].right, }}/>}
+          <LyricsLine
+              className={lineClassName}
+              textLine={lyrics.lines[linesToShow[1].index].content}
+              furiganaLine={furigana && furigana[linesToShow[1].index]}
+              done={!showNext && (offsetLineIdx > 1)}
+              activeRef={offsetLineIdx === 1 ? activeRef : null} />
+        {linesToShow[1].right !== null && <div style={{ flexGrow: linesToShow[1].right, }} />}
       </>
     }</div>
     <div className={clsx("row", "row-2")}>{
       linesToShow[2] !== null && <>
-        {linesToShow[2].left !== null && <div style={{ flexGrow: linesToShow[2].left, }}/>}
+        {linesToShow[2].left !== null && <div style={{ flexGrow: linesToShow[2].left, }} />}
         {firstNotNull === 2 && countdown}
-        <LyricsLine
-          className={lineClassName}
-          textLine={lyrics.lines[linesToShow[2].index].content}
-          furiganaLine={furigana && furigana[linesToShow[2].index]}
-          done={!showNext && (offsetLineIdx > 2 || offsetLineIdx === null)}
-          activeRef={offsetLineIdx === 2 ? activeRef : null} />
-        {linesToShow[2].right !== null && <div style={{ flexGrow: linesToShow[2].right, }}/>}
+          <LyricsLine
+              className={lineClassName}
+              textLine={lyrics.lines[linesToShow[2].index].content}
+              furiganaLine={furigana && furigana[linesToShow[2].index]}
+              done={!showNext && (offsetLineIdx > 2)}
+              activeRef={offsetLineIdx === 2 ? activeRef : null} />
+        {linesToShow[2].right !== null && <div style={{ flexGrow: linesToShow[2].right, }} />}
       </>
     }</div>
     <div className={clsx("row", "row-1")}>{
       linesToShow[3] !== null && <>
-        {linesToShow[3].left !== null && <div style={{ flexGrow: linesToShow[3].left, }}/>}
+        {linesToShow[3].left !== null && <div style={{ flexGrow: linesToShow[3].left, }} />}
         {firstNotNull === 3 && countdown}
-        <LyricsLine
-          className={lineClassName}
-          textLine={lyrics.lines[linesToShow[3].index].content}
-          furiganaLine={furigana && furigana[linesToShow[3].index]}
-          done={offsetLineIdx > 3 || offsetLineIdx === null}
-          activeRef={offsetLineIdx === 3 ? activeRef : null} />
-        {linesToShow[3].right !== null && <div style={{ flexGrow: linesToShow[3].right, }}/>}
+          <LyricsLine
+              className={lineClassName}
+              textLine={lyrics.lines[linesToShow[3].index].content}
+              furiganaLine={furigana && furigana[linesToShow[3].index]}
+              done={offsetLineIdx > 3}
+              activeRef={offsetLineIdx === 3 ? activeRef : null} />
+        {linesToShow[3].right !== null && <div style={{ flexGrow: linesToShow[3].right, }} />}
       </>
     }</div>
   </>;
@@ -568,40 +472,123 @@ interface Props {
 export function KaraokeJaLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
 
+  // Page should only be rebuild if the 2 parameters change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const pages = useMemo(() => buildPages(lyrics, playerRef.current.duration), [lyrics, playerRef.current.duration]);
   const activeRef = useRef<HTMLSpanElement>();
 
-  const progressCallback = useCallback<KaraokeJaFrameCallback>((page, line, lyrics, player, lineStart, lineEnd) => {
-    if (activeRef.current) {
-      const activeSpan = activeRef.current;
-      if (line !== null) {
-        const time = player.currentTime;
-        const percentage = _.clamp((time - lineStart) / (lineEnd - lineStart), 0, 1);
-        const scaledPercentage = (1 - percentage) * 104 - 2;
-        if (line < 0) {
-          activeSpan.style.clipPath = `inset(-30% -2% -10% ${scaledPercentage}%)`;
-        } else {
-          activeSpan.style.clipPath = `inset(-30% ${scaledPercentage}% -10% -2%)`;
-        }
-      }
-    }
-  }, [activeRef]);
+  const { currentFrame, playerState } = useNicokaraLyricsState(lyrics, playerRef, pages);
+  const pageIdx = currentFrame?.data.pageIdx ?? null;
+  const lineIdx = currentFrame?.data.lineIdx ?? null;
+  const showNext = currentFrame?.data.showNext ?? null;
+  const [currentLine, currentLineStart, currentLineEnd] = useMemo((): ([LyricsKitLyricsLine | null, number, number] | [null, null, null]) => {
+    if (pageIdx === null || lineIdx === null) return [null, null, null] as [null, null, null];
+    const page = pages[pageIdx];
+    if (lineIdx > page.lines.length) return [null, null, null] as [null, null, null];
+    if (lineIdx < 0) return [null, page.start - 5, page.start];
+    const line = lyrics.lines[page.lines[lineIdx]];
+    const start = line.position;
+    const end = (lineIdx + 1 === page.lines.length) ? page.end : lyrics.lines[page.lines[lineIdx + 1]].position;
+    return [line, start, end] as [LyricsKitLyricsLine, number, number];
+  }, [pageIdx, lineIdx, pages, lyrics.lines]);
+  const currentLineStartRef = useRef<number | null>();
+  currentLineStartRef.current = currentLineStart;
 
-  const { pageIdx, lineIdx, showNext } = useKaraokeJaLyricsState(playerRef, lyrics, pages, progressCallback);
   const styles = useStyle();
 
   const sequenceQuery = useQuery<SequenceQueryResult>(
     SEQUENCE_QUERY,
     {
       variables: {
-        text: lyrics.lines.map((v) => v.content).join("\n")
+        text: lyrics.lines.map((v) => v.content).join("\n"),
+        furigana: lyrics.lines.map(v => v.attachments?.furigana?.map(
+          ({ content, leftIndex, rightIndex }) => ({ content, leftIndex, rightIndex })
+        ) ?? []),
       },
     }
   );
 
+  const timelineRef = useRef<Timeline>();
+  useEffect(() => {
+    if (timelineRef.current) timelineRef.current.kill();
+    const tl = gsap.timeline({ paused: playerState.state === "paused" });
+    if (activeRef.current && currentLineEnd !== null && currentLineStart !== null) {
+      const duration = currentLineEnd - currentLineStart;
+      const activeSpan = activeRef.current;
+      if (currentLine?.attachments?.timeTag) {
+        activeSpan.style.clipPath = "inset(-30% 102% -10% -2%)";
+        const lengths = measureTextWidths(activeRef.current);
+        const length = lengths[lengths.length - 1];
+        const percentages = lengths.map(v => {
+          // Scale percentages
+          const val = (1 - (v / length)) * 100;
+          if (val === 0) return -2;
+          if (val === 100) return 102;
+          return val;
+        });
+        const tags = currentLine.attachments.timeTag.tags;
+        tl.set(activeRef.current, {
+          clipPath: `inset(-30% 102% -10% -2%)`,
+        }, 0);
+        tags.forEach((v, idx) => {
+          const duration = idx > 0 ? v.timeTag - tags[idx - 1].timeTag : v.timeTag;
+          const start = idx > 0 ? tags[idx - 1].timeTag : 0;
+          let percentage = -2;
+          if (v.index > 0) percentage = percentages[v.index - 1];
+          tl.to(activeRef.current, {
+            clipPath: `inset(-30% ${percentage}% -10% -2%)`,
+            ease: "none",
+            duration
+          }, start);
+        });
+      } else {
+        if (currentLine !== null) {
+          tl.fromTo(activeRef.current, {
+            clipPath: "inset(-30% 102% -10% -2%)",
+          }, {
+            clipPath: "inset(-30% -2% -10% -2%)",
+            ease: "none",
+            duration,
+          });
+        } else {
+          // Countdown
+          tl.fromTo(activeRef.current, {
+            clipPath: "inset(-30% -2% -10% 102%)",
+          }, {
+            clipPath: "inset(-30% -2% -10% -2%)",
+            ease: "none",
+            duration,
+          });
+        }
+      }
+    }
+    timelineRef.current = tl;
+  }, [pageIdx, lineIdx, playerState.state, currentLineEnd, currentLineStart, currentLine]);
+
+  // Controls the progress of timeline
+  useEffect(() => {
+    const timeline = timelineRef.current;
+    const now = performance.now();
+
+    if (timeline) {
+      const start = currentLineStartRef.current || 0;
+      if (playerState.state === "playing") {
+        const inlineProgress = (now - playerState.startingAt) / 1000 - start;
+        timeline.seek(inlineProgress);
+        timeline.play();
+      } else {
+        const inlineProgress = playerState.progress - start;
+        timeline.pause();
+        timeline.seek(inlineProgress);
+      }
+    }
+  }, [playerState]);
+
   let node = <span>...</span>;
   if (sequenceQuery.error) node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
-  else { node = null; }
+  else {
+    node = null;
+  }
 
   return (
     <Measure bounds>{

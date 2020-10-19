@@ -14793,7 +14793,7 @@ fsevents@^1.2.7:
     mysql: ^2.17.1
     mysql2: ^2.1.0
     next: ^9.5.3
-    node-id3: ^0.1.17
+    node-id3: ^0.1.19
     node-pre-gyp: ^0.15.0
     node-sass: ^4.13.1
     nodemon: ^2.0.2
@@ -16068,12 +16068,12 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"node-id3@npm:^0.1.17":
-  version: 0.1.18
-  resolution: "node-id3@npm:0.1.18"
+"node-id3@npm:^0.1.19":
+  version: 0.1.19
+  resolution: "node-id3@npm:0.1.19"
   dependencies:
     iconv-lite: 0.5.1
-  checksum: 217e45f72111c2f908cb5bd160757517ee9a2ad835990278b0327d5eb2fa6d10e48d99b061aeeabf167b82026a81b51f7645ae68199fcfb6ad79916d8d42b61a
+  checksum: 972d4d86453c6e65a84f1f42c6933dbe7d6ad36f14f6884de18a85ab037d5c8bda3075f1cb4b8b0e0915a585c047822ec0bc233f3be79690c3382b19423b09ef
   languageName: node
   linkType: hard
 
