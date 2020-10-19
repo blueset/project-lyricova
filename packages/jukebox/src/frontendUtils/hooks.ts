@@ -3,8 +3,9 @@ import { LyricsKitLyrics, LyricsKitLyricsLine } from "../graphql/LyricsKitObject
 import _ from "lodash";
 import { AnimatedWord } from "../utils/typingSequence";
 import { gql, QueryResult, useQuery } from "@apollo/client";
-import { Simulate } from "react-dom/test-utils";
-
+import gsap from "gsap";
+import { TextPlugin } from "gsap/dist/TextPlugin";
+type Timeline = gsap.core.Timeline;
 
 export function useNamedState<T>(initialValue: T, name: string) {
   const ret = useState<T>(initialValue);
@@ -280,8 +281,8 @@ export function usePlainPlayerLyricsState(lyrics: LyricsKitLyrics, playerRef: Re
 // endregion Refactored keyframe-based lyrics state
 
 const SEQUENCE_QUERY = gql`
-  query TypingSequence($text: String!) {
-    transliterate(text: $text) {
+  query TypingSequence($text: String!, $furigana: [[FuriganaLabel!]!]! = []) {
+    transliterate(text: $text, furigana: $furigana) {
       text
       typingSequence {
         convert
@@ -298,12 +299,83 @@ export interface SequenceQueryResult {
   };
 }
 
-const LONGEST_STEP_SECONDS = 0.5;
+/** Maximum time in second for one key stroke to take in the typing animation */
+const LONGEST_STEP_SECONDS = 1;
 
 interface LyricsSegmentStateResult {
   line: number | null;
   currentStep: number | null;
   sequenceQuery: QueryResult<SequenceQueryResult>;
+}
+
+interface PlayerLyricsTypingState extends PlayerLyricsState<LyricsKitLyricsLine> {
+  sequenceQuery: QueryResult<SequenceQueryResult>;
+  timeline: Timeline;
+}
+
+/**
+ * State hook for typing lyrics animation
+ * @param lyrics
+ * @param playerRef
+ * @param perLineThreshold Percentage of time for the animation to take per line of lyrics, (0, 1]
+ * @param doneElementRef
+ * @param typingElementRef
+ */
+export function usePlayerLyricsTypingState(
+  lyrics: LyricsKitLyrics, playerRef: RefObject<HTMLAudioElement>, perLineThreshold: number,
+  doneElementRef: RefObject<HTMLElement>, typingElementRef: RefObject<HTMLElement>
+): PlayerLyricsTypingState {
+  const state = usePlainPlayerLyricsState(lyrics, playerRef);
+  const { playerState, startTimes, endTimes } = state;
+
+  const sequenceQuery = useQuery<SequenceQueryResult>(
+    SEQUENCE_QUERY,
+    {
+      variables: {
+        text: useMemo(() => lyrics.lines.map((v) => v.content).join("\n"), [lyrics.lines]),
+        furigana: []
+      },
+    }
+  );
+
+  const timeline = useMemo<Timeline>(() => {
+    if (!sequenceQuery.data) return null;
+    gsap.registerPlugin(TextPlugin);
+    if (!doneElementRef.current || !typingElementRef.current) return null;
+    const tl = gsap.timeline();
+    sequenceQuery.data.transliterate.typingSequence.forEach((v, idx) => {
+      const start = startTimes[idx], lineEnd = endTimes[idx + 1];
+      if (start === undefined || lineEnd === undefined) return;
+      const duration = Math.min((lineEnd - start) * perLineThreshold, v.length * LONGEST_STEP_SECONDS);
+
+      const stepDuration = duration / Math.max(1, _.sum(v.map(w => w.sequence.length)));
+      let typed = "", i = 0;
+      for (const word of v) {
+        if (word.convert) {
+          for (const step of word.sequence) {
+            tl.set(doneElementRef.current, { text: typed }, start + i * stepDuration);
+            tl.set(typingElementRef.current, { text: step }, start + i * stepDuration);
+            i++;
+          }
+        } else {
+          for (const step of word.sequence) {
+            tl.set(doneElementRef.current, { text: typed + step }, start + i * stepDuration);
+            tl.set(typingElementRef.current, { text: "" }, start + i * stepDuration);
+            i++;
+          }
+        }
+        typed += word.sequence[word.sequence.length - 1];
+      }
+      tl.set(doneElementRef.current, { text: typed }, start + duration);
+      tl.set(typingElementRef.current, { text: "" }, start + duration);
+    });
+
+    return tl;
+  }, [doneElementRef.current, endTimes, perLineThreshold, sequenceQuery.data, startTimes, typingElementRef.current]);
+
+  useTrackwiseTimelineControl(playerState, timeline);
+
+  return {...state, timeline, sequenceQuery};
 }
 
 export function useLyricsSegmentState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, perLineThreshold: number): LyricsSegmentStateResult {
@@ -319,6 +391,7 @@ export function useLyricsSegmentState(playerRef: RefObject<HTMLAudioElement>, ly
     {
       variables: {
         text: useMemo(() => lyrics.lines.map((v) => v.content).join("\n"), [lyrics.lines]),
+        furigana: []
       },
     }
   );
@@ -412,4 +485,33 @@ export function useLyricsSegmentState(playerRef: RefObject<HTMLAudioElement>, ly
   }, [playerRef, lyrics.lines]);
 
   return { line, currentStep, sequenceQuery };
+}
+
+/**
+ * Control a GSAP timeline which covers the entire track according to the player state.
+ */
+export function useTrackwiseTimelineControl(playerState: PlayerState, timeline: Timeline) {
+
+  // Controls the progress of timeline
+  useEffect(() => {
+    const now = performance.now();
+    if (!timeline) return;
+    if (playerState.state === "playing") {
+      const progress = (now - playerState.startingAt) / 1000;
+      timeline.seek(progress);
+      timeline.play();
+    } else {
+      timeline.pause();
+      timeline.seek(playerState.progress);
+    }
+  }, [playerState, timeline]);
+
+  // Kill a timeline when its lifespan ends.
+  useEffect(() => {
+    const tl = timeline;
+    if (!tl) return;
+    return () => {
+      tl.kill();
+    };
+  }, [timeline]);
 }

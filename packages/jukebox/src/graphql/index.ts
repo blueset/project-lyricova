@@ -57,6 +57,10 @@ export async function applyApollo(app: Application) {
     // strict type check of type-graphql.buildSchema({resolvers})
     resolvers: [FooResolver as unknown as string, `${__dirname}/**/*Resolver.{ts,js}`],
     dateScalarMode: "timestamp",
+    emitSchemaFile: {
+      path: __dirname + "/../../schema.graphql",
+      commentDescriptions: true,
+    },
     authChecker
   });
   const server = new ApolloServer({

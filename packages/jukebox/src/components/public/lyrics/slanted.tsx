@@ -1,8 +1,8 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState, usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
+import { usePlainPlayerLyricsState, useTrackwiseTimelineControl } from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
 import gsap from "gsap";
 import _ from "lodash";
@@ -110,26 +110,7 @@ export function SlantedLyrics({ lyrics }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wrapper.current, translationWrapper.current, startTimes, endTimes]);
 
-  // Controls the progress of timeline
-  useEffect(() => {
-    const now = performance.now();
-
-    if (playerState.state === "playing") {
-      const progress = (now - playerState.startingAt) / 1000;
-      timeline.seek(progress);
-      timeline.play();
-    } else {
-      timeline.pause();
-      timeline.seek(playerState.progress);
-    }
-  }, [playerState, timeline]);
-
-  // Stop a timeline when its lifespan ends.
-  useEffect(() => {
-    return () => {
-      timeline.pause();
-    };
-  }, [timeline]);
+  useTrackwiseTimelineControl(playerState, timeline);
 
   return <div className={styles.container}>
     <div className={clsx(styles.lines, styles.lyrics)} lang="ja" ref={container}>

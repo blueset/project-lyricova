@@ -104,7 +104,7 @@ export default function Index() {
     <Box className={clsx(styles.messageBox, "coverMask")} p={4}>{children}</Box>
   );
 
-  let node = <MessageBox>Default</MessageBox>;
+  let node;
   if (lyricsQuery.loading) {
     node = <MessageBox>Loading...</MessageBox>;
   } else if (lyricsQuery.error) {
