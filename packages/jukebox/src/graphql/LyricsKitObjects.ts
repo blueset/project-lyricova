@@ -1,14 +1,23 @@
-import { ObjectType, Field, Float, Int } from "type-graphql";
+import { ObjectType, Field, Float, Int, InputType } from "type-graphql";
 import { Lyrics } from "lyrics-kit";
 import { LyricsLine } from "lyrics-kit/build/main/core/lyricsLine";
-import { Attachments, FURIGANA, ROMAJI, WordTimeTag, WordTimeTagLabel, RangeAttributeLabel } from "lyrics-kit/build/main/core/lyricsLineAttachment";
+import {
+  Attachments,
+  FURIGANA,
+  ROMAJI,
+  WordTimeTag,
+  WordTimeTagLabel,
+  RangeAttributeLabel
+} from "lyrics-kit/build/main/core/lyricsLineAttachment";
 
 @ObjectType({ description: "Furigana/romaji to words in a lyrics line." })
 export class LyricsKitRangeAttachment {
   constructor(tag: RangeAttributeLabel) {
-    this.content = tag.content;
-    this.leftIndex = tag.range[0];
-    this.rightIndex = tag.range[1];
+    if (tag) {
+      this.content = tag.content;
+      this.leftIndex = tag.range[0];
+      this.rightIndex = tag.range[1];
+    }
   }
 
   @Field({ description: "Furigana/romaji content" })
@@ -27,6 +36,7 @@ export class LyricsKitWordTimeTag {
     this.timeTag = tag.timeTag;
     this.index = tag.index;
   }
+
   @Field(type => Float, { description: "Time when the time tag happens, in seconds." })
   timeTag: number;
 
@@ -40,6 +50,7 @@ export class LyricsKitWordTimeAttachment {
     this.duration = wordTime.duration;
     this.tags = wordTime.tags.map((v: WordTimeTagLabel) => new LyricsKitWordTimeTag(v));
   }
+
   @Field(type => Float, { description: "Duration of line in seconds.", nullable: true })
   duration: number;
 

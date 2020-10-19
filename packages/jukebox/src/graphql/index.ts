@@ -3,7 +3,6 @@ import { ApolloServer } from "apollo-server-express";
 import { ObjectType, Field, Int, Resolver, Query, Arg, Authorized } from "type-graphql";
 import { buildSchema } from "type-graphql";
 import { GraphQLString } from "graphql";
-import { transliterate } from "../utils/transliterate";
 import { authChecker } from "./auth";
 import bcrypt from "bcryptjs";
 
@@ -20,11 +19,6 @@ class Foo {
 class FooResolver {
   // What is dependency injection ???
   // constructor(private fooService: FooService) {}
-
-  @Query(returns => GraphQLString)
-  transliterate(@Arg("text") text: string): string {
-    return transliterate(text);
-  }
 
   @Query(returns => GraphQLString)
   async hash(@Arg("plaintext") plaintext: string): Promise<string> {

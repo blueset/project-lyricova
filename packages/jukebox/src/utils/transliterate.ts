@@ -2,6 +2,8 @@ import pinyin from "pinyin";
 import Segment from "novel-segment";
 import MeCab from "mecab-async";
 import _ from "lodash";
+import { LyricsKitRangeAttachment } from "../graphql/LyricsKitObjects";
+import { FuriganaLabel } from "../graphql/TransliterationResolver";
 
 /** List of commonly used characters that is only used in Japanese */
 const jaOnly = /(\p{Script=Hira}|\p{Script=Kana}|[゛゜゠ーｰ���〱〲〳〴〵゛゜゠・ー･ｰ����㍻㍼㍽㍾㍿増楽薬霊塡犠渓著雑祖猟槇祉栄畳福込帰朗鉱獣砕呉響碑捗僧繊粋瀬繁層厳隠変頬剰拠剤斎専琢廃匂巣転黒社舗蔵伝歩鋳餠愼験抜読猪廊郞曽仮駅譲欄酔桟済気斉囲択経乗満穀難錬嘆戻醸虜寛銭様歳毎奨艶帯侮挙逸署器両釈節墨挿従権憎嬢都倹豊戦庁謁卑歓駆観揺徴悪徳壌団暑営娯弾渇恵祝縁枠勤隣対漢謹検卽摂類視発緖壊拡粛掲涙穏総圏拝沢贈圧浄顔仏図陥歴亀壱梅眞煮闘髪円扱塩騒懐覚敏軽峠戸頼荘黙晩諸継蛍遅逓祥練喩応悩姫険齢撃聴覧痩値鉄禍塀続勉臭鶏辺縄悔絵郷捜懲者鬪海児実薫亜渚歯駄渋弐広姉巻剣証塁単顕価禎祐突穂暦払栃訳渉県労麺糸焼勲神舎縦賓髄丼暁桜滝脳稲勧鎭祈売])/u;
@@ -47,6 +49,11 @@ interface TransliterateOptions {
 
 export interface SegmentedTransliterationOptions extends TransliterateOptions {
   type?: "typing" | "karaoke" | "plain";
+  /**
+   * Explicitly define furigana, will not go through machine furigana generation.
+   * Only honored in Japanese language mode.
+   */
+  furigana?: FuriganaLabel[][];
 }
 
 function notPunct(text: string): boolean {
@@ -59,13 +66,13 @@ interface LevenshteinCellState {
   type?: "insert" | "remove" | "replace";
 }
 
-/** 
- * Convert 
+/**
+ * Convert
  *  `"桃音モモが歌う", "ももねももがうたう"`
- * to 
+ * to
  *  `[["桃音", "ももね"], "モモが", ["歌", "うた"], "う"]`
  * .
- * 
+ *
  * Running Levenshtein edit distance algorithm.
  */
 function furiganaSeparator(kanji: string, kana: string): (string | [string, string])[] {
@@ -135,25 +142,83 @@ function furiganaSeparator(kanji: string, kana: string): (string | [string, stri
  * Transliterate text with fragmentations.
  * @param text Text to transliterate
  * @param options Options to adjust fragmentation strategy
- * @returns Array of arrays of [original, transliterated]
+ * @returns Array (lines) of arrays (words) of [original, transliterated]
  */
 export function segmentedTransliteration(text: string, options?: SegmentedTransliterationOptions): [string, string][][] {
   const type = options?.type ?? "plain";
   if (options?.language === "ja" || (options?.language == null && jaOnly.test(text))) {
     // transliterate as ja
 
-    // Convert inline furigana to tokens.
-    let nextToken = 0xE000;
+    const hasFurigana = _.some(options.furigana?.map(v => v.length > 0) ?? [false]);
+
+    if (hasFurigana) {
+      return text.split("\n").map((base, idx) => {
+        // Build groupings from explicit furigana
+        const groupings: (string | [string, string])[] = [];
+        let ptr = 0;
+        const furigana = options.furigana[idx];
+        if (!furigana) return [[base, base]];
+
+        furigana.forEach(({content, leftIndex: start, rightIndex: end}) => {
+          if (start > ptr) {
+            groupings.push(base.substring(ptr, start));
+          }
+          groupings.push([base.substring(start, end), content]);
+          ptr = end;
+        });
+        if (ptr < base.length) groupings.push(base.substring(ptr));
+
+        // Join groupings accordingly
+        switch (type) {
+          case "typing":
+            return groupings.reduce<[string, string][]>((prev, curr, idx, arr) => {
+              if (
+                // First entry, or
+                prev.length < 1 ||
+                // this is a furigana, and previous one is plain text.
+                (idx > 0 && typeof curr !== "string" && typeof arr[idx - 1] === "string")
+              ) {
+                // add new entry
+                if (typeof curr === "string") prev.push([curr, curr]);
+                else prev.push(curr);
+              } else {
+                // Merge with before
+                const last = prev[prev.length - 1];
+                if (typeof curr === "string") {
+                  last[0] = last[0] + curr;
+                  last[1] = last[1] + curr;
+                } else {
+                  last[0] = last[0] + curr[0];
+                  last[1] = last[1] + curr[1];
+                }
+              }
+              return prev;
+            }, []);
+          case "karaoke":
+          case "plain":
+          default:
+            return groupings.map(v => {
+              if (typeof v === "string") return [v, v];
+              return v;
+            });
+        }
+      });
+    }
+
+    // Convert inline furigana to tokens. Skip if explicit furigana presents.
     const tokenMapping: { [token: string]: [string, string, string] } = {};
-    text = text.replace(
-      /(\p{Script=Hani}+)[\(（]([\p{Script=Kana}ー]+|[\p{Script=Hira}ー]+)[\)）](\p{Script=Hira}*)/ug,
-      (match, p1, p2, p3): string => {
-        const answer = String.fromCharCode(nextToken);
-        tokenMapping[answer] = [p1, p2, p3];
-        nextToken++;
-        return answer;
-      }
-    );
+    if (!hasFurigana) {
+      let nextToken = 0xE000;
+      text = text.replace(
+        /(\p{Script=Hani}+)[\(（]([\p{Script=Kana}ー]+|[\p{Script=Hira}ー]+)[\)）](\p{Script=Hira}*)/ug,
+        (match, p1, p2, p3): string => {
+          const answer = String.fromCharCode(nextToken);
+          tokenMapping[answer] = [p1, p2, p3];
+          nextToken++;
+          return answer;
+        }
+      );
+    }
     const words = mecab.parseSyncFormat(text);
     const lines: MecabParsedResult[][] = words.reduce((prev, curr) => {
       if (curr.isLineBreak) {
@@ -168,6 +233,7 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
     return lines.map((words) => {
       const result: [string, string][] = [];
       let pending: [string, string] = ["", ""];
+
       switch (type) {
         case "typing":
           let lastScore = 0;
@@ -175,6 +241,7 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
           if (words.length < 1) return [];
           words.forEach((x) => {
             if (/[\uE000-\uF8FF]/.test(x.kanji)) {
+              // Expand inline furigana
               if (pending[0] !== "" && pending[1] !== "") {
                 result.push(pending);
                 pending = ["", ""];
@@ -209,6 +276,7 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
           return words.map(x => {
             const result: (string | [string, string])[] = [];
             if (/[\uE000-\uF8FF]/.test(x.kanji)) {
+              // Expand inline furigana
               [...x.kanji].forEach((v) => {
                 if (v in tokenMapping) {
                   const [kanji, kana, okuri] = tokenMapping[v];
@@ -224,7 +292,6 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
                 result.push(x.kanji);
               } else {
                 furiganaSeparator(x.kanji, hira).forEach(v => result.push(v));
-                // result.push([x.kanji, hira]);
               }
             } else {
               result.push(x.kanji);
@@ -275,6 +342,7 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
         default:
           return words.map(x => {
             if (/[\uE000-\uF8FF]/g.test(x.kanji)) {
+              // Expand inline furigana
               return [...x.kanji].map((v) => {
                 if (v in tokenMapping) {
                   const [kanji, kana, okuri] = tokenMapping[v];
@@ -336,7 +404,11 @@ export function segmentedTransliteration(text: string, options?: SegmentedTransl
             }, []);
         case "typing":
           return words.map(
-            word => [word, pinyin(word, { segment: true, heteronym: true, style: pinyin.STYLE_NORMAL }).map(x => x[0]).join("'")]
+            word => [word, pinyin(word, {
+              segment: true,
+              heteronym: true,
+              style: pinyin.STYLE_NORMAL
+            }).map(x => x[0]).join("'")]
           );
         case "plain":
         default:
