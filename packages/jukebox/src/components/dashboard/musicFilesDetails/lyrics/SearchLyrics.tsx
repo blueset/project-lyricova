@@ -31,16 +31,28 @@ import ContentCopyIcon from "@material-ui/icons/ContentCopy";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { lyricsAnalysis, LyricsAnalysisResult } from "../../../../utils/lyricsCheck";
 import { Lyrics } from "lyrics-kit";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import TooltipIconButton from "../../TooltipIconButton";
 
 
 const SEARCH_LYRICS_QUERY = gql`
-  query($title: String!, $artists: String!, $duration: Float) {
+  query($title: String!, $artists: String!, $duration: Float, $sessionId: String) {
     lyricsKitSearch(title: $title, artists: $artists, options: {
       duration: $duration,
       useLRCX: true,
-    }) {
+    }, sessionId: $sessionId) {
+      lyrics
+      quality
+      isMatched
+      metadata
+      tags
+    }
+  }
+`;
+
+const SEARCH_LYRICS_PROGRESS_SUBSCRIPTION = gql`
+  subscription ($sessionId: String!) {
+    lyricsKitSearchIncremental(sessionId: $sessionId) {
       lyrics
       quality
       isMatched
@@ -168,6 +180,8 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
   const [searchResults, setSearchResults] = useNamedState<LyricsKitLyricsEntry[]>([], "searchResults");
+  const searchResultsRef = useRef<LyricsKitLyricsEntry[]>();
+  searchResultsRef.current = searchResults;
   const parsedResults = useMemo(() => searchResults.map((v) => {
     try {
       const lyrics = new Lyrics(v.lyrics);
@@ -192,17 +206,45 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
       initialValues={{ title, artists, duration, }}
       onSubmit={async (values) => {
         try {
-          const result = await apolloClient.query<{ lyricsKitSearch: LyricsKitLyricsEntry[] }>({
+          const sessionId = `${Math.random()}`;
+          setSearchResults([]);
+
+          const query = apolloClient.query<{ lyricsKitSearch: LyricsKitLyricsEntry[] }>({
             query: SEARCH_LYRICS_QUERY,
             variables: {
               ...values,
+              sessionId,
             },
           });
+
+          const subscription = apolloClient.subscribe<{ lyricsKitSearchIncremental: LyricsKitLyricsEntry }>({
+            query: SEARCH_LYRICS_PROGRESS_SUBSCRIPTION,
+            variables: { sessionId }
+          });
+          const zenSubscription = subscription.subscribe({
+            next(x) {
+              if (x.data.lyricsKitSearchIncremental !== null) {
+                const arr = [...searchResultsRef.current, x.data.lyricsKitSearchIncremental];
+                arr.sort((a, b) => b.quality - a.quality);
+                setSearchResults(arr);
+              }
+            },
+            error(err) {
+              console.log(`Finished with error: ${err}`);
+            },
+            complete() {
+              console.log("Finished");
+            }
+          });
+
+          const result = await query;
           if (result.data) {
             const results = [...result.data.lyricsKitSearch];
             results.sort((a, b) => b.quality - a.quality);
             setSearchResults(results);
           }
+          zenSubscription.unsubscribe();
+
         } catch (e) {
           console.error(`Error while loading search result; ${e}`);
           snackbar.enqueueSnackbar(`Failed to load search results: ${e}`, { variant: "error" });
@@ -264,7 +306,8 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
         </ListItemText>
         <ListItemSecondaryAction>
           <TooltipIconButton title="Copy lyrics" onClick={copyText(v.lyrics)}><ContentCopyIcon /></TooltipIconButton>
-          <TooltipIconButton title="Copy cover URL" disabled={!(v.metadata?.artworkURL)} onClick={copyText(v.metadata?.artworkURL)}><FileCopyIcon /></TooltipIconButton>
+          <TooltipIconButton title="Copy cover URL" disabled={!(v.metadata?.artworkURL)}
+                             onClick={copyText(v.metadata?.artworkURL)}><FileCopyIcon /></TooltipIconButton>
         </ListItemSecondaryAction>
       </ListItem>)}
     </List>

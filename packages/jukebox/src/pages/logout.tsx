@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { LS_JWT_KEY } from "../frontendUtils/localStorage";
-import apolloClient from "../frontendUtils/apollo";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
+import { useApolloClient } from "@apollo/client";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const req = context.req as unknown as Express.Request;
@@ -14,6 +14,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default function Logout() {
   const router = useRouter();
+  const apolloClient = useApolloClient();
+
   useEffect(() => {
     const hasToken = Boolean(localStorage?.getItem(LS_JWT_KEY) ?? null);
     if (hasToken) {
@@ -24,6 +26,6 @@ export default function Logout() {
     } else {
       router.push("/login");
     }
-  }, [router]);
+  }, [apolloClient, router]);
   return <></>;
 }

@@ -1,6 +1,8 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
+import { ApolloClient, InMemoryCache, createHttpLink, split } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { LS_JWT_KEY } from "./localStorage";
+import { WebSocketLink } from "@apollo/client/link/ws";
+import { getMainDefinition } from "@apollo/client/utilities";
 
 
 const httpLink = createHttpLink({
@@ -19,7 +21,48 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+const link = (() => {
+  if (process.browser) {
+    const protocol = location.protocol === "http:" ? "ws:" : "wss:";
+    const host = location.hostname + (location.port ? ":" + location.port : "");
+    const wsLink = new WebSocketLink({
+      uri: `${protocol}//${host}/graphql`,
+      options: {
+        reconnect: true,
+        connectionParams: () => {
+          const token = localStorage?.getItem(LS_JWT_KEY) ?? null;
+          return {
+            authorization: token,
+          };
+        },
+      }
+    });
+
+    // The split function takes three parameters:
+    //
+    // * A function that's called for each operation to execute
+    // * The Link to use for an operation if the function returns a "truthy" value
+    // * The Link to use for an operation if the function returns a "falsy" value
+    const splitLink = split(
+      ({ query }) => {
+        const definition = getMainDefinition(query);
+        return (
+          definition.kind === "OperationDefinition" &&
+          definition.operation === "subscription"
+        );
+      },
+      wsLink,
+      authLink.concat(httpLink),
+    );
+
+    return splitLink;
+  } else {
+    return httpLink;
+  }
+})();
+
+
 export default new ApolloClient({
-  link: authLink.concat(httpLink),
+  link,
   cache: new InMemoryCache()
 });

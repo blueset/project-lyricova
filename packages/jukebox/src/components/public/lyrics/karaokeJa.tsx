@@ -482,11 +482,15 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   const lineIdx = currentFrame?.data.lineIdx ?? null;
   const showNext = currentFrame?.data.showNext ?? null;
   const [currentLine, currentLineStart, currentLineEnd] = useMemo((): ([LyricsKitLyricsLine | null, number, number] | [null, null, null]) => {
-    if (pageIdx === null || lineIdx === null) return [null, null, null] as [null, null, null];
+    if (pageIdx === null) return [null, null, null] as [null, null, null];
     const page = pages[pageIdx];
     if (lineIdx > page.lines.length) return [null, null, null] as [null, null, null];
+    if (currentFrame !== null && lineIdx === null) {
+      return [null, currentFrame?.start, lyrics.lines[page.lines[0]].position];
+    }
     if (lineIdx < 0) return [null, page.start - 5, page.start];
     const line = lyrics.lines[page.lines[lineIdx]];
+    if (!line) return [null, null, null];
     const start = line.position;
     const end = (lineIdx + 1 === page.lines.length) ? page.end : lyrics.lines[page.lines[lineIdx + 1]].position;
     return [line, start, end] as [LyricsKitLyricsLine, number, number];
@@ -527,15 +531,16 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           return val;
         });
         const tags = currentLine.attachments.timeTag.tags;
-        tl.set(activeRef.current, {
-          clipPath: `inset(-30% 102% -10% -2%)`,
+        activeSpan.style.clipPath = "inset(-30% 102% -10% -2%)";
+        tl.set(activeSpan, {
+          clipPath: "inset(-30% 102% -10% -2%)",
         }, 0);
         tags.forEach((v, idx) => {
           const duration = idx > 0 ? v.timeTag - tags[idx - 1].timeTag : v.timeTag;
           const start = idx > 0 ? tags[idx - 1].timeTag : 0;
           let percentage = -2;
           if (v.index > 0) percentage = percentages[v.index - 1];
-          tl.to(activeRef.current, {
+          tl.to(activeSpan, {
             clipPath: `inset(-30% ${percentage}% -10% -2%)`,
             ease: "none",
             duration
@@ -543,7 +548,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
         });
       } else {
         if (currentLine !== null) {
-          tl.fromTo(activeRef.current, {
+          tl.fromTo(activeSpan, {
             clipPath: "inset(-30% 102% -10% -2%)",
           }, {
             clipPath: "inset(-30% -2% -10% -2%)",
@@ -552,7 +557,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           });
         } else {
           // Countdown
-          tl.fromTo(activeRef.current, {
+          tl.fromTo(activeSpan, {
             clipPath: "inset(-30% -2% -10% 102%)",
           }, {
             clipPath: "inset(-30% -2% -10% -2%)",

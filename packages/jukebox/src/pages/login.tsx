@@ -3,10 +3,10 @@ import { AuthContext } from "../components/public/AuthContext";
 import { makeStyles, Button } from "@material-ui/core";
 import { useRouter } from "next/router";
 import { LS_JWT_KEY } from "../frontendUtils/localStorage";
-import apolloClient from "../frontendUtils/apollo";
 import { makeValidate, TextField } from "mui-rff";
 import * as yup from "yup";
 import { Form } from "react-final-form";
+import { useApolloClient } from "@apollo/client";
 
 const useStyle = makeStyles((theme) => ({
   container: {
@@ -47,6 +47,7 @@ const useStyle = makeStyles((theme) => ({
 export default function Login() {
   const styles = useStyle();
   const router = useRouter();
+  const apolloClient = useApolloClient();
 
   return <AuthContext authRedirect="/dashboard">
     <div className={styles.container}>

@@ -3,10 +3,24 @@ import cheerio from "cheerio";
 import { Song } from "../models/Song";
 import { SongForApiContract, LyricsForSongContract, VDBTranslationType } from "../types/vocadb";
 import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
-import { Resolver, ObjectType, Field, Arg, Query, Int, Float, InputType, } from "type-graphql";
+import {
+  Resolver,
+  ObjectType,
+  Field,
+  Arg,
+  Query,
+  Int,
+  Float,
+  InputType,
+  PubSub,
+  Publisher,
+  Subscription, Root,
+} from "type-graphql";
 import { ApolloError } from "apollo-server-express";
 import { GraphQLJSONObject } from "graphql-type-json";
 import { LyricsMetadata } from "lyrics-kit/build/main/core/lyricsMetadata";
+import _ from "lodash";
+import { PubSubSessionPayload } from "./index";
 
 
 @ObjectType({ description: "A search result from 初音ミク@wiki." })
@@ -214,20 +228,51 @@ export class LyricsProvidersResolver {
   public async lyricsKitSearch(
     @Arg("artists") artists: string,
     @Arg("title") title: string,
-    @Arg("options") { useLRCX, duration }: LyricsKitSearchOptions
+    @Arg("options") { useLRCX, duration }: LyricsKitSearchOptions,
+    @Arg("sessionId", {
+      nullable: true,
+      description: "Session ID for subscribing to incremental search results with `lyricsKitSearchIncremental`."
+    }) sessionId: string | null,
+    @PubSub("LYRICS_KIT_RESULT") publish: Publisher<PubSubSessionPayload<LyricsKitLyricsEntry>>,
   ): Promise<LyricsKitLyricsEntry[]> {
 
-    const lyrics = await this.lyricsProvider.getLyrics(
-      LyricsSearchRequest.fromInfo(title, artists, duration)
-    );
-    return lyrics.map(lrc => {
-      return {
-        lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
-        quality: lrc.quality,
-        isMatched: lrc.isMatched(),
-        metadata: lrc.metadata,
-        tags: lrc.idTags
-      };
-    });
+    const request = LyricsSearchRequest.fromInfo(title, artists, duration);
+
+    const results = await Promise.all(this.lyricsProvider.providers.map(async (v) => {
+      const result = await v.getLyrics(request);
+      const converted = result.map(lrc => {
+        return {
+          lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
+          quality: lrc.quality,
+          isMatched: lrc.isMatched(),
+          metadata: lrc.metadata,
+          tags: lrc.idTags
+        };
+      });
+      if (sessionId) {
+        for (const data of converted) await publish({ sessionId, data });
+      }
+      return converted;
+    }));
+
+    await publish({ sessionId, data: null });
+
+    return _.flatten(results);
+  }
+
+  @Subscription(
+    () => LyricsKitLyricsEntry,
+    {
+      topics: "LYRICS_KIT_RESULT",
+      filter: ({ payload, args }) => args.sessionId === payload.sessionId,
+      nullable: true,
+      description: "Incremental retrieve results of a `lyricsKitSearch`. Session ID is required when performing search.",
+    }
+  )
+  lyricsKitSearchIncremental(
+    @Root() payload: PubSubSessionPayload<LyricsKitLyricsEntry>,
+    @Arg("sessionId") sessionId: string,
+  ): LyricsKitLyricsEntry | null {
+    return payload.data;
   }
 }

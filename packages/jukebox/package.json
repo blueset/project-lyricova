@@ -123,6 +123,7 @@
     "split": "^1.0.1",
     "stream-combiner": "^0.2.2",
     "stream-filter": "^2.1.0",
+    "subscriptions-transport-ws": "^0.9.18",
     "tempy": "^0.5.0",
     "through": "^2.3.8",
     "type-graphql": "^1.1.0",

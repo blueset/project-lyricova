@@ -9,7 +9,6 @@ import registerRoutes from "./routes";
 import { SESSION_SECRET } from "./utils/secret";
 import sequelize from "./db";
 import SequelizeStoreConstructor from "connect-session-sequelize";
-import { applyApollo } from "./graphql";
 
 const SequelizeStore = SequelizeStoreConstructor(session.Store);
 
@@ -43,8 +42,6 @@ export default async () => {
   // app.get("/", async (req: Request, res: Response) => {
   //   res.send("Hello world!");
   // });
-
-  await applyApollo(app);
 
   return app;
 };
