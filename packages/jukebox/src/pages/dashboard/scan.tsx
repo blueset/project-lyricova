@@ -30,10 +30,10 @@ export default function Scan() {
     } else if (scanResult.data) {
       const data = scanResult.data.scan;
       resultNode = <div>
-        {scanResult.data.scan.added} tracks added;
-        {scanResult.data.scan.deleted} tracks deleted;
-        {scanResult.data.scan.updated} tracks updated;
-        {scanResult.data.scan.unchanged} tracks removed;
+        {data.added} tracks added;
+        {data.deleted} tracks deleted;
+        {data.updated} tracks updated;
+        {data.unchanged} tracks removed;
       </div>;
     } else {
       resultNode = <CircularProgress />;
@@ -49,4 +49,4 @@ export default function Scan() {
   </Box>;
 }
 
-Scan.layout = getLayout();
+Scan.layout = getLayout("Scan for music files");

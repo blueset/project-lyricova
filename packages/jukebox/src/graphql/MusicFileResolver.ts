@@ -1,4 +1,4 @@
-import {MusicFile} from "../models/MusicFile";
+import { ID3_LYRICS_LANGUAGE, MusicFile } from "../models/MusicFile";
 import glob from "glob";
 import {MUSIC_FILES_PATH} from "../utils/secret";
 import ffprobe from "ffprobe-client";
@@ -41,29 +41,6 @@ function setIntersect<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => other.has(val)));
 }
 
-interface GenericMetadata {
-  trackName?: string;
-  trackSortOrder?: string;
-  artistName?: string;
-  artistSortOrder?: string;
-  albumName?: string;
-  albumSortOrder?: string;
-  hasCover: boolean;
-  duration: number;
-  fileSize: number;
-  // formatName?: string;
-  songId: string;
-  albumId: string;
-  playlists: string[];
-  lyrics?: string;
-}
-
-const
-  SONG_ID_TAG = "LyricovaSongID",
-  ALBUM_ID_TAG = "LyricovaAlbumID",
-  PLAYLIST_IDS_TAG = "LyricovaPlaylistIDs";
-
-const ID3_LYRICS_LANGUAGE = "eng";
 
 
 @ObjectType()
@@ -143,114 +120,6 @@ class MusicFilesQueryOptions {
 @Resolver(of => MusicFile)
 export class MusicFileResolver {
 
-
-  /** Get metadata of a song via ffprobe */
-  private static async getSongMetadata(path: string): Promise<GenericMetadata> {
-    const metadata = await ffprobe(path);
-    const tags = metadata.format.tags ?? {};
-    const duration = parseFloat(metadata.format.duration);
-    let playlists: string[] = [];
-
-    if (tags[PLAYLIST_IDS_TAG]) {
-      playlists = tags[PLAYLIST_IDS_TAG].split(",");
-    }
-
-    return {
-      trackName: tags.title || tags.TITLE || undefined,
-      trackSortOrder: tags["title-sort"] || tags.TITLESORT || undefined,
-      artistName: tags.artist || tags.ARTIST || undefined,
-      artistSortOrder:
-        tags["artist-sort"] || tags.ARTISTSORT || undefined,
-      albumName: tags.album || tags.ALBUM || undefined,
-      albumSortOrder: tags["album-sort"] || tags.ALBUMSORT || undefined,
-      hasCover: metadata.streams.some(val => val.codec_type === "video"),
-      duration: isNaN(duration) ? -1 : duration,
-      fileSize: parseInt(metadata.format.size),
-      songId: tags[SONG_ID_TAG] || undefined,
-      albumId: tags[ALBUM_ID_TAG] || undefined,
-      lyrics: tags[`lyrics-${ID3_LYRICS_LANGUAGE}`] || tags.LYRICS || undefined,
-      playlists: playlists,
-      // formatName: get(metadata, "format.format_name", ""),
-      // playlists: tags[PLAYLIST_IDS_TAG] ? tags[PLAYLIST_IDS_TAG].split(",") : undefined,
-    };
-  }
-
-  /** Make a new MusicFile object from file path. */
-  private static async buildSongEntry(path: string): Promise<GenericMetadata & {
-    path: string;
-    hasLyrics: boolean;
-    hash: string;
-    needReview: boolean;
-  }> {
-    const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
-    const metadataPromise = MusicFileResolver.getSongMetadata(path);
-    const md5 = await md5Promise,
-      metadata = await metadataPromise;
-    const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
-    const hasLyrics = fs.existsSync(lrcPath);
-    return {
-      path: Path.relative(MUSIC_FILES_PATH, path),
-      hasLyrics: hasLyrics,
-      hash: md5,
-      needReview: true,
-      ...metadata
-    };
-  }
-
-  /** Update an existing MusicFile object with data in file. */
-  private static async updateSongEntry(entry: MusicFile): Promise<MusicFile | null> {
-    try {
-      let needUpdate = false;
-      const path = entry.fullPath;
-      const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
-      const hasLyrics = fs.existsSync(lrcPath);
-      needUpdate = needUpdate || hasLyrics !== entry.hasLyrics;
-      const fileSize = fs.statSync(path).size;
-      const md5 = await hasha.fromFile(path, {algorithm: "md5"});
-      needUpdate = needUpdate || md5 !== entry.hash;
-      if (!needUpdate) return null;
-
-      const metadata = await MusicFileResolver.getSongMetadata(path);
-      entry = await entry.update({
-        path: Path.relative(MUSIC_FILES_PATH, path),
-        hasLyrics: hasLyrics,
-        fileSize: fileSize,
-        hash: md5,
-        needReview: true,
-        ...metadata
-      });
-    } catch (e) {
-      console.error("Error occurred while updating song entry", e);
-    }
-    return entry;
-  }
-
-  private static async updateMD5(entry: MusicFile): Promise<void> {
-    const md5 = await hasha.fromFile(entry.fullPath, { algorithm: "md5" });
-    await entry.update({ hash: md5 });
-  }
-
-  /** Write metadata to file partially */
-  private static async writeToFile(file: MusicFile, data: Partial<MusicFile>) {
-    let mapping;
-    if (file.path.toLowerCase().endsWith(".flac")) {
-      mapping = { trackSortOrder: "TITLESORT", artistSortOrder: "ARTISTSORT", albumSortOrder: "ALBUMSORT" };
-    } else { // FFMPEG default
-      mapping = { trackSortOrder: "title-sort", artistSortOrder: "artist-sort", albumSortOrder: "album-sort" };
-    }
-    const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
-    await ffMetadataWrite(file.fullPath, {
-      title: data.trackName,
-      [mapping.trackSortOrder]: data.trackSortOrder,
-      album: data.albumName,
-      [mapping.albumSortOrder]: data.albumSortOrder,
-      artist: data.artistName,
-      [mapping.artistSortOrder]: data.artistSortOrder,
-      [SONG_ID_TAG]: `${data.songId}`,
-      [ALBUM_ID_TAG]: `${data.albumId}`
-    }, { preserveStreams: true, forceId3v2: forceId3v2 });
-  }
-
   @Authorized("ADMIN")
   @Mutation(returns => MusicFilesScanOutcome)
   public async scan(): Promise<MusicFilesScanOutcome> {
@@ -287,7 +156,7 @@ export class MusicFileResolver {
     const limit = pLimit(10);
 
     const entriesToAdd = await Promise.all(
-      [...toAdd].map(path => limit(async () => MusicFileResolver.buildSongEntry(path)))
+      [...toAdd].map(path => limit(async () => MusicFile.build({fullPath: path}).buildSongEntry()))
     );
 
     console.log("entries_to_add done.");
@@ -304,7 +173,7 @@ export class MusicFileResolver {
     );
     const updateResults = await Promise.all(
       toUpdateEntries.map(entry =>
-        limit(async () => MusicFileResolver.updateSongEntry(entry))
+        limit(async () => entry.updateSongEntry())
       )
     );
 
@@ -386,7 +255,7 @@ export class MusicFileResolver {
     }
 
     // write song file
-    await MusicFileResolver.writeToFile(song, data);
+    await song.writeToFile(data);
 
     _.assign(song, data);
 
@@ -515,7 +384,7 @@ export class MusicFileResolver {
       return false;
     }
 
-    await MusicFileResolver.updateMD5(file);
+    await file.updateMD5();
     return true;
   }
 
@@ -569,12 +438,7 @@ export class MusicFileResolver {
 
     await file.$set("playlists", playlists);
     const result = await MusicFile.findByPk(fileId);
-    const forceId3v2 = result.path.toLowerCase().endsWith(".aiff");
-    await ffMetadataWrite(result.fullPath, {
-      [PLAYLIST_IDS_TAG]: (await result.$get("playlists")).map((i) => i.slug).join(",")
-    }, { preserveStreams: true, forceId3v2: forceId3v2 });
-
-    await MusicFileResolver.updateMD5(file);
+    await result.updatePlaylistsOfFileAsTags();
     return result;
   }
 

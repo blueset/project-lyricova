@@ -39,9 +39,9 @@ const useStyles = makeStyles((theme) => ({
   },
   avatar: {
     margin: theme.spacing(0, 1),
-    fontSize: "2rem",
-    height: "5rem",
-    width: "5rem",
+    fontSize: "3rem",
+    height: "6rem",
+    width: "6rem",
   }
 }));
 

@@ -2,20 +2,22 @@ import { Playlist } from "../../../models/Playlist";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import {
   Avatar,
-  Button, Checkbox,
+  Button,
+  Checkbox,
   List,
   ListItem,
   ListItemAvatar,
   ListItemIcon,
   ListItemSecondaryAction,
-  ListItemText, Popover
+  ListItemText,
+  Popover
 } from "@material-ui/core";
 import { Alert, Skeleton } from "@material-ui/lab";
 import _ from "lodash";
-import { ReactChildren, ReactNode, useCallback, useEffect } from "react";
+import { ReactNode, useCallback, useEffect } from "react";
 import PlaylistAvatar from "../../PlaylistAvatar";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import AddButton from "@material-ui/icons/Add";
+import AddIcon from "@material-ui/icons/Add";
 import { useSnackbar } from "notistack";
 import { bindPopover, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import AddPlaylistPopoverContent from "../AddPlaylistPopoverContent";
@@ -92,7 +94,7 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
     }
   }, [checkedPlaylists, setCheckedPlaylists]);
 
-  let items: ReactNode = _.range(5).map(v => <SkeletonItem key={v} />);
+  let items: ReactNode = _.fill(Array(5), <SkeletonItem />);
   if (playlistsQuery.error) {
     items = <Alert severity="error">Error occurred while retrieving playlists: {`${playlistsQuery.error}`}</Alert>;
   } else if (playlistsQuery.data) {
@@ -115,7 +117,7 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
         {items}
         <ListItem button {...bindTrigger(popupState)}>
           <ListItemIcon>
-            <AddButton />
+            <AddIcon />
           </ListItemIcon>
           <ListItemText>Add new playlist</ListItemText>
         </ListItem>

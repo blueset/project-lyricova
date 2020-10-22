@@ -1,6 +1,11 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState, LyricsFrameCallback } from "../../../frontendUtils/hooks";
+import {
+  useLyricsState,
+  LyricsFrameCallback,
+  usePlayerLyricsState,
+  usePlainPlayerLyricsState
+} from "../../../frontendUtils/hooks";
 import { makeStyles } from "@material-ui/core";
 import BalancedText from "react-balance-text-cj";
 import _ from "lodash";
@@ -118,12 +123,12 @@ function LyricsLineElement({ className, line, duration, translationClassName, wi
 
       progressorRef.current && progressorRef.current.getItem().load(animate && keyframes);
     }
-  }, [line.content]);
+  }, [animate, line.content, progressorRef, width]);
 
   return (
     <div>
       <div lang="ja">
-        <Scene keyframes={animate ? keyframes : null} ref={animate ? progressorRef : null}>
+        <Scene keyframes={animate ? keyframes : null} ref={animate ? progressorRef : null} autoplay={true}>
           <svg width={width} height="300" style={{ maxWidth: "100%" }} ref={canvasRef}>
             <text x="0" y="1em" id="svgText" lang="ja" className={className} ref={textRef}></text>
           </svg>
@@ -151,37 +156,38 @@ export function StrokeLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const progressorRef = useRef<Scene>();
 
-  const progressCallback = useCallback<LyricsFrameCallback>((thisLine, lyrics, player) => {
-    if (progressorRef.current) {
-      const progressorScene = progressorRef.current;
-      if (thisLine >= lyrics.lines.length) {
-        progressorScene.setTime("100%");
-      } else {
-        const time = player.currentTime;
-        let endTime = player.duration;
-        if (thisLine + 1 < lyrics.lines.length) {
-          endTime = lyrics.lines[thisLine + 1].position;
-        }
-        const percentage = _.clamp((time - lyrics.lines[thisLine].position) / (endTime - lyrics.lines[thisLine].position) / 0.75, 0, 1);
-        progressorScene.setTime(`${percentage * 100}%`);
-      }
-    }
-  }, []);
-
-  const line = useLyricsState(playerRef, lyrics, progressCallback);
+  const {currentFrame, currentFrameId, endTime, playerState} = usePlainPlayerLyricsState(lyrics, playerRef);
 
   const styles = useStyle();
 
-  const lines = lyrics.lines;
+  useEffect(() => {
+    if (!progressorRef.current) return;
+    const progressorScene = progressorRef.current;
+    if (currentFrameId >= lyrics.lines.length) {
+      progressorScene.setTime("100%");
+    } else {
+      const now = performance.now();
+      const startTime = currentFrame?.start ?? 0;
+      if (playerState.state === "playing") {
+        const inlineProgress = (now - playerState.startingAt) / 1000 - startTime;
+        progressorScene.setTime(inlineProgress);
+        progressorScene.play();
+      } else {
+        const inlineProgress = playerState.progress - startTime;
+        progressorScene.pause();
+        progressorScene.setTime(inlineProgress);
+      }
+    }
+  }, [playerState, progressorRef.current, currentFrame]);
 
   let lineElement: (width: number) => JSX.Element | null = () => null;
-  if (line !== null) {
-    const start = lines[line].position;
-    const end = lines[line + 1]?.position ?? playerRef?.current.duration ?? start + 10;
+  if (currentFrame !== null) {
+    const start = currentFrame.start;
+    const end = endTime;
     lineElement = (width) => (<LyricsLineElement
       className={styles.line}
       translationClassName={clsx(styles.translation, "coverMask")}
-      line={lines[line]}
+      line={currentFrame.data}
       duration={end - start}
       width={width}
       progressorRef={progressorRef}
