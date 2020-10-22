@@ -5,6 +5,7 @@ import { transliterate, segmentedTransliteration, SegmentedTransliterationOption
 import { LyricsProvidersController } from "./controller/LyricsProvidersController";
 import { DownloadController } from "./controller/DownloadController";
 import { AuthController } from "./controller/AuthController";
+import { PlaylistController } from "./controller/PlaylistController";
 
 export default (app: express.Express) => {
 
@@ -23,6 +24,9 @@ export default (app: express.Express) => {
 
   const downloadController = new DownloadController();
   apiRouter.use("/download", downloadController.router);
+
+  const playlistController = new PlaylistController();
+  apiRouter.use("/playlists", playlistController.router);
 
   const authController = new AuthController();
   apiRouter.use("/", authController.router);

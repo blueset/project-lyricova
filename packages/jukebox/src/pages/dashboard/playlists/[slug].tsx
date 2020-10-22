@@ -29,10 +29,12 @@ import { move } from "../../../frontendUtils/arrays";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import DragHandleIcon from "@material-ui/icons/DragHandle";
 import DeleteIcon from "@material-ui/icons/Delete";
+import GetAppIcon from "@material-ui/icons/GetApp";
 import _ from "lodash";
 import SelectMusicFileBox from "../../../components/dashboard/selectMusicFileBox";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useCallback } from "react";
+import { NextComposedLink } from "../../../components/Link";
 
 const PLAYLIST_QUERY = gql`
   query($slug: String!) {
@@ -102,6 +104,9 @@ const useStyles = makeStyles((theme) => ({
   },
   sortButton: {
     marginRight: theme.spacing(1),
+  },
+  metaButton: {
+    marginLeft: theme.spacing(1),
   },
   saveButton: {
     marginTop: theme.spacing(1),
@@ -177,7 +182,8 @@ export default function PlaylistDetails() {
           />
         </div>
         <Box flexGrow={1} textAlign="end" ml={1}>
-          <Button variant="outlined" startIcon={<DeleteIcon color="error" />} onClick={handleDeleteConfirm}>Remove playlist</Button>
+          <Button variant="outlined" startIcon={<GetAppIcon />} className={styles.metaButton} component={NextComposedLink} href={`/api/playlists/${slug}.m3u8`}>Export M3U8</Button>
+          <Button variant="outlined" startIcon={<DeleteIcon color="error" />} className={styles.metaButton} onClick={handleDeleteConfirm}>Remove playlist</Button>
         </Box>
         {/**
          * Slugify name while slug field is untouched.

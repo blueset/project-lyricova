@@ -6,18 +6,18 @@ export class PlaylistController {
 
   constructor() {
     this.router = Router();
-    this.router.get("/:id(\\d+).m3u8", this.buildPlaylist);
+    this.router.get("/:slug.m3u8", this.buildPlaylist);
   }
 
   public buildPlaylist = async (req: Request, res: Response, next: NextFunction) => {
-    const playlist = await Playlist.findByPk(parseInt(req.params.id));
+    const playlist = await Playlist.findByPk(req.params.slug);
     if (playlist === null) {
       return res.status(404).json({ status: 404, message: "Playlist not found." });
     }
 
     let text = `#EXTM3U\n#EXTENC:UTF-8\n#PLAYLIST:${playlist.name}\n`;
     (await playlist.$get("files")).forEach((file) => {
-      text += `#EXTINF:${file.duration},${file.artistName} - ${file.trackName}\n${file.path}\n`;
+      text += `#EXTINF:${Math.round(file.duration)},${file.trackName} - ${file.artistName || "Various artists"}\n${file.path}\n`;
     });
 
     res
