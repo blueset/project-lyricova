@@ -1,8 +1,8 @@
 import { ID3_LYRICS_LANGUAGE, MusicFile } from "../models/MusicFile";
 import glob from "glob";
-import {MUSIC_FILES_PATH} from "../utils/secret";
+import { MUSIC_FILES_PATH } from "../utils/secret";
 import ffprobe from "ffprobe-client";
-import {writeAsync as ffMetadataWrite} from "../utils/ffmetadata";
+import { writeAsync as ffMetadataWrite } from "../utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
@@ -18,20 +18,22 @@ import {
   InputType,
   Int,
   Mutation,
-  ObjectType,
+  ObjectType, Publisher, PubSub,
   Query,
   Resolver,
-  Root
+  Root, Subscription
 } from "type-graphql";
-import {PaginationArgs, PaginationInfo} from "./commons";
-import {UserInputError} from "apollo-server-express";
-import {Playlist} from "../models/Playlist";
-import {Song} from "../models/Song";
-import {Album} from "../models/Album";
+import { PaginationArgs, PaginationInfo } from "./commons";
+import { UserInputError } from "apollo-server-express";
+import { Playlist } from "../models/Playlist";
+import { Song } from "../models/Song";
+import { Album } from "../models/Album";
 import NodeID3 from "node-id3";
-import {swapExt} from "../utils/path";
-import {Lyrics} from "lyrics-kit";
-import {LyricsKitLyrics} from "./LyricsKitObjects";
+import { swapExt } from "../utils/path";
+import { Lyrics } from "lyrics-kit";
+import { LyricsKitLyrics } from "./LyricsKitObjects";
+import { LyricsKitLyricsEntry } from "./LyricsProvidersResolver";
+import { PubSubSessionPayload } from "./index";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -40,7 +42,6 @@ function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
 function setIntersect<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => other.has(val)));
 }
-
 
 
 @ObjectType()
@@ -78,6 +79,8 @@ export class MusicFilesScanOutcome {
   @Field(type => Int)
   unchanged: number;
 
+  @Field(type => Int)
+  total: number;
 }
 
 
@@ -111,18 +114,37 @@ class MusicFileInput implements Partial<MusicFile> {
 
 }
 
-@InputType({description: "Music files query options"})
+@InputType({ description: "Music files query options" })
 class MusicFilesQueryOptions {
-  @Field({description: "Filter by review status of files", nullable: true})
+  @Field({ description: "Filter by review status of files", nullable: true })
   needReview?: boolean;
 }
 
 @Resolver(of => MusicFile)
 export class MusicFileResolver {
 
+  @Subscription(
+    () => MusicFilesScanOutcome,
+    {
+      topics: "MUSIC_FILE_SCAN_PROGRESS",
+      filter: ({ payload, args }) => args.sessionId === payload.sessionId,
+      nullable: true,
+      description: "Progress of a `scan`. Session ID is required when performing search.",
+    }
+  )
+  scanProgress(
+    @Root() payload: PubSubSessionPayload<MusicFilesScanOutcome>,
+    @Arg("sessionId") sessionId: string,
+  ): MusicFilesScanOutcome | null {
+    return payload.data;
+  }
+
   @Authorized("ADMIN")
   @Mutation(returns => MusicFilesScanOutcome)
-  public async scan(): Promise<MusicFilesScanOutcome> {
+  public async scan(
+    @Arg("sessionId", { nullable: true }) sessionId: string | null,
+    @PubSub("MUSIC_FILE_SCAN_PROGRESS") publish: Publisher<PubSubSessionPayload<MusicFilesScanOutcome>>,
+  ): Promise<MusicFilesScanOutcome> {
     // Load
     const databaseEntries = await MusicFile.findAll({
       attributes: ["id", "path", "fileSize", "hash", "hasLyrics"]
@@ -143,6 +165,10 @@ export class MusicFileResolver {
     const toUpdate = setIntersect(knownPathsSet, filePathsSet);
     const toDelete = setDifference(knownPathsSet, filePathsSet);
 
+    const total = toAdd.size + toDelete.size + toUpdate.size;
+    const progressObj: MusicFilesScanOutcome = { added: 0, deleted: 0, updated: 0, unchanged: 0, total };
+    if (sessionId) await publish({ sessionId, data: progressObj });
+
     console.log(`toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`);
 
     // Remove records from database for removed files
@@ -151,18 +177,25 @@ export class MusicFileResolver {
     }
 
     console.log("entries deleted.");
+    progressObj.deleted = toDelete.size;
+    if (sessionId) await publish({ sessionId, data: progressObj });
+
 
     // Add new files to database
     const limit = pLimit(10);
 
     const entriesToAdd = await Promise.all(
-      [...toAdd].map(path => limit(async () => MusicFile.build({fullPath: path}).buildSongEntry()))
+      [...toAdd].map(path => limit(async () =>
+        await MusicFile.build({ fullPath: path }).buildSongEntry()
+      ))
     );
 
     console.log("entries_to_add done.");
 
     for (const chunk of chunkArray(entriesToAdd)) {
       await MusicFile.bulkCreate(chunk);
+      progressObj.added += chunk.length;
+      if (sessionId ) await publish({ sessionId, data: progressObj });
     }
 
     console.log("entries added.");
@@ -171,30 +204,27 @@ export class MusicFileResolver {
     const toUpdateEntries = databaseEntries.filter(entry =>
       toUpdate.has(entry.path)
     );
-    const updateResults = await Promise.all(
+    await Promise.all(
       toUpdateEntries.map(entry =>
-        limit(async () => entry.updateSongEntry())
+        limit(async () => {
+          const res = entry.updateSongEntry();
+          if (res === null) progressObj.unchanged++;
+          else progressObj.updated++;
+          if (sessionId && (progressObj.updated + progressObj.unchanged) % 10 === 0) await publish({ sessionId, data: progressObj });
+        })
       )
     );
+    await publish({ sessionId, data: progressObj });
 
     console.log("entries updated.");
 
-    const updatedCount = updateResults.reduce(
-      (prev: number, curr) => prev + (curr === null ? 0 : 1),
-      0
-    ) as number;
-    return {
-      added: toAdd.size,
-      deleted: toDelete.size,
-      updated: updatedCount,
-      unchanged: toUpdate.size - updatedCount
-    };
+    return progressObj;
   }
 
   @Query(returns => MusicFilesPagination)
   public async musicFiles(
     @Args() { first, after }: PaginationArgs,
-    @Arg("options", {nullable: true}) options: MusicFilesQueryOptions
+    @Arg("options", { nullable: true }) options: MusicFilesQueryOptions
   ): Promise<MusicFilesPagination> {
     if (after === null || after === undefined) {
       after = "-1";
