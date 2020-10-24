@@ -76,10 +76,10 @@ interface CountUpCardProps {
 }
 
 const COUNT_UP_LEVELS: ("years" | "months" | "days")[] = ["years", "months", "days"];
+dayjs.extend(duration);
+dayjs.extend(localizedFormat);
 
 function CountUpCard({title, now, time, className}: CountUpCardProps) {
-  dayjs.extend(duration);
-  dayjs.extend(localizedFormat);
 
   let countUpValue = <>...</>;
   if (time) {
