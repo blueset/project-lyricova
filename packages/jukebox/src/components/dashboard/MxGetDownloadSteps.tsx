@@ -189,6 +189,11 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
           </ButtonRow>
         </StepContent>
       </Step>
+      <Step key="mxget-3">
+        <StepLabel>Downloading...</StepLabel>
+        <StepContent>
+        </StepContent>
+      </Step>
     </Stepper>
   );
 }

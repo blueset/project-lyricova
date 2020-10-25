@@ -1,7 +1,7 @@
 import youtubedl, { Info, Options } from "youtube-dl";
 import fs from "fs";
 import Path from "path";
-import { MUSIC_FILES_PATH, MXGET_API_PATH, MXGET_BINARY, VIDEO_FILES_PATH } from "../utils/secret";
+import { MUSIC_FILES_PATH, MXGET_API_PATH, MXGET_BINARY, QQ_API_PATH, VIDEO_FILES_PATH } from "../utils/secret";
 import { promisify } from "util";
 import shortid from "shortid";
 import { pythonBridge, PythonBridge } from "python-bridge";
@@ -24,6 +24,10 @@ import {
 import { GraphQLString } from "graphql";
 import { exec, execSync } from "child_process";
 import { findFilesModifiedAfter } from "../utils/fs";
+import sanitize from "sanitize-filename";
+import Stream from "stream";
+import { downloadFromStream } from "../utils/download";
+import path from "path";
 
 function asyncExec(command: string): Promise<{ stderr: string, stdout: string }> {
   return new Promise<{ stderr: string; stdout: string }>((resolve, reject) => {
@@ -33,6 +37,30 @@ function asyncExec(command: string): Promise<{ stderr: string, stdout: string }>
     });
   });
 }
+
+interface QQSongInfoPartial {
+  result: number;
+  data: {
+    trackInfo: {
+      name: string;
+      singer: {
+        name: string;
+      }[];
+      album: {
+        name: string;
+      };
+      file: {
+        media_mid: string;
+        size_128mp3: number;
+        size_320mp3: number;
+        size_ape: number;
+        size_flac: number;
+      };
+    };
+  };
+}
+
+type QQAPIDownloadResult = { result: 100, data: string } | { result: 400, errMsg: string };
 
 type MxGetSourceType = "netease" | "qq" | "migu" | "kugou" | "kuwo" | "xiami" | "qianqian";
 const MXGET_SOURCES: MxGetSourceType[] = ["netease", "qq", "migu", "kugou", "kuwo", "xiami", "qianqian"];
@@ -435,6 +463,8 @@ def download():
     if (MXGET_SOURCES.indexOf(source) < 0) throw new Error(`${source} is not a valid source.`);
     if (!id.match(/^[0-9a-zA-Z]+$/)) throw new Error(`${id} is not a valid ID.`);
 
+    if (source === "qq") return this.qqMusicDownload(id);
+
     execSync(`${MXGET_BINARY} config --dir '${MUSIC_FILES_PATH}'`);
     const startTime = new Date();
 
@@ -452,5 +482,44 @@ def download():
 
     if (files.length > 0) return files[0];
     return null;
+  }
+
+  private async qqMusicDownload(songId: string): Promise<string> {
+    const headers = { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36" };
+    try {
+      const songInfo = (await axios.get<QQSongInfoPartial>(`${QQ_API_PATH}song?songmid=${songId}`, { headers })).data;
+      if (!songInfo.data) return null;
+      const fileName = sanitize(`${songInfo.data.trackInfo.name} - ${songInfo.data.trackInfo.singer.map(v => v.name).join(", ")}`);
+      const { media_mid, size_128mp3, size_320mp3, size_ape, size_flac } = songInfo.data.trackInfo.file;
+      let url: string | null = null;
+      let ext = "";
+      if (size_flac) {
+        const downloadLink = (await axios.get<QQAPIDownloadResult>(`${QQ_API_PATH}song/url?id=${songId}&mediaId=${media_mid}&type=flac`, { headers })).data;
+        if (downloadLink.result === 100) url = downloadLink.data;
+        ext = ".flac";
+      }
+      if (url === null && size_ape) {
+        const downloadLink = (await axios.get<QQAPIDownloadResult>(`${QQ_API_PATH}song/url?id=${songId}&mediaId=${media_mid}&type=ape`, { headers })).data;
+        if (downloadLink.result === 100) url = downloadLink.data;
+        ext = ".ape";
+      }
+      if (url === null && size_320mp3) {
+        const downloadLink = (await axios.get<QQAPIDownloadResult>(`${QQ_API_PATH}song/url?id=${songId}&mediaId=${media_mid}&type=320`, { headers })).data;
+        if (downloadLink.result === 100) url = downloadLink.data;
+        ext = ".mp3";
+      }
+      if (url === null && size_128mp3) {
+        const downloadLink = (await axios.get<QQAPIDownloadResult>(`${QQ_API_PATH}song/url?id=${songId}&mediaId=${media_mid}&type=128`, { headers })).data;
+        if (downloadLink.result === 100) url = downloadLink.data;
+        ext = ".mp3";
+      }
+      if (url === null) return null;
+      const response = await axios.get<Stream>(url, { responseType: "stream" });
+      await downloadFromStream(response.data, path.join(MUSIC_FILES_PATH, fileName + ext));
+      return fileName + ext;
+    } catch {
+
+      return null;
+    }
   }
 }
