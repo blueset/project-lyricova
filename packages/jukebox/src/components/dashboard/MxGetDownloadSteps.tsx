@@ -131,6 +131,14 @@ const useStyles = makeStyles((theme) => ({
   chip: {
     marginRight: theme.spacing(1),
   },
+  buttonRow: {
+    margin: 0,
+    padding: theme.spacing(1, 0),
+    position: "sticky",
+    bottom: 0,
+    background: theme.palette.background.paper,
+    zIndex: 1,
+  }
 }));
 
 interface Props {
@@ -221,46 +229,48 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
         <StepContent>
           {searchMusicQuery.data && <List>{
             [...searchMusicQuery.data.mxGetSearch]
-            .sort((a, b) => {
-              const aq = `${a.name}${a.artist}${a.album}`;
-              const bq = `${b.name}${b.artist}${b.album}`;
-              const ac = match(aq, searchKeyword).length, bc = match(bq, searchKeyword).length;
-              return bc - ac;
-            })
-            .map((v, idx) => (
-            <ListItem key={idx} alignItems="flex-start">
-              <ListItemAvatar>
-                <Badge overlap="rectangle" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                       badgeContent={<BadgeAvatar>{v.source}</BadgeAvatar>}>
-                  <Avatar src={v.pic_url} variant="rounded"><MusicNoteIcon /></Avatar>
-                </Badge>
-              </ListItemAvatar>
-              <ListItemText disableTypography>
-                <Typography variant="body1" component="span" display="block">
-                  <HighlightedText text={v.name} query={searchKeyword} fallback="No title" />
-                  <small>(<code>{v.id}</code>)</small>
-                </Typography>
-                <Typography variant="body2" component="span" display="block" color="textSecondary">
-                  <HighlightedText text={v.artist} query={searchKeyword}
-                                   fallback="Various artists" /> / <HighlightedText text={v.album} query={searchKeyword}
-                                                                                    fallback="Unknown artists" />
-                </Typography>
-                <Typography variant="body2" component="span" display="block" color="textSecondary">
-                  <CheckURLChip label="Preview" url={v.listen_url} className={styles.chip} />
-                  <CheckURLChip label="Cover art" url={v.pic_url} className={styles.chip} />
-                  <CheckURLChip label="Lyrics" url={v.lyric ? `data:text/plain,${encodeURIComponent(v.lyric)}` : null}
-                                className={styles.chip} />
-                </Typography>
-              </ListItemText>
-              <ListItemSecondaryAction>
-                <IconButton onClick={downloadFile(v)}>
-                  <GetAppIcon />
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}</List>}
+              .sort((a, b) => {
+                const aq = `${a.name}${a.artist}${a.album}`;
+                const bq = `${b.name}${b.artist}${b.album}`;
+                const ac = match(aq, searchKeyword).length, bc = match(bq, searchKeyword).length;
+                return bc - ac;
+              })
+              .map((v, idx) => (
+                <ListItem key={idx} alignItems="flex-start">
+                  <ListItemAvatar>
+                    <Badge overlap="rectangle" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                           badgeContent={<BadgeAvatar>{v.source}</BadgeAvatar>}>
+                      <Avatar src={v.pic_url} variant="rounded"><MusicNoteIcon /></Avatar>
+                    </Badge>
+                  </ListItemAvatar>
+                  <ListItemText disableTypography>
+                    <Typography variant="body1" component="span" display="block">
+                      <HighlightedText text={v.name} query={searchKeyword} fallback="No title" />
+                      <small>(<code>{v.id}</code>)</small>
+                    </Typography>
+                    <Typography variant="body2" component="span" display="block" color="textSecondary">
+                      <HighlightedText text={v.artist} query={searchKeyword}
+                                       fallback="Various artists" /> / <HighlightedText text={v.album}
+                                                                                        query={searchKeyword}
+                                                                                        fallback="Unknown artists" />
+                    </Typography>
+                    <Typography variant="body2" component="span" display="block" color="textSecondary">
+                      <CheckURLChip label="Preview" url={v.listen_url} className={styles.chip} />
+                      <CheckURLChip label="Cover art" url={v.pic_url} className={styles.chip} />
+                      <CheckURLChip label="Lyrics"
+                                    url={v.lyric ? `data:text/plain,${encodeURIComponent(v.lyric)}` : null}
+                                    className={styles.chip} />
+                    </Typography>
+                  </ListItemText>
+                  <ListItemSecondaryAction>
+                    <IconButton onClick={downloadFile(v)}>
+                      <GetAppIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}</List>}
           {searchMusicQuery.loading && <Alert severity="info">Loading...</Alert>}
-          <ButtonRow>
+          <ButtonRow className={styles.buttonRow}>
             <Button variant="outlined" onClick={() => setStep(v => v - 1)}>Back</Button>
           </ButtonRow>
         </StepContent>

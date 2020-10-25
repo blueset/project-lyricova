@@ -16,13 +16,14 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props {
   children: ReactNode;
+  className?: string;
 }
 
-export default function ButtonRow({ children }: Props) {
+export default function ButtonRow({ children, className }: Props) {
   const styles = useStyles();
 
   return (
-    <div className={styles.row}>
+    <div className={clsx(styles.row, className)}>
       {Children.map(children, (child) => {
         if (!isValidElement(child)) {
           return null;
