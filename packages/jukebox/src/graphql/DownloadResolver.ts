@@ -1,19 +1,77 @@
-import { Request, Response, NextFunction, Router } from "express";
-import youtubedl, { Options, Info } from "youtube-dl";
+import youtubedl, { Info, Options } from "youtube-dl";
 import fs from "fs";
 import Path from "path";
-import { VIDEO_FILES_PATH } from "../utils/secret";
+import { MUSIC_FILES_PATH, MXGET_API_PATH, MXGET_BINARY, VIDEO_FILES_PATH } from "../utils/secret";
 import { promisify } from "util";
 import shortid from "shortid";
 import { pythonBridge, PythonBridge } from "python-bridge";
 import { GraphQLJSONObject } from "graphql-type-json";
-import { encrypt, decrypt } from "../utils/crypto";
-import { Resolver, Mutation, Arg, Field, InputType, ObjectType, Int, createUnionType, Query, Float } from "type-graphql";
+import { decrypt, encrypt } from "../utils/crypto";
+import axios from "axios";
+import {
+  Arg,
+  Authorized,
+  createUnionType,
+  Field,
+  Float, ID,
+  InputType,
+  Int,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver
+} from "type-graphql";
 import { GraphQLString } from "graphql";
+import { exec, execSync } from "child_process";
+import { findFilesModifiedAfter } from "../utils/fs";
 
+function asyncExec(command: string): Promise<{ stderr: string, stdout: string }> {
+  return new Promise<{ stderr: string; stdout: string }>((resolve, reject) => {
+    exec(command, (err, stdout, stderr) => {
+      if (err) reject(err);
+      resolve({ stderr, stdout });
+    });
+  });
+}
+
+type MxGetSourceType = "netease" | "qq" | "migu" | "kugou" | "kuwo" | "xiami" | "qianqian";
+const MXGET_SOURCES: MxGetSourceType[] = ["netease", "qq", "migu", "kugou", "kuwo", "xiami", "qianqian"];
+
+interface MxGetSearchResultItem {
+  album: string;
+  artist: string;
+  id: string;
+  name: string;
+}
+
+interface MxGetSearchResultDetails extends MxGetSearchResultItem {
+  listen_url?: string;
+  lyric?: string;
+  pic_url?: string;
+}
+
+@ObjectType()
+export class MxGetSearchResult implements MxGetSearchResultItem {
+  @Field()
+  source: MxGetSourceType;
+  @Field()
+  album: string;
+  @Field()
+  artist: string;
+  @Field(type => ID)
+  id: string;
+  @Field()
+  name: string;
+  @Field({ nullable: true })
+  listen_url?: string;
+  @Field({ nullable: true })
+  lyric?: string;
+  @Field({ nullable: true })
+  pic_url?: string;
+}
 
 @InputType()
-class YouTubeDlDownloadOptions {
+export class YouTubeDlDownloadOptions {
   @Field({ description: "Name of file to save as.", nullable: true })
   filename?: string;
 
@@ -22,14 +80,14 @@ class YouTubeDlDownloadOptions {
 }
 
 @ObjectType()
-class YouTubeDlInfo {
+export class YouTubeDlInfo {
   @Field()
   sessionId: string;
 
   @Field()
   filename: string;
 
-  @Field(type => Int)
+  @Field(type => Int, { description: "Size of file in bytes, precision to every 10486 bytes." })
   size: number;
 
   @Field(type => GraphQLJSONObject)
@@ -37,7 +95,7 @@ class YouTubeDlInfo {
 }
 
 @ObjectType()
-class YouTubeDlDownloadMessage {
+export class YouTubeDlDownloadMessage {
   @Field()
   message: string;
 }
@@ -54,7 +112,7 @@ const YouTubeDLDownloadResponse = createUnionType({
 });
 
 @ObjectType()
-class MusicDlSearchResult {
+export class MusicDlSearchResult {
 
   @Field()
   source: string;
@@ -106,7 +164,7 @@ export class DownloadResolver {
     console.log(`Download failed: ${sessionId}, ${error}`);
   }
 
-  @Mutation(returns => YouTubeDLDownloadResponse, { description: "Download audio via youtube-dl." })
+  @Mutation(returns => YouTubeDLDownloadResponse, { description: "Download video via youtube-dl." })
   public async youTubeDlDownloadVideo(
     @Arg("url") url: string,
     @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions
@@ -169,7 +227,7 @@ export class DownloadResolver {
   }
 
   @Mutation(returns => YouTubeDLDownloadResponse, { description: "Download audio via youtube-dl." })
-  public youtubeDlAudio(
+  public youtubeDlDownloadAudio(
     @Arg("url") url: string,
     @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions
   ): Promise<YouTubeDlDownloadMessage | YouTubeDlInfo> {
@@ -264,6 +322,7 @@ import codecs
 import sys
 from music_dl.source import MusicSource
 from music_dl import config
+from pytimeparse import parse
 
 ms = MusicSource()
 config.init()
@@ -272,21 +331,24 @@ def search(term):
     result = ms.search(
         term, ["baidu", "kugou", "netease", "163", "qq", "migu"]
     )
-    data = [
-        {
+    data = []
+    for i in result:
+        duration = i.duration
+        if isinstance(duration, str):
+            duration = parse(duration)
+        
+        data.append({
             "source": i.source,
             "title": i.title,
             "artists": i.singer,
             "album": i.album,
-            "duration": i.duration,
-            "size": i.size,
+            "duration": duration,
+            "size": round(i.size * 1048576),
             "songURL": i.song_url,
             "lyricsURL": i.lyrics_url,
             "coverURL": i.cover_url,
             "pickle": codecs.encode(pickle.dumps(i), "base64").decode()
-        }
-        for i in result
-    ]
+        })
     return data
 
 
@@ -308,7 +370,9 @@ def download():
   public async musicDlSearch(@Arg("query") query: string): Promise<MusicDlSearchResult[]> {
     const python = await this.prepareMusicDlPythonSession();
     const outcome: MusicDlSearchResult[] = await python`search(${query})`;
-    outcome.forEach(v => { v.pickle = encrypt(v.pickle); });
+    outcome.forEach(v => {
+      v.pickle = encrypt(v.pickle);
+    });
     await python.end();
     return outcome;
   }
@@ -318,7 +382,11 @@ def download():
    * POST .../music-dl
    * <Encrypted pickle data>
    */
-  @Mutation(returns => GraphQLString, { nullable: true, description: "Download a file via music-dl and return the path downloaded." })
+  @Authorized("ADMIN")
+  @Mutation(returns => GraphQLString, {
+    nullable: true,
+    description: "Download a file via music-dl and return the path downloaded."
+  })
   public async musicDlDownload(@Arg("pickle") encrypted: string): Promise<string> {
     const payload = decrypt(encrypted);
     const python = await this.prepareMusicDlPythonSession();
@@ -328,5 +396,61 @@ def download():
     // TODO: move file to right place
     await python.end();
     return outcome;
+  }
+
+  @Query(returns => [MxGetSearchResult])
+  public async mxGetSearch(@Arg("query") query: string): Promise<MxGetSearchResult[]> {
+    const results: MxGetSearchResult[] = [];
+    await Promise.all(MXGET_SOURCES.map(async (source) => {
+      try {
+        const resp = await axios.get<{ data: MxGetSearchResultItem[] }>(`${MXGET_API_PATH}${source}/search/${encodeURIComponent(query)}`);
+        await Promise.all(resp.data.data.map(async (item) => {
+          try {
+            const resp = await axios.get<{ data: MxGetSearchResultDetails }>(`${MXGET_API_PATH}${source}/song/${item.id}`);
+            results.push({
+              ...resp.data.data,
+              source
+            });
+          } catch (e) {
+            console.error(`[mxget] error occurred while getting ${item.id} from ${source}`, e);
+          }
+        }));
+      } catch (e) {
+        if (e?.data?.msg === "search songs: no data") return;
+        console.error(`[mxget] error occurred while searching for ${query} from ${source}`, e);
+      }
+    }));
+    return results;
+  }
+
+  @Authorized("ADMIN")
+  @Mutation(returns => GraphQLString, {
+    nullable: true,
+    description: "Download a file via MxGet and return the path downloaded."
+  })
+  public async mxGetDownload(
+    @Arg("source", type => String) source: MxGetSourceType,
+    @Arg("id", type => ID) id: MxGetSourceType,
+  ): Promise<string> {
+    if (MXGET_SOURCES.indexOf(source) < 0) throw new Error(`${source} is not a valid source.`);
+    if (!id.match(/^[0-9a-zA-Z]+$/)) throw new Error(`${id} is not a valid ID.`);
+
+    execSync(`${MXGET_BINARY} config --dir '${MUSIC_FILES_PATH}'`);
+    const startTime = new Date();
+
+    const { stderr } = await asyncExec(`${MXGET_BINARY} song --from ${source} --id ${id} --lyric --tag`);
+    if (stderr.includes("[ERROR]")) {
+      console.error("Failed to download music file", source, id, stderr);
+      return null;
+    }
+
+    const files =
+      findFilesModifiedAfter(startTime, MUSIC_FILES_PATH).filter(v => {
+        const l = v.toLowerCase();
+        return !l.endsWith(".lrc") && !l.endsWith(".lrcx");
+      });
+
+    if (files.length > 0) return files[0];
+    return null;
   }
 }

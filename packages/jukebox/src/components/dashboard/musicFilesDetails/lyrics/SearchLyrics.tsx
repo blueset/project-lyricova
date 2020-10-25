@@ -40,7 +40,7 @@ const SEARCH_LYRICS_QUERY = gql`
     lyricsKitSearch(title: $title, artists: $artists, options: {
       duration: $duration,
       useLRCX: true,
-    }, sessionId: $sessionId) {
+    }, sessionId: $sessionId) @connection(key: "lyricsKitSearch", filter: ["title", "artists", "options"]) {
       lyrics
       quality
       isMatched
@@ -180,8 +180,6 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
   const [searchResults, setSearchResults] = useNamedState<LyricsKitLyricsEntry[]>([], "searchResults");
-  const searchResultsRef = useRef<LyricsKitLyricsEntry[]>();
-  searchResultsRef.current = searchResults;
   const parsedResults = useMemo(() => searchResults.map((v) => {
     try {
       const lyrics = new Lyrics(v.lyrics);
@@ -224,9 +222,11 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
           const zenSubscription = subscription.subscribe({
             next(x) {
               if (x.data.lyricsKitSearchIncremental !== null) {
-                const arr = [...searchResultsRef.current, x.data.lyricsKitSearchIncremental];
-                arr.sort((a, b) => b.quality - a.quality);
-                setSearchResults(arr);
+                setSearchResults((results) => {
+                  const arr = [...results, x.data.lyricsKitSearchIncremental];
+                  arr.sort((a, b) => b.quality - a.quality);
+                  return arr;
+                });
               }
             },
             error(err) {
@@ -289,9 +289,9 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
         secondaryAction: styles.secondaryAction
       }}>
         <ListItemAvatar>
-          <Badge overlap="circle" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          <Badge overlap="rectangle" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                  badgeContent={<BadgeAvatar>{v.metadata?.source}</BadgeAvatar>}>
-            <Avatar src={v.metadata?.artworkURL}><MusicNoteIcon /></Avatar>
+            <Avatar src={v.metadata?.artworkURL} variant="rounded"><MusicNoteIcon /></Avatar>
           </Badge>
         </ListItemAvatar>
         <ListItemText disableTypography>
@@ -300,9 +300,11 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
           <em>Various artists</em>} / {v.tags?.al || <em>Unknown album</em>}</Typography>
           <Typography variant="body2" component="span" display="block" color="textSecondary"
                       noWrap>{v.lyrics.replace(/\n?\[[^\]]*?]/g, "¶").replace(/^¶+/g, "")}</Typography>
-          <Typography variant="body2" component="span" display="block" color="textSecondary"><InlineAnalysisResult
-            result={parsedResults[idx]?.analysis} duration={duration}
-            length={v.tags?.length as number | undefined} /></Typography>
+          <Typography variant="body2" component="span" display="block" color="textSecondary">
+            <InlineAnalysisResult
+              result={parsedResults[idx]?.analysis} duration={duration}
+              length={v.tags?.length as number | undefined} />
+          </Typography>
         </ListItemText>
         <ListItemSecondaryAction>
           <TooltipIconButton title="Copy lyrics" onClick={copyText(v.lyrics)}><ContentCopyIcon /></TooltipIconButton>

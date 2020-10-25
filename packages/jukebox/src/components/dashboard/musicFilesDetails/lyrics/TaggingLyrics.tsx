@@ -227,14 +227,17 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
     setLinesPerTag(extrapolated);
   }, [linearRegressionResult, setLinesPerTag]);
 
-  const moveCursor = useCallback((idx: number) => {
-    idx = _.clamp(idx, 0, linesPerTagRef.current.length);
-    setCursor(idx);
-    if (linesPerTagRef.current.length > 0 && listRef.current) {
-      const item = listRef.current.children[idx] as HTMLElement;
-      if (!item) return;
-      item.scrollIntoView({ block: "center", behavior: "smooth" });
-    }
+  const moveCursor = useCallback((idx: number | ((orig: number) => number)) => {
+    setCursor((orig) => {
+      let nidx = (typeof idx !== "number")  ? idx(orig) : idx;
+      nidx = _.clamp(nidx, 0, linesPerTagRef.current.length);
+      if (linesPerTagRef.current.length > 0 && listRef.current) {
+        const item = listRef.current.children[nidx] as HTMLElement;
+        if (!item) return nidx;
+        item.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+      return nidx;
+    });
   }, [setCursor]);
 
   const onLineClick = useCallback(
@@ -289,9 +292,10 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
           setLinesPerTag(linesPerTag);
           setCurrentLine(BLANK_LINE);
         } else {
-          const extrapolateTags = [...extrapolateTagsRef.current];
-          extrapolateTags[cursorRef.current] = null;
-          setExtrapolateTags(extrapolateTags);
+          setExtrapolateTags((extrapolateTags) => {
+            extrapolateTags[cursorRef.current] = null;
+            return extrapolateTags;
+          });
         }
         return;
       }
@@ -327,24 +331,26 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         const time = playerRef.current.currentTime;
         const cursor = cursorRef.current;
         if (!isInExtrapolateModeRef.current) {
-          const linesPerTag = [...linesPerTagRef.current];
-          const line = linesPerTag[cursorRef.current];
-          if (!line) return;
-          line[0] = time;
-          setLinesPerTag(linesPerTag);
-          setCurrentLine(BLANK_LINE);
+          setLinesPerTag((linesPerTag) => {
+            const line = linesPerTag[cursorRef.current];
+            if (!line) return linesPerTag;
+            line[0] = time;
+            setCurrentLine(BLANK_LINE);
+            return linesPerTag;
+          });
         } else {
-          const extrapolateTags = [...extrapolateTagsRef.current];
-          extrapolateTags[cursorRef.current] = time;
-          setExtrapolateTags(extrapolateTags);
+          setExtrapolateTags((extrapolateTags) => {
+            extrapolateTags[cursorRef.current] = time;
+            return extrapolateTags;
+          });
         }
-        moveCursor(cursor + 1);
+        moveCursor(cursor => cursor + 1);
       } else if (["ArrowUp", "KeyW", "KeyJ", "Up", "W", "w", "J", "j"].includes(codeOrKey)) {
         ev.preventDefault();
-        moveCursor((cursorRef.current || 1) - 1);
+        moveCursor(cursor => (cursor || 1) - 1);
       } else if (["ArrowDown", "KeyS", "KeyK", "Down", "S", "s", "K", "k"].includes(codeOrKey)) {
         ev.preventDefault();
-        moveCursor((cursorRef.current || 0) + 1);
+        moveCursor(cursor => (cursor || 0) + 1);
       } else if (codeOrKey === "Home") {
         ev.preventDefault();
         moveCursor(0);
@@ -353,10 +359,10 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         moveCursor((linesPerTagRef.current?.length ?? 1) - 1);
       } else if (codeOrKey === "PageUp") {
         ev.preventDefault();
-        moveCursor((cursorRef.current || 10) - 10);
+        moveCursor(cursor => (cursor || 10) - 10);
       } else if (codeOrKey === "PageDown") {
         ev.preventDefault();
-        moveCursor((cursorRef.current || 0) + 10);
+        moveCursor(cursor => (cursor || 0) + 10);
       } else if (["ArrowLeft", "KeyA", "KeyH", "Left", "A", "a", "H", "h"].includes(codeOrKey)) {
         ev.preventDefault();
         if (playerRef.current) playerRef.current.currentTime -= 5;

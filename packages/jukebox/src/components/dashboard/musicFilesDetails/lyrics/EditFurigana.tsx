@@ -110,9 +110,10 @@ export default function EditFurigana({ lyrics, setLyrics }: Props) {
   // Save current line furigana
   const saveCurrentLine = useCallback((idx: number) => (line: LyricsLine) => {
     // Copy `lines` for React to recognize it as a new state
-    const newLines = [...linesRef.current];
-    newLines[idx] = line;
-    setLines(newLines);
+    setLines((l) => {
+      l[idx] = line;
+      return l;
+    });
   }, [setLines]);
 
   return (

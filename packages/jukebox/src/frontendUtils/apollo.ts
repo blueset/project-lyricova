@@ -1,9 +1,8 @@
-import { ApolloClient, InMemoryCache, createHttpLink, split } from "@apollo/client";
+import { ApolloClient, InMemoryCache, createHttpLink, split, defaultDataIdFromObject } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { LS_JWT_KEY } from "./localStorage";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { getMainDefinition } from "@apollo/client/utilities";
-
 
 const httpLink = createHttpLink({
   uri: "/graphql",

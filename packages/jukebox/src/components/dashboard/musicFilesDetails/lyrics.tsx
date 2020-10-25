@@ -41,11 +41,12 @@ interface Props {
   refresh: () => unknown | Promise<unknown>;
 }
 
+dayjs.extend(utc);
+
 export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, title, artists, duration, songId }: Props) {
   const styles = useStyle();
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
-  dayjs.extend(utc);
 
   const [isLyricsEditDialogOpen, toggleLyricsEditDialogOpen] = useNamedState(false, "isLyricsEditDialogOpen");
 

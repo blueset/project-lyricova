@@ -3711,6 +3711,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/autosuggest-highlight@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@types/autosuggest-highlight@npm:3.1.0"
+  checksum: 940fa0274e611750f78994ee7eb8a3668677ea47fa83256439d2acc53e5082e9875a00308e5d7304c1f5daf632807b7a242f591d2ae5e7a0c9e511f5c9fe1c1b
+  languageName: node
+  linkType: hard
+
 "@types/bcryptjs@npm:^2.4.2":
   version: 2.4.2
   resolution: "@types/bcryptjs@npm:2.4.2"
@@ -5921,6 +5928,15 @@ __metadata:
   bin:
     autoprefixer: bin/autoprefixer
   checksum: b406d8047a97fcc39c9c6d208fd6f1974e5957800461d9a79457a3ecaca2c0ea090bd06f30c8653f48f751c31115c63a80502ff8c9a6bb7b8a5a5063021827d4
+  languageName: node
+  linkType: hard
+
+"autosuggest-highlight@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "autosuggest-highlight@npm:3.1.1"
+  dependencies:
+    diacritic: 0.0.2
+  checksum: 7760458b746759b1d16f404cbcec8197725879fef6efb6d175db552354229be52972a8a83611a9c9814b6bd39240e68bf59ce42211a3c601c5fea9bc5f9abf03
   languageName: node
   linkType: hard
 
@@ -9325,6 +9341,13 @@ __metadata:
     detect: ./bin/detect-port
     detect-port: ./bin/detect-port
   checksum: 4ebfc40948cd3dc20c5bbef95018ead433d522b6ef0e2efae2d20943632a815db80435a78212525f05b492331b05e66af51d260e42f8bfe6145f66e2a223f054
+  languageName: node
+  linkType: hard
+
+"diacritic@npm:0.0.2":
+  version: 0.0.2
+  resolution: "diacritic@npm:0.0.2"
+  checksum: 9976179341a03eb800ea91f13dddd5145d1d8539209be9b1288286fb95dd800aa132a85d4664475ee7a5ae6167928c459821efde62de0299757b4bd8a5d8b2d4
   languageName: node
   linkType: hard
 
@@ -14715,6 +14738,7 @@ fsevents@^1.2.7:
     "@material-ui/lab": ^4.0.0-alpha.56
     "@next/bundle-analyzer": ^9.5.3
     "@types/async": ^3.0.3
+    "@types/autosuggest-highlight": ^3.1.0
     "@types/bcryptjs": ^2.4.2
     "@types/bluebird": ^3.5.29
     "@types/body-parser": ^1.17.1
@@ -14750,6 +14774,7 @@ fsevents@^1.2.7:
     "@typescript-eslint/parser": ^3.10.1
     apollo-server-express: ^2.18.2
     async: ^3.1.0
+    autosuggest-highlight: ^3.1.1
     axios: ^0.19.2
     bcryptjs: ^2.4.3
     bluebird: ^3.7.2
