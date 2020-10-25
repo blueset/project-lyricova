@@ -2,7 +2,7 @@ import {
   Avatar,
   Badge,
   Button,
-  Chip,
+  Chip, CircularProgress,
   IconButton,
   List,
   ListItem,
@@ -20,7 +20,7 @@ import {
 import { ChangeEvent, Dispatch, ReactNode, SetStateAction, useCallback } from "react";
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import { MxGetSearchResult } from "../../graphql/DownloadResolver";
 import { Alert } from "@material-ui/lab";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
@@ -31,9 +31,11 @@ import ClearIcon from "@material-ui/icons/Clear";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import GetAppIcon from "@material-ui/icons/GetApp";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import { NextComposedLink } from "../Link";
 import parse from "autosuggest-highlight/parse";
 import match from "autosuggest-highlight/match";
+import { useSnackbar } from "notistack";
 
 const MUSIC_DL_SEARCH_QUERY = gql`
   query($query: String!) {
@@ -46,6 +48,20 @@ const MUSIC_DL_SEARCH_QUERY = gql`
       pic_url
       listen_url
       lyric
+    }
+  }
+`;
+
+const MUSIC_DL_DOWNLOAD_MUTATION = gql`
+  mutation($source: String!, $id: ID!) {
+    mxGetDownload(id: $id, source: $source)
+  }
+`;
+
+const SINGLE_FILE_SCAN_MUTATION = gql`
+  mutation($path: String!) {
+    scanByPath(path: $path) {
+      id
     }
   }
 `;
@@ -128,6 +144,8 @@ dayjs.extend(utc);
 export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) {
   const [searchKeyword, setSearchKeyword] = useNamedState("", "searchKeyword");
   const styles = useStyles();
+  const apolloClient = useApolloClient();
+  const snackbar = useSnackbar();
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(event.target.value);
@@ -138,6 +156,49 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
     await searchMusic({ variables: { query: searchKeyword } });
     setStep(v => v + 1);
   }, [searchKeyword, searchMusic, setStep]);
+
+  /** Download state. Null = no result. >= 0, -1: Fail */
+  const [downloadState, setDownloadState] = useNamedState<number | null>(null, "downloadState");
+
+  const downloadFile = useCallback((file: MxGetSearchResult) => async () => {
+    setStep(v => v + 1);
+    setDownloadState(null);
+
+    try {
+      const outcome = await apolloClient.mutate<{ mxGetDownload: string | null }>({
+        mutation: MUSIC_DL_DOWNLOAD_MUTATION,
+        variables: { id: file.id, source: file.source }
+      });
+
+      const filePath = outcome.data.mxGetDownload;
+      if (filePath === null) {
+        snackbar.enqueueSnackbar(`Failed to download ${file.name} (${file.id}) form ${file.source}`, { variant: "error" });
+        setDownloadState(-1);
+        return;
+      }
+
+      // Scan the file downloaded.
+      const scanOutcome = await apolloClient.mutate<{ scanByPath: { id: number } }>({
+        mutation: SINGLE_FILE_SCAN_MUTATION,
+        variables: { path: filePath },
+      });
+      setDownloadState(scanOutcome.data.scanByPath.id);
+      snackbar.enqueueSnackbar(
+        `File downloaded with database ID ${scanOutcome.data.scanByPath.id} and path ${filePath}.`,
+        {
+          variant: "success",
+          action: <Button color="default"
+                          component={NextComposedLink}
+                          href={`/dashboard/review/${downloadState}`}>
+            Review file
+          </Button>
+        }
+      );
+    } catch (e) {
+      console.error("Error occurred while downloading file", e);
+      snackbar.enqueueSnackbar(`Error occurred while downloading file: ${e}`, { variant: "error" });
+    }
+  }, [apolloClient, setDownloadState, setStep, snackbar]);
 
   return (
     <Stepper activeStep={step} orientation="vertical">
@@ -158,7 +219,15 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
       <Step key="mxget-2">
         <StepLabel>Search via <code>MxGet</code></StepLabel>
         <StepContent>
-          {searchMusicQuery.data && <List>{searchMusicQuery.data.mxGetSearch.map((v, idx) => (
+          {searchMusicQuery.data && <List>{
+            [...searchMusicQuery.data.mxGetSearch]
+            .sort((a, b) => {
+              const aq = `${a.name}${a.artist}${a.album}`;
+              const bq = `${b.name}${b.artist}${b.album}`;
+              const ac = match(aq, searchKeyword).length, bc = match(bq, searchKeyword).length;
+              return bc - ac;
+            })
+            .map((v, idx) => (
             <ListItem key={idx} alignItems="flex-start">
               <ListItemAvatar>
                 <Badge overlap="rectangle" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -168,10 +237,13 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
               </ListItemAvatar>
               <ListItemText disableTypography>
                 <Typography variant="body1" component="span" display="block">
-                  <HighlightedText text={v.name} query={searchKeyword} fallback="No title" /> <small>(<code>{v.id}</code>)</small>
+                  <HighlightedText text={v.name} query={searchKeyword} fallback="No title" />
+                  <small>(<code>{v.id}</code>)</small>
                 </Typography>
                 <Typography variant="body2" component="span" display="block" color="textSecondary">
-                  <HighlightedText text={v.artist} query={searchKeyword} fallback="Various artists" /> / <HighlightedText text={v.album} query={searchKeyword} fallback="Unknown artists" />
+                  <HighlightedText text={v.artist} query={searchKeyword}
+                                   fallback="Various artists" /> / <HighlightedText text={v.album} query={searchKeyword}
+                                                                                    fallback="Unknown artists" />
                 </Typography>
                 <Typography variant="body2" component="span" display="block" color="textSecondary">
                   <CheckURLChip label="Preview" url={v.listen_url} className={styles.chip} />
@@ -180,7 +252,11 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
                                 className={styles.chip} />
                 </Typography>
               </ListItemText>
-              <ListItemSecondaryAction><IconButton><GetAppIcon /></IconButton></ListItemSecondaryAction>
+              <ListItemSecondaryAction>
+                <IconButton onClick={downloadFile(v)}>
+                  <GetAppIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
             </ListItem>
           ))}</List>}
           {searchMusicQuery.loading && <Alert severity="info">Loading...</Alert>}
@@ -190,8 +266,18 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
         </StepContent>
       </Step>
       <Step key="mxget-3">
-        <StepLabel>Downloading...</StepLabel>
+        <StepLabel>{step !== 3 ? "Download" : downloadState === null ? "Downloading..." : "Download outcome"}</StepLabel>
         <StepContent>
+          {downloadState === null && <CircularProgress color="secondary" />}
+          <ButtonRow>
+            <Button disabled={downloadState === null || downloadState < 0} variant="contained" color="secondary"
+                    startIcon={<OpenInNewIcon />}
+                    component={NextComposedLink}
+                    href={`/dashboard/review/${downloadState}`}
+            >Review file</Button>
+            <Button variant="outlined" onClick={() => setStep(v => v - 1)}>Back</Button>
+            <Button variant="outlined" onClick={() => setStep(0)}>Go to first step</Button>
+          </ButtonRow>
         </StepContent>
       </Step>
     </Stepper>

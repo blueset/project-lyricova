@@ -195,7 +195,7 @@ export class MusicFileResolver {
     for (const chunk of chunkArray(entriesToAdd)) {
       await MusicFile.bulkCreate(chunk);
       progressObj.added += chunk.length;
-      if (sessionId ) await publish({ sessionId, data: progressObj });
+      if (sessionId) await publish({ sessionId, data: progressObj });
     }
 
     console.log("entries added.");
@@ -210,7 +210,11 @@ export class MusicFileResolver {
           const res = entry.updateSongEntry();
           if (res === null) progressObj.unchanged++;
           else progressObj.updated++;
-          if (sessionId && (progressObj.updated + progressObj.unchanged) % 10 === 0) await publish({ sessionId, data: progressObj });
+          if (sessionId && (progressObj.updated + progressObj.unchanged) % 10 === 0) await publish({
+            sessionId,
+            data: progressObj
+          });
+          return res;
         })
       )
     );
@@ -219,6 +223,32 @@ export class MusicFileResolver {
     console.log("entries updated.");
 
     return progressObj;
+  }
+
+  @Authorized("ADMIN")
+  @Mutation(returns => MusicFile, {
+    nullable: true,
+    description: "Scan a single file based on its path. This may create, update or delete an entry."
+  })
+  public async scanByPath(
+    @Arg("path", { description: "Path to scan relative to MUSIC_DATA_PATH." }) path: string
+  ): Promise<MusicFile | null> {
+    const fullPath = Path.resolve(MUSIC_FILES_PATH, path);
+    if (fs.existsSync(fullPath)) {
+      let file = await MusicFile.findOne({ where: { path } });
+      if (file === null) {
+        file = await MusicFile.build({ path }).buildSongEntry();
+        file = await MusicFile.create(file);
+      } else {
+        file = await file.updateSongEntry();
+      }
+      return file;
+    } else {
+      // Remove entry if exists
+      await MusicFile.destroy({ where: { path } });
+      return null;
+    }
+    return null;
   }
 
   @Query(returns => MusicFilesPagination)

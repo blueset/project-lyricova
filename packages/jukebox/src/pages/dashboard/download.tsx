@@ -34,7 +34,7 @@ export default function DownloadMusicFile() {
     <Step>
       <StepLabel>{step === 0 ? "Choose source" : `Source: ${chosenSource}`}</StepLabel>
       <StepContent>
-        <Typography gutterBottom>You can choose from one of the 2 sources for downloads.</Typography>
+        <Typography gutterBottom>You can choose from one of the 3 sources for downloads.</Typography>
         <ButtonRow>
           <Button variant="outlined" onClick={chooseSource("youtube-dl")}>Youtube-dl</Button>
           <Button variant="outlined" onClick={chooseSource("music-dl")}>Music-dl</Button>
