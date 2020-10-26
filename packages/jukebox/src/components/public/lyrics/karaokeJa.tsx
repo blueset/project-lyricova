@@ -5,13 +5,14 @@ import { makeStyles } from "@material-ui/core";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
 import clsx from "clsx";
-import { RefObject, useEffect, useMemo, useRef } from "react";
+import { RefObject, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import Measure from "react-measure";
 import measureElement, { measureTextWidths } from "../../../frontendUtils/measure";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
 
 type Timeline = gsap.core.Timeline;
+const COUNTDOWN_DURATION = 3;
 
 const SEQUENCE_QUERY = gql`
   query TypingSequence($text: String!, $furigana: [[FuriganaLabel!]!]! = []) {
@@ -80,6 +81,9 @@ const useStyle = makeStyles((theme) => {
       },
       "&.pending > span.after": {
         clipPath: ["inset(-30% 102% -10% -2%)", "!important"],
+      },
+      "&.active > span.after": {
+        clipPath: "inset(-30% 102% -10% -2%)",
       },
       "& > span.before": {
         position: "absolute",
@@ -175,14 +179,14 @@ function buildPages(lyrics: LyricsKitLyrics, duration: number): KaraokePage[] {
       pages.push({
         countdown,
         lines,
-        start: countdown ? start - 3 : start,
+        start: countdown ? start - COUNTDOWN_DURATION : start,
         end
       });
       i = lines[lines.length - 1] + 1;
       countdown = false;
     } else {
       // Line is empty
-      if (lineLengths[i] > 5) {
+      if (lineLengths[i] > COUNTDOWN_DURATION) {
         countdown = true;
       }
       i++;
@@ -229,17 +233,17 @@ function useNicokaraLyricsState(
       const gapAfter =
         ((idx + 1 < pages.length) ? pages[idx + 1].start :   // Has next page
           (playerRef.current?.duration) ? playerRef.current.duration :   // Has duration
-            v.end + 11)  // fallback to 11
+            v.end + COUNTDOWN_DURATION + 1)  // fallback to 11
         - v.end;
 
       if (v.countdown) {
-        frames.push({ start: v.start - 5, data: { pageIdx: idx, lineIdx: -1, showNext: false } });
+        frames.push({ start: v.start - COUNTDOWN_DURATION * 2, data: { pageIdx: idx, lineIdx: -1, showNext: false } });
       }
       for (let i = 0; i < v.lines.length; i++) {
         const line = lyrics.lines[v.lines[i]];
         frames.push({ start: line.position, data: { pageIdx: idx, lineIdx: i, showNext: false } });
         if (i + 1 === v.lines.length) {
-          if (gapAfter < 5) {
+          if (gapAfter < COUNTDOWN_DURATION) {
             frames.push({
               start: line.position + (v.end - line.position) / 2,
               data: { pageIdx: idx, lineIdx: i, showNext: true }
@@ -247,10 +251,10 @@ function useNicokaraLyricsState(
             if (gapAfter > 0 && idx + 1 < pages.length) {
               frames.push({ start: v.end, data: { pageIdx: idx + 1, lineIdx: null, showNext: false } });
             }
-          } else { // >= 5 seconds gap after
+          } else { // >= COUNTDOWN_DURATION seconds gap after
             frames.push({ start: v.end, data: { pageIdx: idx, lineIdx: v.lines.length, showNext: false } });
-            if (gapAfter > 10) {
-              frames.push({ start: v.end + 5, data: { pageIdx: null, lineIdx: null, showNext: false } });
+            if (gapAfter > COUNTDOWN_DURATION * 2) {
+              frames.push({ start: v.end + COUNTDOWN_DURATION, data: { pageIdx: null, lineIdx: null, showNext: false } });
             }
           }
         }
@@ -273,7 +277,7 @@ function Countdown({ activeRef, className }: CountdownProps) {
   const content = "●●●●●";
   return <div className={clsx("countdown", className)}>
     <span className="before">{content}</span>
-    <span className="after" ref={activeRef} style={activeRef ? undefined : {}}>
+    <span className="after" ref={activeRef}>
       <span>{content}</span>
     </span>
   </div>;
@@ -288,12 +292,17 @@ interface LyricsLineProps {
 }
 
 function LyricsLine({ textLine, furiganaLine, done, activeRef, className }: LyricsLineProps) {
+  const thisRef = useRef<HTMLSpanElement>();
+  const elm = activeRef?.current || thisRef.current;
+  if (elm && (activeRef === null || done)) {
+    elm.style.clipPath = "inset(-30% 102% -10% -2%)";
+  }
   const content = furiganaLine !== null ?
     <FuriganaLyricsLine transliterationLine={furiganaLine} /> :
     <span>{textLine}</span>;
-  return <div className={clsx(className, done && "done", !done && !activeRef && "pending")}>
+  return <div className={clsx(className, done && "done", !done && !activeRef && "pending", activeRef && "active")}>
     <span className="before">{content}</span>
-    <span className="after" ref={activeRef} style={activeRef ? undefined : {}}>
+    <span className="after" ref={activeRef || thisRef}>
       <span>{content}</span>
     </span>
   </div>;
@@ -394,7 +403,7 @@ function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana,
       const nextPageLines = buildPageClasses(nextPage.lines, lyrics, furigana, containerWidth, lineClassName);
       linesToShow = linesToShow.concat(nextPageLines.slice(0, nextPageLines.length - 1));
       linesToShow.push(thisPageWithClass[thisPageWithClass.length - 1]);
-    } else if (lineIdx !== null) {
+    } else {
       linesToShow = linesToShow.concat(thisPageWithClass);
     }
     linesToShow = linesToShow.slice(linesToShow.length - 4);
@@ -488,13 +497,15 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     if (currentFrame !== null && lineIdx === null) {
       return [null, currentFrame?.start, lyrics.lines[page.lines[0]].position];
     }
-    if (lineIdx < 0) return [null, page.start - 5, page.start];
+
+    // Countdown pages starts COUNTDOWN_DURATION seconds earlier than first line.
+    if (lineIdx < 0) return [null, page.start, page.start + COUNTDOWN_DURATION];
     const line = lyrics.lines[page.lines[lineIdx]];
     if (!line) return [null, null, null];
     const start = line.position;
     const end = (lineIdx + 1 === page.lines.length) ? page.end : lyrics.lines[page.lines[lineIdx + 1]].position;
     return [line, start, end] as [LyricsKitLyricsLine, number, number];
-  }, [pageIdx, lineIdx, pages, lyrics.lines]);
+  }, [pageIdx, pages, lineIdx, currentFrame, lyrics.lines]);
   const currentLineStartRef = useRef<number | null>();
   currentLineStartRef.current = currentLineStart;
 
@@ -513,68 +524,76 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   );
 
   const timelineRef = useRef<Timeline>();
+  // Line object or -1 for countdown.
+  const timelineForRef = useRef<LyricsKitLyricsLine | -1 | null>();
+
   useEffect(() => {
-    if (timelineRef.current) timelineRef.current.kill();
-    const tl = gsap.timeline({ paused: playerState.state === "paused" });
-    if (activeRef.current && currentLineEnd !== null && currentLineStart !== null) {
-      const duration = currentLineEnd - currentLineStart;
-      const activeSpan = activeRef.current;
-      if (currentLine?.attachments?.timeTag) {
-        activeSpan.style.clipPath = "inset(-30% 102% -10% -2%)";
-        const lengths = measureTextWidths(activeRef.current);
-        const length = lengths[lengths.length - 1];
-        const percentages = lengths.map(v => {
-          // Scale percentages
-          const val = (1 - (v / length)) * 100;
-          if (val === 0) return -2;
-          if (val === 100) return 102;
-          return val;
-        });
-        const tags = currentLine.attachments.timeTag.tags;
-        activeSpan.style.clipPath = "inset(-30% 102% -10% -2%)";
-        tl.set(activeSpan, {
-          clipPath: "inset(-30% 102% -10% -2%)",
-        }, 0);
-        tags.forEach((v, idx) => {
-          const duration = idx > 0 ? v.timeTag - tags[idx - 1].timeTag : v.timeTag;
-          const start = idx > 0 ? tags[idx - 1].timeTag : 0;
-          let percentage = -2;
-          if (v.index > 0) percentage = percentages[v.index - 1];
-          tl.to(activeSpan, {
-            clipPath: `inset(-30% ${percentage}% -10% -2%)`,
-            ease: "none",
-            duration
-          }, start);
-        });
-      } else {
-        if (currentLine !== null) {
-          tl.fromTo(activeSpan, {
+    const activeSpan = activeRef.current;
+    const shouldUseTimelineFor = currentLine !== null ? currentLine : activeSpan !== null ? -1 : null;
+    // Build new timeline for new lyrics line
+    if (shouldUseTimelineFor !== timelineForRef.current) {
+
+      if (timelineRef.current) timelineRef.current.kill();
+      const tl = gsap.timeline({
+        paused: playerState.state === "paused"
+      });
+      timelineForRef.current = shouldUseTimelineFor;
+      if (currentLine === null && activeSpan !== null) timelineForRef.current = -1;
+      if (activeSpan && currentLineEnd !== null && currentLineStart !== null) {
+        const duration = currentLineEnd - currentLineStart;
+        console.log("start, end, dur", currentLineStart, currentLineEnd, duration, shouldUseTimelineFor);
+        if (currentLine?.attachments?.timeTag) {
+          const lengths = measureTextWidths(activeSpan);
+          const length = lengths[lengths.length - 1];
+          const percentages = lengths.map(v => {
+            // Scale percentages
+            const val = (1 - (v / length)) * 100;
+            if (val === 0) return -2;
+            if (val === 100) return 102;
+            return val;
+          });
+          const tags = currentLine.attachments.timeTag.tags;
+          tl.set(activeSpan, {
             clipPath: "inset(-30% 102% -10% -2%)",
-          }, {
-            clipPath: "inset(-30% -2% -10% -2%)",
-            ease: "none",
-            duration,
+          }, 0);
+          tags.forEach((v, idx) => {
+            const duration = idx > 0 ? v.timeTag - tags[idx - 1].timeTag : v.timeTag;
+            const start = idx > 0 ? tags[idx - 1].timeTag : 0;
+            let percentage = -2;
+            if (v.index > 0) percentage = percentages[v.index - 1];
+            tl.to(activeSpan, {
+              clipPath: `inset(-30% ${percentage}% -10% -2%)`,
+              ease: "none",
+              duration
+            }, start);
           });
         } else {
-          // Countdown
-          tl.fromTo(activeSpan, {
-            clipPath: "inset(-30% -2% -10% 102%)",
-          }, {
-            clipPath: "inset(-30% -2% -10% -2%)",
-            ease: "none",
-            duration,
-          });
+          if (currentLine !== null) {
+            tl.fromTo(activeSpan, {
+              clipPath: "inset(-30% 102% -10% -2%)",
+            }, {
+              clipPath: "inset(-30% -2% -10% -2%)",
+              ease: "none",
+              duration,
+            });
+          } else {
+            // Countdown
+            tl.fromTo(activeSpan, {
+              clipPath: "inset(-30% -2% -10% 102%)",
+            }, {
+              clipPath: "inset(-30% -2% -10% -2%)",
+              ease: "none",
+              duration,
+            });
+          }
         }
       }
+      timelineRef.current = tl;
     }
-    timelineRef.current = tl;
-  }, [pageIdx, lineIdx, playerState.state, currentLineEnd, currentLineStart, currentLine]);
 
-  // Controls the progress of timeline
-  useEffect(() => {
-    const timeline = timelineRef.current;
+    // Controls the progress of timeline
     const now = performance.now();
-
+    const timeline = timelineRef.current;
     if (timeline) {
       const start = currentLineStartRef.current || 0;
       if (playerState.state === "playing") {
@@ -587,7 +606,8 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
         timeline.seek(inlineProgress);
       }
     }
-  }, [playerState]);
+  }, [playerState, pageIdx, lineIdx, currentLineEnd, currentLineStart, currentLine]);
+
 
   let node = <span>...</span>;
   if (sequenceQuery.error) node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
