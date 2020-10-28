@@ -17,7 +17,7 @@ import {
   Theme,
   Typography
 } from "@material-ui/core";
-import { ChangeEvent, Dispatch, ReactNode, SetStateAction, useCallback } from "react";
+import { ChangeEvent, Dispatch, FormEvent, ReactNode, SetStateAction, useCallback } from "react";
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
@@ -160,9 +160,11 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
   }, [setSearchKeyword]);
 
   const [searchMusic, searchMusicQuery] = useLazyQuery<{ mxGetSearch: MxGetSearchResult[] }>(MUSIC_DL_SEARCH_QUERY);
-  const handleSearch = useCallback(async () => {
+  const handleSearch = useCallback(async (e: FormEvent) => {
+    e.preventDefault();
     await searchMusic({ variables: { query: searchKeyword } });
     setStep(v => v + 1);
+    return false;
   }, [searchKeyword, searchMusic, setStep]);
 
   /** Download state. Null = no result. >= 0, -1: Fail */
@@ -206,7 +208,7 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
       console.error("Error occurred while downloading file", e);
       snackbar.enqueueSnackbar(`Error occurred while downloading file: ${e}`, { variant: "error" });
     }
-  }, [apolloClient, setDownloadState, setStep, snackbar]);
+  }, [apolloClient, downloadState, setDownloadState, setStep, snackbar]);
 
   return (
     <Stepper activeStep={step} orientation="vertical">
@@ -214,14 +216,16 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
       <Step key="mxget-1">
         <StepLabel>{step <= 1 ? <>Search via <code>MxGet</code></> : `Search for ${searchKeyword}`}</StepLabel>
         <StepContent>
-          <TextField value={searchKeyword} label="Search keywords" variant="outlined" fullWidth margin="normal"
-                     onChange={handleChange} />
-          <ButtonRow>
-            <Button disabled={searchMusicQuery.loading} variant="contained" color="secondary"
-                    onClick={handleSearch}>Search</Button>
-            <Button disabled={searchMusicQuery.loading} variant="outlined"
-                    onClick={() => setStep(v => v - 1)}>Back</Button>
-          </ButtonRow>
+          <form onSubmit={handleSearch}>
+            <TextField value={searchKeyword} label="Search keywords" variant="outlined" fullWidth margin="normal"
+                       onChange={handleChange} />
+            <ButtonRow>
+              <Button disabled={searchMusicQuery.loading} variant="contained" color="secondary"
+                      type="submit">Search</Button>
+              <Button disabled={searchMusicQuery.loading} variant="outlined"
+                      onClick={() => setStep(v => v - 1)}>Back</Button>
+            </ButtonRow>
+          </form>
         </StepContent>
       </Step>
       <Step key="mxget-2">

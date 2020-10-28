@@ -3,7 +3,6 @@ import fs from "fs";
 import Path from "path";
 import { MUSIC_FILES_PATH, MXGET_API_PATH, MXGET_BINARY, QQ_API_PATH, VIDEO_FILES_PATH } from "../utils/secret";
 import { promisify } from "util";
-import shortid from "shortid";
 import { pythonBridge, PythonBridge } from "python-bridge";
 import { GraphQLJSONObject } from "graphql-type-json";
 import { decrypt, encrypt } from "../utils/crypto";
@@ -17,9 +16,9 @@ import {
   InputType,
   Int,
   Mutation,
-  ObjectType,
+  ObjectType, Publisher, PubSub,
   Query,
-  Resolver
+  Resolver, Root, Subscription
 } from "type-graphql";
 import { GraphQLString } from "graphql";
 import { exec, execSync } from "child_process";
@@ -28,6 +27,9 @@ import sanitize from "sanitize-filename";
 import Stream from "stream";
 import { downloadFromStream } from "../utils/download";
 import path from "path";
+import { PubSubSessionPayload } from "./index";
+import { LyricsKitLyricsEntry } from "./LyricsProvidersResolver";
+import { swapExt } from "../utils/path";
 
 function asyncExec(command: string): Promise<{ stderr: string, stdout: string }> {
   return new Promise<{ stderr: string; stdout: string }>((resolve, reject) => {
@@ -110,9 +112,6 @@ export class YouTubeDlDownloadOptions {
 @ObjectType()
 export class YouTubeDlInfo {
   @Field()
-  sessionId: string;
-
-  @Field()
   filename: string;
 
   @Field(type => Int, { description: "Size of file in bytes, precision to every 10486 bytes." })
@@ -136,6 +135,49 @@ const YouTubeDLDownloadResponse = createUnionType({
       return YouTubeDlDownloadMessage;
     }
     return YouTubeDlInfo;
+  }
+});
+
+@ObjectType({ description: "youtube-dl download progress object." })
+class YouTubeDlProgressValue {
+  @Field(type => String, { description: "Type of update, \"progress\"." })
+  type: "progress";
+
+  @Field(type => Int)
+  current: number;
+
+  @Field(type => Int)
+  total: number;
+}
+
+@ObjectType({ description: "youtube-dl download progress when download is finished." })
+class YouTubeDlProgressDone {
+  @Field(type => String, { description: "Type of update, \"done\"." })
+  type: "done";
+}
+
+@ObjectType({ description: "youtube-dl download progress when download failed." })
+class YouTubeDlProgressError {
+  @Field(type => String, { description: "Type of update, \"error\"." })
+  type: "error";
+
+  @Field()
+  message: string;
+}
+
+type YouTubeDlProgressType = YouTubeDlProgressDone | YouTubeDlProgressError | YouTubeDlProgressValue;
+
+const YouTubeDlProgress = createUnionType({
+  name: "YouTubeDlProgress",
+  types: () => [YouTubeDlProgressDone, YouTubeDlProgressError, YouTubeDlProgressValue],
+  resolveType: value => {
+    if (value?.type === "progress") {
+      return YouTubeDlDownloadMessage;
+    } else if (value?.type === "done") {
+      return YouTubeDlProgressDone;
+    } else {
+      return YouTubeDlProgressError;
+    }
   }
 });
 
@@ -180,22 +222,45 @@ export class DownloadResolver {
     // TODO: find a way to open a global web socket/socket.io
   }
 
-  private publishDownloadProgress(sessionId: string, current: number, total: number) {
+  private publishDownloadProgress(publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>, sessionId: string, current: number, total: number): Promise<void> {
     console.log(`Download progress of ${sessionId}: ${current} / ${total}`);
+    return publish({ sessionId, data: { type: "progress", current, total } });
   }
 
-  private publishDownloadSuccess(sessionId: string) {
+  private publishDownloadSuccess(publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>, sessionId: string): Promise<void> {
     console.log(`Download success: ${sessionId}`);
+    return publish({ sessionId, data: { type: "done" } });
   }
 
-  private publishDownloadFail(sessionId: string, error: unknown) {
-    console.log(`Download failed: ${sessionId}, ${error}`);
+  private publishDownloadFail(publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>, sessionId: string, error: unknown): Promise<void> {
+    console.error(`Download failed: ${sessionId}`, error);
+    return publish({ sessionId, data: { type: "error", message: `${error}` } });
   }
 
+
+  @Subscription(
+    () => YouTubeDlProgress,
+    {
+      topics: "YOUTUBE_DL_PROGRESS",
+      filter: ({ payload, args }) => args.sessionId === payload.sessionId,
+      nullable: true,
+      description: "Progress of a `youTubeDlDownloadVideo` mutation. Session ID is required when performing mutation.",
+    }
+  )
+  youTubeDlDownloadProgress(
+    @Root() payload: PubSubSessionPayload<YouTubeDlProgressType>,
+    @Arg("sessionId") sessionId: string,
+  ): YouTubeDlProgressType | null {
+    return payload.data;
+  }
+
+  @Authorized("ADMIN")
   @Mutation(returns => YouTubeDLDownloadResponse, { description: "Download video via youtube-dl." })
   public async youTubeDlDownloadVideo(
     @Arg("url") url: string,
-    @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions
+    @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
+    @Arg("sessionId", { nullable: true, defaultValue: null }) sessionId: string | null,
+    @PubSub("YOUTUBE_DL_PROGRESS") publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>,
   ): Promise<YouTubeDlDownloadMessage | YouTubeDlInfo> {
     // Sadly I had to write my own promise on this sh#t.
 
@@ -206,7 +271,6 @@ export class DownloadResolver {
       }
       const video = youtubedl(url, params, {});
 
-      const sessionId = shortid.generate();
       let totalSize = 0;
 
       video.on("info", info => {
@@ -219,7 +283,6 @@ export class DownloadResolver {
         video.pipe(fileStream);
         totalSize = info.size;
         resolve({
-          sessionId: sessionId,
           filename: info._filename,
           size: info.size,
           metadata: info,
@@ -229,13 +292,13 @@ export class DownloadResolver {
       // Will be called if download was already completed and there is nothing more to download.
       video.on("complete", info => {
         // console.log("filename: " + info._filename + " already downloaded.");
-        this.publishDownloadSuccess(sessionId);
+        if (sessionId) this.publishDownloadSuccess(publish, sessionId);
         resolve({ message: "Already downloaded" });
       });
 
       video.on("end", () => {
         // console.log("finished downloading!");
-        this.publishDownloadSuccess(sessionId);
+        if (sessionId) this.publishDownloadSuccess(publish, sessionId);
         resolve({ message: "Already downloaded" });
       });
 
@@ -243,87 +306,63 @@ export class DownloadResolver {
       video.on("data", (chunk) => {
         downloaded += (chunk as unknown as Buffer).length;
         // console.log(`Downloaded ${downloaded} bytes`);
-        this.publishDownloadProgress(sessionId, downloaded, totalSize);
+        if (sessionId) this.publishDownloadProgress(publish, sessionId, downloaded, totalSize);
       });
 
       video.on("error", (err) => {
         // console.error("youtube-dl error", err);
-        this.publishDownloadFail(sessionId, err);
-        reject(err);
+        if (sessionId) this.publishDownloadFail(publish, sessionId, err);
+        try {
+          reject(err);
+        } catch (e) {
+          console.log(`Error while downloading music ${url}`, e);
+        }
       });
     });
   }
 
-  @Mutation(returns => YouTubeDLDownloadResponse, { description: "Download audio via youtube-dl." })
-  public youtubeDlDownloadAudio(
+  @Authorized("ADMIN")
+  @Mutation(() => String, { description: "Download audio via youtube-dl.", nullable: true })
+  public async youtubeDlDownloadAudio(
     @Arg("url") url: string,
-    @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions
-  ): Promise<YouTubeDlDownloadMessage | YouTubeDlInfo> {
-    return new Promise((resolve, reject) => {
-      const params = [
-        "--extract-audio",
-        "--audio-format", "mp3",
-        "-f", "best",
-        "--embed-thumbnail",
-        "--add-metadata",
-      ];
-      if (!overwrite) {
-        params.push("--no-overwrites");
-      }
-      const video = youtubedl(url, params, {});
+    @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
+  ): Promise<string> {
+    if (!filename) {
+      const info = await promisify(youtubedl.getInfo)(url);
+      filename = info._filename;
+    }
+    filename = swapExt(filename, "$(ext)s");
+    const finalFilename = swapExt(filename, "mp3");
+    const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
+    const params = [
+      "--extract-audio",
+      "--audio-format", "mp3",
+      "-f", "bestaudio",
+      "--embed-thumbnail",
+      "--add-metadata",
+      "-o", fullPath
+    ];
+    if (!overwrite) {
+      params.push("--no-overwrites");
+    }
 
-      const sessionId = shortid.generate();
-      let totalSize = 0;
+    console.log(finalFilename, fullPath, params);
 
-      video.on("info", info => {
-        // console.log("Download started");
-        // console.log("filename: " + info._filename);
-        // console.log("size: " + info.size);
-        // console.log("info", info);
-        filename = filename || info._filename;
-        const fileStream = fs.createWriteStream(Path.resolve(VIDEO_FILES_PATH, filename + ".$(ext)s"), { flags: "a" });
-        video.pipe(fileStream);
-        totalSize = info.size;
-        resolve({
-          sessionId: sessionId,
-          filename: info._filename,
-          size: info.size,
-          metadata: info,
-        });
-      });
-
-      // Will be called if download was already completed and there is nothing more to download.
-      video.on("complete", info => {
-        // console.log("filename: " + info._filename + " already downloaded.");
-        this.publishDownloadSuccess(sessionId);
-        resolve({ message: "Already downloaded" });
-      });
-
-      video.on("end", () => {
-        // console.log("finished downloading!");
-        this.publishDownloadSuccess(sessionId);
-        resolve({ message: "Finished." });
-      });
-
-      let downloaded = 0;
-      video.on("data", (chunk) => {
-        downloaded += (chunk as unknown as Buffer).length;
-        // console.log(`Downloaded ${downloaded} bytes`);
-        this.publishDownloadProgress(sessionId, downloaded, totalSize);
-      });
-
-      video.on("error", (err) => {
-        // console.error("youtube-dl error", err);
-        this.publishDownloadFail(sessionId, err);
-        reject(err);
-      });
-    });
+    try {
+      const result = await promisify(youtubedl.exec)(url, params, {});
+      console.log(result);
+      return finalFilename;
+    } catch (e) {
+      console.error("Failed to download music from youtube-dl.", e);
+      return null;
+    }
   }
 
   /**
    * Get video info via youtube-dl.
    * GET .../youtubedl/info?url=URL_TO_VIDEO
    */
+  @Authorized("ADMIN")
   @Query(returns => GraphQLJSONObject)
   public async youtubeDlGetInfo(@Arg("url") url: string): Promise<Info> {
     const info = await promisify(youtubedl.getInfo)(url);
@@ -335,6 +374,7 @@ export class DownloadResolver {
    * POST .../youtubedl/thumbnails
    * url=URL_TO_VIDEO
    */
+  @Authorized("ADMIN")
   @Query(returns => [GraphQLString])
   public async youtubeDlGetThumbnail(@Arg("url") url: string): Promise<string[]> {
     const getThumb = promisify(youtubedl.getThumbs as (url: string, options: Options, callback: (err: unknown, output: string[]) => void) => void);
@@ -394,6 +434,7 @@ def download():
    * Search songs via music-dl
    * GET .../music-dl?query=QUERY
    */
+  @Authorized("ADMIN")
   @Query(returns => [MusicDlSearchResult])
   public async musicDlSearch(@Arg("query") query: string): Promise<MusicDlSearchResult[]> {
     const python = await this.prepareMusicDlPythonSession();
@@ -426,6 +467,7 @@ def download():
     return outcome;
   }
 
+  @Authorized("ADMIN")
   @Query(returns => [MxGetSearchResult])
   public async mxGetSearch(@Arg("query") query: string): Promise<MxGetSearchResult[]> {
     const results: MxGetSearchResult[] = [];

@@ -4,7 +4,6 @@ import fs from "fs";
 import Path from "path";
 import { VIDEO_FILES_PATH } from "../utils/secret";
 import { promisify } from "util";
-import shortid from "shortid";
 import { pythonBridge, PythonBridge } from "python-bridge";
 import { encrypt, decrypt } from "../utils/crypto";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
@@ -55,7 +54,7 @@ export class DownloadController {
       }
       const video = youtubedl(url, [], {});
 
-      const sessionId = shortid.generate();
+      const sessionId = `${Math.random()}`;
       let totalSize = 0;
 
       video.on("info", info => {
@@ -129,7 +128,7 @@ export class DownloadController {
       }
       const video = youtubedl(url, [], {});
 
-      const sessionId = shortid.generate();
+      const sessionId = `${Math.random()}`;
       let totalSize = 0;
 
       video.on("info", info => {

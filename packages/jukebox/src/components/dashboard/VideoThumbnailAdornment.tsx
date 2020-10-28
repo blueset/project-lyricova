@@ -25,7 +25,7 @@ export default function VideoThumbnailAdornment({ name }: Props) {
       }
     } else if (value.match(/(youtu.be\/|youtube.com\/watch\?\S*?v=)\S{11}/g)) {
       const id = /(youtu.be\/|youtube.com\/watch\?\S*?v=)(\S{11})/g.exec(value);
-      setValue(name, `https://img.youtube.com/vi/${id[2]}/hqdefault.jpg`);
+      setValue(name, `https://img.youtube.com/vi/${id[2]}/maxresdefault.jpg`);
       return;
     }
 

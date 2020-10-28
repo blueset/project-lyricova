@@ -10859,6 +10859,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"filesize@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "filesize@npm:6.1.0"
+  checksum: 5c0c4be4861bacdfcb701f1162aad6d6fe3724cbb69fcb9f55b3adfbb43d83d776790446a3d10da1cecf3616fc91b5d73ee3ab174ff1e141c983418cb83f9c9c
+  languageName: node
+  linkType: hard
+
 "fill-range@npm:^4.0.0":
   version: 4.0.0
   resolution: "fill-range@npm:4.0.0"
@@ -14797,6 +14804,7 @@ fsevents@^1.2.7:
     express-session: ^1.17.1
     express-validator: ^6.3.1
     ffprobe-client: ^1.1.6
+    filesize: ^6.1.0
     final-form: ^4.20.1
     final-form-arrays: ^3.0.2
     framer-motion: ^2.4.2
@@ -14849,7 +14857,6 @@ fsevents@^1.2.7:
     seamless-scroll-polyfill: ^1.2.3
     sequelize: 6.1.1
     sequelize-typescript: 2.0.0-beta.0
-    shortid: ^2.2.15
     simple-statistics: ^7.3.0
     slugify: ^1.4.5
     split: ^1.0.1
@@ -15853,13 +15860,6 @@ fsevents@^1.2.7:
   dependencies:
     node-gyp: latest
   checksum: eeab7cf260362a578f0b8622716a76d19bc009722049c7274748644ce03b2aa38ca01b3ac730a0497fd2c1ec882a21a0592e800a903994ed4d32acd06bf7eba7
-  languageName: node
-  linkType: hard
-
-"nanoid@npm:^2.1.0":
-  version: 2.1.11
-  resolution: "nanoid@npm:2.1.11"
-  checksum: 41453e344e3abb189cd3baa3ab52685601d7220f86ce73f6a1d9594ebae286c2acf47a20b5aa9cf11933b587b69c6007e88f190ca266450c2fbe20be6db43a29
   languageName: node
   linkType: hard
 
@@ -20063,15 +20063,6 @@ fsevents@^1.2.7:
   bin:
     shjs: bin/shjs
   checksum: bdf68e3c2a8a6d191dde3be2800bfcfd688c126344ccaf6cf7024cdaf824d0d3523b8e514cd52264f739cbabd2b0569637dd5a8183377347225af918e03ff5dc
-  languageName: node
-  linkType: hard
-
-"shortid@npm:^2.2.15":
-  version: 2.2.15
-  resolution: "shortid@npm:2.2.15"
-  dependencies:
-    nanoid: ^2.1.0
-  checksum: 0b657c406153029ba5fe3df357115d31c53929b6e603cbd2ff2aae7ddc016290179dfaa49625a3abc8967df8d53d04bd2c07a617562c1057ace8558f67558235
   languageName: node
   linkType: hard
 
