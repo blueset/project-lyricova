@@ -21,6 +21,7 @@ import { TypingStackedLyrics } from "../components/public/lyrics/typingStack";
 import { PlainFuriganaLyrics } from "../components/public/lyrics/plainFurigana";
 import { KaraokeJaLyrics } from "../components/public/lyrics/karaokeJa";
 import { StrokeLyrics } from "../components/public/lyrics/stroke";
+import { useClientPersistentState } from "../frontendUtils/clientPersistantState";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -49,6 +50,7 @@ const LYRICS_QUERY = gql`
     }
   }
 `;
+
 
 const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } = {
   "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} blur />,
@@ -85,7 +87,7 @@ const useStyle = makeStyles({
 
 export default function Index() {
   const { playlist } = useAppContext();
-  const [module, setModule] = useNamedState<keyof typeof MODULE_LIST>(_.keys(MODULE_LIST)[0], /* name */"module");
+  const [module, setModule] = useClientPersistentState<keyof typeof MODULE_LIST>(_.keys(MODULE_LIST)[0], "module", "lyricovaPlayer");
 
   const keys = Object.keys(MODULE_LIST) as (keyof typeof MODULE_LIST)[];
   const moduleNode = MODULE_LIST[module];

@@ -1,4 +1,14 @@
-import { useState, useDebugValue, useEffect, RefObject, useCallback, useRef, useMemo } from "react";
+import {
+  useState,
+  useDebugValue,
+  useEffect,
+  RefObject,
+  useCallback,
+  useRef,
+  useMemo,
+  Dispatch,
+  SetStateAction
+} from "react";
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
 import _ from "lodash";
 import { AnimatedWord } from "../utils/typingSequence";
@@ -8,7 +18,7 @@ import { TextPlugin } from "gsap/dist/TextPlugin";
 
 type Timeline = gsap.core.Timeline;
 
-export function useNamedState<T>(initialValue: T, name: string) {
+export function useNamedState<T>(initialValue: T | (() => T), name: string): [T, Dispatch<SetStateAction<T>>] {
   const ret = useState<T>(initialValue);
   useDebugValue(`${name}: ${ret[0]}`);
   return ret;

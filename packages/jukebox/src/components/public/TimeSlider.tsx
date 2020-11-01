@@ -64,11 +64,11 @@ export function TimeSlider({ playerRef, disabled, isCollapsed }: Props) {
     }
     setTime(newValue);
     setIsDragging(false);
-  }, [playerRef]);
+  }, [playerRef, setIsDragging, setTime]);
 
   const updateDuration = useCallback(() => {
     setDuration(playerRef.current?.duration);
-  }, [playerRef]);
+  }, [playerRef, setDuration]);
 
   useEffect(() => {
     const playerElm = playerRef.current;

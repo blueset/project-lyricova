@@ -19,6 +19,7 @@ import { CSSProperties } from "@material-ui/core/styles/withStyles";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { AuthContext } from "../AuthContext";
+import { useClientPersistentState } from "../../../frontendUtils/clientPersistantState";
 
 interface Props {
   children: ReactNode;
@@ -153,25 +154,30 @@ function generateBackgroundStyle(
 export default function IndexLayout({ children }: Props) {
   const playerRef = useRef<HTMLAudioElement>();
 
-  const [playlistTracks, setPlaylistTracks] = useNamedState<Track[]>(
+  const [playlistTracks, setPlaylistTracks] = useClientPersistentState<Track[]>(
     [],
-    "playlistTracks"
+    "playlistTracks",
+    "lyricovaPlayer"
   );
-  const [nowPlaying, setNowPlaying] = useNamedState<Playlist["nowPlaying"]>(
+  const [nowPlaying, setNowPlaying] = useClientPersistentState<Playlist["nowPlaying"]>(
     null,
-    "nowPlaying"
+    "nowPlaying",
+    "lyricovaPlayer"
   );
-  const [loopMode, setLoopMode] = useNamedState<LoopMode>(
+  const [loopMode, setLoopMode] = useClientPersistentState<LoopMode>(
     LoopMode.NONE,
-    "loopMode"
+    "loopMode",
+    "lyricovaPlayer"
   );
-  const [shuffleMapping, setShuffleMapping] = useNamedState<number[] | null>(
+  const [shuffleMapping, setShuffleMapping] = useClientPersistentState<number[] | null>(
     null,
-    "shuffleMapping"
+    "shuffleMapping",
+    "lyricovaPlayer"
   );
-  const [isCollapsed, setCollapsed] = useNamedState<boolean>(
+  const [isCollapsed, setCollapsed] = useClientPersistentState<boolean>(
     false,
-    "isCollapsed"
+    "isCollapsed",
+    "lyricovaPlayer"
   );
 
   const styles = useStyle();
