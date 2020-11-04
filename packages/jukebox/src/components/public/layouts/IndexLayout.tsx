@@ -313,6 +313,13 @@ export default function IndexLayout({ children }: Props) {
     },
   }), [loopMode, nowPlaying, playlistTracks, setLoopMode, setNowPlaying, setPlaylistTracks, setShuffleMapping, shuffleMapping, updateShuffleness]);
 
+  // Load track from local storage to audio element on mount
+  useEffect(() => {
+    if (nowPlaying !== null) playlist.playTrack(nowPlaying, false);
+    // Keep empty as this should only run on mount
+    // eslint-disable-next-line
+  }, []);
+
   const onPlayEnded = useCallback(() => {
     if (playlist.loopMode === LoopMode.SINGLE) {
       // Single loop
