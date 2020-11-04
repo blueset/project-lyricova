@@ -96,14 +96,14 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
   return (
     <div className={style.containerBox}>
       {backgroundNode}
-      <Box pt={2} pb={2} pl={4} pr={2} display="flex" flexDirection="row" alignItems="center" zIndex={1}>
+      <Box pt={2} pb={2} pl={4} pr={4} display="flex" flexDirection="row" alignItems="center" zIndex={1}>
         <Link className={style.link} href="/">Lyrics</Link>
         <Link className={style.link} href="/library/tracks"
               activeCriteria={(v) => v.startsWith("/library/")}>Library</Link>
         <Link className={style.link} href="/info">Info</Link>
         <Box flexGrow={1} />
         <IconButton component={NextComposedLink} color={router.pathname === "/search" ? "primary" : "default"}
-                    href="/search" aria-label="delete">
+                    href="/search" aria-label="delete" edge="end">
           <SearchIcon />
         </IconButton>
       </Box>

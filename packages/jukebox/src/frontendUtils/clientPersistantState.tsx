@@ -16,7 +16,6 @@ export function useClientPersistentState<T>(defaultValue: T, name: string, names
   // Mount node and use the state.
   useEffect(() => {
     const stickyValue = window.localStorage.getItem(key);
-    console.log("loading value from localStorage", key, stickyValue);
 
     if (stickyValue !== null) {
       setValue(JSON.parse(stickyValue));

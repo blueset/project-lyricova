@@ -2,7 +2,7 @@ import { Grid, Paper, IconButton, makeStyles } from "@material-ui/core";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
 import React, { useEffect, ReactNode, useRef, useCallback, useMemo } from "react";
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import {
   AppContext,
   Track,
@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { AuthContext } from "../AuthContext";
 import { useClientPersistentState } from "../../../frontendUtils/clientPersistantState";
+import { MusicFileFragments } from "../../../graphql/fragments";
 
 interface Props {
   children: ReactNode;
@@ -99,21 +100,13 @@ const MUSIC_FILES_COUNT_QUERY = gql`
     musicFiles(first: -1) {
       edges {
         node {
-          id
-          fileSize
-          trackName
-          trackSortOrder
-          artistName
-          artistSortOrder
-          albumName
-          albumSortOrder
-          hasCover
-          duration
-          hasLyrics
+          ...MusicFileForPlaylistAttributes
         }
       }
     }
   }
+  
+  ${MusicFileFragments.MusicFileForPlaylistAttributes}
 `;
 
 const TEXTURE_QUERY = gql`
@@ -153,6 +146,7 @@ function generateBackgroundStyle(
 
 export default function IndexLayout({ children }: Props) {
   const playerRef = useRef<HTMLAudioElement>();
+  const apolloClient = useApolloClient();
 
   const [playlistTracks, setPlaylistTracks] = useClientPersistentState<Track[]>(
     [],
@@ -206,6 +200,7 @@ export default function IndexLayout({ children }: Props) {
     shuffleMapping,
     loadTracks: (tracks: Track[]) => {
       setPlaylistTracks(tracks);
+      setShuffleMapping(null);
     },
     playTrack: (index: number, playNow: boolean = false) => {
       const fileId = playlist.getSongByIndex(index).id;
@@ -245,8 +240,8 @@ export default function IndexLayout({ children }: Props) {
     },
     addTrackToNext: (track: Track) => {
       const index = nowPlaying ? nowPlaying : 0;
-      playlistTracks.splice(index, 0, track);
-      setPlaylistTracks(playlistTracks);
+      playlistTracks.splice(index + 1, 0, track);
+      setPlaylistTracks([...playlistTracks]);
     },
     removeTrack: (index: number) => {
       if (shuffleMapping !== null) {
@@ -345,15 +340,29 @@ export default function IndexLayout({ children }: Props) {
     }
   }, [playerRef, onPlayEnded]);
 
-  const [loadMediaFileQuery, mediaFilesQuery] = useLazyQuery<{
-    musicFiles: MusicFilesPagination;
-  }>(MUSIC_FILES_COUNT_QUERY);
-
   // Load full song list on load
   useEffect(() => {
-    if (playlistTracks.length < 1) {
-      loadMediaFileQuery();
-    }
+    (async () => {
+      if (window.localStorage.getItem("lyricovaPlayer.playlistTracks") === null) {
+        try {
+          const query = await apolloClient.query<{ musicFiles: MusicFilesPagination }>({
+            query: MUSIC_FILES_COUNT_QUERY
+          });
+          if (query.data) {
+            setPlaylistTracks(
+              _.sortBy(
+                query.data.musicFiles.edges.map((v) => v.node),
+                ["trackSortOrder", "artistSortOrder", "albumSortOrder"]
+              )
+            );
+          }
+        } catch (e) {
+          console.error("Error while loading initial playlist.", e);
+        }
+      }
+    })();
+    // Run only once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Set media session controllers
@@ -461,26 +470,6 @@ export default function IndexLayout({ children }: Props) {
     };
   }, [playerRef]);
 
-  // Store full song list once loaded
-  useEffect(() => {
-    if (mediaFilesQuery.loading) {
-      console.log("loading...");
-    } else if (mediaFilesQuery.error) {
-      console.log("error!", mediaFilesQuery.error);
-    } else {
-      console.log("Set playlist track.");
-      console.log(mediaFilesQuery.data);
-      if (mediaFilesQuery.data) {
-        setPlaylistTracks(
-          _.sortBy(
-            mediaFilesQuery.data.musicFiles.edges.map((v) => v.node),
-            ["trackSortOrder", "artistSortOrder", "albumSortOrder"]
-          )
-        );
-      }
-    }
-  }, [mediaFilesQuery, setPlaylistTracks]);
-
   // Random fallback background
   const [textureURL, setTextureURL] = useNamedState<string | null>(
     null,
@@ -535,7 +524,7 @@ export default function IndexLayout({ children }: Props) {
       );
       setTextureURL(texture.url);
     }
-  }, [randomTextureQuery.data, setTextureURL]);
+  }, [randomTextureQuery.data?.randomTexture?.name, setTextureURL]);
 
   return (
     <>

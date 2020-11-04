@@ -66,5 +66,12 @@ export default createMuiTheme({
         },
       },
     },
+    MuiTab: {
+      textColorPrimary: {
+        "&$selected": {
+          color: palette.primary.light,
+        }
+      }
+    },
   }
 });
