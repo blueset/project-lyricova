@@ -1,5 +1,5 @@
 import { ChangeEvent, ReactNode } from "react";
-import IndexLayout from "./IndexLayout";
+import { getLayout as getIndexLayout } from "./IndexLayout";
 import { AppBar, Box, Paper, Tab, Tabs } from "@material-ui/core";
 import { useRouter } from "next/router";
 import { makeStyles } from "@material-ui/core/styles";
@@ -30,8 +30,7 @@ export function LibraryLayout({ children }: { children: ReactNode }) {
     return router.push(`/library/${newValue}`);
   };
 
-  return <IndexLayout>
-    <Paper className={styles.paper}>
+  return <Paper className={styles.paper}>
       <AppBar position="static" color="default">
         <Tabs value={tabBarValue} onChange={handleChange}
               aria-label="Library sections" textColor="primary" indicatorColor="primary"
@@ -44,7 +43,7 @@ export function LibraryLayout({ children }: { children: ReactNode }) {
       </AppBar>
       <div className={styles.content}>{children}</div>
     </Paper>
-  </IndexLayout>;
+  ;
 }
 
-export const getLayout = (page: ReactNode) => <LibraryLayout>{page}</LibraryLayout>;
+export const getLayout = (page: ReactNode) => getIndexLayout(<LibraryLayout>{page}</LibraryLayout>);
