@@ -33,6 +33,7 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { useAuthContext } from "../../components/public/AuthContext";
 import { useRouter } from "next/router";
+import ListItemTextWithTime from "../../components/public/library/ListItemTextWithTime";
 
 
 const MUSIC_FILES_COUNT_QUERY = gql`
@@ -134,7 +135,7 @@ const Row = React.memo((props: ListChildComponentProps) => {
 
   return (
     <ListItem ContainerProps={{style: style}}>
-      <ListItemText
+      <ListItemTextWithTime
         primary={isScrolling && item.trackSortOrder ? item.trackSortOrder : item.trackName}
         secondary={<>
           {item.artistName || <em>Various artists</em>}
@@ -143,6 +144,7 @@ const Row = React.memo((props: ListChildComponentProps) => {
         </>}
         primaryTypographyProps={{ noWrap: true }}
         secondaryTypographyProps={{ noWrap: true }}
+        time={item.duration}
       />
       <ListItemSecondaryAction>
         <IconButton
@@ -283,7 +285,7 @@ export default function LibraryTracks() {
             itemSize={ITEM_HEIGHT} itemCount={entries.length + 1}
             height={height} width={width}
             itemData={[null, ...entries]}
-            useIsScrolling
+            // useIsScrolling
             onScroll={({ scrollOffset }) => setScrollDistance(scrollOffset)}
             ref={recycleListRef}
             className={styles.scrollingList}

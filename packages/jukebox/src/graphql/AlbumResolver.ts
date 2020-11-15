@@ -8,6 +8,7 @@ import _ from "lodash";
 import { SongInAlbum } from "../models/SongInAlbum";
 import { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { ArtistOfAlbum } from "../models/ArtistOfAlbum";
+import sequelize from "sequelize";
 
 
 @InputType()
@@ -63,6 +64,31 @@ export class AlbumResolver {
   @Query(returns => Album, { nullable: true })
   public async album(@Arg("id", type => Int) id: number): Promise<Album | null> {
     return Album.findByPk(id);
+  }
+
+  @Query(returns => [Album])
+  public async albums(): Promise<Album[]> {
+    return Album.findAll({
+      order: ["sortOrder"]
+    });
+  }
+
+  @Query(returns => [Album])
+  public async albumsHasFiles(): Promise<Album[]> {
+    return Album.findAll({
+      order: ["sortOrder"],
+      where: sequelize.literal(`(
+        SELECT
+          COUNT(MusicFiles.id) 
+        FROM SongInAlbums 
+        INNER JOIN 
+          MusicFiles 
+        ON
+          SongInAlbums.songId = MusicFiles.songId
+        WHERE 
+          SongInAlbums.albumId = Album.id and MusicFiles.albumId = Album  .id 
+      ) > 0`),
+    });
   }
 
   @Query(returns => [Album])

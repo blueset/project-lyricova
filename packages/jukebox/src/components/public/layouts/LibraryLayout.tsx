@@ -37,7 +37,8 @@ export function LibraryLayout({ children }: { children: ReactNode }) {
               variant="scrollable">
           <Tab label="Tracks" value="tracks" />
           <Tab label="Albums" value="albums" />
-          <Tab label="Artists" value="artists" />
+          <Tab label="Producers" value="producers" />
+          <Tab label="Vocalists" value="vocalists" />
           <Tab label="Playlists" value="playlists" />
         </Tabs>
       </AppBar>

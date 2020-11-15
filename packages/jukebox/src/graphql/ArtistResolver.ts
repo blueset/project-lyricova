@@ -1,6 +1,6 @@
 import { Arg, Authorized, Field, FieldResolver, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
 import { Artist } from "../models/Artist";
-import { literal } from "sequelize";
+import sequelize, { literal, Op } from "sequelize";
 import { Song } from "../models/Song";
 import { Album } from "../models/Album";
 import _ from "lodash";
@@ -14,7 +14,7 @@ class ArtistInput implements Partial<Artist> {
   @Field()
   sortOrder: string;
 
-  @Field({nullable: true})
+  @Field({ nullable: true })
   mainPictureUrl?: string;
 
   @Field()
@@ -26,6 +26,40 @@ export class ArtistResolver {
   @Query(returns => Artist, { nullable: true })
   public async artist(@Arg("id", type => Int) id: number): Promise<Artist | null> {
     return Artist.findByPk(id);
+  }
+
+  @Query(returns => [Artist])
+  public async artists(): Promise<Artist[]> {
+    return Artist.findAll({ order: ["sortOrder"] });
+  }
+
+  @Query(returns => [Artist])
+  public async artistsHasFiles(
+    @Arg("types", type => [String], {
+      defaultValue: [
+        "Unknown", "Circle", "Label", "Producer", "Animator", "Illustrator", "Lyricist", "Vocaloid", "UTAU", "CeVIO", "OtherVoiceSynthesizer", "OtherVocalist", "OtherGroup", "OtherIndividual", "Utaite", "Band", "Vocalist", "Character",
+      ]
+    }) types: VDBArtistType[]
+  ): Promise<Artist[]> {
+    return Artist.findAll({
+      order: ["sortOrder"],
+      where: {
+        [Op.and]: [
+          {type: {[Op.in]: types}},
+          sequelize.literal(`(
+            SELECT
+              COUNT(MusicFiles.id) 
+            FROM ArtistOfSongs 
+            INNER JOIN 
+              MusicFiles 
+            ON
+              ArtistOfSongs.songId = MusicFiles.songId
+            WHERE 
+              ArtistOfSongs.artistId = Artist.id and ArtistOfSongs.artistId = Artist.id 
+          ) > 0`),
+        ]
+      }
+    });
   }
 
   @Query(returns => [Artist])

@@ -189,10 +189,14 @@ export default function CurrentPlaylist() {
 
   const listRef = useRef<FixedSizeList>();
   useEffect(() => {
+    console.log("listref current", listRef.current, "nowplaying", playlist.nowPlaying);
     if (listRef.current && playlist.nowPlaying !== null) {
+      console.log("SCROLL!!");
       listRef.current.scrollToItem(playlist.nowPlaying, "start");
     }
   }, [playlist.nowPlaying, playlist.tracks]);
+
+  console.log("initial scroll offset", playlist.nowPlaying ? playlist.nowPlaying * 60 : 0);
 
   return (
     <List dense={true} className={style.playlist}>
@@ -223,7 +227,7 @@ export default function CurrentPlaylist() {
                   itemSize={60}
                   itemData={tracks}
                   itemCount={tracks.length}
-                  initialScrollOffset={playlist.nowPlaying && playlist.nowPlaying * 60}
+                  initialScrollOffset={playlist.nowPlaying ? playlist.nowPlaying * 60 : 0}
                   itemKey={(i, d) => `${i}-${d.id}`}
                   outerRef={droppableProvided.innerRef}
                 >
