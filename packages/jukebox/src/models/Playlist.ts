@@ -21,4 +21,7 @@ export class Playlist extends Model<Playlist> {
     intermediate => FileInPlaylist
   )
   files: MusicFile[];
+
+  // virtual field in GraphQL
+  filesCount?: number;
 }

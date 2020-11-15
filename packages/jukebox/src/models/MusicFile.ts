@@ -185,7 +185,7 @@ export class MusicFile extends Model<MusicFile> {
   @UpdatedAt
   updatedOn: Date;
 
-  /** SongInAlbum reflected by Playlist.$get("files"), added for GraphQL queries. */
+  /** FileInPlaylist reflected by Playlist.$get("files"), added for GraphQL queries. */
   @Field(type => FileInPlaylist, { nullable: true })
   FileInPlaylist?: Partial<FileInPlaylist>;
 

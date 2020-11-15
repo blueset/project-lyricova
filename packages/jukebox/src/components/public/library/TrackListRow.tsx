@@ -20,7 +20,7 @@ import { Song } from "../../../models/Song";
 import ListItemTextWithTime from "./ListItemTextWithTime";
 
 interface Props {
-  song: Song;
+  song: Song | null;
   file: MusicFile | null;
   files: MusicFile[]
 }
@@ -29,8 +29,9 @@ export default function TrackListRow({song, file, files}: Props) {
   const router = useRouter();
   const { playlist } = useAppContext();
   const { user } = useAuthContext();
-  const popupState = usePopupState({ variant: "popover", popupId: `single-track-menu-${song.id}` });
-  const showTrackNumber = song.SongInAlbum !== undefined;
+  const id = song ? song.id : file.id;
+  const popupState = usePopupState({ variant: "popover", popupId: `single-track-menu-${id}` });
+  const showTrackNumber = song && song.SongInAlbum !== undefined;
 
   const handlePlayNext = () => {
     playlist.addTrackToNext(file);
@@ -50,14 +51,17 @@ export default function TrackListRow({song, file, files}: Props) {
     popupState.close();
   };
   const handleEditSongEntry = () => {
-    window.open(`/dashboard/songs/${song.id}`, "_blank");
+    window.open(`/dashboard/songs/${song?.id}`, "_blank");
     popupState.close();
   };
 
-  return <Fragment key={song.id}>
+  return <Fragment key={id}>
     <ListItem disabled={file === null}>
-      {showTrackNumber && <ListItemIcon>{song.SongInAlbum.trackNumber ?? "?"}</ListItemIcon>}
-      <ListItemTextWithTime primary={song.name} secondary={formatArtistsPlainText(song.artists)} time={file?.duration ?? null}/>
+      {showTrackNumber && <ListItemIcon>{song?.SongInAlbum.trackNumber ?? "?"}</ListItemIcon>}
+      <ListItemTextWithTime
+        primary={song ? song.name : file.trackName}
+        secondary={song ? formatArtistsPlainText(song.artists) : file.artistName}
+        time={file?.duration ?? null}/>
       <ListItemSecondaryAction>
         <IconButton
           edge="end"
@@ -67,7 +71,7 @@ export default function TrackListRow({song, file, files}: Props) {
           <MoreVertIcon />
         </IconButton>
         <Menu
-          id={`currentPlaylist-menu-${song.id}`}
+          id={`currentPlaylist-menu-${id}`}
           getContentAnchorEl={null}
           anchorOrigin={{
             vertical: "bottom",
@@ -99,7 +103,7 @@ export default function TrackListRow({song, file, files}: Props) {
                   primary="Edit music file entry"
               />
           </MenuItem>}
-          {user && <MenuItem onClick={handleEditSongEntry}>
+          {user && <MenuItem disabled={!song} onClick={handleEditSongEntry}>
               <ListItemText
                   primary="Edit song entity"
               />
