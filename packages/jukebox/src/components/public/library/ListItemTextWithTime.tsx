@@ -3,6 +3,7 @@ import { ElementType, ReactNode } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import _ from "lodash";
 import * as React from "react";
+import { formatTime } from "../../../frontendUtils/strings";
 
 interface Props extends ListItemTextProps {
   time: number | null;
@@ -29,7 +30,7 @@ export default function ListItemTextWithTime({primary, secondary, time, primaryT
 
   let timeStr: string = null;
   if (time !== null) {
-    timeStr = _.padStart(`${Math.floor(time / 60)}`, 2, "0") + ":" + _.padStart(`${Math.round(time % 60)}`, 2, "0");
+    timeStr = formatTime(time);
   }
 
   return (

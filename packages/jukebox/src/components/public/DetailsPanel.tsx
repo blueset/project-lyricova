@@ -100,7 +100,8 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
         <Link className={style.link} href="/">Lyrics</Link>
         <Link className={style.link} href="/library/tracks"
               activeCriteria={(v) => v.startsWith("/library/")}>Library</Link>
-        <Link className={style.link} href="/info">Info</Link>
+        <Link className={style.link} href="/info"
+              activeCriteria={(v) => v.startsWith("/info")}>Info</Link>
         <Box flexGrow={1} />
         <IconButton component={NextComposedLink} color={router.pathname === "/search" ? "primary" : "default"}
                     href="/search" aria-label="delete" edge="end">

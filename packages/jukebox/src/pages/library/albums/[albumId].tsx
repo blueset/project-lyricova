@@ -97,7 +97,7 @@ const useStyles = makeStyles((theme) => ({
   sidePanel: {
     [theme.breakpoints.up("md")]: {
       position: "sticky",
-      top: 0,
+      top: theme.spacing(2),
     },
     marginBottom: theme.spacing(4),
   },
