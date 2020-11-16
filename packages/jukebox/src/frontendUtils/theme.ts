@@ -15,6 +15,9 @@ const palette = {
   },
 };
 
+const scrollbarTrackBackground = "rgba(66, 66, 66, 0.5)";
+const scrollbarThumbBackground = "rgba(255, 255, 255, 0.7)";
+
 export default createMuiTheme({
   palette: {
     ...palette,
@@ -42,7 +45,21 @@ export default createMuiTheme({
       "@global": {
         "html": {
           fontFeatureSettings: "'palt' 1",
-        }
+        },
+        "*::-webkit-scrollbar": {
+          width: "8px",
+        },
+        "*": {
+          scrollbarWidth: "thin",
+          scrollbarColor: `${scrollbarThumbBackground} ${scrollbarTrackBackground}`,
+        },
+        "*::-webkit-scrollbar-track": {
+          background: scrollbarTrackBackground,
+        },
+        "*::-webkit-scrollbar-thumb": {
+          backgroundColor: scrollbarThumbBackground,
+          borderRadius: "6px",
+        },
       }
     },
     MuiButton: {
