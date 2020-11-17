@@ -5,7 +5,7 @@ import { makeStyles } from "@material-ui/core";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
 import clsx from "clsx";
-import { RefObject, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { MutableRefObject, RefObject, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import Measure from "react-measure";
 import measureElement, { measureTextWidths } from "../../../frontendUtils/measure";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
@@ -288,12 +288,13 @@ interface LyricsLineProps {
   textLine: string;
   furiganaLine?: [string, string][];
   done?: boolean;
-  activeRef?: RefObject<HTMLSpanElement>;
+  activeRef?: MutableRefObject<HTMLSpanElement>;
 }
 
 function LyricsLine({ textLine, furiganaLine, done, activeRef, className }: LyricsLineProps) {
   const thisRef = useRef<HTMLSpanElement>();
-  const elm = activeRef?.current || thisRef.current;
+  const elm = thisRef.current;
+  if (activeRef != null) activeRef.current = thisRef.current;
   if (elm && (activeRef === null || done)) {
     elm.style.clipPath = "inset(-30% 102% -10% -2%)";
   }
@@ -302,7 +303,7 @@ function LyricsLine({ textLine, furiganaLine, done, activeRef, className }: Lyri
     <span>{textLine}</span>;
   return <div className={clsx(className, done && "done", !done && !activeRef && "pending", activeRef && "active")}>
     <span className="before">{content}</span>
-    <span className="after" ref={activeRef || thisRef}>
+    <span className="after" ref={thisRef}>
       <span>{content}</span>
     </span>
   </div>;
@@ -541,7 +542,6 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
       if (currentLine === null && activeSpan !== null) timelineForRef.current = -1;
       if (activeSpan && currentLineEnd !== null && currentLineStart !== null) {
         const duration = currentLineEnd - currentLineStart;
-        console.log("start, end, dur", currentLineStart, currentLineEnd, duration, shouldUseTimelineFor);
         if (currentLine?.attachments?.timeTag) {
           const lengths = measureTextWidths(activeSpan);
           const length = lengths[lengths.length - 1];
