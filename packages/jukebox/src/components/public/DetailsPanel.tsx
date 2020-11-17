@@ -104,7 +104,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
               activeCriteria={(v) => v.startsWith("/info")}>Info</Link>
         <Box flexGrow={1} />
         <IconButton component={NextComposedLink} color={router.pathname === "/search" ? "primary" : "default"}
-                    href="/search" aria-label="delete" edge="end">
+                    href="/search" aria-label="search" edge="end">
           <SearchIcon />
         </IconButton>
       </Box>
