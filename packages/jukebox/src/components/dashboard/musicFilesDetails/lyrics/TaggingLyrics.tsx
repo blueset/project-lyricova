@@ -393,7 +393,9 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
     <div>
       <div className={styles.controls}>
         <div className={styles.controlsRow}>
-          <DismissibleAlert severity="warning" collapseProps={{className: styles.mainControlItem}}>Switch to another tab to save changes.</DismissibleAlert>
+          <DismissibleAlert severity="warning" collapseProps={{className: styles.mainControlItem}}>
+            Switch to another tab to save changes. ↑WJ/↓SK: Navigate; Home/End: First/Last; PgUp/PgDn: +/-10 lines; ←AH/→DL: +/-5 seconds r: Reset rate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; Enter: play/pause).
+          </DismissibleAlert>
         </div>
         <div className={styles.controlsRow}>
           <audio ref={playerRef} src={`/api/files/${fileId}/file`} controls className={styles.mainControlItem} />

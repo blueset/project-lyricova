@@ -12556,12 +12556,12 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"iconv-lite@npm:0.5.1":
-  version: 0.5.1
-  resolution: "iconv-lite@npm:0.5.1"
+"iconv-lite@npm:0.6.2":
+  version: 0.6.2
+  resolution: "iconv-lite@npm:0.6.2"
   dependencies:
-    safer-buffer: ">= 2.1.2 < 3"
-  checksum: e21730d7f434b74c55863cbb13ace62b070e0f15dd07825bc652ac5d1f7884b34cdbb7b75e74a4a71bbb61326417a8040c1b93631c0b38ee9fdc8672657ee158
+    safer-buffer: ">= 2.1.2 < 3.0.0"
+  checksum: 0785670120f57b5912c6a4391d6a69914906746d259b59de884dc6d324a52a0abde38d5804f67370192fec6878d01e7306de525568abcea70eb41c2bceb9f547
   languageName: node
   linkType: hard
 
@@ -14826,7 +14826,7 @@ fsevents@^1.2.7:
     mysql: ^2.17.1
     mysql2: ^2.1.0
     next: ^9.5.3
-    node-id3: ^0.1.19
+    node-id3: ^0.2.1
     node-pre-gyp: ^0.15.0
     node-sass: ^4.13.1
     nodemon: ^2.0.2
@@ -16095,12 +16095,12 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"node-id3@npm:^0.1.19":
-  version: 0.1.19
-  resolution: "node-id3@npm:0.1.19"
+"node-id3@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "node-id3@npm:0.2.1"
   dependencies:
-    iconv-lite: 0.5.1
-  checksum: 972d4d86453c6e65a84f1f42c6933dbe7d6ad36f14f6884de18a85ab037d5c8bda3075f1cb4b8b0e0915a585c047822ec0bc233f3be79690c3382b19423b09ef
+    iconv-lite: 0.6.2
+  checksum: 44745a05269c19a1d9deb423ac1475815aa5e9fa9a6c36a8d66bfe1ab45e66ba6545bee83edbc73155a51b4079bfd9d96ccc3dc2817a630d98abb4b1f57c89d7
   languageName: node
   linkType: hard
 
@@ -19577,7 +19577,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"safer-buffer@npm:>= 2.1.2 < 3, safer-buffer@npm:^2.0.2, safer-buffer@npm:^2.1.0, safer-buffer@npm:~2.1.0":
+"safer-buffer@npm:>= 2.1.2 < 3, safer-buffer@npm:>= 2.1.2 < 3.0.0, safer-buffer@npm:^2.0.2, safer-buffer@npm:^2.1.0, safer-buffer@npm:~2.1.0":
   version: 2.1.2
   resolution: "safer-buffer@npm:2.1.2"
   checksum: 549ba83f5b314b59898efe3422120ce1ca7987a6eae5925a5fa5db930dc414d4a9dde0a5594f89638cd6ea60b6840ea961872908933ac2428d1726489db46fa5
