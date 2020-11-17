@@ -93,7 +93,7 @@ export default function EditLyrics({ lyrics, setLyrics, songId, title }: Props) 
       id="lyrics-source"
       label="Lyrics source"
       fullWidth
-      value={lyrics}
+      value={lyrics || ""}
       inputProps={{ className: styles.textField, lang: "ja" }}
       onChange={handleChange}
       multiline

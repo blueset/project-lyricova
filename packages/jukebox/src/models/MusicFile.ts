@@ -249,7 +249,7 @@ export class MusicFile extends Model<MusicFile> {
   }
 
   /** Make a new MusicFile object from file path. */
-  public async buildSongEntry(): Promise<MusicFile> {
+  public async buildSongEntry(): Promise<this> {
     const path = this.fullPath;
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
     const metadataPromise = this.getSongMetadata();

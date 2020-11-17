@@ -54,7 +54,7 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics, }: Props) {
       id="lyrics-source"
       label="Lyrics source"
       fullWidth
-      value={lyrics}
+      value={lyrics || ""}
       inputProps={{ className: styles.textField, lang: "ja" }}
       onChange={handleChange}
       multiline

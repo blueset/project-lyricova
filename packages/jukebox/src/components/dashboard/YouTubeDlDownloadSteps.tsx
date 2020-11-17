@@ -130,12 +130,12 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
     setDownloadState(null);
 
     try {
-      const outcome = await apolloClient.mutate<{ mxGetDownload: string | null }>({
+      const outcome = await apolloClient.mutate<{ youtubeDlDownloadAudio: string | null }>({
         mutation: YOUTUBE_DL_DOWNLOAD_MUTATION,
         variables: { url: videoURL, filename, overwrite }
       });
 
-      const filePath = outcome.data.mxGetDownload;
+      const filePath = outcome.data.youtubeDlDownloadAudio;
       if (filePath === null) {
         snackbar.enqueueSnackbar(`Failed to download ${videoURL} as ${filename}`, { variant: "error" });
         setDownloadState(-1);
@@ -162,6 +162,7 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
     } catch (e) {
       console.error("Error occurred while downloading file", e);
       snackbar.enqueueSnackbar(`Error occurred while downloading file: ${e}`, { variant: "error" });
+      setStep(v => v - 1);
     }
   }, [apolloClient, downloadState, filename, overwrite, setDownloadState, setStep, snackbar, videoURL]);
 

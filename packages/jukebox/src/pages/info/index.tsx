@@ -17,7 +17,7 @@ export default function Information() {
     {currentSong && <FileSongInfo partialFile={currentSong} fileId={null} />}
     {user && <ButtonRow>
       {currentSong && <Chip
-          label="Edit song" component={NextComposedLink}
+          label="Edit music file" component={NextComposedLink}
           target="_blank" href={`/dashboard/review/${currentSong.id}`}
           clickable variant="outlined" />}
         <Chip label="Admin panel" component={NextComposedLink} target="_blank" href="login" clickable

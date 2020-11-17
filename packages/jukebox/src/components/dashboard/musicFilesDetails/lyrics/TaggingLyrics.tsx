@@ -132,6 +132,12 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
 
   // Build `linesPerTag`.
   useEffect(() => {
+    // Do nothing when no lyrics is found
+    if (!lyrics) {
+      setLinesPerTag([]);
+      return () => {/* No-op */};
+    }
+
     const mapping: { [key: string]: string[] } = {};
     const lpt: [string, string[]][] = [];
     const splitLines = lyrics.split("\n").map(v => {
@@ -159,7 +165,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
     return () => {
       const result: string[] = [];
       linesPerTagRef.current.forEach(([tag, lines]) => lines.forEach(line =>
-        result.push((tag ? `[${buildTimeTag(tag)}]` : "") + line)
+        result.push((tag !== null ? `[${buildTimeTag(tag)}]` : "") + line)
       ));
       setLyrics(result.join("\n"));
     };
@@ -420,7 +426,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
           </ListItemIcon>}
           <ListItemText disableTypography className={styles.lyricsLine} inset={idx !== cursor}>
             <Typography variant="body1" component="span" display="block" className={styles.tabularNumbers}>
-              {v[0] !== undefined ? `[${buildTimeTag(v[0])}]` : ""}
+              {v[0] != undefined ? `[${buildTimeTag(v[0])}]` : ""}
             </Typography>
             <div>{v[1].map((l, lidx) => (
               <Typography key={`${idx}-${lidx}`} variant="body1" color="textSecondary" display="block">

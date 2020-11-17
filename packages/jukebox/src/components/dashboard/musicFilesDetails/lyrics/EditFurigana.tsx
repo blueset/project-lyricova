@@ -46,6 +46,8 @@ export default function EditFurigana({ lyrics, setLyrics }: Props) {
 
   // Parse lyrics
   const parsedLyrics = useMemo<Lyrics | null>(() => {
+    if (!lyrics) return null;
+
     try {
       return new Lyrics(lyrics);
     } catch (e) {

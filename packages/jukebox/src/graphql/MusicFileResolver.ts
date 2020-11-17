@@ -237,8 +237,9 @@ export class MusicFileResolver {
     if (fs.existsSync(fullPath)) {
       let file = await MusicFile.findOne({ where: { path } });
       if (file === null) {
-        file = await MusicFile.build({ path }).buildSongEntry();
-        file = await MusicFile.create(file);
+        file = MusicFile.build({ path, fullPath });
+        await file.buildSongEntry();
+        await file.save();
       } else {
         file = await file.updateSongEntry();
       }

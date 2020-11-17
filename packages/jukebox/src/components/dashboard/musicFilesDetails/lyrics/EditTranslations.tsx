@@ -16,6 +16,7 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
   const snackbar = useSnackbar();
 
   const parsedLyrics = useMemo<Lyrics | null>(() => {
+    if (!lyrics) return null;
     try {
       return new Lyrics(lyrics);
     } catch (e) {
@@ -34,17 +35,19 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     if (parsedLyrics) {
       const lines = parsedLyrics.lines.map(v => v?.attachments?.translation() ?? null);
       setTranslatedLines(lines);
-    } else {
+    } else if (lyrics) {
       setTranslatedLines([]);
     }
 
     return () => {
-      const translatedLines = translatedLinesRef.current;
-      parsedLyrics.lines.forEach((v, idx) => {
-        if (translatedLines[idx]) v.attachments.setTranslation(translatedLines[idx]);
-        else delete v.attachments.content[TRANSLATION];
-      });
-      setLyrics(parsedLyrics.toString());
+      if (parsedLyrics) {
+        const translatedLines = translatedLinesRef.current;
+        parsedLyrics.lines.forEach((v, idx) => {
+          if (translatedLines[idx]) v.attachments.setTranslation(translatedLines[idx]);
+          else delete v.attachments.content[TRANSLATION];
+        });
+        setLyrics(parsedLyrics.toString());
+      }
     };
   }, [parsedLyrics, setLyrics, setTranslatedLines]);
 
