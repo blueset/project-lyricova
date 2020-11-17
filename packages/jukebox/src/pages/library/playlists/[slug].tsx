@@ -141,7 +141,7 @@ export default function PlaylistDetails() {
       <List>
         {
           _.sortBy(files, v => v.FileInPlaylist.sortOrder).map(v =>
-            <TrackListRow song={null} file={v} files={files} key={v.id} />
+            <TrackListRow song={null} file={v} files={files} key={v.id} showAlbum />
           )
         }
       </List>

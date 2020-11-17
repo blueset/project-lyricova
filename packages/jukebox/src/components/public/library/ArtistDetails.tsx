@@ -160,7 +160,7 @@ export default function ArtistDetails({id, type}: Props) {
       <List>
         {
           _.sortBy(artist.songs, "sortOrder").map(v =>
-            <TrackListRow song={v} file={v.files.length > 0 ? v.files[0] : null} files={files} key={v.id} />
+            <TrackListRow song={v} file={v.files.length > 0 ? v.files[0] : null} files={files} key={v.id} showAlbum />
           )
         }
       </List>

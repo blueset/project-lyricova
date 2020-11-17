@@ -22,10 +22,11 @@ import ListItemTextWithTime from "./ListItemTextWithTime";
 interface Props {
   song: Song | null;
   file: MusicFile | null;
-  files: MusicFile[]
+  files: MusicFile[];
+  showAlbum?: boolean;
 }
 
-export default function TrackListRow({song, file, files}: Props) {
+export default function TrackListRow({ song, file, files, showAlbum }: Props) {
   const router = useRouter();
   const { playlist } = useAppContext();
   const { user } = useAuthContext();
@@ -60,8 +61,13 @@ export default function TrackListRow({song, file, files}: Props) {
       {showTrackNumber && <ListItemIcon>{song?.SongInAlbum.trackNumber ?? "?"}</ListItemIcon>}
       <ListItemTextWithTime
         primary={song ? song.name : file.trackName}
-        secondary={song ? formatArtistsPlainText(song.artists) : file.artistName}
-        time={file?.duration ?? null}/>
+        secondary={<>
+          {(song ? formatArtistsPlainText(song.artists) : file.artistName) || <em>Various Artists</em>}
+          {showAlbum && file && (
+            <>{" / "}{(file.album?.name ?? file.albumName) || <em>Unknown album</em>}</>
+          )}
+        </>}
+        time={file?.duration ?? null} />
       <ListItemSecondaryAction>
         <IconButton
           edge="end"

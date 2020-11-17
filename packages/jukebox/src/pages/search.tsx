@@ -82,7 +82,7 @@ export default function Search() {
     //     secondary={<>{v.artistName || <em>Various Artists</em>} / {v.albumName || <em>Unknown Album</em>}</>}
     //     time={v.duration} />
     // </ListItem>
-      <TrackListRow song={null} file={v} files={searchFilesQuery.data.searchMusicFiles} key={v.id} />
+      <TrackListRow song={null} file={v} files={searchFilesQuery.data.searchMusicFiles} key={v.id} showAlbum />
     );
   }
 
