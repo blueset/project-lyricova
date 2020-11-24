@@ -114,11 +114,12 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
         mutation: WRITE_LYRICS_MUTATION,
         variables: {fileId, lyrics: lrc, ext: "lrc"},
       }));
-      const tagsStripped = lrc.replace(/^(\[[0-9:.]+\])/gm, "");
-      promises.push(apolloClient.mutate<{writeLyricsToMusicFile: boolean}>({
-        mutation: WRITE_LYRICS_TO_FILE_MUTATION,
-        variables: {fileId, lyrics: tagsStripped},
-      }));
+      // TODO: Resolve Node-id3 stripping cover when updating lyrics.
+      // const tagsStripped = lrc.replace(/^(\[[0-9:.]+\])/gm, "");
+      // promises.push(apolloClient.mutate<{writeLyricsToMusicFile: boolean}>({
+      //   mutation: WRITE_LYRICS_TO_FILE_MUTATION,
+      //   variables: {fileId, lyrics: tagsStripped},
+      // }));
     }
     if (lrcx && lrcx !== lrc) {
       promises.push(apolloClient.mutate<{writeLyrics: boolean}>({

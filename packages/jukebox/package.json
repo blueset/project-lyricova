@@ -132,6 +132,7 @@
     "typeorm": "^0.2.22",
     "winston": "^3.2.1",
     "youtube-dl": "^3.0.2",
+    "youtube-dl-wrap": "^1.2.0",
     "yup": "^0.29.3"
   },
   "devDependencies": {

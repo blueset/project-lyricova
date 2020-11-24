@@ -294,16 +294,19 @@ interface LyricsLineProps {
 function LyricsLine({ textLine, furiganaLine, done, activeRef, className }: LyricsLineProps) {
   const thisRef = useRef<HTMLSpanElement>();
   const elm = thisRef.current;
-  if (activeRef != null) activeRef.current = thisRef.current;
   if (elm && (activeRef === null || done)) {
     elm.style.clipPath = "inset(-30% 102% -10% -2%)";
   }
+
   const content = furiganaLine !== null ?
     <FuriganaLyricsLine transliterationLine={furiganaLine} /> :
     <span>{textLine}</span>;
   return <div className={clsx(className, done && "done", !done && !activeRef && "pending", activeRef && "active")}>
     <span className="before">{content}</span>
-    <span className="after" ref={thisRef}>
+    <span className="after" ref={(elm) => {
+      thisRef.current = elm;
+      if (activeRef) activeRef.current = elm;
+    }}>
       <span>{content}</span>
     </span>
   </div>;
@@ -339,8 +342,8 @@ function buildPageClasses(lines: number[], lyrics: LyricsKitLyrics, furigana: [s
       className: lineClassName
     })).width
   );
-  const classes: string[] = lines.map((v, idx) => `line-${lines.length}-${idx + 1}`);
 
+  const classes: string[] = lines.map((v, idx) => `line-${lines.length}-${idx + 1}`);
 
   const result: (PageClassInfo | null)[] = [];
   lines.forEach((v, idx) => {
@@ -531,6 +534,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   useEffect(() => {
     const activeSpan = activeRef.current;
     const shouldUseTimelineFor = currentLine !== null ? currentLine : activeSpan !== null ? -1 : null;
+
     // Build new timeline for new lyrics line
     if (shouldUseTimelineFor !== timelineForRef.current) {
 

@@ -14872,6 +14872,7 @@ fsevents@^1.2.7:
     typescript: ^4.0.2
     winston: ^3.2.1
     youtube-dl: ^3.0.2
+    youtube-dl-wrap: ^1.2.0
     yup: ^0.29.3
   languageName: unknown
   linkType: soft
@@ -23429,6 +23430,13 @@ typescript@^4.0.2:
   version: 3.1.1
   resolution: "yn@npm:3.1.1"
   checksum: bff63b80568d80c711670935427494dde47cdf97e8b04196b140ce0af519c81c5ee857eddad0caa8b422dd65aea0157bbfaacbb1546bebba623f0f383d5d9ae5
+  languageName: node
+  linkType: hard
+
+"youtube-dl-wrap@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "youtube-dl-wrap@npm:1.2.0"
+  checksum: 56b441263d37dd4849a4817d658141a127eb10d6d03a76c53092344e59a3c76bbbb261353111e8412615830b7a03cb79088790f526d364289dbbd750041f2beb
   languageName: node
   linkType: hard
 

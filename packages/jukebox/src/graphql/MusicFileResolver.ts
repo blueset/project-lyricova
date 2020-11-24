@@ -361,10 +361,13 @@ export class MusicFileResolver {
     const lrcPath = swapExt(filePath, "lrc");
     const lrcxPath = swapExt(filePath, "lrcx");
     let path: string | null = null;
+    let usedType: "lrc" | "lrcx";
     if (fs.existsSync(lrcxPath)) {
       path = lrcxPath;
+      usedType = "lrcx";
     } else if (fs.existsSync(lrcPath)) {
       path = lrcPath;
+      usedType = "lrc";
     } else {
       console.log("no file is found");
       return null;
@@ -373,9 +376,11 @@ export class MusicFileResolver {
       const buffer = fs.readFileSync(path);
       let content = buffer.toString();
 
-      // Transform standard " / " type of translation to LyricsX types.
-      content = content.replace(/^((?:\[[0-9:.-]+])+)(.+?) \/ (.+)$/mg, "$1$2\n$1[tr]$3");
-      content = content.replace(/^((?:\[[0-9:.-]+])+)(.+?)[\/／](.+)$/mg, "$1$2\n$1[tr]〝$3〟");
+      if (usedType === "lrc") {
+        // Transform standard " / " type of translation to LyricsX types.
+        content = content.replace(/^((?:\[[0-9:.-]+])+)(.+?) \/ (.+)$/mg, "$1$2\n$1[tr]$3");
+        content = content.replace(/^((?:\[[0-9:.-]+])+)(.+?)[\/／](.+)$/mg, "$1$2\n$1[tr]〝$3〟");
+      }
 
       return new LyricsKitLyrics(new Lyrics(content));
     } catch (e) {

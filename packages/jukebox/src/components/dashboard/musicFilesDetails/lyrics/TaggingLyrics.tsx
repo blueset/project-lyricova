@@ -300,7 +300,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         } else {
           setExtrapolateTags((extrapolateTags) => {
             extrapolateTags[cursorRef.current] = null;
-            return extrapolateTags;
+            return [...extrapolateTags];
           });
         }
         return;
@@ -347,7 +347,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         } else {
           setExtrapolateTags((extrapolateTags) => {
             extrapolateTags[cursorRef.current] = time;
-            return extrapolateTags;
+            return [...extrapolateTags];
           });
         }
         moveCursor(cursor => cursor + 1);
