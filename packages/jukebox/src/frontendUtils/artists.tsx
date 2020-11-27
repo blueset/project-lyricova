@@ -22,7 +22,8 @@ export function formatArtists(artists: Artist[], renderer: (artists: Artist[]) =
   if (producers.length && vocalists.length) {
     return <>{renderer(producers)} feat. {renderer(vocalists)}</>;
   } else if (producers.length || vocalists.length) {
-    return <>{renderer(producers || vocalists)}</>;
+    const list = producers.length ? producers : vocalists;
+    return <>{renderer(list)}</>;
   } else {
     return <em>Various artists</em>;
   }
@@ -34,7 +35,8 @@ export function formatArtistsString(artists: Artist[]): string {
   if (producers.length && vocalists.length) {
     return `${producers.map(i => i.name).join(", ")} feat. ${vocalists.map(i => i.name).join(", ")}`;
   } else if (producers.length || vocalists.length) {
-    return (producers || vocalists).map(i => i.name).join(", ");
+    const list = producers.length ? producers : vocalists;
+    return list.map(i => i.name).join(", ");
   } else {
     return "Various artists";
   }

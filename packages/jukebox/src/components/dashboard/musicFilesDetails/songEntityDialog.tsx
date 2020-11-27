@@ -197,7 +197,7 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
             const data = {
               name: values.name,
               sortOrder: values.sortOrder,
-              coverUrl: values.coverUrl,
+              coverUrl: values.coverUrl || "",
               originalId: values.originalSong?.id ?? null,
               songInAlbums: values.albums.map(v => ({
                 name: v.name,

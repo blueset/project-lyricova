@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import { getLayout as getDashboardLayout } from "./DashboardLayout";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { Alert } from "@material-ui/lab";
 import { TableIcons } from "../MaterialTableIcons";
 import EditIcon from "@material-ui/icons/Edit";
@@ -10,10 +10,31 @@ import { Song } from "../../../models/Song";
 import { useRouter } from "next/router";
 import { formatArtistsPlainText } from "../../../frontendUtils/artists";
 import { Avatar, ListItemText } from "@material-ui/core";
+import GetAppIcon from "@material-ui/icons/GetApp";
+import { Artist } from "../../../models/Artist";
 
 const SONG_INFO_LIST_QUERY = gql`
   query {
     songs {
+      id
+      name
+      sortOrder
+      artists {
+        id
+        name
+        ArtistOfSong {
+          categories
+        }
+      }
+      incomplete
+      coverUrl
+    }
+  }
+`;
+
+const SONG_OVERWRITE_MUTATION = gql`
+  mutation($id: Int!) {
+    enrolSongFromVocaDB(songId: $id) {
       id
       name
       sortOrder
@@ -36,6 +57,7 @@ interface Props {
 
 export default function SongInfoLayout({ children }: Props) {
   const router = useRouter();
+  const apolloClient = useApolloClient();
   const query = useQuery<{songs: Song[]}>(SONG_INFO_LIST_QUERY);
 
   let table: ReactNode = null;
@@ -61,7 +83,7 @@ export default function SongInfoLayout({ children }: Props) {
         {
           // eslint-disable-next-line react/display-name
           icon: () => <EditIcon/>,
-          tooltip: "Review",
+          tooltip: "Edit",
           onClick: async (event, rowData: Partial<Song>) => {
             if (rowData?.id !== undefined) {
               await router.push(`/dashboard/songs/${rowData.id}`);
@@ -75,6 +97,26 @@ export default function SongInfoLayout({ children }: Props) {
           onClick: async (event, rowData: Partial<Song>) => {
             if (rowData?.id !== undefined) {
               await window.open(`https://vocadb.net/S/${rowData.id}`, "_blank");
+            }
+          },
+          disabled: r.id < 0,
+        }),
+        (r) => ({
+          // eslint-disable-next-line react/display-name
+          icon: () => <GetAppIcon/>,
+          tooltip: "Overwrite from VocaDB",
+          onClick: async (event, rowData: Partial<Song>) => {
+            if (rowData?.id !== undefined) {
+              const result = await apolloClient.mutate<{enrolSongFromVocaDB: Song}>({
+                mutation: SONG_OVERWRITE_MUTATION,
+                variables: {id: rowData.id}
+              });
+              if (result.data.enrolSongFromVocaDB) {
+                const updated = result.data.enrolSongFromVocaDB;
+                query.updateQuery(prev => ({
+                  songs: prev.songs.map(v => v.id === updated.id ? updated : v),
+                }));
+              }
             }
           },
           disabled: r.id < 0,
