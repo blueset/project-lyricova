@@ -128,11 +128,12 @@ interface NavMenuItemProps {
   text: string;
   icon?: ReactNode;
   activeCriteria?: (pathName: string) => boolean;
+  prefixMatch?: boolean;
 }
 
-function NavMenuItem({href, text, icon, activeCriteria, as}: NavMenuItemProps) {
+function NavMenuItem({href, text, icon, activeCriteria, as, prefixMatch}: NavMenuItemProps) {
   const router = useRouter();
-  const criteria = activeCriteria || ((v: string) => v === href);
+  const criteria = activeCriteria || ((v: string) => (prefixMatch ? v.startsWith(href) : v === href));
 
   return <ListItem button
                    component={NextComposedLink}
@@ -187,11 +188,11 @@ export default function DashboardLayout({title, children}: Props) {
       <Divider/>
       <List>
         <ListSubheader inset>Databank</ListSubheader>
-        <NavMenuItem text="Review" href="/dashboard/review" activeCriteria={v => v.startsWith("/dashboard/review")} icon={<RateReviewIcon/>}/>
-        <NavMenuItem text="Music entries" href="/dashboard/songs" icon={<MusicNoteIcon/>}/>
-        <NavMenuItem text="Artist entries" href="/dashboard/artists" icon={<RecentActorsIcon/>}/>
-        <NavMenuItem text="Album entries" href="/dashboard/albums" icon={<AlbumIcon/>}/>
-        <NavMenuItem text="Playlists" href="/dashboard/playlists" icon={<QueueMusicIcon/>}/>
+        <NavMenuItem text="Review" href="/dashboard/review" prefixMatch icon={<RateReviewIcon/>}/>
+        <NavMenuItem text="Music entries" href="/dashboard/songs" prefixMatch icon={<MusicNoteIcon/>}/>
+        <NavMenuItem text="Artist entries" href="/dashboard/artists" prefixMatch icon={<RecentActorsIcon/>}/>
+        <NavMenuItem text="Album entries" href="/dashboard/albums" prefixMatch icon={<AlbumIcon/>}/>
+        <NavMenuItem text="Playlists" href="/dashboard/playlists" prefixMatch icon={<QueueMusicIcon/>}/>
         <NavMenuItem text="Scan" href="/dashboard/scan" icon={<CachedIcon/>}/>
       </List><Divider/>
       <List>
