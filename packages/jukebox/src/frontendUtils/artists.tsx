@@ -1,8 +1,9 @@
 import { Artist } from "../models/Artist";
 import { ReactNode } from "react";
 
-export function formatArtists(artists: Artist[], renderer: (artists: Artist[]) => ReactNode): ReactNode {
+function splitArtists(artists: Artist[]): {producers: Artist[], vocalists: Artist[]} {
   const producers: Artist[] = [], vocalists: Artist[] = [];
+
   for (const i of artists) {
     const categories = i?.ArtistOfSong?.categories || [i.ArtistOfAlbum?.categories];
     if (categories.indexOf("Producer") >= 0 || categories.indexOf("Circle") >= 0) {
@@ -11,6 +12,13 @@ export function formatArtists(artists: Artist[], renderer: (artists: Artist[]) =
       vocalists.push(i);
     }
   }
+
+  return {producers, vocalists};
+}
+
+export function formatArtists(artists: Artist[], renderer: (artists: Artist[]) => ReactNode): ReactNode {
+  const { producers, vocalists } = splitArtists(artists);
+
   if (producers.length && vocalists.length) {
     return <>{renderer(producers)} feat. {renderer(vocalists)}</>;
   } else if (producers.length || vocalists.length) {
@@ -20,6 +28,18 @@ export function formatArtists(artists: Artist[], renderer: (artists: Artist[]) =
   }
 }
 
-export function formatArtistsPlainText(artists: Artist[]) {
+export function formatArtistsString(artists: Artist[]): string {
+  const { producers, vocalists } = splitArtists(artists);
+
+  if (producers.length && vocalists.length) {
+    return `${producers.map(i => i.name).join(", ")} feat. ${vocalists.map(i => i.name).join(", ")}`;
+  } else if (producers.length || vocalists.length) {
+    return (producers || vocalists).map(i => i.name).join(", ");
+  } else {
+    return "Various artists";
+  }
+}
+
+export function formatArtistsPlainText(artists: Artist[]): ReactNode {
   return formatArtists(artists, v => v.map(i => i.name).join(", "));
 }

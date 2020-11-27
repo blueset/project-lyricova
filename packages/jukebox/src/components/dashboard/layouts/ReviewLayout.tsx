@@ -1,7 +1,7 @@
 import { ReactNode, useCallback } from "react";
 import { makeStyles, Typography } from "@material-ui/core";
 import { useRouter } from "next/router";
-import DashboardLayout from "./DashboardLayout";
+import {getLayout as getDashboardLayout} from "./DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
 import Alert from "@material-ui/lab/Alert";
 import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
@@ -37,11 +37,10 @@ const PENDING_REVIEW_FILES_QUERY = gql`
 `;
 
 interface Props {
-  title?: string;
   children: ReactNode;
 }
 
-export default function ReviewLayout({title, children}: Props) {
+export default function ReviewLayout({children}: Props) {
   const styles = useStyles();
   const router = useRouter();
   const fileId = parseInt(router.query.fileId as string);
@@ -114,11 +113,8 @@ export default function ReviewLayout({title, children}: Props) {
     }
   }
 
-  return <DashboardLayout title={title}>
-    {content}
-  </DashboardLayout>;
+  return content;
 }
 
 // eslint-disable-next-line react/display-name
-export const getLayout = (title?: string) => ((page: ReactNode) => <ReviewLayout
-  title={title}>{page}</ReviewLayout>);
+export const getLayout = (page: ReactNode) => (title?: string) => getDashboardLayout(title)(<ReviewLayout>{page}</ReviewLayout>);

@@ -82,6 +82,13 @@ export class SongResolver {
     });
   }
 
+  @Query(returns => [Song])
+  public async songs(): Promise<Song[]> {
+    return Song.findAll({
+      order: ["sortOrder"]
+    });
+  }
+
   @FieldResolver(type => Song, { nullable: true })
   private async original(@Root() song: Song): Promise<Song | null> {
     return song.$get("original");

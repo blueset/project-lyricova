@@ -149,8 +149,9 @@ export default function ArtistEntityDialog({ isOpen, toggleOpen, keyword, setKey
         }}>
         {({ submitting, handleSubmit }) => (
           <>
-            <DialogTitle
-              id="form-dialog-title">{create ? "Create new artist entity" : `Edit artist entity #${artistId}`}</DialogTitle>
+            <DialogTitle id="form-dialog-title">
+              {create ? "Create new artist entity" : `Edit artist entity #${artistId}`}
+            </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
                 <Grid item xs={12}>

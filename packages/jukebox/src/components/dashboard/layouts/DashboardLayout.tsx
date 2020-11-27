@@ -23,7 +23,8 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import RateReviewIcon from "@material-ui/icons/RateReview";
-import FileCopyIcon from "@material-ui/icons/FileCopy";
+import RecentActorsIcon from "@material-ui/icons/RecentActors";
+import AlbumIcon from "@material-ui/icons/Album";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import QueueMusicIcon from "@material-ui/icons/QueueMusic";
 import CachedIcon from "@material-ui/icons/Cached";
@@ -187,8 +188,9 @@ export default function DashboardLayout({title, children}: Props) {
       <List>
         <ListSubheader inset>Databank</ListSubheader>
         <NavMenuItem text="Review" href="/dashboard/review" activeCriteria={v => v.startsWith("/dashboard/review")} icon={<RateReviewIcon/>}/>
-        <NavMenuItem text="Music files" href="/dashboard/musicFiles" icon={<FileCopyIcon/>}/>
-        <NavMenuItem text="Music entries" href="/dashboard/entries" icon={<MusicNoteIcon/>}/>
+        <NavMenuItem text="Music entries" href="/dashboard/songs" icon={<MusicNoteIcon/>}/>
+        <NavMenuItem text="Artist entries" href="/dashboard/artists" icon={<RecentActorsIcon/>}/>
+        <NavMenuItem text="Album entries" href="/dashboard/albums" icon={<AlbumIcon/>}/>
         <NavMenuItem text="Playlists" href="/dashboard/playlists" icon={<QueueMusicIcon/>}/>
         <NavMenuItem text="Scan" href="/dashboard/scan" icon={<CachedIcon/>}/>
       </List><Divider/>

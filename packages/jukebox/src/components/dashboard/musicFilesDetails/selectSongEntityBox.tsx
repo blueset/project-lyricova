@@ -17,6 +17,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import SongEntityDialog from "./songEntityDialog";
 import { useField, useForm } from "react-final-form";
 import { Autocomplete } from "mui-rff";
+import { formatArtists } from "../../../frontendUtils/artists";
 
 export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
@@ -251,16 +252,12 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
                   </Typography>
                 </div>
                 {value.artists && <div className={styles.chipsRow}>
-                  {value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Producer") >= 0).map(v => (
-                    <Chip variant="outlined" size="small" key={v.sortOrder}
-                          label={v.ArtistOfSong.customName || v.name} />
-                  ))}
-                  {_.some(value.artists, v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0) &&
-                  <Typography color="textSecondary" component="span" className={styles.featLabel}>feat.</Typography>}
-                  {value.artists.filter(v => v.ArtistOfSong.categories.indexOf("Vocalist") >= 0).map(v => (
-                    <Chip variant="outlined" size="small" key={v.sortOrder}
-                          label={v.ArtistOfSong.customName || v.name} />
-                  ))}
+                  {
+                    formatArtists(value.artists, a => a.map(v => (
+                      <Chip variant="outlined" size="small" key={v.sortOrder}
+                            label={v.ArtistOfSong.customName || v.name} />
+                    )))
+                  }
                 </div>}
               </div>
               <div>
