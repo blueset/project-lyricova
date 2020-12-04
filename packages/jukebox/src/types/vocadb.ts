@@ -389,7 +389,8 @@ export interface AlbumForApiContract {
 }
 export interface ArtistForAlbumForApiContract {
   artist: ArtistContract;
-  categories: VDBArtistCategoryType;
+  /** VDBArtistCategoryType[].join(", ") */
+  categories: string;
   /** VDBArtistRoleType[].join(", ") */
   effectiveRoles: string;
   isSupport: boolean;

@@ -47,7 +47,7 @@ export default function Review() {
 
   const rows = edges?.filter(v => showAll || v.node.needReview).map(v => ({...v.node})) ?? [];
 
-  return <Box p={2}>
+  return <Box>
     {needReviewQuery.error && <Alert severity="error">
         <AlertTitle>Error occurred while retrieving data.</AlertTitle>
       {`${needReviewQuery.error}`}

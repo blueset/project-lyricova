@@ -117,4 +117,4 @@ export default function ReviewLayout({children}: Props) {
 }
 
 // eslint-disable-next-line react/display-name
-export const getLayout = (page: ReactNode) => (title?: string) => getDashboardLayout(title)(<ReviewLayout>{page}</ReviewLayout>);
+export const getLayout = (title?: string) => (page: ReactNode) => getDashboardLayout(title)(<ReviewLayout>{page}</ReviewLayout>);

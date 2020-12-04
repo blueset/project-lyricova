@@ -102,7 +102,7 @@ export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
     const artistOfAlbumAttrs = {
       effectiveRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
       roles: entity.roles.split(", ") as VDBArtistRoleType[],
-      categories: entity.categories,
+      categories: entity.categories.split(", ")[0] as VDBArtistCategoryType,
     };
     if (artist.ArtistOfAlbum === undefined) {
       artist.ArtistOfAlbum = artistOfAlbumAttrs;

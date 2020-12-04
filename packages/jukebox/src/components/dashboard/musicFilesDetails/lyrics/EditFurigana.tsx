@@ -22,7 +22,7 @@ const KARAOKE_TRANSLITERATION_QUERY = gql`
 const useStyles = makeStyles((theme) => ({
   sidePanel: {
     position: "sticky",
-    top: theme.spacing(2),
+    top: theme.spacing(10),
     left: 0,
     height: "fit-content",
     zIndex: 2,
@@ -30,14 +30,28 @@ const useStyles = makeStyles((theme) => ({
   row: {
     margin: theme.spacing(2, 0),
   },
+  musicControlGrid: {
+    position: "sticky",
+    top: theme.spacing(2),
+    left: 0,
+    zIndex: 2,
+    "& > audio": {
+      width: "100%",
+    },
+  },
+  furiganaListLine: {
+    fontSize: "2em",
+    minHeight: "1em",
+  },
 }));
 
 interface Props {
   lyrics: string;
   setLyrics: (lyrics: string) => void;
+  fileId: number;
 }
 
-export default function EditFurigana({ lyrics, setLyrics }: Props) {
+export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
   const snackbar = useSnackbar();
   const styles = useStyles();
   const apolloClient = useApolloClient();
@@ -120,7 +134,10 @@ export default function EditFurigana({ lyrics, setLyrics }: Props) {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12} sm={6} className={styles.sidePanel}>
+      <Grid item xs={12} className={styles.musicControlGrid} >
+        <audio src={`/api/files/${fileId}/file`} controls />
+      </Grid>
+      <Grid item xs={12} sm={5} className={styles.sidePanel}>
         <div className={styles.row}>
           <Button variant="outlined" onClick={overrideFurigana}>Override with generated furigana</Button>
         </div>
@@ -129,11 +146,11 @@ export default function EditFurigana({ lyrics, setLyrics }: Props) {
           <EditFuriganaLine line={lines[selectedLine]} setLine={saveCurrentLine(selectedLine)} />}
         </div>
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12} sm={7}>
         <List dense>
           {lines.map((v, idx) =>
             <ListItem key={idx} button onClick={() => setSelectedLine(idx)} selected={selectedLine === idx}>
-              <ListItemText primaryTypographyProps={{ variant: "body1", lang: "ja" }}>
+              <ListItemText primaryTypographyProps={{ variant: "body1", lang: "ja", className: styles.furiganaListLine }}>
                 <FuriganaLyricsLine lyricsKitLine={v} />
               </ListItemText>
             </ListItem>

@@ -104,7 +104,7 @@ export default function InfoPanel(
                 artistSortOrder: values.artistSortOrder,
                 albumName: values.albumName,
                 albumSortOrder: values.albumSortOrder,
-                songId: values.song.id,
+                songId: values.song?.id,
                 albumId: values.albumId
               }
             }

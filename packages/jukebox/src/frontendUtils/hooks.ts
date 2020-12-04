@@ -114,6 +114,8 @@ export type PlayerState = {
    * e.g. `performance.now() - (player.currentTime * 1000)`.
    */
   startingAt: number;
+  /** Playback rate of the player, defaulted to 1. */
+  rate: number;
 } | {
   state: "paused";
   /** Progress of the current player (seconds). */
@@ -158,7 +160,9 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
     if (player.paused) {
       setPlayerState({ state: "paused", progress: player.currentTime });
     } else {
-      setPlayerState({ state: "playing", startingAt: performance.now() - (player.currentTime * 1000) });
+      const rate = player.playbackRate;
+      const startingAt = performance.now() - ((player.currentTime * 1000) / rate);
+      setPlayerState({ state: "playing", startingAt, rate });
     }
   }, [playerRef, setPlayerState]);
 
@@ -170,12 +174,14 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
     player.addEventListener("play", updatePlayerState);
     player.addEventListener("pause", updatePlayerState);
     player.addEventListener("seeked", updatePlayerState);
+    player.addEventListener("ratechange", updatePlayerState);
     updatePlayerState();
 
     return () => {
       player.removeEventListener("play", updatePlayerState);
       player.removeEventListener("pause", updatePlayerState);
       player.removeEventListener("seeked", updatePlayerState);
+      player.removeEventListener("ratechange", updatePlayerState);
     };
   }, [playerRef, updatePlayerState]);
 

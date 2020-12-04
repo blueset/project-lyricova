@@ -218,10 +218,6 @@ export class MusicDlSearchResult {
 @Resolver()
 export class DownloadResolver {
 
-  constructor() {
-    // TODO: find a way to open a global web socket/socket.io
-  }
-
   private publishDownloadProgress(publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>, sessionId: string, current: number, total: number): Promise<void> {
     console.log(`Download progress of ${sessionId}: ${current} / ${total}`);
     return publish({ sessionId, data: { type: "progress", current, total } });
@@ -334,10 +330,11 @@ export class DownloadResolver {
     filename = swapExt(filename, "$(ext)s");
     const finalFilename = swapExt(filename, "mp3");
     const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
+    const format = url.includes("nicovideo") ? "best" : "bestaudio";
     const params = [
       "--extract-audio",
       "--audio-format", "mp3",
-      "-f", "bestaudio",
+      "-f", format,
       "--embed-thumbnail",
       "--add-metadata",
       "-o", fullPath

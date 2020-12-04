@@ -211,9 +211,9 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
                     {fetchInfoQueryData.formats.filter(v => v.abr).map(v => {
                       let chiplabel = v.format;
                       if (v.abr) {
-                        chiplabel = `${chiplabel}, ♪${v.abr}k@[${v.acodec}]`;
+                        chiplabel = `${chiplabel}, ♪${v.abr}k@[${v.acodec || "Unknown codec"}]`;
                       }
-                      chiplabel = `${chiplabel}, ${filesize(v.filesize)}, ${v.ext}`;
+                      chiplabel = `${chiplabel}, ${v.filesize ? filesize(v.filesize) : "Unknown size"}, ${v.ext}`;
                       return <Chip
                         key={v.format_id}
                         size="small"

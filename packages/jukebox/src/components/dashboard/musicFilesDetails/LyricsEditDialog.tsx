@@ -186,7 +186,7 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
             <EditTranslations lyrics={lrcx} setLyrics={setLrcx} />
           </TabPanel>
           <TabPanel value="furigana">
-            <EditFurigana lyrics={lrcx} setLyrics={setLrcx} />
+            <EditFurigana lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
           </TabPanel>
         </DialogContent>
       </TabContext>

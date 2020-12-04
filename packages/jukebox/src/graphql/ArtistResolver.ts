@@ -46,7 +46,7 @@ export class ArtistResolver {
       where: {
         [Op.and]: [
           {type: {[Op.in]: types}},
-          sequelize.literal(`(
+          literal(`(
             SELECT
               COUNT(MusicFiles.id) 
             FROM ArtistOfSongs 

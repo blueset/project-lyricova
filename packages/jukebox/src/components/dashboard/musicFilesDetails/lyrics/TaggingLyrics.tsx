@@ -181,7 +181,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
     if (playerState.state === "paused") {
       time = playerState.progress;
     } else {
-      time = (timestamp - playerState.startingAt) / 1000;
+      time = (timestamp - playerState.startingAt) / 1000 * playerState.rate;
     }
 
     if ((time < currentLine.start || time > currentLine.end) && linesPerTag.length > 0) {

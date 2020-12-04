@@ -35,6 +35,8 @@ function smartTranslationSeparation(text: string): string {
   if (result !== null) return result;
   result = replaceWithPattern(lines, /^(.*?)\/(.*)$/);
   if (result !== null) return result;
+  result = replaceWithPattern(lines, /^(.*?)／(.*)$/);
+  if (result !== null) return result;
   result = replaceWithPattern(lines, /^(.*?)【(.*)】$/);
   if (result !== null) return result;
   return text;

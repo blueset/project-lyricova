@@ -316,16 +316,16 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                             inputProps={{ name: `${name}.artistRoles`, id: `${name}.artistRoles` }}
                           >
                             <MenuItem value="Default">Default</MenuItem>
-                            <MenuItem value="Animator">Animator</MenuItem>
-                            <MenuItem value="Arranger">Arranger</MenuItem>
                             <MenuItem value="Composer">Composer</MenuItem>
+                            <MenuItem value="Lyricist">Lyricist</MenuItem>
+                            <MenuItem value="Arranger">Arranger</MenuItem>
+                            <MenuItem value="Vocalist">Vocalist</MenuItem>
+                            <MenuItem value="Animator">Animator</MenuItem>
                             <MenuItem value="Distributor">Distributor</MenuItem>
                             <MenuItem value="Illustrator">Illustrator</MenuItem>
                             <MenuItem value="Instrumentalist">Instrumentalist</MenuItem>
-                            <MenuItem value="Lyricist">Lyricist</MenuItem>
                             <MenuItem value="Mastering">Mastering</MenuItem>
                             <MenuItem value="Publisher">Publisher</MenuItem>
-                            <MenuItem value="Vocalist">Vocalist</MenuItem>
                             <MenuItem value="VoiceManipulator">Voice Manipulator</MenuItem>
                             <MenuItem value="Other">Other</MenuItem>
                             <MenuItem value="Mixer">Mixer</MenuItem>
