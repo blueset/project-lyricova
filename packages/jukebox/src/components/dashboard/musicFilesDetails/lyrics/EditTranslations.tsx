@@ -35,7 +35,7 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     if (parsedLyrics) {
       const lines = parsedLyrics.lines.map(v => v?.attachments?.translation() ?? null);
       setTranslatedLines(lines);
-    } else if (lyrics) {
+    } else {
       setTranslatedLines([]);
     }
 
@@ -49,7 +49,8 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
         setLyrics(parsedLyrics.toString());
       }
     };
-  }, [parsedLyrics, setLyrics, setTranslatedLines]);
+    // Dropping dependencies [lyrics, parsedLyrics to prevent infinite loop between this effect and `parsedLyrics`
+  }, [setLyrics, setTranslatedLines]);
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setTranslatedLines(event.target.value.split("\n"));

@@ -169,7 +169,8 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       ));
       setLyrics(result.join("\n"));
     };
-  }, [lyrics, setLinesPerTag, setLyrics]);
+    // Dropping dependency [lyrics] to prevent loop caused during tear down of itself.
+  }, [setLinesPerTag, setLyrics]);
 
   // Update time tags
   const onFrame = useCallback((timestamp: number) => {

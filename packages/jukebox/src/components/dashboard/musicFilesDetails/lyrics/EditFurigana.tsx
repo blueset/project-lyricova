@@ -84,7 +84,8 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
         setLyrics(parsedLyrics.toString());
       };
     }
-  }, [parsedLyrics, setLines, setLyrics]);
+    // dropping dependency [parsedLyrics] to prevent loop with parsedLyrics.
+  }, [setLines, setLyrics]);
 
   // Generate furigana
   const overrideFurigana = useCallback(async () => {
