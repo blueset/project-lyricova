@@ -201,8 +201,8 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
               originalId: values.originalSong?.id ?? null,
               songInAlbums: values.albums.map(v => ({
                 name: v.name,
-                diskNumber: v.diskNumber,
-                trackNumber: v.trackNumber,
+                diskNumber: v.diskNumber && parseInt(v.diskNumber as unknown as string),
+                trackNumber: v.trackNumber && parseInt(v.trackNumber as unknown as string),
                 albumId: v.album.id,
               })),
               artistsOfSong: values.artists.map(v => ({

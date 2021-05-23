@@ -9,7 +9,7 @@ import {
   Dispatch,
   SetStateAction
 } from "react";
-import { LyricsKitLyrics, LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
+
 import _ from "lodash";
 import { AnimatedWord } from "../utils/typingSequence";
 import { gql, QueryResult, useQuery } from "@apollo/client";

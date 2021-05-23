@@ -1,6 +1,7 @@
 import { Song } from "../models/Song";
 import { AlbumForApiContract, ArtistForApiContract, SongForApiContract } from "../types/vocadb";
 import axios, { AxiosInstance } from "axios";
+import got from "got";
 import { Arg, Authorized, Int, Mutation, Resolver } from "type-graphql";
 import { Artist } from "../models/Artist";
 import { Album } from "../models/Album";
@@ -15,31 +16,36 @@ export class VocaDBImportResolver {
   }
 
   private async getSong(songId: string | number): Promise<SongForApiContract> {
-    const song = await this.axios.get<SongForApiContract>(`https://vocadb.net/api/songs/${songId}`, {
-      params: {
+    // const song = await this.axios.get<SongForApiContract>(`https://vocadb.net/api/songs/${songId}`, {
+    //   params: {
+    //     fields: "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
+    //   }
+    // });
+    const song = await got.get(`https://vocadb.net/api/songs/${songId}`, {
+      searchParams: {
         fields: "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
       }
-    });
-    return song.data;
+    }).json<SongForApiContract>();
+    return song;
   }
 
   private async getArtist(artistId: string | number): Promise<ArtistForApiContract> {
-    const artist = await this.axios.get<ArtistForApiContract>(`https://vocadb.net/api/artists/${artistId}`, {
-      params: {
+    const artist = await got.get(`https://vocadb.net/api/artists/${artistId}`, {
+      searchParams: {
         fields: "AdditionalNames,ArtistLinks,ArtistLinksReverse,BaseVoicebank,Description,MainPicture,Names,Tags,WebLinks",
       }
-    });
-    return artist.data;
+    }).json<ArtistForApiContract>();
+    return artist;
   }
 
   private async getAlbum(albumId: string | number): Promise<AlbumForApiContract> {
-    const album = await this.axios.get<AlbumForApiContract>(`https://vocadb.net/api/albums/${albumId}`, {
-      params: {
+    const album = await got.get(`https://vocadb.net/api/albums/${albumId}`, {
+      searchParams: {
         fields: "AdditionalNames,Artists,Description,Discs,Identifiers,MainPicture,Names,PVs,ReleaseEvent,Tags,Tracks,WebLinks",
         songFields: "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
       }
-    });
-    return album.data;
+    }).json<AlbumForApiContract>();
+    return album;
   }
 
   /**

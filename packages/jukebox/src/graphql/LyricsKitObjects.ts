@@ -91,9 +91,9 @@ export class LyricsKitAttachment {
 @ObjectType({ description: "A line of parsed lyrics." })
 export class LyricsKitLyricsLine {
 
-  constructor(line: LyricsLine) {
+  constructor(line: LyricsLine, timeDelay: number) {
     this.content = line.content;
-    this.position = line.position;
+    this.position = line.position - timeDelay;
     this.attachments = new LyricsKitAttachment(line.attachments);
   }
 
@@ -113,7 +113,7 @@ export class LyricsKitLyrics {
   constructor(lyrics: Lyrics) {
     this.quality = lyrics.quality;
     this.length = lyrics.length;
-    this.lines = lyrics.lines.map((v) => new LyricsKitLyricsLine(v));
+    this.lines = lyrics.lines.map((v) => new LyricsKitLyricsLine(v, lyrics.timeDelay));
   }
 
   @Field(type => Float, { nullable: true })

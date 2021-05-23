@@ -569,7 +569,7 @@ function balanceText(elements: NodesOrName) {
         const oldLH = el.style.lineHeight;
 
         // remove line height before measuring container size
-        el.style.lineHeight = "normal";
+        el.style.lineHeight = "1";
 
         const containerWidth = el.offsetWidth;
         const containerHeight = el.offsetHeight;
