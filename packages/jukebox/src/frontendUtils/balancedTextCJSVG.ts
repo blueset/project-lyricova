@@ -118,7 +118,7 @@ class NextWS_params {
   reset = () => {
     this.index = 0;
     this.width = 0;
-  }
+  };
 }
 
 /**

@@ -1,6 +1,6 @@
-import { IconButton, InputAdornment } from "@material-ui/core";
+import { IconButton, InputAdornment } from "@mui/material";
 import { useCallback } from "react";
-import AutorenewIcon from "@material-ui/icons/Autorenew";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { useField, useForm } from "react-final-form";
 import slugify from "slugify";
 

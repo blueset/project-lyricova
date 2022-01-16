@@ -1,4 +1,4 @@
-import { Button, Grid, List, ListItem, ListItemText, TextField, Typography } from "@material-ui/core";
+import { Box, Button, Grid, List, ListItem, ListItemText, TextField, Typography } from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef } from "react";
 import { buildTimeTag, resolveTimeTag } from "lyrics-kit/build/main/utils/regexPattern";
@@ -7,9 +7,10 @@ import { useSnackbar } from "notistack";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import { FURIGANA, TRANSLATION } from "lyrics-kit/build/main/core/lyricsLineAttachment";
 import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";
+import { DocumentNode } from "graphql";
 
 const KARAOKE_TRANSLITERATION_QUERY = gql`
   query($text: String!) {
@@ -17,33 +18,7 @@ const KARAOKE_TRANSLITERATION_QUERY = gql`
       karaoke(language: "ja")
     }
   }
-`;
-
-const useStyles = makeStyles((theme) => ({
-  sidePanel: {
-    position: "sticky",
-    top: theme.spacing(10),
-    left: 0,
-    height: "fit-content",
-    zIndex: 2,
-  },
-  row: {
-    margin: theme.spacing(2, 0),
-  },
-  musicControlGrid: {
-    position: "sticky",
-    top: theme.spacing(2),
-    left: 0,
-    zIndex: 2,
-    "& > audio": {
-      width: "100%",
-    },
-  },
-  furiganaListLine: {
-    fontSize: "2em",
-    minHeight: "1em",
-  },
-}));
+` as DocumentNode;
 
 interface Props {
   lyrics: string;
@@ -53,7 +28,6 @@ interface Props {
 
 export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
   const snackbar = useSnackbar();
-  const styles = useStyles();
   const apolloClient = useApolloClient();
 
   const [selectedLine, setSelectedLine] = useNamedState(null, "selectedLine");
@@ -135,23 +109,37 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12} className={styles.musicControlGrid} >
-        <audio src={`/api/files/${fileId}/file`} controls />
+      <Grid item xs={12} sx={{
+        position: "sticky",
+        top: 2,
+        left: 0,
+        zIndex: 2,
+      }} >
+        <audio src={`/api/files/${fileId}/file`} controls style={{width: "100%"}} />
       </Grid>
-      <Grid item xs={12} sm={5} className={styles.sidePanel}>
-        <div className={styles.row}>
+      <Grid item xs={12} sm={5} sx={{
+        position: "sticky",
+        top: 10,
+        left: 0,
+        height: "fit-content",
+        zIndex: 2,
+      }}>
+        <Box sx={{marginTop: 2, marginBottom: 2}}>
           <Button variant="outlined" onClick={overrideFurigana}>Override with generated furigana</Button>
-        </div>
-        <div className={styles.row}>
+        </Box>
+        <Box sx={{marginTop: 2, marginBottom: 2}}>
           {selectedLine != null && selectedLine < lines.length &&
           <EditFuriganaLine line={lines[selectedLine]} setLine={saveCurrentLine(selectedLine)} />}
-        </div>
+        </Box>
       </Grid>
       <Grid item xs={12} sm={7}>
         <List dense>
           {lines.map((v, idx) =>
             <ListItem key={idx} button onClick={() => setSelectedLine(idx)} selected={selectedLine === idx}>
-              <ListItemText primaryTypographyProps={{ variant: "body1", lang: "ja", className: styles.furiganaListLine }}>
+              <ListItemText primaryTypographyProps={{ variant: "body1", lang: "ja", sx: {
+                  fontSize: "2em",
+                  minHeight: "1em",
+                }}}>
                 <FuriganaLyricsLine lyricsKitLine={v} />
               </ListItemText>
             </ListItem>

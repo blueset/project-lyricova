@@ -14,27 +14,28 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemIcon, ListItemSecondaryAction,
-  ListItemText,
+  ListItemText, Stack, styled,
   Tooltip
-} from "@material-ui/core";
+} from "@mui/material";
 import { Field, Form, FormSpy } from "react-final-form";
 import { OnChange } from "react-final-form-listeners";
 import slugify from "slugify";
 import { useSnackbar } from "notistack";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { Playlist } from "../../../models/Playlist";
 import { MusicFile } from "../../../models/MusicFile";
 import { DragDropContext, Draggable, Droppable, DropResult } from "react-beautiful-dnd";
 import { move } from "../../../frontendUtils/arrays";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import DragHandleIcon from "@material-ui/icons/DragHandle";
-import DeleteIcon from "@material-ui/icons/Delete";
-import GetAppIcon from "@material-ui/icons/GetApp";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import DragHandleIcon from "@mui/icons-material/DragHandle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import GetAppIcon from "@mui/icons-material/GetApp";
 import _ from "lodash";
 import SelectMusicFileBox from "../../../components/dashboard/selectMusicFileBox";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useCallback } from "react";
 import { NextComposedLink } from "../../../components/Link";
+import { DocumentNode } from "graphql";
 
 const PLAYLIST_QUERY = gql`
   query($slug: String!) {
@@ -56,7 +57,7 @@ const PLAYLIST_QUERY = gql`
       }
     }
   }
-`;
+` as DocumentNode;
 
 const UPDATE_PLAYLIST_QUERY = gql`
   mutation($slug: String!, $data: UpdatePlaylistInput!, $files: [Int!]!) {
@@ -67,14 +68,13 @@ const UPDATE_PLAYLIST_QUERY = gql`
       slug
     }
   }
-`;
-
+` as DocumentNode;
 
 const REMOVE_PLAYLIST_QUERY = gql`
   mutation($slug: String!) {
     removePlaylist(slug: $slug)
   }
-`;
+` as DocumentNode;
 
 interface FormValues {
   name: string;
@@ -83,40 +83,12 @@ interface FormValues {
   selectedTrack: MusicFile | null;
 }
 
-const useStyles = makeStyles((theme) => ({
-  form: {
-    padding: theme.spacing(2)
-  },
-  titleRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: theme.spacing(1),
-  },
-  avatar: {
-    marginRight: theme.spacing(1),
-    fontSize: "3rem",
-    height: "6rem",
-    width: "6rem",
-  },
-  addTrackButton: {
-    marginLeft: theme.spacing(1),
-  },
-  sortButton: {
-    marginRight: theme.spacing(1),
-  },
-  metaButton: {
-    marginLeft: theme.spacing(1),
-  },
-  saveButton: {
-    marginTop: theme.spacing(1),
-  }
-}));
+const RightStackButton = styled(Button)({ marginLeft: 4, });
+const LeftStackButton = styled(Button)({ marginRight: 4, });
 
 export default function PlaylistDetails() {
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
-  const styles = useStyles();
   const router = useRouter();
   const slug = router.query.slug as string;
 
@@ -146,7 +118,6 @@ export default function PlaylistDetails() {
 
   const { name, files } = playlistQuery.data.playlist;
 
-
   return <>
     <Form<FormValues>
       initialValues={{ name, slug, files }}
@@ -171,9 +142,10 @@ export default function PlaylistDetails() {
           snackbar.enqueueSnackbar(`Error occurred while creating playlist: ${e}`, { variant: "error" });
         }
       }}
-    >{({ submitting, values, handleSubmit }) => <form onSubmit={handleSubmit} className={styles.form}>
-      <div className={styles.titleRow}>
-        <PlaylistAvatar name={values.name || ""} slug={values.slug || ""} className={styles.avatar} />
+    >{({ submitting, values, handleSubmit }) => <form onSubmit={handleSubmit} style={{padding: 8}}>
+      <Stack alignItems="center" sx={{marginBottom: 1}}>
+        <PlaylistAvatar name={values.name || ""} slug={values.slug || ""}
+                        sx={{ marginRight: 1, fontSize: "3rem", height: "6rem", width: "6rem", }} />
         <div>
           <TextField name="name" label="Name" variant="outlined" margin="dense" size="small" required fullWidth />
           <TextField
@@ -182,8 +154,8 @@ export default function PlaylistDetails() {
           />
         </div>
         <Box flexGrow={1} textAlign="end" ml={1}>
-          <Button variant="outlined" startIcon={<GetAppIcon />} className={styles.metaButton} component={NextComposedLink} href={`/api/playlists/${slug}.m3u8`}>Export M3U8</Button>
-          <Button variant="outlined" startIcon={<DeleteIcon color="error" />} className={styles.metaButton} onClick={handleDeleteConfirm}>Remove playlist</Button>
+          <Button variant="outlined" sx={{marginLeft: 1}} startIcon={<GetAppIcon />} component={NextComposedLink} href={`/api/playlists/${slug}.m3u8`}>Export M3U8</Button>
+          <Button variant="outlined" sx={{marginLeft: 1}} startIcon={<DeleteIcon color="error" />} onClick={handleDeleteConfirm}>Remove playlist</Button>
         </Box>
         {/**
          * Slugify name while slug field is untouched.
@@ -198,7 +170,7 @@ export default function PlaylistDetails() {
             }}</OnChange>
           }</FormSpy>
         }</Field>
-      </div>
+      </Stack>
       <Field<MusicFile[]> name="files">{props => {
         const sortBy = (key: keyof MusicFile) => () => {
           props.input.onChange(_.sortBy(props.input.value, key));
@@ -211,12 +183,9 @@ export default function PlaylistDetails() {
             dest = result.destination.index;
           props.input.onChange(move(props.input.value, src, dest));
         }}>
-          <Button variant="outlined" className={styles.sortButton} onClick={sortBy("trackSortOrder")}>Sort by track
-            name</Button>
-          <Button variant="outlined" className={styles.sortButton} onClick={sortBy("artistSortOrder")}>Sort by artists
-            name</Button>
-          <Button variant="outlined" className={styles.sortButton} onClick={sortBy("albumSortOrder")}>Sort by album
-            name</Button>
+          <LeftStackButton variant="outlined" onClick={sortBy("trackSortOrder")}>Sort by track name</LeftStackButton>
+          <LeftStackButton variant="outlined" onClick={sortBy("artistSortOrder")}>Sort by artists name</LeftStackButton>
+          <LeftStackButton variant="outlined" onClick={sortBy("albumSortOrder")}>Sort by album name</LeftStackButton>
           <Droppable droppableId="playlist-tracks-droppable">{((provided) => (
             <List {...provided.droppableProps} ref={provided.innerRef}>
               {props.input.value.map((v, idx) => (
@@ -248,18 +217,18 @@ export default function PlaylistDetails() {
           <Box display="flex">
             <SelectMusicFileBox fieldName="selectedTrack" labelName="Add track to playlist" />
             <Field<MusicFile | null> name="selectedTrack">{({ input: { value, onChange } }) =>
-              <Button variant="outlined" className={styles.addTrackButton}
-                      disabled={!value || props.input.value.findIndex(v => value.id === v.id) >= 0} onClick={() => {
+              <RightStackButton variant="outlined"
+                disabled={!value || props.input.value.findIndex(v => value.id === v.id) >= 0} onClick={() => {
                 props.input.onChange([...props.input.value, value]);
                 onChange(null);
-              }}>Add</Button>
+              }}>Add</RightStackButton>
             }</Field>
           </Box>
 
         </DragDropContext>;
       }}</Field>
       <Button variant="outlined" color="secondary" type="submit" disabled={submitting}
-              className={styles.saveButton}>Save</Button>
+              sx={{marginTop: 1}}>Save</Button>
     </form>}</Form>
     <Dialog
       open={isDeleteAlertOpen}
@@ -272,7 +241,7 @@ export default function PlaylistDetails() {
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="default">
+        <Button onClick={handleClose}>
           Cancel
         </Button>
         <Button onClick={handleDelete} color="primary" autoFocus>

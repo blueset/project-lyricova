@@ -1,38 +1,26 @@
-import { makeStyles } from "@material-ui/core/styles";
 import { Children, cloneElement, isValidElement, ReactNode } from "react";
-import clsx from "clsx";
+import { Box, Theme } from "@mui/material";
+import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
-const useStyles = makeStyles((theme) => ({
-  row: {
-    margin: theme.spacing(1, 0),
-  },
-  button: {
-    marginRight: theme.spacing(1),
-    "&:last-child": {
-      marginRight: 0,
-    },
-  }
-}));
 
 interface Props {
   children: ReactNode;
+  sx?: SxProps<Theme>;
   className?: string;
 }
 
-export default function ButtonRow({ children, className }: Props) {
-  const styles = useStyles();
-
+export default function ButtonRow({ children, className, sx }: Props) {
   return (
-    <div className={clsx(styles.row, className)}>
-      {Children.map(children, (child) => {
+    <Box component="div" sx={{marginTop: 1, marginBottom: 1, ...sx}} className={className}>
+      {Children.map(children, (child, idx) => {
         if (!isValidElement(child)) {
           return null;
         }
 
         return cloneElement(child, {
-          className: clsx(styles.button, child.props.className),
+          sx: {marginLeft: idx == 0 ? 0 : 1},
         });
       })}
-    </div>
+    </Box>
   );
 }

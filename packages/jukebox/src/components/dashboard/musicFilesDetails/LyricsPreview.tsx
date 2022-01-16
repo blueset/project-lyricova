@@ -1,48 +1,14 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Lyrics, LyricsLine } from "lyrics-kit";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { PlayerLyricsKeyframe, usePlayerLyricsState } from "../../../frontendUtils/hooks";
 import clsx from "clsx";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
 import { measureTextWidths } from "../../../frontendUtils/measure";
+import { Box } from "@mui/material";
 
 type Timeline = gsap.core.Timeline;
-
-const useStyle = makeStyles((theme) => ({
-  lyricsContainer: {
-    height: "calc(100vh - 15rem)",
-    overflow: "scroll",
-    "&:before, &:after": {
-      content: "\"\"",
-      height: "50%",
-      display: "block",
-    }
-  },
-  player: {
-    width: "100%",
-  },
-  line: {
-    color: theme.palette.text.secondary,
-    marginBottom: theme.spacing(2),
-    textAlign: "center",
-    fontSize: "1rem",
-    minHeight: "1.5em",
-  },
-  activeLine: {
-    color: theme.palette.secondary.main,
-    fontWeight: "bold",
-    "& > .furigana": {
-      display: "inline",
-      backgroundImage: `linear-gradient(0deg, ${theme.palette.common.black}, ${theme.palette.common.black})`,
-      backgroundRepeat: "no-repeat",
-      backgroundSize: "0% 100%",
-    },
-  },
-  translation: {
-    fontSize: "0.8em",
-  },
-}));
 
 interface Props {
   lyrics: Lyrics;
@@ -53,7 +19,6 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
   const playerRef = useRef<HTMLAudioElement>();
   const containerRef = useRef<HTMLDivElement>();
   const currentLineRef = useRef<HTMLDivElement>();
-  const styles = useStyle();
 
   const keyFrames: PlayerLyricsKeyframe<LyricsLine>[] = useMemo(() => (lyrics?.lines ?? []).map(v => ({
     start: v.position,
@@ -117,19 +82,45 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
   }, [playerState]);
 
   return <div>
-    <audio ref={playerRef} src={`/api/files/${fileId}/file`} controls className={styles.player} />
-    <div className={styles.lyricsContainer} ref={containerRef}>
+    <audio ref={playerRef} src={`/api/files/${fileId}/file`} controls style={{width: "100%"}} />
+    <Box sx={{
+      height: "calc(100vh - 15rem)",
+      overflow: "scroll",
+      "&:before, &:after": {
+        content: "\"\"",
+        height: "50%",
+        display: "block",
+      }
+    }} ref={containerRef}>
       {(lyrics?.lines ?? []).map((v, idx) => (
-        <div key={idx}
-             className={clsx(styles.line, idx === currentFrameId && styles.activeLine)}
+        <Box key={idx}
+             sx={[
+               {
+               color: "text.secondary",
+               marginBottom: 2,
+               textAlign: "center",
+               fontSize: "1rem",
+               minHeight: "1.5em",
+               },
+               idx == currentFrameId && {
+                 color: "secondary.main",
+                 fontWeight: "bold",
+                 "& > .furigana": {
+                   display: "inline",
+                   backgroundImage: "linear-gradient(0deg, #000, #000)",
+                   backgroundRepeat: "no-repeat",
+                   backgroundSize: "0% 100%",
+                 },
+               }
+             ]}
              ref={idx === currentFrameId ? currentLineRef : null}
         >
           <div className="furigana">
             <FuriganaLyricsLine lyricsKitLine={v} />
           </div>
-          <div className={styles.translation}>{v.attachments.translation()}</div>
-        </div>
+          <div style={{fontSize: "0.8em",}}>{v.attachments.translation()}</div>
+        </Box>
       ))}
-    </div>
+    </Box>
   </div>;
 }

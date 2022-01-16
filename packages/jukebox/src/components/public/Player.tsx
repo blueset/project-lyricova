@@ -5,106 +5,27 @@ import {
   makeStyles,
   ButtonBase,
   useMediaQuery,
-  Theme,
-} from "@material-ui/core";
+  Theme, Box, Stack,
+} from "@mui/material";
 import React, { useCallback, CSSProperties } from "react";
 import clsx from "clsx";
-import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
-import SkipNextIcon from "@material-ui/icons/SkipNext";
-import ShuffleIcon from "@material-ui/icons/Shuffle";
-import RepeatOneIcon from "@material-ui/icons/RepeatOne";
-import RepeatIcon from "@material-ui/icons/Repeat";
-import UnfoldLessIcon from "@material-ui/icons/UnfoldLess";
-import UnfoldMoreIcon from "@material-ui/icons/UnfoldMore";
+import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
+import SkipNextIcon from "@mui/icons-material/SkipNext";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
+import RepeatOneIcon from "@mui/icons-material/RepeatOne";
+import RepeatIcon from "@mui/icons-material/Repeat";
+import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
+import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import { useAppContext, LoopMode, Track } from "./AppContext";
 import { TimeSlider } from "./TimeSlider";
 import { PlayButton } from "./PlayButton";
+import { isContext } from "vm";
 
 const LOOP_MODE_SWITCH: { [key in keyof typeof LoopMode]: LoopMode } = {
   [LoopMode.ALL]: LoopMode.SINGLE,
   [LoopMode.SINGLE]: LoopMode.NONE,
   [LoopMode.NONE]: LoopMode.ALL,
 };
-
-const useStyle = makeStyles((theme) => ({
-  container: {
-    padding: theme.spacing(2),
-    "&:last-child": {
-      padding: theme.spacing(2),
-    }
-  },
-  collapsedContainer: {
-    [theme.breakpoints.down("sm")]: {
-      height: "12.5rem",
-    },
-  },
-  controlContainer: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-  },
-  expandedControlContainer: {
-    flexWrap: "wrap",
-    width: "100%",
-  },
-  collapsedControlContainer: {
-    [theme.breakpoints.down("sm")]: {
-      flexWrap: "wrap",
-      width: "100%",
-    },
-    [theme.breakpoints.up("md")]: {
-      marginBottom: "-1rem",
-      "& #player-previous": {
-        order: -3,
-        marginLeft: "-1rem",
-      },
-      "& #player-play-pause": {
-        order: -2,
-      },
-      "& #player-next": {
-        order: -2,
-      },
-      "& #player-time-slider": {
-        margin: "0 1rem",
-      }
-    },
-  },
-  flatPlayerTitles: {
-    marginTop: "-0.3rem",
-    marginBottom: "-0.3rem",
-  },
-  collapseButton: {
-    width: "4rem",
-    height: "4rem",
-    float: "left",
-    marginRight: "0.75rem",
-    borderRadius: theme.shape.borderRadius,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    transition: theme.transitions.create(["box-shadow", "background-image"]),
-    "&:hover, &:focus": {
-      boxShadow: theme.shadows[2],
-    },
-    "& > .backdrop": {
-      opacity: 0,
-      backgroundColor: "rgba(0,0,0,0.5)",
-      width: "100%",
-      height: "100%",
-      transition: theme.transitions.create(["opacity"]),
-      borderRadius: theme.shape.borderRadius,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    "&:hover > .backdrop, &:focus > .backdrop": {
-      opacity: 1,
-    },
-  },
-  collapsedSubtitle: {
-    opacity: 0.75,
-  },
-}));
 
 function generateBackgroundStyle(
   track: Track,
@@ -129,7 +50,6 @@ interface PlayerProps {
 export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
 
   const { playerRef, playlist } = useAppContext();
-  const styles = useStyle();
   const isFlatPlayer = useMediaQuery<Theme>((theme) => theme.breakpoints.up("md")) && isCollapsed;
 
   function nextTrack() {
@@ -187,9 +107,38 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
   };
 
   return (
-    <CardContent className={clsx(styles.container, isCollapsed && styles.collapsedContainer)}>
+    <CardContent sx={{
+      padding: 2,
+      ...(isCollapsed && {height: {xs: "12.5rem", md: "auto"},})
+    }}>
       <ButtonBase
-        className={styles.collapseButton}
+        sx={{
+          width: "4rem",
+          height: "4rem",
+          float: "left",
+          marginRight: "0.75rem",
+          borderRadius: 1,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          transition: "box-shadow 0.5s, background-image 0.5s",
+          "&:hover, &:focus": {
+            boxShadow: 2,
+          },
+          "& > .backdrop": {
+            opacity: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            width: "100%",
+            height: "100%",
+            transition: "opacity 0.5s",
+            borderRadius: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          },
+          "&:hover > .backdrop, &:focus > .backdrop": {
+            opacity: 1,
+          },
+        }}
         aria-label={isCollapsed ? "Expand player" : "Collapse player"}
         style={generateBackgroundStyle(playlist.getCurrentSong())}
         onClick={() => setCollapsed(!isCollapsed)}>
@@ -197,16 +146,39 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
           {isCollapsed ? <UnfoldMoreIcon /> : <UnfoldLessIcon />}
         </div>
       </ButtonBase>
-      <div className={clsx(isFlatPlayer && styles.flatPlayerTitles)}>
+      <Box sx={isFlatPlayer && {marginTop: "-0.3rem", marginBottom: "-0.3rem",}}>
         <Typography variant={isFlatPlayer ? "subtitle1" : "h6"} component={isFlatPlayer ? "span" : null} noWrap={true}>
           {playlist.getCurrentSong()?.trackName || "No title"}
         </Typography>
         {isFlatPlayer && " / "}
-        <Typography variant="subtitle1" component={isFlatPlayer ? "span" : null} className={clsx(isFlatPlayer && styles.collapsedSubtitle)} noWrap={true}>
+        <Typography variant="subtitle1" component={isFlatPlayer ? "span" : null}
+                    sx={isFlatPlayer && {opacity: 0.75,}} noWrap={true}>
           {playlist.getCurrentSong()?.artistName || "Unknown artists"}
         </Typography>
-      </div>
-      <div className={clsx(styles.controlContainer, isCollapsed ? styles.collapsedControlContainer : styles.expandedControlContainer)}>
+      </Box>
+      <Stack
+        direction="row" alignItems="center" justifyContent="space-around"
+        sx={isCollapsed ? {
+          flexWrap: {xs: "wrap", md: "inherit"},
+          width: {xs: "100%", md: "auto"},
+          marginBottom: {md: "-1rem"},
+          "& #player-previous": {
+            order: {md: -3},
+            marginLeft: {md: "-1rem"},
+          },
+          "& #player-play-pause": {
+            order: {md: -2},
+          },
+          "& #player-next": {
+            order: {md: -2},
+          },
+          "& #player-time-slider": {
+            margin: {md: "0 1rem"},
+          },
+        } : {
+          flexWrap: "wrap",
+          width: "100%",
+        }}>
         <TimeSlider playerRef={playerRef} disabled={playlist.nowPlaying === null} isCollapsed={isCollapsed} />
         <IconButton id="player-shuffle"
           color="default"
@@ -228,7 +200,7 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
           <SkipNextIcon />
         </IconButton>
         {loopModeButton[playlist.loopMode]}
-      </div>
+      </Stack>
     </CardContent>
   );
 }

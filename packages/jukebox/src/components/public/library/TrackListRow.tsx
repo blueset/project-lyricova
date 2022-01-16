@@ -12,9 +12,9 @@ import {
   ListItemText,
   Menu,
   MenuItem
-} from "@material-ui/core";
+} from "@mui/material";
 import { formatArtistsPlainText } from "../../../frontendUtils/artists";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { MusicFile } from "../../../models/MusicFile";
 import { Song } from "../../../models/Song";
 import ListItemTextWithTime from "./ListItemTextWithTime";
@@ -78,7 +78,6 @@ export default function TrackListRow({ song, file, files, showAlbum }: Props) {
         </IconButton>
         <Menu
           id={`currentPlaylist-menu-${id}`}
-          getContentAnchorEl={null}
           anchorOrigin={{
             vertical: "bottom",
             horizontal: "right",

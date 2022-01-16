@@ -1,49 +1,13 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState, usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles } from "@material-ui/core";
+import { makeStyles, styled, Theme } from "@mui/material";
 import { motion, Transition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import clsx from "clsx";
+import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
 const ANIMATION_THRESHOLD = 0.25;
-
-const useStyle = makeStyles((theme) => {
-  return {
-    container: {
-      padding: theme.spacing(4),
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-    },
-    line: {
-      fontWeight: 600,
-      lineHeight: 1.2,
-      textWrap: "balance",
-      fontSize: "4em",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundAttachment: "fixed",
-      color: "rgba(255, 255, 255, 0.8)",
-      "& > div": {
-        display: "block",
-        fontSize: "0.6em",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      },
-    },
-    blurredBrighter: {
-      filter: "var(--jukebox-cover-filter-brighter)",
-    },
-    brighter: {
-      filter: "var(--jukebox-cover-filter-brighter-blurless)",
-    }
-  };
-});
-
 
 const TRANSITION: Transition = {
   duration: 0.2,
@@ -54,15 +18,17 @@ interface LyricsLineElementProps {
   className: string;
   line: LyricsKitLyricsLine | null;
   animate: boolean;
+  sx?: SxProps<Theme>;
 }
 
+const SxMotionDiv = styled(motion.div)``;
 
-function LyricsLineElement({ className, line, animate }: LyricsLineElementProps) {
+function LyricsLineElement({ className, line, animate, sx }: LyricsLineElementProps) {
   if (!line) return null;
   const transition = animate ? TRANSITION : { duration: 0 };
 
   return (
-    <motion.div
+    <SxMotionDiv
       lang="ja"
       className={className}
       transition={transition}
@@ -75,6 +41,7 @@ function LyricsLineElement({ className, line, animate }: LyricsLineElementProps)
       exit={{
         opacity: 0,
       }}
+      sx={sx}
     >
       {
         animate ? (
@@ -92,7 +59,7 @@ function LyricsLineElement({ className, line, animate }: LyricsLineElementProps)
           </div>
         )
       }
-    </motion.div >
+    </SxMotionDiv >
   );
 }
 
@@ -105,20 +72,40 @@ export function FocusedLyrics({ lyrics, blur }: Props) {
   const { playerRef } = useAppContext();
   const {currentFrame, currentFrameId, endTime} = usePlainPlayerLyricsState(lyrics, playerRef);
 
-  const styles = useStyle();
-
   const lines = lyrics.lines;
 
-  const blurClass = blur ? styles.blurredBrighter : styles.brighter;
-
   return (
-    <motion.div className={styles.container}>
+    <motion.div style={{
+      padding: 16,
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+    }}>
       {currentFrame !== null && lines.map((l, idx) => {
         if (idx !== currentFrameId) return null;
         const animate = (endTime - currentFrame.start) >= ANIMATION_THRESHOLD;
         return (
           <LyricsLineElement
-            className={clsx(styles.line, blurClass, "coverMask")}
+            sx={{
+              fontWeight: 600,
+              lineHeight: 1.2,
+              fontSize: "4em",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundAttachment: "fixed",
+              color: "rgba(255, 255, 255, 0.8)",
+              filter: blur ? "var(--jukebox-cover-filter-brighter)" : "var(--jukebox-cover-filter-brighter-blurless)",
+              "& > div": {
+                display: "block",
+                fontSize: "0.6em",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundAttachment: "fixed",
+              },
+            }}
+            className={"coverMask"}
             line={l}
             key={idx}
             animate={animate} />);

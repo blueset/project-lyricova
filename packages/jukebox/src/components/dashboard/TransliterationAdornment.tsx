@@ -1,11 +1,12 @@
-import { Button, ButtonGroup, InputAdornment, Menu, MenuItem } from "@material-ui/core";
-import AutorenewIcon from "@material-ui/icons/Autorenew";
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import { Button, ButtonGroup, InputAdornment, Menu, MenuItem } from "@mui/material";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { gql, useApolloClient } from "@apollo/client";
 import { useCallback, MouseEvent } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { useField, useForm, useFormState } from "react-final-form";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
+import { DocumentNode } from "graphql";
 
 const TRANSLITRATION_QUERY = gql`
   query($text: String!, $language: String) {
@@ -13,17 +14,7 @@ const TRANSLITRATION_QUERY = gql`
       plain(language: $language)
     }
   }
-`;
-
-const useStyles = makeStyles((theme) => ({
-  adornment: {
-    marginRight: theme.spacing(-1.5),
-  },
-  dropDownButton: {
-    paddingLeft: 0,
-    paddingRight: 0,
-  },
-}));
+` as DocumentNode;
 
 interface Props {
   sourceName: string;
@@ -35,8 +26,6 @@ export default function TransliterationAdornment({ sourceName, destinationName }
   const popupState = usePopupState({ variant: "popover", popupId: "transliteration-menu" });
   const { input: { value }} = useField(sourceName);
   const setValue = useForm().mutators.setValue;
-
-  const styles = useStyles();
 
   const transliterateCallback = useCallback((language?: "zh" | "ja") => async () => {
     try {
@@ -62,7 +51,7 @@ export default function TransliterationAdornment({ sourceName, destinationName }
   }, [apolloClient, destinationName, popupState, setValue, value]);
 
   return (
-    <InputAdornment position="end" className={styles.adornment}>
+    <InputAdornment position="end" sx={{marginRight: -1.5}}>
       <ButtonGroup size="small" variant="text">
         <Button
           size="small"
@@ -74,7 +63,7 @@ export default function TransliterationAdornment({ sourceName, destinationName }
         <Button
           size="small"
           aria-label="Generate transliteration by languages"
-          className={styles.dropDownButton}
+          sx={{paddingLeft: 0, paddingRight: 0,}}
           {...bindTrigger(popupState)}
         >
           <ArrowDropDownIcon />
@@ -90,7 +79,6 @@ export default function TransliterationAdornment({ sourceName, destinationName }
           vertical: "top",
           horizontal: "right",
         }}
-        getContentAnchorEl={null}
         {...bindMenu(popupState)}
       >
         <MenuItem onClick={transliterateCallback("zh")}>中文 → zhōngwén</MenuItem>

@@ -11,13 +11,13 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   Popover
-} from "@material-ui/core";
+} from "@mui/material";
 import { Alert, Skeleton } from "@material-ui/lab";
 import _ from "lodash";
 import { ReactNode, useCallback, useEffect } from "react";
 import PlaylistAvatar from "../../PlaylistAvatar";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import AddIcon from "@material-ui/icons/Add";
+import AddIcon from "@mui/icons-material/Add";
 import { useSnackbar } from "notistack";
 import { bindPopover, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import AddPlaylistPopoverContent from "../AddPlaylistPopoverContent";

@@ -1,8 +1,8 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState, useTrackwiseTimelineControl } from "../../../frontendUtils/hooks";
-import { makeStyles } from "@material-ui/core";
-import { useEffect, useMemo, useRef } from "react";
+import { Box, makeStyles, Stack } from "@mui/material";
+import { CSSProperties, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
 import gsap from "gsap";
 import _ from "lodash";
@@ -11,55 +11,8 @@ interface Props {
   lyrics: LyricsKitLyrics;
 }
 
-const useStyle = makeStyles((theme) => {
-  return {
-    container: {
-      width: "100%",
-      height: "100%",
-      overflow: "hidden",
-      display: "flex",
-      justifyContent: "center",
-      flexDirection: "column",
-      maskBorderImageSource: "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBorderImageSlice: "0 49% fill",
-      maskBorderImageWidth: "0 40px",
-      maskBoxImageSource: "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBoxImageSlice: "0 49% fill",
-      maskBoxImageWidth: "0 40px",
-    },
-    lines: {
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      transform: "rotate(-5deg)",
-    },
-    wrapper: {
-      "&:before, &:after": {
-        content: "\" \"",
-        width: "50%",
-        display: "inline-block",
-      }
-    },
-    lyrics: {
-      fontSize: "2em",
-    },
-    translations: {
-      fontSize: "1.5em",
-    },
-    line: {
-      fontWeight: 600,
-      fontStyle: "italic",
-      opacity: 0.5,
-      paddingInlineEnd: "1em",
-      "&.active": {
-        opacity: 1,
-      },
-    },
-  };
-});
-
 export function SlantedLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
-  const styles = useStyle();
   const container = useRef<HTMLDivElement>();
   const wrapper = useRef<HTMLDivElement>();
   const currentLine = useRef<HTMLSpanElement>();
@@ -112,30 +65,77 @@ export function SlantedLyrics({ lyrics }: Props) {
 
   useTrackwiseTimelineControl(playerState, timeline);
 
-  return <div className={styles.container}>
-    <div className={clsx(styles.lines, styles.lyrics)} lang="ja" ref={container}>
-      <div ref={wrapper} className={styles.wrapper}>
+  return <Box sx={{
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    display: "flex",
+    justifyContent: "center",
+    flexDirection: "column",
+    maskBorderImageSource: "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+    maskBorderImageSlice: "0 49% fill",
+    maskBorderImageWidth: "0 40px",
+    maskBoxImageSource: "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+    maskBoxImageSlice: "0 49% fill",
+    maskBoxImageWidth: "0 40px",
+  } as unknown as CSSProperties}>
+    <Box sx={{
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      transform: "rotate(-5deg)",
+      fontSize: "2em",
+    }} lang="ja" ref={container}>
+      <Box ref={wrapper} sx={{
+        "&:before, &:after": {
+            content: "\" \"",
+            width: "50%",
+            display: "inline-block",
+          }
+      }}>
         {lyrics.lines.map((v, idx) => {
           return (
-            <span key={idx} className={clsx(styles.line, idx === currentFrameId && "active")} ref={idx === currentFrameId ? currentLine : null}>
+            <Box component="span" key={idx} sx={{
+                fontWeight: 600,
+                fontStyle: "italic",
+                opacity: 0.5,
+                paddingInlineEnd: "1em",
+                ...(idx === currentFrameId && { opacity: 1, }),
+            }} ref={idx === currentFrameId ? currentLine : null}>
               {v.content}
-            </span>
+            </Box>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
     {hasTranslation &&
-      <div className={clsx(styles.lines, styles.translations)} lang="zh" ref={translationContainer}>
-        <div ref={translationWrapper} className={styles.wrapper}>
+      <Box sx={{
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        transform: "rotate(-5deg)",
+        fontSize: "1.5em",
+      }} lang="zh" ref={translationContainer}>
+        <Box ref={translationWrapper} sx={{
+          "&:before, &:after": {
+            content: "\" \"",
+            width: "50%",
+            display: "inline-block",
+          }
+        }}>
           {lyrics.lines.map((v, idx) => {
             return (
-              <span key={idx} className={clsx(styles.line, idx === currentFrameId && "active")} ref={idx === currentFrameId ? currentTranslation : null}>
+              <Box component="span" key={idx} sx={{
+                fontWeight: 600,
+                fontStyle: "italic",
+                opacity: 0.5,
+                paddingInlineEnd: "1em",
+                ...(idx === currentFrameId && { opacity: 1, }),
+              }} ref={idx === currentFrameId ? currentTranslation : null}>
                 {v.attachments.translation}
-              </span>
+              </Box>
             );
           })}
-        </div>
-      </div>
+        </Box>
+      </Box>
     }
-  </div>;
+  </Box>;
 }

@@ -1,9 +1,9 @@
-import { IconButton, InputAdornment } from "@material-ui/core";
-import ContentCopyIcon from "@material-ui/icons/ContentCopy";
-import ClearIcon from "@material-ui/icons/Clear";
+import { IconButton, InputAdornment } from "@mui/material";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ClearIcon from "@mui/icons-material/Clear";
 import { useCallback } from "react";
 import { useSnackbar } from "notistack";
-import AutorenewIcon from "@material-ui/icons/Autorenew";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { useField, useForm } from "react-final-form";
 
 interface Props {

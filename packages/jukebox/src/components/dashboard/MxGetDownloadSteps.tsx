@@ -12,30 +12,29 @@ import {
   Step,
   StepContent,
   StepLabel,
-  Stepper,
+  Stepper, styled,
   TextField,
-  Theme,
   Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { ChangeEvent, Dispatch, FormEvent, ReactNode, SetStateAction, useCallback } from "react";
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import { MxGetSearchResult } from "../../graphql/DownloadResolver";
 import { Alert } from "@material-ui/lab";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import { blue, lightBlue, lightGreen, orange, pink, red, yellow } from "@material-ui/core/colors";
-import { makeStyles } from "@material-ui/core/styles";
-import CheckIcon from "@material-ui/icons/Check";
-import ClearIcon from "@material-ui/icons/Clear";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import { blue, lightBlue, lightGreen, orange, pink, red, yellow } from "@mui/material/colors";
+import CheckIcon from "@mui/icons-material/Check";
+import ClearIcon from "@mui/icons-material/Clear";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import GetAppIcon from "@material-ui/icons/GetApp";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import GetAppIcon from "@mui/icons-material/GetApp";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { NextComposedLink } from "../Link";
 import parse from "autosuggest-highlight/parse";
 import match from "autosuggest-highlight/match";
 import { useSnackbar } from "notistack";
+import { DocumentNode } from "graphql";
 
 const MUSIC_DL_SEARCH_QUERY = gql`
   query($query: String!) {
@@ -50,13 +49,13 @@ const MUSIC_DL_SEARCH_QUERY = gql`
       lyric
     }
   }
-`;
+` as DocumentNode;
 
 const MUSIC_DL_DOWNLOAD_MUTATION = gql`
   mutation($source: String!, $id: ID!) {
     mxGetDownload(id: $id, source: $source)
   }
-`;
+` as DocumentNode;
 
 const SINGLE_FILE_SCAN_MUTATION = gql`
   mutation($path: String!) {
@@ -64,7 +63,7 @@ const SINGLE_FILE_SCAN_MUTATION = gql`
       id
     }
   }
-`;
+` as DocumentNode;
 
 function HighlightedText({ text, query, fallback }: { text: string, query: string, fallback: string }) {
   if (!text) return <em>{fallback}</em>;
@@ -78,13 +77,13 @@ function HighlightedText({ text, query, fallback }: { text: string, query: strin
 
 function CheckURLChip({ url, className, label }: { label: string, className?: string, url: string | null }) {
   return url
-    ? <Chip size="small" className={className} variant="default" color="secondary" icon={<CheckIcon />}
+    ? <Chip size="small" className={className} color="secondary" icon={<CheckIcon />}
             label={label} clickable={true} component={NextComposedLink} target="_blank" href={url} />
-    : <Chip size="small" className={className} variant="outlined" color="default" icon={<ClearIcon />}
+    : <Chip size="small" className={className} variant="outlined" icon={<ClearIcon />}
             label={label} />;
 }
 
-function getBackgroundColor(key: string, theme: Theme): string {
+function getBackgroundColor(key: string): string {
   switch (key) {
     case "ne":
       return red[900];
@@ -101,21 +100,9 @@ function getBackgroundColor(key: string, theme: Theme): string {
     case "mi":
       return pink[900];
     default:
-      return theme.palette.secondary.dark;
+      return "secondary.dark";
   }
 }
-
-const useBadgeStyles = makeStyles<Theme, { key: string }>((theme) => ({
-  root: {
-    width: 22,
-    height: 22,
-    fontSize: 10,
-    background: props => getBackgroundColor(props.key, theme),
-    color: theme.palette.common.white,
-    border: `1px solid ${theme.palette.background.paper}`,
-    textTransform: "capitalize",
-  },
-}));
 
 function BadgeAvatar({ children }: { children: unknown }) {
   const name = `${children || "??"}`;
@@ -123,23 +110,18 @@ function BadgeAvatar({ children }: { children: unknown }) {
     name === "kugou" ? "kg" :
       name === "kuwo" ? "kw" :
         name.substring(0, 2);
-  const styles = useBadgeStyles({ key: truncated });
-  return <Avatar className={styles.root}>{truncated}</Avatar>;
+  return <Avatar sx={{
+    width: 22,
+    height: 22,
+    fontSize: 10,
+    background: getBackgroundColor(truncated),
+    color: "white",
+    border: 1,
+    borderColor: "background.paper",
+  }}>{truncated}</Avatar>;
 }
 
-const useStyles = makeStyles((theme) => ({
-  chip: {
-    marginRight: theme.spacing(1),
-  },
-  buttonRow: {
-    margin: 0,
-    padding: theme.spacing(1, 0),
-    position: "sticky",
-    bottom: 0,
-    background: theme.palette.background.paper,
-    zIndex: 1,
-  }
-}));
+const MarginedCheckURLChip = styled(CheckURLChip)({marginRight: 1,});
 
 interface Props {
   step: number;
@@ -151,7 +133,6 @@ dayjs.extend(utc);
 
 export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) {
   const [searchKeyword, setSearchKeyword] = useNamedState("", "searchKeyword");
-  const styles = useStyles();
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
 
@@ -197,8 +178,7 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
         `File downloaded with database ID ${scanOutcome.data.scanByPath.id} and path ${filePath}.`,
         {
           variant: "success",
-          action: <Button color="default"
-                          component={NextComposedLink}
+          action: <Button component={NextComposedLink}
                           href={`/dashboard/review/${downloadState}`}>
             Review file
           </Button>
@@ -242,7 +222,7 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
               .map((v, idx) => (
                 <ListItem key={idx} alignItems="flex-start">
                   <ListItemAvatar>
-                    <Badge overlap="rectangle" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    <Badge overlap="rectangular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                            badgeContent={<BadgeAvatar>{v.source}</BadgeAvatar>}>
                       <Avatar src={v.pic_url} variant="rounded"><MusicNoteIcon /></Avatar>
                     </Badge>
@@ -259,11 +239,10 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
                                                                                         fallback="Unknown artists" />
                     </Typography>
                     <Typography variant="body2" component="span" display="block" color="textSecondary">
-                      <CheckURLChip label="Preview" url={v.listen_url} className={styles.chip} />
-                      <CheckURLChip label="Cover art" url={v.pic_url} className={styles.chip} />
-                      <CheckURLChip label="Lyrics"
-                                    url={v.lyric ? `data:text/plain,${encodeURIComponent(v.lyric)}` : null}
-                                    className={styles.chip} />
+                      <MarginedCheckURLChip label="Preview" url={v.listen_url} />
+                      <MarginedCheckURLChip label="Cover art" url={v.pic_url} />
+                      <MarginedCheckURLChip label="Lyrics"
+                                            url={v.lyric ? `data:text/plain,${encodeURIComponent(v.lyric)}` : null} />
                     </Typography>
                   </ListItemText>
                   <ListItemSecondaryAction>
@@ -274,7 +253,15 @@ export default function MxGetDownloadSteps({ step, setStep, firstStep }: Props) 
                 </ListItem>
               ))}</List>}
           {searchMusicQuery.loading && <Alert severity="info">Loading...</Alert>}
-          <ButtonRow className={styles.buttonRow}>
+          <ButtonRow sx={{
+            margin: 0,
+            paddingTop: 1,
+            paddingBottom: 1,
+            position: "sticky",
+            bottom: 0,
+            background: "background.paper",
+            zIndex: 1,
+          }}>
             <Button variant="outlined" onClick={() => setStep(v => v - 1)}>Back</Button>
           </ButtonRow>
         </StepContent>

@@ -1,51 +1,8 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { makeStyles } from "@material-ui/core";
-import { useRef } from "react";
+import { Box, makeStyles } from "@mui/material";
+import { CSSProperties, useRef } from "react";
 import { usePlayerLyricsTypingState } from "../../../frontendUtils/hooks";
-
-const useStyle = makeStyles((theme) => {
-  return {
-    container: {
-      padding: theme.spacing(4),
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column-reverse",
-      maskBorderImageSource: "linear-gradient(0deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBorderImageSlice: "49% 0 fill",
-      maskBorderImageWidth: "40px 0 0 0",
-      maskBoxImageSource: "linear-gradient(0deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBoxImageSlice: "49% 0 fill",
-      maskBoxImageWidth: "40px 0 0 0",
-    },
-    line: {
-      fontSize: "3em",
-      fontWeight: 600,
-    },
-    typing: {
-      backgroundColor: theme.palette.primary.light + "80",
-    },
-    cursor: {
-      backgroundColor: "white",
-      display: "inline-block",
-      width: "2px",
-      height: "1.2em",
-      verticalAlign: "text-top",
-      animation: "$blink 0.5s infinite alternate",
-    },
-    pastLine: {
-      fontSize: "2em",
-      // fontWeight: 600,
-      opacity: 0.7,
-      marginBottom: "0.5em",
-    },
-    "@keyframes blink": {
-      from: { background: "#fff0", },
-      to: { background: "#ffff", },
-    }
-  };
-});
 
 interface Props {
   lyrics: LyricsKitLyrics;
@@ -58,28 +15,43 @@ export function TypingStackedLyrics({ lyrics }: Props) {
 
   const { sequenceQuery, currentFrameId } = usePlayerLyricsTypingState(lyrics, playerRef, 0.75, doneRef, typingRef);
 
-  const styles = useStyle();
-
   let node = <span>{lyrics.lines.length} lines, starting at {lyrics.lines[0].position} second.</span>;
   if (sequenceQuery.loading) node = <span>loading</span>;
   else if (sequenceQuery.error) node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
   else if (sequenceQuery.data) {
-    node = <div className={styles.line}>
-      <span ref={doneRef}/><span ref={typingRef} className={styles.typing}/>
+    node = <div style={{fontSize: "3em", fontWeight: 600,}}>
+      <span ref={doneRef}/><span ref={typingRef} style={{backgroundColor: "#ffffff80"}} />
     </div>;
   }
 
   return (
-    <div className={styles.container}>
+    <Box sx={{
+      width: "100%",
+      height: "100%",
+      overflow: "hidden",
+      display: "flex",
+      justifyContent: "center",
+      flexDirection: "column",
+      maskBorderImageSource: "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+      maskBorderImageSlice: "0 49% fill",
+      maskBorderImageWidth: "0 40px",
+      maskBoxImageSource: "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+      maskBoxImageSlice: "0 49% fill",
+      maskBoxImageWidth: "0 40px",
+    } as unknown as CSSProperties}>
       {node}
       {sequenceQuery.data && sequenceQuery.data.transliterate.typingSequence.map((v, idx) => {
         if (idx >= currentFrameId || idx < currentFrameId - 20) return null;
         return (
-          <div className={styles.pastLine} key={idx}>
+          <Box sx={{
+            fontSize: "2em",
+            opacity: 0.7,
+            marginBottom: "0.5em",
+          }} key={idx}>
             {v.map((vv) => vv.sequence.length > 0 ? vv.sequence[vv.sequence.length - 1] : "").join("")}
-          </div>
+          </Box>
         );
       }).reverse()}
-    </div>
+    </Box>
   );
 }

@@ -6,7 +6,7 @@ import { ObjectType, Field, ID } from "type-graphql";
 
 @ObjectType({ description: "A playlist of music files." })
 @Table
-export class Playlist extends Model<Playlist> {
+export class Playlist extends Model<Playlist, Partial<Playlist>> {
   @Field(type => ID, { description: "Slug of the playlist." })
   @PrimaryKey
   @Column({ type: new DataTypes.STRING(512) })

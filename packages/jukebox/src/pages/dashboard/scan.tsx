@@ -1,5 +1,5 @@
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
-import { Box, Button, CircularProgress, LinearProgress, LinearProgressProps, Typography } from "@material-ui/core";
+import { Box, Button, CircularProgress, LinearProgress, LinearProgressProps, Typography } from "@mui/material";
 import { gql, useApolloClient, useMutation } from "@apollo/client";
 import { useCallback } from "react";
 import { MusicFilesScanOutcome } from "../../graphql/MusicFileResolver";

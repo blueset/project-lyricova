@@ -6,7 +6,7 @@ import {
   usePlayerLyricsState,
   usePlainPlayerLyricsState
 } from "../../../frontendUtils/hooks";
-import { makeStyles } from "@material-ui/core";
+import { Box, makeStyles } from "@mui/material";
 import BalancedText from "react-balance-text-cj";
 import _ from "lodash";
 import clsx from "clsx";
@@ -16,41 +16,6 @@ import { Scene } from "react-scenejs";
 import { cj, notAfter, ascIINonSpace, notBefore, balanceText } from "../../../frontendUtils/balancedTextCJSVG";
 
 const ANIMATION_THRESHOLD = 0.25;
-
-const useStyle = makeStyles((theme) => {
-  return {
-    container: {
-      padding: theme.spacing(4),
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-    },
-    line: {
-      fontWeight: 600,
-      lineHeight: 1.2,
-      fontSize: "4em",
-      fill: "rgba(255, 255, 255, 0.8)",
-      stroke: "rgba(255, 255, 255, 0.8)",
-      strokeWidth: 1,
-      strokeDasharray: 600,
-      strokeDashoffset: 600,
-    },
-    translation: {
-      display: "block",
-      fontSize: "2.2em",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundAttachment: "fixed",
-      lineHeight: 1.2,
-      fontWeight: 600,
-      textWrap: "balance",
-      color: "rgba(255, 255, 255, 0.6)",
-      filter: "var(--jukebox-cover-filter-bright)",
-    },
-  };
-});
 
 const keyframes: { [key: string]: ((idx: number) => unknown) | unknown; } = {
   ".char": (i: number) => ({
@@ -79,7 +44,6 @@ const keyframes: { [key: string]: ((idx: number) => unknown) | unknown; } = {
 };
 
 interface LyricsLineElementProps {
-  className: string;
   translationClassName: string;
   line: LyricsKitLyricsLine | null;
   duration: number;
@@ -88,7 +52,7 @@ interface LyricsLineElementProps {
 }
 
 
-function LyricsLineElement({ className, line, duration, translationClassName, width, progressorRef }: LyricsLineElementProps) {
+function LyricsLineElement({ line, duration, translationClassName, width, progressorRef }: LyricsLineElementProps) {
   const textRef = useRef<SVGTextElement>();
   const canvasRef = useRef<SVGSVGElement>();
   const animate = duration >= ANIMATION_THRESHOLD;
@@ -130,18 +94,37 @@ function LyricsLineElement({ className, line, duration, translationClassName, wi
       <div lang="ja">
         <Scene keyframes={animate ? keyframes : null} ref={animate ? progressorRef : null} autoplay={true}>
           <svg width={width} height="300" style={{ maxWidth: "100%" }} ref={canvasRef}>
-            <text x="0" y="1em" id="svgText" lang="ja" className={className} ref={textRef}></text>
+            <text x="0" y="1em" id="svgText" lang="ja" style={{
+              fontWeight: 600,
+              lineHeight: 1.2,
+              fontSize: "4em",
+              fill: "rgba(255, 255, 255, 0.8)",
+              stroke: "rgba(255, 255, 255, 0.8)",
+              strokeWidth: 1,
+              strokeDasharray: 600,
+              strokeDashoffset: 600,
+            }} ref={textRef}></text>
           </svg>
         </Scene>
       </div>
       {
         line.attachments?.translation && (
-          <div lang="zh" className={translationClassName}>
+          <Box lang="zh" className={translationClassName} sx={{
+            display: "block",
+            fontSize: "2.2em",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+            lineHeight: 1.2,
+            fontWeight: 600,
+            color: "rgba(255, 255, 255, 0.6)",
+            filter: "var(--jukebox-cover-filter-bright)",
+          }}>
             {animate ? (
               <BalancedText
                 resize={true}>{line.attachments.translation}</BalancedText>
             ) : line.attachments.translation}
-          </div>
+          </Box>
         )
       }
     </div>
@@ -157,8 +140,6 @@ export function StrokeLyrics({ lyrics }: Props) {
   const progressorRef = useRef<Scene>();
 
   const {currentFrame, currentFrameId, endTime, playerState} = usePlainPlayerLyricsState(lyrics, playerRef);
-
-  const styles = useStyle();
 
   useEffect(() => {
     if (!progressorRef.current) return;
@@ -185,8 +166,7 @@ export function StrokeLyrics({ lyrics }: Props) {
     const start = currentFrame.start;
     const end = endTime;
     lineElement = (width) => (<LyricsLineElement
-      className={styles.line}
-      translationClassName={clsx(styles.translation, "coverMask")}
+      translationClassName={"coverMask"}
       line={currentFrame.data}
       duration={end - start}
       width={width}
@@ -195,12 +175,19 @@ export function StrokeLyrics({ lyrics }: Props) {
   }
 
   return (
-    <div className={styles.container}>
+    <Box sx={{
+      padding: 4,
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+    }}>
       <Measure bounds>{
         ({ contentRect, measureRef }) => <div ref={measureRef}>
           {lineElement(contentRect.bounds.width)}
         </div>
       }</Measure>
-    </div>
+    </Box>
   );
 }

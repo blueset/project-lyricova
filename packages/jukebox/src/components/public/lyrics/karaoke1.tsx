@@ -1,7 +1,7 @@
-import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
+import { LyricsKitLyrics, LyricsKitLyricsLine, LyricsKitWordTimeTag } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles } from "@material-ui/core";
+import { Box, makeStyles, Stack } from "@mui/material";
 import BalancedText from "react-balance-text-cj";
 import gsap from "gsap";
 import clsx from "clsx";
@@ -11,68 +11,6 @@ import { measureTextWidths } from "../../../frontendUtils/measure";
 type Timeline = gsap.core.Timeline;
 
 const ANIMATION_THRESHOLD = 0.25;
-
-const useStyle = makeStyles((theme) => {
-  return {
-    container: {
-      padding: theme.spacing(4),
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-    },
-    line: {
-      fontWeight: 600,
-      lineHeight: 1.2,
-      fontSize: "4em",
-      textWrap: "balance",
-      position: "relative",
-      "& span.base": {
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-        color: "rgba(255, 255, 255, 0.6)",
-        filter: "var(--jukebox-cover-filter-bright)",
-        position: "absolute",
-      },
-      "& span.overlay": {
-        color: "transparent",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "0% 100%",
-        mixBlendMode: "overlay",
-        "&.underline": {
-          backgroundImage: `linear-gradient(
-            transparent 60%,
-            white 60%,
-            white 90%,
-            transparent 90%
-          )`,
-        },
-        "&.cover": {
-          backgroundImage: `linear-gradient(
-            transparent 7.5%,
-            white 7.5%,
-            white 85%,
-            transparent 85%
-          )`,
-        },
-      },
-    },
-    translation: {
-      display: "block",
-      fontSize: "2.2em",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundAttachment: "fixed",
-      lineHeight: 1.2,
-      fontWeight: 600,
-      textWrap: "balance",
-      color: "rgba(255, 255, 255, 0.6)",
-      filter: "var(--jukebox-cover-filter-bright)",
-    },
-  };
-});
 
 interface WrapProps {
   animate: boolean;
@@ -91,32 +29,75 @@ function BalancedTextSpanWrap({ animate, children, className, style, progressorR
 }
 
 interface LyricsLineElementProps {
-  className: string;
-  translationClassName: string;
   line: LyricsKitLyricsLine | null;
   animate: boolean;
   theme: string;
   progressorRef?: RefObject<HTMLSpanElement>;
 }
 
-function LyricsLineElement({ className, line, animate, translationClassName, theme, progressorRef }: LyricsLineElementProps) {
+function LyricsLineElement({ line, animate, theme, progressorRef }: LyricsLineElementProps) {
   if (!line) return null;
 
   return (
     <div>
-      <div className={className} lang="ja">
+      <Box sx={{
+        fontWeight: 600,
+        lineHeight: 1.2,
+        fontSize: "4em",
+        position: "relative",
+        "& span.base": {
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          color: "rgba(255, 255, 255, 0.6)",
+          filter: "var(--jukebox-cover-filter-bright)",
+          position: "absolute",
+        },
+        "& span.overlay": {
+          color: "transparent",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "0% 100%",
+          mixBlendMode: "overlay",
+          "&.underline": {
+            backgroundImage: `linear-gradient(
+              transparent 60%,
+              white 60%,
+              white 90%,
+              transparent 90%
+            )`,
+          },
+          "&.cover": {
+            backgroundImage: `linear-gradient(
+                transparent 7.5%,
+                white 7.5%,
+                white 85%,
+                transparent 85%
+              )`,
+          },
+        },
+      }} lang="ja">
         <BalancedTextSpanWrap animate={animate} className="base coverMask">{line.content}</BalancedTextSpanWrap>
         <BalancedTextSpanWrap animate={animate} className={`overlay ${theme}`}
                               progressorRef={progressorRef}>{line.content}</BalancedTextSpanWrap>
-      </div>
+      </Box>
       {
         line.attachments?.translation && (
-          <div lang="zh" className={translationClassName}>
+          <Box lang="zh" sx={{
+            display: "block",
+            fontSize: "2.2em",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+            lineHeight: 1.2,
+            fontWeight: 600,
+            color: "rgba(255, 255, 255, 0.6)",
+            filter: "var(--jukebox-cover-filter-bright)",
+          }}>
             {animate ? (
               <BalancedText
                 resize={true}>{line.attachments.translation}</BalancedText>
             ) : line.attachments.translation}
-          </div>
+          </Box>
         )
       }
     </div>
@@ -146,7 +127,7 @@ export function Karaoke1Lyrics({ lyrics, cover }: Props) {
         const length = lengths[lengths.length - 1];
         const percentages = lengths.map(v => v / length * 100);
         const tags = currentFrame.data.attachments.timeTag.tags;
-        tags.forEach((v, idx) => {
+        tags.forEach((v: LyricsKitWordTimeTag, idx: number) => {
           const duration = idx > 0 ? v.timeTag - tags[idx - 1].timeTag : v.timeTag;
           const start = idx > 0 ? tags[idx - 1].timeTag : 0;
           let percentage = 0;
@@ -191,15 +172,11 @@ export function Karaoke1Lyrics({ lyrics, cover }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerState]);
 
-  const styles = useStyle();
-
   let lineElement = null;
   if (currentFrame !== null) {
     const animate = endTime - (currentFrame?.start ?? 0) >= ANIMATION_THRESHOLD;
     lineElement = (<LyricsLineElement
-      className={styles.line}
       theme={cover ? "cover" : "underline"}
-      translationClassName={clsx(styles.translation, "coverMask")}
       line={currentFrame.data}
       animate={animate}
       progressorRef={progressorRef}
@@ -207,8 +184,8 @@ export function Karaoke1Lyrics({ lyrics, cover }: Props) {
   }
 
   return (
-    <div className={styles.container}>
+    <Stack sx={{ padding: 4, width: "100%", height: "100%", }} direction="column"  justifyContent="center">
       {lineElement}
-    </div>
+    </Stack>
   );
 }

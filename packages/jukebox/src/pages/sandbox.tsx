@@ -1,56 +1,12 @@
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Avatar, Button } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
+import { Avatar, Button } from "@mui/material";
+import { makeStyles } from "@mui/material/styles";
 import { measureTextWidths } from "../frontendUtils/measure";
 import _ from "lodash";
 import clsx from "clsx";
 
-const SEQUENCE_QUERY = gql`
-  query TypingSequence($text: String!) {
-    transliterate(text: $text) {
-      text
-      karaoke
-    }
-  }
-`;
-
-interface SequenceQueryResult {
-  transliterate: {
-    text: string;
-    karaoke: [string, string][][];
-  };
-}
-
-const useStyles1 = makeStyles((theme) => ({
-  text: {
-    fontSize: "4em",
-    whiteSpace: "pre",
-  },
-  container: {
-    display: "flex",
-    height: "100vh",
-    flexDirection: "column",
-    justifyContent: "center",
-    padding: 32,
-  },
-  wbContainer: {
-    position: "relative",
-    transform: "translateY(-5em)",
-    zIndex: -1,
-
-  },
-  wb: {
-    position: "absolute",
-    height: "4em",
-    border: `1px solid ${theme.palette.secondary.main}`,
-    top: 0,
-    left: 0,
-  }
-}));
-
 export function Sandbox0() {
-  const styles = useStyles1();
 
   const lyrics = `cosMo＠暴走P feat. 初音ミク
 深刻な"未来"不足で
@@ -62,46 +18,11 @@ export function Sandbox0() {
 何かが変わるとは思えないけど
 それでも……`;
 
-  const sequenceQuery = useQuery<SequenceQueryResult>(
-    SEQUENCE_QUERY,
-    {
-      variables: {
-        text: lyrics,
-      },
-    }
-  );
-
   const [currentLine, setCurrentLine] = useState<number>(null);
   const [widthBoxes, setWidthBoxes] = useState<number[]>([]);
   const textRef = useRef<HTMLDivElement>();
 
   let content = <></>;
-
-  if (sequenceQuery.data) {
-    const lines = sequenceQuery.data.transliterate.karaoke;
-    content = <>
-      <div className="buttons">
-        {lines.map((v, i) => <Button key={i} onClick={() => setCurrentLine(i)} variant="outlined">{i}</Button>)}
-      </div>
-      {(currentLine !== null) && <div className={styles.text} ref={textRef}>
-        {lines[currentLine].map(([text, ruby], k) => {
-          if (text === ruby) {
-            return <span key={k}>{text}</span>;
-          } else {
-            return <ruby key={k}>
-              {text}
-              <rp>(</rp>
-              <rt>{ruby}</rt>
-              <rp>)</rp>
-            </ruby>;
-          }
-        })}
-      </div>}
-      <div className={styles.wbContainer}>
-        {widthBoxes.map((v, idx) => <div key={idx} className={styles.wb} style={{ width: v }} />)}
-      </div>
-    </>;
-  }
 
   useEffect(() => {
     const el = textRef.current;
@@ -112,7 +33,7 @@ export function Sandbox0() {
     setWidthBoxes(result);
   }, [textRef, currentLine]);
 
-  return <div className={styles.container} lang="ja">
+  return <div lang="ja">
     {content}
   </div>;
 }
@@ -1664,100 +1585,15 @@ const gradients = [
   }
 ];
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: "flex",
-    flexWrap: "wrap",
-  },
-  avatar: {
-    width: theme.spacing(15),
-    height: theme.spacing(15),
-    margin: theme.spacing(2),
-    fontSize: "3em",
-    color: "white",
-  },
-  disabled: {
-    opacity: 0.2,
-  },
-  preWrap: {
-    whiteSpace: "pre-wrap",
-  }
-}));
-
-function Sandbox1() {
-  const [enabled, setEnabled] = useState(gradients.map(() => true));
-  const styles = useStyles();
-
-  const toggle = useCallback((idx: number) => () => {
-    const result = [...enabled];
-    result[idx] = !result[idx];
-    setEnabled(result);
-  }, [enabled, setEnabled]);
-
-  return <div className={styles.container}>
-    {gradients.map((v, idx) =>
-      <Avatar
-        key={idx}
-        variant="rounded"
-        className={clsx(styles.avatar, !enabled[idx] && styles.disabled)}
-        style={{ background: `linear-gradient(to top, ${v.colors.join(", ")})` }}
-        onClick={toggle(idx)}>
-        {initials(v.name)}
-      </Avatar>
-    )}
-    <pre className={styles.preWrap}>{JSON.stringify(gradients.filter((v, idx) => enabled[idx]))}</pre>
-  </div>;
-}
-
-const LENGTHY_QUERY = gql`
-  query q($sessionId: String!) {
-    startALengthyTask(sessionId: $sessionId)
-  }
-`;
-
-const LENGTHY_SUBSCRIPTION = gql`
-  subscription s($sessionId: String!) {
-    aLengthyTask(sessionId: $sessionId)
-  }
-`;
-
 export default function Sandbox() {
   const [sessionId, setSessionId] = useState("");
   const [results, setResults] = useState<string[]>([]);
 
   const apolloClient = useApolloClient();
 
-  const handleRun = useCallback(async () => {
-    const sid = `${Math.random()}`;
-    setSessionId(sid);
-
-    const query = apolloClient.query<{startALengthyTask: string[]}>({ query: LENGTHY_QUERY, variables: { sessionId: sid } });
-    const subscription = apolloClient.subscribe<{aLengthyTask: string}>({ query: LENGTHY_SUBSCRIPTION, variables: { sessionId: sid } });
-    const zenSubscription = subscription.subscribe({
-      next(x) {
-        if (x !== null) {
-          setResults(results => [...results, x.data.aLengthyTask]);
-        } else {
-          setResults(results => [...results, `=== end of ${sid} ===`]);
-        }
-      },
-      error(err) { console.log(`Finished with error: ${ err }`); },
-      complete() { console.log("Finished"); }
-    });
-
-    try {
-      const q = await query;
-      if (q.data) setResults(q.data.startALengthyTask);
-    } catch (e) {
-      console.error("query failed", e);
-    } finally {
-      zenSubscription.unsubscribe();
-    }
-  }, [apolloClient]);
-
   return <div>
     Session: {sessionId}, length: {results.length}
-    <button onClick={handleRun}>Run</button>
+    <button>Run</button>
     <ul>{results.map((v, idx) => <li key={idx}>{v}</li>)}</ul>
   </div>;
 }

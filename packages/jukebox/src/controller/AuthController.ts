@@ -85,7 +85,7 @@ export class AuthController {
     // res.redirect("/dashboard");
     // console.log(req.user);
     res.json(req.user);
-  }
+  };
 
   public emitJWT = async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as User;
@@ -103,7 +103,7 @@ export class AuthController {
       status: 200,
       token: token
     });
-  }
+  };
 
   public injectGraphQLUser = async (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate("jwt", { session: false, failWithError: false }, function (err: unknown, user: User | null) {
@@ -113,5 +113,5 @@ export class AuthController {
         next();
       }
     })(req, res, next);
-  }
+  };
 }

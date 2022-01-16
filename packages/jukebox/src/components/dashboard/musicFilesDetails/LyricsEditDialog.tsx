@@ -7,7 +7,7 @@ import {
   IconButton,
   Tab,
   Tabs, Toolbar
-} from "@material-ui/core";
+} from "@mui/material";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { TabContext, TabPanel } from "@material-ui/lab";
@@ -16,34 +16,20 @@ import { Lyrics } from "lyrics-kit";
 import { useSnackbar } from "notistack";
 import EditLyrics from "./lyrics/EditLyrics";
 import SearchLyrics from "./lyrics/SearchLyrics";
-import { makeStyles } from "@material-ui/core/styles";
-import CloseIcon from "@material-ui/icons/Close";
+import { makeStyles } from "@mui/material/styles";
+import CloseIcon from "@mui/icons-material/Close";
 import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
 import EditTranslations from "./lyrics/EditTranslations";
 import EditFurigana from "./lyrics/EditFurigana";
 import { gql, useApolloClient } from "@apollo/client";
+import { DocumentNode } from "graphql";
 
 const WRITE_LYRICS_MUTATION = gql`
   mutation($fileId: Int!, $lyrics: String!, $ext: String!) {
     writeLyrics(fileId: $fileId, lyrics: $lyrics, ext: $ext)
   } 
-`;
-
-const WRITE_LYRICS_TO_FILE_MUTATION = gql`
-  mutation($fileId: Int!, $lyrics: String!) {
-    writeLyricsToMusicFile(fileId: $fileId, lyrics: $lyrics)
-  } 
-`;
-
-const useStyles = makeStyles(() => ({
-  content: {
-    padding: 0,
-  },
-  tabs: {
-    flexGrow: 1,
-  },
-}));
+` as DocumentNode;
 
 function PreviewPanel({ lyricsString, fileId }: {
   lyricsString: string,
@@ -81,7 +67,6 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
 
   const [lrc, setLrc] = useNamedState(initialLrc || "", "lrc");
   const [lrcx, setLrcx] = useNamedState(initialLrcx || "", "lrcx");
-  const styles = useStyles();
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
 
@@ -146,7 +131,7 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
         <AppBar position="static" color="default">
           <Toolbar disableGutters variant="dense">
             <Tabs value={tabIndex} onChange={onTabSwitch}
-                  className={styles.tabs}
+                  sx={{flexGrow: 1}}
                   aria-label="Lyrics edit dialog tabs"
                   indicatorColor="secondary"
                   textColor="secondary"
@@ -166,7 +151,7 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
             </IconButton>
           </Toolbar>
         </AppBar>
-        <DialogContent dividers className={styles.content}>
+        <DialogContent dividers sx={{padding: 0}}>
           <TabPanel value="preview">
             <PreviewPanel lyricsString={effectiveLyrics} fileId={fileId} />
           </TabPanel>

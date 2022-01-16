@@ -6,10 +6,10 @@ import {
   InputAdornment,
   List,
   ListItem,
-  ListItemAvatar, ListItemSecondaryAction, ListItemText, Theme, Typography,
-} from "@material-ui/core";
+  ListItemAvatar, ListItemSecondaryAction, ListItemText, styled, Theme, Typography,
+} from "@mui/material";
 import { TextField } from "mui-rff";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { gql, useApolloClient } from "@apollo/client";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import { LyricsKitLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
@@ -23,16 +23,17 @@ import {
   blueGrey,
   blue,
   purple, lightGreen
-} from "@material-ui/core/colors";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import CheckIcon from "@material-ui/icons/Check";
-import ClearIcon from "@material-ui/icons/Clear";
-import ContentCopyIcon from "@material-ui/icons/ContentCopy";
-import FileCopyIcon from "@material-ui/icons/FileCopy";
+} from "@mui/material/colors";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import CheckIcon from "@mui/icons-material/Check";
+import ClearIcon from "@mui/icons-material/Clear";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import FileCopyIcon from "@mui/icons-material/FileCopy";
 import { lyricsAnalysis, LyricsAnalysisResult } from "../../../../utils/lyricsCheck";
 import { Lyrics } from "lyrics-kit";
 import { useCallback, useMemo, useRef } from "react";
 import TooltipIconButton from "../../TooltipIconButton";
+import { DocumentNode } from "graphql";
 
 
 const SEARCH_LYRICS_QUERY = gql`
@@ -48,7 +49,7 @@ const SEARCH_LYRICS_QUERY = gql`
       tags
     }
   }
-`;
+` as DocumentNode;
 
 const SEARCH_LYRICS_PROGRESS_SUBSCRIPTION = gql`
   subscription ($sessionId: String!) {
@@ -60,58 +61,52 @@ const SEARCH_LYRICS_PROGRESS_SUBSCRIPTION = gql`
       tags
     }
   }
-`;
+` as DocumentNode;
 
-const useAnalysisStyle = makeStyles((theme) => ({
-  chip: {
-    marginRight: theme.spacing(1),
-  },
-}));
+const AnalysisChip = styled(Chip)({marginRight: 1});
 
 function InlineAnalysisResult({ result, duration, length }: { result?: LyricsAnalysisResult, duration: number, length?: number }) {
-  const styles = useAnalysisStyle();
-
   const lengthChip = !length
-    ? <Chip size="small" variant="outlined" color="default" label="?? seconds" className={styles.chip} />
+    ? <AnalysisChip size="small" variant="outlined" color="default" label="?? seconds" />
     : Math.abs(length - duration) < 3
-      ? <Chip size="small" variant="default" color="secondary" label={`${length} seconds`} className={styles.chip} />
-      : <Chip size="small" variant="outlined" color="primary" label={`${length} seconds`} className={styles.chip} />;
+      ? <AnalysisChip size="small" color="secondary" label={`${length} seconds`} />
+      : <AnalysisChip size="small" variant="outlined" color="primary" label={`${length} seconds`} />;
 
   if (result) {
     const translation = result.hasTranslation
-      ? <Chip size="small" className={styles.chip} variant="default" color="secondary" icon={<CheckIcon />}
+      ? <AnalysisChip size="small" color="secondary" icon={<CheckIcon />}
               label="Translation" />
-      : <Chip size="small" className={styles.chip} variant="outlined" color="default" icon={<ClearIcon />}
+      : <AnalysisChip size="small" variant="outlined" color="default" icon={<ClearIcon />}
               label="Translation" />;
     const inlineTimeTags = result.hasInlineTimeTags
-      ? <Chip size="small" className={styles.chip} variant="default" color="secondary" icon={<CheckIcon />}
+      ? <AnalysisChip size="small" color="secondary" icon={<CheckIcon />}
               label="Inline time tags" />
-      : <Chip size="small" className={styles.chip} variant="outlined" color="default" icon={<ClearIcon />}
+      : <AnalysisChip size="small" variant="outlined" color="default" icon={<ClearIcon />}
               label="Inline time tags" />;
     const furigana = result.hasFurigana
-      ? <Chip size="small" className={styles.chip} variant="default" color="secondary" icon={<CheckIcon />}
+      ? <AnalysisChip size="small" color="secondary" icon={<CheckIcon />}
               label="Furigana" />
-      : <Chip size="small" className={styles.chip} variant="outlined" color="default" icon={<ClearIcon />}
+      : <AnalysisChip size="small" variant="outlined" color="default" icon={<ClearIcon />}
               label="Furigana" />;
     const simplifiedJapanese = result.hasSimplifiedJapanese
-      ? <Chip size="small" className={styles.chip} variant="default" color="primary" icon={<CheckIcon />}
+      ? <AnalysisChip size="small" color="primary" icon={<CheckIcon />}
               label="Simplified Japanese" />
-      : <Chip size="small" className={styles.chip} variant="outlined" color="secondary" icon={<ClearIcon />}
+      : <AnalysisChip size="small" variant="outlined" color="secondary" icon={<ClearIcon />}
               label="Simplified Japanese" />;
-    const lastTimesamp = result.lastTimestamp < duration
-      ? <Chip size="small" variant="outlined" color="secondary" label={`Last line: ${result.lastTimestamp} seconds`} />
-      : <Chip size="small" variant="outlined" color="primary" label={`Last line: ${result.lastTimestamp} seconds`} />;
+    const lastTimestamp = result.lastTimestamp < duration
+      ? <AnalysisChip size="small" variant="outlined" color="secondary" label={`Last line: ${result.lastTimestamp} seconds`} />
+      : <AnalysisChip size="small" variant="outlined" color="primary" label={`Last line: ${result.lastTimestamp} seconds`} />;
 
     return <>
-      {lengthChip}{translation}{inlineTimeTags}{furigana}{simplifiedJapanese}{lastTimesamp}
+      {lengthChip}{translation}{inlineTimeTags}{furigana}{simplifiedJapanese}{lastTimestamp}
     </>;
   } else {
-    return <>{lengthChip}<Chip size="small" variant="default" color="primary" icon={<ClearIcon />}
+    return <>{lengthChip}<AnalysisChip size="small" color="primary" icon={<ClearIcon />}
                                label="Parse failed" /></>;
   }
 }
 
-function getBackgroundColor(key: string, theme: Theme): string {
+function getBackgroundColor(key: string): string {
   switch (key) {
     case "Ne":
       return red[900];
@@ -130,43 +125,22 @@ function getBackgroundColor(key: string, theme: Theme): string {
     case "Ma":
       return purple[600];
     default:
-      return theme.palette.secondary.dark;
+      return "secondary.dark";
   }
 }
 
-const useBadgeStyles = makeStyles<Theme, { key: string }>((theme) => ({
-  root: {
+function BadgeAvatar({ children }: { children: unknown }) {
+  const truncated = `${children || "??"}`.substring(0, 2);
+  return <Avatar sx={{
     width: 22,
     height: 22,
     fontSize: 10,
-    background: props => getBackgroundColor(props.key, theme),
-    color: theme.palette.common.white,
-    border: `1px solid ${theme.palette.background.paper}`,
-  },
-}));
-
-function BadgeAvatar({ children }: { children: unknown }) {
-  const truncated = `${children || "??"}`.substring(0, 2);
-  const styles = useBadgeStyles({ key: truncated });
-  return <Avatar className={styles.root}>{truncated}</Avatar>;
+    background: getBackgroundColor(truncated),
+    color: "white",
+    border: 1,
+    borderColor: "background.paper",
+  }}>{truncated}</Avatar>;
 }
-
-const useStyles = makeStyles((theme) => ({
-  form: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  textField: {
-    marginRight: theme.spacing(1),
-  },
-  durationField: {
-    flexBasis: "25em",
-  },
-  secondaryAction: {
-    paddingRight: 104,
-  },
-}));
 
 interface FormValues {
   title: string;
@@ -175,8 +149,6 @@ interface FormValues {
 }
 
 export default function SearchLyrics({ title, artists, duration }: FormValues) {
-  const styles = useStyles();
-
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
   const [searchResults, setSearchResults] = useNamedState<LyricsKitLyricsEntry[]>([], "searchResults");
@@ -251,9 +223,13 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
         }
       }}
     >
-      {({ submitting, handleSubmit }) => (<form className={styles.form} onSubmit={handleSubmit}>
+      {({ submitting, handleSubmit }) => (<form style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+      }} onSubmit={handleSubmit}>
         <TextField
-          className={styles.textField}
+          sx={{marginRight: 1}}
           variant="outlined"
           required
           fullWidth
@@ -261,14 +237,14 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
           name="title" type="text" label="Title"
         />
         <TextField
-          className={styles.textField}
+          sx={{marginRight: 1}}
           variant="outlined"
           fullWidth
           margin="dense"
           name="artists" type="text" label="Artists"
         />
         <TextField
-          className={clsx(styles.textField, styles.durationField)}
+          sx={{marginRight: 1, flexBasis: "25em"}}
           variant="outlined"
           margin="dense"
           InputProps={{ endAdornment: <InputAdornment position="end">sec</InputAdornment>, readOnly: true }}
@@ -285,11 +261,9 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
       </form>)}
     </Form>
     <List>
-      {searchResults.map((v, idx) => <ListItem key={idx} alignItems="flex-start" classes={{
-        secondaryAction: styles.secondaryAction
-      }}>
+      {searchResults.map((v, idx) => <ListItem key={idx} alignItems="flex-start">
         <ListItemAvatar>
-          <Badge overlap="rectangle" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          <Badge overlap="rectangular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                  badgeContent={<BadgeAvatar>{v.metadata?.source}</BadgeAvatar>}>
             <Avatar src={v.metadata?.artworkURL} variant="rounded"><MusicNoteIcon /></Avatar>
           </Badge>

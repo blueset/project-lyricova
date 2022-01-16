@@ -1,23 +1,34 @@
-import { Avatar, Box, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
+import {
+  AutocompleteRenderInputParams,
+  Avatar,
+  Box,
+  Grid,
+  IconButton,
+  Stack,
+  TextField,
+  TextField as MuiTextField,
+  Typography
+} from "@mui/material";
 import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useCallback, useEffect } from "react";
 import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import SearchIcon from "@material-ui/icons/Search";
-import AddCircleIcon from "@material-ui/icons/AddCircle";
-import { makeStyles } from "@material-ui/core/styles";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SearchIcon from "@mui/icons-material/Search";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import { makeStyles } from "@mui/material/styles";
 import { AlbumFragments } from "../../../graphql/fragments";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
-import EditIcon from "@material-ui/icons/Edit";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import EditIcon from "@mui/icons-material/Edit";
 import { Album } from "../../../models/Album";
 import VocaDBSearchAlbumDialog from "./vocaDBSearchAlbumDialog";
 import AlbumEntityDialog from "./albumEntityDialog";
 import { useField, useForm } from "react-final-form";
 import { Autocomplete } from "mui-rff";
 import SongEntityDialog from "./songEntityDialog";
+import { DocumentNode } from "graphql";
 
 export type ExtendedAlbum = Partial<Album> & {
   vocaDBSuggestion?: boolean;
@@ -32,37 +43,7 @@ const LOCAL_ARTIST_ENTITY_QUERY = gql`
   }
   
   ${AlbumFragments.SelectAlbumEntry}
-`;
-
-const useStyles = makeStyles((theme) => ({
-  icon: {
-    color: theme.palette.text.secondary,
-    marginRight: theme.spacing(2),
-  },
-  detailsBox: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: theme.spacing(2),
-  },
-  detailsThumbnail: {
-    height: "3em",
-    width: "3em",
-    marginRight: theme.spacing(2),
-  },
-  textBox: {
-    flexGrow: 1,
-    flexBasis: 0,
-  },
-  chipsRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  featLabel: {
-    margin: theme.spacing(0, 1),
-  },
-}));
+` as DocumentNode;
 
 interface Props<T extends string> {
   fieldName: T;
@@ -71,8 +52,6 @@ interface Props<T extends string> {
 }
 
 export default function SelectAlbumEntityBox<T extends string>({ fieldName, labelName, title }: Props<T>) {
-  const styles = useStyles();
-
   const apolloClient = useApolloClient();
   const { input: { value } } = useField<ExtendedAlbum>(fieldName);
   const setValue = useForm().mutators.setValue;
@@ -163,6 +142,7 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, labe
             handleHomeEndKeys
             freeSolo
             textFieldProps={{variant: "outlined", size: "small"}}
+            // renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label={labelName} />}
             filterOptions={(v: ExtendedAlbum[], params: FilterOptionsState<ExtendedAlbum>) => {
               if (params.inputValue !== "") {
                 v.push({
@@ -204,35 +184,34 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, labe
                 setValue(fieldName, newValue);
               }
             }}
-            renderOption={(option: ExtendedAlbum | null) => {
-              let icon = <MusicNoteIcon className={styles.icon} />;
-              if (option.vocaDBSuggestion) icon = <SearchIcon className={styles.icon} />;
-              else if (option.manual) icon = <AddCircleIcon className={styles.icon} />;
+            renderOption={(props, option: ExtendedAlbum | null) => {
+              let icon = <MusicNoteIcon sx={{color: "text.secondary", marginRight: 2 }} />;
+              if (option.vocaDBSuggestion) icon = <SearchIcon sx={{color: "text.secondary", marginRight: 2 }} />;
+              else if (option.manual) icon = <AddCircleIcon sx={{color: "text.secondary", marginRight: 2 }} />;
               return (
-                <Box display="flex" flexDirection="row" alignItems="center">
+                <Stack component="li" {...props} flexDirection="row" alignItems="center">
                   {icon} {option.name}
-                </Box>
+                </Stack>
               );
             }}
             getOptionLabel={(option: ExtendedAlbum | null) => {
               // Prevent ”Manually add ...” item from being rendered
               if (option === null || option.id === null) return "";
               return option.name || "";
-            }}
-          />
+            }}/>
         </Grid>
         {value && (
           <Grid item xs={12}>
-            <div className={styles.detailsBox}>
+            <Stack direction="row" alignItems="center" sx={{marginBottom: 2}}>
               <div>
                 <Avatar
                   src={value.coverUrl} variant="rounded"
-                  className={styles.detailsThumbnail}
+                  sx={{height: "3em", width: "3em", marginRight: 2}}
                 >
                   <MusicNoteIcon />
                 </Avatar>
               </div>
-              <div className={styles.textBox}>
+              <div style={{flexGrow: 1, flexBasis: 0,}}>
                 <Typography>
                   {value.name}
                 </Typography>
@@ -253,7 +232,7 @@ export default function SelectAlbumEntityBox<T extends string>({ fieldName, labe
                   <EditIcon />
                 </IconButton>
               </div>
-            </div>
+            </Stack>
           </Grid>
         )}
       </Grid>

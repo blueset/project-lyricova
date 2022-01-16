@@ -1,8 +1,8 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles } from "@material-ui/core";
-import { useRef, useEffect } from "react";
+import { Box, makeStyles, styled } from "@mui/material";
+import { useRef, useEffect, CSSProperties } from "react";
 import clsx from "clsx";
 import BalanceText from "react-balance-text-cj";
 
@@ -12,41 +12,20 @@ interface Props {
   lyrics: LyricsKitLyrics;
 }
 
-const useStyle = makeStyles((theme) => {
-  return {
-    container: {
-      padding: theme.spacing(4),
-      width: "100%",
-      height: "100%",
-      overflow: "hidden",
-      textAlign: "justify",
-      maskBorderImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBorderImageSlice: "49% 0 fill",
-      maskBorderImageWidth: "40% 0",
-      maskBoxImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBoxImageSlice: "49% 0 fill",
-      maskBoxImageWidth: "40% 0",
-    },
-    line: {
-      fontWeight: 400,
-      fontSize: "2.5em",
-      opacity: 0.5,
-      marginBottom: theme.spacing(1),
-      "&.active": {
-        opacity: 1,
-        fontWeight: 500,
-      },
-    },
-    filler: {
-      height: "50%",
-    },
-  };
+const StyledLine = styled("span")({
+  fontWeight: 400,
+  fontSize: "2.5em",
+  opacity: 0.5,
+  marginBottom: 4,
+  "&.active": {
+    opacity: 1,
+    fontWeight: 500,
+  },
 });
 
 export function ParagraphLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
-  const styles = useStyle();
   const currentLine = useRef<HTMLSpanElement>();
 
   useEffect(() => {
@@ -60,24 +39,36 @@ export function ParagraphLyrics({ lyrics }: Props) {
     }
   }, [currentLine, line, lyrics.lines]);
 
-  return <div className={styles.container}>
-    <div className={styles.filler} />
+  return <Box style={{
+    padding: 4,
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    textAlign: "justify",
+    maskBorderImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+    maskBorderImageSlice: "49% 0 fill",
+    maskBorderImageWidth: "40% 0",
+    maskBoxImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+    maskBoxImageSlice: "49% 0 fill",
+    maskBoxImageWidth: "40% 0",
+  } as unknown as CSSProperties}>
+    <Box sx={{height: "50%",}}/>
     {lyrics.lines.map((v, idx) => {
       const offset = line !== null ? Math.abs(line - idx) : idx;
       return (
         <>
-          {idx !== 0 && <span className={styles.line} key={`${idx}-divider`} style={{ filter: `blur(${offset * 0.1}px)` }}> ・ </span>}
-          <span
+          {idx !== 0 && <StyledLine key={`${idx}-divider`} style={{ filter: `blur(${offset * 0.1}px)` }}> ・ </StyledLine>}
+          <StyledLine
             key={idx}
             lang="ja"
-            className={clsx(styles.line, idx === line && "active")} ref={idx === line ? currentLine : null}
+            className={clsx(idx === line && "active")} ref={idx === line ? currentLine : null}
             style={{ filter: `blur(${offset * 0.1}px)` }}
           >
             {v.content || "＊"}
-          </span>
+          </StyledLine>
         </>
       );
     })}
-    <div className={styles.filler} />
-  </div>;
+    <Box sx={{height: "50%",}}/>
+  </Box>;
 }

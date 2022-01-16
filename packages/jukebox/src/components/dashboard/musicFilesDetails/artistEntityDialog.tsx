@@ -5,22 +5,20 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   Grid,
-  InputLabel,
-  MenuItem
-} from "@material-ui/core";
+  MenuItem, Stack
+} from "@mui/material";
 import { useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import TransliterationAdornment from "../TransliterationAdornment";
 import { useSnackbar } from "notistack";
-import { makeStyles } from "@material-ui/core/styles";
 import * as yup from "yup";
-import { ArtistFragments, SongFragments } from "../../../graphql/fragments";
+import { ArtistFragments} from "../../../graphql/fragments";
 import { Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
 import AvatarField from "./AvatarField";
 import finalFormMutators from "../../../frontendUtils/finalFormMutators";
+import { DocumentNode } from "graphql";
 
 const NEW_ARTIST_MUTATION = gql`
   mutation($data: ArtistInput!) {
@@ -30,7 +28,7 @@ const NEW_ARTIST_MUTATION = gql`
   }
   
   ${ArtistFragments.SelectArtistEntry}
-`;
+` as DocumentNode;
 
 const UPDATE_ARTIST_MUTATION = gql`
   mutation($id: Int!, $data: ArtistInput!) {
@@ -40,20 +38,7 @@ const UPDATE_ARTIST_MUTATION = gql`
   }
   
   ${ArtistFragments.SelectArtistEntry}
-`;
-
-const useStyles = makeStyles((theme) => ({
-  mainPictureRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  mainPictureThumbnail: {
-    marginRight: theme.spacing(2),
-    height: "3em",
-    width: "3em",
-  },
-}));
+` as DocumentNode;
 
 interface FormValues {
   name: string;
@@ -76,7 +61,6 @@ export default function ArtistEntityDialog({ isOpen, toggleOpen, keyword, setKey
 
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
-  const styles = useStyles();
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
@@ -174,17 +158,21 @@ export default function ArtistEntityDialog({ isOpen, toggleOpen, keyword, setKey
                     name="sortOrder" type="text" label="Sort order" />
                 </Grid>
                 <Grid item xs={12}>
-                  <div className={styles.mainPictureRow}>
+                  <Stack direction="row" alignItems="center">
                     <AvatarField
                       name="mainPictureUrl"
-                      className={styles.mainPictureThumbnail}
+                      sx={{
+                        marginRight: 2,
+                        height: "3em",
+                        width: "3em",
+                      }}
                     />
                     <TextField
                       variant="outlined"
                       margin="dense"
                       fullWidth
                       name="mainPictureUrl" type="text" label="Main picture URL" />
-                  </div>
+                  </Stack>
                 </Grid>
                 <Grid item xs={12}>
                   <Select

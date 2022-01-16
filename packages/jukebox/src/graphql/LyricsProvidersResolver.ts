@@ -2,7 +2,7 @@ import axios from "axios";
 import cheerio from "cheerio";
 import { Song } from "../models/Song";
 import { SongForApiContract, LyricsForSongContract, VDBTranslationType } from "../types/vocadb";
-import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
+import { Lyrics, LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
 import {
   Resolver,
   ObjectType,
@@ -240,7 +240,7 @@ export class LyricsProvidersResolver {
 
     const results = await Promise.all(this.lyricsProvider.providers.map(async (v) => {
       const result = await v.getLyrics(request);
-      const converted = result.map(lrc => {
+      const converted = result.map((lrc: Lyrics) => {
         return {
           lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
           quality: lrc.quality,

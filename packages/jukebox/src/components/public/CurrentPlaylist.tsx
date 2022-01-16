@@ -7,13 +7,12 @@ import {
   ListItemSecondaryAction,
   IconButton,
   ListItemIcon,
-  RootRef,
   Menu,
-  MenuItem,
-} from "@material-ui/core";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
-import DragHandleIcon from "@material-ui/icons/DragHandle";
-import DeleteIcon from "@material-ui/icons/Delete";
+  MenuItem, ListItemButton,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DragHandleIcon from "@mui/icons-material/DragHandle";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useRef, useCallback } from "react";
 import AutoResizer from "react-virtualized-auto-sizer";
 import { FixedSizeList, ListChildComponentProps, areEqual } from "react-window";
@@ -57,32 +56,32 @@ function CurrentPlaylistItem({
 
   // isDragging = true;
   return (
-    <RootRef rootRef={provided.innerRef}>
-      <ListItem
-        button
-        ContainerProps={{
-          ...provided.draggableProps,
-          style: {
-            ...style,
-            ...provided.draggableProps.style,
-            opacity: index < playlist.nowPlaying ? 0.375 : 1,
-          },
-        }}
-        style={{
-          height: 60,
-        }}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        ContainerComponent={isDragging ? "div" : "li"}
-        selected={playlist.nowPlaying === index || isDragging}
-        onClick={
-          isDragging
-            ? null
-            : () => {
-              playlist.playTrack(index, true);
-            }
-        }
-      >
+    <ListItem
+      ref={provided.innerRef}
+      ContainerProps={{
+        ...provided.draggableProps,
+        style: {
+          ...style,
+          ...provided.draggableProps.style,
+          opacity: index < playlist.nowPlaying ? 0.375 : 1,
+        },
+      }}
+      style={{
+        height: 60,
+      }}
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      ContainerComponent={isDragging ? "div" : "li"}
+      selected={playlist.nowPlaying === index || isDragging}
+      onClick={
+        isDragging
+          ? null
+          : () => {
+            playlist.playTrack(index, true);
+          }
+      }
+    >
+      <ListItemButton>
         <ListItemIcon style={{ zIndex: 10 }} {...provided.dragHandleProps}>
           <DragHandleIcon />
         </ListItemIcon>
@@ -102,7 +101,6 @@ function CurrentPlaylistItem({
           </IconButton>
           <Menu
             id={`currentPlaylist-menu-${track.id}`}
-            getContentAnchorEl={null}
             anchorOrigin={{
               vertical: "bottom",
               horizontal: "right",
@@ -124,8 +122,8 @@ function CurrentPlaylistItem({
             </MenuItem>
           </Menu>
         </ListItemSecondaryAction>
-      </ListItem>
-    </RootRef>
+      </ListItemButton>
+    </ListItem>
   );
 }
 

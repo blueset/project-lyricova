@@ -55,5 +55,5 @@ export class VocaDBImportController {
 
       res.json({ status: "OK", data: songEntity });
     } catch (e) { next(e); }
-  }
+  };
 }

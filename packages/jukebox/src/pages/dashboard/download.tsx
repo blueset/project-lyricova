@@ -1,7 +1,7 @@
-import { Button, Step, StepContent, StepLabel, Stepper, Typography } from "@material-ui/core";
+import { Button, Step, StepContent, StepLabel, Stepper, Typography } from "@mui/material";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { ReactNode, useCallback } from "react";
 import YouTubeDlDownloadSteps from "../../components/dashboard/YouTubeDlDownloadSteps";
 import MusicDlDownloadSteps from "../../components/dashboard/MusicDlDownloadSteps";
@@ -14,16 +14,9 @@ function BlankStepper({ firstStep }: { firstStep: ReactNode }) {
   </Stepper>;
 }
 
-const useStyles = makeStyles((theme) => ({
-  button: {
-    marginRight: theme.spacing(1),
-  }
-}));
-
 export default function DownloadMusicFile() {
   const [step, setStep] = useNamedState(0, "step");
   const [chosenSource, setChosenSource] = useNamedState<"youtube-dl" | "music-dl" | "mxget" | null>(null, "chosenSource");
-  const styles = useStyles();
 
   const chooseSource = useCallback((sourceName: "youtube-dl" | "music-dl"| "mxget" ) => () => {
     setChosenSource(sourceName);

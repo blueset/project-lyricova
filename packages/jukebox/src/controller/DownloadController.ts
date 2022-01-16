@@ -102,7 +102,7 @@ export class DownloadController {
     } catch (e) {
       next(e);
     }
-  }
+  };
 
   /**
    * Download video via youtube-dl
@@ -176,7 +176,7 @@ export class DownloadController {
     } catch (e) {
       next(e);
     }
-  }
+  };
 
   /**
    * Get video info via youtube-dl.
@@ -191,7 +191,7 @@ export class DownloadController {
     } catch (e) {
       next(e);
     }
-  }
+  };
 
   /**
    * Get video thumbnail via youtube-dl.
@@ -208,7 +208,7 @@ export class DownloadController {
     } catch (e) {
       next(e);
     }
-  }
+  };
 
   private async prepareMusicDlPythonSession(): Promise<PythonBridge> {
     const python = pythonBridge({ python: "/usr/local/bin/python3" });
@@ -270,7 +270,7 @@ def download():
     } catch (e) {
       next(e);
     }
-  }
+  };
 
   /**
    * Download song via music-dl
@@ -292,5 +292,5 @@ def download():
     } catch (e) {
       next(e);
     }
-  }
+  };
 }

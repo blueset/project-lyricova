@@ -1,38 +1,38 @@
 import {
   Button,
   Chip,
-  CircularProgress, FormControlLabel,
+  CircularProgress, FormControlLabel, Stack,
   Step,
   StepContent,
   StepLabel,
   Stepper, Switch,
   TextField,
   Typography
-} from "@material-ui/core";
-import { ChangeEvent, Dispatch, FormEvent, ReactNode, SetStateAction, useCallback, useEffect } from "react";
+} from "@mui/material";
+import { ChangeEvent, Dispatch, FormEvent, ReactNode, SetStateAction, useCallback } from "react";
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import { Alert } from "@material-ui/lab";
 import filesize from "filesize";
-import { makeStyles } from "@material-ui/core/styles";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import { makeStyles } from "@mui/material/styles";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { NextComposedLink } from "../Link";
-import { MxGetSearchResult } from "../../graphql/DownloadResolver";
 import { useSnackbar } from "notistack";
 import { swapExt } from "../../utils/path";
+import { DocumentNode } from "graphql";
 
 const YOUTUBE_DL_INFO_QUERY = gql`
   query($url: String!) {
     youtubeDlGetInfo(url: $url)
   }
-`;
+` as DocumentNode;
 
 const YOUTUBE_DL_DOWNLOAD_MUTATION = gql`
   mutation($url: String!, $filename: String, $overwrite: Boolean) {
     youtubeDlDownloadAudio(url: $url, options: {filename: $filename, overwrite: $overwrite})
   }
-`;
+` as DocumentNode;
 
 const SINGLE_FILE_SCAN_MUTATION = gql`
   mutation($path: String!) {
@@ -40,7 +40,7 @@ const SINGLE_FILE_SCAN_MUTATION = gql`
       id
     }
   }
-`;
+` as DocumentNode;
 
 interface YouTubeDlInfo {
   fulltitle: string;
@@ -60,23 +60,6 @@ interface YouTubeDlInfo {
   }[];
 }
 
-const useStyles = makeStyles((theme) => ({
-  infoTitle: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: theme.spacing(1),
-  },
-  infoThumbnail: {
-    height: "4em",
-    marginRight: theme.spacing(1),
-    borderRadius: theme.shape.borderRadius,
-  },
-  infoChip: {
-    margin: theme.spacing(0, 1, 1, 0),
-  },
-}));
-
 interface Props {
   step: number;
   setStep: Dispatch<SetStateAction<number>>;
@@ -84,7 +67,6 @@ interface Props {
 }
 
 export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Props) {
-  const styles = useStyles();
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
 
@@ -152,8 +134,7 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
         `File downloaded with database ID ${scanOutcome.data.scanByPath.id} and path ${filePath}.`,
         {
           variant: "success",
-          action: <Button color="default"
-                          component={NextComposedLink}
+          action: <Button component={NextComposedLink}
                           href={`/dashboard/review/${downloadState}`}>
             Review file
           </Button>
@@ -196,15 +177,15 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
               <Alert severity="error">Error: {`${fetchInfoQuery.error}`}</Alert>
               : fetchInfoQueryData ?
                 <div>
-                  <div className={styles.infoTitle}>
+                  <Stack direction="row" alignItems="center">
                     <img src={fetchInfoQueryData.thumbnail} alt={fetchInfoQueryData.fulltitle}
-                         className={styles.infoThumbnail} />
+                         style={{ height: "4em", marginRight: 4, borderRadius: 4, }} />
                     <div>
                       <Typography
                         variant="body1">{fetchInfoQueryData.fulltitle} ({fetchInfoQueryData._duration_hms})</Typography>
                       <Typography variant="body2" color="textSecondary">{fetchInfoQueryData.uploader}</Typography>
                     </div>
-                  </div>
+                  </Stack>
                   <Typography variant="body1"
                               gutterBottom>Filename (video): <code>{fetchInfoQueryData._filename}</code></Typography>
                   <div>
@@ -217,7 +198,7 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
                       return <Chip
                         key={v.format_id}
                         size="small"
-                        className={styles.infoChip}
+                        sx={{marginRight: 1, marginBottom: 1}}
                         label={chiplabel} />;
                     })}
                   </div>

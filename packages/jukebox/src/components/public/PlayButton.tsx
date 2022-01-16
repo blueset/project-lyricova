@@ -1,9 +1,9 @@
 import style from "./PlayButton.module.scss";
 import { RefObject, useEffect, useCallback } from "react";
-import { Fab, CircularProgress, useMediaQuery, Theme } from "@material-ui/core";
+import { Fab, CircularProgress, useMediaQuery, Theme } from "@mui/material";
 import { Playlist } from "./AppContext";
-import PlayArrowIcon from "@material-ui/icons/PlayArrow";
-import PauseIcon from "@material-ui/icons/Pause";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
 import { useNamedState } from "../../frontendUtils/hooks";
 
 interface Props {
@@ -98,7 +98,6 @@ export function PlayButton({ playerRef, playlist, isCollapsed }: Props) {
         color="secondary"
         value={loadProgress}
         className={style.loadProgressSpinner}
-        variant="static"
       />
     )}
   </div>);

@@ -1,15 +1,15 @@
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { Field, Form, FormSpy } from "react-final-form";
 import PlaylistAvatar from "../PlaylistAvatar";
 import { TextField } from "mui-rff";
-import { IconButton } from "@material-ui/core";
-import CheckIcon from "@material-ui/icons/Check";
-import CloseIcon from "@material-ui/icons/Close";
+import { IconButton } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import { OnChange } from "react-final-form-listeners";
 import slugify from "slugify";
 import finalFormMutators from "../../frontendUtils/finalFormMutators";
 import SlugifyAdornment from "./SlugifyAdornment";
-import { gql, useApolloClient } from "@apollo/client";
+import { DocumentNode, gql, useApolloClient } from "@apollo/client";
 import { useSnackbar } from "notistack";
 
 const NEW_PLAYLIST_MUTATION = gql`
@@ -19,7 +19,7 @@ const NEW_PLAYLIST_MUTATION = gql`
       slug
     }
   }
-`;
+` as DocumentNode;
 
 interface FormValues {
   name: string;
@@ -31,22 +31,7 @@ interface Props {
   dismiss: () => void;
 }
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  avatar: {
-    margin: theme.spacing(0, 1),
-    fontSize: "3rem",
-    height: "6rem",
-    width: "6rem",
-  }
-}));
-
 export default function AddPlaylistPopoverContent({ refresh, dismiss }: Props) {
-  const styles = useStyles();
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
 
@@ -67,8 +52,18 @@ export default function AddPlaylistPopoverContent({ refresh, dismiss }: Props) {
           snackbar.enqueueSnackbar(`Error occurred while creating playlist: ${e}`, {variant: "error"});
         }
       }}
-    >{({ submitting, values, handleSubmit }) => <form className={styles.container} onSubmit={handleSubmit}>
-      <PlaylistAvatar name={values.name || ""} slug={values.slug || ""} className={styles.avatar} />
+    >{({ submitting, values, handleSubmit }) => <form style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+        }} onSubmit={handleSubmit}>
+      <PlaylistAvatar name={values.name || ""} slug={values.slug || ""} sx={{
+        marginLeft: 1,
+        marginRight: 1,
+        fontSize: "3rem",
+        height: "6rem",
+        width: "6rem",
+      }}/>
       <div>
         <TextField name="name" label="Name" variant="outlined" margin="dense" size="small" required />
         <TextField

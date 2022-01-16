@@ -8,13 +8,14 @@ import {
   DialogTitle,
   IconButton,
   Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
 import { HmikuAtWikiEntry } from "../../../../graphql/LyricsProvidersResolver";
-import ContentCopyIcon from "@material-ui/icons/ContentCopy";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useSnackbar } from "notistack";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import Link from "../../../Link";
+import { DocumentNode } from "graphql";
 
 const HMIKU_LYRICS_QUERY = gql`
   query($id: String!) {
@@ -25,19 +26,7 @@ const HMIKU_LYRICS_QUERY = gql`
       lyrics
     }
   }
-`;
-
-const useStyles = makeStyles((theme) => ({
-  title: {
-    marginRight: theme.spacing(4),
-  },
-  titleButton: {
-    position: "absolute",
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}));
+` as DocumentNode;
 
 interface Props {
   isOpen: boolean;
@@ -47,7 +36,6 @@ interface Props {
 
 export default function HMikuWikiResultDialog({ isOpen, toggleOpen, articleId }: Props) {
   const snackbar = useSnackbar();
-  const styles = useStyles();
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
@@ -75,10 +63,17 @@ export default function HMikuWikiResultDialog({ isOpen, toggleOpen, articleId }:
     } else {
       const data = query.data.hmikuLyrics;
       content = <>
-        <DialogTitle disableTypography>
-          <Typography variant="h6" className={styles.title}>
-            <Link href={`https://w.atwiki.jp/hmiku/pages/${data.id}.html`} target="_blank">{data.name}</Link> ({data.furigana}, #{data.id})</Typography>
-          <IconButton aria-label="close" className={styles.titleButton} onClick={copyText(data.lyrics)}>
+        <DialogTitle>
+            <Link href={`https://w.atwiki.jp/hmiku/pages/${data.id}.html`} target="_blank">{data.name}</Link> ({data.furigana}, #{data.id})
+          <IconButton
+            aria-label="close"
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+            onClick={copyText(data.lyrics)}>
             <ContentCopyIcon />
           </IconButton>
         </DialogTitle>

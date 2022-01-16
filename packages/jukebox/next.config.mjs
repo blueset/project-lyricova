@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const analyzer = require("@next/bundle-analyzer");
+import analyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = analyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-module.exports = withBundleAnalyzer({});
+export default withBundleAnalyzer({
+
+});

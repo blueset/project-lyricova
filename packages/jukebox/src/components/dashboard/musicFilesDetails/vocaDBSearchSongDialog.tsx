@@ -12,20 +12,21 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   Radio
-} from "@material-ui/core";
+} from "@mui/material";
 import { ChangeEvent, useCallback, useEffect } from "react";
 import { Song } from "../../../models/Song";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import axios from "axios";
 import { PartialFindResult, SongForApiContract } from "../../../types/vocadb";
 import _ from "lodash";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Skeleton } from "@material-ui/lab";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
 import { SongFragments } from "../../../graphql/fragments";
+import { DocumentNode } from "graphql";
 
 const IMPORT_SONG_MUTATION = gql`
   mutation($id: Int!) {
@@ -35,13 +36,7 @@ const IMPORT_SONG_MUTATION = gql`
   }
   
   ${SongFragments.SelectSongEntry}
-`;
-
-const useStyles = makeStyles({
-  secondaryAction: {
-    paddingRight: 104,
-  },
-});
+` as DocumentNode;
 
 interface Props {
   isOpen: boolean;
@@ -52,8 +47,6 @@ interface Props {
 }
 
 export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, setKeyword, setSong }: Props) {
-  const styles = useStyles();
-
   const [results, setResults] = useNamedState<SongForApiContract[]>([], "results");
   const [isLoaded, toggleLoaded] = useNamedState(false, "loaded");
   const [selectedSong, setSelectedSong] = useNamedState<number | null>(null, "selectedSong");
@@ -158,9 +151,7 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
           {isLoaded ? (
             results.length > 0 ?
               results.map((v) => (
-                <ListItem key={v.id} classes={{
-                  secondaryAction: styles.secondaryAction
-                }}>
+                <ListItem key={v.id}>
                   <ListItemAvatar>
                     <Avatar variant="rounded" src={v.thumbUrl}>
                       <MusicNoteIcon />

@@ -12,20 +12,21 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   Radio
-} from "@material-ui/core";
+} from "@mui/material";
 import { ChangeEvent, useCallback, useEffect } from "react";
 import { Album } from "../../../models/Album";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import axios from "axios";
 import { PartialFindResult, AlbumForApiContract } from "../../../types/vocadb";
 import _ from "lodash";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Skeleton } from "@material-ui/lab";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
 import { AlbumFragments } from "../../../graphql/fragments";
+import { DocumentNode } from "graphql";
 
 const IMPORT_SONG_MUTATION = gql`
   mutation($id: Int!) {
@@ -35,13 +36,7 @@ const IMPORT_SONG_MUTATION = gql`
   }
   
   ${AlbumFragments.SelectAlbumEntry}
-`;
-
-const useStyles = makeStyles({
-  secondaryAction: {
-    paddingRight: 104,
-  },
-});
+` as DocumentNode;
 
 interface Props {
   isOpen: boolean;
@@ -52,8 +47,6 @@ interface Props {
 }
 
 export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, setKeyword, setAlbum }: Props) {
-  const styles = useStyles();
-
   const [results, setResults] = useNamedState<AlbumForApiContract[]>([], "results");
   const [isLoaded, toggleLoaded] = useNamedState(false, "loaded");
   const [selectedAlbum, setSelectedAlbum] = useNamedState<number | null>(null, "selectedAlbum");
@@ -121,7 +114,7 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
         {
           params: {
             query: keyword,
-            sort: "SongCount",
+            sort: "Name",
             nameMatchMode: "Auto",
             fields: "MainPicture",
           }
@@ -158,9 +151,7 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
           {isLoaded ? (
             results.length > 0 ?
               results.map((v) => (
-                <ListItem key={v.id} classes={{
-                  secondaryAction: styles.secondaryAction
-                }}>
+                <ListItem key={v.id}>
                   <ListItemAvatar>
                     <Avatar variant="rounded" src={v.mainPicture?.urlOriginal}>
                       <MusicNoteIcon />

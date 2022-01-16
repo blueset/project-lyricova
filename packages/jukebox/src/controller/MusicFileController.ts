@@ -6,12 +6,10 @@ import ffprobe from "ffprobe-client";
 import ffmetadata from "../utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
-import pLimit from "p-limit";
 import { Op } from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
-import tempy from "tempy";
 import crypto from "crypto";
 import multer from "multer";
 import { swapExt } from "../utils/path";
@@ -59,6 +57,7 @@ export class MusicFileController {
   }
 
   constructor() {
+    const tempy = (await import("tempy")).default;
     this.uploadDirectory = tempy.directory();
     const coverUpload = multer({
       storage: multer.diskStorage({
@@ -200,10 +199,11 @@ export class MusicFileController {
       console.log("entries deleted.");
 
       // Add new files to database
+      const pLimit = (await import("p-limit")).default;
       const limit = pLimit(10);
 
       const entriesToAdd = await Promise.all(
-        [...toAdd].map(path => limit(async () => this.buildSongEntry(path)))
+        [...toAdd].map(path => limit(async () => await this.buildSongEntry(path) as Promise<MusicFile>))
       );
 
       console.log("entries_to_add done.");
@@ -247,7 +247,7 @@ export class MusicFileController {
       const songs = await MusicFile.findAll();
       return res.json(songs);
     } catch (e) { next(e); }
-  }
+  };
 
   public getSong = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -257,7 +257,7 @@ export class MusicFileController {
       }
       return res.json(song);
     } catch (e) { next(e); }
-  }
+  };
 
   public getSongFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -276,7 +276,7 @@ export class MusicFileController {
       res
         .sendFile(path);
     } catch (e) { next(e); }
-  }
+  };
 
   public getSongLRC = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -296,7 +296,7 @@ export class MusicFileController {
         .contentType("text/lrc")
         .sendFile(path);
     } catch (e) { next(e); }
-  }
+  };
 
   public getSongLRCX = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -316,7 +316,7 @@ export class MusicFileController {
         .contentType("text/lrcx")
         .sendFile(path);
     } catch (e) { next(e); }
-  }
+  };
 
 
 
@@ -339,7 +339,7 @@ export class MusicFileController {
       await song.save();
       return res.json(song);
     } catch (e) { next(e); }
-  }
+  };
 
   /**
    * Retrieve cover art of a music file. Should return a file or nothing.
@@ -372,7 +372,7 @@ export class MusicFileController {
     res.sendFile(coverUrl, () => {
       fs.unlinkSync(coverUrl);
     });
-  }
+  };
 
   /**
    * Upload cover art for a music file.
@@ -435,5 +435,5 @@ export class MusicFileController {
         fs.unlinkSync(coverPath);
       }
     }
-  }
+  };
 }

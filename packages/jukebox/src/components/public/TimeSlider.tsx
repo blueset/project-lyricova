@@ -1,4 +1,4 @@
-import { Slider, Typography, makeStyles } from "@material-ui/core";
+import { Slider, Typography, makeStyles, Stack, Box } from "@mui/material";
 import { formatTime } from "../../frontendUtils/strings";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { RefObject, useEffect, useCallback } from "react";
@@ -10,39 +10,10 @@ interface Props {
   isCollapsed: boolean;
 }
 
-const useStyle = makeStyles((theme) => ({
-  expandedSliderContainer: {
-    width: "100%",
-  },
-  collapsedSliderContainer: {
-    [theme.breakpoints.up("md")]: {
-      flexGrow: 1,
-    },
-    [theme.breakpoints.down("sm")]: {
-      width: "100%",
-    },
-  },
-  sliderLabelContainer: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    marginTop: "-1em",
-  },
-  sliderLabelStretcher: {
-    flexGrow: 1,
-  },
-  sliderLabelText: {
-    opacity: 0.5,
-    fontVariantNumeric: "tabular-nums",
-  },
-}));
-
 export function TimeSlider({ playerRef, disabled, isCollapsed }: Props) {
   const [time, setTime] = useNamedState(0, "time");
   const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
   const [duration, setDuration] = useNamedState(0, "duration");
-
-  const style = useStyle();
 
   function updateTime() {
     // console.log("updateTime, playerRef", playerRef.current, playerRef);
@@ -92,7 +63,10 @@ export function TimeSlider({ playerRef, disabled, isCollapsed }: Props) {
     };
   }, [playerRef]);
 
-  return (<div className={isCollapsed ? style.collapsedSliderContainer : style.expandedSliderContainer} id="player-time-slider">
+  return (<Box sx={isCollapsed ? {
+    flexGrow: {md: 1},
+    width: {xs: "100%", md: "auto"},
+  } : {width: "100%"}} id="player-time-slider">
     <Slider
       defaultValue={0}
       value={time}
@@ -102,22 +76,22 @@ export function TimeSlider({ playerRef, disabled, isCollapsed }: Props) {
       onChange={onSliderChange}
       onChangeCommitted={onSliderChangeCommitted}
     />
-    <div className={style.sliderLabelContainer}>
+    <Stack direction="row" sx={{width: "100%", marginTop: "-1em",}}>
       <Typography
         variant="body2"
         component="span"
-        className={style.sliderLabelText}
+        sx={{opacity: 0.5, fontVariantNumeric: "tabular-nums",}}
       >
         {formatTime(time)}
       </Typography>
-      <span className={style.sliderLabelStretcher}></span>
+      <span style={{flexGrow: 1,}}/>
       <Typography
         variant="body2"
         component="span"
-        className={style.sliderLabelText}
+        sx={{opacity: 0.5, fontVariantNumeric: "tabular-nums",}}
       >
         {formatTime(duration)}
       </Typography>
-    </div>
-  </div>);
+    </Stack>
+  </Box>);
 }

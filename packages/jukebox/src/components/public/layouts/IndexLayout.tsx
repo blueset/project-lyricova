@@ -1,7 +1,7 @@
-import { Grid, Paper, IconButton, makeStyles } from "@material-ui/core";
+import { Grid, Paper, IconButton, styled } from "@mui/material";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
-import React, { useEffect, ReactNode, useRef, useCallback, useMemo } from "react";
+import React, { useEffect, ReactNode, useRef, useCallback, useMemo, CSSProperties } from "react";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import {
   AppContext,
@@ -15,85 +15,18 @@ import CurrentPlaylist from "../CurrentPlaylist";
 import { move } from "../../../frontendUtils/arrays";
 import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import { Texture } from "../../../graphql/TextureResolver";
-import { CSSProperties } from "@material-ui/core/styles/withStyles";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { AuthContext } from "../AuthContext";
 import { useClientPersistentState } from "../../../frontendUtils/clientPersistantState";
 import { MusicFileFragments } from "../../../graphql/fragments";
+import { DocumentNode } from "graphql";
 
 interface Props {
   children: ReactNode;
 }
 
-const useStyle = makeStyles((theme) => ({
-  gridContainer: {
-    height: "100vh",
-    display: "flex",
-  },
-  expandedContainer: {
-    [theme.breakpoints.up("md")]: {
-      flexDirection: "row",
-    },
-    [theme.breakpoints.down("sm")]: {
-      flexDirection: "column",
-    },
-  },
-  collapsedContainer: {
-    [theme.breakpoints.up("md")]: {
-      flexDirection: "column",
-    },
-    [theme.breakpoints.down("sm")]: {
-      flexDirection: "column",
-    },
-  },
-  playerGridItem: {
-    zIndex: 2,
-  },
-  detailsGridItem: {
-    flexGrow: 1,
-    [theme.breakpoints.down("sm")]: {
-      maxHeight: "calc(100% - 12.5rem)",
-    }
-  },
-  collapsedDetails: {
-    [theme.breakpoints.up("md")]: {
-      height: 0,
-    },
-    [theme.breakpoints.down("sm")]: {
-      height: "100%",
-    },
-  },
-  expandedDetails: {
-    height: "100%",
-    [theme.breakpoints.up("md")]: {
-      width: 0,
-    },
-  },
-  playerPaper: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-  },
-  expandedPlayer: {
-    [theme.breakpoints.up("md")]: {
-      width: "clamp(25em, 33%, 45em)",
-      padding: "24px",
-      height: "100%",
-    },
-    [theme.breakpoints.down("sm")]: {
-      position: "absolute",
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-    },
-  },
-  collapsedPlayer: {
-    order: 1,
-  },
-}));
+const SxMotionDiv = styled(motion.div)``;
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
@@ -107,7 +40,7 @@ const MUSIC_FILES_COUNT_QUERY = gql`
   }
   
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
-`;
+` as DocumentNode;
 
 const TEXTURE_QUERY = gql`
   query GetTexture {
@@ -118,7 +51,7 @@ const TEXTURE_QUERY = gql`
       url
     }
   }
-`;
+` as DocumentNode;
 
 function getTrackCoverURL(track: Track): string {
   return `/api/files/${track.id}/cover`;
@@ -174,7 +107,7 @@ export default function IndexLayout({ children }: Props) {
     "lyricovaPlayer"
   );
 
-  const styles = useStyle();
+  // const styles = useStyle();
 
   function updateShuffleness(toggle: boolean = false): number[] | null {
     // if        | shuffleMapping is null |  not null
@@ -539,25 +472,59 @@ export default function IndexLayout({ children }: Props) {
       <AppContext playerRef={playerRef} playlist={playlist}>
         <AuthContext noRedirect>
           <AnimatePresence>
-            <motion.div
+            <SxMotionDiv
               layout
-              className={clsx(styles.gridContainer, isCollapsed ? styles.collapsedContainer : styles.expandedContainer)}
+              sx={{
+                height: "100vh",
+                display: "flex",
+                ...(isCollapsed ? {flexDirection: "column"} : {
+                  flexDirection: {xs: "row", md: "column"}
+                })
+              }}
               style={generateBackgroundStyle(playlist.getCurrentSong(), textureURL)}
             >
-              <motion.div layout
-                          className={clsx(styles.playerGridItem, isCollapsed ? styles.collapsedPlayer : styles.expandedPlayer)}>
-                <Paper className={styles.playerPaper}>
+              <SxMotionDiv
+                layout
+                sx={{
+                  zIndex: 2,
+                  ...(isCollapsed ? {order: 1} : {
+                    width: {md: "clamp(25em, 33%, 45em)"},
+                    padding: {md: "24px"},
+                    height: {md: "100%"},
+                    position: {xs: "absolute"},
+                    left: {xs: 0},
+                    right: {xs: 0},
+                    top: {xs: 0},
+                    bottom: {xs: 0},
+                  })
+                }}>
+                <Paper sx={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}>
                   <Player isCollapsed={isCollapsed} setCollapsed={setCollapsed} />
                   {!isCollapsed && <CurrentPlaylist />}
                 </Paper>
-              </motion.div>
-              <motion.div layout
-                          className={clsx(styles.detailsGridItem, isCollapsed ? styles.collapsedDetails : styles.expandedDetails)}>
+              </SxMotionDiv>
+              <SxMotionDiv
+                layout
+                sx={{
+                  flexGrow: 1,
+                  maxHeight: {sm: "calc(100% - 12.5rem)"},
+                  ...(isCollapsed ? {
+                    height: {md: 0, xs: "100%"},
+                  } : {
+                    height: "100%",
+                    width: {xs: 0, md: "auto"},
+                  })
+                }}>
                 <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>
                   {children}
                 </DetailsPanel>
-              </motion.div>
-            </motion.div>
+              </SxMotionDiv>
+            </SxMotionDiv>
           </AnimatePresence>
         </AuthContext>
       </AppContext>

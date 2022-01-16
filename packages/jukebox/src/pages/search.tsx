@@ -10,10 +10,10 @@ import {
   ListItemAvatar,
   StepContent,
   TextField
-} from "@material-ui/core";
+} from "@mui/material";
 import { useNamedState } from "../frontendUtils/hooks";
 import React, { ChangeEvent, FormEvent, ReactNode, useCallback } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { gql, useLazyQuery } from "@apollo/client";
 import { MxGetSearchResult } from "../graphql/DownloadResolver";
 import { MusicFileFragments } from "../graphql/fragments";
@@ -21,7 +21,7 @@ import { MusicFile } from "../models/MusicFile";
 import theme from "../frontendUtils/theme";
 import { Alert } from "@material-ui/lab";
 import ListItemTextWithTime from "../components/public/library/ListItemTextWithTime";
-import SearchIcon from "@material-ui/icons/Search";
+import SearchIcon from "@mui/icons-material/Search";
 import TrackListRow from "../components/public/library/TrackListRow";
 
 const MUSIC_FILE_SEARCH_QUERY = gql`
@@ -34,26 +34,8 @@ const MUSIC_FILE_SEARCH_QUERY = gql`
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
 `;
 
-const useStyles = makeStyles((theme) => ({
-  form: {
-    position: "sticky",
-    top: 0,
-    zIndex: 1,
-  },
-  textField: {
-    backdropFilter: "blur(10px)",
-  },
-  textFieldInput: {
-    fontSize: "2em",
-  },
-  inputLabel: {
-    transform: "translate(14px, 20px) scale(2)",
-  }
-}));
-
 export default function Search() {
   const [searchKeyword, setSearchKeyword] = useNamedState("", "searchKeyword");
-  const styles = useStyles();
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(event.target.value);
@@ -87,16 +69,20 @@ export default function Search() {
   }
 
   return <Box p={4} pt={0}>
-    <form onSubmit={handleSearch} className={styles.form}>
+    <form onSubmit={handleSearch} style={{
+      position: "sticky",
+      top: 0,
+      zIndex: 1,
+    }}>
       <TextField value={searchKeyword} label="Search keywords" variant="filled"
-                 fullWidth margin="none" size="medium" inputProps={{ className: styles.textFieldInput }}
-                 InputLabelProps={{ className: styles.inputLabel }}
+                 fullWidth margin="none" size="medium" inputProps={{ sx: {fontSize: "2em", }}}
+                 InputLabelProps={{ sx: {transform: "translate(14px, 20px) scale(2)",} }}
                  InputProps={{endAdornment: <InputAdornment position="end">
                      <IconButton type="submit" aria-label="search" edge="end">
                        <SearchIcon fontSize="large" />
                      </IconButton>
                    </InputAdornment>}}
-                 className={styles.textField}
+                 sx={{backdropFilter: "blur(10px)",}}
                  onChange={handleChange} />
     </form>
     <List>

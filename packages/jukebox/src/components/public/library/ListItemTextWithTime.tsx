@@ -1,6 +1,6 @@
-import { ListItemText, ListItemTextProps, Typography } from "@material-ui/core";
+import { Box, ListItemText, ListItemTextProps, Typography } from "@mui/material";
 import { ElementType, ReactNode } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import _ from "lodash";
 import * as React from "react";
 import { formatTime } from "../../../frontendUtils/strings";
@@ -9,37 +9,19 @@ interface Props extends ListItemTextProps {
   time: number | null;
 }
 
-const useStyles = makeStyles((theme) => ({
-  row: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  texts: {
-    flexGrow: 1,
-    width: 0,
-    marginRight: theme.spacing(1),
-  },
-  time: {
-    marginRight: theme.spacing(1),
-  }
-}));
-
 export default function ListItemTextWithTime({primary, secondary, time, primaryTypographyProps, secondaryTypographyProps}: Props) {
-  const styles = useStyles();
-
   let timeStr: string = null;
   if (time !== null) {
     timeStr = formatTime(time);
   }
 
   return (
-    <ListItemText className={styles.row} disableTypography>
-      <div className={styles.texts}>
+    <ListItemText sx={{display: "flex", flexDirection: "row", alignItems: "center"}} disableTypography>
+      <Box sx={{flexGrow: 1, width: 0, marginRight: 1}}>
         <Typography variant="body1" {...primaryTypographyProps}>{primary}</Typography>
         <Typography variant="body2" color="textSecondary" {...secondaryTypographyProps}>{secondary}</Typography>
-      </div>
-      {timeStr !== null && <Typography variant="body2" color="textSecondary" className={styles.time}>{timeStr}</Typography>}
+      </Box>
+      {timeStr !== null && <Typography variant="body2" color="textSecondary" sx={{marginRight: 1}}>{timeStr}</Typography>}
     </ListItemText>
   );
 }
