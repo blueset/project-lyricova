@@ -19,7 +19,7 @@ import { MxGetSearchResult } from "../graphql/DownloadResolver";
 import { MusicFileFragments } from "../graphql/fragments";
 import { MusicFile } from "../models/MusicFile";
 import theme from "../frontendUtils/theme";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import ListItemTextWithTime from "../components/public/library/ListItemTextWithTime";
 import SearchIcon from "@mui/icons-material/Search";
 import TrackListRow from "../components/public/library/TrackListRow";

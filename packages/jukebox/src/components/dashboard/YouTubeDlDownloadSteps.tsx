@@ -13,7 +13,7 @@ import { ChangeEvent, Dispatch, FormEvent, ReactNode, SetStateAction, useCallbac
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import filesize from "filesize";
 import { makeStyles } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";

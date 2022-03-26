@@ -4,7 +4,7 @@ import { useAppContext } from "../../../components/public/AppContext";
 import { useAuthContext } from "../../../components/public/AuthContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import { gql, useQuery } from "@apollo/client";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import _ from "lodash";
 import { Box, Chip, IconButton, List, ListItemText, Menu, MenuItem, Stack, Typography } from "@mui/material";
 import filesize from "filesize";

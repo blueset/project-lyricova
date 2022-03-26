@@ -18,6 +18,8 @@ import mime from "mime";
 import * as Stream from "stream";
 import { downloadFromStream } from "../utils/download";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
+import tempy from "tempy";
+import pLimit from "p-limit";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter(val => !other.has(val)));
@@ -57,7 +59,6 @@ export class MusicFileController {
   }
 
   constructor() {
-    const tempy = (await import("tempy")).default;
     this.uploadDirectory = tempy.directory();
     const coverUpload = multer({
       storage: multer.diskStorage({
@@ -199,7 +200,6 @@ export class MusicFileController {
       console.log("entries deleted.");
 
       // Add new files to database
-      const pLimit = (await import("p-limit")).default;
       const limit = pLimit(10);
 
       const entriesToAdd = await Promise.all(

@@ -13,7 +13,7 @@ import {
   PubSub, Publisher
 } from "type-graphql";
 import { buildSchema } from "type-graphql";
-import { execute, GraphQLString, subscribe } from "graphql";
+import { execute, subscribe } from "graphql";
 import { authChecker } from "./auth";
 import bcrypt from "bcryptjs";
 import _ from "lodash";
@@ -48,9 +48,9 @@ class FooResolver {
   // What is dependency injection ???
   // constructor(private fooService: FooService) {}
 
-  @Query(returns => GraphQLString)
+  @Query(returns => String)
   async hash(@Arg("plaintext") plaintext: string): Promise<string> {
-    return bcrypt.hash(plaintext, 10);
+    return await bcrypt.hash(plaintext, 10);
   }
 
   @Authorized("ADMIN")
@@ -120,29 +120,29 @@ export async function applyApollo(app: Application): Promise<Server> {
     authChecker
   });
 
-
   const httpServer = createServer(app);
 
-  const subscriptionServer = SubscriptionServer.create({
-    // This is the `schema` we just created.
-    schema,
-    // These are imported from `graphql`.
-    execute,
-    subscribe,
-  }, {
-    // This is the `httpServer` we created in a previous step.
-    server: httpServer,
-    // Pass a different path here if your ApolloServer serves at
-    // a different path.
-    path: "/graphql",
-  });
+  // This is blocking next auto refresh
+  // const subscriptionServer = SubscriptionServer.create({
+  //   // This is the `schema` we just created.
+  //   schema,
+  //   // These are imported from `graphql`.
+  //   execute,
+  //   subscribe,
+  // }, {
+  //   // This is the `httpServer` we created in a previous step.
+  //   server: httpServer,
+  //   // Pass a different path here if your ApolloServer serves at
+  //   // a different path.
+  //   path: "/graphql",
+  // });
 
   const apolloServer = new ApolloServer({
     schema,
     plugins: [{
       async serverWillStart() {
         return { async drainServer() {
-          subscriptionServer.close();
+          // subscriptionServer.close();
         }};
       }
     }],
@@ -153,6 +153,8 @@ export async function applyApollo(app: Application): Promise<Server> {
       };
     }
   });
+
+  await apolloServer.start();
 
   apolloServer.applyMiddleware({ app });
 

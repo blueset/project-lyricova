@@ -3,8 +3,7 @@ import { makeStyles } from "@mui/material/styles";
 import { MusicFile } from "../../models/MusicFile";
 import { useRouter } from "next/router";
 import React, { ReactNode, useCallback, useMemo } from "react";
-import { Alert } from "@material-ui/lab";
-import { Avatar, Box, Chip, Divider, Grid, styled, Typography } from "@mui/material";
+import { Avatar, Box, Chip, Divider, Grid, styled, Typography, Alert } from "@mui/material";
 import clsx from "clsx";
 import { Artist } from "../../models/Artist";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -64,7 +63,7 @@ interface Props {
 }
 
 export default function FileSongInfo({ partialFile, fileId }: Props) {
-  const idToQuery = fileId == null ? partialFile.id : fileId;
+  const idToQuery = fileId ?? partialFile.id;
 
   const query = useQuery<{ musicFile: MusicFile }>(SINGLE_FILE_SONG_QUERY, { variables: { id: idToQuery } });
   const router = useRouter();

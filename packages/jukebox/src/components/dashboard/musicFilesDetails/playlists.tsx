@@ -12,7 +12,7 @@ import {
   ListItemText,
   Popover
 } from "@mui/material";
-import { Alert, Skeleton } from "@material-ui/lab";
+import { Alert, Skeleton } from "@mui/material";
 import _ from "lodash";
 import { ReactNode, useCallback, useEffect } from "react";
 import PlaylistAvatar from "../../PlaylistAvatar";
@@ -25,7 +25,7 @@ import AddPlaylistPopoverContent from "../AddPlaylistPopoverContent";
 function SkeletonItem() {
   return <ListItem>
     <ListItemAvatar>
-      <Skeleton variant="rect"><Avatar variant="rounded" /></Skeleton>
+      <Skeleton variant="rectangular"><Avatar variant="rounded" /></Skeleton>
     </ListItemAvatar>
     <ListItemText><Skeleton /></ListItemText>
   </ListItem>;

@@ -1,7 +1,7 @@
 import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout";
 import { useRouter } from "next/router";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import finalFormMutators from "../../../frontendUtils/finalFormMutators";
 import PlaylistAvatar from "../../../components/PlaylistAvatar";
 import { TextField } from "mui-rff";

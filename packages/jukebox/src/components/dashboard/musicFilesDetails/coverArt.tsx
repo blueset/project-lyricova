@@ -213,7 +213,7 @@ export default function CoverArtPanel({
         <Button sx={{marginLeft: 2}} variant="outlined" onClick={setImageUrl(urlField)}>Import</Button>
         <Button sx={{marginLeft: 2}} variant="outlined" component="label">
           Upload
-          <input type="file" hidden onChange={handleFileFieldOnChange} {...getInputProps()} />
+          <input type="file" hidden onChange={handleFileFieldOnChange} {...getInputProps() as unknown} />
         </Button>
       </Box>
     </Grid>

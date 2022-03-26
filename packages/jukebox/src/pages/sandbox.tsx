@@ -1586,14 +1586,12 @@ const gradients = [
 ];
 
 export default function Sandbox() {
-  const [sessionId, setSessionId] = useState("");
-  const [results, setResults] = useState<string[]>([]);
+  // const [sessionId, setSessionId] = useState("");
+  // const [results, setResults] = useState<string[]>([]);
 
-  const apolloClient = useApolloClient();
+  // const apolloClient = useApolloClient();
 
   return <div>
-    Session: {sessionId}, length: {results.length}
-    <button>Run</button>
-    <ul>{results.map((v, idx) => <li key={idx}>{v}</li>)}</ul>
+    content
   </div>;
 }

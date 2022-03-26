@@ -96,6 +96,7 @@ export function PlayButton({ playerRef, playlist, isCollapsed }: Props) {
         size={useSmallSize ? 51 : 60}
         thickness={2.4}
         color="secondary"
+        variant="determinate"
         value={loadProgress}
         className={style.loadProgressSpinner}
       />

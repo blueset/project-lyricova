@@ -1,4 +1,4 @@
-import youtubedl, { Info, Options } from "youtube-dl";
+// import youtubedl, { Info, Options } from "youtube-dl";
 import fs from "fs";
 import Path from "path";
 import { MUSIC_FILES_PATH, MXGET_API_PATH, MXGET_BINARY, QQ_API_PATH, VIDEO_FILES_PATH } from "../utils/secret";
@@ -20,7 +20,6 @@ import {
   Query,
   Resolver, Root, Subscription
 } from "type-graphql";
-import { GraphQLString } from "graphql";
 import { exec, execSync } from "child_process";
 import { findFilesModifiedAfter } from "../utils/fs";
 import sanitize from "sanitize-filename";
@@ -118,7 +117,7 @@ export class YouTubeDlInfo {
   size: number;
 
   @Field(type => GraphQLJSONObject)
-  metadata: Info;
+  metadata: object;
 }
 
 @ObjectType()
@@ -250,134 +249,134 @@ export class DownloadResolver {
     return payload.data;
   }
 
-  @Authorized("ADMIN")
-  @Mutation(returns => YouTubeDLDownloadResponse, { description: "Download video via youtube-dl." })
-  public async youTubeDlDownloadVideo(
-    @Arg("url") url: string,
-    @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
-    @Arg("sessionId", { nullable: true, defaultValue: null }) sessionId: string | null,
-    @PubSub("YOUTUBE_DL_PROGRESS") publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>,
-  ): Promise<YouTubeDlDownloadMessage | YouTubeDlInfo> {
-    // Sadly I had to write my own promise on this sh#t.
-
-    return new Promise((resolve, reject) => {
-      const params = [];
-      if (!overwrite) {
-        params.push("--no-overwrites");
-      }
-      const video = youtubedl(url, params, {});
-
-      let totalSize = 0;
-
-      video.on("info", info => {
-        // console.log("Download started");
-        // console.log("filename: " + info._filename);
-        // console.log("size: " + info.size);
-        // console.log("info", info);
-        filename = filename || info._filename;
-        const fileStream = fs.createWriteStream(Path.resolve(VIDEO_FILES_PATH, filename), { flags: "a" });
-        video.pipe(fileStream);
-        totalSize = info.size;
-        resolve({
-          filename: info._filename,
-          size: info.size,
-          metadata: info,
-        });
-      });
-
-      // Will be called if download was already completed and there is nothing more to download.
-      video.on("complete", info => {
-        // console.log("filename: " + info._filename + " already downloaded.");
-        if (sessionId) this.publishDownloadSuccess(publish, sessionId);
-        resolve({ message: "Already downloaded" });
-      });
-
-      video.on("end", () => {
-        // console.log("finished downloading!");
-        if (sessionId) this.publishDownloadSuccess(publish, sessionId);
-        resolve({ message: "Already downloaded" });
-      });
-
-      let downloaded = 0;
-      video.on("data", (chunk) => {
-        downloaded += (chunk as unknown as Buffer).length;
-        // console.log(`Downloaded ${downloaded} bytes`);
-        if (sessionId) this.publishDownloadProgress(publish, sessionId, downloaded, totalSize);
-      });
-
-      video.on("error", (err) => {
-        // console.error("youtube-dl error", err);
-        if (sessionId) this.publishDownloadFail(publish, sessionId, err);
-        try {
-          reject(err);
-        } catch (e) {
-          console.log(`Error while downloading music ${url}`, e);
-        }
-      });
-    });
-  }
-
-  @Authorized("ADMIN")
-  @Mutation(() => String, { description: "Download audio via youtube-dl.", nullable: true })
-  public async youtubeDlDownloadAudio(
-    @Arg("url") url: string,
-    @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
-  ): Promise<string> {
-    if (!filename) {
-      const info = await promisify(youtubedl.getInfo)(url);
-      filename = info._filename;
-    }
-    filename = swapExt(filename, "$(ext)s");
-    const finalFilename = swapExt(filename, "mp3");
-    const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
-    const format = url.includes("nicovideo") ? "best" : "bestaudio";
-    const params = [
-      "--extract-audio",
-      "--audio-format", "mp3",
-      "-f", format,
-      "--embed-thumbnail",
-      "--add-metadata",
-      "-o", fullPath
-    ];
-    if (!overwrite) {
-      params.push("--no-overwrites");
-    }
-
-    console.log(finalFilename, fullPath, params);
-
-    try {
-      const result = await promisify(youtubedl.exec)(url, params, {});
-      console.log(result);
-      return finalFilename;
-    } catch (e) {
-      console.error("Failed to download music from youtube-dl.", e);
-      return null;
-    }
-  }
-
-  /**
-   * Get video info via youtube-dl.
-   * GET .../youtubedl/info?url=URL_TO_VIDEO
-   */
-  @Authorized("ADMIN")
-  @Query(returns => GraphQLJSONObject)
-  public async youtubeDlGetInfo(@Arg("url") url: string): Promise<Info> {
-    const info = await promisify(youtubedl.getInfo)(url);
-    return info;
-  }
-
-  /**
-   * Get video thumbnail via youtube-dl.
-   * POST .../youtubedl/thumbnails
-   * url=URL_TO_VIDEO
-   */
-  @Authorized("ADMIN")
-  @Query(returns => [GraphQLString])
-  public async youtubeDlGetThumbnail(@Arg("url") url: string): Promise<string[]> {
-    const getThumb = promisify(youtubedl.getThumbs as (url: string, options: Options, callback: (err: unknown, output: string[]) => void) => void);
-    const thumbInfo = await getThumb(url, { all: true });
-    return thumbInfo;
-  }
+  // @Authorized("ADMIN")
+  // @Mutation(returns => YouTubeDLDownloadResponse, { description: "Download video via youtube-dl." })
+  // public async youTubeDlDownloadVideo(
+  //   @Arg("url") url: string,
+  //   @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
+  //   @Arg("sessionId", { nullable: true, defaultValue: null }) sessionId: string | null,
+  //   @PubSub("YOUTUBE_DL_PROGRESS") publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>,
+  // ): Promise<YouTubeDlDownloadMessage | YouTubeDlInfo> {
+  //   // Sadly I had to write my own promise on this sh#t.
+  //
+  //   return new Promise((resolve, reject) => {
+  //     const params = [];
+  //     if (!overwrite) {
+  //       params.push("--no-overwrites");
+  //     }
+  //     const video = youtubedl(url, params, {});
+  //
+  //     let totalSize = 0;
+  //
+  //     video.on("info", info => {
+  //       // console.log("Download started");
+  //       // console.log("filename: " + info._filename);
+  //       // console.log("size: " + info.size);
+  //       // console.log("info", info);
+  //       filename = filename || info._filename;
+  //       const fileStream = fs.createWriteStream(Path.resolve(VIDEO_FILES_PATH, filename), { flags: "a" });
+  //       video.pipe(fileStream);
+  //       totalSize = info.size;
+  //       resolve({
+  //         filename: info._filename,
+  //         size: info.size,
+  //         metadata: info,
+  //       });
+  //     });
+  //
+  //     // Will be called if download was already completed and there is nothing more to download.
+  //     video.on("complete", info => {
+  //       // console.log("filename: " + info._filename + " already downloaded.");
+  //       if (sessionId) this.publishDownloadSuccess(publish, sessionId);
+  //       resolve({ message: "Already downloaded" });
+  //     });
+  //
+  //     video.on("end", () => {
+  //       // console.log("finished downloading!");
+  //       if (sessionId) this.publishDownloadSuccess(publish, sessionId);
+  //       resolve({ message: "Already downloaded" });
+  //     });
+  //
+  //     let downloaded = 0;
+  //     video.on("data", (chunk) => {
+  //       downloaded += (chunk as unknown as Buffer).length;
+  //       // console.log(`Downloaded ${downloaded} bytes`);
+  //       if (sessionId) this.publishDownloadProgress(publish, sessionId, downloaded, totalSize);
+  //     });
+  //
+  //     video.on("error", (err) => {
+  //       // console.error("youtube-dl error", err);
+  //       if (sessionId) this.publishDownloadFail(publish, sessionId, err);
+  //       try {
+  //         reject(err);
+  //       } catch (e) {
+  //         console.log(`Error while downloading music ${url}`, e);
+  //       }
+  //     });
+  //   });
+  // }
+  //
+  // @Authorized("ADMIN")
+  // @Mutation(() => String, { description: "Download audio via youtube-dl.", nullable: true })
+  // public async youtubeDlDownloadAudio(
+  //   @Arg("url") url: string,
+  //   @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
+  // ): Promise<string> {
+  //   if (!filename) {
+  //     const info = await promisify(youtubedl.getInfo)(url);
+  //     filename = info._filename;
+  //   }
+  //   filename = swapExt(filename, "$(ext)s");
+  //   const finalFilename = swapExt(filename, "mp3");
+  //   const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
+  //   const format = url.includes("nicovideo") ? "best" : "bestaudio";
+  //   const params = [
+  //     "--extract-audio",
+  //     "--audio-format", "mp3",
+  //     "-f", format,
+  //     "--embed-thumbnail",
+  //     "--add-metadata",
+  //     "-o", fullPath
+  //   ];
+  //   if (!overwrite) {
+  //     params.push("--no-overwrites");
+  //   }
+  //
+  //   console.log(finalFilename, fullPath, params);
+  //
+  //   try {
+  //     const result = await promisify(youtubedl.exec)(url, params, {});
+  //     console.log(result);
+  //     return finalFilename;
+  //   } catch (e) {
+  //     console.error("Failed to download music from youtube-dl.", e);
+  //     return null;
+  //   }
+  // }
+  //
+  // /**
+  //  * Get video info via youtube-dl.
+  //  * GET .../youtubedl/info?url=URL_TO_VIDEO
+  //  */
+  // @Authorized("ADMIN")
+  // @Query(returns => GraphQLJSONObject)
+  // public async youtubeDlGetInfo(@Arg("url") url: string): Promise<Info> {
+  //   const info = await promisify(youtubedl.getInfo)(url);
+  //   return info;
+  // }
+  //
+  // /**
+  //  * Get video thumbnail via youtube-dl.
+  //  * POST .../youtubedl/thumbnails
+  //  * url=URL_TO_VIDEO
+  //  */
+  // @Authorized("ADMIN")
+  // @Query(returns => [String])
+  // public async youtubeDlGetThumbnail(@Arg("url") url: string): Promise<string[]> {
+  //   const getThumb = promisify(youtubedl.getThumbs as (url: string, options: Options, callback: (err: unknown, output: string[]) => void) => void);
+  //   const thumbInfo = await getThumb(url, { all: true });
+  //   return thumbInfo;
+  // }
 
   private async prepareMusicDlPythonSession(): Promise<PythonBridge> {
     const python = pythonBridge({ python: "/usr/local/bin/python3" });
@@ -449,7 +448,7 @@ def download():
    * <Encrypted pickle data>
    */
   @Authorized("ADMIN")
-  @Mutation(returns => GraphQLString, {
+  @Mutation(returns => String, {
     nullable: true,
     description: "Download a file via music-dl and return the path downloaded."
   })
@@ -491,7 +490,7 @@ def download():
   }
 
   @Authorized("ADMIN")
-  @Mutation(returns => GraphQLString, {
+  @Mutation(returns => String, {
     nullable: true,
     description: "Download a file via MxGet and return the path downloaded."
   })

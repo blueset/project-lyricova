@@ -4,7 +4,7 @@ import { AppBar, Button, Card, CardActions, Divider, Tab, Tabs } from "@mui/mate
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { makeStyles } from "@mui/material/styles";
-import { TabContext, TabPanel } from "@material-ui/lab";
+import { TabContext, TabPanel } from "@mui/lab";
 import InfoPanel from "./musicFilesDetails/info";
 import { SongFragments } from "../../graphql/fragments";
 import CoverArtPanel from "./musicFilesDetails/coverArt";
@@ -172,10 +172,10 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
       <CardActions>
         <Button
           disabled={!fileData.data || submittingReview}
-          color={(fileData.data?.musicFile.needReview ?? false) ? "secondary" : null}
+          color={(fileData.data?.musicFile.needReview ?? false) ? "secondary" : "inherit"}
           onClick={toggleReviewStatus}
         >
-          {fileData.data?.musicFile.needReview ? "Mark as reviewed" : "Mark as need review"}
+          {`${fileData.data?.musicFile.needReview ? "Mark as reviewed" : "Mark as need review"}`}
         </Button>
       </CardActions>
     </Card>

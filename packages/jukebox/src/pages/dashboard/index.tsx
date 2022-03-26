@@ -106,9 +106,9 @@ function PercentageCard({title, value, total, className}: PercentageCardProps) {
     valueText = <>{value}<small>/{total}</small></>;
     rotator = (
       <Box position="relative" display="inline-flex" className="rotator" sx={{float: "right"}}>
-        <CircularProgress size="6em" value={100} thickness={5} className="background"
-                          sx={{color: "grey.700"}}/>
-        <CircularProgress size="6em" value={percentage} thickness={5} className="foreground"
+        <CircularProgress size="6em" value={100} thickness={5} className="background" variant="determinate"
+                          sx={{color: "grey.800"}}/>
+        <CircularProgress size="6em" value={percentage} thickness={5} className="foreground" variant="determinate"
                           sx={{strokeLinecap: "round", position: "absolute",}}/>
         <Box
           top={0}

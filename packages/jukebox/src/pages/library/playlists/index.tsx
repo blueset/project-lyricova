@@ -4,7 +4,7 @@ import { VDBArtistType } from "../../../types/vocadb";
 import { gql, useQuery } from "@apollo/client";
 import { makeStyles } from "@mui/material/styles";
 import { Artist } from "../../../models/Artist";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import { Avatar, Box, ButtonBase, Divider, Grid, Typography } from "@mui/material";
 import { NextComposedLink } from "../../../components/Link";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";

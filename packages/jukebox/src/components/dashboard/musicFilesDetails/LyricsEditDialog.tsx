@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import { TabContext, TabPanel } from "@material-ui/lab";
+import { TabContext, TabPanel } from "@mui/lab";
 import LyricsPreview from "./LyricsPreview";
 import { Lyrics } from "lyrics-kit";
 import { useSnackbar } from "notistack";

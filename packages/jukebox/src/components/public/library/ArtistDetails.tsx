@@ -6,7 +6,7 @@ import React from "react";
 import { useRouter } from "next/router";
 import { makeStyles } from "@mui/material/styles";
 import { Artist } from "../../../models/Artist";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import _ from "lodash";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import filesize from "filesize";

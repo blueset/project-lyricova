@@ -58,15 +58,15 @@ function CurrentPlaylistItem({
   return (
     <ListItem
       ref={provided.innerRef}
+      {...provided.draggableProps}
       ContainerProps={{
-        ...provided.draggableProps,
         style: {
-          ...style,
-          ...provided.draggableProps.style,
           opacity: index < playlist.nowPlaying ? 0.375 : 1,
         },
       }}
       style={{
+        ...style,
+        ...provided.draggableProps.style,
         height: 60,
       }}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -82,10 +82,13 @@ function CurrentPlaylistItem({
       }
     >
       <ListItemButton>
-        <ListItemIcon style={{ zIndex: 10 }} {...provided.dragHandleProps}>
+        <ListItemIcon style={{ zIndex: 10 }}
+                      {...provided.dragHandleProps}
+        >
           <DragHandleIcon />
         </ListItemIcon>
         <ListItemText
+          sx={{width: 0, mr: 8}}
           primary={track.trackName || "No title"}
           primaryTypographyProps={{ noWrap: true }}
           secondary={track.artistName || "Unknown artist"}
@@ -187,19 +190,21 @@ export default function CurrentPlaylist() {
 
   const listRef = useRef<FixedSizeList>();
   useEffect(() => {
-    console.log("listref current", listRef.current, "nowplaying", playlist.nowPlaying);
+    // console.log("listref current", listRef.current, "nowplaying", playlist.nowPlaying);
     if (listRef.current && playlist.nowPlaying !== null) {
-      console.log("SCROLL!!");
+      // console.log("SCROLL!!");
       listRef.current.scrollToItem(playlist.nowPlaying, "start");
     }
   }, [playlist.nowPlaying, playlist.tracks]);
 
-  console.log("initial scroll offset", playlist.nowPlaying ? playlist.nowPlaying * 60 : 0);
+  // console.log("initial scroll offset", playlist.nowPlaying ? playlist.nowPlaying * 60 : 0);
 
   return (
     <List dense={true} className={style.playlist}>
       <AutoResizer>
         {({ height, width }) => (
+          // console.log([height, width]);
+          // return (
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable
               droppableId="droppable-currentPlaylist"
@@ -215,9 +220,9 @@ export default function CurrentPlaylist() {
                     isDragging={snapshot.isDragging}
                     provided={provided}
                   />
-                )}
-            >
-              {(droppableProvided: DroppableProvided) => (
+                 )}
+             >
+            {(droppableProvided: DroppableProvided) => (
                 <FixedSizeList
                   ref={listRef}
                   height={height}

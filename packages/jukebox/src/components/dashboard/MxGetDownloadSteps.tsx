@@ -21,7 +21,7 @@ import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import { MxGetSearchResult } from "../../graphql/DownloadResolver";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { blue, lightBlue, lightGreen, orange, pink, red, yellow } from "@mui/material/colors";
 import CheckIcon from "@mui/icons-material/Check";

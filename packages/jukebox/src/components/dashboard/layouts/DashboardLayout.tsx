@@ -13,7 +13,7 @@ import {
   Menu,
   MenuItem,
   Avatar,
-  ListSubheader, CSSObject, styled, Box
+  ListSubheader, CSSObject, styled, Box, ListItemButton
 } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
@@ -120,7 +120,7 @@ function NavMenuItem({href, text, icon, activeCriteria, as, prefixMatch}: NavMen
   const router = useRouter();
   const criteria = activeCriteria || ((v: string) => (prefixMatch ? v.startsWith(href) : v === href));
 
-  return <ListItem button
+  return <ListItemButton
                    component={NextComposedLink}
                    selected={criteria(router.pathname)}
                    href={href}
@@ -128,7 +128,7 @@ function NavMenuItem({href, text, icon, activeCriteria, as, prefixMatch}: NavMen
   >
     {icon && <ListItemIcon>{icon}</ListItemIcon>}
     <ListItemText primary={text}/>
-  </ListItem>;
+  </ListItemButton>;
 }
 
 interface Props {
@@ -218,7 +218,7 @@ export default function DashboardLayout({title, children}: Props) {
             >
               <MenuIcon/>
             </IconButton>
-            <Typography variant="h6" component="div" noWrap>
+            <Typography variant="h6" component="div" sx={{flexGrow: 1}} noWrap>
               {title}
             </Typography>
             <IconButton

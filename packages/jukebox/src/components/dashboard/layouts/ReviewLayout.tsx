@@ -3,7 +3,7 @@ import { Box, makeStyles, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import {getLayout as getDashboardLayout} from "./DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
-import Alert from "@material-ui/lab/Alert";
+import Alert from "@mui/material/Alert";
 import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";

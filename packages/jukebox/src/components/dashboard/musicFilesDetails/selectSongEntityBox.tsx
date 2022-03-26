@@ -2,13 +2,12 @@ import {
   AutocompleteRenderInputParams,
   Avatar,
   Box,
-  Chip,
+  Chip, FilterOptionsState,
   Grid,
   IconButton, Stack, TextField,
   TextField as MuiTextField,
   Typography
 } from "@mui/material";
-import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { Song } from "../../../models/Song";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useEffect } from "react";

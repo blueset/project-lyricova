@@ -17,7 +17,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { makeStyles } from "@mui/material/styles";
 import { gql, useQuery } from "@apollo/client";
 import { AlbumFragments, MusicFileFragments } from "../../../graphql/fragments";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import React, { Fragment } from "react";
 import { Album } from "../../../models/Album";
 import _ from "lodash";

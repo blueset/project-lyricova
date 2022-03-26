@@ -21,7 +21,7 @@ import { PartialFindResult, ArtistForApiContract } from "../../../types/vocadb";
 import _ from "lodash";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { Skeleton } from "@material-ui/lab";
+import { Skeleton } from "@mui/material";
 import { makeStyles } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
@@ -179,7 +179,7 @@ export default function VocaDBSearchArtistDialog({ isOpen, toggleOpen, keyword, 
           ) : _.range(5).map(v => (
             <ListItem key={v}>
               <ListItemAvatar>
-                <Skeleton variant="rect"><Avatar variant="rounded" /></Skeleton>
+                <Skeleton variant="rectangular"><Avatar variant="rounded" /></Skeleton>
               </ListItemAvatar>
               <ListItemText
                 primary={<Skeleton />}

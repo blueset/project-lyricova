@@ -1,6 +1,7 @@
 import Link from "../../components/Link";
 import { getLayout } from "../../components/public/layouts/LibraryLayout";
 import {
+  Alert,
   Badge,
   Box,
   Chip,
@@ -10,7 +11,6 @@ import {
   ListItemText,
   Menu, MenuItem,
   Slider,
-  ValueLabelProps
 } from "@mui/material";
 import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
@@ -20,7 +20,6 @@ import { FixedSizeList, ListChildComponentProps, areEqual } from "react-window";
 import { gql, useQuery } from "@apollo/client";
 import { MusicFileFragments } from "../../graphql/fragments";
 import { MusicFilesPagination } from "../../graphql/MusicFileResolver";
-import { Alert } from "@material-ui/lab";
 import React, { cloneElement, useMemo, useRef } from "react";
 import { MusicFile } from "../../models/MusicFile";
 import _ from "lodash";
@@ -64,7 +63,7 @@ const SxSliderLabel = {
   color: "common.white",
 };
 
-function SliderLabel(props: ValueLabelProps) {
+function SliderLabel(props: any) {
   const labelRef = useRef<HTMLDivElement>();
 
   if (!props.open) return props.children;

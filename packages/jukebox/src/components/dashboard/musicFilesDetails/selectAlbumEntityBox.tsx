@@ -1,7 +1,7 @@
 import {
   AutocompleteRenderInputParams,
   Avatar,
-  Box,
+  Box, FilterOptionsState,
   Grid,
   IconButton,
   Stack,
@@ -9,7 +9,6 @@ import {
   TextField as MuiTextField,
   Typography
 } from "@mui/material";
-import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useCallback, useEffect } from "react";
 import _ from "lodash";

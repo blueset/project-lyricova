@@ -1,7 +1,7 @@
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
 import { makeStyles } from "@mui/material/styles";
 import { gql, useQuery } from "@apollo/client";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import React, { ReactNode } from "react";
 import { Album } from "../../../models/Album";
 import { Avatar, Box, ButtonBase, Grid, Typography } from "@mui/material";

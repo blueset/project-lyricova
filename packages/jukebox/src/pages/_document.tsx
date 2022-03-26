@@ -5,9 +5,14 @@ import Document, {
   Main,
   NextScript,
 } from "next/document";
-import { ServerStyleSheets } from "@mui/styles";
 import React from "react";
 import theme from "../frontendUtils/theme";
+import createCache from "@emotion/cache";
+import createEmotionServer from "@emotion/server/create-instance";
+
+function createEmotionCache() {
+  return createCache({ key: 'css', prepend: true });
+}
 
 class MyDocument extends Document {
   render() {
@@ -54,24 +59,34 @@ class MyDocument extends Document {
     // 3. app.render
     // 4. page.render
 
-    // Render app and page and get the context of the page with collected side effects.
-    const sheets = new ServerStyleSheets();
     const originalRenderPage = ctx.renderPage;
+    const cache = createEmotionCache();
+    const { extractCriticalToChunks } = createEmotionServer(cache);
 
-    ctx.renderPage = () =>
-      originalRenderPage({
-        enhanceApp: (App) => (props) => sheets.collect(<App {...props} />),
-      });
+    // ctx.renderPage = () =>
+    //   originalRenderPage({
+    //     enhanceApp: (App: any) =>
+    //       (props) =>
+    //         <App emotionCache={cache} {...props} />
+    //   });
 
     const initialProps = await Document.getInitialProps(ctx);
 
+    // This is important. It prevents emotion to render invalid HTML.
+    // See https://github.com/mui/material-ui/issues/26561#issuecomment-855286153
+    const emotionStyles = extractCriticalToChunks(initialProps.html);
+    const emotionStyleTags = emotionStyles.styles.map((style: any) => (
+      <style
+        data-emotion={`${style.key} ${style.ids.join(' ')}`}
+        key={style.key}
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: style.css }}
+      />
+    ));
+
     return {
       ...initialProps,
-      // Styles fragment is rendered after the app and page rendering finish.
-      styles: [
-        sheets.getStyleElement(),
-        ...React.Children.toArray(initialProps.styles),
-      ],
+      emotionStyleTags,
     };
   }
 }

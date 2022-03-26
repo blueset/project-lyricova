@@ -478,7 +478,7 @@ export default function IndexLayout({ children }: Props) {
                 height: "100vh",
                 display: "flex",
                 ...(isCollapsed ? {flexDirection: "column"} : {
-                  flexDirection: {xs: "row", md: "column"}
+                  flexDirection: {xs: "column", md: "row"}
                 })
               }}
               style={generateBackgroundStyle(playlist.getCurrentSong(), textureURL)}
@@ -491,11 +491,11 @@ export default function IndexLayout({ children }: Props) {
                     width: {md: "clamp(25em, 33%, 45em)"},
                     padding: {md: "24px"},
                     height: {md: "100%"},
-                    position: {xs: "absolute"},
-                    left: {xs: 0},
-                    right: {xs: 0},
-                    top: {xs: 0},
-                    bottom: {xs: 0},
+                    position: {xs: "absolute", md: "unset"},
+                    left: {xs: 0, md: "unset"},
+                    right: {xs: 0, md: "unset"},
+                    top: {xs: 0, md: "unset"},
+                    bottom: {xs: 0, md: "unset"},
                   })
                 }}>
                 <Paper sx={{
@@ -512,12 +512,12 @@ export default function IndexLayout({ children }: Props) {
                 layout
                 sx={{
                   flexGrow: 1,
-                  maxHeight: {sm: "calc(100% - 12.5rem)"},
+                  maxHeight: {xs: "calc(100% - 12.5rem)", md: "unset"},
                   ...(isCollapsed ? {
                     height: {md: 0, xs: "100%"},
                   } : {
                     height: "100%",
-                    width: {xs: 0, md: "auto"},
+                    width: 0,
                   })
                 }}>
                 <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>

@@ -1,7 +1,7 @@
 import { VDBArtistType } from "../../../types/vocadb";
 import { gql, useQuery } from "@apollo/client";
 import { Artist } from "../../../models/Artist";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import React from "react";
 import { Avatar, Box, ButtonBase, Divider, Grid, Typography } from "@mui/material";
 import { makeStyles } from "@mui/material/styles";
