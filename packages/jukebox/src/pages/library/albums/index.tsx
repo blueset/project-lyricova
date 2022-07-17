@@ -33,10 +33,10 @@ export default function LibraryAlbums() {
   if (query.error) return <Alert severity="error">Error: {`${query.error}`}</Alert>;
 
   return (
-    <Grid gap={2} sx={{padding: 2}} xs={2} md={4} lg={6} xl={8}>
+    <Grid container spacing={2} sx={{padding: 2}}>
       {query.data.albumsHasFiles.map(val => {
         return (
-          <Box key={val.id} sx={{minWidth: 0}}>
+          <Grid item xs={6} md={3} lg={2} xl={2} key={val.id} sx={{minWidth: 0}}>
             <ButtonBase sx={{width: "100%"}} component={NextComposedLink} href={`/library/albums/${val.id}`}>
               <Avatar sx={{
                 width: "100%",
@@ -59,7 +59,7 @@ export default function LibraryAlbums() {
             </ButtonBase>
             <Typography variant="body2" noWrap>{val.name}</Typography>
             <Typography variant="body2" color="textSecondary" noWrap>{formatArtistsPlainText(val.artists)}</Typography>
-          </Box>
+          </Grid>
         );
       })}
     </Grid>

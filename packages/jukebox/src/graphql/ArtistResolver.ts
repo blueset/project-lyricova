@@ -30,7 +30,10 @@ export class ArtistResolver {
 
   @Query(returns => [Artist])
   public async artists(): Promise<Artist[]> {
-    return Artist.findAll({ order: ["sortOrder"] });
+    return Artist.findAll({
+      order: ["sortOrder"],
+      attributes: { exclude: ["vocaDbJson"] },
+    });
   }
 
   @Query(returns => [Artist])
@@ -45,7 +48,7 @@ export class ArtistResolver {
       order: ["sortOrder"],
       where: {
         [Op.and]: [
-          {type: {[Op.in]: types}},
+          { type: { [Op.in]: types } },
           literal(`(
             SELECT
               COUNT(MusicFiles.id) 
@@ -66,6 +69,7 @@ export class ArtistResolver {
   public async searchArtists(@Arg("keywords") keywords: string): Promise<Artist[]> {
     return Artist.findAll({
       where: literal("match (name, sortOrder) against (:keywords in boolean mode)"),
+      attributes: { exclude: ["vocaDbJson"] },
       replacements: {
         keywords,
       },

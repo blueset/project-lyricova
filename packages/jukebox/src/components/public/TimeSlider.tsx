@@ -69,9 +69,9 @@ export function TimeSlider({ playerRef, disabled, isCollapsed }: Props) {
   } : {width: "100%"}} id="player-time-slider">
     <Slider
       defaultValue={0}
-      value={time}
+      value={isNaN(time) ? 0 : time}
       getAriaValueText={formatTime}
-      max={duration}
+      max={isNaN(duration) ? 0 : duration}
       disabled={disabled}
       onChange={onSliderChange}
       onChangeCommitted={onSliderChangeCommitted}

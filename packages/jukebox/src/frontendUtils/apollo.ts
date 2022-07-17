@@ -21,6 +21,7 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const link = (() => {
+  return authLink.concat(httpLink);
   if (process.browser) {
     const protocol = location.protocol === "http:" ? "ws:" : "wss:";
     const host = location.hostname + (location.port ? ":" + location.port : "");
@@ -56,7 +57,7 @@ const link = (() => {
 
     return splitLink;
   } else {
-    return httpLink;
+    return authLink.concat(httpLink);
   }
 })();
 

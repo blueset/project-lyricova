@@ -76,6 +76,7 @@ export class SongResolver {
   public async searchSongs(@Arg("keywords") keywords: string): Promise<Song[]> {
     return Song.findAll({
       where: literal("match (name, sortOrder) against (:keywords in boolean mode)"),
+      attributes: { exclude: ["vocaDbJson"] },
       replacements: {
         keywords,
       },
@@ -85,7 +86,8 @@ export class SongResolver {
   @Query(returns => [Song])
   public async songs(): Promise<Song[]> {
     return Song.findAll({
-      order: ["sortOrder"]
+      order: ["sortOrder"],
+      attributes: { exclude: ["vocaDbJson"] },
     });
   }
 

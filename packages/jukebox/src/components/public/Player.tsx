@@ -146,13 +146,13 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
           {isCollapsed ? <UnfoldMoreIcon /> : <UnfoldLessIcon />}
         </div>
       </ButtonBase>
-      <Box sx={isFlatPlayer && {marginTop: "-0.3rem", marginBottom: "-0.3rem",}}>
+      <Box sx={isFlatPlayer ? {marginTop: "-0.3rem", marginBottom: "-0.3rem",} : undefined}>
         <Typography variant={isFlatPlayer ? "subtitle1" : "h6"} component={isFlatPlayer ? "span" : null} noWrap={true}>
           {playlist.getCurrentSong()?.trackName || "No title"}
         </Typography>
         {isFlatPlayer && " / "}
         <Typography variant="subtitle1" component={isFlatPlayer ? "span" : null}
-                    sx={isFlatPlayer && {opacity: 0.75,}} noWrap={true}>
+                    sx={{opacity: isFlatPlayer ? 0.75 : 1,}} noWrap={true}>
           {playlist.getCurrentSong()?.artistName || "Unknown artists"}
         </Typography>
       </Box>

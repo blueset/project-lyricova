@@ -137,7 +137,7 @@ CurrentPlaylistItem.defaultProps = {
 
 const Row = React.memo((props: ListChildComponentProps) => {
   const { data, index, style } = props;
-  const item: Track = data[index];
+  const item: Track = data[index] ?? {id: -index};
 
   return (
     <Draggable
@@ -222,21 +222,26 @@ export default function CurrentPlaylist() {
                   />
                  )}
              >
-            {(droppableProvided: DroppableProvided) => (
+            {(droppableProvided: DroppableProvided) => {
+              console.log("playlist now playing", playlist.nowPlaying, "tracks length", tracks.length);
+             return (
                 <FixedSizeList
                   ref={listRef}
                   height={height}
                   width={width}
                   itemSize={60}
                   itemData={tracks}
-                  itemCount={tracks.length}
+                  // tracks.length on load is 0, we need at least `playlist.nowPlaying` plus an offset to ensure that
+                  // the list scrolls to the correct position before we have the data.
+                  itemCount={Math.max(tracks.length, playlist.nowPlaying ? playlist.nowPlaying + 50 : 0)}
                   initialScrollOffset={playlist.nowPlaying ? playlist.nowPlaying * 60 : 0}
                   itemKey={(i, d) => `${i}-${d.id}`}
                   outerRef={droppableProvided.innerRef}
                 >
                   {Row}
                 </FixedSizeList>
-              )}
+              )
+            }}
             </Droppable>
           </DragDropContext>
         )}

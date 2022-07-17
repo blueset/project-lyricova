@@ -36,9 +36,9 @@ export default function Login() {
               body: JSON.stringify(values),
             });
             if (resp.status === 401) {
-              throw new Error("Username and password is not matching.");
+              return {username: "Username and password is not matching."};
             } else if (resp.status !== 200) {
-              throw new Error(`Unknown error occurred (${resp.status} ${resp.statusText})`);
+              return {username: `Unknown error occurred (${resp.status} ${resp.statusText})`};
             } else {
               const token: string = (await resp.json()).token;
               window.localStorage.setItem(LS_JWT_KEY, token);

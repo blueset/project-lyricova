@@ -1,7 +1,7 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { PlayerLyricsKeyframe, PlayerLyricsState, usePlayerLyricsState } from "../../../frontendUtils/hooks";
-import { Box, makeStyles } from "@mui/material";
+import { Box, makeStyles, styled } from "@mui/material";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
 import clsx from "clsx";
@@ -241,23 +241,23 @@ function LyricsLine({ textLine, furiganaLine, done, activeRef }: LyricsLineProps
     fontSize: "3.5rem",
     fontFamily: "\"Source Han Serif\", \"Noto Serif CJK\", \"Noto Serif JP\", serif",
     whiteSpace: "pre",
-    "& > span.after": {
+    "& span.after": {
       color: "primary.dark",
       clipPath: "inset(-30% 102% 0 -2%)",
       "& > span": {
         filter: "url(#nicokaraAfter)",
       },
     },
-    "&.done > span.after": {
+    "&.done span.after": {
       clipPath: ["none", "!important"],
     },
-    "&.pending > span.after": {
+    "&.pending span.after": {
       clipPath: ["inset(-30% 102% -10% -2%)", "!important"],
     },
-    "&.active > span.after": {
+    "&.active span.after": {
       clipPath: "inset(-30% 102% -10% -2%)",
     },
-    "& > span.before": {
+    "& span.before": {
       position: "absolute",
       top: 0,
       left: 0,
@@ -434,6 +434,17 @@ function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana,
   </>;
 }
 
+const MeasureLayer = styled("div")({
+  display: "inline-block",
+  position: "absolute",
+  visibility: "hidden",
+  zIndex: -1,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+});
+
 interface Props {
   lyrics: LyricsKitLyrics;
   blur?: boolean;
@@ -604,16 +615,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           activeRef={activeRef}
           containerWidth={contentRect.bounds.width}
         />
-        <Box id="measure-layer" sx={{
-          display: "inline-block",
-          position: "absolute",
-          visibility: "hidden",
-          zIndex: -1,
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}/>
+        <MeasureLayer id="measure-layer" />
       </Box>
     }</Measure>
   );

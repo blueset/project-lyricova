@@ -14,17 +14,15 @@ const SxMotionDiv = styled(motion.div)``;
 const MAIN_LINE_VARIANTS: Variants = {
   current: {
     marginBottom: 32,
-    fontSize: 14 * 4,
     opacity: 1,
-    width: "100%",
+    scale: 1,
     color: "rgba(255, 255, 255, 0.7)",
     filter: "var(--jukebox-cover-filter-brighter)",
   },
   next: {
-    fontSize: 14 * 2.5,
     opacity: 1,
     marginBottom: 0,
-    width: "62.5%",
+    scale: 0.625,
     color: "rgba(255, 255, 255, 0.4)",
     filter: "var(--jukebox-cover-filter-bright)",
   },
@@ -72,12 +70,14 @@ function LyricsLineElement({ line, isCurrent, animate }: LyricsLineElementProps)
       sx={{
         fontWeight: 600,
         lineHeight: 1.2,
-        fontSize: "2.5em",
+        fontSize: "3.5em",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
-        width: "62.5%",
+        width: "100%",
         color: "rgba(255, 255, 255, 0.4)",
+        transformOrigin: "center left",
+        transform: "scale(0.625)",
         filter: "var(--jukebox-cover-filter-bright)",
         "& > div": {
           display: "block",

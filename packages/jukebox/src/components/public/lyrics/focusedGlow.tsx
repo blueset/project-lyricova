@@ -79,7 +79,7 @@ function LyricsLineElement({ line, animate }: LyricsLineElementProps) {
           maskImage: "url(/images/glowMask.png)",
           maskSize: "200%",
           maskPosition: "0% 0%",
-          animation: "$lyricsGlowEffect 20s linear infinite alternate",
+          animation: "lyricsGlowEffect 20s linear infinite alternate",
         },
         "@keyframes lyricsGlowEffect": {
           from: {

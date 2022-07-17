@@ -77,7 +77,8 @@ export default function PlaylistsPage() {
             title={v.name}
             subtitle={v.slug}
             actionIcon={<Chip label={v.filesCount} color="secondary" size="small"
-                              variant={v.filesCount === 0 ? "outlined" : undefined} sx={{marginRight: 2}} />}
+                              variant={v.filesCount === 0 ? "outlined" : undefined}
+                              sx={{marginRight: 2, lineHeight: 1}} />}
           />
         </ImageListItem>
       </ButtonBase>

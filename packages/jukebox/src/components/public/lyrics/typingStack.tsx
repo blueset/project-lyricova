@@ -30,7 +30,7 @@ export function TypingStackedLyrics({ lyrics }: Props) {
       height: "100%",
       overflow: "hidden",
       display: "flex",
-      justifyContent: "center",
+      justifyContent: "start",
       flexDirection: "column",
       maskBorderImageSource: "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
       maskBorderImageSlice: "0 49% fill",
