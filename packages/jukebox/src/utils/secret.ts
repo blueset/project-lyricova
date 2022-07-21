@@ -35,6 +35,13 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
+export const YTDLP_PATH = process.env["YTDLP_PATH"];
+
+if (!YTDLP_PATH) {
+  logger.error("Path to yt-dlp is not set. Set YTDLP_PATH environment variable.");
+  process.exit(1);
+}
+
 export const MUSIC_FILES_PATH = process.env["MUSIC_FILES_PATH"].endsWith("/")
   ? process.env["MUSIC_FILES_PATH"]
   : process.env["MUSIC_FILES_PATH"] + "/";

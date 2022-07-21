@@ -9,25 +9,24 @@ import { useAuthContext } from "../../public/AuthContext";
 import { useSnackbar } from "notistack";
 
 const CoverAvatar = styled(Avatar)({
-  sx: {
+  width: "100%",
+  height: 0,
+  overflow: "hidden",
+  paddingTop: "100%",
+  position: "relative",
+  marginBottom: 2,
+  "& > img": {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    objectFit: "contain",
     width: "100%",
-    height: 0,
-    overflow: "hidden",
-    paddingTop: "100%",
-    position: "relative",
-    marginBottom: 2,
-    "& > img": {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      objectFit: "contain",
-    },
-    "& > svg": {
-      position: "absolute",
-      top: "calc(50% - 12px)",
-      left: "calc(50% - 12px)",
-    },
-  }
+  },
+  "& > svg": {
+    position: "absolute",
+    top: "calc(50% - 12px)",
+    left: "calc(50% - 12px)",
+  },
 });
 
 interface SelectedImage {

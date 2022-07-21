@@ -20,10 +20,10 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     static marumaru = new LyricsProviderSource(MarumaruProvider);
 
     static allCases = [
-        LyricsProviderSource.netease,
-        LyricsProviderSource.qq,
+        // LyricsProviderSource.netease,
+        // LyricsProviderSource.qq,
         LyricsProviderSource.kugou,
-        LyricsProviderSource.xiami,
+        // LyricsProviderSource.xiami,
         LyricsProviderSource.gecimi,
         LyricsProviderSource.viewLyrics,
         LyricsProviderSource.syair,

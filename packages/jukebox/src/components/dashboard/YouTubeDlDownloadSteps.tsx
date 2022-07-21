@@ -152,7 +152,7 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
     <Stepper activeStep={step} orientation="vertical">
       {firstStep}
       <Step key="youtube-dl-1">
-        <StepLabel>{step <= 1 ? <>Download from <code>youtube-dl</code></> : <>Download
+        <StepLabel>{step <= 1 ? <>Download from <code>yt-dlp</code></> : <>Download
           from <code>{videoURL}</code></>}</StepLabel>
         <StepContent>
           <form onSubmit={handleVerify}>
@@ -182,7 +182,7 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
                          style={{ height: "4em", marginRight: 4, borderRadius: 4, }} />
                     <div>
                       <Typography
-                        variant="body1">{fetchInfoQueryData.fulltitle} ({fetchInfoQueryData._duration_hms})</Typography>
+                        variant="body1">{fetchInfoQueryData.fulltitle} ({fetchInfoQueryData.duration_string})</Typography>
                       <Typography variant="body2" color="textSecondary">{fetchInfoQueryData.uploader}</Typography>
                     </div>
                   </Stack>

@@ -8,8 +8,8 @@ import { LyricsProviderSource } from "../lyricsProviderSource";
 import { SyairResponseSearchResult } from "../types/syair/searchResult";
 import { TITLE } from "../../core/idTagKey";
 
-const SEARCH_URL = "https://syair.info/search";
-const LYRICS_URL = "https://syair.info/";
+const SEARCH_URL = "https://www.lyricsify.com/search";
+const LYRICS_URL = "https://www.lyricsify.com/";
 
 export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
     // static source = LyricsProviderSource.syair;
@@ -36,7 +36,7 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
             }
             const data: string = response.data;
             const $ = cheerio.load(data);
-            return $(".li > a").map((_, x: CheerioElement): SyairResponseSearchResult => { 
+            return $(".li > a.title").map((_, x: CheerioElement): SyairResponseSearchResult => {
                 return { url: $(x).attr("href"), name: $(x).text() }; 
             }).get();
         } catch (e) {
@@ -48,7 +48,7 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
         try {
             const response = await axios.get<string>(token.url, {
                 baseURL: LYRICS_URL,
-                headers: { Referer: "https://syair.info" }
+                headers: { Referer: "https://www.lyricsify.com/" }
             });
             if (response.status !== 200) {
                 console.error(response.data);
@@ -59,21 +59,8 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
                 throw new Error("lyric is empty");
             }
             const $ = cheerio.load(content);
-            const downloadLink = $("a[href*=download]").attr("href");
-            let lyricsText = "";
-            
-            const lyricsRequest = await axios.get<string>(downloadLink, {
-                baseURL: LYRICS_URL,
-                headers: {
-                    "Cookie": response.headers["set-cookie"][0].split(";")[0]
-                }
-            });
-            if (lyricsRequest.data.trim() !== "This URL is invalid or has expired.") {
-                lyricsText = lyricsRequest.data;
-            }
-            if (!lyricsText) {
-                lyricsText = cheerio.load(response.data)(".entry").text();
-            }
+            let lyricsText = $("#entry").text();
+
             lyricsText = lyricsText.replace(/\r\n/g, "\n");
             const lrc = new Lyrics(lyricsText);
             lrc.idTags[TITLE] = lrc.idTags[TITLE] || token.name;

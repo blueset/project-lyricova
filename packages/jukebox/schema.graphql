@@ -459,6 +459,9 @@ type Mutation {
     lyrics: String!
   ): Boolean!
   writeTagsToMusicFile(data: MusicFileInput!, id: Int!): MusicFile!
+
+  """Download audio via youtube-dl."""
+  youtubeDlDownloadAudio(options: YouTubeDlDownloadOptions!, url: String!): String
 }
 
 type MxGetSearchResult {
@@ -534,6 +537,7 @@ type Query {
   startALengthyTask(sessionId: String!): [String!]!
   transliterate(furigana: [[FuriganaLabel!]!] = [], text: String!): TransliterationResult!
   vocaDBLyrics(id: Int!): [VocaDBLyricsEntry!]!
+  youtubeDlGetInfo(url: String!): JSONObject!
 }
 
 type Song {

@@ -1,7 +1,14 @@
 // import youtubedl, { Info, Options } from "youtube-dl";
 import fs from "fs";
 import Path from "path";
-import { MUSIC_FILES_PATH, MXGET_API_PATH, MXGET_BINARY, QQ_API_PATH, VIDEO_FILES_PATH } from "../utils/secret";
+import {
+  MUSIC_FILES_PATH,
+  MXGET_API_PATH,
+  MXGET_BINARY,
+  QQ_API_PATH,
+  VIDEO_FILES_PATH,
+  YTDLP_PATH
+} from "../utils/secret";
 import { promisify } from "util";
 import { pythonBridge, PythonBridge } from "python-bridge";
 import { GraphQLJSONObject } from "graphql-type-json";
@@ -29,6 +36,7 @@ import path from "path";
 import { PubSubSessionPayload } from "./index";
 import { LyricsKitLyricsEntry } from "./LyricsProvidersResolver";
 import { swapExt } from "../utils/path";
+import YTDlpWrap from "yt-dlp-wrap";
 
 function asyncExec(command: string): Promise<{ stderr: string, stdout: string }> {
   return new Promise<{ stderr: string; stdout: string }>((resolve, reject) => {
@@ -315,55 +323,60 @@ export class DownloadResolver {
   //     });
   //   });
   // }
-  //
-  // @Authorized("ADMIN")
-  // @Mutation(() => String, { description: "Download audio via youtube-dl.", nullable: true })
-  // public async youtubeDlDownloadAudio(
-  //   @Arg("url") url: string,
-  //   @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
-  // ): Promise<string> {
-  //   if (!filename) {
-  //     const info = await promisify(youtubedl.getInfo)(url);
-  //     filename = info._filename;
-  //   }
-  //   filename = swapExt(filename, "$(ext)s");
-  //   const finalFilename = swapExt(filename, "mp3");
-  //   const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
-  //   const format = url.includes("nicovideo") ? "best" : "bestaudio";
-  //   const params = [
-  //     "--extract-audio",
-  //     "--audio-format", "mp3",
-  //     "-f", format,
-  //     "--embed-thumbnail",
-  //     "--add-metadata",
-  //     "-o", fullPath
-  //   ];
-  //   if (!overwrite) {
-  //     params.push("--no-overwrites");
-  //   }
-  //
-  //   console.log(finalFilename, fullPath, params);
-  //
-  //   try {
-  //     const result = await promisify(youtubedl.exec)(url, params, {});
-  //     console.log(result);
-  //     return finalFilename;
-  //   } catch (e) {
-  //     console.error("Failed to download music from youtube-dl.", e);
-  //     return null;
-  //   }
-  // }
-  //
-  // /**
-  //  * Get video info via youtube-dl.
-  //  * GET .../youtubedl/info?url=URL_TO_VIDEO
-  //  */
-  // @Authorized("ADMIN")
-  // @Query(returns => GraphQLJSONObject)
-  // public async youtubeDlGetInfo(@Arg("url") url: string): Promise<Info> {
-  //   const info = await promisify(youtubedl.getInfo)(url);
-  //   return info;
-  // }
+
+  @Authorized("ADMIN")
+  @Mutation(() => String, { description: "Download audio via youtube-dl.", nullable: true })
+  public async youtubeDlDownloadAudio(
+    @Arg("url") url: string,
+    @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
+  ): Promise<string> {
+    const ytdlpWrap = new YTDlpWrap(YTDLP_PATH);
+    if (!filename) {
+      const info = await ytdlpWrap.getVideoInfo(url);
+      filename = info.filename;
+    }
+    filename = swapExt(filename, "$(ext)s");
+    const finalFilename = swapExt(filename, "mp3");
+    const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
+    const format = url.includes("nicovideo") ? "best" : "bestaudio";
+    const params = [
+      url,
+      "--extract-audio",
+      "--audio-format", "mp3",
+      "-f", format,
+      "--embed-thumbnail",
+      "--add-metadata",
+      "-o", fullPath
+    ];
+    if (!overwrite) {
+      params.push("--no-overwrites");
+    }
+
+    console.log(finalFilename, fullPath, params);
+
+    try {
+      const result = await ytdlpWrap.execPromise(params);
+      console.log(result);
+      return finalFilename;
+    } catch (e) {
+      console.error("Failed to download music from youtube-dl.", e);
+      return null;
+    }
+  }
+
+  /**
+   * Get video info via yt-dlp.
+   */
+  @Authorized("ADMIN")
+  @Query(returns => GraphQLJSONObject)
+  public async youtubeDlGetInfo(@Arg("url") url: string): Promise<object> {
+    const ytdlpWrap = new YTDlpWrap(YTDLP_PATH);
+    const info = await ytdlpWrap.getVideoInfo(url);
+    // console.log("yt-dlp info", info);
+    if (Array.isArray(info)) throw new Error("Playlist download is not supported yet");
+    return info;
+  }
+
   //
   // /**
   //  * Get video thumbnail via youtube-dl.

@@ -16,9 +16,9 @@ function BlankStepper({ firstStep }: { firstStep: ReactNode }) {
 
 export default function DownloadMusicFile() {
   const [step, setStep] = useNamedState(0, "step");
-  const [chosenSource, setChosenSource] = useNamedState<"youtube-dl" | "music-dl" | "mxget" | null>(null, "chosenSource");
+  const [chosenSource, setChosenSource] = useNamedState<"yt-dlp" | "music-dl" | "mxget" | null>(null, "chosenSource");
 
-  const chooseSource = useCallback((sourceName: "youtube-dl" | "music-dl"| "mxget" ) => () => {
+  const chooseSource = useCallback((sourceName: "yt-dlp" | "music-dl"| "mxget" ) => () => {
     setChosenSource(sourceName);
     setStep(1);
   }, [setStep, setChosenSource]);
@@ -29,7 +29,7 @@ export default function DownloadMusicFile() {
       <StepContent>
         <Typography gutterBottom>You can choose from one of the 3 sources for downloads.</Typography>
         <ButtonRow>
-          <Button variant="outlined" onClick={chooseSource("youtube-dl")}>Youtube-dl</Button>
+          <Button variant="outlined" onClick={chooseSource("yt-dlp")}>yt-dlp</Button>
           <Button variant="outlined" onClick={chooseSource("music-dl")}>Music-dl</Button>
           <Button variant="outlined" onClick={chooseSource("mxget")}>MxGet</Button>
         </ButtonRow>
@@ -37,7 +37,7 @@ export default function DownloadMusicFile() {
     </Step>
   );
 
-  if (chosenSource === "youtube-dl") {
+  if (chosenSource === "yt-dlp") {
     return <YouTubeDlDownloadSteps step={step} setStep={setStep} firstStep={firstStep} />;
   }
   if (chosenSource === "music-dl") {

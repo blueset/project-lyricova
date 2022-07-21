@@ -137,6 +137,7 @@
     "winston": "^3.2.1",
     "youtube-dl-exec": "^2.0.0",
     "youtube-dl-wrap": "^2.1.1",
+    "yt-dlp-wrap": "^2.3.11",
     "yup": "^0.32.11"
   },
   "devDependencies": {

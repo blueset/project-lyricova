@@ -93,6 +93,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
         console.error(outcome.data);
         return [];
       }
+      console.log(outcome);
       return outcome.data.result.songs || [];
     } catch (e) {
       console.error(e);
