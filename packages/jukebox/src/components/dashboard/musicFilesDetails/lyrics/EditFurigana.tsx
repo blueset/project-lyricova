@@ -119,7 +119,7 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
       </Grid>
       <Grid item xs={12} sm={5} sx={{
         position: "sticky",
-        top: 10,
+        top: 60,
         left: 0,
         height: "fit-content",
         zIndex: 2,

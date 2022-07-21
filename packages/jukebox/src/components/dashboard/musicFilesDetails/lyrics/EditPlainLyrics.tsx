@@ -7,7 +7,10 @@ import HMikuWikiSearchDialog from "./HMikuWikiSearchDialog";
 import { Lyrics } from "lyrics-kit";
 import { useSnackbar } from "notistack";
 
-const SpacedButton = styled(Button)({marginRight: 1, marginBottom: 1});
+const SpacedButton = styled(Button)(({theme}) => ({
+  marginRight: theme.spacing(1),
+  marginBottom: theme.spacing(1)
+}));
 
 interface Props {
   lyrics: string;

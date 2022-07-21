@@ -34,6 +34,7 @@ import { Lyrics } from "lyrics-kit";
 import { useCallback, useMemo, useRef } from "react";
 import TooltipIconButton from "../../TooltipIconButton";
 import { DocumentNode } from "graphql";
+import { Subscription } from "zen-observable-ts";
 
 
 const SEARCH_LYRICS_QUERY = gql`
@@ -192,7 +193,12 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
             variables: { sessionId }
           });
           const zenSubscription = subscription.subscribe({
+            start(subscription: Subscription) {
+
+              console.log("subscription started", subscription);
+            },
             next(x) {
+              console.log("subscription event", x);
               if (x.data.lyricsKitSearchIncremental !== null) {
                 setSearchResults((results) => {
                   const arr = [...results, x.data.lyricsKitSearchIncremental];

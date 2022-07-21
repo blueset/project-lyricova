@@ -187,7 +187,7 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
         width: "fit-content",
         zIndex: 1500,
       }} elevation={5}>
-          <form onSubmit={handleFloatingInputConfirm}>
+          <form onSubmit={handleFloatingInputConfirm} style={{display: "flex", alignItems: "center"}}>
           <TextField
               id="outlined-multiline-flexible"
               label={(renderableFurigana[floatingWindow.nodeIdx] as string).slice(floatingWindow.start, floatingWindow.end)}

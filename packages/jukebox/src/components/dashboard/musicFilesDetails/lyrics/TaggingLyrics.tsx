@@ -25,12 +25,12 @@ import DismissibleAlert from "../../DismissibleAlert";
 
 type LinesPerTag = [number, string[]][];
 
-const ControlRow = styled(Stack)({
-  marginBottom: 1,
+const ControlRow = styled(Stack)(({theme}) => ({
+  marginBottom: theme.spacing(1),
   "&:last-child": {
     marginBottom: 0,
   }
-});
+}));
 
 const BLANK_LINE = { index: Infinity, start: Infinity, end: -Infinity, };
 
@@ -322,7 +322,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       } else if (["ArrowUp", "KeyW", "KeyJ", "Up", "W", "w", "J", "j"].includes(codeOrKey)) {
         ev.preventDefault();
         moveCursor(cursor => (cursor || 1) - 1);
-      } else if (["ArrowDown", "KeyS", "KeyK", "Down", "S", "s", "K", "k"].includes(codeOrKey)) {
+      } else if (["ArrowDown", "KeyR", "KeyK", "Down", "r", "r", "K", "k"].includes(codeOrKey)) {
         ev.preventDefault();
         moveCursor(cursor => (cursor || 0) + 1);
       } else if (codeOrKey === "Home") {
@@ -340,7 +340,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       } else if (["ArrowLeft", "KeyA", "KeyH", "Left", "A", "a", "H", "h"].includes(codeOrKey)) {
         ev.preventDefault();
         if (playerRef.current) playerRef.current.currentTime -= 5;
-      } else if (["ArrowRight", "KeyD", "KeyL", "Right", "D", "d", "L", "l"].includes(codeOrKey)) {
+      } else if (["ArrowRight", "KeyS", "KeyL", "Right", "S", "s", "L", "l"].includes(codeOrKey)) {
         ev.preventDefault();
         if (playerRef.current) playerRef.current.currentTime += 5;
       } else if (code === "KeyR" || key === "R" || key === "r") {
@@ -364,17 +364,17 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         top: 0,
         left: 0,
         zIndex: 1,
-        backgroundColor: "background.paper",
+        backgroundColor: "#12121280",
         backdropFilter: "blur(5px)",
         paddingTop: 1,
         paddingBottom: 1,
       }}>
-        <ControlRow direction="row" alignItems="center">
+        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
           <DismissibleAlert severity="warning" collapseProps={{sx: {flexGrow: 1}}}>
-            Switch to another tab to save changes. ↑WJ/↓SK: Navigate; Home/End: First/Last; PgUp/PgDn: +/-10 lines; ←AH/→DL: +/-5 seconds r: Reset rate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; Enter: play/pause).
+            Switch to another tab to save changes. ↑WJ/↓RK: Navigate; Home/End: First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5 seconds R: Reset rate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; Enter: play/pause).
           </DismissibleAlert>
         </ControlRow>
-        <ControlRow direction="row" alignItems="center">
+        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
           <audio ref={playerRef} src={`/api/files/${fileId}/file`} controls style={{flexGrow: 1}} />
           <Typography variant="body1" sx={{marginTop: 2, marginBottom: 2, fontVariantNumeric: "tabular-nums",}}>@{playbackRate.toFixed(2)}x</Typography>
           <FormControlLabel

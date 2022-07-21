@@ -24,7 +24,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
         // LyricsProviderSource.qq,
         LyricsProviderSource.kugou,
         // LyricsProviderSource.xiami,
-        LyricsProviderSource.gecimi,
+        // LyricsProviderSource.gecimi,
         LyricsProviderSource.viewLyrics,
         LyricsProviderSource.syair,
         LyricsProviderSource.marumaru,

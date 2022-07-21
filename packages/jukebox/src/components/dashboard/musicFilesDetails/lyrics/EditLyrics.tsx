@@ -42,7 +42,10 @@ function smartTranslationSeparation(text: string): string {
   return text;
 }
 
-const SpacedButton = styled(Button)({marginRight: 1, marginBottom: 1});
+const SpacedButton = styled(Button)(({theme}) => ({
+  marginRight: theme.spacing(1),
+  marginBottom: theme.spacing(1)
+}));
 
 interface Props {
   lyrics: string;
@@ -69,12 +72,12 @@ export default function EditLyrics({ lyrics, setLyrics, songId, title }: Props) 
 
   return <>
     <Grid container spacing={2}>
-      <Grid item xs={12} lg={4}>
+      <Grid item xs={12} lg={6}>
         <Typography variant="overline" display="block">Load plain text</Typography>
         <SpacedButton variant="outlined" disabled={songId == null} onClick={() => toggleVocaDBDialog(true)}>Load lyrics from VocaDB</SpacedButton>
         <SpacedButton variant="outlined" onClick={() => toggleHMikuWikiDialog(true)}>Search from 初音ミク@wiki</SpacedButton>
       </Grid>
-      <Grid item xs={12} lg={4}>
+      <Grid item xs={12} lg={6}>
         <Typography variant="overline" display="block">Common operations</Typography>
         <SpacedButton variant="outlined" onClick={trimSpaces}>Trim spaces</SpacedButton>
         <SpacedButton variant="outlined" onClick={separateTranslations}>Smart translation extraction</SpacedButton>
