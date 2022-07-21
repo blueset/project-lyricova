@@ -20,10 +20,10 @@ const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
   }
 ` as DocumentNode;
 
-const UpdateButton = styled(Button)({
-  marginRight: 1,
-  marginBottom: 1,
-});
+const UpdateButton = styled(Button)(({theme}) => ({
+  marginRight: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+}));
 
 interface FormProps {
   trackName: string;
