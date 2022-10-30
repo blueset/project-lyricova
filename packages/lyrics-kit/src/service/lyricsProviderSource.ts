@@ -7,6 +7,7 @@ import { GecimiProvider } from "./provider/gecimi";
 import { ViewLyricsProvider } from "./provider/viewLyrics";
 import { SyairProvider } from "./provider/syair";
 import { MarumaruProvider } from "./provider/marumaru";
+import { MusixMatchProvider } from "./provider/musixmatch";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class LyricsProviderSource<T extends LyricsProvider<any>> {
@@ -18,6 +19,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     static viewLyrics = new LyricsProviderSource(ViewLyricsProvider);
     static syair = new LyricsProviderSource(SyairProvider);
     static marumaru = new LyricsProviderSource(MarumaruProvider);
+    static musixmatch = new LyricsProviderSource(MusixMatchProvider);
 
     static allCases = [
         // LyricsProviderSource.netease,
