@@ -145,25 +145,30 @@ export class MusicFileResolver {
     @Arg("sessionId", { nullable: true }) sessionId: string | null,
     @PubSub("MUSIC_FILE_SCAN_PROGRESS") publish: Publisher<PubSubSessionPayload<MusicFilesScanOutcome>>,
   ): Promise<MusicFilesScanOutcome> {
+    const dryRun = false;
     // Load
     const databaseEntries = await MusicFile.findAll({
       attributes: ["id", "path", "fileSize", "hash", "hasLyrics"]
     });
     const filePaths = glob.sync(
-      `${MUSIC_FILES_PATH}/**/*.{mp3,flac,aiff}`,
+      `${MUSIC_FILES_PATH}**/*.{mp3,flac,aiff}`,
       {
         nosort: true,
         nocase: true
       }
     );
     const knownPathsSet: Set<string> = new Set(
-      databaseEntries.map(entry => entry.path)
+      databaseEntries.map(entry => MUSIC_FILES_PATH + entry.path)
     );
     const filePathsSet: Set<string> = new Set(filePaths);
 
     const toAdd = setDifference(filePathsSet, knownPathsSet);
     const toUpdate = setIntersect(knownPathsSet, filePathsSet);
     const toDelete = setDifference(knownPathsSet, filePathsSet);
+
+    // console.log("To add", toAdd);
+    // console.log("To update", toUpdate);
+    // console.log("To delete", toDelete);
 
     const total = toAdd.size + toDelete.size + toUpdate.size;
     const progressObj: MusicFilesScanOutcome = { added: 0, deleted: 0, updated: 0, unchanged: 0, total };
@@ -172,7 +177,7 @@ export class MusicFileResolver {
     console.log(`toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`);
 
     // Remove records from database for removed files
-    if (toDelete.size) {
+    if (toDelete.size && !dryRun) {
       await MusicFile.destroy({ where: { path: { [Op.in]: [...toDelete] } } });
     }
 
@@ -180,44 +185,57 @@ export class MusicFileResolver {
     progressObj.deleted = toDelete.size;
     if (sessionId) await publish({ sessionId, data: progressObj });
 
-
     // Add new files to database
     const limit = pLimit(10);
 
-    const entriesToAdd = await Promise.all(
-      [...toAdd].map(path => limit(async () =>
-        await MusicFile.build({ fullPath: path }).buildSongEntry()
-      ))
-    );
+    if (!dryRun) {
+      const entriesToAdd = await Promise.all(
+        [...toAdd].map(path => limit(async () =>
+          (await MusicFile.build({ fullPath: path }).buildSongEntry())
+        ))
+      );
 
-    console.log("entries_to_add done.");
+      console.log("entries_to_add done.");
 
-    for (const chunk of chunkArray(entriesToAdd)) {
-      await MusicFile.bulkCreate(chunk);
-      progressObj.added += chunk.length;
-      if (sessionId) await publish({ sessionId, data: progressObj });
+      entriesToAdd.map(entry => limit(async() => {
+        await entry.save();
+        if (entry.playlists.length > 0) await entry.$set("playlists", entry.playlists);
+      }));
+      progressObj.added += entriesToAdd.length;
+      // for (const chunk of chunkArray(entriesToAdd)) {
+      //
+      //   // console.log(chunk);
+      //   await MusicFile.bulkCreate(chunk);
+      //   progressObj.added += chunk.length;
+      //   if (sessionId) await publish({ sessionId, data: progressObj });
+      // }
     }
 
     console.log("entries added.");
 
     // update songs into database
     const toUpdateEntries = databaseEntries.filter(entry =>
-      toUpdate.has(entry.path)
+      toUpdate.has(MUSIC_FILES_PATH + entry.path)
     );
-    await Promise.all(
-      toUpdateEntries.map(entry =>
-        limit(async () => {
-          const res = entry.updateSongEntry();
-          if (res === null) progressObj.unchanged++;
-          else progressObj.updated++;
-          if (sessionId && (progressObj.updated + progressObj.unchanged) % 10 === 0) await publish({
-            sessionId,
-            data: progressObj
-          });
-          return res;
-        })
-      )
-    );
+
+    console.log("to Update Entries", toUpdateEntries.length);
+
+    if (!dryRun) {
+      await Promise.all(
+        toUpdateEntries.map(entry =>
+          limit(async () => {
+            const res = await entry.updateSongEntry();
+            // console.log("Result", res);
+            if (res === null) progressObj.unchanged++;
+            else progressObj.updated++;
+            if (sessionId && (progressObj.updated + progressObj.unchanged) % 10 === 0) await publish({
+              sessionId,
+              data: progressObj
+            });
+          })
+        )
+      );
+    }
     await publish({ sessionId, data: progressObj });
 
     console.log("entries updated.");

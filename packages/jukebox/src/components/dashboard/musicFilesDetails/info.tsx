@@ -20,7 +20,7 @@ const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
   }
 ` as DocumentNode;
 
-const UpdateButton = styled(Button)(({theme}) => ({
+const UpdateButton = styled(Button)(({ theme }) => ({
   marginRight: theme.spacing(1),
   marginBottom: theme.spacing(1),
 }));
@@ -43,7 +43,19 @@ interface Props extends FormProps {
 }
 
 export default function InfoPanel(
-  { trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder, song, albumId, path, fileId, refresh, }: Props
+  {
+    trackName,
+    trackSortOrder,
+    artistName,
+    artistSortOrder,
+    albumName,
+    albumSortOrder,
+    song,
+    albumId,
+    path,
+    fileId,
+    refresh,
+  }: Props
 ) {
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
@@ -192,7 +204,7 @@ export default function InfoPanel(
               />
             </Grid>
           </Grid>
-          <Divider sx={{marginTop: 2, marginBottom: 2}} />
+          <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
           <SelectSongEntityBox
             fieldName="song"
             labelName="Linked song"
@@ -285,7 +297,7 @@ export default function InfoPanel(
               </Grid>
             )}
           </Field>
-          <Box sx={{marginTop: 2}}>
+          <Box sx={{ marginTop: 2 }}>
             <Button disabled={submitting} variant="outlined" color="secondary" onClick={handleSubmit}>Save</Button>
           </Box>
         </>

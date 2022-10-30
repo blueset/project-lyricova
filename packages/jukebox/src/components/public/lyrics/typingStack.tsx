@@ -19,7 +19,7 @@ export function TypingStackedLyrics({ lyrics }: Props) {
   if (sequenceQuery.loading) node = <span>loading</span>;
   else if (sequenceQuery.error) node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
   else if (sequenceQuery.data) {
-    node = <div style={{fontSize: "3em", fontWeight: 600,}}>
+    node = <div style={{fontSize: "3em", fontWeight: 600, marginBottom: "0.5rem"}}>
       <span ref={doneRef}/><span ref={typingRef} style={{backgroundColor: "#ffffff80"}} />
     </div>;
   }
@@ -38,15 +38,19 @@ export function TypingStackedLyrics({ lyrics }: Props) {
       maskBoxImageSource: "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
       maskBoxImageSlice: "0 49% fill",
       maskBoxImageWidth: "0 40px",
+      padding: "0 2rem",
+      "-webkit-mask-box-image-source": "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+      "-webkit-mask-box-image-slice": "49% 0 fill",
+      "-webkit-mask-box-image-width": "0 0 40px",
     } as unknown as CSSProperties}>
       {node}
       {sequenceQuery.data && sequenceQuery.data.transliterate.typingSequence.map((v, idx) => {
-        if (idx >= currentFrameId || idx < currentFrameId - 20) return null;
+        if (idx >= currentFrameId || idx < currentFrameId - 30) return null;
         return (
           <Box sx={{
             fontSize: "2em",
             opacity: 0.7,
-            marginBottom: "0.5em",
+            marginBottom: "0.5rem",
           }} key={idx}>
             {v.map((vv) => vv.sequence.length > 0 ? vv.sequence[vv.sequence.length - 1] : "").join("")}
           </Box>

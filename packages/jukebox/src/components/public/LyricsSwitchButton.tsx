@@ -26,7 +26,7 @@ export function LyricsSwitchButton<T>({ module, setModule, moduleNames }: Props<
       variant="outlined"
       color="primary"
       endIcon={<ArrowDropDownIcon />}
-      sx={{position: "absolute", top: 0, right: 2 }}
+      sx={{position: "absolute", top: 0, right: 16 }}
       {...bindTrigger(popupState)}
     >
       {module}

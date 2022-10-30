@@ -15,9 +15,10 @@
     "watch-ts": "tsc -w",
     "build-next": "next build",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
-    "debug": "npm run build && npm run watch-debug",
-    "serve-debug": "nodemon --inspect dist/server.js",
-    "watch-debug": "npm run watch serve-debug"
+    "debug": "npm run build && npm run watch-debug-b",
+    "watch-node-debug": "nodemon --inspect dist/server.js",
+    "watch-debug-b": "npm run watch serve-debug",
+    "watch-debug": "concurrently -n node,tscr -c green,blue npm:watch-node-debug npm:watch-ts"
   },
   "repository": {
     "type": "git",
@@ -97,6 +98,7 @@
     "mysql2": "^2.1.0",
     "next": "^12.1.1",
     "node-id3": "^0.2.1",
+    "nodejieba": "^2.6.0",
     "notistack": "^2.0.3",
     "novel-segment": "^2.7.53",
     "p-limit": "^3.1.0",

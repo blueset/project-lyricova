@@ -10,8 +10,9 @@ import {
   ListItem, ListItemIcon, ListItemSecondaryAction,
   ListItemText,
   Menu, MenuItem,
-  Slider,
+  Slider, Tooltip,
 } from "@mui/material";
+import { SliderValueLabel } from "@mui/material/Slider";
 import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import ButtonRow from "../../components/ButtonRow";
@@ -61,28 +62,18 @@ const SxSliderLabel = {
   textAlign: "center",
   backgroundColor: "primary.dark",
   color: "common.white",
+  borderRadius: "50% 50% 0% 50%",
 };
 
-function SliderLabel(props: any) {
-  const labelRef = useRef<HTMLDivElement>();
+function SliderLabel(props: React.ComponentProps<typeof SliderValueLabel> & {children: React.ReactElement}) {
 
-  if (!props.open) return props.children;
-
-  let labelPosition = {
-    borderRadius: "50% 0 50% 50%",
-    transform: "translateX(-80%) translateY(40%)",
-  };
-  if (labelRef.current?.parentElement?.style?.bottom) {
-    if (parseInt(labelRef.current.parentElement.style.bottom) > 50) {
-      labelPosition = {
-        borderRadius: "50% 50% 0 50%",
-        transform: "translateX(-80%) translateY(-40%)",
-      };
-    }
-  }
-
-  return cloneElement(props.children, {}, <Box sx={{...SxSliderLabel, ...labelPosition} as SxProps}
-                                               ref={labelRef}>{props.value}</Box>);
+  return (
+    <Tooltip enterTouchDelay={0} placement={"left-end"}
+             componentsProps={{tooltip: {sx: SxSliderLabel as SxProps}}}
+             title={props.value}>
+      {props.children}
+    </Tooltip>
+  )
 }
 
 const ITEM_HEIGHT = 60;
@@ -249,8 +240,7 @@ export default function LibraryTracks() {
           components={{ValueLabel: SliderLabel}}
           valueLabelFormat={(x) => {
             const index = _.sortedLastIndexBy(sliderLookup, { index: scrollLength - x, name: "" }, "index") - 1;
-            if (index < 0) return sliderLookup[0].name;
-            return sliderLookup[index].name;
+            return sliderLookup[Math.max(0, index)].name;
           }}
           value={scrollLength - scrollDistance} min={height} max={scrollLength} />
         <List>

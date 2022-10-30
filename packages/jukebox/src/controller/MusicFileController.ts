@@ -169,6 +169,7 @@ export class MusicFileController {
   }
 
   public scan = async (req: Request, res: Response, next: NextFunction) => {
+    const dryRun = false;
     try {
       // Load
       const databaseEntries = await MusicFile.findAll({
@@ -193,7 +194,7 @@ export class MusicFileController {
       console.log(`toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`);
 
       // Remove records from database for removed files
-      if (toDelete.size) {
+      if (toDelete.size && !dryRun) {
         await MusicFile.destroy({ where: { path: { [Op.in]: [...toDelete] } } });
       }
 
@@ -202,29 +203,34 @@ export class MusicFileController {
       // Add new files to database
       const limit = pLimit(10);
 
-      const entriesToAdd = await Promise.all(
-        [...toAdd].map(path => limit(async () => await this.buildSongEntry(path) as Promise<MusicFile>))
-      );
+      if (!dryRun) {
+        const entriesToAdd = await Promise.all(
+          [...toAdd].map(path => limit(async () => await this.buildSongEntry(path) as Promise<MusicFile>))
+        );
 
-      console.log("entries_to_add done.");
+        console.log("entries_to_add done.");
 
-      for (const chunk of chunkArray(entriesToAdd)) {
-        await MusicFile.bulkCreate(chunk);
+        for (const chunk of chunkArray(entriesToAdd)) {
+          await MusicFile.bulkCreate(chunk);
+        }
       }
 
       console.log("entries added.");
 
       // update songs into database
+      console.log("entries updated.");
+
       const toUpdateEntries = databaseEntries.filter(entry =>
         toUpdate.has(entry.path)
       );
-      const updateResults = await Promise.all(
-        toUpdateEntries.map(entry =>
-          limit(async () => this.updateSongEntry(entry))
-        )
-      );
-
-      console.log("entries updated.");
+      let updateResults = [];
+      if (!dryRun) {
+        updateResults = await Promise.all(
+          toUpdateEntries.map(entry =>
+            limit(async () => this.updateSongEntry(entry))
+          )
+        );
+      }
 
       const updatedCount = updateResults.reduce(
         (prev: number, curr) => prev + (curr === null ? 0 : 1),

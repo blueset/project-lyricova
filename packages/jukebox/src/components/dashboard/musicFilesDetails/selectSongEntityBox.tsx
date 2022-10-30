@@ -222,7 +222,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
                     ({value.sortOrder}) #{value.id}
                   </Typography>
                 </div>
-                {value.artists && <Stack direction="row" alignItems="center">
+                {value.artists && <Stack direction="row" alignContent="center" sx={{gap: 1}}>
                   {
                     formatArtists(value.artists, a => a.map(v => (
                       <Chip variant="outlined" size="small" key={v.sortOrder}

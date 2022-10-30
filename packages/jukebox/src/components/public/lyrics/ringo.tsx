@@ -12,6 +12,28 @@ import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 const ANIMATION_THRESHOLD = 0.25;
 
 const SxMotionDiv = styled(motion.div)``;
+const MotionDivLine = styled(motion.div)`
+  font-weight: 600;
+  line-height: 1.2;
+  text-wrap: balance;
+  font-size: 3em;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column-reverse;
+  color: rgba(255, 255, 255, 0.4);
+  --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright) blur(var(--jukebox-ringo-blur-radius));
+  filter: var(--jukebox-cover-filter-bright-blur, blur(var(--jukebox-ringo-blur-radius)));
+  transform-origin: top left;
+  & .translation {
+    display: block;
+    font-size: 0.7em;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+`;
 
 const TRANSLATION_LINE_VARIANTS: Variants = {
   current: {
@@ -27,7 +49,7 @@ const TRANSLATION_LINE_VARIANTS: Variants = {
 
 const TRANSITION: Transition = {
   duration: 0.2,
-  ease: "easeOut",
+  ease: "easeInOut",
 };
 
 interface LyricsLineElementProps {
@@ -48,47 +70,42 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
     opacity: 1,
     height: "auto",
     marginBottom: 50,
-    width: "100%",
+    width: resize ? "72.5%" : "100%",
     fontSize: theme.typography.fontSize * 3,
     transitionEnd: {
-      filter: "var(--jukebox-cover-filter-bright-blur, blur(var(--jukebox-ringo-blur-radius)))",
+      filter: "var(--jukebox-cover-filter-brighter, blur(var(--jukebox-ringo-blur-radius)))",
+      mixBlendMode: "hard-light",
     },
   };
 
   if (offsetIndex === 0) {
     if (resize) {
-      styles.fontSize = theme.typography.fontSize * 5;
+      styles.scale = 1.3;
     } else {
     }
     styles.transitionEnd.filter = "var(--jukebox-cover-filter-brighter)";
     styles.transitionEnd.mixBlendMode = "hard-light";
     styles.color = "rgba(255, 255, 255, 0.7)";
   } else {
-    if (resize) {
-      styles.fontSize = 14 * 3;
-      styles.width = "62.5%";
-    }
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     styles["--jukebox-ringo-blur-radius"] = `${0.4 * Math.abs(offsetIndex)}px`;
+    styles.opacity = 0.75;
     styles.transitionEnd.mixBlendMode = "overlay";
     styles.color = "rgba(255, 255, 255, 0.4)";
     if (offsetIndex < 0) {
       styles.height = 35;
     }
   }
-
-
+  
   const translationVariants = resize ? TRANSLATION_LINE_VARIANTS : {
     exit: TRANSLATION_LINE_VARIANTS.exit,
   };
 
   return (
-    <SxMotionDiv
+    <MotionDivLine
       lang="ja"
       className={className}
-      sx={sx}
       transition={transition}
       animate={styles}
       exit={{
@@ -120,7 +137,7 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
           )
         }
       </div>
-    </SxMotionDiv >
+    </MotionDivLine>
   );
 }
 
@@ -163,25 +180,6 @@ export function RingoLyrics({ lyrics, resize }: Props) {
           return (
             <LyricsLineElement
               sx={{
-                fontWeight: 600,
-                lineHeight: 1.2,
-                textWrap: "balance",
-                fontSize: "3em",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundAttachment: "fixed",
-                display: "flex",
-                flexDirection: "column-reverse",
-                color: "rgba(255, 255, 255, 0.4)",
-                "--jukebox-cover-filter-bright-blur": "var(--jukebox-cover-filter-bright) blur(var(--jukebox-ringo-blur-radius))",
-                filter: "var(--jukebox-cover-filter-bright-blur, blur(var(--jukebox-ringo-blur-radius)))",
-                "& .translation": {
-                  display: "block",
-                  fontSize: "0.7em",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  backgroundAttachment: "fixed",
-                },
                 ...(resize && {width: "62.5%",})
               } as unknown as CSSProperties}
               className="coverMask"
