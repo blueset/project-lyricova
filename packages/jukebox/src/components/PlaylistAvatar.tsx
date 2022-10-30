@@ -1,4 +1,4 @@
-import { Avatar, AvatarProps, withStyles } from "@material-ui/core";
+import { Avatar, AvatarProps, styled, withStyles } from "@mui/material";
 import _ from "lodash";
 import { useMemo } from "react";
 
@@ -443,11 +443,9 @@ function hash(str: string): number {
   return hash >>> 0;
 }
 
-const StyledAvatar = withStyles({
-  root: {
-    color: "white",
-  },
-})(Avatar);
+const StyledAvatar = styled(Avatar)({
+  color: "white",
+});
 
 interface Props extends AvatarProps {
   name: string;

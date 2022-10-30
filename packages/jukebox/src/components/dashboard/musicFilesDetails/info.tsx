@@ -1,15 +1,16 @@
-import { makeStyles } from "@material-ui/core/styles";
-import { Avatar, Button, Divider, Grid, MenuItem, TextField as MuiTextField } from "@material-ui/core";
+import { makeStyles } from "@mui/material/styles";
+import { Avatar, Box, Button, Divider, Grid, MenuItem, styled, TextField as MuiTextField } from "@mui/material";
 import { gql, useApolloClient } from "@apollo/client";
 import { Song } from "../../../models/Song";
 import SelectSongEntityBox from "./selectSongEntityBox";
 import TransliterationAdornment from "../TransliterationAdornment";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { Field, Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
 import finalFormMutators from "../../../frontendUtils/finalFormMutators";
 import * as yup from "yup";
 import { useSnackbar } from "notistack";
+import { DocumentNode } from "graphql";
 
 const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
   mutation($id: Int!, $data: MusicFileInput!) {
@@ -17,24 +18,11 @@ const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
       trackName
     }
   }
-`;
+` as DocumentNode;
 
-const useStyles = makeStyles((theme) => ({
-  divider: {
-    margin: theme.spacing(2, 0),
-  },
-  formButtons: {
-    marginTop: theme.spacing(2),
-  },
-  listThumbnail: {
-    height: "2em",
-    width: "2em",
-    marginRight: theme.spacing(2),
-  },
-  updateButtons: {
-    marginRight: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  }
+const UpdateButton = styled(Button)(({ theme }) => ({
+  marginRight: theme.spacing(1),
+  marginBottom: theme.spacing(1),
 }));
 
 interface FormProps {
@@ -55,9 +43,20 @@ interface Props extends FormProps {
 }
 
 export default function InfoPanel(
-  { trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder, song, albumId, path, fileId, refresh, }: Props
+  {
+    trackName,
+    trackSortOrder,
+    artistName,
+    artistSortOrder,
+    albumName,
+    albumSortOrder,
+    song,
+    albumId,
+    path,
+    fileId,
+    refresh,
+  }: Props
 ) {
-  const styles = useStyles();
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
 
@@ -72,19 +71,19 @@ export default function InfoPanel(
       validate={makeValidate(yup.object({
         trackName: yup.string(),
         trackSortOrder: yup.string().when("trackName", {
-          is: (v) => !!v,
+          is: (v: string) => !!v,
           then: yup.string().required(),
           otherwise: yup.string().optional()
         }),
         artistName: yup.string(),
         artistSortOrder: yup.string().when("artistName", {
-          is: (v) => !!v,
+          is: (v: string) => !!v,
           then: yup.string().required(),
           otherwise: yup.string().optional()
         }),
         albumName: yup.string(),
         albumSortOrder: yup.string().when("albumName", {
-          is: (v) => !!v,
+          is: (v: string) => !!v,
           then: yup.string().required(),
           otherwise: yup.string().optional()
         }),
@@ -205,7 +204,7 @@ export default function InfoPanel(
               />
             </Grid>
           </Grid>
-          <Divider className={styles.divider} />
+          <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
           <SelectSongEntityBox
             fieldName="song"
             labelName="Linked song"
@@ -239,7 +238,11 @@ export default function InfoPanel(
                             <MenuItem value={v.id} key={v.id}>
                               <Avatar
                                 src={v.coverUrl} variant="rounded"
-                                className={styles.listThumbnail}
+                                sx={{
+                                  height: "2em",
+                                  width: "2em",
+                                  marginRight: 2,
+                                }}
                               >
                                 <MusicNoteIcon />
                               </Avatar>
@@ -250,16 +253,14 @@ export default function InfoPanel(
                       </Select>
                   </Grid>
                   <Grid item xs={12}>
-                      <Button
-                          className={styles.updateButtons}
+                      <UpdateButton
                           variant="outlined"
                           onClick={() => {
                             setValue("trackName", value.name);
                             setValue("trackSortOrder", value.sortOrder);
                           }}
-                      >Update track name</Button>
-                      <Button
-                          className={styles.updateButtons}
+                      >Update track name</UpdateButton>
+                      <UpdateButton
                           variant="outlined"
                           onClick={() => {
                             if (value.artists) {
@@ -279,11 +280,10 @@ export default function InfoPanel(
                               setValue("artistSortOrder", artistSortOrder);
                             }
                           }}
-                      >Update artist name</Button>
+                      >Update artist name</UpdateButton>
                       <Field name="albumId">{
                         ({ input: { value: albumId } }) =>
-                          <Button
-                            className={styles.updateButtons}
+                          <UpdateButton
                             variant="outlined"
                             disabled={albumId == null || albumId === ""}
                             onClick={() => {
@@ -291,15 +291,15 @@ export default function InfoPanel(
                               setValue("albumName", album.name);
                               setValue("albumSortOrder", album.sortOrder);
                             }}
-                          >Update album name</Button>
+                          >Update album name</UpdateButton>
                       }</Field>
                   </Grid>
               </Grid>
             )}
           </Field>
-          <div className={styles.formButtons}>
+          <Box sx={{ marginTop: 2 }}>
             <Button disabled={submitting} variant="outlined" color="secondary" onClick={handleSubmit}>Save</Button>
-          </div>
+          </Box>
         </>
       );
     }}</Form>

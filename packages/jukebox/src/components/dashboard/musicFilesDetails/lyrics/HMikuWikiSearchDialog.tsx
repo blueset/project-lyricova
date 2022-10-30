@@ -3,39 +3,22 @@ import {
   Button,
   Dialog,
   DialogActions, DialogContent,
-  DialogContentText, DialogTitle, InputAdornment,
+  DialogTitle,
   List, ListItem,
-  ListItemSecondaryAction,
   ListItemText,
   Typography
-} from "@material-ui/core";
-import { gql, useApolloClient, useQuery } from "@apollo/client";
+} from "@mui/material";
+import { gql, useApolloClient } from "@apollo/client";
 import {
   HmikuAtWikiSearchResultEntry,
-  LyricsKitLyricsEntry,
-  VocaDBLyricsEntry
 } from "../../../../graphql/LyricsProvidersResolver";
-import Link from "../../../Link";
-import ContentCopyIcon from "@material-ui/icons/ContentCopy";
-import TooltipIconButton from "../../TooltipIconButton";
 import { useSnackbar } from "notistack";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import { TextField } from "mui-rff";
-import clsx from "clsx";
 import { Form } from "react-final-form";
-import { makeStyles } from "@material-ui/core/styles";
 import HMikuWikiResultDialog from "./HMikuWikiResultDialog";
+import { DocumentNode } from "graphql";
 
-const useStyles = makeStyles((theme) => ({
-  form: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  textField: {
-    marginRight: theme.spacing(1),
-  },
-}));
 
 const HMIKU_ATWIKI_LYRICS_QUERY = gql`
   query($keyword: String!) {
@@ -45,7 +28,7 @@ const HMIKU_ATWIKI_LYRICS_QUERY = gql`
       desc
     }
   }
-`;
+` as DocumentNode;
 
 interface FormValues {
   keyword: string;
@@ -62,7 +45,6 @@ export default function HMikuWikiSearchDialog({ isOpen, toggleOpen, keyword }: P
     toggleOpen(false);
   }, [toggleOpen]);
 
-  const styles = useStyles();
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
 
@@ -102,9 +84,13 @@ export default function HMikuWikiSearchDialog({ isOpen, toggleOpen, keyword }: P
               }
             }}
           >
-            {({ submitting, handleSubmit }) => (<form className={styles.form} onSubmit={handleSubmit}>
+            {({ submitting, handleSubmit }) => (<form style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }} onSubmit={handleSubmit}>
               <TextField
-                className={styles.textField}
+                sx={{ marginRight: 1 }}
                 variant="outlined"
                 required
                 fullWidth

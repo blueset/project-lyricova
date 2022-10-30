@@ -1,6 +1,6 @@
-import { Button, Grid, TextField, Typography } from "@material-ui/core";
+import { Button, Grid, styled, TextField, Typography } from "@mui/material";
 import { ChangeEvent, useCallback } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import VocaDBLyricsDialog from "./VocaDBLyricsDialog";
 import HMikuWikiSearchDialog from "./HMikuWikiSearchDialog";
@@ -42,14 +42,9 @@ function smartTranslationSeparation(text: string): string {
   return text;
 }
 
-const useStyle = makeStyles((theme) => ({
-  textField: {
-    fontFamily: "monospace",
-  },
-  button: {
-    marginRight: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  }
+const SpacedButton = styled(Button)(({theme}) => ({
+  marginRight: theme.spacing(1),
+  marginBottom: theme.spacing(1)
 }));
 
 interface Props {
@@ -64,10 +59,8 @@ export default function EditLyrics({ lyrics, setLyrics, songId, title }: Props) 
     setLyrics(event.target.value);
   }, [setLyrics]);
 
-  const styles = useStyle();
-
   const trimSpaces = useCallback(() => {
-    setLyrics(lyrics.replace(/^(\[.+\])(?:[ 　\t]*)(.*?)(?:[ 　\t]*)$/gm, "$1$2"));
+    setLyrics(lyrics.replace(/^(\[.+\])?(?:[ 　\t]*)(.*?)(?:[ 　\t]*)$/gm, "$1$2"));
   }, [lyrics, setLyrics]);
 
   const separateTranslations = useCallback(() => {
@@ -79,16 +72,16 @@ export default function EditLyrics({ lyrics, setLyrics, songId, title }: Props) 
 
   return <>
     <Grid container spacing={2}>
-      <Grid item xs={12} lg={4}>
+      <Grid item xs={12} lg={6}>
         <Typography variant="overline" display="block">Load plain text</Typography>
-        <Button className={styles.button} variant="outlined" disabled={songId == null} onClick={() => toggleVocaDBDialog(true)}>Load lyrics from VocaDB</Button>
-        <Button className={styles.button} variant="outlined" onClick={() => toggleHMikuWikiDialog(true)}>Search from 初音ミク@wiki</Button>
+        <SpacedButton variant="outlined" disabled={songId == null} onClick={() => toggleVocaDBDialog(true)}>Load lyrics from VocaDB</SpacedButton>
+        <SpacedButton variant="outlined" onClick={() => toggleHMikuWikiDialog(true)}>Search from 初音ミク@wiki</SpacedButton>
       </Grid>
-      <Grid item xs={12} lg={4}>
+      <Grid item xs={12} lg={6}>
         <Typography variant="overline" display="block">Common operations</Typography>
-        <Button className={styles.button} variant="outlined" onClick={trimSpaces}>Trim spaces</Button>
-        <Button className={styles.button} variant="outlined" onClick={separateTranslations}>Smart translation extraction</Button>
-        <Button className={styles.button} variant="outlined" onClick={() => setLyrics("")}>Clear</Button>
+        <SpacedButton variant="outlined" onClick={trimSpaces}>Trim spaces</SpacedButton>
+        <SpacedButton variant="outlined" onClick={separateTranslations}>Smart translation extraction</SpacedButton>
+        <SpacedButton variant="outlined" onClick={() => setLyrics("")}>Clear</SpacedButton>
       </Grid>
     </Grid>
     <TextField
@@ -96,7 +89,7 @@ export default function EditLyrics({ lyrics, setLyrics, songId, title }: Props) 
       label="Lyrics source"
       fullWidth
       value={lyrics || ""}
-      inputProps={{ className: styles.textField, lang: "ja" }}
+      inputProps={{ sx: {fontFamily: "monospace"}, lang: "ja" }}
       onChange={handleChange}
       multiline
       variant="outlined"

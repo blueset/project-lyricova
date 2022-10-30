@@ -24,5 +24,5 @@ export class PlaylistController {
       .type("audio/mpegurl")
       .attachment(`${playlist.slug}.m3u8`)
       .send(text);
-  }
+  };
 }

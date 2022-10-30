@@ -3,22 +3,19 @@ import { gql, useQuery } from "@apollo/client";
 import {
   Button,
   ButtonBase,
-  Chip,
-  GridList,
-  GridListTile,
-  GridListTileBar,
+  Chip, ImageList, ImageListItem, ImageListItemBar,
   Popover,
-  Typography
-} from "@material-ui/core";
-import { Alert, Skeleton } from "@material-ui/lab";
-import { makeStyles } from "@material-ui/core/styles";
+} from "@mui/material";
+import { Alert, Skeleton } from "@mui/material";
 import PlaylistAvatar from "../../../components/PlaylistAvatar";
-import { ReactNode } from "react";
+import { CSSProperties, ReactNode } from "react";
 import { NextComposedLink } from "../../../components/Link";
 import _ from "lodash";
 import { bindPopover, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import AddPlaylistPopoverContent from "../../../components/dashboard/AddPlaylistPopoverContent";
-import AddIcon from "@material-ui/icons/Add";
+import AddIcon from "@mui/icons-material/Add";
+import { DocumentNode } from "graphql";
+import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
 const PLAYLISTS_QUERY = gql`
   query {
@@ -28,40 +25,24 @@ const PLAYLISTS_QUERY = gql`
       filesCount
     }
   }
-`;
+` as DocumentNode;
 
-const useStyles = makeStyles((theme) => ({
-  tileWrapper: {
-    width: "100%",
-    height: 0,
-    overflow: "hidden",
-    paddingTop: "100%",
-    position: "relative",
-  },
-  tileBody: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    fontSize: "5vw",
-  },
-  buttonBase: {
-    textAlign: "inherit",
-    "&:hover": {
-      filter: "brightness(1.2)"
-    },
-  },
-  tile: {
-    width: "100%",
-  },
-  chip: {
-    marginRight: theme.spacing(2),
-  },
-  button: {
-    margin: theme.spacing(1),
-  }
-}));
+const SxTileWrapper: CSSProperties = {
+  width: "100%",
+  height: 0,
+  overflow: "hidden",
+  paddingTop: "100%",
+  position: "relative",
+};
+
+const SxTileBody: SxProps = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  fontSize: "5vw",
+};
 
 export default function PlaylistsPage() {
   const playlistsQuery = useQuery<{
@@ -69,7 +50,6 @@ export default function PlaylistsPage() {
       name: string, slug: string, filesCount: number
     }[]
   }>(PLAYLISTS_QUERY);
-  const styles = useStyles();
   const popupState = usePopupState({ variant: "popover", popupId: "add-playlist-popover" });
 
   let elements: ReactNode = "a";
@@ -80,48 +60,55 @@ export default function PlaylistsPage() {
       <ButtonBase
         focusRipple
         key={v.slug}
-        className={styles.buttonBase}
+        sx={{
+          textAlign: "inherit",
+          "&:hover": {
+            filter: "brightness(1.2)"
+          },
+        }}
         component={NextComposedLink}
         href={`/dashboard/playlists/${v.slug}`}
       >
-        <GridListTile className={styles.tile}>
-          <div className={styles.tileWrapper}>
-            <PlaylistAvatar name={v.name} slug={v.slug} className={styles.tileBody} />
+        <ImageListItem sx={{width: "100%"}}>
+          <div style={SxTileWrapper}>
+            <PlaylistAvatar name={v.name} slug={v.slug} sx={SxTileBody} />
           </div>
-          <GridListTileBar
+          <ImageListItemBar
             title={v.name}
             subtitle={v.slug}
-            actionIcon={<Chip label={v.filesCount} color="secondary" size="small" variant={v.filesCount === 0 ? "outlined" : "default"} className={styles.chip} />}
+            actionIcon={<Chip label={v.filesCount} color="secondary" size="small"
+                              variant={v.filesCount === 0 ? "outlined" : undefined}
+                              sx={{marginRight: 2, lineHeight: 1}} />}
           />
-        </GridListTile>
+        </ImageListItem>
       </ButtonBase>
     ));
     console.log("data loaded", elements);
   } else {
-    elements = _.range(6).map(v => <GridListTile key={v}>
-      <div className={styles.tileWrapper}>
-        <Skeleton variant="rect" className={styles.tileBody} />
+    elements = _.range(6).map(v => <ImageListItem key={v}>
+      <div style={SxTileWrapper}>
+        <Skeleton variant="rectangular" sx={SxTileBody} />
       </div>
-      <GridListTileBar
+      <ImageListItemBar
         title={<Skeleton variant="text" />}
         subtitle={<Skeleton variant="text" />}
       />
-    </GridListTile>);
+    </ImageListItem>);
   }
 
   return <div>
-    <GridList cols={6} cellHeight="auto">
-      <GridListTile cols={6}>
+    <ImageList cols={6} rowHeight="auto">
+      <ImageListItem cols={6}>
         <Button
           variant="contained"
           color="secondary"
           startIcon={<AddIcon />}
-          className={styles.button}
+          sx={{margin: 1}}
           {...bindTrigger(popupState)}
         >Create new playlist</Button>
-      </GridListTile>
+      </ImageListItem>
       {elements}
-    </GridList>
+    </ImageList>
   <Popover
     anchorOrigin={{
       vertical: "bottom",

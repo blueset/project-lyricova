@@ -38,8 +38,8 @@ interface GenericMetadata {
   duration: number;
   fileSize: number;
   // formatName?: string;
-  songId: string;
-  albumId: string;
+  songId?: string;
+  albumId?: string;
   playlists: string[];
   lyrics?: string;
 }
@@ -53,7 +53,7 @@ export const ID3_LYRICS_LANGUAGE = "eng";
 
 @ObjectType({ description: "A music file in the jukebox." })
 @Table
-export class MusicFile extends Model<MusicFile> {
+export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   @Field(type => Int, { description: "File ID in database." })
   @AutoIncrement
   @PrimaryKey
@@ -228,7 +228,7 @@ export class MusicFile extends Model<MusicFile> {
       playlists = tags[PLAYLIST_IDS_TAG].split(",");
     }
 
-    return {
+    const columns: GenericMetadata = {
       trackName: tags.title || tags.TITLE || undefined,
       trackSortOrder: tags["title-sort"] || tags.TITLESORT || undefined,
       artistName: tags.artist || tags.ARTIST || undefined,
@@ -239,13 +239,19 @@ export class MusicFile extends Model<MusicFile> {
       hasCover: metadata.streams.some(val => val.codec_type === "video"),
       duration: isNaN(duration) ? -1 : duration,
       fileSize: parseInt(metadata.format.size),
-      songId: tags[SONG_ID_TAG] || undefined,
-      albumId: tags[ALBUM_ID_TAG] || undefined,
-      lyrics: tags[`lyrics-${ID3_LYRICS_LANGUAGE}`] || tags.LYRICS || undefined,
       playlists: playlists,
       // formatName: get(metadata, "format.format_name", ""),
       // playlists: tags[PLAYLIST_IDS_TAG] ? tags[PLAYLIST_IDS_TAG].split(",") : undefined,
     };
+
+    const songId = tags[SONG_ID_TAG] || undefined;
+    if (songId !== undefined) columns.songId = songId;
+    const albumId = tags[ALBUM_ID_TAG] || undefined;
+    if (albumId !== undefined) columns.albumId = albumId;
+    const lyrics = tags[`lyrics-${ID3_LYRICS_LANGUAGE}`] || tags.LYRICS || undefined;
+    if (lyrics !== undefined) columns.lyrics = lyrics;
+
+    return columns;
   }
 
   /** Make a new MusicFile object from file path. */
@@ -258,15 +264,18 @@ export class MusicFile extends Model<MusicFile> {
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
     const hasLyrics = fs.existsSync(lrcPath);
 
+    // console.log(songId, albumId, playlists);
+
     this.set({
       hasLyrics: hasLyrics,
       hash: md5,
       needReview: true,
       ...metadata,
-      songId: songId ? parseInt(songId) : null,
-      albumId: albumId ? parseInt(albumId) : null,
-      playlists: playlists.map(slug => Playlist.build({ slug }, { isNewRecord: false })),
     } as Partial<this>);
+    if (parseInt(songId)) this.set({songId: parseInt(songId)});
+    if (parseInt(albumId)) this.set({songId: parseInt(albumId)});
+
+    this.playlists = playlists.map(slug => Playlist.build({ slug }, { isNewRecord: false }));
 
     return this;
   }

@@ -1,19 +1,15 @@
-import { Avatar, Box, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
-import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
+import { Avatar, Box, Grid, Stack, Typography } from "@mui/material";
 
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import _ from "lodash";
-import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import SearchIcon from "@material-ui/icons/Search";
-import AddCircleIcon from "@material-ui/icons/AddCircle";
-import { makeStyles } from "@material-ui/core/styles";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import { makeStyles } from "@mui/material/styles";
 import { useField, useForm } from "react-final-form";
 import { Autocomplete } from "mui-rff";
 import { MusicFile } from "../../models/MusicFile";
 import { useNamedState } from "../../frontendUtils/hooks";
-import { emit } from "cluster";
+import { DocumentNode } from "graphql";
 
 const LOCAL_ARTIST_ENTITY_QUERY = gql`
   query($text: String!) {
@@ -28,36 +24,7 @@ const LOCAL_ARTIST_ENTITY_QUERY = gql`
       hasCover
     }
   }
-`;
-
-const useStyles = makeStyles((theme) => ({
-  icon: {
-    color: theme.palette.text.secondary,
-    marginRight: theme.spacing(2),
-  },
-  detailsBox: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: theme.spacing(2),
-  },
-  detailsThumbnail: {
-    height: "3em",
-    width: "3em",
-    marginRight: theme.spacing(2),
-  },
-  textBox: {
-    flexGrow: 1,
-  },
-  chipsRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  featLabel: {
-    margin: theme.spacing(0, 1),
-  },
-}));
+` as DocumentNode;
 
 interface Props<T extends string> {
   fieldName: T;
@@ -66,8 +33,6 @@ interface Props<T extends string> {
 }
 
 export default function SelectMusicFileBox<T extends string>({ fieldName, labelName, title, }: Props<T>) {
-  const styles = useStyles();
-
   const apolloClient = useApolloClient();
   const { input: { value } } = useField<MusicFile>(fieldName);
   const setValue = useForm().mutators.setValue;
@@ -126,17 +91,16 @@ export default function SelectMusicFileBox<T extends string>({ fieldName, labelN
             onChange={(event: unknown, newValue: MusicFile | null) => {
               setValue(fieldName, newValue);
             }}
-            renderOption={(option: MusicFile | null) => (
-              <Box display="flex" flexDirection="row" alignItems="center">
+            renderOption={(params, option: MusicFile | null) => (
+              <Stack component="li" {...params} direction="row" alignItems="center">
                 <Avatar src={option.hasCover ? `/api/files/${option.id}/cover` : null}
-                        variant="rounded"
-                        className={styles.icon}><MusicNoteIcon /></Avatar>
-                <Box display="flex" flexDirection="column">
+                        variant="rounded" sx={{color: "text.secondary", marginRight: 2,}}><MusicNoteIcon /></Avatar>
+                <Stack direction="column">
                   <Typography variant="body1">{option.trackName}</Typography>
                   <Typography variant="body2" color="textSecondary">{option.artistName ||
                   <em>Unknown artists</em>} / {option.albumName || <em>Unknown album</em>}</Typography>
-                </Box>
-              </Box>
+                </Stack>
+              </Stack>
             )}
             getOptionLabel={(option: MusicFile | null) => {
               return option.trackName || "";

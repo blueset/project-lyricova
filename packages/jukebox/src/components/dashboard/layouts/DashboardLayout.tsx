@@ -1,12 +1,8 @@
-import {ReactNode, useEffect, MouseEvent} from "react";
+import {ReactNode, useEffect} from "react";
 import {
-  AppBar,
   Toolbar,
   IconButton,
   Typography,
-  makeStyles,
-  Hidden,
-  Drawer,
   Divider,
   List,
   ListItem,
@@ -17,19 +13,20 @@ import {
   Menu,
   MenuItem,
   Avatar,
-  ListSubheader
-} from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/Menu";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import DashboardIcon from "@material-ui/icons/Dashboard";
-import RateReviewIcon from "@material-ui/icons/RateReview";
-import RecentActorsIcon from "@material-ui/icons/RecentActors";
-import AlbumIcon from "@material-ui/icons/Album";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import QueueMusicIcon from "@material-ui/icons/QueueMusic";
-import CachedIcon from "@material-ui/icons/Cached";
-import GetAppIcon from "@material-ui/icons/GetApp";
-import clsx from "clsx";
+  ListSubheader, CSSObject, styled, Box, ListItemButton
+} from "@mui/material";
+import MuiDrawer from "@mui/material/Drawer";
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import MenuIcon from "@mui/icons-material/Menu";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
+import AlbumIcon from "@mui/icons-material/Album";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import QueueMusicIcon from "@mui/icons-material/QueueMusic";
+import CachedIcon from "@mui/icons-material/Cached";
+import GetAppIcon from "@mui/icons-material/GetApp";
 import {useNamedState} from "../../../frontendUtils/hooks";
 import {AuthContext, AuthContextConsumer} from "../../public/AuthContext";
 import {useRouter} from "next/router";
@@ -41,86 +38,74 @@ import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/ho
 const DRAWER_WIDTH = 240;
 const DASHBOARD_TITLE = "Jukebox Dashboard";
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: "flex",
+const openedMixin = (theme: Theme): CSSObject => ({
+  width: DRAWER_WIDTH,
+  transition: theme.transitions.create("width", {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.enteringScreen,
+  }),
+  overflowX: "hidden",
+});
+
+const closedMixin = (theme: Theme): CSSObject => ({
+  transition: theme.transitions.create("width", {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  overflowX: "hidden",
+  width: `calc(${theme.spacing(7)} + 1px)`,
+  [theme.breakpoints.up("sm")]: {
+    width: `calc(${theme.spacing(9)} + 1px)`,
   },
-  toolbar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  appBar: {
-    [theme.breakpoints.up("sm")]: {
-      marginLeft: DRAWER_WIDTH,
-      zIndex: theme.zIndex.drawer + 1,
-      transition: theme.transitions.create(["width", "margin"], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-    },
-  },
-  appBarShift: {
-    [theme.breakpoints.up("sm")]: {
-      marginLeft: DRAWER_WIDTH,
-      width: `calc(100% - ${DRAWER_WIDTH}px)`,
-      transition: theme.transitions.create(["width", "margin"], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-    },
-  },
-  drawerPaper: {
-    width: DRAWER_WIDTH,
-  },
-  drawer: {
-    [theme.breakpoints.up("sm")]: {
-      width: DRAWER_WIDTH,
-      flexShrink: 0,
-      whiteSpace: "nowrap",
-    },
-  },
-  hideToggle: {
-    [theme.breakpoints.up("sm")]: {
-      display: "none",
-    },
-  },
-  drawerOpen: {
-    [theme.breakpoints.up("sm")]: {
-      width: DRAWER_WIDTH,
-      transition: theme.transitions.create("width", {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-    }
-  },
-  drawerClose: {
-    [theme.breakpoints.up("sm")]: {
-      transition: theme.transitions.create("width", {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-      overflowX: "hidden",
-      width: theme.spacing(7) + 1,
-    }
-  },
-  title: {
-    flexGrow: 1,
-  },
-  filler: {
-    flexGrow: 1,
-  },
-  main: {
-    flexGrow: 1,
-    width: 0,
-  },
+});
+
+const DrawerHeader = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
 }));
+
+interface AppBarProps extends MuiAppBarProps {
+  open?: boolean;
+}
+
+const AppBar = styled(MuiAppBar, {
+  shouldForwardProp: (prop) => prop !== "open",
+})<AppBarProps>(({ theme, open }) => ({
+  zIndex: theme.zIndex.drawer + 1,
+  transition: theme.transitions.create(["width", "margin"], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...(open && {
+    marginLeft: DRAWER_WIDTH,
+    width: `calc(100% - ${DRAWER_WIDTH}px)`,
+    transition: theme.transitions.create(["width", "margin"], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  }),
+}));
+
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== "open" })(
+  ({ theme, open }) => ({
+    width: DRAWER_WIDTH,
+    flexShrink: 0,
+    whiteSpace: "nowrap",
+    boxSizing: "border-box",
+    ...(open && {
+      ...openedMixin(theme),
+      "& .MuiDrawer-paper": openedMixin(theme),
+    }),
+    ...(!open && {
+      ...closedMixin(theme),
+      "& .MuiDrawer-paper": closedMixin(theme),
+    }),
+  }),
+);
 
 interface NavMenuItemProps {
   href: string;
@@ -135,7 +120,7 @@ function NavMenuItem({href, text, icon, activeCriteria, as, prefixMatch}: NavMen
   const router = useRouter();
   const criteria = activeCriteria || ((v: string) => (prefixMatch ? v.startsWith(href) : v === href));
 
-  return <ListItem button
+  return <ListItemButton
                    component={NextComposedLink}
                    selected={criteria(router.pathname)}
                    href={href}
@@ -143,7 +128,7 @@ function NavMenuItem({href, text, icon, activeCriteria, as, prefixMatch}: NavMen
   >
     {icon && <ListItemIcon>{icon}</ListItemIcon>}
     <ListItemText primary={text}/>
-  </ListItem>;
+  </ListItemButton>;
 }
 
 interface Props {
@@ -152,7 +137,6 @@ interface Props {
 }
 
 export default function DashboardLayout({title, children}: Props) {
-  const styles = useStyles();
   const router = useRouter();
 
   const container = () => window.document.body || undefined;
@@ -176,11 +160,11 @@ export default function DashboardLayout({title, children}: Props) {
 
   const drawer = (
     <>
-      <div className={styles.toolbar}>
+      <DrawerHeader>
         <IconButton onClick={handleDrawerToggle}>
           <ChevronLeftIcon/>
         </IconButton>
-      </div>
+      </DrawerHeader>
       <Divider/>
       <List>
         <NavMenuItem text="Dashboard" href="/dashboard" icon={<DashboardIcon/>}/>
@@ -199,7 +183,7 @@ export default function DashboardLayout({title, children}: Props) {
         <ListSubheader inset>Files</ListSubheader>
         <NavMenuItem text="Download" href="/dashboard/download" icon={<GetAppIcon/>}/>
       </List>
-      <div className={styles.filler}/>
+      <Box sx={{display: "flex", flexGrow: 1}} />
       <List dense>
         <ListItem>
           <ListItemText inset primaryTypographyProps={{color: "textSecondary"}}>Project Lyricova<br/>since 2013<br/>by
@@ -219,21 +203,22 @@ export default function DashboardLayout({title, children}: Props) {
     </Head>
     <SnackbarProvider maxSnack={4}>
       <AuthContextConsumer>{(userContext) =>
-      <div className={styles.container}>
-        <AppBar position="fixed" className={clsx(styles.appBar, {
-          [styles.appBarShift]: isDrawerOpen,
-        })}>
+      <Box sx={{display: "flex"}}>
+        <AppBar position="fixed" open={isDrawerOpen}>
           <Toolbar>
             <IconButton
               color="inherit"
               aria-label="open drawer"
               edge="start"
-              className={clsx(styles.menuButton, isDrawerOpen && styles.hideToggle)}
               onClick={handleDrawerToggle}
+              sx={{
+                marginRight: "36px",
+                ...(isDrawerOpen && {display: "none"}),
+              }}
             >
               <MenuIcon/>
             </IconButton>
-            <Typography variant="h6" className={styles.title} noWrap>
+            <Typography variant="h6" component="div" sx={{flexGrow: 1}} noWrap>
               {title}
             </Typography>
             <IconButton
@@ -253,7 +238,6 @@ export default function DashboardLayout({title, children}: Props) {
                 vertical: "top",
                 horizontal: "right",
               }}
-              getContentAnchorEl={null}
               {...bindMenu(popupState)}
             >
               <MenuItem onClick={logOut}>
@@ -265,47 +249,17 @@ export default function DashboardLayout({title, children}: Props) {
             </Menu>
           </Toolbar>
         </AppBar>
-        <nav
-          className={clsx(styles.drawer, {
-            [styles.drawerOpen]: isDrawerOpen,
-            [styles.drawerClose]: !isDrawerOpen,
-          })} aria-label="Dashboard menu">
-          <Hidden smUp implementation="js">
-            <Drawer
-              container={container}
-              variant="temporary"
-              open={isDrawerOpen}
-              onClose={handleDrawerToggle}
-              classes={{
-                paper: styles.drawerPaper,
-              }}
-              ModalProps={{
-                keepMounted: true, // Better open performance on mobile.
-              }}
-            >
-              {drawer}
-            </Drawer>
-          </Hidden>
-          <Hidden xsDown implementation="js">
-            <Drawer
-              classes={{
-                paper: clsx({
-                  [styles.drawerOpen]: isDrawerOpen,
-                  [styles.drawerClose]: !isDrawerOpen,
-                }),
-              }}
-              variant="permanent"
-              open
-            >
-              {drawer}
-            </Drawer>
-          </Hidden>
-        </nav>
-        <main className={styles.main}>
-          <div className={styles.toolbar}/>
+        <Drawer
+          variant="permanent"
+          open={isDrawerOpen}
+        >
+          {drawer}
+        </Drawer>
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <DrawerHeader />
           {children}
-        </main>
-      </div>
+        </Box>
+      </Box>
     }</AuthContextConsumer>
     </SnackbarProvider>
   </AuthContext>;

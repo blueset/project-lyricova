@@ -1,5 +1,5 @@
-import { Alert, AlertProps } from "@material-ui/lab";
-import { Collapse, CollapseProps } from "@material-ui/core";
+import { Alert, AlertProps } from "@mui/material";
+import { Collapse, CollapseProps } from "@mui/material";
 import { useState } from "react";
 
 interface Props extends AlertProps {

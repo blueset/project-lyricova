@@ -6,62 +6,30 @@
  */
 import { PlayerState, useNamedState, usePlayerState } from "../../../../frontendUtils/hooks";
 import { useCallback, useEffect, useRef, MouseEvent, ChangeEvent, useMemo } from "react";
-import { fade, makeStyles } from "@material-ui/core/styles";
 import {
+  Box,
   Button,
   FormControlLabel,
   List,
   ListItem,
   ListItemIcon, ListItemSecondaryAction,
-  ListItemText,
+  ListItemText, Stack, styled,
   Switch,
   Typography
-} from "@material-ui/core";
-import EditIcon from "@material-ui/icons/Edit";
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import _ from "lodash";
 import { buildTimeTag, resolveTimeTag } from "lyrics-kit/build/main/utils/regexPattern";
 import { linearRegression } from "simple-statistics";
-import clsx from "clsx";
 import DismissibleAlert from "../../DismissibleAlert";
 
 type LinesPerTag = [number, string[]][];
 
-const useStyles = makeStyles((theme) => ({
-  controls: {
-    position: "sticky",
-    top: 0,
-    left: 0,
-    zIndex: 1,
-    backgroundColor: fade(theme.palette.background.paper, 0.5),
-    backdropFilter: "blur(5px)",
-    padding: theme.spacing(1, 0),
-  },
-  controlsRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: theme.spacing(1),
-    "&:last-child": {
-      marginBottom: 0,
-    }
-  },
-  mainControlItem: {
-    flexGrow: 1,
-  },
-  controlElement: {
-    margin: theme.spacing(0, 2),
-  },
-  lyricsLine: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "start",
-  },
-  tabularNumbers: {
-    fontVariantNumeric: "tabular-nums",
-  },
-  formula: {
-    fontFamily: "serif",
-  },
+const ControlRow = styled(Stack)(({theme}) => ({
+  marginBottom: theme.spacing(1),
+  "&:last-child": {
+    marginBottom: 0,
+  }
 }));
 
 const BLANK_LINE = { index: Infinity, start: Infinity, end: -Infinity, };
@@ -95,7 +63,6 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
   linesPerTagRef.current = linesPerTag;
 
   const playerRef = useRef<HTMLAudioElement>();
-  const styles = useStyles();
   const [playbackRate, setPlaybackRate] = useNamedState(1, "playbackRate");
 
   const listRef = useRef<HTMLUListElement>();
@@ -355,7 +322,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       } else if (["ArrowUp", "KeyW", "KeyJ", "Up", "W", "w", "J", "j"].includes(codeOrKey)) {
         ev.preventDefault();
         moveCursor(cursor => (cursor || 1) - 1);
-      } else if (["ArrowDown", "KeyS", "KeyK", "Down", "S", "s", "K", "k"].includes(codeOrKey)) {
+      } else if (["ArrowDown", "KeyR", "KeyK", "Down", "r", "r", "K", "k"].includes(codeOrKey)) {
         ev.preventDefault();
         moveCursor(cursor => (cursor || 0) + 1);
       } else if (codeOrKey === "Home") {
@@ -373,7 +340,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       } else if (["ArrowLeft", "KeyA", "KeyH", "Left", "A", "a", "H", "h"].includes(codeOrKey)) {
         ev.preventDefault();
         if (playerRef.current) playerRef.current.currentTime -= 5;
-      } else if (["ArrowRight", "KeyD", "KeyL", "Right", "D", "d", "L", "l"].includes(codeOrKey)) {
+      } else if (["ArrowRight", "KeyS", "KeyL", "Right", "S", "s", "L", "l"].includes(codeOrKey)) {
         ev.preventDefault();
         if (playerRef.current) playerRef.current.currentTime += 5;
       } else if (code === "KeyR" || key === "R" || key === "r") {
@@ -392,15 +359,24 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
 
   return <>
     <div>
-      <div className={styles.controls}>
-        <div className={styles.controlsRow}>
-          <DismissibleAlert severity="warning" collapseProps={{className: styles.mainControlItem}}>
-            Switch to another tab to save changes. ↑WJ/↓SK: Navigate; Home/End: First/Last; PgUp/PgDn: +/-10 lines; ←AH/→DL: +/-5 seconds r: Reset rate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; Enter: play/pause).
+      <Box sx={{
+        position: "sticky",
+        top: 0,
+        left: 0,
+        zIndex: 1,
+        backgroundColor: "#12121280",
+        backdropFilter: "blur(5px)",
+        paddingTop: 1,
+        paddingBottom: 1,
+      }}>
+        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
+          <DismissibleAlert severity="warning" collapseProps={{sx: {flexGrow: 1}}}>
+            Switch to another tab to save changes. ↑WJ/↓RK: Navigate; Home/End: First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5 seconds R: Reset rate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; Enter: play/pause).
           </DismissibleAlert>
-        </div>
-        <div className={styles.controlsRow}>
-          <audio ref={playerRef} src={`/api/files/${fileId}/file`} controls className={styles.mainControlItem} />
-          <Typography variant="body1" className={clsx(styles.controlElement, styles.tabularNumbers)}>@{playbackRate.toFixed(2)}x</Typography>
+        </ControlRow>
+        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
+          <audio ref={playerRef} src={`/api/files/${fileId}/file`} controls style={{flexGrow: 1}} />
+          <Typography variant="body1" sx={{marginTop: 2, marginBottom: 2, fontVariantNumeric: "tabular-nums",}}>@{playbackRate.toFixed(2)}x</Typography>
           <FormControlLabel
             control={
               <Switch
@@ -411,14 +387,14 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
             }
             label="Extrapolate mode"
           />
-        </div>
-        {isInExtrapolateMode && <div className={styles.controlsRow}>
-            <span className={styles.controlElement}>
+        </ControlRow>
+        {isInExtrapolateMode && <ControlRow direction="row" alignItems="center">
+            <Box component="span" sx={{marginTop: 2, marginBottom: 2}}>
               {extrapolateTags.reduce((prev, curr) => prev + (curr == null ? 0 : 1), 0)} tags added,{" "}
-              formula: <span className={styles.formula}><var>y</var> = {linearRegressionResult?.m ?? "??"}<var>x</var> + {linearRegressionResult?.b ?? "??"}</span></span>
+              formula: <span style={{fontFamily: "serif"}}><var>y</var> = {linearRegressionResult?.m ?? "??"}<var>x</var> + {linearRegressionResult?.b ?? "??"}</span></Box>
             <Button variant="outlined" color="secondary" disabled={!linearRegressionResult} onClick={applyExtrapolation}>Apply</Button>
-        </div>}
-      </div>
+        </ControlRow>}
+      </Box>
 
 
       <List component="ul" dense ref={listRef}>{linesPerTag.map((v, idx) =>
@@ -427,8 +403,12 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
           {idx === cursor && <ListItemIcon>
               <EditIcon />
           </ListItemIcon>}
-          <ListItemText disableTypography className={styles.lyricsLine} inset={idx !== cursor}>
-            <Typography variant="body1" component="span" display="block" className={styles.tabularNumbers}>
+          <ListItemText disableTypography sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "start",
+          }} inset={idx !== cursor}>
+            <Typography variant="body1" component="span" display="block" sx={{fontVariantNumeric: "tabular-nums",}}>
               {v[0] != undefined ? `[${buildTimeTag(v[0])}]` : ""}
             </Typography>
             <div>{v[1].map((l, lidx) => (
@@ -438,8 +418,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
             ))}</div>
           </ListItemText>
           <ListItemSecondaryAction>
-            <span
-              className={styles.tabularNumbers}>{extrapolateTags[idx] != undefined ? `[${buildTimeTag(extrapolateTags[idx])}]` : ""}</span>
+            <span style={{fontVariantNumeric: "tabular-nums",}}>{extrapolateTags[idx] != undefined ? `[${buildTimeTag(extrapolateTags[idx])}]` : ""}</span>
           </ListItemSecondaryAction>
         </ListItem>
       )}</List>

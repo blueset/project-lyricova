@@ -1,7 +1,7 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { PlayerLyricsKeyframe, PlayerLyricsState, usePlayerLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles } from "@material-ui/core";
+import { Box, makeStyles, styled } from "@mui/material";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
 import clsx from "clsx";
@@ -10,6 +10,7 @@ import Measure from "react-measure";
 import measureElement, { measureTextWidths } from "../../../frontendUtils/measure";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
+import { DocumentNode } from "graphql";
 
 type Timeline = gsap.core.Timeline;
 const COUNTDOWN_DURATION = 3;
@@ -21,7 +22,7 @@ const SEQUENCE_QUERY = gql`
       karaoke
     }
   }
-`;
+` as DocumentNode;
 
 interface SequenceQueryResult {
   transliterate: {
@@ -29,72 +30,6 @@ interface SequenceQueryResult {
     karaoke: [string, string][][];
   };
 }
-
-const useStyle = makeStyles((theme) => {
-  return {
-    container: {
-      padding: theme.spacing(4),
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "flex-end",
-      "& .row": {
-        height: "9rem",
-        display: "flex",
-        flexDirection: "row",
-        position: "relative",
-        alignItems: "flex-end",
-      },
-      "& .countdown": {
-        position: "absolute",
-        top: "-1em",
-        fontSize: "1.5rem",
-        letterSpacing: "0.1em",
-      },
-    },
-    measureLayer: {
-      display: "inline-block",
-      position: "absolute",
-      visibility: "hidden",
-      zIndex: -1,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    },
-    line: {
-      position: "relative",
-      fontWeight: 800,
-      fontSize: "3.5rem",
-      fontFamily: "\"Source Han Serif\", \"Noto Serif CJK\", \"Noto Serif JP\", serif",
-      whiteSpace: "pre",
-      "& > span.after": {
-        color: theme.palette.primary.dark,
-        clipPath: "inset(-30% 102% 0 -2%)",
-        "& > span": {
-          filter: "url(#nicokaraAfter)",
-        },
-      },
-      "&.done > span.after": {
-        clipPath: ["none", "!important"],
-      },
-      "&.pending > span.after": {
-        clipPath: ["inset(-30% 102% -10% -2%)", "!important"],
-      },
-      "&.active > span.after": {
-        clipPath: "inset(-30% 102% -10% -2%)",
-      },
-      "& > span.before": {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        color: "#fff",
-        filter: "url(#nicokaraBefore)",
-      },
-    },
-  };
-});
 
 //#region Page builders
 interface KaraokePage {
@@ -284,14 +219,13 @@ function Countdown({ activeRef, className }: CountdownProps) {
 }
 
 interface LyricsLineProps {
-  className?: string;
   textLine: string;
   furiganaLine?: [string, string][];
   done?: boolean;
   activeRef?: MutableRefObject<HTMLSpanElement>;
 }
 
-function LyricsLine({ textLine, furiganaLine, done, activeRef, className }: LyricsLineProps) {
+function LyricsLine({ textLine, furiganaLine, done, activeRef }: LyricsLineProps) {
   const thisRef = useRef<HTMLSpanElement>();
   const elm = thisRef.current;
   if (elm && (activeRef === null || done)) {
@@ -301,7 +235,36 @@ function LyricsLine({ textLine, furiganaLine, done, activeRef, className }: Lyri
   const content = furiganaLine !== null ?
     <FuriganaLyricsLine transliterationLine={furiganaLine} /> :
     <span>{textLine}</span>;
-  return <div className={clsx(className, done && "done", !done && !activeRef && "pending", activeRef && "active")}>
+  return <Box sx={{
+    position: "relative",
+    fontWeight: 800,
+    fontSize: "3.5rem",
+    fontFamily: "\"Source Han Serif\", \"Noto Serif CJK\", \"Noto Serif JP\", serif",
+    whiteSpace: "pre",
+    "& span.after": {
+      color: "primary.dark",
+      clipPath: "inset(-30% 102% 0 -2%)",
+      "& > span": {
+        filter: "url(#nicokaraAfter)",
+      },
+    },
+    "&.done span.after": {
+      clipPath: ["none", "!important"],
+    },
+    "&.pending span.after": {
+      clipPath: ["inset(-30% 102% -10% -2%)", "!important"],
+    },
+    "&.active span.after": {
+      clipPath: "inset(-30% 102% -10% -2%)",
+    },
+    "& span.before": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      color: "#fff",
+      filter: "url(#nicokaraBefore)",
+    },
+  }} className={clsx(done && "done", !done && !activeRef && "pending", activeRef && "active")}>
     <span className="before">{content}</span>
     <span className="after" ref={(elm) => {
       thisRef.current = elm;
@@ -309,10 +272,10 @@ function LyricsLine({ textLine, furiganaLine, done, activeRef, className }: Lyri
     }}>
       <span>{content}</span>
     </span>
-  </div>;
+  </Box>;
 }
 
-function LyricsLineHTML({ textLine, furiganaLine, className }: LyricsLineProps): string {
+function LyricsLineHTML({ textLine, furiganaLine }: LyricsLineProps): string {
   const content = furiganaLine ?
     furiganaLine.map(([text, ruby]) => {
       if (text === ruby) {
@@ -322,7 +285,7 @@ function LyricsLineHTML({ textLine, furiganaLine, className }: LyricsLineProps):
       }
     }).join("") :
     `<span>${textLine}</span>`;
-  return `<span class="${className}">${content}</span>`;
+  return `<span style="position:relative;font-weight: 800;font-size:3.5rem;font-family: Source Han Serif,Noto Serif CJK,Noto Serif JP,serif;white-space:pre;">${content}</span>`;
 }
 
 const LINE_OVERLAP_FACTOR = 0.1;
@@ -334,12 +297,11 @@ interface PageClassInfo {
   right: number | null;
 }
 
-function buildPageClasses(lines: number[], lyrics: LyricsKitLyrics, furigana: [string, string][][] | null, containerWidth: number, lineClassName: string) {
+function buildPageClasses(lines: number[], lyrics: LyricsKitLyrics, furigana: [string, string][][] | null, containerWidth: number) {
   const lineWidths = lines.map(v =>
     measureElement(LyricsLineHTML({
       textLine: lyrics.lines[v].content,
       furiganaLine: furigana && furigana[v],
-      className: lineClassName
     })).width
   );
 
@@ -393,18 +355,17 @@ interface LyricsScreenProps {
   lyrics: LyricsKitLyrics;
   furigana?: [string, string][][];
   activeRef?: RefObject<HTMLSpanElement>;
-  lineClassName?: string;
 }
 
-function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana, activeRef, containerWidth, lineClassName }: LyricsScreenProps) {
+function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana, activeRef, containerWidth }: LyricsScreenProps) {
   let linesToShow: (PageClassInfo | null)[] = [null, null, null, null];
   let offsetLineIdx = lineIdx;
   showNext = showNext && nextPage && !nextPage.countdown && (nextPage.start - thisPage.end < 1);
 
   if (thisPage !== null) {
-    const thisPageWithClass = buildPageClasses(thisPage.lines, lyrics, furigana, containerWidth, lineClassName);
+    const thisPageWithClass = buildPageClasses(thisPage.lines, lyrics, furigana, containerWidth);
     if (showNext) {
-      const nextPageLines = buildPageClasses(nextPage.lines, lyrics, furigana, containerWidth, lineClassName);
+      const nextPageLines = buildPageClasses(nextPage.lines, lyrics, furigana, containerWidth);
       linesToShow = linesToShow.concat(nextPageLines.slice(0, nextPageLines.length - 1));
       linesToShow.push(thisPageWithClass[thisPageWithClass.length - 1]);
     } else {
@@ -418,7 +379,7 @@ function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana,
   }
 
   const countdown = (thisPage && thisPage.countdown && lineIdx === -1) ?
-    <Countdown activeRef={activeRef} className={lineClassName} /> : null;
+    <Countdown activeRef={activeRef}/> : null;
   const firstNotNull = linesToShow.reduce<number | null>((prev, curr, idx) => prev === null && curr !== null ? idx : prev, null);
 
   return <>
@@ -427,7 +388,6 @@ function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana,
         {linesToShow[0].left !== null && <div style={{ flexGrow: linesToShow[0].left, }} />}
         {firstNotNull === 0 && countdown}
           <LyricsLine
-              className={lineClassName}
               textLine={lyrics.lines[linesToShow[0].index].content}
               furiganaLine={furigana && furigana[linesToShow[0].index]}
               done={!showNext && (offsetLineIdx > 0)}
@@ -440,7 +400,6 @@ function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana,
         {linesToShow[1].left !== null && <div style={{ flexGrow: linesToShow[1].left, }} />}
         {firstNotNull === 1 && countdown}
           <LyricsLine
-              className={lineClassName}
               textLine={lyrics.lines[linesToShow[1].index].content}
               furiganaLine={furigana && furigana[linesToShow[1].index]}
               done={!showNext && (offsetLineIdx > 1)}
@@ -453,7 +412,6 @@ function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana,
         {linesToShow[2].left !== null && <div style={{ flexGrow: linesToShow[2].left, }} />}
         {firstNotNull === 2 && countdown}
           <LyricsLine
-              className={lineClassName}
               textLine={lyrics.lines[linesToShow[2].index].content}
               furiganaLine={furigana && furigana[linesToShow[2].index]}
               done={!showNext && (offsetLineIdx > 2)}
@@ -466,7 +424,6 @@ function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana,
         {linesToShow[3].left !== null && <div style={{ flexGrow: linesToShow[3].left, }} />}
         {firstNotNull === 3 && countdown}
           <LyricsLine
-              className={lineClassName}
               textLine={lyrics.lines[linesToShow[3].index].content}
               furiganaLine={furigana && furigana[linesToShow[3].index]}
               done={offsetLineIdx > 3}
@@ -476,6 +433,17 @@ function LyricsScreen({ thisPage, nextPage, showNext, lineIdx, lyrics, furigana,
     }</div>
   </>;
 }
+
+const MeasureLayer = styled("div")({
+  display: "inline-block",
+  position: "absolute",
+  visibility: "hidden",
+  zIndex: -1,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+});
 
 interface Props {
   lyrics: LyricsKitLyrics;
@@ -512,8 +480,6 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   }, [pageIdx, pages, lineIdx, currentFrame, lyrics.lines]);
   const currentLineStartRef = useRef<number | null>();
   currentLineStartRef.current = currentLineStart;
-
-  const styles = useStyle();
 
   const sequenceQuery = useQuery<SequenceQueryResult>(
     SEQUENCE_QUERY,
@@ -612,7 +578,6 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     }
   }, [playerState, pageIdx, lineIdx, currentLineEnd, currentLineStart, currentLine]);
 
-
   let node = <span>...</span>;
   if (sequenceQuery.error) node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
   else {
@@ -621,7 +586,27 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
 
   return (
     <Measure bounds>{
-      ({ contentRect, measureRef }) => <div className={styles.container} lang="ja" ref={measureRef}>
+      ({ contentRect, measureRef }) => <Box sx={{
+        padding: 4,
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-end",
+        "& .row": {
+          height: "9rem",
+          display: "flex",
+          flexDirection: "row",
+          position: "relative",
+          alignItems: "flex-end",
+        },
+          "& .countdown": {
+          position: "absolute",
+          top: "-1em",
+          fontSize: "1.5rem",
+          letterSpacing: "0.1em",
+        },
+      }} lang="ja" ref={measureRef}>
         {node}
         <LyricsScreen
           thisPage={pages[pageIdx] ?? null} nextPage={pages[pageIdx + 1] ?? null}
@@ -629,10 +614,9 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           furigana={sequenceQuery.data?.transliterate.karaoke ?? null}
           activeRef={activeRef}
           containerWidth={contentRect.bounds.width}
-          lineClassName={styles.line}
         />
-        <div id="measure-layer" className={styles.measureLayer} />
-      </div>
+        <MeasureLayer id="measure-layer" />
+      </Box>
     }</Measure>
   );
 }

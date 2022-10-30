@@ -10,24 +10,24 @@ import {
   ListItemText,
   ListSubheader,
   Menu,
-  MenuItem,
+  MenuItem, Stack,
   Typography
-} from "@material-ui/core";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import { makeStyles } from "@material-ui/core/styles";
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { makeStyles } from "@mui/material/styles";
 import { gql, useQuery } from "@apollo/client";
 import { AlbumFragments, MusicFileFragments } from "../../../graphql/fragments";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import React, { Fragment } from "react";
 import { Album } from "../../../models/Album";
 import _ from "lodash";
 import filesize from "filesize";
 import { Song } from "../../../models/Song";
 import ButtonRow from "../../../components/ButtonRow";
-import PlaylistPlayIcon from "@material-ui/icons/PlaylistPlay";
-import ShuffleIcon from "@material-ui/icons/Shuffle";
-import FindInPageIcon from "@material-ui/icons/FindInPage";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
+import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
+import FindInPageIcon from "@mui/icons-material/FindInPage";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { formatArtists } from "../../../frontendUtils/artists";
 import Link from "../../../components/Link";
 import { useAppContext } from "../../../components/public/AppContext";
@@ -35,6 +35,7 @@ import { useAuthContext } from "../../../components/public/AuthContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import { MusicFile } from "../../../models/MusicFile";
 import TrackListRow from "../../../components/public/library/TrackListRow";
+import { DocumentNode } from "graphql";
 
 const ALBUM_QUERY = gql`
   query($id: Int!) {
@@ -51,64 +52,17 @@ const ALBUM_QUERY = gql`
 
   ${AlbumFragments.FullAlbumEntry}
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
-`;
+` as DocumentNode;
 
 type ConvertedTrack = Song & {
   foundFile: MusicFile | null;
 };
-
-const useStyles = makeStyles((theme) => ({
-  container: {
-    padding: theme.spacing(2),
-  },
-  navigationRow: {
-    margin: theme.spacing(1, 0),
-  },
-  trackInfoRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: theme.spacing(1),
-  },
-  trackInfoMain: {
-    flexGrow: 1,
-  },
-  grid: {
-    marginTop: theme.spacing(2),
-  },
-  cover: {
-    width: "calc(100% - 16px)",
-    paddingTop: "calc(100% - 16px)",
-    height: 0,
-    overflow: "hidden",
-    position: "relative",
-    marginBottom: theme.spacing(2),
-    "& > img": {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-    },
-  },
-  subheader: {
-    backgroundColor: theme.palette.background.default,
-  },
-  sidePanel: {
-    [theme.breakpoints.up("md")]: {
-      position: "sticky",
-      top: theme.spacing(2),
-    },
-    marginBottom: theme.spacing(4),
-  },
-}));
 
 export default function LibrarySingleAlbum() {
   const router = useRouter();
   const { playlist } = useAppContext();
   const { user } = useAuthContext();
   const albumId = parseInt(router.query.albumId as string);
-  const styles = useStyles();
   const popupState = usePopupState({ variant: "popover", popupId: "single-album-overflow-menu" });
 
   const query = useQuery<{ album: Album }>(ALBUM_QUERY, { variables: { id: albumId } });
@@ -151,17 +105,31 @@ export default function LibrarySingleAlbum() {
   };
 
   return (
-    <div className={styles.container}>
-      <Chip label="Albums" icon={<ArrowBackIcon />} clickable size="small" className={styles.navigationRow}
+    <Box sx={{padding: 2}}>
+      <Chip label="Albums" icon={<ArrowBackIcon />} clickable size="small" sx={{marginTop: 1, marginBottom: 1}}
             onClick={() => router.push("/library/albums")} />
-      <Grid container className={styles.grid}>
+      <Grid container sx={{marginTop: 2}}>
         <Grid item md={4} xs={12}>
-          <div className={styles.sidePanel}>
-            {album.coverUrl && <Avatar variant="rounded" src={album.coverUrl} className={styles.cover} />}
+          <Box sx={{ position: {md: "sticky"}, top: {md: 2}, marginBottom: 4, }}>
+            {album.coverUrl && <Avatar variant="rounded" src={album.coverUrl} sx={{
+              width: "calc(100% - 16px)",
+              paddingTop: "calc(100% - 16px)",
+              height: 0,
+              overflow: "hidden",
+              position: "relative",
+              marginBottom: 2,
+              "& > img": {
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+              },
+            }} />}
             <Typography variant="body2" color="textSecondary">
               {trackCount} {trackCount < 2 ? "song" : "songs"}, {totalMinutes} {totalMinutes < 2 ? "minute" : "minutes"}, {filesize(totalSize)}
             </Typography>
-          </div>
+          </Box>
         </Grid>
         <Grid item md={8} xs={12}>
           <Box ml={2}>
@@ -172,8 +140,8 @@ export default function LibrarySingleAlbum() {
                 <Link href={`/library/artists/${artist.id}`}>{artist.name}</Link>
               </Fragment>
             ))}</Typography>
-            <div className={styles.trackInfoRow}>
-              <ButtonRow className={styles.trackInfoMain}>
+            <Stack direction="row" alignItems="center" sx={{marginRight: 1,}}>
+              <ButtonRow sx={{flexGrow: 1}}>
                 {canPlay && <Chip icon={<PlaylistPlayIcon />} label="Play" clickable onClick={playAll} />}
                 {canPlay && <Chip icon={<ShuffleIcon />} label="Shuffle" clickable onClick={shuffleAll} />}
                 {album.id >= 0 && <Chip icon={<FindInPageIcon />} label="VocaDB" clickable
@@ -182,7 +150,6 @@ export default function LibrarySingleAlbum() {
               <IconButton {...bindTrigger(popupState)}><MoreVertIcon /></IconButton>
               <Menu
                 id={"single-album-overflow-menu"}
-                getContentAnchorEl={null}
                 anchorOrigin={{
                   vertical: "bottom",
                   horizontal: "right",
@@ -202,14 +169,14 @@ export default function LibrarySingleAlbum() {
                   />
                 </MenuItem>
               </Menu>
-            </div>
+            </Stack>
           </Box>
           <List>
             {diskSeparatedTracked.map(v => {
               if (v === null) {
-                return <ListSubheader className={styles.subheader} key="unknownDisc">Unknown disc</ListSubheader>;
+                return <ListSubheader sx={{backgroundColor: "background.default"}} key="unknownDisc">Unknown disc</ListSubheader>;
               } else if (typeof v === "number") {
-                return <ListSubheader className={styles.subheader} key={`disc${v}`}>Disc {v}</ListSubheader>;
+                return <ListSubheader sx={{backgroundColor: "background.default"}} key={`disc${v}`}>Disc {v}</ListSubheader>;
               } else {
                 return <TrackListRow song={v} file={v.foundFile} files={album.files} />;
               }
@@ -217,7 +184,7 @@ export default function LibrarySingleAlbum() {
           </List>
         </Grid>
       </Grid>
-    </div>
+    </Box>
   );
 }
 

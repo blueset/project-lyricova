@@ -63,7 +63,7 @@ export class LyricsProvidersController {
         }).get();
       return res.json(data);
     } catch (e) { next(e); }
-  }
+  };
 
   public hmikuAtWikiSingle = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -118,7 +118,7 @@ export class LyricsProvidersController {
       }
       next(e);
     }
-  }
+  };
 
   public vocaDBSingle = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -154,7 +154,7 @@ export class LyricsProvidersController {
       }
       next(e);
     }
-  }
+  };
 
   public lyricsKit = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -184,5 +184,5 @@ export class LyricsProvidersController {
     } catch (e) {
       next(e);
     }
-  }
+  };
 }

@@ -2,7 +2,7 @@ import axios from "axios";
 import cheerio from "cheerio";
 import { Song } from "../models/Song";
 import { SongForApiContract, LyricsForSongContract, VDBTranslationType } from "../types/vocadb";
-import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
+import { Lyrics, LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
 import {
   Resolver,
   ObjectType,
@@ -158,8 +158,11 @@ export class LyricsProvidersResolver {
         return null;
       }
       const title = titleNode.text();
-      const furiganaMatch = $("#wikibody").text().match(/.+(?=【登録タグ)/);
-      const furigana = furiganaMatch ? furiganaMatch[0] : null;
+      const furiganaMatch = /(?:【検索用:)?([^:【\n]+?)[\u00a0\s]*【?登録タグ/g.exec($("#wikibody").text());
+      console.log("wikibody", JSON.stringify($("#wikibody").text()));
+      console.log("wikibody match", furiganaMatch);
+      const furigana = furiganaMatch ? furiganaMatch[1] : title;
+      console.log("wikibody furigana", furigana);
       const lyricsTitleNode = $("#wikibody h3:contains(歌詞)");
       let lyrics = null;
       if (lyricsTitleNode) {
@@ -240,7 +243,7 @@ export class LyricsProvidersResolver {
 
     const results = await Promise.all(this.lyricsProvider.providers.map(async (v) => {
       const result = await v.getLyrics(request);
-      const converted = result.map(lrc => {
+      const converted = result.map((lrc: Lyrics) => {
         return {
           lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
           quality: lrc.quality,

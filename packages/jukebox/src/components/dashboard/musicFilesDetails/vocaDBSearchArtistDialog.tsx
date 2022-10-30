@@ -12,20 +12,21 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   Radio
-} from "@material-ui/core";
+} from "@mui/material";
 import { ChangeEvent, useCallback, useEffect } from "react";
 import { Artist } from "../../../models/Artist";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import axios from "axios";
 import { PartialFindResult, ArtistForApiContract } from "../../../types/vocadb";
 import _ from "lodash";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
-import { Skeleton } from "@material-ui/lab";
-import { makeStyles } from "@material-ui/core/styles";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { Skeleton } from "@mui/material";
+import { makeStyles } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
 import { ArtistFragments } from "../../../graphql/fragments";
+import { DocumentNode } from "graphql";
 
 const IMPORT_SONG_MUTATION = gql`
   mutation($id: Int!) {
@@ -35,13 +36,7 @@ const IMPORT_SONG_MUTATION = gql`
   }
   
   ${ArtistFragments.SelectArtistEntry}
-`;
-
-const useStyles = makeStyles({
-  secondaryAction: {
-    paddingRight: 104,
-  },
-});
+` as DocumentNode;
 
 interface Props {
   isOpen: boolean;
@@ -52,8 +47,6 @@ interface Props {
 }
 
 export default function VocaDBSearchArtistDialog({ isOpen, toggleOpen, keyword, setKeyword, setArtist }: Props) {
-  const styles = useStyles();
-
   const [results, setResults] = useNamedState<ArtistForApiContract[]>([], "results");
   const [isLoaded, toggleLoaded] = useNamedState(false, "loaded");
   const [selectedArtist, setSelectedArtist] = useNamedState<number | null>(null, "selectedArtist");
@@ -155,9 +148,7 @@ export default function VocaDBSearchArtistDialog({ isOpen, toggleOpen, keyword, 
           {isLoaded ? (
             results.length > 0 ?
               results.map((v) => (
-                <ListItem key={v.id} classes={{
-                  secondaryAction: styles.secondaryAction
-                }}>
+                <ListItem key={v.id}>
                   <ListItemAvatar>
                     <Avatar variant="rounded" src={v.mainPicture?.urlOriginal}>
                       <MusicNoteIcon />
@@ -188,7 +179,7 @@ export default function VocaDBSearchArtistDialog({ isOpen, toggleOpen, keyword, 
           ) : _.range(5).map(v => (
             <ListItem key={v}>
               <ListItemAvatar>
-                <Skeleton variant="rect"><Avatar variant="rounded" /></Skeleton>
+                <Skeleton variant="rectangular"><Avatar variant="rounded" /></Skeleton>
               </ListItemAvatar>
               <ListItemText
                 primary={<Skeleton />}

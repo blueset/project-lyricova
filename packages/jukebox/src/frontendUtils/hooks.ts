@@ -15,6 +15,8 @@ import { AnimatedWord } from "../utils/typingSequence";
 import { gql, QueryResult, useQuery } from "@apollo/client";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
+import { LyricsKitLyrics, LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
+import { DocumentNode } from "graphql";
 
 type Timeline = gsap.core.Timeline;
 
@@ -307,7 +309,7 @@ const SEQUENCE_QUERY = gql`
       }
     }
   }
-`;
+` as DocumentNode;
 
 export interface SequenceQueryResult {
   transliterate: {

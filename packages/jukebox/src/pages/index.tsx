@@ -1,5 +1,5 @@
 import { gql, useQuery } from "@apollo/client";
-import { Box, makeStyles } from "@material-ui/core";
+import { Box, makeStyles, Stack } from "@mui/material";
 import clsx from "clsx";
 import _ from "lodash";
 import { ReactNode } from "react";
@@ -22,6 +22,7 @@ import { PlainFuriganaLyrics } from "../components/public/lyrics/plainFurigana";
 import { KaraokeJaLyrics } from "../components/public/lyrics/karaokeJa";
 import { StrokeLyrics } from "../components/public/lyrics/stroke";
 import { useClientPersistentState } from "../frontendUtils/clientPersistantState";
+import { DocumentNode } from "graphql";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -49,7 +50,7 @@ const LYRICS_QUERY = gql`
       }
     }
   }
-`;
+` as DocumentNode;
 
 
 const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } = {
@@ -71,20 +72,6 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Stroke": (lyrics: LyricsKitLyrics) => <StrokeLyrics lyrics={lyrics} />,
 };
 
-const useStyle = makeStyles({
-  messageBox: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 600,
-    fontSize: "2.5em",
-    fontStyle: "italic",
-    filter: "var(--jukebox-cover-filter-brighter)",
-  }
-});
-
 export default function Index() {
   const { playlist } = useAppContext();
   const [module, setModule] = useClientPersistentState<keyof typeof MODULE_LIST>(_.keys(MODULE_LIST)[0], "module", "lyricovaPlayer");
@@ -98,12 +85,16 @@ export default function Index() {
     }
   });
 
-  const styles = useStyle({
-    coverUrl: playlist.getCurrentCoverUrl()
-  });
-
   const MessageBox = ({ children }: { children: ReactNode }) => (
-    <Box className={clsx(styles.messageBox, "coverMask")} p={4}>{children}</Box>
+    <Stack className="coverMask" alignItems="center" justifyContent="center" sx={{
+      width: "100%",
+      height: "100%",
+      fontWeight: 600,
+      fontSize: "2.5em",
+      fontStyle: "italic",
+      filter: "var(--jukebox-cover-filter-brighter)",
+      padding: 4,
+    }}>{children}</Stack>
   );
 
   let node;

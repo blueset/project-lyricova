@@ -2,7 +2,6 @@ import { Resolver, Query, FieldResolver, Root, Arg, Mutation, InputType, Field, 
 import { Playlist } from "../models/Playlist";
 import { MusicFile } from "../models/MusicFile";
 import { UserInputError } from "apollo-server-express";
-import { GraphQLBoolean } from "graphql";
 import { MusicFileResolver } from "./MusicFileResolver";
 import pLimit from "p-limit";
 import { FileInPlaylist } from "../models/FileInPlaylist";
@@ -122,7 +121,7 @@ export class PlaylistResolver {
     return playlist;
   }
 
-  @Mutation(returns => GraphQLBoolean)
+  @Mutation(returns => Boolean)
   public async removePlaylist(@Arg("slug") slug: string): Promise<boolean> {
     const playlist = await Playlist.findByPk(slug);
     if (playlist === null) {

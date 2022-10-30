@@ -1,7 +1,6 @@
-import { Avatar, Box, Button, fade, Grid, TextField, Typography } from "@material-ui/core";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import ImageNotSupportedIcon from "@material-ui/icons/ImageNotSupported";
-import { makeStyles } from "@material-ui/core/styles";
+import { Avatar, Box, Button, Grid, styled, TextField, Typography } from "@mui/material";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import ImageNotSupportedIcon from "@mui/icons-material/ImageNotSupported";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { ChangeEvent, useCallback, useEffect } from "react";
 import axios from "axios";
@@ -9,47 +8,26 @@ import { useDropzone } from "react-dropzone";
 import { useAuthContext } from "../../public/AuthContext";
 import { useSnackbar } from "notistack";
 
-const useStyles = makeStyles((theme) => ({
-  coverAvatar: {
-    width: "100%",
-    height: 0,
-    overflow: "hidden",
-    paddingTop: "100%",
-    position: "relative",
-    marginBottom: theme.spacing(2),
-    "& > img": {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      objectFit: "contain",
-    },
-    "& > svg": {
-      position: "absolute",
-      top: "calc(50% - 12px)",
-      left: "calc(50% - 12px)",
-    },
-  },
-  importButton: {
-    marginLeft: theme.spacing(2),
-  },
-  container: {
-    position: "relative",
-  },
-  dragCover: {
+const CoverAvatar = styled(Avatar)({
+  width: "100%",
+  height: 0,
+  overflow: "hidden",
+  paddingTop: "100%",
+  position: "relative",
+  marginBottom: 2,
+  "& > img": {
     position: "absolute",
     top: 0,
-    bottom: 0,
     left: 0,
-    right: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: fade(theme.palette.secondary.dark, 0.9),
-    borderColor: fade(theme.palette.secondary.light, 0.5),
-    borderWidth: "2px",
-    borderStyle: "solid",
-    zIndex: 2,
-  }
-}));
+    objectFit: "contain",
+    width: "100%",
+  },
+  "& > svg": {
+    position: "absolute",
+    top: "calc(50% - 12px)",
+    left: "calc(50% - 12px)",
+  },
+});
 
 interface SelectedImage {
   url?: string;
@@ -73,8 +51,6 @@ export default function CoverArtPanel({
                                         hasAlbum, albumCoverUrl,
                                         refresh,
                                       }: Props) {
-  const styles = useStyles();
-
   const [selectedImage, setSelectedImage] = useNamedState<SelectedImage>(null, "selectedImage");
   const [urlField, setUrlField] = useNamedState<string>("", "urlField");
   const [isSubmitting, toggleSubmitting] = useNamedState(false, "isSubmitting");
@@ -167,16 +143,29 @@ export default function CoverArtPanel({
     }
   }, [authContext, fileId, selectedImage]);
 
-  return <Grid container className={styles.container} spacing={3} {...getRootProps()}>
-    <div className={styles.dragCover} style={{ display: isDragActive ? "flex" : "none" }}>Drag here to set cover.</div>
+  return <Grid container sx={{position: "relative"}} spacing={3} {...getRootProps()}>
+    <Box sx={{
+      display: isDragActive ? "flex" : "none",
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "secondary.dark",
+      borderColor: "secondary.light",
+      borderWidth: "2px",
+      borderStyle: "solid",
+      zIndex: 2,
+    }}>Drag here to set cover.</Box>
     <Grid item xs={12} md={3}>
       <Typography variant="h5" gutterBottom>Current cover</Typography>
-      <Avatar
+      <CoverAvatar
         src={hasCover ? `/api/files/${fileId}/cover?t=${cacheBustingToken}` : null} variant="rounded"
-        className={styles.coverAvatar}
       >
         {hasCover ? <MusicNoteIcon /> : <ImageNotSupportedIcon />}
-      </Avatar>
+      </CoverAvatar>
       <Button href={`https://www.google.com/search?q=${encodeURIComponent(trackName)}`} target="_blank"
               variant="outlined" color="secondary">
         Search on Google
@@ -184,36 +173,33 @@ export default function CoverArtPanel({
     </Grid>
     <Grid item xs={12} md={3}>
       <Typography variant="h5" gutterBottom>Cover from song entity</Typography>
-      <Avatar
+      <CoverAvatar
         src={songCoverUrl} variant="rounded"
-        className={styles.coverAvatar}
       >
         {hasSong ? <MusicNoteIcon /> : <ImageNotSupportedIcon />}
-      </Avatar>
+      </CoverAvatar>
       <Button disabled={!hasSong || !songCoverUrl}
               onClick={setImageUrl(songCoverUrl)}
               variant="outlined">Use this</Button>
     </Grid>
     <Grid item xs={12} md={3}>
       <Typography variant="h5" gutterBottom>Cover from album entity</Typography>
-      <Avatar
+      <CoverAvatar
         src={albumCoverUrl} variant="rounded"
-        className={styles.coverAvatar}
       >
         {hasAlbum ? <MusicNoteIcon /> : <ImageNotSupportedIcon />}
-      </Avatar>
+      </CoverAvatar>
       <Button disabled={!hasAlbum || !albumCoverUrl}
               onClick={setImageUrl(albumCoverUrl)}
               variant="outlined">Use this</Button>
     </Grid>
     <Grid item xs={12} md={3}>
       <Typography variant="h5" gutterBottom>Cover to upload</Typography>
-      <Avatar variant="rounded"
-              src={selectedImage && (selectedImage.url ? selectedImage.url : URL.createObjectURL(selectedImage.blob))}
-              className={styles.coverAvatar}
+      <CoverAvatar variant="rounded"
+                   src={selectedImage && (selectedImage.url ? selectedImage.url : URL.createObjectURL(selectedImage.blob))}
       >
         {hasAlbum ? <MusicNoteIcon /> : <ImageNotSupportedIcon />}
-      </Avatar>
+      </CoverAvatar>
       <Button variant="outlined" color="secondary" disabled={selectedImage === null || isSubmitting}
               onClick={applyCover}>
         Apply
@@ -223,10 +209,10 @@ export default function CoverArtPanel({
       <Box display="flex" alignItems="center">
         <TextField variant="outlined" label="Import from URL" margin="dense" fullWidth value={urlField}
                    onChange={handleUrlFieldOnChange} />
-        <Button className={styles.importButton} variant="outlined" onClick={setImageUrl(urlField)}>Import</Button>
-        <Button className={styles.importButton} variant="outlined" component="label">
+        <Button sx={{marginLeft: 2}} variant="outlined" onClick={setImageUrl(urlField)}>Import</Button>
+        <Button sx={{marginLeft: 2}} variant="outlined" component="label">
           Upload
-          <input type="file" hidden onChange={handleFileFieldOnChange} {...getInputProps()} />
+          <input type="file" hidden onChange={handleFileFieldOnChange} {...getInputProps() as unknown} />
         </Button>
       </Box>
     </Grid>

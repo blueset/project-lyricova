@@ -1,12 +1,13 @@
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { gql, useQuery } from "@apollo/client";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import React, { ReactNode } from "react";
 import { Album } from "../../../models/Album";
-import { Avatar, ButtonBase, Typography } from "@material-ui/core";
+import { Avatar, Box, ButtonBase, Grid, Typography } from "@mui/material";
 import { NextComposedLink } from "../../../components/Link";
 import { formatArtistsPlainText } from "../../../frontendUtils/artists";
+import { DocumentNode } from "graphql";
 
 const ALBUMS_QUERY = gql`
   query {
@@ -23,76 +24,45 @@ const ALBUMS_QUERY = gql`
       }
     }
   }
-`;
-
-const useStyles = makeStyles((theme) => ({
-  grid: {
-    display: "grid",
-    // Using `2, 2` to force `theme.spacing` to generate a string.
-    // by default `theme.spacing(2)` only produces a number which the csx converter cannot attach unit
-    // properly on the `gap` property.
-    gap: theme.spacing(2, 2),
-    padding: theme.spacing(2),
-    [theme.breakpoints.up("xs")]: {
-      gridTemplateColumns: "repeat(2, 1fr)",
-    },
-    [theme.breakpoints.up("md")]: {
-      gridTemplateColumns: "repeat(4, 1fr)",
-    },
-    [theme.breakpoints.up("lg")]: {
-      gridTemplateColumns: "repeat(6, 1fr)",
-    },
-    [theme.breakpoints.up("xl")]: {
-      gridTemplateColumns: "repeat(8, 1fr)",
-    },
-  },
-  cell: {
-    minWidth: 0,
-  },
-  buttonBase: {
-    width: "100%",
-  },
-  cover: {
-    width: "100%",
-    height: 0,
-    overflow: "hidden",
-    paddingTop: "100%",
-    position: "relative",
-    marginBottom: theme.spacing(1),
-    "&:hover": {
-      filter: "brightness(1.2)",
-    },
-    "& > img": {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-    },
-  },
-}));
+` as DocumentNode;
 
 export default function LibraryAlbums() {
-  const styles = useStyles();
   const query = useQuery<{ albumsHasFiles: Album[] }>(ALBUMS_QUERY);
 
   if (query.loading) return <Alert severity="info">Loading...</Alert>;
   if (query.error) return <Alert severity="error">Error: {`${query.error}`}</Alert>;
 
   return (
-    <div className={styles.grid}>
+    <Grid container spacing={2} sx={{padding: 2}}>
       {query.data.albumsHasFiles.map(val => {
         return (
-          <div key={val.id} className={styles.cell}>
-            <ButtonBase className={styles.buttonBase} component={NextComposedLink} href={`/library/albums/${val.id}`}>
-              <Avatar className={styles.cover} src={val.coverUrl || "/images/disk-512.jpg"} variant="rounded" />
+          <Grid item xs={6} md={3} lg={2} xl={2} key={val.id} sx={{minWidth: 0}}>
+            <ButtonBase sx={{width: "100%"}} component={NextComposedLink} href={`/library/albums/${val.id}`}>
+              <Avatar sx={{
+                width: "100%",
+                height: 0,
+                overflow: "hidden",
+                paddingTop: "100%",
+                position: "relative",
+                marginBottom: 1,
+                "&:hover": {
+                  filter: "brightness(1.2)",
+                },
+                "& > img": {
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                },
+              }} src={val.coverUrl || "/images/disk-512.jpg"} variant="rounded" />
             </ButtonBase>
             <Typography variant="body2" noWrap>{val.name}</Typography>
             <Typography variant="body2" color="textSecondary" noWrap>{formatArtistsPlainText(val.artists)}</Typography>
-          </div>
+          </Grid>
         );
       })}
-    </div>
+    </Grid>
   );
 }
 

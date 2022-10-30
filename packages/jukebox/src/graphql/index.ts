@@ -10,14 +10,15 @@ import {
   Authorized,
   Subscription,
   Root,
-  Args,
   PubSub, Publisher
 } from "type-graphql";
 import { buildSchema } from "type-graphql";
-import { GraphQLSchema, GraphQLString } from "graphql";
+import { execute, subscribe } from "graphql";
 import { authChecker } from "./auth";
 import bcrypt from "bcryptjs";
 import _ from "lodash";
+import { createServer, Server } from "http";
+import { SubscriptionServer } from "subscriptions-transport-ws";
 
 export interface PubSubSessionPayload<T> {
   sessionId: string;
@@ -47,9 +48,9 @@ class FooResolver {
   // What is dependency injection ???
   // constructor(private fooService: FooService) {}
 
-  @Query(returns => GraphQLString)
+  @Query(returns => String)
   async hash(@Arg("plaintext") plaintext: string): Promise<string> {
-    return bcrypt.hash(plaintext, 10);
+    return await bcrypt.hash(plaintext, 10);
   }
 
   @Authorized("ADMIN")
@@ -106,7 +107,7 @@ class FooResolver {
   }
 }
 
-export async function applyApollo(app: Application): Promise<ApolloServer> {
+export async function applyApollo(app: Application): Promise<Server> {
 
   const schema = await buildSchema({
     // `FooResolver as unknown as string` is a workaround to mitigate the 
@@ -115,15 +116,37 @@ export async function applyApollo(app: Application): Promise<ApolloServer> {
     dateScalarMode: "timestamp",
     emitSchemaFile: {
       path: __dirname + "/../../schema.graphql",
-      commentDescriptions: true,
     },
     authChecker
   });
 
-  const server = new ApolloServer({
+  const httpServer = createServer(app);
+
+  // This is blocking next auto refresh
+  // const subscriptionServer = SubscriptionServer.create({
+  //   // This is the `schema` we just created.
+  //   schema,
+  //   // These are imported from `graphql`.
+  //   execute,
+  //   subscribe,
+  // }, {
+  //   // This is the `httpServer` we created in a previous step.
+  //   server: httpServer,
+  //   // Pass a different path here if your ApolloServer serves at
+  //   // a different path.
+  //   path: "/graphql",
+  // });
+
+  const apolloServer = new ApolloServer({
     schema,
-    context: ({ req, connection }) => {
-      if (connection) return connection.context;
+    plugins: [{
+      async serverWillStart() {
+        return { async drainServer() {
+          // subscriptionServer.close();
+        }};
+      }
+    }],
+    context: ({ req }) => {
       return {
         req,
         user: req.user,  // That should come from passport strategy JWT
@@ -131,7 +154,9 @@ export async function applyApollo(app: Application): Promise<ApolloServer> {
     }
   });
 
-  server.applyMiddleware({ app });
+  await apolloServer.start();
 
-  return server;
+  apolloServer.applyMiddleware({ app });
+
+  return httpServer;
 }

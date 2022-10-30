@@ -2,37 +2,11 @@ import { LyricsLine, RangeAttribute } from "lyrics-kit";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef } from "react";
 import { FURIGANA } from "lyrics-kit/build/main/core/lyricsLineAttachment";
 import { useNamedState } from "../../../../frontendUtils/hooks";
-import { makeStyles } from "@material-ui/core/styles";
-import { BackdropProps, IconButton, Modal, Paper, TextField, Typography } from "@material-ui/core";
+import { makeStyles } from "@mui/material/styles";
+import { BackdropProps, Box, IconButton, Modal, Paper, TextField, Typography } from "@mui/material";
 import _ from "lodash";
-import CloseIcon from "@material-ui/icons/Close";
-import CheckIcon from "@material-ui/icons/Check";
-
-const useStyle = makeStyles((theme) => ({
-  floatingCard: {
-    position: "fixed",
-    width: "fit-content",
-    zIndex: 1500,
-  },
-  rubyBlock: {
-    display: "inline-flex",
-    flexDirection: "column",
-    alignItems: "center",
-    "& > ruby": {
-      display: "inline-block",
-      border: `1px solid ${theme.palette.divider}`,
-      borderRadius: theme.shape.borderRadius,
-      padding: theme.spacing(0.5),
-      margin: theme.spacing(0, 0.5),
-    },
-    "& > button": {
-      visibility: "hidden",
-    },
-    "&:hover > button, &:focus > button": {
-      visibility: "visible",
-    },
-  }
-}));
+import CloseIcon from "@mui/icons-material/Close";
+import CheckIcon from "@mui/icons-material/Check";
 
 interface FloatingWindowProps {
   nodeIdx: number;
@@ -53,7 +27,6 @@ interface Props {
 }
 
 export default function EditFuriganaLine({ line, setLine }: Props) {
-  const styles = useStyle();
   const [renderableFurigana, setRenderableFurigana] = useNamedState<RenderableFuriganaElement[]>([], "renderableFurigana");
   const [floatingWindow, setFloatingWindow] = useNamedState<FloatingWindowProps | null>(null, "floatingWindow");
   const [floatingWindowInput, setFloatingWindowInput] = useNamedState("", "floatingWindowInput");
@@ -183,15 +156,38 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
       <Typography variant="h4" component="div" ref={lineContainerRef}>
         {renderableFurigana.map((v, idx) => {
           if (typeof v === "string") return <span key={idx} data-index={idx} data-furigana-creatable={true}>{v}</span>;
-          else return <span key={idx} data-index={idx} className={styles.rubyBlock}>
+          else return <Box component="span" key={idx} data-index={idx} sx={{
+            display: "inline-flex",
+            flexDirection: "column",
+            alignItems: "center",
+            "& > ruby": {
+              display: "inline-block",
+              border: 1,
+              borderColor: "divider",
+              borderRadius: 1,
+              padding: 0.5,
+              marginTop: 0.5,
+              marginBottom: 0.5,
+            },
+            "& > button": {
+              visibility: "hidden",
+            },
+            "&:hover > button, &:focus > button": {
+              visibility: "visible",
+            },
+          }}>
             <ruby>{v.base}<rt>{v.value}</rt></ruby>
             <IconButton size="small" onClick={removeRange(idx)} color="primary"><CloseIcon /></IconButton>
-          </span>;
+          </Box>;
         })}
       </Typography>
       {floatingWindow &&
-      <Paper style={{ top: floatingWindow.top, left: floatingWindow.left }} className={styles.floatingCard} elevation={5}>
-          <form onSubmit={handleFloatingInputConfirm}>
+      <Paper style={{ top: floatingWindow.top, left: floatingWindow.left }} sx={{
+        position: "fixed",
+        width: "fit-content",
+        zIndex: 1500,
+      }} elevation={5}>
+          <form onSubmit={handleFloatingInputConfirm} style={{display: "flex", alignItems: "center"}}>
           <TextField
               id="outlined-multiline-flexible"
               label={(renderableFurigana[floatingWindow.nodeIdx] as string).slice(floatingWindow.start, floatingWindow.end)}

@@ -1,14 +1,14 @@
 import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
-import { Box } from "@material-ui/core";
-import { Alert, AlertTitle } from "@material-ui/lab";
+import { Box, useTheme } from "@mui/material";
+import { Alert, AlertTitle } from "@mui/material";
 import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import React, { useCallback } from "react";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import MaterialTable from "material-table";
-import RateReviewIcon from "@material-ui/icons/RateReview";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
+import MaterialTable from "@material-table/core";
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useRouter } from "next/router";
 import { MusicFile } from "../../../models/MusicFile";
 import { TableIcons } from "../../../components/dashboard/MaterialTableIcons";
@@ -38,6 +38,7 @@ export default function Review() {
   const edges = needReviewQuery.data?.musicFiles.edges;
 
   const router = useRouter();
+  const theme = useTheme();
 
   const [showAll, setShowAll] = useNamedState(false, "showAll");
 

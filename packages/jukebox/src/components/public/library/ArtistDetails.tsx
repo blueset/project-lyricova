@@ -1,24 +1,25 @@
-import { Avatar, Box, Chip, IconButton, List, ListItemText, Menu, MenuItem, Typography } from "@material-ui/core";
+import { Avatar, Box, Chip, IconButton, List, ListItemText, Menu, MenuItem, Stack, Typography } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
 import { MusicFileFragments } from "../../../graphql/fragments";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
 import { useRouter } from "next/router";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { Artist } from "../../../models/Artist";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import _ from "lodash";
-import RecentActorsIcon from "@material-ui/icons/RecentActors";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import filesize from "filesize";
-import PlaylistPlayIcon from "@material-ui/icons/PlaylistPlay";
-import ShuffleIcon from "@material-ui/icons/Shuffle";
-import FindInPageIcon from "@material-ui/icons/FindInPage";
+import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
+import FindInPageIcon from "@mui/icons-material/FindInPage";
 import ButtonRow from "../../ButtonRow";
 import { useAppContext } from "../AppContext";
 import { useAuthContext } from "../AuthContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TrackListRow from "./TrackListRow";
+import { DocumentNode } from "graphql";
 
 const ARTIST_DETAILS_QUERY = gql`
   query($id: Int!) {
@@ -57,31 +58,7 @@ const ARTIST_DETAILS_QUERY = gql`
   }
   
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
-`;
-
-const useStyles = makeStyles((theme) => ({
-  navigationRow: {
-    margin: theme.spacing(2, 0),
-    textTransform: "capitalize",
-  },
-  cover: {
-    marginRight: theme.spacing(1),
-    height: "4em",
-    width: "4em",
-  },
-  container: {
-    margin: theme.spacing(2, 4),
-  },
-  metaRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  metaText: {
-    flexGrow: 1,
-    width: 0,
-  }
-}));
+` as DocumentNode;
 
 interface Props {
   id: number;
@@ -90,7 +67,6 @@ interface Props {
 
 export default function ArtistDetails({id, type}: Props) {
   const router = useRouter();
-  const styles = useStyles();
   const { playlist } = useAppContext();
   const { user } = useAuthContext();
   const popupState = usePopupState({ variant: "popover", popupId: "single-artist-overflow-menu" });
@@ -116,17 +92,21 @@ export default function ArtistDetails({id, type}: Props) {
     };
 
     content = <>
-      <div className={styles.metaRow}>
-        <Avatar variant="rounded" src={artist.mainPictureUrl} className={styles.cover}>
+      <Stack direction="row" alignItems="center">
+        <Avatar variant="rounded" src={artist.mainPictureUrl} sx={{
+          marginRight: 1,
+          height: "4em",
+          width: "4em",
+        }}>
           <RecentActorsIcon fontSize="large" />
         </Avatar>
-        <div className={styles.metaText}>
+        <Box sx={{flexGrow: 1, width: 0}}>
           <Typography variant="h6">{artist.name}</Typography>
           <Typography variant="body2" color="textSecondary">
             {artist.sortOrder}, {artist.type}{". "}
             {trackCount} {trackCount < 2 ? "song" : "songs"}, {totalMinutes} {totalMinutes < 2 ? "minute" : "minutes"}, {filesize(totalSize)}
           </Typography>
-        </div>
+        </Box>
         <ButtonRow>
           {canPlay && <Chip icon={<PlaylistPlayIcon />} label="Play" clickable onClick={playAll} />}
           {canPlay && <Chip icon={<ShuffleIcon />} label="Shuffle" clickable onClick={shuffleAll} />}
@@ -135,7 +115,6 @@ export default function ArtistDetails({id, type}: Props) {
           <IconButton {...bindTrigger(popupState)}><MoreVertIcon /></IconButton>
           <Menu
             id={"single-album-overflow-menu"}
-            getContentAnchorEl={null}
             anchorOrigin={{
               vertical: "bottom",
               horizontal: "right",
@@ -156,7 +135,7 @@ export default function ArtistDetails({id, type}: Props) {
             </MenuItem>
           </Menu>
         </ButtonRow>
-      </div>
+      </Stack>
       <List>
         {
           _.sortBy(artist.songs, "sortOrder").map(v =>
@@ -168,10 +147,11 @@ export default function ArtistDetails({id, type}: Props) {
   }
 
   return (
-    <div className={styles.container}>
-      <Chip label={type} icon={<ArrowBackIcon />} clickable size="small" className={styles.navigationRow}
+    <Box sx={{marginTop: 2, marginBottom: 2, marginLeft: 4, marginRight: 4}}>
+      <Chip label={type} icon={<ArrowBackIcon />} clickable size="small"
+            sx={{marginTop: 2, marginBottom: 2, textTransform: "capitalize",}}
             onClick={() => router.push(`/library/${type}`)} />
       {content}
-    </div>
+    </Box>
   );
 }

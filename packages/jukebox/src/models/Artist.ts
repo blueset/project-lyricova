@@ -27,7 +27,7 @@ import { SongInAlbum } from "./SongInAlbum";
 
 @ObjectType()
 @Table
-export class Artist extends Model<Artist> {
+export class Artist extends Model<Artist, Partial<Artist>> {
   @Field(() => Int)
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER })
@@ -149,7 +149,7 @@ export class Artist extends Model<Artist> {
       sortOrder: transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
       mainPictureUrl: entity.mainPicture?.urlOriginal ?? null,
-      type: entity.artistType,
+      type: entity.artistType as VDBArtistType,
       incomplete: false,
     });
 

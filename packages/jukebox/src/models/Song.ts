@@ -31,7 +31,7 @@ import _ from "lodash";
 
 @ObjectType()
 @Table
-export class Song extends Model<Song> {
+export class Song extends Model<Song, Partial<Song>> {
   @Field(() => Int)
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER })

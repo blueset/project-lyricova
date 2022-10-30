@@ -1,14 +1,14 @@
 import React, { ReactNode } from "react";
 import { getLayout as getDashboardLayout } from "./DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
-import { Alert } from "@material-ui/lab";
+import Alert from "@mui/material/Alert";
 import { TableIcons } from "../MaterialTableIcons";
-import EditIcon from "@material-ui/icons/Edit";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
-import MaterialTable from "material-table";
+import EditIcon from "@mui/icons-material/Edit";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import MaterialTable from "@material-table/core";
 import { useRouter } from "next/router";
 import { formatArtistsPlainText } from "../../../frontendUtils/artists";
-import { Avatar, ListItemText } from "@material-ui/core";
+import { Avatar, ListItemText } from "@mui/material";
 import { Album } from "../../../models/Album";
 
 const ALBUM_INFO_LIST_QUERY = gql`

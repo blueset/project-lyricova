@@ -1,5 +1,6 @@
 import { Song } from "../../../models/Song";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -10,19 +11,18 @@ import {
   Grid,
   IconButton,
   InputAdornment,
-  MenuItem,
+  MenuItem, Stack, styled,
   Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { Fragment, useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import TransliterationAdornment from "../TransliterationAdornment";
 import { useSnackbar } from "notistack";
-import AddIcon from "@material-ui/icons/Add";
-import DeleteIcon from "@material-ui/icons/Delete";
-import AlbumIcon from "@material-ui/icons/Album";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AlbumIcon from "@mui/icons-material/Album";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SelectSongEntityBox from "./selectSongEntityBox";
-import { makeStyles } from "@material-ui/core/styles";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
 import SelectAlbumEntityBox from "./selectAlbumEntityBox";
 import TrackNameAdornment from "../TrackNameAdornment";
@@ -38,72 +38,49 @@ import finalFormMutators from "../../../frontendUtils/finalFormMutators";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import AvatarField from "./AvatarField";
+import StringSchema from "yup/lib/string";
+import { DocumentNode } from "graphql";
 
 const NEW_SONG_MUTATION = gql`
-  mutation($data: SongInput!) {
-    newSong(data: $data) {
-      ...SelectSongEntry
+    mutation($data: SongInput!) {
+        newSong(data: $data) {
+            ...SelectSongEntry
+        }
     }
-  }
-  
-  ${SongFragments.SelectSongEntry}
-`;
+
+    ${SongFragments.SelectSongEntry}
+` as DocumentNode;
 
 const UPDATE_SONG_MUTATION = gql`
-  mutation($id: Int!, $data: SongInput!) {
-    updateSong(id: $id, data: $data) {
-      ...SelectSongEntry
+    mutation($id: Int!, $data: SongInput!) {
+        updateSong(id: $id, data: $data) {
+            ...SelectSongEntry
+        }
     }
-  }
-  
-  ${SongFragments.SelectSongEntry}
-`;
 
-const useStyles = makeStyles((theme) => ({
-  artistRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    "& > *": {
-      marginRight: theme.spacing(1),
-    },
-    "& > *:last-child": {
-      marginRight: 0,
-    },
+    ${SongFragments.SelectSongEntry}
+` as DocumentNode;
+
+const dividerRowSx = {
+  marginTop: 1,
+  marginBottom: 1,
+};
+
+const NumberField = styled(TextField)({
+  "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+    "-webkit-appearance": "none",
+    margin: 0,
   },
-  mainPictureRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
+  "input[type=number]": {
+    "-moz-appearance": "textfield",
   },
-  mainPictureThumbnail: {
-    marginRight: theme.spacing(2),
-    height: "3em",
-    width: "3em",
-  },
-  numberField: {
-    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-      "-webkit-appearance": "none",
-      margin: 0,
-    },
-    "input[type=number]": {
-      "-moz-appearance": "textfield",
-    },
-  },
-  divider: {
-    margin: theme.spacing(1, 0),
-  },
-  supportBox: {
-    minWidth: "auto",
-    marginRight: 0,
-  }
-}));
+});
 
 interface FormValues {
   name: string;
   sortOrder: string;
   coverUrl: string;
-  originalSong?: Song;
+  originalSong?: Partial<Song>;
   artists: {
     artist: Partial<Artist>;
     artistRoles: VDBArtistRoleType[];
@@ -129,11 +106,18 @@ interface Props {
   songToEdit?: Partial<Song>;
 }
 
-export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeyword, setSong, songToEdit, create }: Props) {
+export default function SongEntityDialog({
+                                           isOpen,
+                                           toggleOpen,
+                                           keyword,
+                                           setKeyword,
+                                           setSong,
+                                           songToEdit,
+                                           create
+                                         }: Props) {
 
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
-  const styles = useStyles();
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
@@ -164,6 +148,28 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
 
   const songId = songToEdit?.id ?? null;
 
+  const schema = yup.object({
+    name: yup.string().required(),
+    sortOrder: yup.string().required(),
+    coverUrl: yup.string().nullable().url(),
+    originalSong: yup.object().nullable(),
+    artists: yup.array(yup.object({
+      artist: yup.object().typeError("Artist entity must be selected."),
+      artistRoles: yup.array(yup.string() as StringSchema<VDBArtistRoleType>).required(),
+      categories: yup.array(yup.string() as StringSchema<VDBArtistCategoryType>).required(),
+      customName: yup.string().nullable(),
+      isSupport: yup.boolean().required(),
+    })),
+    albums: yup.array(yup.object({
+      album: yup.object().typeError("Album entity must be selected."),
+      diskNumber: yup.number().optional().nullable().positive().integer(),
+      trackNumber: yup.number().optional().nullable().positive().integer(),
+      name: yup.string().required(),
+    })),
+  });
+
+  const validate = makeValidate<FormValues>(schema);
+
   return (
     <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
       <Form<FormValues>
@@ -173,25 +179,7 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
           ...arrayMutators,
         }}
         subscription={{}}
-        validate={makeValidate<FormValues>(yup.object({
-          name: yup.string().required(),
-          sortOrder: yup.string().required(),
-          coverUrl: yup.string().nullable().url(),
-          originalSong: yup.object<Song>().nullable(),
-          artists: yup.array(yup.object({
-            artist: yup.object().typeError("Artist entity must be selected."),
-            artistRoles: yup.array(yup.string<VDBArtistRoleType>()).required(),
-            categories: yup.array(yup.string<VDBArtistCategoryType>()).required(),
-            customName: yup.string().nullable(),
-            isSupport: yup.boolean().required(),
-          })),
-          albums: yup.array(yup.object({
-            album: yup.object().typeError("Album entity must be selected."),
-            diskNumber: yup.number().optional().nullable().positive().integer(),
-            trackNumber: yup.number().optional().nullable().positive().integer(),
-            name: yup.string().required(),
-          })),
-        }))}
+        validate={validate}
         onSubmit={async (values) => {
           try {
             const data = {
@@ -279,10 +267,14 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                     name="sortOrder" type="text" label="Sort order" />
                 </Grid>
                 <Grid item xs={12}>
-                  <div className={styles.mainPictureRow}>
+                  <Stack flexDirection="row" alignItems="center">
                     <AvatarField
                       name="coverUrl"
-                      className={styles.mainPictureThumbnail}
+                      sx={{
+                        marginRight: 2,
+                        height: "3em",
+                        width: "3em",
+                      }}
                     />
                     <TextField
                       variant="outlined"
@@ -292,12 +284,18 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                         endAdornment: <VideoThumbnailAdornment name="coverUrl" />,
                       }}
                       name="coverUrl" type="text" label="Cover URL" />
-                  </div>
+                  </Stack>
                 </Grid>
               </Grid>
               <SelectSongEntityBox fieldName="originalSong" labelName="Original song" />
-              <Typography variant="h6" component="h3" className={styles.divider}>Artists</Typography>
-              <FieldArray name="artists" subscription={{ error: true, touched: true, modified: true, dirtySinceLastSubmit: true, submitError: true}}>
+              <Typography sx={dividerRowSx} variant="h6" component="h3">Artists</Typography>
+              <FieldArray name="artists" subscription={{
+                error: true,
+                touched: true,
+                modified: true,
+                dirtySinceLastSubmit: true,
+                submitError: true
+              }}>
                 {({ fields, meta, }) => (
                   <>
                     {fields.map((name, idx) => (
@@ -306,12 +304,13 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                           fieldName={`${name}.artist`}
                           labelName="Artist"
                         />
-                        <div className={styles.artistRow}>
+                        <Stack flexDirection="row" alignItems="center">
                           <Select
                             type="text"
                             label="Roles"
                             name={`${name}.artistRoles`}
                             multiple
+                            sx={{ marginRight: 1 }}
                             formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
                             inputProps={{ name: `${name}.artistRoles`, id: `${name}.artistRoles` }}
                           >
@@ -352,12 +351,20 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                             <MenuItem value="Illustrator">Illustrator</MenuItem>
                             <MenuItem value="Subject">Subject</MenuItem>
                           </Select>
-                        </div>
-                        <div className={styles.artistRow}>
-                          <Checkboxes indeterminate={false} data={{ label: "Support", value: true }}
-                                      formControlProps={{className: styles.supportBox}}
-                                      name={`${name}.isSupport`} />
+                        </Stack>
+                        <Stack flexDirection="row" alignItems="center">
+                          <Checkboxes
+                            sx={{ marginRight: 1 }}
+                            indeterminate={false} data={{ label: "Support", value: true }}
+                            formControlProps={{
+                              sx: {
+                                minWidth: "auto",
+                                marginRight: 0,
+                              }
+                            }}
+                            name={`${name}.isSupport`} />
                           <TextField
+                            sx={{ marginRight: 1 }}
                             variant="outlined"
                             margin="dense"
                             fullWidth
@@ -366,8 +373,8 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                                       onClick={() => fields.remove(idx)}>
                             <DeleteIcon />
                           </IconButton>
-                        </div>
-                        <Divider className={styles.divider} />
+                        </Stack>
+                        <Divider sx={dividerRowSx} />
                       </Fragment>
                     ))}
                     <Button
@@ -384,12 +391,12 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                     >
                       Add artist
                     </Button>
-                    {showErrorOnChange({meta}) ?
+                    {showErrorOnChange({ meta }) ?
                       <FormHelperText error>{meta.submitError ?? meta.error?.[0]}</FormHelperText> : false}
                   </>
                 )}
               </FieldArray>
-              <Typography variant="h6" component="h3" className={styles.divider}>Albums</Typography>
+              <Typography variant="h6" component="h3" sx={dividerRowSx}>Albums</Typography>
               <FieldArray name="albums" subscription={{}}>
                 {({ fields }) => (
                   <>
@@ -402,9 +409,8 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                               labelName="Album"
                             />
                         }</Field>
-                        <div className={styles.artistRow}>
-                          <TextField
-                            className={styles.numberField}
+                        <Stack flexDirection="row" alignItems="center">
+                          <NumberField
                             variant="outlined"
                             margin="dense"
                             fullWidth
@@ -412,8 +418,7 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                               startAdornment: <InputAdornment position="start"><AlbumIcon /></InputAdornment>,
                             }}
                             name={`${name}.diskNumber`} type="number" label="Disk number" />
-                          <TextField
-                            className={styles.numberField}
+                          <NumberField
                             variant="outlined"
                             margin="dense"
                             fullWidth
@@ -421,8 +426,8 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                               startAdornment: <InputAdornment position="start"><MusicNoteIcon /></InputAdornment>,
                             }}
                             name={`${name}.trackNumber`} type="number" label="Track number" />
-                        </div>
-                        <div className={styles.artistRow}>
+                        </Stack>
+                        <Stack flexDirection="row" alignItems="center">
                           <TextField
                             variant="outlined"
                             margin="dense"
@@ -439,8 +444,8 @@ export default function SongEntityDialog({ isOpen, toggleOpen, keyword, setKeywo
                           <IconButton color="primary" aria-label="Delete album item" onClick={() => fields.remove(idx)}>
                             <DeleteIcon />
                           </IconButton>
-                        </div>
-                        <Divider className={styles.divider} />
+                        </Stack>
+                        <Divider sx={dividerRowSx}/>
                       </Fragment>
                     ))}
                     <Field name="name" subscription={{ value: true }}>

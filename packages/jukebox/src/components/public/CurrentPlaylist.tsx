@@ -7,13 +7,12 @@ import {
   ListItemSecondaryAction,
   IconButton,
   ListItemIcon,
-  RootRef,
   Menu,
-  MenuItem,
-} from "@material-ui/core";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
-import DragHandleIcon from "@material-ui/icons/DragHandle";
-import DeleteIcon from "@material-ui/icons/Delete";
+  MenuItem, ListItemButton,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DragHandleIcon from "@mui/icons-material/DragHandle";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useRef, useCallback } from "react";
 import AutoResizer from "react-virtualized-auto-sizer";
 import { FixedSizeList, ListChildComponentProps, areEqual } from "react-window";
@@ -57,36 +56,39 @@ function CurrentPlaylistItem({
 
   // isDragging = true;
   return (
-    <RootRef rootRef={provided.innerRef}>
-      <ListItem
-        button
-        ContainerProps={{
-          ...provided.draggableProps,
-          style: {
-            ...style,
-            ...provided.draggableProps.style,
-            opacity: index < playlist.nowPlaying ? 0.375 : 1,
-          },
-        }}
-        style={{
-          height: 60,
-        }}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        ContainerComponent={isDragging ? "div" : "li"}
-        selected={playlist.nowPlaying === index || isDragging}
-        onClick={
-          isDragging
-            ? null
-            : () => {
-              playlist.playTrack(index, true);
-            }
-        }
-      >
-        <ListItemIcon style={{ zIndex: 10 }} {...provided.dragHandleProps}>
+    <ListItem
+      ref={provided.innerRef}
+      {...provided.draggableProps}
+      ContainerProps={{
+        style: {
+          opacity: index < playlist.nowPlaying ? 0.375 : 1,
+        },
+      }}
+      style={{
+        ...style,
+        ...provided.draggableProps.style,
+        height: 60,
+      }}
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      ContainerComponent={isDragging ? "div" : "li"}
+      selected={playlist.nowPlaying === index || isDragging}
+      onClick={
+        isDragging
+          ? null
+          : () => {
+            playlist.playTrack(index, true);
+          }
+      }
+    >
+      <ListItemButton>
+        <ListItemIcon style={{ zIndex: 10 }}
+                      {...provided.dragHandleProps}
+        >
           <DragHandleIcon />
         </ListItemIcon>
         <ListItemText
+          sx={{width: 0, mr: 8}}
           primary={track.trackName || "No title"}
           primaryTypographyProps={{ noWrap: true }}
           secondary={track.artistName || "Unknown artist"}
@@ -102,7 +104,6 @@ function CurrentPlaylistItem({
           </IconButton>
           <Menu
             id={`currentPlaylist-menu-${track.id}`}
-            getContentAnchorEl={null}
             anchorOrigin={{
               vertical: "bottom",
               horizontal: "right",
@@ -124,8 +125,8 @@ function CurrentPlaylistItem({
             </MenuItem>
           </Menu>
         </ListItemSecondaryAction>
-      </ListItem>
-    </RootRef>
+      </ListItemButton>
+    </ListItem>
   );
 }
 
@@ -136,7 +137,7 @@ CurrentPlaylistItem.defaultProps = {
 
 const Row = React.memo((props: ListChildComponentProps) => {
   const { data, index, style } = props;
-  const item: Track = data[index];
+  const item: Track = data[index] ?? {id: -index};
 
   return (
     <Draggable
@@ -189,19 +190,21 @@ export default function CurrentPlaylist() {
 
   const listRef = useRef<FixedSizeList>();
   useEffect(() => {
-    console.log("listref current", listRef.current, "nowplaying", playlist.nowPlaying);
+    // console.log("listref current", listRef.current, "nowplaying", playlist.nowPlaying);
     if (listRef.current && playlist.nowPlaying !== null) {
-      console.log("SCROLL!!");
+      // console.log("SCROLL!!");
       listRef.current.scrollToItem(playlist.nowPlaying, "start");
     }
   }, [playlist.nowPlaying, playlist.tracks]);
 
-  console.log("initial scroll offset", playlist.nowPlaying ? playlist.nowPlaying * 60 : 0);
+  // console.log("initial scroll offset", playlist.nowPlaying ? playlist.nowPlaying * 60 : 0);
 
   return (
     <List dense={true} className={style.playlist}>
       <AutoResizer>
         {({ height, width }) => (
+          // console.log([height, width]);
+          // return (
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable
               droppableId="droppable-currentPlaylist"
@@ -217,23 +220,28 @@ export default function CurrentPlaylist() {
                     isDragging={snapshot.isDragging}
                     provided={provided}
                   />
-                )}
-            >
-              {(droppableProvided: DroppableProvided) => (
+                 )}
+             >
+            {(droppableProvided: DroppableProvided) => {
+              console.log("playlist now playing", playlist.nowPlaying, "tracks length", tracks.length);
+             return (
                 <FixedSizeList
                   ref={listRef}
                   height={height}
                   width={width}
                   itemSize={60}
                   itemData={tracks}
-                  itemCount={tracks.length}
+                  // tracks.length on load is 0, we need at least `playlist.nowPlaying` plus an offset to ensure that
+                  // the list scrolls to the correct position before we have the data.
+                  itemCount={Math.max(tracks.length, playlist.nowPlaying ? playlist.nowPlaying + 50 : 0)}
                   initialScrollOffset={playlist.nowPlaying ? playlist.nowPlaying * 60 : 0}
                   itemKey={(i, d) => `${i}-${d.id}`}
                   outerRef={droppableProvided.innerRef}
                 >
                   {Row}
                 </FixedSizeList>
-              )}
+              )
+            }}
             </Droppable>
           </DragDropContext>
         )}

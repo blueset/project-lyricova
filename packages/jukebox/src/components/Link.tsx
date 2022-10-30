@@ -1,6 +1,6 @@
 import React, { AnchorHTMLAttributes } from "react";
 import NextLink from "next/link";
-import { Link as MuiLink } from "@material-ui/core";
+import { Link as MuiLink } from "@mui/material";
 import { useRouter } from "next/router";
 import clsx from "clsx";
 
@@ -56,7 +56,7 @@ function Link(props: LinkProps) {
   });
 
   if (naked) {
-    return <NextComposedLink className={className} ref={innerRef} href={href} {...other} />;
+    return <NextComposedLink className={className} ref={innerRef} href={href} {...other as unknown as NextComposedProps} />;
   }
 
   return (

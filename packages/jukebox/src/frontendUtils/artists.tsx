@@ -20,7 +20,7 @@ export function formatArtists(artists: Artist[], renderer: (artists: Artist[]) =
   const { producers, vocalists } = splitArtists(artists);
 
   if (producers.length && vocalists.length) {
-    return <>{renderer(producers)} feat. {renderer(vocalists)}</>;
+    return <>{renderer(producers)}{" feat. "}{renderer(vocalists)}</>;
   } else if (producers.length || vocalists.length) {
     const list = producers.length ? producers : vocalists;
     return <>{renderer(list)}</>;

@@ -1,4 +1,4 @@
-import { Grid, ListItem, ListItemText, TextField, Typography } from "@material-ui/core";
+import { Grid, ListItem, ListItemText, TextField, Typography } from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef } from "react";
 import { buildTimeTag, resolveTimeTag } from "lyrics-kit/build/main/utils/regexPattern";

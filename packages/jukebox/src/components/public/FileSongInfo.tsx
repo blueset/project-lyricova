@@ -1,18 +1,20 @@
 import { gql, useQuery } from "@apollo/client";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { MusicFile } from "../../models/MusicFile";
 import { useRouter } from "next/router";
 import React, { ReactNode, useCallback, useMemo } from "react";
-import { Alert } from "@material-ui/lab";
-import { Avatar, Chip, Divider, Grid, Typography } from "@material-ui/core";
+import { Avatar, Box, Chip, Divider, Grid, styled, Typography, Alert } from "@mui/material";
 import clsx from "clsx";
 import { Artist } from "../../models/Artist";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ButtonRow from "../ButtonRow";
 import { NextComposedLink } from "../Link";
 import { formatTime } from "../../frontendUtils/strings";
 import filesize from "filesize";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { DocumentNode } from "graphql";
+import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import { Theme } from "@emotion/react";
 
 const SINGLE_FILE_SONG_QUERY = gql`
   query($id: Int!) {
@@ -45,77 +47,15 @@ const SINGLE_FILE_SONG_QUERY = gql`
       }
     }
   }
-`;
+` as DocumentNode;
 
-const useStyles = makeStyles((theme) => ({
-  cover: {
-    width: "calc(100% - 16px)",
-    paddingTop: "calc(100% - 16px)",
-    height: 0,
-    overflow: "hidden",
-    position: "relative",
-    marginBottom: theme.spacing(2),
-    "& > img": {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-    },
-  },
-  sidePanel: {
-    [theme.breakpoints.up("md")]: {
-      position: "sticky",
-      top: theme.spacing(2),
-    },
-    marginBottom: theme.spacing(4),
-  },
-  headings: {
-    lineHeight: 1.2,
-  },
-  majorHeadings: {
-    fontWeight: "bold",
-  },
-  responsiveTable: {
-    margin: theme.spacing(2, 0),
-    [theme.breakpoints.up("md")]: {
-      display: "table",
-      width: "100%",
-      borderCollapse: "collapse",
-      tableLayout: "fixed",
-    },
-  },
-  responsiveTableRow: {
-    [theme.breakpoints.up("md")]: {
-      display: "table-row",
-    },
-  },
-  responsiveTableCell: {
-    [theme.breakpoints.up("md")]: {
-      display: "table-cell",
-      padding: theme.spacing(1, 0),
-      borderBottom: `1px solid ${theme.palette.divider}`,
-    },
-  },
-  responsiveTableCellHeader: {
-    [theme.breakpoints.up("md")]: {
-      minWidth: "8em",
-      width: "30%",
-      maxWidth: "20em",
-    },
-  },
-  responsiveTableDivider: {
-    [theme.breakpoints.up("md")]: {
-      display: "none",
-    },
-  },
-  artistButtonRow: {
-    margin: 0,
-  },
-  navigationRow: {
-    marginBottom: theme.spacing(4),
-  },
-}));
+const ResponsiveTableCellSx: SxProps<Theme> = {
+  display: {md: "table-cell"},
+  paddingTop: {md: 1},
+  paddingBottom: {md: 1},
+  borderBottom: {md: 1},
+  borderBottomColor: {md: "divider"},
+};
 
 interface Props {
   partialFile: Partial<MusicFile>;
@@ -123,11 +63,9 @@ interface Props {
 }
 
 export default function FileSongInfo({ partialFile, fileId }: Props) {
-
-  const idToQuery = fileId == null ? partialFile.id : fileId;
+  const idToQuery = fileId ?? partialFile.id;
 
   const query = useQuery<{ musicFile: MusicFile }>(SINGLE_FILE_SONG_QUERY, { variables: { id: idToQuery } });
-  const styles = useStyles();
   const router = useRouter();
 
   let banner: ReactNode = null;
@@ -141,12 +79,17 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
   );
 
   const TableRow = useCallback(({ heading, children }: { heading: ReactNode, children: ReactNode }) =>
-    <div className={styles.responsiveTableRow}>
-      <Typography className={clsx(styles.responsiveTableCell, styles.responsiveTableCellHeader)} variant="overline"
-                  color="textSecondary">{heading}</Typography>
-      <Typography className={styles.responsiveTableCell} variant="body1">{children}</Typography>
-      <Divider className={styles.responsiveTableDivider} />
-    </div>, [styles]
+    <Box sx={{display: {md: "table-row"},}}>
+      <Typography sx={{
+        ...ResponsiveTableCellSx,
+        minWidth: "8em",
+        width: "30%",
+        maxWidth: "20em",
+      }} variant="overline"
+      color="textSecondary">{heading}</Typography>
+      <Typography sx={ResponsiveTableCellSx} variant="body1">{children}</Typography>
+      <Divider sx={{display: {md: "none"}}} />
+    </Box>, []
   );
 
   const [producers, vocalists] = useMemo((): [Artist[], Artist[]] => {
@@ -171,29 +114,54 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
     <>
       {fileId !== null &&
       <Chip label="Now playing" icon={<ArrowBackIcon />} clickable
-            className={styles.navigationRow}
+            sx={{marginBottom: 4}}
             variant="outlined" onClick={() => router.push("/info")}
       />
       }
       {banner}
       <Grid container spacing={2}>
         {file.hasCover && <Grid item md={4} xs={12}>
-            <div className={styles.sidePanel}>
+            <Box sx={{
+              position: {md: "sticky"},
+              top: {md: 2},
+              marginBottom: 4,
+            }}>
               {file.hasCover &&
-              <Avatar variant="rounded" src={`/api/files/${file.id}/cover`} className={styles.cover} />}
-            </div>
+              <Avatar variant="rounded" src={`/api/files/${file.id}/cover`} sx={{
+                width: "calc(100% - 16px)",
+                paddingTop: "calc(100% - 16px)",
+                height: 0,
+                overflow: "hidden",
+                position: "relative",
+                marginBottom: 2,
+                "& > img": {
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                },
+              }} />}
+            </Box>
         </Grid>}
         <Grid item md={file.hasCover ? 8 : 12} xs={12}>
           <Typography variant="overline" color="textSecondary">
             {fileId == null ? "Now playing" : "File details"}
           </Typography>
-          <Typography className={clsx(styles.headings, styles.majorHeadings)} variant="h5">{file.trackName}</Typography>
-          <Typography className={styles.headings} variant="h6">{file.artistName}</Typography>
-          <Typography className={styles.headings} variant="body1" color="textSecondary">{file.albumName}</Typography>
+          <Typography sx={{lineHeight: 1.2, fontWeight: "bold",}} variant="h5">{file.trackName}</Typography>
+          <Typography sx={{lineHeight: 1.2,}} variant="h6">{file.artistName}</Typography>
+          <Typography sx={{lineHeight: 1.2,}} variant="body1" color="textSecondary">{file.albumName}</Typography>
 
-          <div className={styles.responsiveTable}>
+          <Box sx={{
+            marginTop: 2,
+            marginBottom: 2,
+            display: {md: "table"},
+            width: {md: "100%"},
+            borderCollapse: {md: "collapse"},
+            tableLayout: {md: "fixed"},
+          }}>
             {producers.length > 0 && <TableRow heading="Producers">
-                <ButtonRow className={styles.artistButtonRow}>
+                <ButtonRow sx={{margin: 0}}>
                   {
                     producers.map(v =>
                       <Chip label={v.name} component={NextComposedLink}
@@ -204,7 +172,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                 </ButtonRow>
             </TableRow>}
             {vocalists.length > 0 && <TableRow heading="Vocalists">
-                <ButtonRow className={styles.artistButtonRow}>
+                <ButtonRow sx={{margin: 0}}>
                   {
                     vocalists.map(v =>
                       <Chip label={v.name} component={NextComposedLink}
@@ -229,7 +197,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                       target="_blank" href={`https://vocadb.net/S/${file.song.id}`} clickable
                       icon={<OpenInNewIcon fontSize="small" />} variant="outlined" />
             </TableRow>}
-          </div>
+          </Box>
         </Grid>
       </Grid>
     </>

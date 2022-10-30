@@ -1,5 +1,6 @@
 import { Album } from "../../../models/Album";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -8,18 +9,18 @@ import {
   Divider,
   Grid,
   IconButton,
-  MenuItem,
+  MenuItem, Stack,
   Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { Fragment, useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import TransliterationAdornment from "../TransliterationAdornment";
 import { useSnackbar } from "notistack";
-import AddIcon from "@material-ui/icons/Add";
-import DeleteIcon from "@material-ui/icons/Delete";
-import SortIcon from "@material-ui/icons/Sort";
-import AutorenewIcon from "@material-ui/icons/Autorenew";
-import { makeStyles } from "@material-ui/core/styles";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SortIcon from "@mui/icons-material/Sort";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
+import { makeStyles } from "@mui/material/styles";
 import SelectSongEntityBox from "./selectSongEntityBox";
 import TrackNameAdornment from "../TrackNameAdornment";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
@@ -37,6 +38,8 @@ import AvatarField from "./AvatarField";
 import { Song } from "../../../models/Song";
 import { VDBArtistCategoryType, VDBArtistRoleType } from "../../../types/vocadb";
 import { useNamedState } from "../../../frontendUtils/hooks";
+import { DocumentNode } from "graphql";
+import StringSchema from "yup/lib/string";
 
 const NEW_ALBUM_MUTATION = gql`
   mutation($data: AlbumInput!) {
@@ -46,7 +49,7 @@ const NEW_ALBUM_MUTATION = gql`
   }
   
   ${AlbumFragments.SelectAlbumEntry}
-`;
+` as DocumentNode;
 
 const UPDATE_ALBUM_MUTATION = gql`
   mutation($id: Int!, $data: AlbumInput!) {
@@ -56,7 +59,7 @@ const UPDATE_ALBUM_MUTATION = gql`
   }
   
   ${AlbumFragments.SelectAlbumEntry}
-`;
+` as DocumentNode;
 
 const FULL_ALBUM_QUERY = gql`
   query($id: Int!) {
@@ -66,7 +69,7 @@ const FULL_ALBUM_QUERY = gql`
   }
   
   ${AlbumFragments.FullAlbumEntry}
-`;
+` as DocumentNode;
 
 interface RoleFieldProps {
   name: string;
@@ -104,49 +107,6 @@ function RoleField<T extends string>({ name, label }: RoleFieldProps) {
   );
 }
 
-
-const useStyles = makeStyles((theme) => ({
-  artistRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "flex-start",
-    "& > *": {
-      marginRight: theme.spacing(1),
-    },
-    "& > *:last-child": {
-      marginRight: 0,
-    },
-  },
-  mainPictureRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  mainPictureThumbnail: {
-    marginRight: theme.spacing(2),
-    height: "3em",
-    width: "3em",
-  },
-  refreshButton: {
-    position: "absolute",
-    top: theme.spacing(1),
-    right: theme.spacing(1),
-  },
-  numberField: {
-    width: "10em",
-    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-      "-webkit-appearance": "none",
-      margin: 0,
-    },
-    "input[type=number]": {
-      "-moz-appearance": "textfield",
-    },
-  },
-  divider: {
-    margin: theme.spacing(1, 0),
-  }
-}));
-
 interface FormValues {
   name: string;
   sortOrder: string;
@@ -177,16 +137,13 @@ interface Props {
 }
 
 export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyword, setAlbum, create, albumToEdit }: Props) {
-
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
-  const styles = useStyles();
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
     setKeyword("");
   }, [toggleOpen, setKeyword]);
-
 
   const buildInitialValues: FormValues = (create || !albumToEdit) ? {
     name: keyword,
@@ -268,9 +225,9 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
           })),
           artists: yup.array().of(yup.object({
             artist: yup.object().typeError("Artist entity must be selected."),
-            categories: yup.string<VDBArtistCategoryType>().required(),
-            roles: yup.array(yup.string<VDBArtistRoleType>().required()).required(),
-            effectiveRoles: yup.array(yup.string<VDBArtistRoleType>().required()).required(),
+            categories: yup.string().required() as StringSchema<VDBArtistCategoryType>,
+            roles: yup.array(yup.string() as StringSchema<VDBArtistRoleType>).required(),
+            effectiveRoles: yup.array(yup.string() as StringSchema<VDBArtistRoleType>).required(),
           }))
         }))}
         onSubmit={async (values) => {
@@ -331,7 +288,8 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
           <>
             <DialogTitle id="form-dialog-title">
               {create ? "Create new album entity" : `Edit album entity #${albumId}`}
-              {!create && <IconButton className={styles.refreshButton} onClick={refresh}><AutorenewIcon /></IconButton>}
+              {!create && <IconButton sx={{ position: "absolute", top: 1, right: 1, }}
+                                      onClick={refresh}><AutorenewIcon /></IconButton>}
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
@@ -358,10 +316,18 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                     name="sortOrder" type="text" label="Sort order" />
                 </Grid>
                 <Grid item xs={12}>
-                  <div className={styles.mainPictureRow}>
+                  <Box sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}>
                     <AvatarField
                       name="coverUrl"
-                      className={styles.mainPictureThumbnail}
+                      sx={{
+                        marginRight: 2,
+                        height: "3em",
+                        width: "3em",
+                      }}
                     />
                     <TextField
                       variant="outlined"
@@ -371,10 +337,10 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                         endAdornment: <VideoThumbnailAdornment name="coverUrl" />,
                       }}
                       name="coverUrl" type="text" label="Cover URL" />
-                  </div>
+                  </Box>
                 </Grid>
               </Grid>
-              <Typography variant="h6" component="h3" className={styles.divider}>Artists</Typography>
+              <Typography variant="h6" component="h3" sx={{mt: 1, mb: 1}}>Artists</Typography>
               <FieldArray name="artists" subscription={{ error: true }}>
                 {({ fields }) => (
                   <>
@@ -384,11 +350,11 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                           fieldName={`${name}.artist`}
                           labelName="Artist"
                         />
-                        <div className={styles.artistRow}>
+                        <Stack direction="row" spacing={1}>
                           <RoleField name={`${name}.roles`} label="Roles" />
                           <RoleField name={`${name}.effectiveRoles`} label="Effective roles" />
-                        </div>
-                        <div className={styles.artistRow}>
+                        </Stack>
+                        <Stack direction="row" spacing={1}>
                           <TextField
                             type="text"
                             label="Category"
@@ -414,8 +380,8 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                                       onClick={() => fields.remove(idx)}>
                             <DeleteIcon />
                           </IconButton>
-                        </div>
-                        <Divider className={styles.divider} />
+                        </Stack>
+                        <Divider sx={{mt: 1, mb: 1}} />
                       </Fragment>
                     ))}
                     <Button
@@ -434,7 +400,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                   </>
                 )}
               </FieldArray>
-              <Typography variant="h6" component="h3" className={styles.divider}>Tracks</Typography>
+              <Typography variant="h6" component="h3" sx={{mt: 1, mb: 1}}>Tracks</Typography>
               <FieldArray name="songs" subscription={{}}>
                 {({ fields }) => (
                   <>
@@ -444,14 +410,32 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                           fieldName={`songs.${idx}.song`}
                           labelName="Track"
                         />
-                        <div className={styles.artistRow}>
+                        <Stack direction="row" spacing={1}>
                           <TextField
-                            className={styles.numberField}
+                            sx={{
+                              width: "10em",
+                              "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                                "appearance": "none",
+                                margin: 0,
+                              },
+                              "input[type=number]": {
+                                "appearance": "textfield",
+                              },
+                            }}
                             variant="outlined"
                             margin="dense"
                             name={`songs.${idx}.diskNumber`} type="number" label="#Disk" />
                           <TextField
-                            className={styles.numberField}
+                            sx={{
+                              width: "10em",
+                              "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                                "appearance": "none",
+                                margin: 0,
+                              },
+                              "input[type=number]": {
+                                "appearance": "textfield",
+                              },
+                            }}
                             variant="outlined"
                             margin="dense"
                             name={`songs.${idx}.trackNumber`} type="number" label="#Track" />
@@ -471,15 +455,14 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                           <IconButton color="primary" aria-label="Delete album item" onClick={() => fields.remove(idx)}>
                             <DeleteIcon />
                           </IconButton>
-                        </div>
-                        <Divider className={styles.divider} />
+                        </Stack>
+                        <Divider sx={{mt: 1, mb: 1}} />
                       </>
                     ))}
-                    <div className={styles.artistRow}>
+                    <Stack direction="row" spacing={1}>
                       <Field name="songs">{({input: {value}}) => (
                         <Button
                           variant="outlined"
-                          color="default"
                           startIcon={<SortIcon />}
                           onClick={() => form.mutators.setValue(
                             "songs",
@@ -502,7 +485,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                       >
                         Add Album
                       </Button>
-                    </div>
+                    </Stack>
                   </>
                 )}
               </FieldArray>

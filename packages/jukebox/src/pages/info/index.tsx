@@ -1,6 +1,6 @@
 import { NextComposedLink } from "../../components/Link";
 import { getLayout } from "../../components/public/layouts/IndexLayout";
-import { Box, Chip } from "@material-ui/core";
+import { Box, Chip } from "@mui/material";
 import { useAuthContext } from "../../components/public/AuthContext";
 import { useAppContext } from "../../components/public/AppContext";
 import ButtonRow from "../../components/ButtonRow";

@@ -1,57 +1,39 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles, useTheme } from "@material-ui/core";
+import { makeStyles, styled, Theme, useTheme } from "@mui/material";
 import { motion, Variants, AnimatePresence, Transition, TargetAndTransition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import _ from "lodash";
 import clsx from "clsx";
+import { CSSProperties } from "react";
+import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
 const ANIMATION_THRESHOLD = 0.25;
 
-const useStyle = makeStyles((theme) => {
-  return {
-    container: {
-      padding: theme.spacing(0, 4),
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "start",
-      overflow: "hidden",
-      maskBorderImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBorderImageSlice: "49% 0 fill",
-      maskBorderImageWidth: "100px 0",
-      maskBoxImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBoxImageSlice: "49% 0 fill",
-      maskBoxImageWidth: "35px 0 50%",
-    },
-    nextLine: {
-      fontWeight: 600,
-      lineHeight: 1.2,
-      textWrap: "balance",
-      fontSize: "3em",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundAttachment: "fixed",
-      display: "flex",
-      flexDirection: "column-reverse",
-      color: "rgba(255, 255, 255, 0.4)",
-      "--jukebox-cover-filter-bright-blur": "var(--jukebox-cover-filter-bright) blur(var(--jukebox-ringo-blur-radius))",
-      filter: "var(--jukebox-cover-filter-bright-blur, blur(var(--jukebox-ringo-blur-radius)))",
-      "& .translation": {
-        display: "block",
-        fontSize: "0.7em",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      },
-    },
-    resizable: {
-      width: "62.5%",
-    },
-  };
-});
+const SxMotionDiv = styled(motion.div)``;
+const MotionDivLine = styled(motion.div)`
+  font-weight: 600;
+  line-height: 1.2;
+  text-wrap: balance;
+  font-size: 3em;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column-reverse;
+  color: rgba(255, 255, 255, 0.4);
+  --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright) blur(var(--jukebox-ringo-blur-radius));
+  filter: var(--jukebox-cover-filter-bright-blur, blur(var(--jukebox-ringo-blur-radius)));
+  transform-origin: top left;
+  & .translation {
+    display: block;
+    font-size: 0.7em;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+`;
 
 const TRANSLATION_LINE_VARIANTS: Variants = {
   current: {
@@ -67,7 +49,7 @@ const TRANSLATION_LINE_VARIANTS: Variants = {
 
 const TRANSITION: Transition = {
   duration: 0.2,
-  ease: "easeOut",
+  ease: "easeInOut",
 };
 
 interface LyricsLineElementProps {
@@ -76,55 +58,52 @@ interface LyricsLineElementProps {
   offsetIndex: number;
   animate: boolean;
   resize: boolean;
-
+  sx?: SxProps<Theme>;
 }
 
-function LyricsLineElement({ className, line, offsetIndex, animate, resize }: LyricsLineElementProps) {
+function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }: LyricsLineElementProps) {
+  const theme = useTheme();
   if (!line) return null;
   const transition = animate ? TRANSITION : { duration: 0 };
-  const theme = useTheme();
 
   const styles: TargetAndTransition = {
     opacity: 1,
     height: "auto",
     marginBottom: 50,
-    width: "100%",
+    width: resize ? "72.5%" : "100%",
     fontSize: theme.typography.fontSize * 3,
     transitionEnd: {
-      filter: "var(--jukebox-cover-filter-bright-blur, blur(var(--jukebox-ringo-blur-radius)))",
+      filter: "var(--jukebox-cover-filter-brighter, blur(var(--jukebox-ringo-blur-radius)))",
+      mixBlendMode: "hard-light",
     },
   };
 
   if (offsetIndex === 0) {
     if (resize) {
-      styles.fontSize = theme.typography.fontSize * 5;
+      styles.scale = 1.3;
     } else {
     }
     styles.transitionEnd.filter = "var(--jukebox-cover-filter-brighter)";
     styles.transitionEnd.mixBlendMode = "hard-light";
     styles.color = "rgba(255, 255, 255, 0.7)";
   } else {
-    if (resize) {
-      styles.fontSize = 14 * 3;
-      styles.width = "62.5%";
-    }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+
     // @ts-ignore
     styles["--jukebox-ringo-blur-radius"] = `${0.4 * Math.abs(offsetIndex)}px`;
+    styles.opacity = 0.75;
     styles.transitionEnd.mixBlendMode = "overlay";
     styles.color = "rgba(255, 255, 255, 0.4)";
     if (offsetIndex < 0) {
       styles.height = 35;
     }
   }
-
-
+  
   const translationVariants = resize ? TRANSLATION_LINE_VARIANTS : {
     exit: TRANSLATION_LINE_VARIANTS.exit,
   };
 
   return (
-    <motion.div
+    <MotionDivLine
       lang="ja"
       className={className}
       transition={transition}
@@ -158,7 +137,7 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize }: Ly
           )
         }
       </div>
-    </motion.div >
+    </MotionDivLine>
   );
 }
 
@@ -171,16 +150,28 @@ export function RingoLyrics({ lyrics, resize }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
 
-  const styles = useStyle();
-
   const lines = lyrics.lines;
 
   const lineNumber = line || 0;
 
   return (
-    <motion.div className={styles.container}>
+    <SxMotionDiv sx={{
+      paddingLeft: 4,
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "start",
+      overflow: "hidden",
+      maskBorderImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+      maskBorderImageSlice: "49% 0 fill",
+      maskBorderImageWidth: "100px 0",
+      maskBoxImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+      maskBoxImageSlice: "49% 0 fill",
+      maskBoxImageWidth: "35px 0 50%",
+    } as unknown as CSSProperties}>
       <AnimatePresence initial={false}>
-        {lineNumber === 0 && <motion.div animate={{ minHeight: 35, }} exit={{ minHeight: 0, }} ></motion.div>}
+        {lineNumber === 0 && <motion.div animate={{ minHeight: 35, }} exit={{ minHeight: 0, }} />}
         {lines.map((l, idx) => {
           if (idx < lineNumber - 1 || idx > lineNumber + 12) return null;
           const animate =
@@ -188,7 +179,10 @@ export function RingoLyrics({ lyrics, resize }: Props) {
             (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
           return (
             <LyricsLineElement
-              className={clsx(styles.nextLine, "coverMask", resize && styles.resizable)}
+              sx={{
+                ...(resize && {width: "62.5%",})
+              } as unknown as CSSProperties}
+              className="coverMask"
               line={l}
               key={idx}
               animate={animate}
@@ -196,6 +190,6 @@ export function RingoLyrics({ lyrics, resize }: Props) {
               offsetIndex={line !== null ? idx - line : idx + 1} />);
         })}
       </AnimatePresence>
-    </motion.div>
+    </SxMotionDiv>
   );
 }

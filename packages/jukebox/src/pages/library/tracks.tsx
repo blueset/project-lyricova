@@ -1,6 +1,7 @@
 import Link from "../../components/Link";
 import { getLayout } from "../../components/public/layouts/LibraryLayout";
 import {
+  Alert,
   Badge,
   Box,
   Chip,
@@ -9,32 +10,32 @@ import {
   ListItem, ListItemIcon, ListItemSecondaryAction,
   ListItemText,
   Menu, MenuItem,
-  Slider,
-  ValueLabelProps
-} from "@material-ui/core";
-import PlaylistPlayIcon from "@material-ui/icons/PlaylistPlay";
-import ShuffleIcon from "@material-ui/icons/Shuffle";
+  Slider, Tooltip,
+} from "@mui/material";
+import { SliderValueLabel } from "@mui/material/Slider";
+import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
 import ButtonRow from "../../components/ButtonRow";
 import AutoResizer from "react-virtualized-auto-sizer";
 import { FixedSizeList, ListChildComponentProps, areEqual } from "react-window";
 import { gql, useQuery } from "@apollo/client";
 import { MusicFileFragments } from "../../graphql/fragments";
 import { MusicFilesPagination } from "../../graphql/MusicFileResolver";
-import { Alert } from "@material-ui/lab";
 import React, { cloneElement, useMemo, useRef } from "react";
 import { MusicFile } from "../../models/MusicFile";
 import _ from "lodash";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { useNamedState } from "../../frontendUtils/hooks";
 import clsx from "clsx";
 import { useAppContext } from "../../components/public/AppContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
-import DeleteIcon from "@material-ui/icons/Delete";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useAuthContext } from "../../components/public/AuthContext";
 import { useRouter } from "next/router";
 import ListItemTextWithTime from "../../components/public/library/ListItemTextWithTime";
-
+import { DocumentNode } from "graphql";
+import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
@@ -48,46 +49,31 @@ const MUSIC_FILES_COUNT_QUERY = gql`
   }
 
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
-`;
+` as DocumentNode;
 
-const makeSliderLabelStyle = makeStyles((theme) => ({
-  label: {
-    height: "4rem",
-    width: "4rem",
-    minWidth: "4rem",
-    fontSize: "2rem",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    backgroundColor: theme.palette.primary.dark,
-    color: theme.palette.common.white,
-  },
-  labelBottomHalf: {
-    borderRadius: "50% 0 50% 50%",
-    transform: "translateX(-80%) translateY(40%)",
-  },
-  labelTopHalf: {
-    borderRadius: "50% 50% 0 50%",
-    transform: "translateX(-80%) translateY(-40%)",
-  }
-}));
+const SxSliderLabel = {
+  height: "4rem",
+  width: "4rem",
+  minWidth: "4rem",
+  fontSize: "2rem",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  textAlign: "center",
+  backgroundColor: "primary.dark",
+  color: "common.white",
+  borderRadius: "50% 50% 0% 50%",
+};
 
-function SliderLabel(props: ValueLabelProps) {
-  const styles = makeSliderLabelStyle();
-  const labelRef = useRef<HTMLDivElement>();
+function SliderLabel(props: React.ComponentProps<typeof SliderValueLabel> & {children: React.ReactElement}) {
 
-  if (!props.open) return props.children;
-
-  let labelPosition = styles.labelTopHalf;
-  if (labelRef.current?.parentElement?.style?.bottom) {
-    if (parseInt(labelRef.current.parentElement.style.bottom) > 50) {
-      labelPosition = styles.labelBottomHalf;
-    }
-  }
-
-  return cloneElement(props.children, {}, <div className={clsx(styles.label, labelPosition)}
-                                               ref={labelRef}>{props.value}</div>);
+  return (
+    <Tooltip enterTouchDelay={0} placement={"left-end"}
+             componentsProps={{tooltip: {sx: SxSliderLabel as SxProps}}}
+             title={props.value}>
+      {props.children}
+    </Tooltip>
+  )
 }
 
 const ITEM_HEIGHT = 60;
@@ -156,7 +142,6 @@ const Row = React.memo((props: ListChildComponentProps) => {
         </IconButton>
         <Menu
           id={`currentPlaylist-menu-${item.id}`}
-          getContentAnchorEl={null}
           anchorOrigin={{
             vertical: "bottom",
             horizontal: "right",
@@ -194,35 +179,8 @@ const Row = React.memo((props: ListChildComponentProps) => {
 }, areEqual);
 Row.displayName = "Row";
 
-const useStyles = makeStyles((theme) => ({
-  slider: {
-    position: "absolute",
-    top: theme.spacing(1),
-    bottom: theme.spacing(1),
-    right: theme.spacing(0),
-    zIndex: 500,
-  },
-  list: {
-    padding: theme.spacing(0, 4),
-    height: "100%",
-    position: "relative",
-    overflow: "hidden",
-  },
-  scrollingList: {
-    scrollbarWidth: "none",
-    "&::-webkit-scrollbar": {
-      width: 0,
-      background: "transparent",
-    },
-    "&::-webkit-scrollbar-thumb": {
-      background: theme.palette.primary.light,
-    },
-  }
-}));
-
 export default function LibraryTracks() {
   const query = useQuery<{ musicFiles: MusicFilesPagination }>(MUSIC_FILES_COUNT_QUERY);
-  const styles = useStyles();
   const recycleListRef = useRef<FixedSizeList>();
 
   const [scrollDistance, setScrollDistance] = useNamedState(0, "scrollDistance");
@@ -265,19 +223,24 @@ export default function LibraryTracks() {
     if (recycleListRef.current) recycleListRef.current.scrollTo(scrollLength - newValue);
   };
 
-  return <div className={styles.list}>
+  return <Box sx={{
+    paddingLeft: 4,
+    paddingRight: 4,
+    height: "100%",
+    position: "relative",
+    overflow: "hidden",
+  }}>
     <AutoResizer>{({ height, width }) =>
       <>
         <Slider
           orientation="vertical" track={false}
-          className={styles.slider}
+          sx={{position: "absolute", top: 1, bottom: 1, right: 0, zIndex: 500,}}
           onChange={onScrollSliderChange}
           valueLabelDisplay="auto"
-          ValueLabelComponent={SliderLabel}
+          components={{ValueLabel: SliderLabel}}
           valueLabelFormat={(x) => {
             const index = _.sortedLastIndexBy(sliderLookup, { index: scrollLength - x, name: "" }, "index") - 1;
-            if (index < 0) return sliderLookup[0].name;
-            return sliderLookup[index].name;
+            return sliderLookup[Math.max(0, index)].name;
           }}
           value={scrollLength - scrollDistance} min={height} max={scrollLength} />
         <List>
@@ -288,12 +251,12 @@ export default function LibraryTracks() {
             // useIsScrolling
             onScroll={({ scrollOffset }) => setScrollDistance(scrollOffset)}
             ref={recycleListRef}
-            className={styles.scrollingList}
+            style={{ scrollbarWidth: "none", }}
           >{Row}</FixedSizeList>
         </List>
       </>
     }</AutoResizer>
-  </div>;
+  </Box>;
 }
 
 // Persisted layout pattern based on the works of Adam Wathan

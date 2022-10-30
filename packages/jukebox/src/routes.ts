@@ -22,8 +22,8 @@ export default (app: express.Express) => {
   const lyricsProvidersController = new LyricsProvidersController();
   apiRouter.use("/lyrics", lyricsProvidersController.router);
 
-  const downloadController = new DownloadController();
-  apiRouter.use("/download", downloadController.router);
+  // const downloadController = new DownloadController();
+  // apiRouter.use("/download", downloadController.router);
 
   const playlistController = new PlaylistController();
   apiRouter.use("/playlists", playlistController.router);

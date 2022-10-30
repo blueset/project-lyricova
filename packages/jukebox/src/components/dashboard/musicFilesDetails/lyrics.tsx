@@ -1,6 +1,6 @@
-import { Button, Grid, Typography } from "@material-ui/core";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import { useCallback, useMemo } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import LyricsPreview from "./LyricsPreview";
 import { lyricsAnalysis } from "../../../utils/lyricsCheck";
 import dayjs from "dayjs";
@@ -10,25 +10,13 @@ import { Lyrics } from "lyrics-kit";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import LyricsEditDialog from "./LyricsEditDialog";
 import { gql, useApolloClient } from "@apollo/client";
+import { DocumentNode } from "graphql";
 
 const REMOVE_LYRICS_MUTATION = gql`
   mutation($fileId: Int!) {
     removeLyrics(fileId: $fileId)
   }
-`;
-
-const useStyle = makeStyles((theme) => ({
-  player: {
-    width: "100%",
-  },
-  button: {
-    marginRight: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
-  section: {
-    marginBottom: theme.spacing(2),
-  }
-}));
+` as DocumentNode;
 
 interface Props {
   fileId: number;
@@ -44,7 +32,6 @@ interface Props {
 dayjs.extend(utc);
 
 export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, title, artists, duration, songId }: Props) {
-  const styles = useStyle();
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
 
@@ -100,7 +87,7 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
         </Grid>
         <Grid item xs={12} sm={3}>
           <Typography variant="h6" component="h3">Lyric state</Typography>
-          <section className={styles.section}>
+          <Box component="section" sx={{marginBottom: 2}}>
             <Typography>Lyrics type: {lrcxLyrics ?
               <Typography component="span" color="secondary">LRCX</Typography> : lrcLyrics ? "LRC" :
                 <Typography component="span" color="textSecondary">No lyrics</Typography>}</Typography>
@@ -122,10 +109,10 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
               <Typography>Last
                 timestamp: {dayjs.utc(analysisResult.lastTimestamp * 1000).format("HH:mm:ss")}</Typography>
             </>)}
-          </section>
+          </Box>
           <Typography variant="h6" component="h3">What to do?</Typography>
-          <Button className={styles.button} variant="outlined" onClick={handleOpenLyricsEditDialog}>Adjust</Button>
-          <Button className={styles.button} variant="outlined" color="primary" onClick={handleRemoveLyrics}>Remove</Button>
+          <Button sx={{marginRight: 1, marginBottom: 1}} variant="outlined" onClick={handleOpenLyricsEditDialog}>Adjust</Button>
+          <Button sx={{marginRight: 1, marginBottom: 1}} variant="outlined" color="primary" onClick={handleRemoveLyrics}>Remove</Button>
         </Grid>
       </Grid>
       <LyricsEditDialog

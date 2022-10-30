@@ -10,21 +10,23 @@ import {
   Stepper,
   TextField, Theme,
   Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { ChangeEvent, Dispatch, ReactNode, SetStateAction, useCallback } from "react";
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useLazyQuery } from "@apollo/client";
 import { MusicDlSearchResult } from "../../graphql/DownloadResolver";
-import { Alert } from "@material-ui/lab";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import { blue, blueGrey, lightBlue, lightGreen, orange, pink, purple, red } from "@material-ui/core/colors";
-import { makeStyles } from "@material-ui/core/styles";
-import CheckIcon from "@material-ui/icons/Check";
-import ClearIcon from "@material-ui/icons/Clear";
+import Alert from "@mui/material/Alert";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import { blue, blueGrey, lightBlue, lightGreen, orange, pink, purple, red } from "@mui/material/colors";
+import { makeStyles } from "@mui/material/styles";
+import CheckIcon from "@mui/icons-material/Check";
+import ClearIcon from "@mui/icons-material/Clear";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import GetAppIcon from "@material-ui/icons/GetApp";
+import GetAppIcon from "@mui/icons-material/GetApp";
+import { DocumentNode } from "graphql";
+import { SxProps } from "@mui/system";
 
 const MUSIC_DL_SEARCH_QUERY = gql`
   query($query: String!) {
@@ -41,17 +43,18 @@ const MUSIC_DL_SEARCH_QUERY = gql`
       title
     }
   }
-`;
+` as DocumentNode;
 
-function CheckURLChip({ url, className, label }: { label: string, className?: string, url: string | null }) {
+function CheckURLChip({ url, className, label, sx }:
+                        { label: string, className?: string, url: string | null, sx?: SxProps<Theme> }) {
   return url
-    ? <Chip size="small" className={className} variant="default" color="secondary" icon={<CheckIcon />}
-            label={label} clickable={true} component="a" target="_blank" href={url} />
+    ? <Chip size="small" className={className} color="secondary" icon={<CheckIcon />}
+            label={label} clickable={true} component="a" target="_blank" href={url} sx={sx} />
     : <Chip size="small" className={className} variant="outlined" color="default" icon={<ClearIcon />}
-            label={label} />;
+            label={label} sx={sx}/>;
 }
 
-function getBackgroundColor(key: string, theme: Theme): string {
+function getBackgroundColor(key: string): string {
   switch (key) {
     case "ne":
     case "16":
@@ -63,33 +66,23 @@ function getBackgroundColor(key: string, theme: Theme): string {
     case "ba":
       return blue[900];
     default:
-      return theme.palette.secondary.dark;
+      return "secondary.dark";
   }
 }
 
-const useBadgeStyles = makeStyles<Theme, { key: string }>((theme) => ({
-  root: {
+function BadgeAvatar({ children }: { children: unknown }) {
+  const truncated = `${children || "??"}`.substring(0, 2);
+  return <Avatar sx={{
     width: 22,
     height: 22,
     fontSize: 10,
-    background: props => getBackgroundColor(props.key, theme),
-    color: theme.palette.common.white,
-    border: `1px solid ${theme.palette.background.paper}`,
+    background: getBackgroundColor(truncated),
+    color: "white",
+    border: 1,
+    borderColor: "background.paper",
     textTransform: "capitalize",
-  },
-}));
-
-function BadgeAvatar({ children }: { children: unknown }) {
-  const truncated = `${children || "??"}`.substring(0, 2);
-  const styles = useBadgeStyles({ key: truncated });
-  return <Avatar className={styles.root}>{truncated}</Avatar>;
+  }}>{truncated}</Avatar>;
 }
-
-const useStyles = makeStyles((theme) => ({
-  chip: {
-    marginRight: theme.spacing(1),
-  },
-}));
 
 interface Props {
   step: number;
@@ -101,7 +94,6 @@ dayjs.extend(utc);
 
 export default function MusicDlDownloadSteps({ step, setStep, firstStep }: Props) {
   const [searchKeyword, setSearchKeyword] = useNamedState("", "searchKeyword");
-  const styles = useStyles();
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(event.target.value);
@@ -135,7 +127,7 @@ export default function MusicDlDownloadSteps({ step, setStep, firstStep }: Props
           {searchMusicQuery.data && <List>{searchMusicQuery.data.musicDlSearch.map((v, idx) => (
             <ListItem key={idx} alignItems="flex-start">
               <ListItemAvatar>
-                <Badge overlap="rectangle" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                <Badge overlap="rectangular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                        badgeContent={<BadgeAvatar>{v.source}</BadgeAvatar>}>
                   <Avatar src={v.coverURL} variant="rounded"><MusicNoteIcon /></Avatar>
                 </Badge>
@@ -145,12 +137,12 @@ export default function MusicDlDownloadSteps({ step, setStep, firstStep }: Props
                 <Typography variant="body2" component="span" display="block" color="textSecondary">{v.artists ||
                 <em>Various artists</em>} / {v.album || <em>Unknown album</em>}</Typography>
                 <Typography variant="body2" component="span" display="block" color="textSecondary">
-                  <CheckURLChip label="Preview" url={v.songURL} className={styles.chip} />
-                  <CheckURLChip label="Cover art" url={v.coverURL} className={styles.chip} />
-                  <CheckURLChip label="Lyrics" url={v.lyricsURL} className={styles.chip} />
-                  <Chip size="small" className={styles.chip} variant="outlined" color="default"
+                  <CheckURLChip label="Preview" url={v.songURL} sx={{mr: 1}} />
+                  <CheckURLChip label="Cover art" url={v.coverURL} sx={{mr: 1}} />
+                  <CheckURLChip label="Lyrics" url={v.lyricsURL} sx={{mr: 1}} />
+                  <Chip size="small" sx={{mr: 1}} variant="outlined" color="default"
                         label={`Duration: ${dayjs.utc(v.duration * 1000).format("HH:mm:ss")}`} />
-                  <Chip size="small" className={styles.chip} variant="outlined" color="default"
+                  <Chip size="small" sx={{mr: 1}} variant="outlined" color="default"
                         label={`Size: ${(v.size / 1048576).toFixed(2)} MB`} />
                 </Typography>
               </ListItemText>

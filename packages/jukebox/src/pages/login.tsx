@@ -1,6 +1,6 @@
 import Link from "../components/Link";
 import { AuthContext } from "../components/public/AuthContext";
-import { makeStyles, Button } from "@material-ui/core";
+import { makeStyles, Button, Box } from "@mui/material";
 import { useRouter } from "next/router";
 import { LS_JWT_KEY } from "../frontendUtils/localStorage";
 import { makeValidate, TextField } from "mui-rff";
@@ -8,51 +8,18 @@ import * as yup from "yup";
 import { Form } from "react-final-form";
 import { useApolloClient } from "@apollo/client";
 
-const useStyle = makeStyles((theme) => ({
-  container: {
-    display: "flex",
-    height: "100vh",
-    [theme.breakpoints.up("sm")]: {
-      flexDirection: "row",
-    },
-    [theme.breakpoints.down("xs")]: {
-      flexDirection: "column",
-    },
-  },
-  form: {
-    [theme.breakpoints.up("sm")]: {
-      width: "min(50rem, 35%)",
-    },
-    padding: theme.spacing(4),
-  },
-  input: {
-    marginTop: theme.spacing(2),
-  },
-  logo: {
-    height: "8rem",
-  },
-  pattern: {
-    flexGrow: 1,
-    backgroundImage: "url(images/pattern.svg)",
-    [theme.breakpoints.up("sm")]: {
-      backgroundSize: "10em",
-      backgroundPosition: "left center",
-    },
-    [theme.breakpoints.down("xs")]: {
-      backgroundSize: "7.5em",
-      backgroundPosition: "center top",
-    },
-  },
-}));
 export default function Login() {
-  const styles = useStyle();
   const router = useRouter();
   const apolloClient = useApolloClient();
 
   return <AuthContext authRedirect="/dashboard">
-    <div className={styles.container}>
-      <div className={styles.form}>
-        <img src="/images/logo.svg" alt="Project Lyricova" className={styles.logo} />
+    <Box sx={{
+      display: "flex",
+      height: "100vh",
+      flexDirection: {sm: "row", xs: "column"},
+    }}>
+      <Box sx={{ width: {sm: "min(50rem, 35%)"}, padding: 4, }}>
+        <img src="/images/logo.svg" alt="Project Lyricova" style={{height: "8em"}} />
         <h1>Log in</h1>
         <Form
           initialValues={{ username: "", password: "" }}
@@ -69,9 +36,9 @@ export default function Login() {
               body: JSON.stringify(values),
             });
             if (resp.status === 401) {
-              throw new Error("Username and password is not matching.");
+              return {username: "Username and password is not matching."};
             } else if (resp.status !== 200) {
-              throw new Error(`Unknown error occurred (${resp.status} ${resp.statusText})`);
+              return {username: `Unknown error occurred (${resp.status} ${resp.statusText})`};
             } else {
               const token: string = (await resp.json()).token;
               window.localStorage.setItem(LS_JWT_KEY, token);
@@ -82,7 +49,7 @@ export default function Login() {
         >
           {({ submitting, handleSubmit }) => (<form onSubmit={handleSubmit}>
             <TextField
-              className={styles.input}
+              sx={{marginTop: 2}}
               variant="outlined"
               required
               fullWidth
@@ -91,7 +58,7 @@ export default function Login() {
               name="username" type="text" label="Username"
             />
             <TextField
-              className={styles.input}
+              sx={{marginTop: 2}}
               variant="outlined"
               required
               fullWidth
@@ -101,7 +68,7 @@ export default function Login() {
             />
             <div><Link href="#">Forgot password?</Link></div>
             <Button
-              className={styles.input}
+              sx={{marginTop: 2}}
               variant="contained"
               color="primary"
               type="submit"
@@ -111,8 +78,13 @@ export default function Login() {
             </Button>
           </form>)}
         </Form>
-      </div>
-      <div className={styles.pattern}/>
-    </div>
+      </Box>
+      <Box sx={{
+        flexGrow: 1,
+        backgroundImage: "url(images/pattern.svg)",
+        backgroundSize: { sm: "10em", xs: "7.5em" },
+        backgroundPosition: { sm: "left center", xs: "center top" },
+      }}/>
+    </Box>
   </AuthContext>;
 }

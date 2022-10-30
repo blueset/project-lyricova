@@ -1,12 +1,12 @@
 import { Arg, Authorized, Field, FieldResolver, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
 import { Artist } from "../models/Artist";
-import { literal } from "sequelize";
+import { DataTypes, literal } from "sequelize";
 import { Song } from "../models/Song";
 import { Album } from "../models/Album";
 import { MusicFile } from "../models/MusicFile";
 import _ from "lodash";
 import { SongInAlbum } from "../models/SongInAlbum";
-import { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
+import { AlbumForApiContract, VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { ArtistOfAlbum } from "../models/ArtistOfAlbum";
 import sequelize from "sequelize";
 
@@ -69,7 +69,8 @@ export class AlbumResolver {
   @Query(returns => [Album])
   public async albums(): Promise<Album[]> {
     return Album.findAll({
-      order: ["sortOrder"]
+      order: ["sortOrder"],
+      attributes: { exclude: ["vocaDbJson"] }
     });
   }
 
@@ -77,6 +78,9 @@ export class AlbumResolver {
   public async albumsHasFiles(): Promise<Album[]> {
     return Album.findAll({
       order: ["sortOrder"],
+      attributes: [
+        "id", "name", "sortOrder", "coverUrl",  "incomplete", "creationDate", "updatedOn", "deletionDate",
+      ],
       where: sequelize.literal(`(
         SELECT
           COUNT(MusicFiles.id) 
@@ -86,7 +90,7 @@ export class AlbumResolver {
         ON
           SongInAlbums.songId = MusicFiles.songId
         WHERE 
-          SongInAlbums.albumId = Album.id and MusicFiles.albumId = Album  .id 
+          SongInAlbums.albumId = Album.id and MusicFiles.albumId = Album.id 
       ) > 0`),
     });
   }
@@ -95,6 +99,7 @@ export class AlbumResolver {
   public async searchAlbums(@Arg("keywords") keywords: string): Promise<Album[]> {
     return Album.findAll({
       where: literal("match (name, sortOrder) against (:keywords in boolean mode)"),
+      attributes: { exclude: ["vocaDbJson"] },
       replacements: {
         keywords,
       },

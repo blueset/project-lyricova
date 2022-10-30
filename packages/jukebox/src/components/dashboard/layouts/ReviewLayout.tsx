@@ -1,26 +1,14 @@
 import { ReactNode, useCallback } from "react";
-import { makeStyles, Typography } from "@material-ui/core";
+import { Box, makeStyles, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import {getLayout as getDashboardLayout} from "./DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
-import Alert from "@material-ui/lab/Alert";
+import Alert from "@mui/material/Alert";
 import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TooltipIconButton from "../TooltipIconButton";
-
-const useStyles = makeStyles((theme) => ({
-  navBar: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: theme.spacing(1),
-    "& > *": {
-      margin: theme.spacing(0, 1),
-    }
-  }
-}));
+import { DocumentNode } from "@apollo/client/core";
 
 const PENDING_REVIEW_FILES_QUERY = gql`
   query {
@@ -34,14 +22,13 @@ const PENDING_REVIEW_FILES_QUERY = gql`
       }
     }
   }
-`;
+` as DocumentNode;
 
 interface Props {
   children: ReactNode;
 }
 
 export default function ReviewLayout({children}: Props) {
-  const styles = useStyles();
   const router = useRouter();
   const fileId = parseInt(router.query.fileId as string);
 
@@ -75,12 +62,19 @@ export default function ReviewLayout({children}: Props) {
       const hasNextUnreviewed = nextUnreviewed < edges.length;
 
       content = <>
-        <div className={styles.navBar}>
+        <Box sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          margin: 1,
+        }}>
           <TooltipIconButton
             title="Previous file"
             disabled={!hasPrev}
             aria-label="Go to previous file"
-            onClick={goToFile(index - 1)}>
+            onClick={goToFile(index - 1)}
+            sx={{mr: 1}}>
             <ChevronLeftIcon/>
           </TooltipIconButton>
           <TooltipIconButton
@@ -88,26 +82,29 @@ export default function ReviewLayout({children}: Props) {
             disabled={!hasPrevUnreviewed}
             aria-label="Go to previous unreviewed file"
             color="secondary"
-            onClick={goToFile(prevUnreviewed)}>
+            onClick={goToFile(prevUnreviewed)}
+            sx={{mr: 1}}>
             <ChevronLeftIcon/>
           </TooltipIconButton>
-          <Typography>#{fileId}: {index + 1} / {edges.length}</Typography>
+          <Typography sx={{mr: 1}}>#{fileId}: {index + 1} / {edges.length}</Typography>
           <TooltipIconButton
             title="Next unreviewed file"
             disabled={!hasNextUnreviewed}
             aria-label="Go to next unreviewed file"
             color="secondary"
-            onClick={goToFile(nextUnreviewed)}>
+            onClick={goToFile(nextUnreviewed)}
+            sx={{mr: 1}}>
             <ChevronRightIcon/>
           </TooltipIconButton>
           <TooltipIconButton
             title="Next file"
             disabled={!hasNext}
             aria-label="Go to next file"
-            onClick={goToFile(index + 1)}>
+            onClick={goToFile(index + 1)}
+            sx={{mr: 1}}>
             <ChevronRightIcon/>
           </TooltipIconButton>
-        </div>
+        </Box>
         {children}
       </>;
     }

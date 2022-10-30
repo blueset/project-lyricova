@@ -1,16 +1,17 @@
 import {getLayout} from "../../components/dashboard/layouts/DashboardLayout";
 import {gql, useQuery} from "@apollo/client";
-import {Grid, makeStyles, CardContent, Card, Typography, CircularProgress, Box, Button} from "@material-ui/core";
+import { Grid, makeStyles, CardContent, Card, Typography, CircularProgress, Box, Button, styled } from "@mui/material";
 import {DashboardStats} from "../../graphql/StatsResolver";
 import {useNamedState} from "../../frontendUtils/hooks";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import {useEffect} from "react";
-import RateReviewIcon from "@material-ui/icons/RateReview";
-import GetAppIcon from "@material-ui/icons/GetApp";
-import CachedIcon from "@material-ui/icons/Cached";
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import GetAppIcon from "@mui/icons-material/GetApp";
+import CachedIcon from "@mui/icons-material/Cached";
 import {NextComposedLink} from "../../components/Link";
+import { DocumentNode } from "graphql";
 
 const DASHBOARD_STATS_QUERY = gql`
   query {
@@ -26,47 +27,16 @@ const DASHBOARD_STATS_QUERY = gql`
       albumCount
     }
   }
-`;
+` as DocumentNode;
 
 type ConvertedDashboardStats = Record<keyof DashboardStats, number>;
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    padding: theme.spacing(2),
-  },
-  countUpCard: {
-    "& small": {
-      fontSize: "0.65em",
-    },
-  },
-  percentageCard: {
-    "& small": {
-      fontSize: "0.65em",
-    },
-    "& .rotator": {
-      float: "right",
-      "& .background": {
-        color: theme.palette.grey[700],
-      },
-      "& .foreground": {
-        strokeLinecap: "round",
-        position: "absolute",
-      },
-      "& .percentageText": {
-        fontSize: "1.75em",
-      },
-    },
-  },
-  gridContainer: {
-    marginBottom: theme.spacing(2),
-  },
-  actionButton: {
-    fontSize: "1.5em",
-    "& .MuiButton-iconSizeLarge > *:first-child": {
-      fontSize: "2em",
-    }
-  },
-}));
+const ActionButtonSx = {
+  fontSize: "1.5em",
+  "& .MuiButton-iconSizeLarge > *:first-child": {
+    fontSize: "2em",
+  }
+};
 
 interface CountUpCardProps {
   title: string;
@@ -91,10 +61,10 @@ function CountUpCard({title, now, time, className}: CountUpCardProps) {
     }
 
     countUpValue = <>
-      {highestLevel <= 0 && <>{duration.years()}<small>Y</small></>}
-      {highestLevel <= 1 && <>{duration.months()}<small>M</small></>}
-      {highestLevel <= 2 && <>{duration.days()}<small>D</small>{" "}</>}
-      <small>{duration.hours().toString().padStart(2, "0")}:{duration.minutes().toString().padStart(2, "0")}:{duration.seconds().toString().padStart(2, "0")}</small>
+      {highestLevel <= 0 && <>{duration.years()}<small style={{fontSize: "0.65em"}}>Y</small></>}
+      {highestLevel <= 1 && <>{duration.months()}<small style={{fontSize: "0.65em"}}>M</small></>}
+      {highestLevel <= 2 && <>{duration.days()}<small style={{fontSize: "0.65em"}}>D</small>{" "}</>}
+      <small style={{fontSize: "0.65em"}}>{duration.hours().toString().padStart(2, "0")}:{duration.minutes().toString().padStart(2, "0")}:{duration.seconds().toString().padStart(2, "0")}</small>
     </>;
   }
   return <Card className={className}>
@@ -135,9 +105,11 @@ function PercentageCard({title, value, total, className}: PercentageCardProps) {
     const percentage = total === 0 ? 0 : (value / total) * 100;
     valueText = <>{value}<small>/{total}</small></>;
     rotator = (
-      <Box position="relative" display="inline-flex" className="rotator">
-        <CircularProgress variant="static" size="6em" value={100} thickness={5} className="background"/>
-        <CircularProgress variant="static" size="6em" value={percentage} thickness={5} className="foreground"/>
+      <Box position="relative" display="inline-flex" className="rotator" sx={{float: "right"}}>
+        <CircularProgress size="6em" value={100} thickness={5} className="background" variant="determinate"
+                          sx={{color: "grey.800"}}/>
+        <CircularProgress size="6em" value={percentage} thickness={5} className="foreground" variant="determinate"
+                          sx={{strokeLinecap: "round", position: "absolute",}}/>
         <Box
           top={0}
           left={0}
@@ -148,8 +120,8 @@ function PercentageCard({title, value, total, className}: PercentageCardProps) {
           alignItems="center"
           justifyContent="center"
         >
-          <Typography variant="body1" component="div" color="textPrimary"
-                      className="percentageText">{`${Math.round(percentage)}`}<small>%</small></Typography>
+          <Typography variant="body1" component="div" color="textPrimary" sx={{fontSize: "1.75em",}}
+                      className="percentageText">{`${Math.round(percentage)}`}<small style={{fontSize: "0.65em"}}>%</small></Typography>
         </Box>
       </Box>
     );
@@ -167,8 +139,6 @@ export default function DashboardIndex() {
   const [now, setNow] = useNamedState(dayjs(), "now");
   const {error, data} = useQuery<{ dashboardStats: ConvertedDashboardStats }>(DASHBOARD_STATS_QUERY);
 
-  const styles = useStyles();
-
   useEffect(() => {
     const timer = setInterval(() => {
       setNow(dayjs());
@@ -178,16 +148,14 @@ export default function DashboardIndex() {
     };
   }, [setNow]);
 
-  return <div className={styles.container}>
-    {error && `Error occured while loading stats: ${error}`}
-    <Grid container spacing={2} className={styles.gridContainer}>
+  return <Box sx={{padding: 2}}>
+    {error && `Error occurred while loading stats: ${error}`}
+    <Grid container spacing={2} sx={{marginBottom: 2}}>
       <Grid item xs={12} md={6}>
-        <CountUpCard title="Revamp dev time" now={now} time={data?.dashboardStats.revampStartedOn}
-                     className={styles.countUpCard}/>
+        <CountUpCard title="Revamp dev time" now={now} time={data?.dashboardStats.revampStartedOn} />
       </Grid>
       <Grid item xs={12} md={6}>
-        <CountUpCard title="Project uptime" now={now} time={data?.dashboardStats.aliveStartedOn}
-                     className={styles.countUpCard}/>
+        <CountUpCard title="Project uptime" now={now} time={data?.dashboardStats.aliveStartedOn} />
       </Grid>
       <Grid item xs={6} sm={3}>
         <CountCard title="# of Music files" value={data?.dashboardStats.musicFilesCount}/>
@@ -203,22 +171,22 @@ export default function DashboardIndex() {
       </Grid>
       <Grid item xs={12} sm={4}>
         <PercentageCard title="Reviewed files" value={data?.dashboardStats.reviewedFilesCount}
-                        total={data?.dashboardStats.musicFilesCount} className={styles.percentageCard}/>
+                        total={data?.dashboardStats.musicFilesCount}/>
       </Grid>
       <Grid item xs={12} sm={4}>
         <PercentageCard title="Files with lyrics" value={data?.dashboardStats.filesHasLyricsCount}
-                        total={data?.dashboardStats.musicFilesCount} className={styles.percentageCard}/>
+                        total={data?.dashboardStats.musicFilesCount}/>
       </Grid>
       <Grid item xs={12} sm={4}>
         <PercentageCard title="Files with cover" value={data?.dashboardStats.filesHasCoverCount}
-                        total={data?.dashboardStats.musicFilesCount} className={styles.percentageCard}/>
+                        total={data?.dashboardStats.musicFilesCount}/>
       </Grid>
     </Grid>
     <Typography variant="h4" component="h2">Actions</Typography>
-    <Grid container spacing={2} className={styles.gridContainer}>
+    <Grid container spacing={2} sx={{marginBottom: 2}}>
       <Grid item xs={4}>
         <Button
-          fullWidth size="large" variant="outlined" className={styles.actionButton}
+          fullWidth size="large" variant="outlined" sx={ActionButtonSx}
           color="secondary"
           component={NextComposedLink} href="/dashboard/review"
           startIcon={<RateReviewIcon/>}
@@ -228,8 +196,7 @@ export default function DashboardIndex() {
       </Grid>
       <Grid item xs={4}>
         <Button
-          fullWidth size="large" variant="outlined" className={styles.actionButton}
-          color="default"
+          fullWidth size="large" variant="outlined" sx={ActionButtonSx}
           component={NextComposedLink} href="/dashboard/download"
           startIcon={<GetAppIcon/>}
         >
@@ -238,8 +205,7 @@ export default function DashboardIndex() {
       </Grid>
       <Grid item xs={4}>
         <Button
-          fullWidth size="large" variant="outlined" className={styles.actionButton}
-          color="default"
+          fullWidth size="large" variant="outlined" sx={ActionButtonSx}
           component={NextComposedLink} href="/dashboard/scan"
           startIcon={<CachedIcon/>}
         >
@@ -247,7 +213,7 @@ export default function DashboardIndex() {
         </Button>
       </Grid>
     </Grid>
-  </div>;
+  </Box>;
 }
 
 DashboardIndex.layout = getLayout();

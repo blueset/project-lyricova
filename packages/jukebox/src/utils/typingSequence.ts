@@ -1,6 +1,5 @@
 import { kanaToHira } from "./transliterate";
 import { ObjectType, Field } from "type-graphql";
-import { GraphQLString } from "graphql";
 
 const JA_MAP = {
   romanMapSingle: {
@@ -50,7 +49,7 @@ export class AnimatedWord {
   @Field({ description: "True if the word shows a conversion-type of animation. False if it is just typing." })
   convert: boolean;
 
-  @Field(type => [GraphQLString], { description: "Actual sequence to show, one frame at a time." })
+  @Field(type => [String], { description: "Actual sequence to show, one frame at a time." })
   sequence: string[];
 }
 

@@ -1,23 +1,32 @@
-import { Avatar, Box, Chip, Grid, IconButton, TextField as MuiTextField, Typography } from "@material-ui/core";
-import { FilterOptionsState } from "@material-ui/lab/useAutocomplete/useAutocomplete";
+import {
+  AutocompleteRenderInputParams,
+  Avatar,
+  Box,
+  Chip, FilterOptionsState,
+  Grid,
+  IconButton, Stack, TextField,
+  TextField as MuiTextField,
+  Typography
+} from "@mui/material";
 import { Song } from "../../../models/Song";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useEffect } from "react";
 import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
-import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import SearchIcon from "@material-ui/icons/Search";
-import AddCircleIcon from "@material-ui/icons/AddCircle";
-import { makeStyles } from "@material-ui/core/styles";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SearchIcon from "@mui/icons-material/Search";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import { makeStyles } from "@mui/material/styles";
 import VocaDBSearchSongDialog from "./vocaDBSearchSongDialog";
 import { SongFragments } from "../../../graphql/fragments";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
-import EditIcon from "@material-ui/icons/Edit";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import EditIcon from "@mui/icons-material/Edit";
 import SongEntityDialog from "./songEntityDialog";
 import { useField, useForm } from "react-final-form";
 import { Autocomplete } from "mui-rff";
 import { formatArtists } from "../../../frontendUtils/artists";
+import { DocumentNode } from "graphql";
 
 export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
@@ -32,44 +41,7 @@ const LOCAL_SONG_ENTITY_QUERY = gql`
   }
   
   ${SongFragments.SelectSongEntry}
-`;
-
-const useStyles = makeStyles((theme) => ({
-  icon: {
-    color: theme.palette.text.secondary,
-    marginRight: theme.spacing(2),
-  },
-  detailsBox: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    [theme.breakpoints.down("xs")]: {
-      flexWrap: "wrap",
-    }
-  },
-  detailsThumbnail: {
-    height: "4em",
-    width: "4em",
-    marginRight: theme.spacing(2),
-  },
-  textBox: {
-    flexGrow: 1,
-    flexBasis: 0,
-    overflow: "hidden",
-    [theme.breakpoints.down("xs")]: {
-      order: 3,
-      flexBasis: "100%",
-    }
-  },
-  chipsRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  featLabel: {
-    margin: theme.spacing(0, 1),
-  },
-}));
+` as DocumentNode;
 
 interface Props<T extends string> {
   fieldName: T;
@@ -78,8 +50,6 @@ interface Props<T extends string> {
 }
 
 export default function SelectSongEntityBox<T extends string>({ fieldName, labelName, title }: Props<T>) {
-  const styles = useStyles();
-
   const apolloClient = useApolloClient();
   const { input: { value } } = useField<ExtendedSong>(fieldName);
   const setValue = useForm().mutators.setValue;
@@ -171,6 +141,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
             handleHomeEndKeys
             freeSolo
             textFieldProps={{ variant: "outlined", size: "small" }}
+            // renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label={labelName} />}
             filterOptions={(v: ExtendedSong[], params: FilterOptionsState<ExtendedSong>) => {
               if (params.inputValue !== "") {
                 v.push({
@@ -213,14 +184,14 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
                 setValue(fieldName, newValue);
               }
             }}
-            renderOption={(option: ExtendedSong | null) => {
-              let icon = <MusicNoteIcon className={styles.icon} />;
-              if (option.vocaDBSuggestion) icon = <SearchIcon className={styles.icon} />;
-              else if (option.manual) icon = <AddCircleIcon className={styles.icon} />;
+            renderOption={(params, option: ExtendedSong | null) => {
+              let icon = <MusicNoteIcon sx={{color: "text.secondary", marginRight: 2 }} />;
+              if (option.vocaDBSuggestion) icon = <SearchIcon sx={{color: "text.secondary", marginRight: 2 }} />;
+              else if (option.manual) icon = <AddCircleIcon sx={{color: "text.secondary", marginRight: 2 }} />;
               return (
-                <Box display="flex" flexDirection="row" alignItems="center">
+                <Stack component="li" {...params} flexDirection="row" alignItems="center">
                   {icon} {option.name}
-                </Box>
+                </Stack>
               );
             }}
             getOptionLabel={(option: ExtendedSong | null) => {
@@ -232,16 +203,16 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
         </Grid>
         {value && value.id && (
           <Grid item xs={12}>
-            <div className={styles.detailsBox}>
+            <Stack direction="row" alignItems="center" sx={{marginBottom: 2, flexWrap: {"xs": "wrap"}}}>
               <div>
                 <Avatar
                   src={value.coverUrl} variant="rounded"
-                  className={styles.detailsThumbnail}
+                  sx={{height: "3em", width: "3em", marginRight: 2}}
                 >
                   <MusicNoteIcon />
                 </Avatar>
               </div>
-              <div className={styles.textBox}>
+              <div style={{flexGrow: 1, flexBasis: 0,}}>
                 <div>
                   <Typography component="span">
                     {value.name}
@@ -251,14 +222,14 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
                     ({value.sortOrder}) #{value.id}
                   </Typography>
                 </div>
-                {value.artists && <div className={styles.chipsRow}>
+                {value.artists && <Stack direction="row" alignContent="center" sx={{gap: 1}}>
                   {
                     formatArtists(value.artists, a => a.map(v => (
                       <Chip variant="outlined" size="small" key={v.sortOrder}
                             label={v.ArtistOfSong.customName || v.name} />
                     )))
                   }
-                </div>}
+                </Stack>}
               </div>
               <div>
                 {value.id >= 0 && (
@@ -273,7 +244,7 @@ export default function SelectSongEntityBox<T extends string>({ fieldName, label
                   <EditIcon />
                 </IconButton>
               </div>
-            </div>
+            </Stack>
           </Grid>
         )}
       </Grid>

@@ -26,7 +26,7 @@ import { ArtistOfSong } from "./ArtistOfSong";
 
 @ObjectType()
 @Table
-export class Album extends Model<Album> {
+export class Album extends Model<Album, Partial<Album>> {
   @Field(type => Int)
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER })

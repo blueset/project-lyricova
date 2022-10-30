@@ -1,5 +1,4 @@
 import { Resolver, Query, ObjectType, Field, Arg, InputType, Int } from "type-graphql";
-import { GraphQLString } from "graphql";
 import { segmentedTransliteration, getLanguage } from "../utils/transliterate";
 import { AnimatedWord, buildAnimationSequence } from "../utils/typingSequence";
 
@@ -42,17 +41,17 @@ export class TransliterationResult {
       .join("\n");
   }
 
-  @Field(type => [[[GraphQLString]]])
+  @Field(type => [[[String]]])
   plainSegmented(@Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"): [string, string][][] {
     return segmentedTransliteration(this.text, { language, type: "plain", furigana: this.furigana });
   }
 
-  @Field(type => [[[GraphQLString]]])
+  @Field(type => [[[String]]])
   karaoke(@Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"): [string, string][][] {
     return segmentedTransliteration(this.text, { language, type: "karaoke", furigana: this.furigana });
   }
 
-  @Field(type => [[[GraphQLString]]])
+  @Field(type => [[[String]]])
   typing(@Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"): [string, string][][] {
     return segmentedTransliteration(this.text, { language, type: "typing", furigana: this.furigana });
   }

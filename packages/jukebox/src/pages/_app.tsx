@@ -1,5 +1,5 @@
 import { AppProps } from "next/app";
-import { ThemeProvider, CssBaseline } from "@material-ui/core";
+import { ThemeProvider, CssBaseline } from "@mui/material";
 import PropTypes from "prop-types";
 import React from "react";
 import theme from "../frontendUtils/theme";
@@ -16,11 +16,10 @@ type AppPropsExtension = AppProps & {
   };
 }
 
-
-export default function MyApp({ Component, pageProps }: AppPropsExtension) {
+function MyApp({ Component, pageProps }: AppPropsExtension) {
 
   React.useEffect(() => {
-    polyfill();
+    // polyfill();
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector("#jss-server-side");
     if (jssStyles) {
@@ -54,3 +53,5 @@ MyApp.propTypes = {
   Component: PropTypes.elementType.isRequired,
   pageProps: PropTypes.object.isRequired,
 };
+
+export default MyApp;

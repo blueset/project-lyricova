@@ -1,76 +1,20 @@
 import { ReactNode } from "react";
-import { Box, IconButton, makeStyles, Theme as MUITheme } from "@material-ui/core";
+import { Box, GlobalStyles, IconButton, styled } from "@mui/material";
 import Link, { NextComposedLink } from "../Link";
-import SearchIcon from "@material-ui/icons/Search";
+import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/router";
+import { GlobalStylesProps as StyledGlobalStylesProps } from "@mui/styled-engine/GlobalStyles/GlobalStyles";
 
-const useStyle = makeStyles<MUITheme,
-  { coverUrl: string },
-  "link" | "containerBox" | "backgroundStyle" | "backgroundShade" | "hideSvg" | "@global">((theme) => ({
-  link: {
-    fontSize: "1.75em",
-    fontWeight: 500,
-    marginRight: "1em",
-    fontStyle: "italic",
-    color: theme.palette.text.secondary,
-    "&.active": {
-      color: theme.palette.primary.light,
-    }
-  },
-  containerBox: {
-    position: "relative",
-    overflow: "hidden",
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-  },
-  backgroundStyle: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    filter: "url(#sharpBlur)",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundAttachment: "fixed",
-    zIndex: 0,
-  },
-  backgroundShade: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    zIndex: 0,
-  },
-  hideSvg: {
-    border: 0,
-    clip: "rect(0 0 0 0)",
-    height: "1px",
-    margin: "-1px",
-    overflow: "hidden",
-    padding: 0,
-    position: "absolute",
-    width: "1px",
-  },
-  "@global": {
-    ".coverMask": {
-      backgroundImage: ({ coverUrl }) => coverUrl ? `url(${coverUrl})` : null,
-      color: ({ coverUrl }) => coverUrl ? ["transparent", "!important"] : null,
-      mixBlendMode: ({ coverUrl }) => coverUrl ? ["none", "!important"] : null,
-      backgroundClip: ({ coverUrl }) => coverUrl ? "text" : null,
-      "-webkit-background-clip": ({ coverUrl }) => coverUrl ? "text" : null,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundAttachment: "fixed",
-      "--jukebox-cover-filter-blur": ({ coverUrl }) => coverUrl ? "url(#sharpBlur)" : null,
-      "--jukebox-cover-filter-bright": ({ coverUrl }) => coverUrl ? "url(#sharpBlurBright)" : null,
-      "--jukebox-cover-filter-brighter": ({ coverUrl }) => coverUrl ? "url(#sharpBlurBrighter)" : null,
-      "--jukebox-cover-filter-brighter-blurless": ({ coverUrl }) => coverUrl ? "url(#brighter)" : null,
-    }
+const StyledLink = styled(Link)({
+  fontSize: "1.75em",
+  fontWeight: 500,
+  marginRight: "1em",
+  fontStyle: "italic",
+  color: "text.secondary",
+  "&.active": {
+    color: "primary.light",
   }
-}));
+});
 
 interface Props {
   coverUrl: string | null;
@@ -78,30 +22,67 @@ interface Props {
 }
 
 export default function DetailsPanel({ coverUrl = null, children }: Props) {
-  const style = useStyle({ coverUrl });
   const router = useRouter();
 
-  let backgroundNode = <div className={style.backgroundShade} />;
+  let backgroundNode = <div style={{
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    zIndex: 0,
+  }} />;
 
   if (coverUrl) {
     backgroundNode = (<>
-      <div className={style.backgroundStyle} style={{ backgroundImage: `url(${coverUrl})` }} />
-      <div className={style.backgroundShade} />
+      <div style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        filter: "url(#sharpBlur)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+        zIndex: 0,
+        backgroundImage: `url(${coverUrl})`
+      }} />
+      {backgroundNode}
     </>);
   }
 
-
-  // console.log(router.pathname);
-
   return (
-    <div className={style.containerBox}>
+    <div style={{
+      position: "relative",
+      overflow: "hidden",
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      <GlobalStyles styles={{
+        ".coverMask": {
+          backgroundImage: coverUrl ? `url(${coverUrl})` : null,
+          color: coverUrl ? "transparent !important" : null,
+          mixBlendMode: coverUrl ? "none !important" : null,
+          backgroundClip: coverUrl ? "text" : null,
+          "-webkit-background-clip": coverUrl ? "text" : null,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          "--jukebox-cover-filter-blur": coverUrl ? "url(#sharpBlur)" : null,
+          "--jukebox-cover-filter-bright": coverUrl ? "url(#sharpBlurBright)" : null,
+          "--jukebox-cover-filter-brighter": coverUrl ? "url(#sharpBlurBrighter)" : null,
+          "--jukebox-cover-filter-brighter-blurless": coverUrl ? "url(#brighter)" : null,
+        }
+      } as unknown as StyledGlobalStylesProps["styles"]} />
       {backgroundNode}
       <Box pt={2} pb={2} pl={4} pr={4} display="flex" flexDirection="row" alignItems="center" zIndex={1}>
-        <Link className={style.link} href="/">Lyrics</Link>
-        <Link className={style.link} href="/library/tracks"
-              activeCriteria={(v) => v.startsWith("/library/")}>Library</Link>
-        <Link className={style.link} href="/info"
-              activeCriteria={(v) => v.startsWith("/info")}>Info</Link>
+        <StyledLink href="/">Lyrics</StyledLink>
+        <StyledLink href="/library/tracks"
+              activeCriteria={(v) => v.startsWith("/library/")}>Library</StyledLink>
+        <StyledLink href="/info"
+              activeCriteria={(v) => v.startsWith("/info")}>Info</StyledLink>
         <Box flexGrow={1} />
         <IconButton component={NextComposedLink} color={router.pathname === "/search" ? "primary" : "default"}
                     href="/search" aria-label="search" edge="end">
@@ -111,7 +92,16 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
       <Box position="relative" width="1" flexGrow={1} flexBasis={0} overflow="auto">
         {children}
       </Box>
-      <svg className={style.hideSvg}>
+      <svg style={{
+        border: 0,
+        clip: "rect(0 0 0 0)",
+        height: "1px",
+        margin: "-1px",
+        overflow: "hidden",
+        padding: 0,
+        position: "absolute",
+        width: "1px",
+      }}>
         <filter id="sharpBlur">
           <feGaussianBlur stdDeviation="15" result="blur" />
           <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" />

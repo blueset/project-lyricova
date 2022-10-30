@@ -1,20 +1,15 @@
-import { Button, Grid, TextField, Typography } from "@material-ui/core";
+import { Button, Grid, styled, TextField, Typography } from "@mui/material";
 import { ChangeEvent, useCallback } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/material/styles";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import VocaDBLyricsDialog from "./VocaDBLyricsDialog";
 import HMikuWikiSearchDialog from "./HMikuWikiSearchDialog";
 import { Lyrics } from "lyrics-kit";
 import { useSnackbar } from "notistack";
 
-const useStyle = makeStyles((theme) => ({
-  textField: {
-    fontFamily: "monospace",
-  },
-  button: {
-    marginRight: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  }
+const SpacedButton = styled(Button)(({theme}) => ({
+  marginRight: theme.spacing(1),
+  marginBottom: theme.spacing(1)
 }));
 
 interface Props {
@@ -28,7 +23,6 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics, }: Props) {
     setLyrics(event.target.value);
   }, [setLyrics]);
 
-  const styles = useStyle();
   const snackbar = useSnackbar();
 
   const copyFromLRCX = useCallback((useFurigana: boolean) => () => {
@@ -44,10 +38,10 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics, }: Props) {
     <Grid container spacing={2}>
       <Grid item xs={12}>
         <Typography variant="overline" display="block">Common operations</Typography>
-        <Button className={styles.button} variant="outlined" disabled={!lrcx}
-                onClick={copyFromLRCX(false)}>Copy from LRCX</Button>
-        <Button className={styles.button} variant="outlined" disabled={!lrcx}
-                onClick={copyFromLRCX(true)}>Copy from LRCX with Furigana</Button>
+        <SpacedButton variant="outlined" disabled={!lrcx}
+                onClick={copyFromLRCX(false)}>Copy from LRCX</SpacedButton>
+        <SpacedButton variant="outlined" disabled={!lrcx}
+                onClick={copyFromLRCX(true)}>Copy from LRCX with Furigana</SpacedButton>
       </Grid>
     </Grid>
     <TextField
@@ -55,7 +49,7 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics, }: Props) {
       label="Lyrics source"
       fullWidth
       value={lyrics || ""}
-      inputProps={{ className: styles.textField, lang: "ja" }}
+      inputProps={{ sx:{ fontFamily: "monospace" }, lang: "ja" }}
       onChange={handleChange}
       multiline
       variant="outlined"

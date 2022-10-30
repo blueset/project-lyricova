@@ -8,11 +8,11 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
 import { VocaDBLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
 import Link from "../../../Link";
-import ContentCopyIcon from "@material-ui/icons/ContentCopy";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TooltipIconButton from "../../TooltipIconButton";
 import { useSnackbar } from "notistack";
 
