@@ -50,7 +50,7 @@
     "node": ">=8.9"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "axios-cookiejar-support": "^0.5.1",
     "cheerio": "^1.0.0-rc.3",
     "lodash": "^4.17.19",
