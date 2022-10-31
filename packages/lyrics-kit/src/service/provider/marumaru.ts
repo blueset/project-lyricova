@@ -220,7 +220,7 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
       {
           headers: {
             Referer: `https://www.jpmarumaru.com/tw/JPSongPlay-${token.songPK}.html`,
-            'content-type': 'application/x-www-form-urlencoded',
+            "content-type": "application/x-www-form-urlencoded",
           },
         }
       );

@@ -8,6 +8,7 @@ import { ViewLyricsProvider } from "./provider/viewLyrics";
 import { SyairProvider } from "./provider/syair";
 import { MarumaruProvider } from "./provider/marumaru";
 import { MusixMatchProvider } from "./provider/musixmatch";
+import { YouTubeProvider } from "./provider/youtube";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class LyricsProviderSource<T extends LyricsProvider<any>> {
@@ -20,6 +21,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     static syair = new LyricsProviderSource(SyairProvider);
     static marumaru = new LyricsProviderSource(MarumaruProvider);
     static musixmatch = new LyricsProviderSource(MusixMatchProvider);
+    static youtube = new LyricsProviderSource(YouTubeProvider);
 
     static allCases = [
         // LyricsProviderSource.netease,
@@ -30,6 +32,8 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
         LyricsProviderSource.viewLyrics,
         LyricsProviderSource.syair,
         LyricsProviderSource.marumaru,
+        LyricsProviderSource.musixmatch,
+        LyricsProviderSource.youtube,
     ];
 
     
@@ -47,7 +51,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
         return new this.cls();
     }
 
-    public toJSON() {
+    public toJSON(): string {
         return this.name;
     }
 }

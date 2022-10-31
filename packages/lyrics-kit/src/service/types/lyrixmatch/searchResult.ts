@@ -18,6 +18,7 @@ export interface MusixMatchEntry {
                         artist_name: string;
                         album_name: string;
                         album_coverart_100x100: string;
+                        track_length: number;
                     }
                 }>;
                 "track.subtitles.get": MusixMatchMacroCall<{

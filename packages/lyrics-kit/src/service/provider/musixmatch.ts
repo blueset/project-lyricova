@@ -27,6 +27,7 @@ class MusixMatchLyrics extends Lyrics {
         this.metadata.artworkURL = trackInfo.album_coverart_100x100;
         this.metadata.providerToken = `${trackInfo.track_id}`;
         this.metadata.source = LyricsProviderSource.musixmatch;
+        this.length = trackInfo.track_length;
         this.lines = lyricsData.map(line => {
             const lline = new LyricsLine(line.text, line.time.total);
             lline.lyrics = this;
