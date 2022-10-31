@@ -151,7 +151,7 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
           {isLoaded ? (
             results.length > 0 ?
               results.map((v) => (
-                <ListItem key={v.id}>
+                <ListItem key={v.id} sx={{pr: 12}}>
                   <ListItemAvatar>
                     <Avatar variant="rounded" src={v.thumbUrl}>
                       <MusicNoteIcon />

@@ -135,7 +135,7 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
         {
           variant: "success",
           action: <Button component={NextComposedLink}
-                          href={`/dashboard/review/${downloadState}`}>
+                          href={`/dashboard/review/${scanOutcome.data.scanByPath.id}`}>
             Review file
           </Button>
         }

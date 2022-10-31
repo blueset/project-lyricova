@@ -267,7 +267,7 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
       </form>)}
     </Form>
     <List>
-      {searchResults.map((v, idx) => <ListItem key={idx} alignItems="flex-start">
+      {searchResults.map((v, idx) => <ListItem key={idx} alignItems="flex-start" sx={{pr: 12}}>
         <ListItemAvatar>
           <Badge overlap="rectangular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                  badgeContent={<BadgeAvatar>{v.metadata?.source}</BadgeAvatar>}>
