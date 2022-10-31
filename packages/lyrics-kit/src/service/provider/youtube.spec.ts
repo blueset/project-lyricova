@@ -12,6 +12,7 @@ test("youtube test", async t => {
     t.assert(Array.isArray(result));
     t.log("Number of hits:", result.length);
     t.log("Hits:", result);
+    result.forEach(v => t.log("Entry:", v.toString()));
     t.assert(result.length > 0);
     t.assert(result.map(i => i.isMatched()).reduce(
         (prev: boolean, curr: boolean): boolean => { 

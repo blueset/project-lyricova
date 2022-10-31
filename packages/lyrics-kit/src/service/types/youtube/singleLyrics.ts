@@ -1,7 +1,7 @@
 export interface YouTubeLyricsJSON3 {
     events: {
         tStartMs: number;
-        tDurationMs: number;
+        dDurationMs: number;
         segs: {
             utf8: string;
         }[];

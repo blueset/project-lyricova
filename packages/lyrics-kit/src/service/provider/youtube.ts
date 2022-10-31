@@ -4,6 +4,7 @@ import { LyricsProvider } from ".";
 import { ARTIST, TITLE } from "../../core/idTagKey";
 import { Lyrics } from "../../core/lyrics";
 import { LyricsLine } from "../../core/lyricsLine";
+import { LyricsProviderSource } from "../lyricsProviderSource";
 import { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { YouTubeSearchResult } from "../types/youtube/searchResult";
 import { YouTubeLyricsJSON3 } from "../types/youtube/singleLyrics";
@@ -22,13 +23,13 @@ class YouTubeLyrics extends Lyrics {
             let addBlankLine = false;
             if (i === events.length - 1) {
                 addBlankLine = true;
-            } else if (Math.abs(events[i].tStartMs + events[i].tDurationMs - events[i + 1].tStartMs) > 1000) {
+            } else if ((events[i + 1].tStartMs - (events[i].tStartMs + events[i].dDurationMs)) > 1000) {
                 addBlankLine = true;
             }
             
             const start = events[i].tStartMs / 1000;
-            const end = (events[i].tStartMs + events[i].tDurationMs) / 1000;
-            const lineContent = events[i].segs.map(seg => seg.utf8).join(" ");
+            const end = (events[i].tStartMs + events[i].dDurationMs) / 1000;
+            const lineContent = events[i].segs.map(seg => seg.utf8).join(" ").replace("\n", " ");
 
             const line = new LyricsLine(lineContent, start);
             line.lyrics = this;
@@ -119,6 +120,7 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
         const lyrics = new YouTubeLyrics(data.data);
         lyrics.idTags[TITLE] = token.title;
         lyrics.idTags[ARTIST] = token.uploader;
+        lyrics.metadata.source = LyricsProviderSource.youtube;
         lyrics.metadata.providerToken = `${token.id} ${token.language}`;
         lyrics.metadata.artworkURL = token.thumbnail;
         lyrics.length = YouTubeProvider.parseDuration(token.durationText);

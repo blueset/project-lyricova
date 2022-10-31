@@ -1,6 +1,5 @@
 import { Box, Button, Grid, Typography } from "@mui/material";
 import { useCallback, useMemo } from "react";
-import { makeStyles } from "@mui/material/styles";
 import LyricsPreview from "./LyricsPreview";
 import { lyricsAnalysis } from "../../../utils/lyricsCheck";
 import dayjs from "dayjs";

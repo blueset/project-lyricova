@@ -223,7 +223,7 @@ export class MusicFileController {
       const toUpdateEntries = databaseEntries.filter(entry =>
         toUpdate.has(entry.path)
       );
-      let updateResults = [];
+      let updateResults: MusicFile[] = [];
       if (!dryRun) {
         updateResults = await Promise.all(
           toUpdateEntries.map(entry =>

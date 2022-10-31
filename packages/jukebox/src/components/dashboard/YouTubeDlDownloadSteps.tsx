@@ -182,7 +182,7 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
                          style={{ height: "4em", marginRight: 4, borderRadius: 4, }} />
                     <div>
                       <Typography
-                        variant="body1">{fetchInfoQueryData.fulltitle} ({fetchInfoQueryData.duration_string})</Typography>
+                        variant="body1">{fetchInfoQueryData.fulltitle} ({fetchInfoQueryData._duration_hms})</Typography>
                       <Typography variant="body2" color="textSecondary">{fetchInfoQueryData.uploader}</Typography>
                     </div>
                   </Stack>

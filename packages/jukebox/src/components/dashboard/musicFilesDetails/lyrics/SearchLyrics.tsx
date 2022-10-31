@@ -125,6 +125,10 @@ function getBackgroundColor(key: string): string {
       return blue[900];
     case "Ma":
       return purple[600];
+    case "Mu":
+      return orange[900];
+    case "Yo":
+      return red[900];
     default:
       return "secondary.dark";
   }
