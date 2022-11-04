@@ -409,7 +409,7 @@ export default function SongEntityDialog({
                               labelName="Album"
                             />
                         }</Field>
-                        <Stack flexDirection="row" alignItems="center">
+                        <Stack flexDirection="row" alignItems="center" gap={1}>
                           <NumberField
                             variant="outlined"
                             margin="dense"

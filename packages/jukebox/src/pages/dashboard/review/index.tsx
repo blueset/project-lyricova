@@ -1,17 +1,16 @@
 import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
-import { Box, useTheme } from "@mui/material";
+import { Box, IconButton, Tooltip, useTheme } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
 import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import React, { useCallback } from "react";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import MaterialTable from "@material-table/core";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useRouter } from "next/router";
-import { MusicFile } from "../../../models/MusicFile";
-import { TableIcons } from "../../../components/dashboard/MaterialTableIcons";
+import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import { DataGridToolbar } from "../../../components/dashboard/DataGridToolbar";
 
 const PENDING_REVIEW_FILES_QUERY = gql`
   query {
@@ -38,8 +37,6 @@ export default function Review() {
   const edges = needReviewQuery.data?.musicFiles.edges;
 
   const router = useRouter();
-  const theme = useTheme();
-
   const [showAll, setShowAll] = useNamedState(false, "showAll");
 
   const toggleShowAll = useCallback(() => {
@@ -48,44 +45,40 @@ export default function Review() {
 
   const rows = edges?.filter(v => showAll || v.node.needReview).map(v => ({...v.node})) ?? [];
 
-  return <Box>
+  return <Box sx={{ minHeight: "calc(100vh - 7em)", height: 0 }}>
     {needReviewQuery.error && <Alert severity="error">
         <AlertTitle>Error occurred while retrieving data.</AlertTitle>
       {`${needReviewQuery.error}`}
     </Alert>}
-    <MaterialTable
-      title={`${needReviewCount ?? "..."} / ${totalCount ?? "..."} files pending review.`}
+    <DataGrid 
       columns={[
-        {title: "ID", field: "id", width: "3em",},
-        {title: "Track name", field: "trackName",},
-        {title: "Artist name", field: "artistName",},
-        {title: "Album name", field: "albumName",},
-        {title: "Need review", field: "needReview", type: "boolean", width: "2em",},
-      ]}
-      data={rows}
-      icons={TableIcons}
-      actions={[
-        {
-          // eslint-disable-next-line react/display-name
-          icon: () => <RateReviewIcon/>,
-          tooltip: "Review",
-          onClick: async (event, rowData: Partial<MusicFile>) => {
-            if (rowData?.id !== undefined) {
-              await router.push(`/dashboard/review/${rowData.id}`);
-            }
-          },
+        { headerName: "ID", field: "id", width: 75, },
+        { headerName: "Track name", field: "trackName", flex: 2 },
+        { headerName: "Artist name", field: "artistName", flex: 1 },
+        { headerName: "Album name", field: "albumName", flex: 1 },
+        { headerName: "Need review", field: "needReview", type: "boolean", width: 100, },
+        { 
+          field: "actions", type: "actions", width: 100, 
+          getActions: (rowData) => [
+            <Tooltip title="Review" key="review"><GridActionsCellItem icon={<RateReviewIcon/>} label="Review" onClick={async () => {
+              if (rowData?.id !== undefined) {
+                await router.push(`/dashboard/review/${rowData.id}`);
+              }
+            }} /></Tooltip>,
+          ],
         },
-        {
-          // eslint-disable-next-line react/display-name
-          icon: () => showAll ? <VisibilityOffIcon/> : <VisibilityIcon/>,
-          tooltip: showAll ? "Hide reviewed" : "Show all",
-          isFreeAction: true,
-          onClick: toggleShowAll
-        }
       ]}
-      options={{
-        actionsColumnIndex: -1,
-        pageSize: 20,
+      rows={rows}
+      components={{ Toolbar: DataGridToolbar }}
+      componentsProps={{
+        toolbar: {
+          title: `${needReviewCount ?? "..."} / ${totalCount ?? "..."} files pending review.`,
+          children: (<>
+            <Tooltip title={showAll ? "Hide reviewed" : "Show all"}>
+              <IconButton onClick={toggleShowAll}>{showAll ? <VisibilityOffIcon/> : <VisibilityIcon/>}</IconButton>
+            </Tooltip>
+          </>)
+        },
       }}
     />
   </Box>;

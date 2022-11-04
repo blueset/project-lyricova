@@ -25,7 +25,7 @@ export function formatArtists(artists: Artist[], renderer: (artists: Artist[]) =
     const list = producers.length ? producers : vocalists;
     return <>{renderer(list)}</>;
   } else {
-    return <em>Various artists</em>;
+    return <em style={{opacity: 0.5}}>Various artists</em>;
   }
 }
 

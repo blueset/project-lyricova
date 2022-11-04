@@ -34,6 +34,7 @@ class MyDocument extends Document {
     );
   }
 
+  /*
   // `getInitialProps` belongs to `_document` (instead of `_app`),
   // it's compatible with server-side generation (SSG).
   static async getInitialProps(ctx: DocumentContext) {
@@ -77,7 +78,7 @@ class MyDocument extends Document {
     const emotionStyles = extractCriticalToChunks(initialProps.html);
     const emotionStyleTags = emotionStyles.styles.map((style: any) => (
       <style
-        data-emotion={`${style.key} ${style.ids.join(' ')}`}
+        data-emotion={`${style.key} ${style.ids.join(" ")}`}
         key={style.key}
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: style.css }}
@@ -89,6 +90,7 @@ class MyDocument extends Document {
       emotionStyleTags,
     };
   }
+  */
 }
 
 export default MyDocument;

@@ -5,6 +5,7 @@ import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
 import { JWT_SECRET } from "../utils/secret";
+import cors from "cors";
 
 const JWT_ISSUER = "lyricova";
 
@@ -32,6 +33,14 @@ export class AuthController {
     ), this.emitJWT);
 
     // Inject user context before Apollo server
+    this.injectionRouter.use("/graphql", function (req, res, next) {
+      if (req.headers["access-control-request-private-network"]) {
+        res.setHeader("access-control-allow-private-network", "true");
+      }
+      next(null);
+    }, cors({
+      preflightContinue: true,
+    }));
     this.injectionRouter.post("/graphql", this.injectGraphQLUser);
   }
 

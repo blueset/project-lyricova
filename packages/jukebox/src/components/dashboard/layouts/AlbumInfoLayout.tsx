@@ -2,14 +2,14 @@ import React, { ReactNode } from "react";
 import { getLayout as getDashboardLayout } from "./DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
-import { TableIcons } from "../MaterialTableIcons";
 import EditIcon from "@mui/icons-material/Edit";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import MaterialTable from "@material-table/core";
 import { useRouter } from "next/router";
 import { formatArtistsPlainText } from "../../../frontendUtils/artists";
-import { Avatar, ListItemText } from "@mui/material";
+import { Avatar, ListItemText, Tooltip } from "@mui/material";
 import { Album } from "../../../models/Album";
+import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import { DataGridToolbar } from "../../../components/dashboard/DataGridToolbar";
 
 const ALBUM_INFO_LIST_QUERY = gql`
   query {
@@ -44,51 +44,49 @@ export default function AlbumInfoLayout({ children }: Props) {
   else if (query.data) {
     const rows = query.data.albums.map(v => ({...v}));
 
-    table = <MaterialTable
-      title={`${rows.length} album entities.`}
+    table = <DataGrid 
       columns={[
-        {title: "ID", field: "id", width: "3em",},
+        { headerName: "ID", field: "id", width: 125,},
         // eslint-disable-next-line react/display-name
-        {title: "Cover", field: "coverUrl", width: "3em", render: r => <Avatar variant="rounded" src={r.coverUrl}>{r.name[0]}</Avatar>},
+        { headerName: "Cover", field: "coverUrl", width: 75, renderCell: ({row: r}) => <Avatar variant="rounded" src={r.coverUrl}>{r.name[0]}</Avatar>},
         // eslint-disable-next-line react/display-name
-        {title: "Album name", field: "name", render: r => <ListItemText primary={r.name} secondary={r.sortOrder} />},
-        {title: "Artists", field: "artists", render: r => formatArtistsPlainText(r.artists)},
-        {title: "Incomplete", field: "incomplete", type: "boolean", width: "2em",},
-      ]}
-      data={rows}
-      icons={TableIcons}
-      actions={[
-        {
-          // eslint-disable-next-line react/display-name
-          icon: () => <EditIcon/>,
-          tooltip: "Edit",
-          onClick: async (event, rowData: Partial<Album>) => {
-            if (rowData?.id !== undefined) {
-              await router.push(`/dashboard/albums/${rowData.id}`);
-            }
-          },
+        { headerName: "Album name", field: "name", renderCell: ({row: r}) => <ListItemText primary={r.name} secondary={r.sortOrder} />, flex: 1, },
+        { headerName: "Artists", field: "artists", renderCell: ({row: r}) => formatArtistsPlainText(r.artists), flex: 1, },
+        { headerName: "Incomplete", field: "incomplete", type: "boolean", width: 100,},
+        { 
+          field: "actions", type: "actions", width: 100, 
+          getActions: (rowData) => [
+            <Tooltip title="Edit" key="Edit" >
+              <GridActionsCellItem icon={<EditIcon/>} label="Edit" onClick={async () => {
+                if (rowData?.id !== undefined) {
+                  await router.push(`/dashboard/album/${rowData.id}`);
+                }
+              }} />
+            </Tooltip>,
+            <Tooltip title="View in VocaDB" key="ViewInVocaDB" >
+              <GridActionsCellItem icon={<OpenInNewIcon/>} label="View in VocaDB"
+                disabled={(rowData?.id ?? -1) < 0}
+                onClick={async () => {
+                  if (rowData?.id !== undefined) {
+                    await window.open(`https://vocadb.net/Al/${rowData.id}`, "_blank");
+                  }
+                }} />
+            </Tooltip>,
+          ],
         },
-        (r) => ({
-          // eslint-disable-next-line react/display-name
-          icon: () => <OpenInNewIcon/>,
-          tooltip: "View in VocaDB",
-          onClick: async (event, rowData: Partial<Album>) => {
-            if (rowData?.id !== undefined) {
-              await window.open(`https://vocadb.net/Al/${rowData.id}`, "_blank");
-            }
-          },
-          disabled: r.id < 0,
-        }),
       ]}
-      options={{
-        actionsColumnIndex: -1,
-        pageSize: 20,
+      rows={rows}
+      components={{ Toolbar: DataGridToolbar }}
+      componentsProps={{
+        toolbar: {
+          title: `${rows.length} album entities.`,
+        },
       }}
     />;
   }
 
   return (
-    <div>
+    <div style={{ minHeight: "calc(100vh - 7em)", height: 0 }}>
       {table}
       {children}
     </div>

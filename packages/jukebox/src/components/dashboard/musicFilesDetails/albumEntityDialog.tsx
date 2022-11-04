@@ -7,12 +7,12 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Grid,
   IconButton,
   MenuItem, Stack,
   Typography
 } from "@mui/material";
-import { Fragment, useCallback } from "react";
+import Grid from "@mui/material/Unstable_Grid2";
+import { Fragment, useCallback, useEffect } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import TransliterationAdornment from "../TransliterationAdornment";
 import { useSnackbar } from "notistack";
@@ -20,7 +20,6 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SortIcon from "@mui/icons-material/Sort";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
-import { makeStyles } from "@mui/material/styles";
 import SelectSongEntityBox from "./selectSongEntityBox";
 import TrackNameAdornment from "../TrackNameAdornment";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
@@ -83,7 +82,7 @@ function RoleField<T extends string>({ name, label }: RoleFieldProps) {
       label={label}
       name={name}
       multiple
-      formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
+      formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true, sx: { mt: 0 } }}
       inputProps={{ name: name, id: name }}
     >
       <MenuItem value="Default">Default</MenuItem>
@@ -168,6 +167,24 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
   const [initialValues, setInitialValues] = useNamedState(buildInitialValues, "initialValues");
   const albumId = albumToEdit?.id ?? null;
 
+  useEffect(() => {
+    if (albumToEdit) {
+      setInitialValues({
+        name: albumToEdit.name,
+        sortOrder: albumToEdit.sortOrder,
+        coverUrl: albumToEdit.coverUrl,
+        artists: albumToEdit.artists?.map(v => ({
+          ...v.ArtistOfAlbum,
+          artist: v,
+        })) ?? [],
+        songs: albumToEdit.songs?.map(v => ({
+          ...v.SongInAlbum,
+          song: v,
+        })) ?? [],
+      });
+    } 
+  }, [albumToEdit, setInitialValues]);
+
   const refresh = useCallback(async () => {
     try {
       const result = await apolloClient.query<{album: Album}>({
@@ -203,7 +220,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
       });
     }
   }, [albumId, apolloClient, setInitialValues, snackbar]);
-
+  console.log("initialValues", initialValues, create, albumToEdit);
   return (
     <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
       <Form<FormValues>
@@ -288,12 +305,12 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
           <>
             <DialogTitle id="form-dialog-title">
               {create ? "Create new album entity" : `Edit album entity #${albumId}`}
-              {!create && <IconButton sx={{ position: "absolute", top: 1, right: 1, }}
+              {!create && <IconButton sx={{ position: "absolute", top: 12, right: 12, }}
                                       onClick={refresh}><AutorenewIcon /></IconButton>}
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <TextField
                     variant="outlined"
                     margin="dense"
@@ -301,7 +318,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                     required
                     name="name" type="text" label="Album name" />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <TextField
                     variant="outlined"
                     margin="dense"
@@ -315,7 +332,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                     }}
                     name="sortOrder" type="text" label="Sort order" />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <Box sx={{
                     display: "flex",
                     flexDirection: "row",
@@ -413,6 +430,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                         <Stack direction="row" spacing={1}>
                           <TextField
                             sx={{
+                              mt: 0,
                               width: "10em",
                               "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
                                 "appearance": "none",
@@ -448,7 +466,7 @@ export default function AlbumEntityDialog({ isOpen, toggleOpen, keyword, setKeyw
                             InputProps={{
                               endAdornment: <TrackNameAdornment
                                 sourceName="name"
-                                destinationName={`${name}.name`}
+                                destinationName={`songs.${idx}.name`}
                               />,
                             }}
                           />

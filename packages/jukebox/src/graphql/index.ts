@@ -19,6 +19,7 @@ import bcrypt from "bcryptjs";
 import _ from "lodash";
 import { createServer, Server } from "http";
 import { SubscriptionServer } from "subscriptions-transport-ws";
+import cors from "cors";
 
 export interface PubSubSessionPayload<T> {
   sessionId: string;
@@ -155,8 +156,20 @@ export async function applyApollo(app: Application): Promise<Server> {
   });
 
   await apolloServer.start();
+  // app.use(cors());
 
-  apolloServer.applyMiddleware({ app });
+  // app.post("/graphql", cors({
+  //   origin: "*",
+  //   credentials: true,
+  //   optionsSuccessStatus: 204
+  // }), apolloServer.getMiddleware({ path: "/graphql" }));
+
+  apolloServer.applyMiddleware({
+    app,
+    // cors: {
+    //   credentials: true,
+    // },
+  });
 
   return httpServer;
 }

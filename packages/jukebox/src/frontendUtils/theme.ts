@@ -1,4 +1,4 @@
-import { createMuiTheme, alpha, createTheme } from "@mui/material";
+import { alpha, createTheme } from "@mui/material";
 
 const palette = {
   primary: {
@@ -43,25 +43,26 @@ export default createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        "@global": {
-          "html": {
-            fontFeatureSettings: "'palt' 1",
-          },
-          "*::-webkit-scrollbar": {
-            width: "8px",
-          },
-          "*": {
-            scrollbarWidth: "thin",
-            scrollbarColor: `${scrollbarThumbBackground} ${scrollbarTrackBackground}`,
-          },
-          "*::-webkit-scrollbar-track": {
-            background: scrollbarTrackBackground,
-          },
-          "*::-webkit-scrollbar-thumb": {
-            backgroundColor: scrollbarThumbBackground,
-            borderRadius: "6px",
-          },
-        }
+        ":root": {
+          colorScheme: "dark",
+        },
+        "html": {
+          fontFeatureSettings: "'palt' 1",
+        },
+        "*::-webkit-scrollbar": {
+          width: "8px",
+        },
+        "*": {
+          scrollbarWidth: "thin",
+          scrollbarColor: `${scrollbarThumbBackground} ${scrollbarTrackBackground}`,
+        },
+        "*::-webkit-scrollbar-track": {
+          background: scrollbarTrackBackground,
+        },
+        "*::-webkit-scrollbar-thumb": {
+          backgroundColor: scrollbarThumbBackground,
+          borderRadius: "6px",
+        },
       }
     },
     MuiButton: {

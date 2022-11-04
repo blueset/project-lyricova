@@ -16,9 +16,7 @@ export const NextComposedLink = React.forwardRef<HTMLAnchorElement, NextComposed
   const { as, href, ...other } = props;
 
   return (
-    <NextLink href={href} as={as}>
-      <a ref={ref} {...other} />
-    </NextLink>
+    <NextLink href={href} as={as} ref={ref} {...other} />
   );
 });
 
