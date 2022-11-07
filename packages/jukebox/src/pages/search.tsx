@@ -76,7 +76,7 @@ export default function Search() {
     }}>
       <TextField value={searchKeyword} label="Search keywords" variant="filled"
                  fullWidth margin="none" size="medium" inputProps={{ sx: {fontSize: "2em", }}}
-                 InputLabelProps={{ sx: {transform: "translate(14px, 20px) scale(2)",} }}
+                 InputLabelProps={{ sx: {"&[data-shrink=false]": {transform: "translate(14px, 20px) scale(2)",}} }}
                  InputProps={{endAdornment: <InputAdornment position="end">
                      <IconButton type="submit" aria-label="search" edge="end">
                        <SearchIcon fontSize="large" />

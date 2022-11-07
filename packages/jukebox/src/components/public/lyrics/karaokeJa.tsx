@@ -249,10 +249,10 @@ function LyricsLine({ textLine, furiganaLine, done, activeRef }: LyricsLineProps
       },
     },
     "&.done span.after": {
-      clipPath: ["none", "!important"],
+      clipPath: "none !important",
     },
     "&.pending span.after": {
-      clipPath: ["inset(-30% 102% -10% -2%)", "!important"],
+      clipPath: "inset(-30% 102% -10% -2%) !important",
     },
     "&.active span.after": {
       clipPath: "inset(-30% 102% -10% -2%)",
@@ -600,11 +600,34 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           position: "relative",
           alignItems: "flex-end",
         },
-          "& .countdown": {
+        "& .countdown": {
           position: "absolute",
           top: "-1em",
           fontSize: "1.5rem",
           letterSpacing: "0.1em",
+        },
+        "& .countdown > span.after": {
+          color: "primary.dark",
+          clipPath: "inset(-30% 102% 0 -2%)",
+          "& > span": {
+            filter: "url(#nicokaraAfter)",
+          },
+        },
+        "&.done .countdown > span.after": {
+          clipPath: "none !important",
+        },
+        "&.pending .countdown > span.after": {
+          clipPath: "inset(-30% 102% -10% -2%) !important",
+        },
+        "&.active .countdown > span.after": {
+          clipPath: "inset(-30% 102% -10% -2%)",
+        },
+        "& .countdown > span.before": {
+          position: "absolute",
+          top: 0,
+          left: 0,
+          color: "#fff",
+          filter: "url(#nicokaraBefore)",
         },
       }} lang="ja" ref={measureRef}>
         {node}

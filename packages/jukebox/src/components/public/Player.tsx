@@ -162,9 +162,10 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
           flexWrap: {xs: "wrap", md: "inherit"},
           width: {xs: "100%", md: "auto"},
           marginBottom: {md: "-1rem"},
+          marginTop: {md: "0.5rem"},
           "& #player-previous": {
             order: {md: -3},
-            marginLeft: {md: "-1rem"},
+            marginLeft: {md: "-0.5rem"},
           },
           "& #player-play-pause": {
             order: {md: -2},

@@ -73,7 +73,12 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
         sequence.push(done + key);
         done += key;
         remainingHira = remainingHira.substring(2, remainingHira.length);
-      } else if (remainingHira.length >= 2 && remainingHira[0] == "っ" && secondKana in JA_MAP.romanMapSingle) {
+      } else if (
+        remainingHira.length >= 2 && 
+        remainingHira[0] == "っ" && 
+        secondKana in JA_MAP.romanMapSingle && 
+        JA_MAP.romanMapSingle[(secondKana as keyof (typeof JA_MAP["romanMapSingle"]))]
+      ) {
         const key = secondKana as keyof (typeof JA_MAP)["romanMapSingle"];
         sequence.push(done + JA_MAP.romanMapSingle[key][0]);
         done += "っ";
