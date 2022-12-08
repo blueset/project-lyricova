@@ -73,27 +73,7 @@ function CurrentPlaylistItem({
       // @ts-ignore
       ContainerComponent={isDragging ? "div" : "li"}
       selected={playlist.nowPlaying === index || isDragging}
-      onClick={
-        isDragging
-          ? null
-          : () => {
-            playlist.playTrack(index, true);
-          }
-      }
-    >
-      <ListItemButton>
-        <ListItemIcon style={{ zIndex: 10 }}
-                      {...provided.dragHandleProps}
-        >
-          <DragHandleIcon />
-        </ListItemIcon>
-        <ListItemText
-          sx={{width: 0, mr: 8}}
-          primary={track.trackName || "No title"}
-          primaryTypographyProps={{ noWrap: true }}
-          secondary={track.artistName || "Unknown artist"}
-          secondaryTypographyProps={{ noWrap: true }}
-        />
+      secondaryAction={
         <ListItemSecondaryAction>
           <IconButton
             edge="end"
@@ -125,6 +105,28 @@ function CurrentPlaylistItem({
             </MenuItem>
           </Menu>
         </ListItemSecondaryAction>
+      }
+    >
+      <ListItemButton
+      onClick={
+        isDragging
+          ? null
+          : () => {
+            playlist.playTrack(index, true);
+          }
+      }>
+        <ListItemIcon style={{ zIndex: 10 }}
+                      {...provided.dragHandleProps}
+        >
+          <DragHandleIcon />
+        </ListItemIcon>
+        <ListItemText
+          sx={{width: 0, mr: 8}}
+          primary={track.trackName || "No title"}
+          primaryTypographyProps={{ noWrap: true }}
+          secondary={track.artistName || "Unknown artist"}
+          secondaryTypographyProps={{ noWrap: true }}
+        />
       </ListItemButton>
     </ListItem>
   );

@@ -75,7 +75,7 @@ interface LevenshteinCellState {
  *
  * Running Levenshtein edit distance algorithm.
  */
-function furiganaSeparator(kanji: string, kana: string): (string | [string, string])[] {
+function furiganaSeparator0(kanji: string, kana: string): (string | [string, string])[] {
   const result: (string | [string, string])[] = [];
 
   // Levenshtein matrix
@@ -136,6 +136,32 @@ function furiganaSeparator(kanji: string, kana: string): (string | [string, stri
   });
 
   return result;
+}
+
+/**
+ * @author mkpoli
+ * @url https://zenn.dev/mkpoli/articles/8269f2f3ce71c9
+ */
+function furiganaSeparator(mixed: string, kana: string): (string | [string, string])[] {
+  // 正規表現文 /(\p{sc=Hiragana}+)うさ(\p{sc=Hiragana}+)るさ/u のようなものを作る
+  const pattern = new RegExp(mixed.replace(/\p{sc=Han}/gu, "(\\p{sc=Hiragana}+)"), "u");
+
+  // 作った正規表現文で仮名表記をマッチさせて、「お」「き」を取得する
+  const groups = kana.match(pattern);
+  if (!groups) return [[mixed, kana]];
+  const [, ...rest] = groups;
+
+  // 混じり表記の文を漢字部分とそうでない部分を分ける [ '逢', 'うさ', '離', 'るさ' ]
+  const sections = mixed.split(/(\p{sc=Han}+)/u).filter(Boolean);
+
+  // 最後に分けた部分に必要な場合だけルビを振る
+  return sections.map((section) => {
+    if (section.match(/\p{sc=Han}+/u)) {
+      return [section, rest.shift()];
+    } else {
+      return section;
+    }
+  });
 }
 
 /**

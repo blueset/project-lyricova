@@ -180,7 +180,8 @@ function useNicokaraLyricsState(
         if (i + 1 === v.lines.length) {
           if (gapAfter < COUNTDOWN_DURATION) {
             frames.push({
-              start: line.position + (v.end - line.position) / 2,
+              // Time to show next screen preview: after 1/4 of the last line has past
+              start: line.position + (v.end - line.position) / 4,
               data: { pageIdx: idx, lineIdx: i, showNext: true }
             });
             if (gapAfter > 0 && idx + 1 < pages.length) {

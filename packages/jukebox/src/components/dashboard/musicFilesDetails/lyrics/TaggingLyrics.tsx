@@ -306,7 +306,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         const cursor = cursorRef.current;
         if (!isInExtrapolateModeRef.current) {
           setLinesPerTag((linesPerTag) => {
-            const line = linesPerTag[cursorRef.current];
+            const line = linesPerTag[cursor];
             if (!line) return linesPerTag;
             line[0] = time;
             setCurrentLine(BLANK_LINE);
@@ -314,7 +314,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
           });
         } else {
           setExtrapolateTags((extrapolateTags) => {
-            extrapolateTags[cursorRef.current] = time;
+            extrapolateTags[cursor] = time;
             return [...extrapolateTags];
           });
         }

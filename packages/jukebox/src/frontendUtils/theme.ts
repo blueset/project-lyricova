@@ -13,6 +13,14 @@ const palette = {
     dark: "#009f94",
     contrastText: "#000",
   },
+  text: {
+    primary: "#fff",
+    secondary: "rgba(255, 255, 255, 0.7)",
+    disabled: "rgba(255, 255, 255, 0.5)",
+    icon: "rgba(255, 255, 255, 0,5)",
+    primaryChannel: "255 255 255",
+    secondaryChannel: "255 255 255",
+  },
 };
 
 const scrollbarTrackBackground = "rgba(66, 66, 66, 0.5)";
@@ -79,7 +87,7 @@ export default createTheme({
     MuiTypography: {
       styleOverrides: {
         root: {
-          color: palette.primary.light,
+          // color: palette.primary.light,
         },
       }
     },
