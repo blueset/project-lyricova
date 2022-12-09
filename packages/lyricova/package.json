@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/blueset/project-lyricova#readme",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.18.2",
     "graphql": "^15.7.2",
     "lodash": "^4.17.21",
     "next": "^12.3.2",
