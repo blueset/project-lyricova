@@ -1,13 +1,12 @@
-import Link from "../../components/Link";
 import { getLayout } from "../../components/public/layouts/LibraryLayout";
 import {
   Alert,
-  Badge,
   Box,
   Chip,
   IconButton,
   List,
-  ListItem, ListItemIcon, ListItemSecondaryAction,
+  ListItem,
+  ListItemSecondaryAction,
   ListItemText,
   Menu, MenuItem,
   Slider, Tooltip,
@@ -17,25 +16,23 @@ import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import ButtonRow from "../../components/ButtonRow";
 import AutoResizer from "react-virtualized-auto-sizer";
-import { FixedSizeList, ListChildComponentProps, areEqual } from "react-window";
 import { gql, useQuery } from "@apollo/client";
 import { MusicFileFragments } from "../../graphql/fragments";
 import { MusicFilesPagination } from "../../graphql/MusicFileResolver";
-import React, { cloneElement, useMemo, useRef } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import { MusicFile } from "../../models/MusicFile";
 import _ from "lodash";
-import { makeStyles } from "@mui/material/styles";
 import { useNamedState } from "../../frontendUtils/hooks";
-import clsx from "clsx";
 import { useAppContext } from "../../components/public/AppContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { useAuthContext } from "../../components/public/AuthContext";
 import { useRouter } from "next/router";
 import ListItemTextWithTime from "../../components/public/library/ListItemTextWithTime";
 import { DocumentNode } from "graphql";
 import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import { useVirtualizer } from "@tanstack/react-virtual";
+
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
@@ -73,15 +70,13 @@ function SliderLabel(props: React.ComponentProps<typeof SliderValueLabel> & {chi
              title={props.value}>
       {props.children}
     </Tooltip>
-  )
+  );
 }
 
 const ITEM_HEIGHT = 60;
 
-const Row = React.memo((props: ListChildComponentProps) => {
-  const { data, index, style, isScrolling } = props;
-  const item: MusicFile | null = data[index];
-
+const Row = React.memo(({height, index, data, start, isScrolling}: {height: number, index: number, start: number, data: MusicFile[], isScrolling: boolean}) => {
+  const item = index == 0 ? null : data[index + 1];
   const { playlist } = useAppContext();
   const { user } = useAuthContext();
   const router = useRouter();
@@ -93,7 +88,7 @@ const Row = React.memo((props: ListChildComponentProps) => {
       playAll();
       playlist.toggleShuffle();
     };
-    return <ListItem style={style}>
+    return <ListItem style={{height, transform: `translateY(${start}px)`,}}>
       <ButtonRow>
         <Chip icon={<PlaylistPlayIcon />} onClick={playAll} label="Play all" clickable />
         <Chip icon={<ShuffleIcon />} onClick={shuffleAll} label="Shuffle all" clickable />
@@ -120,7 +115,14 @@ const Row = React.memo((props: ListChildComponentProps) => {
   };
 
   return (
-    <ListItem ContainerProps={{style: style}}>
+    <ListItem ContainerProps={{style: {
+      height, 
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      transform: `translateY(${start}px)`,
+    }}}>
       <ListItemTextWithTime
         primary={isScrolling && item.trackSortOrder ? item.trackSortOrder : item.trackName}
         secondary={<>
@@ -176,14 +178,13 @@ const Row = React.memo((props: ListChildComponentProps) => {
       </ListItemSecondaryAction>
     </ListItem>
   );
-}, areEqual);
+});
 Row.displayName = "Row";
 
 export default function LibraryTracks() {
   const query = useQuery<{ musicFiles: MusicFilesPagination }>(MUSIC_FILES_COUNT_QUERY);
-  const recycleListRef = useRef<FixedSizeList>();
-
-  const [scrollDistance, setScrollDistance] = useNamedState(0, "scrollDistance");
+  // const recycleListRef = useRef<FixedSizeList>();
+  const parentRef = useRef<HTMLDivElement>();
 
   const entries = useMemo<MusicFile[]>(() => {
     if (query.data) {
@@ -196,6 +197,44 @@ export default function LibraryTracks() {
     }
   }, [query.data]);
   const scrollLength = (entries.length + 1) * ITEM_HEIGHT;
+
+  const [scrollDistance, setScrollDistance] = useNamedState(0, "scrollDistance");
+  const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
+
+  // const { outerRef, innerRef, items, scrollToItem } = useVirtual<HTMLDivElement, HTMLDivElement>({
+  //   itemCount: entries.length + 1,
+  //   itemSize: ITEM_HEIGHT,
+  //   // overscanCount: 10,
+  //   // onScroll: ({ scrollOffset, userScroll }) => {
+  //   //   console.log("on scroll", userScroll, scrollOffset);
+  //   //   if (userScroll) setInvScrollDistance(scrollLength - scrollOffset);
+  //   // }
+  // });
+  const rowVirtualizer = useVirtualizer({
+    count: entries.length + 1,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ITEM_HEIGHT,
+    overscan: 10,
+    // debug: true,
+    onChange: (instance) => {
+      if (instance.scrollElement && !isDragging) {
+        // console.log("onChange", instance.scrollElement?.scrollTop);
+        setScrollDistance(instance.scrollElement?.scrollTop);
+      }
+    },
+  });
+
+  const parentRefCallback = useCallback((elm) => {
+    console.log("ref", elm);
+    if (!parentRef.current) {
+      parentRef.current = elm;
+      rowVirtualizer.measure();
+    } else {
+      parentRef.current = elm;
+    }
+  }, []);
+
+  // console.log("Items count", entries.length + 1, items.length);
 
   const sliderLookup = useMemo(() => {
     const rows = [null, ...entries];
@@ -220,7 +259,11 @@ export default function LibraryTracks() {
   if (query.error) return <Alert severity="error">Error: {`${query.error}`}</Alert>;
 
   const onScrollSliderChange = (event: any, newValue: number) => {
-    if (recycleListRef.current) recycleListRef.current.scrollTo(scrollLength - newValue);
+    // console.log("Slider change", newValue);
+    setIsDragging(true);
+    setScrollDistance(scrollLength - newValue);
+    // scrollToItem((scrollLength - newValue) / ITEM_HEIGHT, () => console.log("Scroll to done"));
+    rowVirtualizer.scrollToOffset(scrollLength - newValue);
   };
 
   return <Box sx={{
@@ -236,6 +279,7 @@ export default function LibraryTracks() {
           orientation="vertical" track={false}
           sx={{position: "absolute", top: 1, bottom: 1, right: 0, zIndex: 500,}}
           onChange={onScrollSliderChange}
+          onChangeCommitted={() => setIsDragging(false)}
           valueLabelDisplay="auto"
           components={{ValueLabel: SliderLabel}}
           valueLabelFormat={(x) => {
@@ -243,8 +287,17 @@ export default function LibraryTracks() {
             return sliderLookup[Math.max(0, index)].name;
           }}
           value={scrollLength - scrollDistance} min={height} max={scrollLength} />
-        <List>
-          <FixedSizeList
+        <div style={{width, height, overflowY: "auto", scrollbarWidth: "none"}} ref={parentRefCallback}>
+          {/* Items: {entries.length + 1} @ {rowVirtualizer.getTotalSize()}, w: {width}, h: {height} */}
+          <List style={{
+            height: rowVirtualizer.getTotalSize(),
+            width: "100%",
+            position: "relative",
+          }}>{
+            rowVirtualizer.getVirtualItems().map(({index, size, start}) => ( 
+              <Row key={index} index={index} height={size} start={start} data={entries} isScrolling={isDragging} />))
+          }</List>
+          {/* <FixedSizeList
             itemSize={ITEM_HEIGHT} itemCount={entries.length + 1}
             height={height} width={width}
             itemData={[null, ...entries]}
@@ -252,8 +305,8 @@ export default function LibraryTracks() {
             onScroll={({ scrollOffset }) => setScrollDistance(scrollOffset)}
             ref={recycleListRef}
             style={{ scrollbarWidth: "none", }}
-          >{Row}</FixedSizeList>
-        </List>
+          >{Row}</FixedSizeList> */}
+        </div>
       </>
     }</AutoResizer>
   </Box>;

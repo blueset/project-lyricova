@@ -20,7 +20,7 @@ export default function InformationById() {
     {user && <ButtonRow>
       {currentSong && <Chip
           label="Edit song" component={NextComposedLink}
-          target="_blank" href={`/dashboard/review/${currentSong.id}`}
+          target="_blank" href={`/dashboard/review/${fileId ?? currentSong.id}`}
           clickable variant="outlined" />}
     </ButtonRow>}
   </Box>;

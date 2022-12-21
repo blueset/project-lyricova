@@ -1,11 +1,10 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles, styled, Theme, useTheme } from "@mui/material";
+import { styled, Theme, useTheme } from "@mui/material";
 import { motion, Variants, AnimatePresence, Transition, TargetAndTransition } from "framer-motion";
 import BalancedText from "react-balance-text-cj";
 import _ from "lodash";
-import clsx from "clsx";
 import { CSSProperties } from "react";
 import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
@@ -48,8 +47,8 @@ const TRANSLATION_LINE_VARIANTS: Variants = {
 };
 
 const TRANSITION: Transition = {
-  duration: 0.2,
-  ease: "easeInOut",
+  duration: 0.1,
+  ease: "easeOut",
 };
 
 interface LyricsLineElementProps {
@@ -64,14 +63,15 @@ interface LyricsLineElementProps {
 function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }: LyricsLineElementProps) {
   const theme = useTheme();
   if (!line) return null;
-  const transition = animate ? TRANSITION : { duration: 0 };
+  const transition: Transition = animate ? TRANSITION : { duration: 0 };
 
   const styles: TargetAndTransition = {
     opacity: 1,
     height: "auto",
     marginBottom: 50,
-    width: resize ? "72.5%" : "100%",
+    // width: resize ? "72.5%" : "100%",
     fontSize: theme.typography.fontSize * 3,
+    // trans
     transitionEnd: {
       filter: "var(--jukebox-cover-filter-brighter, blur(var(--jukebox-ringo-blur-radius)))",
       mixBlendMode: "hard-light",
@@ -79,10 +79,10 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
   };
 
   if (offsetIndex === 0) {
-    if (resize) {
-      styles.scale = 1.3;
-    } else {
-    }
+    // if (resize) {
+    //   styles.scale = 1.3;
+    // } else {
+    // }
     styles.transitionEnd.filter = "var(--jukebox-cover-filter-brighter)";
     styles.transitionEnd.mixBlendMode = "hard-light";
     styles.color = "rgba(255, 255, 255, 0.7)";
@@ -98,13 +98,17 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
     }
   }
   
-  const translationVariants = resize ? TRANSLATION_LINE_VARIANTS : {
+  // const translationVariants = resize ? TRANSLATION_LINE_VARIANTS : {
+  //   exit: TRANSLATION_LINE_VARIANTS.exit,
+  // };
+  const translationVariants = {
     exit: TRANSLATION_LINE_VARIANTS.exit,
   };
 
   return (
     <MotionDivLine
       lang="ja"
+      layout
       className={className}
       transition={transition}
       animate={styles}
@@ -169,8 +173,8 @@ export function RingoLyrics({ lyrics, resize }: Props) {
       maskBoxImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
       maskBoxImageSlice: "49% 0 fill",
       maskBoxImageWidth: "35px 0 50%",
-    } as unknown as CSSProperties}>
-      <AnimatePresence initial={false}>
+    } as unknown as CSSProperties} transition={{staggerChildren: 1}}>
+      <AnimatePresence initial={false} mode="popLayout">
         {lineNumber === 0 && <motion.div animate={{ minHeight: 35, }} exit={{ minHeight: 0, }} />}
         {lines.map((l, idx) => {
           if (idx < lineNumber - 1 || idx > lineNumber + 12) return null;
