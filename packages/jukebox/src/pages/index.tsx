@@ -23,6 +23,7 @@ import { KaraokeJaLyrics } from "../components/public/lyrics/karaokeJa";
 import { StrokeLyrics } from "../components/public/lyrics/stroke";
 import { useClientPersistentState } from "../frontendUtils/clientPersistantState";
 import { DocumentNode } from "graphql";
+import { RingoTranslateLyrics } from "../components/public/lyrics/ringoTranslate";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -59,8 +60,7 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Focused Glow": (lyrics: LyricsKitLyrics) => <FocusedGlowLyrics lyrics={lyrics} />,
   "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
   "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
-  "Ringo": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} resize />,
-  "Ringo Unisize": (lyrics: LyricsKitLyrics) => <RingoLyrics lyrics={lyrics} />,
+  "Ringo": (lyrics: LyricsKitLyrics) => <RingoTranslateLyrics lyrics={lyrics} />,
   "Karaoke/1/Underline": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} />,
   "Karaoke/1/Cover": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} cover />,
   "Nicokara": (lyrics: LyricsKitLyrics) => <KaraokeJaLyrics lyrics={lyrics} />,
@@ -77,7 +77,7 @@ export default function Index() {
   const [module, setModule] = useClientPersistentState<keyof typeof MODULE_LIST>(_.keys(MODULE_LIST)[0], "module", "lyricovaPlayer");
 
   const keys = Object.keys(MODULE_LIST) as (keyof typeof MODULE_LIST)[];
-  const moduleNode = MODULE_LIST[module];
+  const moduleNode = MODULE_LIST[module] ?? MODULE_LIST[keys[0]];
 
   const lyricsQuery = useQuery<{ musicFile?: { lyrics: LyricsKitLyrics } }>(LYRICS_QUERY, {
     variables: {

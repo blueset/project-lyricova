@@ -1,3 +1,7 @@
+# Deprecated
+
+This project is deprecated for [react-wrap-balancer](https://github.com/shuding/react-wrap-balancer/) which offers the same feature with better performance.
+
 # `react-balance-text-cj`
 
 A fork of [`adobe/balance-text`](https://github.com/adobe/balance-text/) and
@@ -67,7 +71,7 @@ function MyComponent() {
 
 
 ## Default line break logic for Chinese and Japanese
-By default, if the program sees no Zero-Width Space (ZWS, U+200B) in the text, it will run the default line break logic which roughly replicates how your browser would do for line breaks taking in considerations of common rules rngaegard starting a line and ending a line.
+By default, if the program sees no Zero-Width Space (ZWS, U+200B) in the text, it will run the default line break logic which roughly replicates how your browser would do for line breaks taking in considerations of common rules regarding starting a line and ending a line.
 
 ## Custom line break chances for Chinese and Japanese
 If you want to specify your own line break chances that may make more sense to you, you can add these marks using ZWS. Once it finds ZWS in the content, it will follow there marks instead of generating its own ones.

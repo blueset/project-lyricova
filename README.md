@@ -14,9 +14,9 @@ branch.
 
 - `jukebox`: Music library manager and public jukebox.
 - `lyricova`: Lyrics blog (similar to version 1).
-- `common`: Common code shared between jukebox and lyricova.
+- `common`: Common code shared between `jukebox` and `lyricova`.
 - `lyrics-kit`: Fetch and parse lyrics from various sources.
-- `react-balance-text-cj`: Balance line breaks on web for Chinese and Japanese text.
+- ~~`react-balance-text-cj`: Balance line breaks on web for Chinese and Japanese text. (Deprecated)~~
 
 ## The name
 

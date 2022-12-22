@@ -3,7 +3,7 @@ import { useAppContext } from "../AppContext";
 import { useLyricsState, usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles, styled, Theme } from "@mui/material";
 import { motion, Transition } from "framer-motion";
-import BalancedText from "react-balance-text-cj";
+import Balancer from "react-wrap-balancer";
 import clsx from "clsx";
 import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
@@ -45,16 +45,14 @@ function LyricsLineElement({ className, line, animate, sx }: LyricsLineElementPr
     >
       {
         animate ? (
-          <BalancedText
-            resize={true} > {line.content}</BalancedText>
+          <Balancer>{line.content}</Balancer>
         ) : line.content}
       {
         line.attachments?.translation && (
           <div
             lang="zh">
             {animate ? (
-              <BalancedText
-                resize={true}>{line.attachments.translation}</BalancedText>
+              <Balancer>{line.attachments.translation}</Balancer>
             ) : line.attachments.translation}
           </div>
         )

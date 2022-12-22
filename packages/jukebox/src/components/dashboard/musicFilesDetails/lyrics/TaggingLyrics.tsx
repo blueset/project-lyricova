@@ -1,5 +1,5 @@
 /**
- * Some code in this document is adapted from “LRC Maker”.
+ * Some code in this file is adapted from “LRC Maker”.
  *
  * LRC Maker (https://github.com/magic-akari/lrc-maker)
  * Copyright (c) 阿卡琳 licensed under MIT License

@@ -1,9 +1,12 @@
-import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
+import {
+  LyricsKitLyrics,
+  LyricsKitLyricsLine,
+} from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles, styled } from "@mui/material";
 import { motion, Transition } from "framer-motion";
-import BalancedText from "react-balance-text-cj";
+import Balancer from "react-wrap-balancer";
 import _ from "lodash";
 import clsx from "clsx";
 
@@ -24,24 +27,16 @@ interface LyricsLineElementProps {
 function LyricsLineElement({ line, animate }: LyricsLineElementProps) {
   if (!line) return null;
   const transition = animate ? TRANSITION : { duration: 0 };
-  const content = <>
-    {
-      animate ? (
-        <BalancedText
-          resize={true} > {line.content}</BalancedText>
-      ) : line.content}
-    {
-      line.attachments?.translation && (
-        <div className="translate"
-          lang="zh">
-          {animate ? (
-            <BalancedText
-              resize={true}>{line.attachments.translation}</BalancedText>
-          ) : line.attachments.translation}
+  const content = (
+    <>
+      <Balancer>{line.content}</Balancer>
+      {line.attachments?.translation && (
+        <div className="translate" lang="zh">
+          <Balancer>{line.attachments.translation}</Balancer>
         </div>
-      )
-    }
-  </>;
+      )}
+    </>
+  );
 
   return (
     <SxMotionDiv
@@ -72,7 +67,7 @@ function LyricsLineElement({ line, animate }: LyricsLineElementProps) {
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
         },
-          "& .overlay": {
+        "& .overlay": {
           position: "absolute",
           width: "100%",
           filter: "blur(5px) drop-shadow(0 0 5px white)",
@@ -109,25 +104,25 @@ export function FocusedGlowLyrics({ lyrics }: Props) {
   const lines = lyrics.lines;
 
   return (
-    <motion.div style={{
-      padding: 16,
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-    }}>
-      {line !== null && lines.map((l, idx) => {
-        if (idx < line || idx > line) return null;
-        const animate =
-          (idx + 1 > lines.length) || (!lines[idx + 1]) ||
-          (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
-        return (
-          <LyricsLineElement
-            line={l}
-            key={idx}
-            animate={animate} />);
-      })}
+    <motion.div
+      style={{
+        padding: 16,
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+    >
+      {line !== null &&
+        lines.map((l, idx) => {
+          if (idx < line || idx > line) return null;
+          const animate =
+            idx + 1 > lines.length ||
+            !lines[idx + 1] ||
+            lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD;
+          return <LyricsLineElement line={l} key={idx} animate={animate} />;
+        })}
     </motion.div>
   );
 }

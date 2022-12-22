@@ -1,10 +1,11 @@
-import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
+import {
+  LyricsKitLyrics,
+  LyricsKitLyricsLine,
+} from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles, styled } from "@mui/material";
+import { styled } from "@mui/material";
 import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
-import BalancedText from "react-balance-text-cj";
-import clsx from "clsx";
 import _ from "lodash";
 
 const ANIMATION_THRESHOLD = 0.25;
@@ -56,7 +57,11 @@ interface LyricsLineElementProps {
   animate: boolean;
 }
 
-function LyricsLineElement({ line, isCurrent, animate }: LyricsLineElementProps) {
+function LyricsLineElement({
+  line,
+  isCurrent,
+  animate,
+}: LyricsLineElementProps) {
   if (!line) return null;
   const transition = animate ? TRANSITION : { duration: 0 };
   return (
@@ -88,26 +93,18 @@ function LyricsLineElement({ line, isCurrent, animate }: LyricsLineElementProps)
         },
       }}
     >
-      {
-        animate ? (
-          <BalancedText
-            resize={true} > {line.content}</BalancedText>
-        ) : line.content}
-      {
-        line.attachments?.translation && (
-          <motion.div
-            variants={TRANSLATION_LINE_VARIANTS}
-            transition={transition}
-            animate={isCurrent ? "current" : "next"}
-            exit="exit"
-            lang="zh">
-            {animate ? (
-              <BalancedText
-                resize={true}>{line.attachments.translation}</BalancedText>
-            ) : line.attachments.translation}
-          </motion.div>
-        )
-      }
+      <Balancer>{line.content}</Balancer>
+      {line.attachments?.translation && (
+        <motion.div
+          variants={TRANSLATION_LINE_VARIANTS}
+          transition={transition}
+          animate={isCurrent ? "current" : "next"}
+          exit="exit"
+          lang="zh"
+        >
+          <Balancer>{line.attachments.translation}</Balancer>
+        </motion.div>
+      )}
     </SxMotionDiv>
   );
 }
@@ -123,27 +120,33 @@ export function FocusedLyrics2({ lyrics }: Props) {
   const lines = lyrics.lines;
 
   return (
-    <motion.div style={{
-      padding: 16,
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-    }}>
+    <motion.div
+      style={{
+        padding: 16,
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+    >
       <AnimatePresence initial={false}>
-        {line !== null && lines.map((l, idx) => {
-          if (idx < line || idx > line + 1) return null;
-          const animate =
-            (idx + 1 > lines.length) || (!lines[idx + 1]) ||
-            (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
-          return (
-            <LyricsLineElement
-              line={l}
-              key={idx}
-              animate={animate}
-              isCurrent={idx === line} />);
-        })}
+        {line !== null &&
+          lines.map((l, idx) => {
+            if (idx < line || idx > line + 1) return null;
+            const animate =
+              idx + 1 > lines.length ||
+              !lines[idx + 1] ||
+              lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD;
+            return (
+              <LyricsLineElement
+                line={l}
+                key={idx}
+                animate={animate}
+                isCurrent={idx === line}
+              />
+            );
+          })}
       </AnimatePresence>
     </motion.div>
   );

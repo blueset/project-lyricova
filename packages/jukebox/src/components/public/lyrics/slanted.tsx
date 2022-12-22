@@ -78,6 +78,9 @@ export function SlantedLyrics({ lyrics }: Props) {
     maskBoxImageSource: "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
     maskBoxImageSlice: "0 49% fill",
     maskBoxImageWidth: "0 40px",
+    "-webkit-mask-box-image-source": "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+    "-webkit-mask-box-image-slice": "0 49% fill",
+    "-webkit-mask-box-image-width": "0 40px",
   } as unknown as CSSProperties}>
     <Box sx={{
       whiteSpace: "nowrap",

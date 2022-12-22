@@ -1,10 +1,9 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { Box, makeStyles, styled } from "@mui/material";
+import { Box, styled } from "@mui/material";
 import { useRef, useEffect, CSSProperties } from "react";
 import clsx from "clsx";
-import BalanceText from "react-balance-text-cj";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -51,6 +50,9 @@ export function ParagraphLyrics({ lyrics }: Props) {
     maskBoxImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
     maskBoxImageSlice: "49% 0 fill",
     maskBoxImageWidth: "40% 0",
+    "-webkit-mask-box-image-source": "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+    "-webkit-mask-box-image-slice": "49% 0 fill",
+    "-webkit-mask-box-image-width": "40% 0",
   } as unknown as CSSProperties}>
     <Box sx={{height: "50%",}}/>
     {lyrics.lines.map((v, idx) => {

@@ -4,14 +4,14 @@ import { useLyricsState } from "../../../frontendUtils/hooks";
 import { Box, makeStyles, styled } from "@mui/material";
 import { useRef, useEffect, CSSProperties } from "react";
 import clsx from "clsx";
-import BalanceText from "react-balance-text-cj";
+import Balancer from "react-wrap-balancer";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import React from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import AutoResizer from "react-virtualized-auto-sizer";
 
 const ANIMATION_THRESHOLD = 0.25;
-const MemoBalanceText = React.memo(BalanceText);
+const MemoBalanceText = React.memo(Balancer);
 
 const rowStyle = (start: number) =>
   ({
@@ -32,7 +32,7 @@ const StyledLine = styled("div")({
   minHeight: "1.2em",
   fontSize: "1.5em",
   textAlign: "center",
-  marginBottom: 4,
+  paddingTop: 16,
   "&.active": {
     opacity: 1,
     fontWeight: 600,
@@ -72,10 +72,12 @@ export function PlainLyrics({ lyrics }: Props) {
     //       behavior: animate ? "smooth" : "auto",
     //     });
     // }
-    virtualizer.scrollToIndex(line + 1, {
+    virtualizer.scrollToIndex(line + 2, {
       align: "center",
       behavior: animate ? "smooth" : "auto",
     });
+    // window.virtualizer = virtualizer;
+    // console.log("scrolling to", line + 1);
   }, [container, line, lyrics.lines]);
   console.log(line);
 
@@ -96,6 +98,10 @@ export function PlainLyrics({ lyrics }: Props) {
             "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
           maskBoxImageSlice: "49% 0 fill",
           maskBoxImageWidth: "40% 0",
+          "-webkit-mask-box-image-source":
+            "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+          "-webkit-mask-box-image-slice": "49% 0 fill",
+          "-webkit-mask-box-image-width": "40% 0",
         } as unknown) as CSSProperties
       }
       ref={container}
@@ -123,12 +129,12 @@ export function PlainLyrics({ lyrics }: Props) {
               ref={virtualizer.measureElement}
               style={rowStyle(start)}
             >
-              <MemoBalanceText resize={true}>
+              <MemoBalanceText>
                 <FuriganaLyricsLine graphQLSourceLine={lines[index - 1]} />
               </MemoBalanceText>
               {lines[index - 1].attachments.translation && (
                 <div className="translation">
-                  <MemoBalanceText resize={true}>
+                  <MemoBalanceText>
                     {lines[index - 1].attachments.translation}
                   </MemoBalanceText>
                 </div>
