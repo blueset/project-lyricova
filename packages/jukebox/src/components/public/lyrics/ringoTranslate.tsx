@@ -4,12 +4,10 @@ import {
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { styled, Theme } from "@mui/material";
-import { motion, Variants, Transition } from "framer-motion";
+import { styled } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import _ from "lodash";
 import { useLayoutEffect, useRef } from "react";
-import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
 const ANIMATION_THRESHOLD = 0.25;
 const RENDER_LINES = 20;

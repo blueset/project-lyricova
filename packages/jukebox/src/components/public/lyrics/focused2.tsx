@@ -7,6 +7,7 @@ import { useLyricsState } from "../../../frontendUtils/hooks";
 import { styled } from "@mui/material";
 import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
 import _ from "lodash";
+import Balancer from "react-wrap-balancer";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -130,7 +131,7 @@ export function FocusedLyrics2({ lyrics }: Props) {
         justifyContent: "center",
       }}
     >
-      <AnimatePresence initial={false}>
+      <AnimatePresence initial={false} mode="popLayout">
         {line !== null &&
           lines.map((l, idx) => {
             if (idx < line || idx > line + 1) return null;
