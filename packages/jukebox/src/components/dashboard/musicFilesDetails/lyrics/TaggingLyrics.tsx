@@ -4,35 +4,134 @@
  * LRC Maker (https://github.com/magic-akari/lrc-maker)
  * Copyright (c) 阿卡琳 licensed under MIT License
  */
-import { PlayerState, useNamedState, usePlayerState } from "../../../../frontendUtils/hooks";
-import { useCallback, useEffect, useRef, MouseEvent, ChangeEvent, useMemo } from "react";
+import {
+  PlayerState,
+  useNamedState,
+  usePlayerState,
+} from "../../../../frontendUtils/hooks";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  MouseEvent,
+  ChangeEvent,
+  useMemo,
+  memo,
+  MouseEventHandler,
+} from "react";
 import {
   Box,
   Button,
   FormControlLabel,
   List,
-  ListItem,
-  ListItemIcon, ListItemSecondaryAction,
-  ListItemText, Stack, styled,
+  ListItemButton,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  ListItemText,
+  Stack,
+  styled,
   Switch,
-  Typography
+  Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import _ from "lodash";
-import { buildTimeTag, resolveTimeTag } from "lyrics-kit/build/main/utils/regexPattern";
+import {
+  buildTimeTag,
+  resolveTimeTag,
+} from "lyrics-kit/build/main/utils/regexPattern";
 import { linearRegression } from "simple-statistics";
 import DismissibleAlert from "../../DismissibleAlert";
 
+interface LineListItemProps {
+  isCurrent: boolean;
+  isCursorOn: boolean;
+  onClickCapture?: MouseEventHandler<HTMLDivElement>;
+  onDoubleClickCapture?: MouseEventHandler<HTMLDivElement>;
+  extrapolateTag: number | undefined;
+  line: [number, string[]];
+}
+
+const LineListItem = ({
+  isCurrent,
+  isCursorOn,
+  onClickCapture,
+  onDoubleClickCapture,
+  extrapolateTag,
+  line: v,
+}: LineListItemProps) => {
+  // console.log("LineListItem render", v);
+  return (
+    <ListItemButton
+      dense
+      selected={isCurrent}
+      onClickCapture={onClickCapture}
+      onDoubleClickCapture={onDoubleClickCapture}
+      tabIndex={-1}
+    >
+      {isCursorOn && (
+        <ListItemIcon>
+          <EditIcon />
+        </ListItemIcon>
+      )}
+      <ListItemText
+        disableTypography
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "start",
+        }}
+        inset={!isCursorOn}
+      >
+        <Typography
+          variant="body1"
+          component="span"
+          display="block"
+          sx={{ fontVariantNumeric: "tabular-nums" }}
+        >
+          {v[0] != undefined ? `[${buildTimeTag(v[0])}]` : ""}
+        </Typography>
+        <div>
+          {v[1].map((l, lidx) => (
+            <Typography
+              key={lidx}
+              variant="body1"
+              color="textSecondary"
+              display="block"
+            >
+              {l}
+            </Typography>
+          ))}
+        </div>
+      </ListItemText>
+      <ListItemSecondaryAction>
+        <span style={{ fontVariantNumeric: "tabular-nums" }}>
+          {extrapolateTag && `[${buildTimeTag(extrapolateTag)}]`}
+        </span>
+      </ListItemSecondaryAction>
+    </ListItemButton>
+  );
+};
+
+const MemoLineListItem = memo(LineListItem, (prev, next) => {
+  return (
+    prev.isCurrent === next.isCurrent &&
+    prev.isCursorOn === next.isCursorOn &&
+    prev.extrapolateTag === next.extrapolateTag &&
+    prev.line[0] === next.line[0] &&
+    prev.line[1].join("") === next.line[1].join("")
+  );
+});
+
 type LinesPerTag = [number, string[]][];
 
-const ControlRow = styled(Stack)(({theme}) => ({
+const ControlRow = styled(Stack)(({ theme }) => ({
   marginBottom: theme.spacing(1),
   "&:last-child": {
     marginBottom: 0,
-  }
+  },
 }));
 
-const BLANK_LINE = { index: Infinity, start: Infinity, end: -Infinity, };
+const BLANK_LINE = { index: Infinity, start: Infinity, end: -Infinity };
 
 interface CurrentLineState {
   index: number;
@@ -58,7 +157,10 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
    * ]
    * ```
    */
-  const [linesPerTag, setLinesPerTag] = useNamedState<LinesPerTag>([], "linesPerTag");
+  const [linesPerTag, setLinesPerTag] = useNamedState<LinesPerTag>(
+    [],
+    "linesPerTag"
+  );
   const linesPerTagRef = useRef<LinesPerTag>();
   linesPerTagRef.current = linesPerTag;
 
@@ -71,7 +173,10 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
   const cursorRef = useRef<number | null>();
   cursorRef.current = cursor;
 
-  const [currentLine, setCurrentLine] = useNamedState<CurrentLineState>(BLANK_LINE, "currentLine");
+  const [currentLine, setCurrentLine] = useNamedState<CurrentLineState>(
+    BLANK_LINE,
+    "currentLine"
+  );
   const currentLineRef = useRef<CurrentLineState>();
   currentLineRef.current = currentLine;
 
@@ -79,16 +184,28 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
   const playerStateRef = useRef<PlayerState>();
   playerStateRef.current = playerState;
 
-  const [isInExtrapolateMode, toggleExtrapolateMode] = useNamedState<boolean>(false, "isInExtrapolateMode");
+  const [isInExtrapolateMode, toggleExtrapolateMode] = useNamedState<boolean>(
+    false,
+    "isInExtrapolateMode"
+  );
   const isInExtrapolateModeRef = useRef<boolean>();
   isInExtrapolateModeRef.current = isInExtrapolateMode;
-  const [extrapolateTags, setExtrapolateTags] = useNamedState<(number | null)[]>([], "extrapolateTags");
+  const [extrapolateTags, setExtrapolateTags] = useNamedState<
+    (number | null)[]
+  >([], "extrapolateTags");
   const extrapolateTagsRef = useRef<(number | null)[]>();
   extrapolateTagsRef.current = extrapolateTags;
 
-  const linearRegressionResult = useMemo<{ m: number; b: number; } | null>(() => {
+  const linearRegressionResult = useMemo<{
+    m: number;
+    b: number;
+  } | null>(() => {
     const points: [number, number][] = [];
-    for (let i = 0; i < Math.min(linesPerTag.length, extrapolateTags.length); i++) {
+    for (
+      let i = 0;
+      i < Math.min(linesPerTag.length, extrapolateTags.length);
+      i++
+    ) {
       if (extrapolateTags[i] != null && linesPerTag[i]?.[0] != null) {
         points.push([linesPerTag[i]?.[0], extrapolateTags[i]]);
       }
@@ -102,12 +219,14 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
     // Do nothing when no lyrics is found
     if (!lyrics) {
       setLinesPerTag([]);
-      return () => {/* No-op */};
+      return () => {
+        /* No-op */
+      };
     }
 
     const mapping: { [key: string]: string[] } = {};
     const lpt: [string, string[]][] = [];
-    const splitLines = lyrics.split("\n").map(v => {
+    const splitLines = lyrics.split("\n").map((v) => {
       const matches = v.match(/^(\[[0-9:.]+\])?(.*)$/);
       if (matches) {
         return [matches[1], matches[2]];
@@ -127,99 +246,118 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       }
     });
 
-    setLinesPerTag(lpt.map(([tag, lines]) => [resolveTimeTag(tag || "")?.[0] ?? null, lines]));
+    setLinesPerTag(
+      lpt.map(([tag, lines]) => [resolveTimeTag(tag || "")?.[0] ?? null, lines])
+    );
 
     return () => {
       const result: string[] = [];
-      linesPerTagRef.current.forEach(([tag, lines]) => lines.forEach(line =>
-        result.push((tag !== null ? `[${buildTimeTag(tag)}]` : "") + line)
-      ));
+      linesPerTagRef.current.forEach(([tag, lines]) =>
+        lines.forEach((line) =>
+          result.push((tag !== null ? `[${buildTimeTag(tag)}]` : "") + line)
+        )
+      );
       setLyrics(result.join("\n"));
     };
     // Dropping dependency [lyrics] to prevent loop caused during tear down of itself.
   }, [setLinesPerTag, setLyrics]);
 
   // Update time tags
-  const onFrame = useCallback((timestamp: number) => {
-    const playerState = playerStateRef.current;
-    const currentLine = currentLineRef.current;
-    const linesPerTag = linesPerTagRef.current;
+  const onFrame = useCallback(
+    (timestamp: number) => {
+      const playerState = playerStateRef.current;
+      const currentLine = currentLineRef.current;
+      const linesPerTag = linesPerTagRef.current;
 
-    let time: number;
-    if (playerState.state === "paused") {
-      time = playerState.progress;
-    } else {
-      time = (timestamp - playerState.startingAt) / 1000 * playerState.rate;
-    }
+      let time: number;
+      if (playerState.state === "paused") {
+        time = playerState.progress;
+      } else {
+        time = ((timestamp - playerState.startingAt) / 1000) * playerState.rate;
+      }
 
-    if ((time < currentLine.start || time > currentLine.end) && linesPerTag.length > 0) {
-      const record = linesPerTag.reduce(
-        (p, c, i) => {
-          if (c[0]) {
-            if (c[0] < p.end && c[0] > time) {
-              p.end = c[0];
+      if (
+        (time < currentLine.start || time > currentLine.end) &&
+        linesPerTag.length > 0
+      ) {
+        const record = linesPerTag.reduce(
+          (p, c, i) => {
+            if (c[0]) {
+              if (c[0] < p.end && c[0] > time) {
+                p.end = c[0];
+              }
+              if (c[0] > p.start && c[0] <= time) {
+                p.start = c[0];
+                p.index = i;
+              }
             }
-            if (c[0] > p.start && c[0] <= time) {
-              p.start = c[0];
-              p.index = i;
-            }
+            return p;
+          },
+          {
+            index: -Infinity,
+            start: -Infinity,
+            end: Infinity,
           }
-          return p;
-        },
-        {
-          index: -Infinity,
-          start: -Infinity,
-          end: Infinity,
-        },
-      );
-      setCurrentLine(record);
-    }
+        );
+        setCurrentLine(record);
+      }
 
-    if (playerState.state === "playing") {
-      requestAnimationFrame(onFrame);
-    }
-  }, [setCurrentLine]);
+      if (playerState.state === "playing") {
+        requestAnimationFrame(onFrame);
+      }
+    },
+    [setCurrentLine]
+  );
 
   useEffect(() => {
     requestAnimationFrame(onFrame);
   }, [onFrame, playerState]);
 
-  const handleExtrapolateModeToggle = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    toggleExtrapolateMode(event.target.checked);
-    if (!event.target.checked) {
-      setExtrapolateTags([]);
-    }
-  }, [toggleExtrapolateMode, setExtrapolateTags]);
+  const handleExtrapolateModeToggle = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      toggleExtrapolateMode(event.target.checked);
+      if (!event.target.checked) {
+        setExtrapolateTags([]);
+      }
+    },
+    [toggleExtrapolateMode, setExtrapolateTags]
+  );
 
   const applyExtrapolation = useCallback(() => {
     if (linearRegressionResult == null) return;
     const linesPerTag = [...linesPerTagRef.current];
     const extrapolated = linesPerTag.map(([v, l]) => {
       if (v == null) return [v, l] as [number, string[]];
-      return [Math.max(0, linearRegressionResult.m * v + linearRegressionResult.b), l] as [number, string[]];
+      return [
+        Math.max(0, linearRegressionResult.m * v + linearRegressionResult.b),
+        l,
+      ] as [number, string[]];
     });
     setLinesPerTag(extrapolated);
   }, [linearRegressionResult, setLinesPerTag]);
 
-  const moveCursor = useCallback((idx: number | ((orig: number) => number)) => {
-    setCursor((orig) => {
-      let nidx = (typeof idx !== "number")  ? idx(orig) : idx;
-      nidx = _.clamp(nidx, 0, linesPerTagRef.current.length);
-      if (linesPerTagRef.current.length > 0 && listRef.current) {
-        const item = listRef.current.children[nidx] as HTMLElement;
-        if (!item) return nidx;
-        item.scrollIntoView({ block: "center", behavior: "smooth" });
-      }
-      return nidx;
-    });
-  }, [setCursor]);
+  const moveCursor = useCallback(
+    (idx: number | ((orig: number) => number)) => {
+      setCursor((orig) => {
+        let nidx = typeof idx !== "number" ? idx(orig) : idx;
+        nidx = _.clamp(nidx, 0, linesPerTagRef.current.length);
+        if (linesPerTagRef.current.length > 0 && listRef.current) {
+          const item = listRef.current.children[nidx] as HTMLElement;
+          if (!item) return nidx;
+          item.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+        return nidx;
+      });
+    },
+    [setCursor]
+  );
 
   const onLineClick = useCallback(
     (idx: number) => (ev: MouseEvent<HTMLDivElement>) => {
       ev.stopPropagation();
       moveCursor(idx);
     },
-    [moveCursor],
+    [moveCursor]
   );
 
   const onLineDoubleClick = useCallback(
@@ -238,7 +376,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         requestAnimationFrame(onFrame);
       }
     },
-    [moveCursor, onFrame],
+    [moveCursor, onFrame]
   );
 
   // Register key press listeners
@@ -254,7 +392,11 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         if (type === "textarea" || type === "text" || type === "url") return;
       }
 
-      if (codeOrKey === "Backspace" || codeOrKey === "Delete" || codeOrKey === "Del") {
+      if (
+        codeOrKey === "Backspace" ||
+        codeOrKey === "Delete" ||
+        codeOrKey === "Del"
+      ) {
         ev.preventDefault();
 
         if (!isInExtrapolateModeRef.current) {
@@ -279,14 +421,20 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
           ev.preventDefault();
           if (playerRef.current) {
             const rate = playerRef.current.playbackRate;
-            playerRef.current.playbackRate = Math.exp(Math.min(Math.log(rate) + 0.2, 1));
+            playerRef.current.playbackRate = Math.exp(
+              Math.min(Math.log(rate) + 0.2, 1)
+            );
             setPlaybackRate(playerRef.current.playbackRate);
           }
-        } else if (["ArrowDown", "KeyK", "Down", "K", "k"].includes(codeOrKey)) {
+        } else if (
+          ["ArrowDown", "KeyK", "Down", "K", "k"].includes(codeOrKey)
+        ) {
           ev.preventDefault();
           if (playerRef.current) {
             const rate = playerRef.current.playbackRate;
-            playerRef.current.playbackRate = Math.exp(Math.max(Math.log(rate) - 0.2, -1));
+            playerRef.current.playbackRate = Math.exp(
+              Math.max(Math.log(rate) - 0.2, -1)
+            );
             setPlaybackRate(playerRef.current.playbackRate);
           }
         } else if (codeOrKey === "Enter") {
@@ -318,13 +466,21 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
             return [...extrapolateTags];
           });
         }
-        moveCursor(cursor => cursor + 1);
-      } else if (["ArrowUp", "KeyW", "KeyJ", "Up", "W", "w", "J", "j"].includes(codeOrKey)) {
+        moveCursor((cursor) => cursor + 1);
+      } else if (
+        ["ArrowUp", "KeyW", "KeyJ", "Up", "W", "w", "J", "j"].includes(
+          codeOrKey
+        )
+      ) {
         ev.preventDefault();
-        moveCursor(cursor => (cursor || 1) - 1);
-      } else if (["ArrowDown", "KeyR", "KeyK", "Down", "r", "r", "K", "k"].includes(codeOrKey)) {
+        moveCursor((cursor) => (cursor || 1) - 1);
+      } else if (
+        ["ArrowDown", "KeyR", "KeyK", "Down", "r", "r", "K", "k"].includes(
+          codeOrKey
+        )
+      ) {
         ev.preventDefault();
-        moveCursor(cursor => (cursor || 0) + 1);
+        moveCursor((cursor) => (cursor || 0) + 1);
       } else if (codeOrKey === "Home") {
         ev.preventDefault();
         moveCursor(0);
@@ -333,14 +489,22 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         moveCursor((linesPerTagRef.current?.length ?? 1) - 1);
       } else if (codeOrKey === "PageUp") {
         ev.preventDefault();
-        moveCursor(cursor => (cursor || 10) - 10);
+        moveCursor((cursor) => (cursor || 10) - 10);
       } else if (codeOrKey === "PageDown") {
         ev.preventDefault();
-        moveCursor(cursor => (cursor || 0) + 10);
-      } else if (["ArrowLeft", "KeyA", "KeyH", "Left", "A", "a", "H", "h"].includes(codeOrKey)) {
+        moveCursor((cursor) => (cursor || 0) + 10);
+      } else if (
+        ["ArrowLeft", "KeyA", "KeyH", "Left", "A", "a", "H", "h"].includes(
+          codeOrKey
+        )
+      ) {
         ev.preventDefault();
         if (playerRef.current) playerRef.current.currentTime -= 5;
-      } else if (["ArrowRight", "KeyS", "KeyL", "Right", "S", "s", "L", "l"].includes(codeOrKey)) {
+      } else if (
+        ["ArrowRight", "KeyS", "KeyL", "Right", "S", "s", "L", "l"].includes(
+          codeOrKey
+        )
+      ) {
         ev.preventDefault();
         if (playerRef.current) playerRef.current.currentTime += 5;
       } else if (code === "KeyR" || key === "R" || key === "r") {
@@ -355,73 +519,108 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
     return (): void => {
       document.removeEventListener("keydown", listener);
     };
-  }, [linesPerTag, moveCursor, setCurrentLine, setExtrapolateTags, setLinesPerTag, setPlaybackRate]);
+  }, [
+    linesPerTag,
+    moveCursor,
+    setCurrentLine,
+    setExtrapolateTags,
+    setLinesPerTag,
+    setPlaybackRate,
+  ]);
 
-  return <>
-    <div>
-      <Box sx={{
-        position: "sticky",
-        top: 0,
-        left: 0,
-        zIndex: 1,
-        backgroundColor: "#12121280",
-        backdropFilter: "blur(5px)",
-        paddingTop: 1,
-        paddingBottom: 1,
-      }}>
-        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
-          <DismissibleAlert severity="warning" collapseProps={{sx: {flexGrow: 1}}}>
-            Switch to another tab to save changes. ↑WJ/↓RK: Navigate; Home/End: First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5 seconds R: Reset rate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; Enter: play/pause).
-          </DismissibleAlert>
-        </ControlRow>
-        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
-          <audio ref={playerRef} src={`/api/files/${fileId}/file`} controls style={{flexGrow: 1}} />
-          <Typography variant="body1" sx={{marginTop: 2, marginBottom: 2, fontVariantNumeric: "tabular-nums",}}>@{playbackRate.toFixed(2)}x</Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isInExtrapolateMode}
-                onChange={handleExtrapolateModeToggle}
-                color="secondary"
-              />
-            }
-            label="Extrapolate mode"
-          />
-        </ControlRow>
-        {isInExtrapolateMode && <ControlRow direction="row" alignItems="center">
-            <Box component="span" sx={{marginTop: 2, marginBottom: 2}}>
-              {extrapolateTags.reduce((prev, curr) => prev + (curr == null ? 0 : 1), 0)} tags added,{" "}
-              formula: <span style={{fontFamily: "serif"}}><var>y</var> = {linearRegressionResult?.m ?? "??"}<var>x</var> + {linearRegressionResult?.b ?? "??"}</span></Box>
-            <Button variant="outlined" color="secondary" disabled={!linearRegressionResult} onClick={applyExtrapolation}>Apply</Button>
-        </ControlRow>}
-      </Box>
-
-
-      <List component="ul" dense ref={listRef}>{linesPerTag.map((v, idx) =>
-        <ListItem key={idx} dense button selected={idx === currentLine.index} onClickCapture={onLineClick(idx)}
-                  onDoubleClickCapture={onLineDoubleClick(idx)} tabIndex={-1}>
-          {idx === cursor && <ListItemIcon>
-              <EditIcon />
-          </ListItemIcon>}
-          <ListItemText disableTypography sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "start",
-          }} inset={idx !== cursor}>
-            <Typography variant="body1" component="span" display="block" sx={{fontVariantNumeric: "tabular-nums",}}>
-              {v[0] != undefined ? `[${buildTimeTag(v[0])}]` : ""}
+  return (
+    <>
+      <div>
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            left: 0,
+            zIndex: 1,
+            backgroundColor: "#12121280",
+            backdropFilter: "blur(5px)",
+            paddingTop: 1,
+            paddingBottom: 1,
+          }}
+        >
+          <ControlRow p={1} spacing={2} direction="row" alignItems="center">
+            <DismissibleAlert
+              severity="warning"
+              collapseProps={{ sx: { flexGrow: 1 } }}
+            >
+              Switch to another tab to save changes. ↑WJ/↓RK: Navigate;
+              Home/End: First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5
+              seconds R: Reset rate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K:
+              speed; Enter: play/pause).
+            </DismissibleAlert>
+          </ControlRow>
+          <ControlRow p={1} spacing={2} direction="row" alignItems="center">
+            <audio
+              ref={playerRef}
+              src={`/api/files/${fileId}/file`}
+              controls
+              style={{ flexGrow: 1 }}
+            />
+            <Typography
+              variant="body1"
+              sx={{
+                marginTop: 2,
+                marginBottom: 2,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              @{playbackRate.toFixed(2)}x
             </Typography>
-            <div>{v[1].map((l, lidx) => (
-              <Typography key={`${idx}-${lidx}`} variant="body1" color="textSecondary" display="block">
-                {l}
-              </Typography>
-            ))}</div>
-          </ListItemText>
-          <ListItemSecondaryAction>
-            <span style={{fontVariantNumeric: "tabular-nums",}}>{extrapolateTags[idx] != undefined ? `[${buildTimeTag(extrapolateTags[idx])}]` : ""}</span>
-          </ListItemSecondaryAction>
-        </ListItem>
-      )}</List>
-    </div>
-  </>;
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isInExtrapolateMode}
+                  onChange={handleExtrapolateModeToggle}
+                  color="secondary"
+                />
+              }
+              label="Extrapolate mode"
+            />
+          </ControlRow>
+          {isInExtrapolateMode && (
+            <ControlRow direction="row" alignItems="center">
+              <Box component="span" sx={{ marginTop: 2, marginBottom: 2 }}>
+                {extrapolateTags.reduce(
+                  (prev, curr) => prev + (curr == null ? 0 : 1),
+                  0
+                )}{" "}
+                tags added, formula:{" "}
+                <span style={{ fontFamily: "serif" }}>
+                  <var>y</var> = {linearRegressionResult?.m ?? "??"}
+                  <var>x</var> + {linearRegressionResult?.b ?? "??"}
+                </span>
+              </Box>
+              <Button
+                variant="outlined"
+                color="secondary"
+                disabled={!linearRegressionResult}
+                onClick={applyExtrapolation}
+              >
+                Apply
+              </Button>
+            </ControlRow>
+          )}
+        </Box>
+
+        <List component="ul" dense ref={listRef}>
+          {linesPerTag.map((v, idx) => (
+            <MemoLineListItem
+              line={v}
+              extrapolateTag={extrapolateTags[idx]}
+              isCurrent={idx === currentLine.index}
+              isCursorOn={idx === cursor}
+              onClickCapture={onLineClick(idx)}
+              onDoubleClickCapture={onLineDoubleClick(idx)}
+              key={idx}
+            />
+          ))}
+        </List>
+      </div>
+    </>
+  );
 }
