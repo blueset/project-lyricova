@@ -4,16 +4,12 @@ import {
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import {
-  useLyricsState,
-  LyricsFrameCallback,
-  usePlayerLyricsState,
   usePlainPlayerLyricsState,
 } from "../../../frontendUtils/hooks";
-import { Box, makeStyles } from "@mui/material";
+import { Box } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import _ from "lodash";
-import clsx from "clsx";
-import { useRef, RefObject, useCallback, useEffect, useMemo } from "react";
+import { useRef, RefObject, useEffect } from "react";
 import Measure from "react-measure";
 import { Scene } from "react-scenejs";
 import {
@@ -207,7 +203,7 @@ export function StrokeLyrics({ lyrics }: Props) {
         progressorScene.setTime(inlineProgress);
       }
     }
-  }, [playerState, progressorRef.current, currentFrame]);
+  }, [playerState.state, progressorRef.current, currentFrame]);
 
   let lineElement: (width: number) => JSX.Element | null = () => null;
   if (currentFrame !== null) {

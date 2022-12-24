@@ -2,13 +2,11 @@ import {
   CardContent,
   Typography,
   IconButton,
-  makeStyles,
   ButtonBase,
   useMediaQuery,
   Theme, Box, Stack,
 } from "@mui/material";
 import React, { useCallback, CSSProperties } from "react";
-import clsx from "clsx";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
@@ -19,7 +17,6 @@ import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import { useAppContext, LoopMode, Track } from "./AppContext";
 import { TimeSlider } from "./TimeSlider";
 import { PlayButton } from "./PlayButton";
-import { isContext } from "vm";
 
 const LOOP_MODE_SWITCH: { [key in keyof typeof LoopMode]: LoopMode } = {
   [LoopMode.ALL]: LoopMode.SINGLE,

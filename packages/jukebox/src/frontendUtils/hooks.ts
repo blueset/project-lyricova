@@ -44,7 +44,7 @@ export function getStartEnd(playerRef: RefObject<HTMLAudioElement>, lyrics: Lyri
 
 export type LyricsFrameCallback = (thisLine: number, lyrics: LyricsKitLyrics, player: HTMLAudioElement, start: number | null, end: number | null) => void;
 
-export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, callback?: LyricsFrameCallback): number {
+export function useLyricsStateRAF(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, callback?: LyricsFrameCallback): number {
   const [line, setLine] = useNamedState<number | null>(null, "line");
   const lineRef = useRef<number>();
   lineRef.current = line;
@@ -102,6 +102,67 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
       };
     }
   }, [playerRef, onPlay, onTimeChange]);
+
+  return line;
+}
+
+/** Refactor useLyricsState using WebVTT Cue callbacks. */
+export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, callback?: LyricsFrameCallback): number {
+  const [line, setLine] = useNamedState<number | null>(null, "line");
+  
+  useEffect(() => {
+    if (!playerRef.current) return;
+
+    // Create track
+    const track = document.createElement("track");
+    const uniqueId = Math.random().toString(36).substring(2, 15);
+    track.id = `lyricsState-${uniqueId}`;
+    track.kind = "subtitles";
+    track.label = `Lyrics State ${uniqueId}`;
+    track.src = "data:text/vtt;base64,V0VCVlRUCgoK";
+    
+    // Add track
+    playerRef.current.appendChild(track);
+    track.track.mode = "hidden";
+    // Workaround for Firefox
+    playerRef.current.textTracks.getTrackById(track.id).mode = "hidden";
+
+    const addCues = () => {
+      // Generate cues
+      if (lyrics?.lines?.length > 0 && lyrics.lines[0].position > 0) {
+        const cue = new VTTCue(0, lyrics.lines[0].position, `null,0`);
+        cue.addEventListener("enter", () => {
+          setLine(null);
+          // console.log("WebWTT lyrics state enter", null);
+        });
+        track.track.addCue(cue);
+      }
+      lyrics.lines.forEach((line, index) => {
+        let nextLine: number = lyrics.lines[index + 1]?.position ?? playerRef.current.duration;
+        if (Number.isNaN(nextLine)) nextLine = 1e10;
+        const cue = new VTTCue(line.position, nextLine, `${index},${line.position},${line.content}`);
+        cue.addEventListener("enter", () => {
+          setLine(index);
+          // console.log("WebWTT lyrics state enter", index);
+          callback && callback(index, lyrics, playerRef.current, line.position, nextLine);
+        });
+        track.track.addCue(cue);
+      });
+    };
+
+    if (playerRef.current.readyState >= 2) {
+      // Set timeout to ensure the cues can be added properly.
+      setTimeout(addCues, 0);
+    } else {
+      playerRef.current.addEventListener("loadedmetadata", addCues);
+    }
+
+    // Cleanup
+    return () => {
+      track?.parentElement?.removeChild(track);
+      playerRef.current?.removeEventListener("loadedmetadata", addCues);
+    }
+  }, [lyrics, playerRef.current]);
 
   return line;
 }
@@ -192,7 +253,7 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
   return playerState;
 }
 
-export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], playerRef: RefObject<HTMLAudioElement>): PlayerLyricsState<T> {
+export function usePlayerLyricsStateRAF<T>(keyframes: PlayerLyricsKeyframe<T>[], playerRef: RefObject<HTMLAudioElement>): PlayerLyricsState<T> {
   const playerState = usePlayerState(playerRef);
   const playerStateRef = useRef<PlayerState>();
   playerStateRef.current = playerState;
@@ -280,6 +341,98 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
       thisLifespan.current = false;
     };
   }, [playerRef]);
+
+  return {
+    playerState,
+    currentFrameId,
+    currentFrame: currentFrameId >= 0 ? keyframes[currentFrameId] : null,
+    endTime: endTimes[currentFrameId + 1],
+    startTimes,
+    endTimes,
+  };
+}
+
+/** Refactor usePlayerLyricsState using WebVTT Cue callbacks. */
+export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], playerRef: RefObject<HTMLAudioElement>): PlayerLyricsState<T> {
+  const playerState = usePlayerState(playerRef);
+
+  /**
+   * Current frame can be anything in [-1, keyframe.length - 1].
+   * -1 means before the first frame starts. Final frame lasts forever.
+   */
+  const [currentFrameId, setCurrentFrameId] = useNamedState(-1, "currentFrameId");
+
+  /**
+   * `endTimes[i + 1]` is when frame `i` ends, in seconds.
+   * Last value is the end of the track.
+   */
+  const endTimes = useMemo(() => {
+    const endTimes = [];
+    keyframes.forEach((v, idx) => {
+      endTimes[idx] = v.start;
+    });
+
+    if (playerRef.current) endTimes[keyframes.length] = playerRef.current.duration;
+    else if (keyframes.length > 0) endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
+    else endTimes[keyframes.length] = 0;
+
+    return endTimes;
+  }, [keyframes, playerRef]);
+
+  const startTimes = useMemo(() => keyframes.map(v => v.start), [keyframes]);
+
+  useEffect(() => {
+    if (!playerRef.current) return;
+
+    // Create track
+    const track = document.createElement("track");
+    const uniqueId = Math.random().toString(36).substring(2, 15);
+    track.id = `playerLyricsState-${uniqueId}`;
+    track.kind = "subtitles";
+    track.label = `Player Lyrics State ${uniqueId}`;
+    track.src = "data:text/vtt;base64,V0VCVlRUCgoK";
+    
+    // Add track
+    playerRef.current.appendChild(track);
+    track.track.mode = "hidden";
+    // Workaround for Firefox
+    playerRef.current.textTracks.getTrackById(track.id).mode = "hidden";
+
+    const addCues = () => {
+      // Generate cues
+      if (startTimes[0] > 0) {
+        const cue = new VTTCue(0, startTimes[0], `-1,0,${startTimes[0]}`);
+        cue.addEventListener("enter", () => {
+          setCurrentFrameId(-1);
+          // console.log("WebWTT lyrics state enter", -1);
+        });
+        track.track.addCue(cue);
+      }
+      startTimes.forEach((startTime, index) => {
+        let endTime: number = endTimes[index + 1];
+        if (Number.isNaN(endTime)) endTime = 1e10;
+        const cue = new VTTCue(startTime, endTime, `${index},${startTime},${endTime}`);
+        cue.addEventListener("enter", () => {
+          setCurrentFrameId(index);
+          // console.log("WebWTT lyrics state enter", index);
+        });
+        track.track.addCue(cue);
+      });
+    };
+
+    if (playerRef.current.readyState >= 2) {
+      // Set timeout to ensure the cues can be added properly.
+      setTimeout(addCues, 0);
+    } else {
+      playerRef.current.addEventListener("loadedmetadata", addCues);
+    }
+
+    // Cleanup
+    return () => {
+      track?.parentElement?.removeChild(track);
+      playerRef.current?.removeEventListener("loadedmetadata", addCues);
+    }
+  }, [startTimes, endTimes, playerRef.current]);
 
   return {
     playerState,

@@ -58,6 +58,7 @@ function LyricsLineElement({ line, animate }: LyricsLineElementProps) {
         position: "absolute",
         top: "50%",
         transform: "translateY(-50%)",
+        width: "calc(100% - 32px)",
         color: "white",
         fontVariationSettings: "'wght' 150, 'palt' 1",
         "& .translate": {

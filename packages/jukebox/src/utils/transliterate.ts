@@ -143,8 +143,10 @@ function furiganaSeparator0(kanji: string, kana: string): (string | [string, str
  * @url https://zenn.dev/mkpoli/articles/8269f2f3ce71c9
  */
 function furiganaSeparator(mixed: string, kana: string): (string | [string, string])[] {
+  const [_, pre, post] = mixed.match(/^(\s*).+?(\s*)$/);
+  kana = `${pre}${kana}${post}`;
   // 正規表現文 /(\p{sc=Hiragana}+)うさ(\p{sc=Hiragana}+)るさ/u のようなものを作る
-  const pattern = new RegExp(mixed.replace(/(\p{sc=Han}|\p{sc=Katakana})+/gu, "(\\p{sc=Hiragana}+)"), "u");
+  const pattern = new RegExp(mixed.replace(/(\p{sc=Han}+|\p{sc=Katakana}+)/gu, "(\\p{sc=Hiragana}+)"), "u");
 
   // 作った正規表現文で仮名表記をマッチさせて、「お」「き」を取得する
   const groups = kana.match(pattern);

@@ -24,6 +24,7 @@ import EditTranslations from "./lyrics/EditTranslations";
 import EditFurigana from "./lyrics/EditFurigana";
 import { gql, useApolloClient } from "@apollo/client";
 import { DocumentNode } from "graphql";
+import LyricsPreviewPanel from "./WebVTTPreview";
 
 const WRITE_LYRICS_MUTATION = gql`
   mutation($fileId: Int!, $lyrics: String!, $ext: String!) {
@@ -139,6 +140,7 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
                   scrollButtons="auto"
             >
               <Tab label="Preview" value="preview" />
+              <Tab label="WebVTT Preview" value="webvttPreview" />
               <Tab label="Download" value="download" />
               <Tab label="Edit" value="edit" />
               <Tab label="Edit Plain" value="editLrc" />
@@ -154,6 +156,9 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
         <DialogContent dividers sx={{padding: 0}}>
           <TabPanel value="preview">
             <PreviewPanel lyricsString={effectiveLyrics} fileId={fileId} />
+          </TabPanel>
+          <TabPanel value="webvttPreview">
+            <LyricsPreviewPanel lyricsString={effectiveLyrics} fileId={fileId} />
           </TabPanel>
           <TabPanel value="download">
             <SearchLyrics title={title} artists={artists} duration={duration} />

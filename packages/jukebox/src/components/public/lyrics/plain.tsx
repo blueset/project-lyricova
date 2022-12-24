@@ -79,7 +79,7 @@ export function PlainLyrics({ lyrics }: Props) {
     // window.virtualizer = virtualizer;
     // console.log("scrolling to", line + 1);
   }, [container, line, lyrics.lines]);
-  console.log(line);
+  // console.log(line);
 
   return (
     <div

@@ -107,7 +107,8 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
                  fontWeight: "bold",
                  "& > .furigana": {
                    display: "inline",
-                   backgroundImage: "linear-gradient(0deg, #000, #000)",
+                   backgroundImage: "linear-gradient(0deg, #923cbd, #923cbd)",
+                   backgroundBlendMode: "difference",
                    backgroundRepeat: "no-repeat",
                    backgroundSize: "0% 100%",
                  },

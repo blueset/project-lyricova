@@ -240,7 +240,7 @@ export default function CurrentPlaylist() {
                  )}
              >
             {(droppableProvided: DroppableProvided) => {
-              console.log("playlist now playing", playlist.nowPlaying, "tracks length", tracks.length);
+              // console.log("playlist now playing", playlist.nowPlaying, "tracks length", tracks.length);
              return (
               <div style={{height, width, overflowY: "scroll"}} ref={(r) => {
                 droppableProvided.innerRef(r);

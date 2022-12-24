@@ -67,7 +67,7 @@ const LineDiv = styled("div")`
   opacity: 0.75;
   mix-blend-mode: overlay;
   color: rgba(255, 255, 255, 0.4);
-  transition: top 0.25s ease-out;
+  transition: top 0.25s ease-out, transform 0.25s ease-out;
 
   & .translation {
     display: block;
@@ -143,6 +143,8 @@ export function RingoTranslateLyrics({ lyrics, resize }: Props) {
 
   const lineNumber = line || 0;
 
+  const isChromimum = navigator.userAgent.includes("Chrome");
+
   useLayoutEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
@@ -152,14 +154,19 @@ export function RingoTranslateLyrics({ lyrics, resize }: Props) {
       offset = 100;
     if (lines[0].dataset.offset === "-1") {
       start += 1;
-      lines[0].style.top = `${offset -
-        gap -
-        lines[0].clientHeight}px`;
+      if (isChromimum) {
+        lines[0].style.top = `${offset - gap - lines[0].clientHeight}px`;
+      } else {
+        lines[0].style.transform = `translateY(${offset - gap - lines[0].clientHeight}px)`;
+      }
     }
     for (let i = start; i < lines.length; i++) {
       const line = lines[i];
-      line.style.top = `${offset}px`;
-      console.log("assign", i, offset);
+      if (isChromimum) {
+        line.style.top = `${offset}px`;
+      } else {
+        line.style.transform = `translateY(${offset}px)`;
+      }
       offset += line.clientHeight + gap;
     }
   }, [line, containerRef.current]);
@@ -175,7 +182,7 @@ export function RingoTranslateLyrics({ lyrics, resize }: Props) {
           lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD;
         return (
           <LyricsLineElement
-            className="coverMask"
+            className={isChromimum ? "coverMask" : ""}
             line={l}
             key={idx}
             offsetIndex={line !== null ? idx - line : idx + 1}

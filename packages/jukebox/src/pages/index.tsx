@@ -106,7 +106,7 @@ export default function Index() {
     } else {
       node = <MessageBox>No track.</MessageBox>;
     }
-  } else if (lyricsQuery.data.musicFile.lyrics !== null) {
+  } else if (lyricsQuery?.data?.musicFile?.lyrics) {
     node = moduleNode(lyricsQuery.data.musicFile.lyrics);
   } else {
     node = <MessageBox>No lyrics</MessageBox>;

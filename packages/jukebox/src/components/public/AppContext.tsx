@@ -100,7 +100,7 @@ export function AppContext({ playerRef, playlist, children }: ContextProps) {
 
 export function useAppContext() {
   return {
-    playerRef: useContext(PlayerRefContext),
-    playlist: useContext(PlaylistContext),
+    playerRef: useContext(PlayerRefContext) as RefObject<HTMLAudioElement>,
+    playlist: useContext(PlaylistContext) as Playlist,
   };
 }

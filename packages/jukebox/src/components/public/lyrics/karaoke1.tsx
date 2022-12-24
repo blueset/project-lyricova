@@ -16,7 +16,6 @@ type Timeline = gsap.core.Timeline;
 const ANIMATION_THRESHOLD = 0.25;
 
 interface WrapProps {
-  animate: boolean;
   children: string;
   className?: string;
   style?: CSSProperties;
@@ -24,24 +23,12 @@ interface WrapProps {
 }
 
 function BalancedTextSpanWrap({
-  animate,
   children,
   className,
   style,
   progressorRef,
 }: WrapProps) {
-  if (animate) {
-    return (
-      <span className={className} style={style} ref={progressorRef}>
-        <Balancer>{children}</Balancer>
-      </span>
-    );
-  }
-  return (
-    <span className={className} style={style} ref={progressorRef}>
-      <span>{children}</span>
-    </span>
-  );
+    return <span className={className} style={style} ref={progressorRef}>{children}</span>;
 }
 
 interface LyricsLineElementProps {
@@ -74,6 +61,7 @@ function LyricsLineElement({
             color: "rgba(255, 255, 255, 0.6)",
             filter: "var(--jukebox-cover-filter-bright)",
             position: "absolute",
+            width: "calc(100% - 32px)",
           },
           "& span.overlay": {
             color: "transparent",
@@ -100,11 +88,10 @@ function LyricsLineElement({
         }}
         lang="ja"
       >
-        <BalancedTextSpanWrap animate={animate} className="base coverMask">
+        <BalancedTextSpanWrap className="base coverMask">
           {line.content}
         </BalancedTextSpanWrap>
         <BalancedTextSpanWrap
-          animate={animate}
           className={`overlay ${theme}`}
           progressorRef={progressorRef}
         >

@@ -1,6 +1,6 @@
 import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState, usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
+import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { makeStyles, styled, Theme } from "@mui/material";
 import { motion, Transition } from "framer-motion";
 import Balancer from "react-wrap-balancer";
