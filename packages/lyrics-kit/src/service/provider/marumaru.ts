@@ -149,12 +149,12 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
   constructor() {
     super();
 
-    this.axios.get("https://www.jpmarumaru.com/tw/JPSongList.asp")
+    this.axios.get(SEARCH_URL)
       // .then(resp => {
       // console.log(resp);
       // })
       .catch(err => {
-        console.log(err);
+        console.error(err);
       });
   }
 
@@ -180,11 +180,11 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
 
       const { data } = await this.axios.post(
         SEARCH_URL,
+        new URLSearchParams(parameters).toString(),
         {
-          form: new URLSearchParams(parameters).toString(),
           headers: {
             Accept: "*/*",
-            "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
+            "Content-Type": "application/x-www-form-urlencoded"
           }
         }
       );
@@ -217,7 +217,7 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
         new URLSearchParams({
           SongPK: token.songPK,
         }).toString(),
-      {
+        {
           headers: {
             Referer: `https://www.jpmarumaru.com/tw/JPSongPlay-${token.songPK}.html`,
             "content-type": "application/x-www-form-urlencoded",
