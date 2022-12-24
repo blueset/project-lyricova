@@ -11,7 +11,7 @@ import createCache from "@emotion/cache";
 import createEmotionServer from "@emotion/server/create-instance";
 
 function createEmotionCache() {
-  return createCache({ key: 'css', prepend: true });
+  return createCache({ key: "css", prepend: true });
 }
 
 class MyDocument extends Document {

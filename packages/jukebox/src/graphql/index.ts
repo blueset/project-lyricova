@@ -152,7 +152,8 @@ export async function applyApollo(app: Application): Promise<Server> {
         req,
         user: req.user,  // That should come from passport strategy JWT
       };
-    }
+    },
+    cache: "bounded",
   });
 
   await apolloServer.start();

@@ -87,9 +87,7 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
     styles.transitionEnd.mixBlendMode = "hard-light";
     styles.color = "rgba(255, 255, 255, 0.7)";
   } else {
-
-    // @ts-ignore
-    styles["--jukebox-ringo-blur-radius"] = `${0.4 * Math.abs(offsetIndex)}px`;
+    // styles["--jukebox-ringo-blur-radius"] = `${0.4 * Math.abs(offsetIndex)}px`;
     styles.opacity = 0.75;
     styles.transitionEnd.mixBlendMode = "overlay";
     styles.color = "rgba(255, 255, 255, 0.4)";
@@ -121,8 +119,7 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
       <div className="wrapper">
         {
           animate ? (
-            <Balancer
-              resize={true} > {line.content}</Balancer>
+            <Balancer>{line.content}</Balancer>
           ) : line.content}
         {
           line.attachments?.translation && (
@@ -134,8 +131,7 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
               className="translation"
               lang="zh">
               {animate ? (
-                <Balancer
-                  resize={true}>{line.attachments.translation}</Balancer>
+                <Balancer>{line.attachments.translation}</Balancer>
               ) : line.attachments.translation}
             </motion.div>
           )

@@ -174,6 +174,7 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
     if (!player) return;
 
     player.addEventListener("play", updatePlayerState);
+    player.addEventListener("timeupdate", updatePlayerState);
     player.addEventListener("pause", updatePlayerState);
     player.addEventListener("seeked", updatePlayerState);
     player.addEventListener("ratechange", updatePlayerState);
@@ -181,6 +182,7 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
 
     return () => {
       player.removeEventListener("play", updatePlayerState);
+      player.removeEventListener("timeupdate", updatePlayerState);
       player.removeEventListener("pause", updatePlayerState);
       player.removeEventListener("seeked", updatePlayerState);
       player.removeEventListener("ratechange", updatePlayerState);

@@ -144,7 +144,7 @@ function furiganaSeparator0(kanji: string, kana: string): (string | [string, str
  */
 function furiganaSeparator(mixed: string, kana: string): (string | [string, string])[] {
   // 正規表現文 /(\p{sc=Hiragana}+)うさ(\p{sc=Hiragana}+)るさ/u のようなものを作る
-  const pattern = new RegExp(mixed.replace(/\p{sc=Han}/gu, "(\\p{sc=Hiragana}+)"), "u");
+  const pattern = new RegExp(mixed.replace(/(\p{sc=Han}|\p{sc=Katakana})+/gu, "(\\p{sc=Hiragana}+)"), "u");
 
   // 作った正規表現文で仮名表記をマッチさせて、「お」「き」を取得する
   const groups = kana.match(pattern);
@@ -157,7 +157,11 @@ function furiganaSeparator(mixed: string, kana: string): (string | [string, stri
   // 最後に分けた部分に必要な場合だけルビを振る
   return sections.map((section) => {
     if (section.match(/\p{sc=Han}+/u)) {
-      return [section, rest.shift()];
+      const kana = rest.shift();
+      if (kanaToHira(section) === kana) {
+        return section;
+      }
+      return [section, kana];
     } else {
       return section;
     }

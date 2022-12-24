@@ -41,7 +41,7 @@ function CurrentPlaylistItem({
   {
     provided: DraggableProvided;
     index: number;
-    track: Track;
+    track?: Track;
     style: CSSProperties;
     isDragging: boolean;
   }) {
@@ -118,9 +118,9 @@ function CurrentPlaylistItem({
         </ListItemIcon>
         <ListItemText
           sx={{width: 0, mr: 8}}
-          primary={track.trackName || "No title"}
+          primary={track?.trackName || "No title"}
           primaryTypographyProps={{ noWrap: true }}
-          secondary={track.artistName || "Unknown artist"}
+          secondary={track?.artistName || "Unknown artist"}
           secondaryTypographyProps={{ noWrap: true }}
         />
       </ListItemButton>
@@ -133,7 +133,7 @@ CurrentPlaylistItem.defaultProps = {
   style: {},
 };
 
-const Row = React.memo(({item, height, index, start}: {item: Track, height: number, index: number, start: number}) => {
+const Row = React.memo(({item, height, index, start}: {item?: Track, height: number, index: number, start: number}) => {
   return (
     <Draggable
       draggableId={`nowPlaying-draggable-${item?.id}`}
@@ -252,7 +252,7 @@ export default function CurrentPlaylist() {
                   position: "relative",
                 }}>
                   {rowVirtualizer.getVirtualItems().map(({index, size, start}) => 
-                    <Row key={index} index={index} item={tracks[index] ?? {}} height={size} start={start}/>)}
+                    <Row key={index} index={index} item={tracks[index]} height={size} start={start}/>)}
                 </div>
               </div>
                 // <FixedSizeList

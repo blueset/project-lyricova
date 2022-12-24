@@ -62,4 +62,6 @@ function Link(props: LinkProps) {
   );
 }
 
-export default React.forwardRef<HTMLAnchorElement, Omit<LinkProps, "innerRef">>((props, ref) => <Link {...props} innerRef={ref} />);
+const RefLink = React.forwardRef<HTMLAnchorElement, Omit<LinkProps, "innerRef">>((props, ref) => <Link {...props} innerRef={ref} />);
+RefLink.displayName = "Link";
+export default RefLink;

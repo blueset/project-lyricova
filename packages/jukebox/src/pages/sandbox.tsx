@@ -22,7 +22,7 @@ export function Sandbox0() {
   const [widthBoxes, setWidthBoxes] = useState<number[]>([]);
   const textRef = useRef<HTMLDivElement>();
 
-  let content = <></>;
+  const content = <></>;
 
   useEffect(() => {
     const el = textRef.current;

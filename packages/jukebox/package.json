@@ -26,8 +26,7 @@
   },
   "keywords": [
     "Lyricova",
-    "Project",
-    "Lyricova",
+    "Project Lyricova",
     "music",
     "library",
     "jukebox"
@@ -179,7 +178,7 @@
     "@types/yup": "^0.29.7",
     "concurrently": "^6.4.0",
     "eslint-plugin-react": "^7.20.6",
-    "eslint-plugin-react-hooks": "^4.1.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "nodemon": "^2.0.2",
     "ts-node": "^10.4.0",
     "typescript": "^4.0.2"
