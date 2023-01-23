@@ -12,6 +12,11 @@ import { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
 
 const SEARCH_URL = "http://music.163.com/api/search/pc";
 const LYRICS_URL = "http://music.163.com/api/song/lyric";
+const headers = {
+  Referer: "http://music.163.com/",
+  "user-agent": "Mozilla/5.0 (Windows NT 10.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.3987.132 Safari/537.36",
+  Cookie: "NMTID=",
+};
 
 class NeteaseKLyrics extends Lyrics {
   constructor(content: string) {
@@ -68,7 +73,7 @@ class NeteaseKLyrics extends Lyrics {
 }
 
 export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
-  // static source = LyricsProviderSource.netease;
+  static source = LyricsProviderSource.netease;
 
   constructor() {
     super();
@@ -78,16 +83,13 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
     try {
       const parameters = {
         s: request.searchTerm.toString(),
-        offset: 0,
-        length: 10,
-        type: 1
+        limit: 50,
+        type: 1,
       };
       // Use axios to make request
       const outcome = await axios.post<NetEaseResponseSearchResult>(SEARCH_URL, "", {
         params: parameters,
-        headers: {
-          "Referer": "http://music.163.com/"
-        }
+        headers,
       });
       if (outcome.status !== 200) {
         console.error(outcome.data);
@@ -108,7 +110,8 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
         lv: 1, kd: 1, tv: -1
       };
       const response = await axios.get<NetEaseResponseSingleLyrics>(LYRICS_URL, {
-        params: parameters
+        params: parameters,
+        headers,
       });
       if (response.status !== 200) {
         console.error(response.data);

@@ -23,7 +23,9 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
     public async searchLyrics(request: LyricsSearchRequest): Promise<QQSongItem[]> {
         try {
             const parameter = {
-                w: request.searchTerm.toString()
+                format: "json",
+                w: request.searchTerm.toString(),
+                n: "10",
             };
             const response = await axios.get<QQResponseSearchResult>(SEARCH_URL,
                 _.defaults({ params: parameter }, axiosJsonp));
@@ -42,12 +44,13 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         try {
             const parameters = {
                 songmid: token.songmid,
-                g_tk: 5381
+                nobase64: "1",
+                format: "json",
             };
             const response = await axios.get<QQResponseSingleLyrics>(LYRICS_URL, _.defaults({
                 params: parameters,
                 headers: {
-                    Referer: "y.qq.com/portal/player.html"
+                    Referer: "https://y.qq.com/"
                 }
             }, axiosJsonp));
             if (response.status !== 200) {

@@ -24,7 +24,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     static youtube = new LyricsProviderSource(YouTubeProvider);
 
     static allCases = [
-        // LyricsProviderSource.netease,
+        LyricsProviderSource.netease,
         // LyricsProviderSource.qq,
         LyricsProviderSource.kugou,
         // LyricsProviderSource.xiami,
