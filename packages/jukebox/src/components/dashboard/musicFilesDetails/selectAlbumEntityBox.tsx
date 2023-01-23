@@ -1,23 +1,19 @@
 import {
-  AutocompleteRenderInputParams,
   Avatar,
-  Box, FilterOptionsState,
+  FilterOptionsState,
   Grid,
   IconButton,
   Stack,
-  TextField,
-  TextField as MuiTextField,
   Typography
 } from "@mui/material";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SearchIcon from "@mui/icons-material/Search";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import { makeStyles } from "@mui/material/styles";
 import { AlbumFragments } from "../../../graphql/fragments";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EditIcon from "@mui/icons-material/Edit";
@@ -26,7 +22,6 @@ import VocaDBSearchAlbumDialog from "./vocaDBSearchAlbumDialog";
 import AlbumEntityDialog from "./albumEntityDialog";
 import { useField, useForm } from "react-final-form";
 import { Autocomplete } from "mui-rff";
-import SongEntityDialog from "./songEntityDialog";
 import { DocumentNode } from "graphql";
 
 export type ExtendedAlbum = Partial<Album> & {

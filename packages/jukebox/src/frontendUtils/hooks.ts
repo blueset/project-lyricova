@@ -383,6 +383,7 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
 
   useEffect(() => {
     if (!playerRef.current) return;
+    const player = playerRef.current;
 
     // Create track
     const track = document.createElement("track");
@@ -393,10 +394,10 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
     track.src = "data:text/vtt;base64,V0VCVlRUCgoK";
     
     // Add track
-    playerRef.current.appendChild(track);
+    player.appendChild(track);
     track.track.mode = "hidden";
     // Workaround for Firefox
-    playerRef.current.textTracks.getTrackById(track.id).mode = "hidden";
+    player.textTracks.getTrackById(track.id).mode = "hidden";
 
     const addCues = () => {
       // Generate cues
@@ -420,19 +421,19 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
       });
     };
 
-    if (playerRef.current.readyState >= 2) {
+    if (player.readyState >= 2) {
       // Set timeout to ensure the cues can be added properly.
       setTimeout(addCues, 0);
     } else {
-      playerRef.current.addEventListener("loadedmetadata", addCues);
+      player.addEventListener("loadedmetadata", addCues);
     }
 
     // Cleanup
     return () => {
       track?.parentElement?.removeChild(track);
-      playerRef.current?.removeEventListener("loadedmetadata", addCues);
-    }
-  }, [startTimes, endTimes, playerRef.current]);
+      player?.removeEventListener("loadedmetadata", addCues);
+    };
+  }, [startTimes, endTimes, playerRef, setCurrentFrameId]);
 
   return {
     playerState,

@@ -1,5 +1,4 @@
-import { makeStyles } from "@mui/material/styles";
-import { Avatar, Box, Button, Divider, Grid, MenuItem, styled, TextField as MuiTextField } from "@mui/material";
+import { Avatar, Box, Button, Divider, Grid, IconButton, MenuItem, Stack, styled, TextField as MuiTextField, Tooltip } from "@mui/material";
 import { gql, useApolloClient } from "@apollo/client";
 import { Song } from "../../../models/Song";
 import SelectSongEntityBox from "./selectSongEntityBox";
@@ -11,6 +10,9 @@ import finalFormMutators from "../../../frontendUtils/finalFormMutators";
 import * as yup from "yup";
 import { useSnackbar } from "notistack";
 import { DocumentNode } from "graphql";
+import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
+import { AlbumFragments } from "../../../graphql/fragments";
+import { useNamedState } from "../../../frontendUtils/hooks";
 
 const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
   mutation($id: Int!, $data: MusicFileInput!) {
@@ -18,6 +20,16 @@ const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
       trackName
     }
   }
+` as DocumentNode;
+
+const IMPORT_ALBUM_MUTATION = gql`
+  mutation($id: Int!) {
+    enrolAlbumFromVocaDB(albumId: $id) {
+      ...SelectAlbumEntry
+    }
+  }
+  
+  ${AlbumFragments.SelectAlbumEntry}
 ` as DocumentNode;
 
 const UpdateButton = styled(Button)(({ theme }) => ({
@@ -59,6 +71,7 @@ export default function InfoPanel(
 ) {
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
+  const [isImporting, toggleImporting] = useNamedState(false, "isImporting");
 
   return (
     <Form<FormProps>
@@ -127,6 +140,41 @@ export default function InfoPanel(
       }}
     >{({ form, submitting, handleSubmit }) => {
       const setValue = form.mutators.setValue;
+
+      const handleRefreshAlbum = async () => {
+        const albumId = form.getState().values.albumId;
+        if (!albumId) {
+          snackbar.enqueueSnackbar("Please choose a album to import.", {
+            variant: "error",
+          });
+          return;
+        }
+
+        toggleImporting(true);
+        try {
+          const result = await apolloClient.mutate<{ enrolAlbumFromVocaDB: Partial<Album> }>({
+            mutation: IMPORT_ALBUM_MUTATION,
+            variables: {
+              id: albumId,
+            }
+          });
+
+          if (result.data) {
+            snackbar.enqueueSnackbar(`Album “${result.data.enrolAlbumFromVocaDB.name}” is successfully enrolled.`, {
+              variant: "success",
+            });
+          } 
+          toggleImporting(false);
+          
+        } catch (e) {
+          console.error(`Error occurred while importing album #${albumId}.`, e);
+          snackbar.enqueueSnackbar(`Error occurred while importing album #${albumId}. (${e})`, {
+            variant: "error",
+          });
+          toggleImporting(false);
+        }
+      };
+
       return (
         <>
           <Grid container spacing={3}>
@@ -215,21 +263,22 @@ export default function InfoPanel(
               value && value.id &&
               <Grid container spacing={2}>
                   <Grid item xs={12}>
+                    <Stack direction="row" spacing={2} sx={{alignItems: "center"}}>
                       <Select
-                          type="text"
-                          label="Album"
-                          name="albumId"
-                          formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
-                          inputProps={{
-                            name: "album",
-                            id: "album",
-                            renderValue: (v: number) => {
-                              const album = value.albums.find(i => i.id === v);
-                              if (album) return album.name;
-                              return v;
-                            }
-                          }}
-                      >
+                        type="text"
+                        label="Album"
+                        name="albumId"
+                        formControlProps={{ margin: "dense", variant: "outlined", fullWidth: true }}
+                        inputProps={{
+                          name: "album",
+                          id: "album",
+                          renderValue: (v: number) => {
+                            const album = value.albums.find(i => i.id === v);
+                            if (album) return album.name;
+                            return v;
+                          }
+                        }}
+                        >
                         {[
                           // Workaround for mui-rff.Select to accept an array of elements.
                           <MenuItem value={null} key={null}><em>No album</em></MenuItem>
@@ -251,6 +300,12 @@ export default function InfoPanel(
                           )) ?? []
                         )}
                       </Select>
+                      <Tooltip title="Import album info">
+                        <IconButton disabled={!(form.getState().values.albumId) || isImporting} onClick={handleRefreshAlbum}>
+                          <FileDownloadDoneIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
                   </Grid>
                   <Grid item xs={12}>
                       <UpdateButton

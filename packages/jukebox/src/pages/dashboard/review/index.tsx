@@ -11,6 +11,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useRouter } from "next/router";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { DataGridToolbar } from "../../../components/dashboard/DataGridToolbar";
+import { NextComposedLink } from "src/components/Link";
 
 const PENDING_REVIEW_FILES_QUERY = gql`
   query {
@@ -30,10 +31,14 @@ const PENDING_REVIEW_FILES_QUERY = gql`
 `;
 
 export default function Review() {
-  const needReviewQuery = useQuery<{ musicFiles: MusicFilesPagination }>(PENDING_REVIEW_FILES_QUERY);
+  const needReviewQuery = useQuery<{ musicFiles: MusicFilesPagination }>(
+    PENDING_REVIEW_FILES_QUERY
+  );
 
   const totalCount = needReviewQuery.data?.musicFiles.totalCount;
-  const needReviewCount = needReviewQuery.data?.musicFiles.edges.filter(v => v.node.needReview).length;
+  const needReviewCount = needReviewQuery.data?.musicFiles.edges.filter(
+    (v) => v.node.needReview
+  ).length;
   const edges = needReviewQuery.data?.musicFiles.edges;
 
   const router = useRouter();
@@ -43,45 +48,67 @@ export default function Review() {
     setShowAll(!showAll);
   }, [showAll, setShowAll]);
 
-  const rows = edges?.filter(v => showAll || v.node.needReview).map(v => ({...v.node})) ?? [];
+  const rows =
+    edges
+      ?.filter((v) => showAll || v.node.needReview)
+      .map((v) => ({ ...v.node })) ?? [];
 
-  return <Box sx={{ minHeight: "calc(100vh - 7em)", height: 0 }}>
-    {needReviewQuery.error && <Alert severity="error">
-        <AlertTitle>Error occurred while retrieving data.</AlertTitle>
-      {`${needReviewQuery.error}`}
-    </Alert>}
-    <DataGrid 
-      columns={[
-        { headerName: "ID", field: "id", width: 75, },
-        { headerName: "Track name", field: "trackName", flex: 2 },
-        { headerName: "Artist name", field: "artistName", flex: 1 },
-        { headerName: "Album name", field: "albumName", flex: 1 },
-        { headerName: "Need review", field: "needReview", type: "boolean", width: 100, },
-        { 
-          field: "actions", type: "actions", width: 100, 
-          getActions: (rowData) => [
-            <Tooltip title="Review" key="review"><GridActionsCellItem icon={<RateReviewIcon/>} label="Review" onClick={async () => {
-              if (rowData?.id !== undefined) {
-                await router.push(`/dashboard/review/${rowData.id}`);
-              }
-            }} /></Tooltip>,
-          ],
-        },
-      ]}
-      rows={rows}
-      components={{ Toolbar: DataGridToolbar }}
-      componentsProps={{
-        toolbar: {
-          title: `${needReviewCount ?? "..."} / ${totalCount ?? "..."} files pending review.`,
-          children: (<>
-            <Tooltip title={showAll ? "Hide reviewed" : "Show all"}>
-              <IconButton onClick={toggleShowAll}>{showAll ? <VisibilityOffIcon/> : <VisibilityIcon/>}</IconButton>
-            </Tooltip>
-          </>)
-        },
-      }}
-    />
-  </Box>;
+  return (
+    <Box sx={{ minHeight: "calc(100vh - 7em)", height: 0 }}>
+      {needReviewQuery.error && (
+        <Alert severity="error">
+          <AlertTitle>Error occurred while retrieving data.</AlertTitle>
+          {`${needReviewQuery.error}`}
+        </Alert>
+      )}
+      <DataGrid
+        columns={[
+          { headerName: "ID", field: "id", width: 75 },
+          { headerName: "Track name", field: "trackName", flex: 2 },
+          { headerName: "Artist name", field: "artistName", flex: 1 },
+          { headerName: "Album name", field: "albumName", flex: 1 },
+          {
+            headerName: "Need review",
+            field: "needReview",
+            type: "boolean",
+            width: 100,
+          },
+          {
+            field: "actions",
+            type: "actions",
+            width: 100,
+            getActions: (rowData) => [
+              <Tooltip title="Review" key="review">
+                <GridActionsCellItem
+                  icon={<RateReviewIcon />}
+                  label="Review"
+                  LinkComponent={NextComposedLink}
+                  {...{href: `/dashboard/review/${rowData?.id}`} as unknown}
+                />
+              </Tooltip>,
+            ],
+          },
+        ]}
+        rows={rows}
+        components={{ Toolbar: DataGridToolbar }}
+        componentsProps={{
+          toolbar: {
+            title: `${needReviewCount ?? "..."} / ${totalCount ??
+              "..."} files pending review.`,
+            children: (
+              <>
+                <Tooltip title={showAll ? "Hide reviewed" : "Show all"}>
+                  <IconButton onClick={toggleShowAll}>
+                    {showAll ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </IconButton>
+                </Tooltip>
+              </>
+            ),
+          },
+        }}
+      />
+    </Box>
+  );
 }
 
 Review.layout = getLayout("Review");

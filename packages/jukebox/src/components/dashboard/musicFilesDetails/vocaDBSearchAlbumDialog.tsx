@@ -22,13 +22,12 @@ import _ from "lodash";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Skeleton } from "@mui/material";
-import { makeStyles } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
 import { AlbumFragments } from "../../../graphql/fragments";
 import { DocumentNode } from "graphql";
 
-const IMPORT_SONG_MUTATION = gql`
+const IMPORT_ALBUM_MUTATION = gql`
   mutation($id: Int!) {
     enrolAlbumFromVocaDB(albumId: $id) {
       ...SelectAlbumEntry
@@ -74,7 +73,7 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
     toggleImporting(true);
     try {
       const result = await apolloClient.mutate<{ enrolAlbumFromVocaDB: Partial<Album> }>({
-        mutation: IMPORT_SONG_MUTATION,
+        mutation: IMPORT_ALBUM_MUTATION,
         variables: {
           id: selectedAlbum,
         }

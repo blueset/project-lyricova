@@ -191,7 +191,10 @@ export default function DashboardIndex() {
           component={NextComposedLink} href="/dashboard/review"
           startIcon={<RateReviewIcon/>}
         >
-          Review
+          <Box sx={{display: "flex", flexDirection: "column", lineHeight: 1.1}}>
+            <span>Review</span>
+            <Box component="span" sx={{fontSize: "0.7em", opacity: 0.6, textTransform: "none" }}>Review music files</Box>
+          </Box>
         </Button>
       </Grid>
       <Grid item xs={4}>
@@ -200,7 +203,10 @@ export default function DashboardIndex() {
           component={NextComposedLink} href="/dashboard/download"
           startIcon={<GetAppIcon/>}
         >
-          Download
+        <Box sx={{display: "flex", flexDirection: "column", lineHeight: 1.1}}>
+          <span>Download</span>
+          <Box component="span" sx={{fontSize: "0.7em", opacity: 0.6, textTransform: "none" }}>Download with YT-DLP, etc.</Box>
+        </Box>
         </Button>
       </Grid>
       <Grid item xs={4}>
@@ -209,7 +215,10 @@ export default function DashboardIndex() {
           component={NextComposedLink} href="/dashboard/scan"
           startIcon={<CachedIcon/>}
         >
-          Scan
+        <Box sx={{display: "flex", flexDirection: "column", lineHeight: 1.1}}>
+          <span>Scan</span>
+          <Box component="span" sx={{fontSize: "0.7em", opacity: 0.6, textTransform: "none" }}>Rescan local music files</Box>
+        </Box>
         </Button>
       </Grid>
     </Grid>

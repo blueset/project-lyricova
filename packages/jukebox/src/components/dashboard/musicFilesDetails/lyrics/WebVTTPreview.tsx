@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Lyrics, LyricsLine } from "lyrics-kit";
-import { PlayerLyricsKeyframe, usePlayerLyricsState } from "../../../frontendUtils/hooks";
-import { Box } from "@mui/material";
 import { FURIGANA } from "lyrics-kit/build/main/core/lyricsLineAttachment";
 import { buildTimeTag } from "lyrics-kit/build/main/utils/regexPattern";
 
@@ -54,9 +52,9 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
   }, [lyricsString]);
   const trackDataUrl = useMemo<string | null>(() => {
     if (!lyrics) return null;
-    let webvtt = `WEBVTT\n\n`;
-    webvtt += `STYLE\n::cue {\n  font-family: Inter, "Source Han Sans", "Noto Sans CJK", sans-serif;\n}\n\n`;
-    webvtt += `STYLE\n::cue(.tt) {\n  font-variant-numeric: "tabular-nums";\n}\n\n`;
+    let webvtt = "WEBVTT\n\n";
+    webvtt += "STYLE\n::cue {\n  font-family: Inter, \"Source Han Sans\", \"Noto Sans CJK\", sans-serif;\n}\n\n";
+    webvtt += "STYLE\n::cue(.tt) {\n  font-variant-numeric: \"tabular-nums\";\n}\n\n";
     webvtt += lyrics.lines.map((v, idx) => {
       const start = v.timeTag.substring(0, 10);
       const end = lyrics.lines[idx + 1]?.timeTag?.substring(0, 10) ?? "99:59.999";
@@ -67,7 +65,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
 
       return `${idx + 1}\n${start} --> ${end} line:50% align:start\n<c.tt>[${start}]</c>\n${text}`;
     }).join("\n\n");
-    console.log(webvtt);
+    // console.log(webvtt);
     const vttBlob = new Blob([webvtt], {
       type: "text/plain"
     });

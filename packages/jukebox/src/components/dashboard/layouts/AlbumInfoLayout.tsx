@@ -59,7 +59,7 @@ export default function AlbumInfoLayout({ children }: Props) {
             <Tooltip title="Edit" key="Edit" >
               <GridActionsCellItem icon={<EditIcon/>} label="Edit" onClick={async () => {
                 if (rowData?.id !== undefined) {
-                  await router.push(`/dashboard/album/${rowData.id}`);
+                  await router.push(`/dashboard/albums/${rowData.id}`);
                 }
               }} />
             </Tooltip>,

@@ -16,7 +16,6 @@ import { Lyrics } from "lyrics-kit";
 import { useSnackbar } from "notistack";
 import EditLyrics from "./lyrics/EditLyrics";
 import SearchLyrics from "./lyrics/SearchLyrics";
-import { makeStyles } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
 import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
@@ -24,7 +23,8 @@ import EditTranslations from "./lyrics/EditTranslations";
 import EditFurigana from "./lyrics/EditFurigana";
 import { gql, useApolloClient } from "@apollo/client";
 import { DocumentNode } from "graphql";
-import LyricsPreviewPanel from "./WebVTTPreview";
+import LyricsPreviewPanel from "./lyrics/WebVTTPreview";
+import WebAudioTaggingLyrics from "./lyrics/WebAudioTaggingLyrics";
 
 const WRITE_LYRICS_MUTATION = gql`
   mutation($fileId: Int!, $lyrics: String!, $ext: String!) {
@@ -145,6 +145,7 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
               <Tab label="Edit" value="edit" />
               <Tab label="Edit Plain" value="editLrc" />
               <Tab label="Tagging" value="tagging" />
+              <Tab label="WebAudioAPI Tagging" value="webAudioTagging" />
               <Tab label="Translation" value="translation" />
               <Tab label="Furigana" value="furigana" />
             </Tabs>
@@ -168,6 +169,9 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
           </TabPanel>
           <TabPanel value="editLrc">
             <EditPlainLyrics lyrics={lrc} lrcx={lrcx} setLyrics={setLrc} />
+          </TabPanel>
+          <TabPanel value="webAudioTagging">
+            <WebAudioTaggingLyrics lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
           </TabPanel>
           <TabPanel value="tagging">
             <TaggingLyrics lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
