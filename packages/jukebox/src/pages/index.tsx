@@ -1,6 +1,5 @@
 import { gql, useQuery } from "@apollo/client";
-import { Box, makeStyles, Stack } from "@mui/material";
-import clsx from "clsx";
+import { Stack } from "@mui/material";
 import _ from "lodash";
 import { ReactNode } from "react";
 import { useAppContext } from "../components/public/AppContext";
@@ -9,9 +8,7 @@ import { FocusedLyrics } from "../components/public/lyrics/focused";
 import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
 import { Karaoke1Lyrics } from "../components/public/lyrics/karaoke1";
 import { PlainLyrics } from "../components/public/lyrics/plain";
-import { RingoLyrics } from "../components/public/lyrics/ringo";
 import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
-import { useNamedState } from "../frontendUtils/hooks";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 import { FocusedGlowLyrics } from "../components/public/lyrics/focusedGlow";
 import { SlantedLyrics } from "../components/public/lyrics/slanted";

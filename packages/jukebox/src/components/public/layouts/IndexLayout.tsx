@@ -1,4 +1,4 @@
-import { Grid, Paper, IconButton, styled } from "@mui/material";
+import { Paper, styled } from "@mui/material";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
 import React, { useEffect, ReactNode, useRef, useCallback, useMemo, CSSProperties } from "react";
@@ -16,7 +16,6 @@ import { move } from "../../../frontendUtils/arrays";
 import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import { Texture } from "../../../graphql/TextureResolver";
 import { motion, AnimatePresence } from "framer-motion";
-import clsx from "clsx";
 import { AuthContext } from "../AuthContext";
 import { useClientPersistentState } from "../../../frontendUtils/clientPersistantState";
 import { MusicFileFragments } from "../../../graphql/fragments";
@@ -109,7 +108,7 @@ export default function IndexLayout({ children }: Props) {
 
   // const styles = useStyle();
 
-  function updateShuffleness(toggle: boolean = false): number[] | null {
+  const updateShuffleness = useCallback((toggle: boolean = false): number[] | null => {
     // if        | shuffleMapping is null |  not null
     // toggle    |        shuffle         | no shuffle
     // no toggle |      no shuffle        |  shuffle
@@ -124,7 +123,7 @@ export default function IndexLayout({ children }: Props) {
     }
     setShuffleMapping(mapping);
     return mapping;
-  }
+  }, [nowPlaying, playlistTracks.length, setShuffleMapping, shuffleMapping]);
 
   const playlist: Playlist = useMemo(() => ({
     tracks: playlistTracks,
@@ -137,6 +136,7 @@ export default function IndexLayout({ children }: Props) {
     },
     playTrack: (index: number, playNow: boolean = false) => {
       const fileId = playlist.getSongByIndex(index).id;
+      // console.log("playTrack", index, playNow, playerRef.current);
       if (playerRef.current) {
         playerRef.current.src = `/api/files/${fileId}/file`;
         playerRef.current.currentTime = 0;
@@ -227,6 +227,7 @@ export default function IndexLayout({ children }: Props) {
       return playlistTracks[index];
     },
     getCurrentSong: () => {
+      // console.log("getCurrentSong", nowPlaying, (new Error()));
       if (nowPlaying === null) return null;
       return playlist.getSongByIndex(nowPlaying);
     },
@@ -453,7 +454,7 @@ export default function IndexLayout({ children }: Props) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadRandomTexture, setTextureURL, playlist.getCurrentSong()]);
+  }, [loadRandomTexture, setTextureURL, nowPlaying]);
 
   // Store full song list once loaded
   useEffect(() => {
@@ -464,7 +465,7 @@ export default function IndexLayout({ children }: Props) {
       );
       setTextureURL(texture.url);
     }
-  }, [randomTextureQuery.data?.randomTexture?.name, setTextureURL]);
+  }, [randomTextureQuery.data, setTextureURL]);
 
   return (
     <>
