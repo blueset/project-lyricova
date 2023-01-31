@@ -118,7 +118,8 @@ export async function applyApollo(app: Application): Promise<Server> {
     emitSchemaFile: {
       path: __dirname + "/../../schema.graphql",
     },
-    authChecker
+    authChecker,
+    validate: { forbidUnknownValues: false },
   });
 
   const httpServer = createServer(app);

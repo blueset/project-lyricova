@@ -1,6 +1,5 @@
 import { useRouter } from "next/router";
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
-import { useAppContext } from "../../../components/public/AppContext";
 import { useAuthContext } from "../../../components/public/AuthContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import { gql, useQuery } from "@apollo/client";
@@ -15,11 +14,12 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TrackListRow from "../../../components/public/library/TrackListRow";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
-import { makeStyles } from "@mui/material/styles";
 import { MusicFileFragments } from "../../../graphql/fragments";
 import { Playlist } from "../../../models/Playlist";
 import PlaylistAvatar from "../../../components/PlaylistAvatar";
 import { DocumentNode } from "graphql";
+import { useAppDispatch } from "../../../redux/public/store";
+import { addTrackToNext, loadTracks, playTrack, toggleShuffle } from "../../../redux/public/playlist";
 
 
 const PLAYLIST_DETAILS_QUERY = gql`
@@ -43,9 +43,9 @@ const PLAYLIST_DETAILS_QUERY = gql`
 export default function PlaylistDetails() {
   const router = useRouter();
   const slug = router.query.slug as string;
-  const { playlist } = useAppContext();
   const { user } = useAuthContext();
   const popupState = usePopupState({ variant: "popover", popupId: "single-artist-overflow-menu" });
+  const dispatch = useAppDispatch();
 
   const query = useQuery<{playlist: Playlist}>(PLAYLIST_DETAILS_QUERY, {variables: {slug}});
   let content;
@@ -61,10 +61,10 @@ export default function PlaylistDetails() {
     const totalSize = _.sumBy(files, "fileSize");
     const canPlay = trackCount > 0;
 
-    const playAll = () => playlist.loadTracks(files);
+    const playAll = () => dispatch(loadTracks(files));
     const shuffleAll = () => {
       playAll();
-      playlist.toggleShuffle();
+      dispatch(toggleShuffle());
     };
 
     content = <>

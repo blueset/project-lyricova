@@ -1,25 +1,35 @@
 import { Paper, styled } from "@mui/material";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
-import React, { useEffect, ReactNode, useRef, useCallback, useMemo, CSSProperties } from "react";
-import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
-import {
-  AppContext,
-  Track,
-  Playlist,
-  LoopMode,
-} from "../AppContext";
+import React, {
+  useEffect,
+  ReactNode,
+  useRef,
+  useCallback,
+  CSSProperties,
+} from "react";
+import { gql, useLazyQuery } from "@apollo/client";
+import { AppContext, Track } from "../AppContext";
 import _ from "lodash";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import CurrentPlaylist from "../CurrentPlaylist";
-import { move } from "../../../frontendUtils/arrays";
-import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import { Texture } from "../../../graphql/TextureResolver";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../AuthContext";
-import { useClientPersistentState } from "../../../frontendUtils/clientPersistantState";
-import { MusicFileFragments } from "../../../graphql/fragments";
 import { DocumentNode } from "graphql";
+import store, {
+  persistor,
+  useAppDispatch,
+  useAppSelector,
+} from "../../../redux/public/store";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import {
+  currentSongSelector,
+  playNext,
+  playPrevious,
+  stop,
+} from "../../../redux/public/playlist";
 
 interface Props {
   children: ReactNode;
@@ -27,19 +37,6 @@ interface Props {
 
 const SxMotionDiv = styled(motion.div)``;
 
-const MUSIC_FILES_COUNT_QUERY = gql`
-  query GetMusicFiles {
-    musicFiles(first: -1) {
-      edges {
-        node {
-          ...MusicFileForPlaylistAttributes
-        }
-      }
-    }
-  }
-  
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
 
 const TEXTURE_QUERY = gql`
   query GetTexture {
@@ -60,11 +57,11 @@ function generateBackgroundStyle(
   track: Track,
   texture: string | null
 ): CSSProperties {
-  if (texture !== null) {
+  if (texture) {
     return {
       backgroundImage: `url("/textures/${texture}")`,
     };
-  } else if (track !== null) {
+  } else if (track) {
     return {
       backgroundImage: `url("${getTrackCoverURL(track)}")`,
       backgroundSize: "cover",
@@ -78,197 +75,45 @@ function generateBackgroundStyle(
 
 export default function IndexLayout({ children }: Props) {
   const playerRef = useRef<HTMLAudioElement>();
-  const apolloClient = useApolloClient();
 
-  const [playlistTracks, setPlaylistTracks] = useClientPersistentState<Track[]>(
-    [],
-    "playlistTracks",
-    "lyricovaPlayer"
-  );
-  const [nowPlaying, setNowPlaying] = useClientPersistentState<Playlist["nowPlaying"]>(
-    null,
-    "nowPlaying",
-    "lyricovaPlayer"
-  );
-  const [loopMode, setLoopMode] = useClientPersistentState<LoopMode>(
-    LoopMode.NONE,
-    "loopMode",
-    "lyricovaPlayer"
-  );
-  const [shuffleMapping, setShuffleMapping] = useClientPersistentState<number[] | null>(
-    null,
-    "shuffleMapping",
-    "lyricovaPlayer"
-  );
-  const [isCollapsed, setCollapsed] = useClientPersistentState<boolean>(
-    false,
-    "isCollapsed",
-    "lyricovaPlayer"
-  );
-
-  // const styles = useStyle();
-
-  const updateShuffleness = useCallback((toggle: boolean = false): number[] | null => {
-    // if        | shuffleMapping is null |  not null
-    // toggle    |        shuffle         | no shuffle
-    // no toggle |      no shuffle        |  shuffle
-    let mapping = null;
-
-    if ((shuffleMapping !== null) !== toggle) {
-      mapping = _.shuffle(_.range(playlistTracks.length));
-      if (nowPlaying !== null) {
-        const repIndex = mapping.indexOf(nowPlaying);
-        [mapping[0], mapping[repIndex]] = [mapping[repIndex], mapping[0]];
-      }
-    }
-    setShuffleMapping(mapping);
-    return mapping;
-  }, [nowPlaying, playlistTracks.length, setShuffleMapping, shuffleMapping]);
-
-  const playlist: Playlist = useMemo(() => ({
-    tracks: playlistTracks,
+  const dispatch = useAppDispatch();
+  const {
     nowPlaying,
     loopMode,
-    shuffleMapping,
-    loadTracks: (tracks: Track[]) => {
-      setPlaylistTracks(tracks);
-      setShuffleMapping(null);
-    },
-    playTrack: (index: number, playNow: boolean = false) => {
-      const fileId = playlist.getSongByIndex(index).id;
-      // console.log("playTrack", index, playNow, playerRef.current);
-      if (playerRef.current) {
-        playerRef.current.src = `/api/files/${fileId}/file`;
-        playerRef.current.currentTime = 0;
-        playerRef.current.load();
-        if (playNow) playerRef.current.play();
-      } else {
-        console.error("PlayerRef is lost!", playerRef);
-      }
-      setNowPlaying(index);
-    },
-    playNext: (playNow: boolean = false) => {
-      if (playlistTracks.length < 1) return;
-      if (nowPlaying === null) {
-        playlist.playTrack(0, playNow);
-      } else if (nowPlaying === playlistTracks.length - 1) {
-        if (playlist.loopMode === LoopMode.ALL) {
-          playlist.playTrack(0, playNow);
-        }
-      } else {
-        playlist.playTrack(nowPlaying + 1, playNow);
-      }
-    },
-    playPrevious: (playNow: boolean = false) => {
-      if (playlistTracks.length < 1) return;
-      if (nowPlaying === null) {
-        playlist.playTrack(playlistTracks.length - 1, playNow);
-      } else if (nowPlaying === 0) {
-        if (playlist.loopMode === LoopMode.ALL) {
-          playlist.playTrack(nowPlaying - 1, playNow);
-        }
-      } else {
-        playlist.playTrack(nowPlaying - 1, playNow);
-      }
-    },
-    addTrackToNext: (track: Track) => {
-      const index = nowPlaying ? nowPlaying : 0;
-      playlistTracks.splice(index + 1, 0, track);
-      setPlaylistTracks([...playlistTracks]);
-    },
-    removeTrack: (index: number) => {
-      if (shuffleMapping !== null) {
-        const realIndex = shuffleMapping[index];
-        setShuffleMapping(shuffleMapping.filter((v, idx) => idx !== index));
-        index = realIndex;
-      }
-      setPlaylistTracks(playlistTracks.filter((v, idx) => idx !== index));
-      if (nowPlaying === index) {
-        playlist.playTrack(index);
-      }
-    },
-    moveTrack: (from: number, to: number) => {
-      if (shuffleMapping === null) {
-        setPlaylistTracks(move(playlistTracks, from, to));
-      } else {
-        setShuffleMapping(move(shuffleMapping, from, to));
-      }
-      if (nowPlaying === from) {
-        setNowPlaying(to);
-      } else if (from < nowPlaying && nowPlaying <= to) {
-        setNowPlaying(nowPlaying - 1);
-      } else if (from > nowPlaying && nowPlaying >= to) {
-        setNowPlaying(nowPlaying + 1);
-      }
-    },
-    toggleShuffle: () => {
-      if (playlistTracks.length < 1) {
-        setShuffleMapping(null);
-        return;
-      }
+    isCollapsed,
+    playNow,
+  } = useAppSelector((s) => s.playlist);
+  const currentSong = useAppSelector(currentSongSelector);
 
-      // Revert back now playing pointer before turning off shuffling
-      if (nowPlaying !== null && shuffleMapping !== null) {
-        setNowPlaying(shuffleMapping[nowPlaying]);
-      }
-
-      const mapping = updateShuffleness(/*toggle: */ true);
-
-      // Map over now playing pointer after turning on shuffling
-      if (nowPlaying !== null && mapping !== null) {
-        setNowPlaying(mapping.indexOf(nowPlaying));
-      }
-    },
-    setLoopMode: (loopMode: LoopMode) => {
-      setLoopMode(loopMode);
-    },
-    getSongByIndex: (index: number) => {
-      if (shuffleMapping !== null) return playlistTracks[shuffleMapping[index]];
-      return playlistTracks[index];
-    },
-    getCurrentSong: () => {
-      // console.log("getCurrentSong", nowPlaying, (new Error()));
-      if (nowPlaying === null) return null;
-      return playlist.getSongByIndex(nowPlaying);
-    },
-    getCurrentCoverUrl: () => {
-      const track = playlist.getCurrentSong();
-      if (track && track.hasCover) {
-        return getTrackCoverURL(track);
-      }
-      return null;
-    },
-    stop: () => {
-      setNowPlaying(null);
-      if (playerRef.current) {
-        playerRef.current.pause();
-        playerRef.current.src = "";
-      }
-    },
-  }), [loopMode, nowPlaying, playlistTracks, setLoopMode, setNowPlaying, setPlaylistTracks, setShuffleMapping, shuffleMapping, updateShuffleness]);
-
-  // Load track from local storage to audio element on mount
+  // Reflect nowPlaying change to player
   useEffect(() => {
-    if (nowPlaying !== null) playlist.playTrack(nowPlaying, false);
-    // Keep empty as this should only run on mount
-    // eslint-disable-next-line
-  }, []);
+    if (!currentSong) {
+      playerRef.current.pause();
+      playerRef.current.src = "";
+      return;
+    }
+    const fileId = currentSong.id;
+    // console.log("playTrack", index, playNow, playerRef.current);
+    if (playerRef.current) {
+      const isPlaying = !playerRef.current.paused;
+      playerRef.current.src = `/api/files/${fileId}/file`;
+      playerRef.current.currentTime = 0;
+      playerRef.current.load();
+      if (playNow || (playNow === null && isPlaying)) playerRef.current.play();
+    } else {
+      console.error("PlayerRef is lost!", playerRef);
+    }
+  }, [currentSong, nowPlaying, playNow]);
 
   const onPlayEnded = useCallback(() => {
-    if (playlist.loopMode === LoopMode.SINGLE) {
-      // Single loop
-      playlist.playTrack(nowPlaying, true);
-    } else if (nowPlaying + 1 < playlistTracks.length) {
-      // Play next
-      playlist.playNext(true);
-    } else if (playlist.loopMode === LoopMode.ALL) {
-      // Loop all, play the first
-      playlist.playTrack(0, true);
+    if (loopMode === "single") {
+      playerRef.current.currentTime = 0;
+      playerRef.current.play();
     } else {
-      // Play nothing if no loop and last track ended
-      setNowPlaying(null);
+      // Play next
+      dispatch(playNext());
     }
-  }, [nowPlaying, playlist, playlistTracks.length, setNowPlaying]);
+  }, [loopMode, dispatch]);
 
   // Add onEnded listener
   useEffect(() => {
@@ -281,43 +126,18 @@ export default function IndexLayout({ children }: Props) {
     }
   }, [playerRef, onPlayEnded]);
 
-  // Load full song list on load
-  useEffect(() => {
-    (async () => {
-      if (window.localStorage.getItem("lyricovaPlayer.playlistTracks") === null) {
-        try {
-          const query = await apolloClient.query<{ musicFiles: MusicFilesPagination }>({
-            query: MUSIC_FILES_COUNT_QUERY
-          });
-          if (query.data) {
-            setPlaylistTracks(
-              _.sortBy(
-                query.data.musicFiles.edges.map((v) => v.node),
-                ["trackSortOrder", "artistSortOrder", "albumSortOrder"]
-              )
-            );
-          }
-        } catch (e) {
-          console.error("Error while loading initial playlist.", e);
-        }
-      }
-    })();
-    // Run only once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Set media session controllers
   useEffect(() => {
     if (navigator.mediaSession !== undefined) {
-      navigator.mediaSession.setActionHandler("play", function () {
+      navigator.mediaSession.setActionHandler("play", function() {
         console.log("Media session action: play");
         playerRef.current?.play();
       });
-      navigator.mediaSession.setActionHandler("pause", function () {
+      navigator.mediaSession.setActionHandler("pause", function() {
         console.log("Media session action: pause");
         playerRef.current?.pause();
       });
-      navigator.mediaSession.setActionHandler("seekbackward", function () {
+      navigator.mediaSession.setActionHandler("seekbackward", function() {
         console.log("Media session action: seekbackward");
         if (playerRef.current?.src) {
           const newValue = Math.max(playerRef.current.currentTime - 5, 0);
@@ -328,7 +148,7 @@ export default function IndexLayout({ children }: Props) {
           }
         }
       });
-      navigator.mediaSession.setActionHandler("seekforward", function () {
+      navigator.mediaSession.setActionHandler("seekforward", function() {
         console.log("Media session action: seekforward");
         if (playerRef.current?.src) {
           const newValue = Math.min(
@@ -342,23 +162,22 @@ export default function IndexLayout({ children }: Props) {
           }
         }
       });
-      navigator.mediaSession.setActionHandler("previoustrack", function () {
+      navigator.mediaSession.setActionHandler("previoustrack", function() {
         console.log("Media session action: previoustrack");
-        playlist.playPrevious(!playerRef.current?.paused);
+        dispatch(playPrevious());
       });
-      navigator.mediaSession.setActionHandler("nexttrack", function () {
+      navigator.mediaSession.setActionHandler("nexttrack", function() {
         console.log("Media session action: nexttrack");
-        playlist.playNext(!playerRef.current?.paused);
+        dispatch(playNext());
       });
       try {
-        navigator.mediaSession.setActionHandler("stop", function () {
-          playlist.stop();
+        navigator.mediaSession.setActionHandler("stop", function() {
+          dispatch(stop());
         });
-      } catch (error) {
-      }
+      } catch (error) {}
 
       try {
-        navigator.mediaSession.setActionHandler("seekto", function (event) {
+        navigator.mediaSession.setActionHandler("seekto", function(event) {
           if (event.fastSeek === true) return;
           if (playerRef.current.fastSeek) {
             playerRef.current.fastSeek(event.seekTime);
@@ -366,8 +185,7 @@ export default function IndexLayout({ children }: Props) {
             playerRef.current.currentTime = event.seekTime;
           }
         });
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   });
 
@@ -392,7 +210,7 @@ export default function IndexLayout({ children }: Props) {
   useEffect(() => {
     const playerElm = playerRef.current;
     // trying to register listeners
-    if (playerElm !== null) {
+    if (playerElm) {
       // registering listeners
       playerElm.addEventListener("timeupdate", updatePositionState);
       playerElm.addEventListener("playing", updatePositionState);
@@ -401,7 +219,7 @@ export default function IndexLayout({ children }: Props) {
     }
     return function cleanUp() {
       // trying to remove listeners
-      if (playerElm !== null) {
+      if (playerElm) {
         // removing listeners
         playerElm.removeEventListener("timeupdate", updatePositionState);
         playerElm.removeEventListener("playing", updatePositionState);
@@ -421,28 +239,27 @@ export default function IndexLayout({ children }: Props) {
   }>(TEXTURE_QUERY);
 
   useEffect(() => {
-    if (!playlist.getCurrentSong()?.hasCover) {
+    if (!currentSong?.hasCover) {
       if (randomTextureQuery?.called !== true) {
         loadRandomTexture();
-      } else if (randomTextureQuery !== undefined) {
-        randomTextureQuery && randomTextureQuery.refetch();
+      } else {
+        randomTextureQuery?.refetch();
       }
     } else {
       setTextureURL(null);
     }
 
     if ("mediaSession" in navigator) {
-      const track = playlist.getCurrentSong();
-      if (track) {
+      if (currentSong) {
         const data: MediaMetadataInit = {
-          title: track.trackName || "",
-          artist: track.artistName || "",
-          album: track.albumName || "",
+          title: currentSong.trackName || "",
+          artist: currentSong.artistName || "",
+          album: currentSong.albumName || "",
         };
-        if (track.hasCover) {
+        if (currentSong.hasCover) {
           data.artwork = [
             {
-              src: getTrackCoverURL(track),
+              src: getTrackCoverURL(currentSong),
               type: "image/png",
               sizes: "512x512",
             },
@@ -453,8 +270,8 @@ export default function IndexLayout({ children }: Props) {
         navigator.mediaSession.metadata = null;
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadRandomTexture, setTextureURL, nowPlaying]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSong, loadRandomTexture, randomTextureQuery.refetch, setTextureURL]);
 
   // Store full song list once loaded
   useEffect(() => {
@@ -470,7 +287,7 @@ export default function IndexLayout({ children }: Props) {
   return (
     <>
       <audio ref={playerRef} />
-      <AppContext playerRef={playerRef} playlist={playlist}>
+      <AppContext playerRef={playerRef}>
         <AuthContext noRedirect>
           <AnimatePresence>
             <SxMotionDiv
@@ -478,34 +295,41 @@ export default function IndexLayout({ children }: Props) {
               sx={{
                 height: "100vh",
                 display: "flex",
-                ...(isCollapsed ? {flexDirection: "column"} : {
-                  flexDirection: {xs: "column", md: "row"}
-                })
+                ...(isCollapsed
+                  ? { flexDirection: "column" }
+                  : {
+                      flexDirection: { xs: "column", md: "row" },
+                    }),
               }}
-              style={generateBackgroundStyle(playlist.getCurrentSong(), textureURL)}
+              style={generateBackgroundStyle(currentSong, textureURL)}
             >
               <SxMotionDiv
                 layout
                 sx={{
                   zIndex: 2,
-                  ...(isCollapsed ? {order: 1} : {
-                    width: {md: "clamp(25em, 33%, 45em)"},
-                    padding: {md: "24px"},
-                    height: {md: "100%"},
-                    position: {xs: "absolute", md: "unset"},
-                    left: {xs: 0, md: "unset"},
-                    right: {xs: 0, md: "unset"},
-                    top: {xs: 0, md: "unset"},
-                    bottom: {xs: 0, md: "unset"},
-                  })
-                }}>
-                <Paper sx={{
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}>
-                  <Player isCollapsed={isCollapsed} setCollapsed={setCollapsed} />
+                  ...(isCollapsed
+                    ? { order: 1 }
+                    : {
+                        width: { md: "clamp(25em, 33%, 45em)" },
+                        padding: { md: "24px" },
+                        height: { md: "100%" },
+                        position: { xs: "absolute", md: "unset" },
+                        left: { xs: 0, md: "unset" },
+                        right: { xs: 0, md: "unset" },
+                        top: { xs: 0, md: "unset" },
+                        bottom: { xs: 0, md: "unset" },
+                      }),
+                }}
+              >
+                <Paper
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Player />
                   {!isCollapsed && <CurrentPlaylist />}
                 </Paper>
               </SxMotionDiv>
@@ -513,15 +337,20 @@ export default function IndexLayout({ children }: Props) {
                 layout
                 sx={{
                   flexGrow: 1,
-                  maxHeight: {xs: "calc(100% - 12.5rem)", md: "unset"},
-                  ...(isCollapsed ? {
-                    height: {md: 0, xs: "100%"},
-                  } : {
-                    height: "100%",
-                    width: 0,
-                  })
-                }}>
-                <DetailsPanel coverUrl={playlist.getCurrentCoverUrl()}>
+                  maxHeight: { xs: "calc(100% - 12.5rem)", md: "unset" },
+                  ...(isCollapsed
+                    ? {
+                        height: { md: 0, xs: "100%" },
+                      }
+                    : {
+                        height: "100%",
+                        width: 0,
+                      }),
+                }}
+              >
+                <DetailsPanel
+                  coverUrl={currentSong ? getTrackCoverURL(currentSong) : null}
+                >
                   {children}
                 </DetailsPanel>
               </SxMotionDiv>
@@ -533,4 +362,10 @@ export default function IndexLayout({ children }: Props) {
   );
 }
 
-export const getLayout = (page: ReactNode) => <IndexLayout>{page}</IndexLayout>;
+export const getLayout = (page: ReactNode) => (
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <IndexLayout>{page}</IndexLayout>
+    </PersistGate>
+  </Provider>
+);

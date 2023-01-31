@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-import { useAppContext } from "../AppContext";
 import { useAuthContext } from "../AuthContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import React, { Fragment } from "react";
@@ -18,6 +17,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { MusicFile } from "../../../models/MusicFile";
 import { Song } from "../../../models/Song";
 import ListItemTextWithTime from "./ListItemTextWithTime";
+import { playTrack, addTrackToNext, loadTracks } from "../../../redux/public/playlist";
+import { useAppDispatch } from "../../../redux/public/store";
 
 interface Props {
   song: Song | null;
@@ -28,19 +29,19 @@ interface Props {
 
 export default function TrackListRow({ song, file, files, showAlbum }: Props) {
   const router = useRouter();
-  const { playlist } = useAppContext();
   const { user } = useAuthContext();
+  const dispatch = useAppDispatch();
   const id = song ? song.id : file.id;
   const popupState = usePopupState({ variant: "popover", popupId: `single-track-menu-${id}` });
   const showTrackNumber = song && song.SongInAlbum !== undefined;
 
   const handlePlayNext = () => {
-    playlist.addTrackToNext(file);
+    dispatch(addTrackToNext(file));
     popupState.close();
   };
   const handlePlayInList = () => {
-    playlist.loadTracks(files);
-    playlist.playTrack(files.indexOf(file));
+    dispatch(loadTracks(files));
+    dispatch(playTrack({track: files.indexOf(file), playNow: true}));
     popupState.close();
   };
   const handleShowDetails = () => {

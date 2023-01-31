@@ -6,7 +6,7 @@ import {
   useMediaQuery,
   Theme, Box, Stack,
 } from "@mui/material";
-import React, { useCallback, CSSProperties } from "react";
+import React, { CSSProperties } from "react";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
@@ -14,20 +14,22 @@ import RepeatOneIcon from "@mui/icons-material/RepeatOne";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
-import { useAppContext, LoopMode, Track } from "./AppContext";
+import { useAppContext, Track } from "./AppContext";
 import { TimeSlider } from "./TimeSlider";
 import { PlayButton } from "./PlayButton";
+import { useAppDispatch, useAppSelector } from "../../redux/public/store";
+import { currentSongSelector, playNext, playPrevious, setCollapsed, setLoopMode, toggleShuffle } from "../../redux/public/playlist";
 
-const LOOP_MODE_SWITCH: { [key in keyof typeof LoopMode]: LoopMode } = {
-  [LoopMode.ALL]: LoopMode.SINGLE,
-  [LoopMode.SINGLE]: LoopMode.NONE,
-  [LoopMode.NONE]: LoopMode.ALL,
-};
+const LOOP_MODE_SWITCH = {
+  "all": "single",
+  "single": "none",
+  "none": "all",
+} as const;
 
 function generateBackgroundStyle(
   track: Track,
 ): CSSProperties {
-  if (track !== null && track.hasCover) {
+  if (track?.hasCover) {
     return {
       backgroundImage: `url(/api/files/${track.id}/cover)`,
     };
@@ -39,38 +41,28 @@ function generateBackgroundStyle(
   }
 }
 
-interface PlayerProps {
-  isCollapsed: boolean;
-  setCollapsed?: (value: boolean) => void;
-}
 
-export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
+export default function Player() {
+  const dispatch = useAppDispatch();
+  const {
+    nowPlaying,
+    loopMode,
+    shuffleMapping,
+    isCollapsed,
+    tracks,
+  } = useAppSelector((s) => s.playlist);
+  const currentSong = useAppSelector(currentSongSelector);
+  const { playerRef } = useAppContext();
 
-  const { playerRef, playlist } = useAppContext();
   const isFlatPlayer = useMediaQuery<Theme>((theme) => theme.breakpoints.up("md")) && isCollapsed;
 
-  function nextTrack() {
-    const isPlaying = !playerRef.current.paused;
-    if (isPlaying) playerRef.current.pause();
-    playlist.playNext(/*playNow*/ isPlaying);
-  }
-
-  function previousTrack() {
-    const isPlaying = !playerRef.current.paused;
-    if (isPlaying) playerRef.current.pause();
-    playlist.playPrevious(/*playNow*/ isPlaying);
-  }
-
-  const toggleShuffle = useCallback(() => {
-    playlist.toggleShuffle();
-  }, [playlist]);
-
-  const switchLoopMode = useCallback(() => {
-    playlist.setLoopMode(LOOP_MODE_SWITCH[playlist.loopMode]);
-  }, [playlist]);
+  const nextTrack = () => dispatch(playNext());
+  const previousTrack = () => dispatch(playPrevious());
+  const toggleShuffleHandler = () => dispatch(toggleShuffle());
+  const switchLoopMode = () => dispatch(setLoopMode(LOOP_MODE_SWITCH[loopMode]));
 
   const loopModeButton = {
-    [LoopMode.ALL]: (
+    "all": (
       <IconButton
         id="player-loop-mode"
         color="default"
@@ -80,7 +72,7 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
         <RepeatIcon />
       </IconButton>
     ),
-    [LoopMode.SINGLE]: (
+    "single": (
       <IconButton
         id="player-loop-mode"
         color="default"
@@ -90,7 +82,7 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
         <RepeatOneIcon />
       </IconButton>
     ),
-    [LoopMode.NONE]: (
+    "none": (
       <IconButton
         id="player-loop-mode"
         color="default"
@@ -137,20 +129,20 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
           },
         }}
         aria-label={isCollapsed ? "Expand player" : "Collapse player"}
-        style={generateBackgroundStyle(playlist.getCurrentSong())}
-        onClick={() => setCollapsed(!isCollapsed)}>
+        style={generateBackgroundStyle(currentSong)}
+        onClick={() => dispatch(setCollapsed(!isCollapsed))}>
         <div className="backdrop">
           {isCollapsed ? <UnfoldMoreIcon /> : <UnfoldLessIcon />}
         </div>
       </ButtonBase>
       <Box sx={isFlatPlayer ? {marginTop: "-0.3rem", marginBottom: "-0.3rem",} : undefined}>
         <Typography variant={isFlatPlayer ? "subtitle1" : "h6"} component={isFlatPlayer ? "span" : null} noWrap={true}>
-          {playlist.getCurrentSong()?.trackName || "No title"}
+          {currentSong?.trackName || "No title"}
         </Typography>
         {isFlatPlayer && " / "}
         <Typography variant="subtitle1" component={isFlatPlayer ? "span" : null}
                     sx={{opacity: isFlatPlayer ? 0.75 : 1,}} noWrap={true}>
-          {playlist.getCurrentSong()?.artistName || "Unknown artists"}
+          {currentSong?.artistName || "Unknown artists"}
         </Typography>
       </Box>
       <Stack
@@ -177,12 +169,13 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
           flexWrap: "wrap",
           width: "100%",
         }}>
-        <TimeSlider playerRef={playerRef} disabled={playlist.nowPlaying === null} isCollapsed={isCollapsed} />
+        <TimeSlider playerRef={playerRef} disabled={nowPlaying === null} isCollapsed={isCollapsed} />
         <IconButton id="player-shuffle"
           color="default"
           aria-label="Shuffle"
-          style={{ opacity: playlist.shuffleMapping ? 1 : 0.5 }}
-          onClick={toggleShuffle}
+          style={{ opacity: shuffleMapping ? 1 : 0.5 }}
+          disabled={tracks.length < 2}
+          onClick={toggleShuffleHandler}
         >
           <ShuffleIcon />
         </IconButton>
@@ -193,11 +186,11 @@ export default function Player({ isCollapsed, setCollapsed }: PlayerProps) {
         >
           <SkipPreviousIcon />
         </IconButton>
-        <PlayButton playerRef={playerRef} playlist={playlist} isCollapsed={isCollapsed} />
+        <PlayButton playerRef={playerRef} />
         <IconButton id="player-next" color="default" aria-label="Next track" onClick={nextTrack}>
           <SkipNextIcon />
         </IconButton>
-        {loopModeButton[playlist.loopMode]}
+        {loopModeButton[loopMode]}
       </Stack>
     </CardContent>
   );

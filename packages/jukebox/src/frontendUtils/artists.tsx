@@ -16,14 +16,14 @@ function splitArtists(artists: Artist[]): {producers: Artist[], vocalists: Artis
   return {producers, vocalists};
 }
 
-export function formatArtists(artists: Artist[], renderer: (artists: Artist[]) => ReactNode): ReactNode {
+export function formatArtists(artists: Artist[], renderer: (artists: Artist[], isProducer: boolean) => ReactNode): ReactNode {
   const { producers, vocalists } = splitArtists(artists);
 
   if (producers.length && vocalists.length) {
-    return <>{renderer(producers)}{" feat. "}{renderer(vocalists)}</>;
+    return <>{renderer(producers, true)}{" feat. "}{renderer(vocalists, false)}</>;
   } else if (producers.length || vocalists.length) {
     const list = producers.length ? producers : vocalists;
-    return <>{renderer(list)}</>;
+    return <>{renderer(list, !!producers.length)}</>;
   } else {
     return <em style={{opacity: 0.5}}>Various artists</em>;
   }

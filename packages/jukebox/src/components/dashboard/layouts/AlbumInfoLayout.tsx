@@ -94,4 +94,4 @@ export default function AlbumInfoLayout({ children }: Props) {
 }
 
 // eslint-disable-next-line react/display-name, @typescript-eslint/explicit-module-boundary-types
-export const getLayout = (page: ReactNode) => getDashboardLayout("Alubum entities")(<AlbumInfoLayout>{page}</AlbumInfoLayout>);
+export const getLayout = (page: ReactNode) => getDashboardLayout("Album entities")(<AlbumInfoLayout>{page}</AlbumInfoLayout>);

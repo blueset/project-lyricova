@@ -23,7 +23,6 @@ import React, { useCallback, useMemo, useRef } from "react";
 import { MusicFile } from "../../models/MusicFile";
 import _ from "lodash";
 import { useNamedState } from "../../frontendUtils/hooks";
-import { useAppContext } from "../../components/public/AppContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useAuthContext } from "../../components/public/AuthContext";
@@ -32,6 +31,8 @@ import ListItemTextWithTime from "../../components/public/library/ListItemTextWi
 import { DocumentNode } from "graphql";
 import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useAppDispatch } from "../../redux/public/store";
+import { addTrackToNext, loadTracks, playTrack, toggleShuffle } from "../../redux/public/playlist";
 
 
 const MUSIC_FILES_COUNT_QUERY = gql`
@@ -77,16 +78,20 @@ const ITEM_HEIGHT = 60;
 
 const Row = React.memo(({height, index, data, start, isScrolling}: {height: number, index: number, start: number, data: MusicFile[], isScrolling: boolean}) => {
   const item = index == 0 ? null : data[index + 1];
-  const { playlist } = useAppContext();
+  const dispatch = useAppDispatch();
   const { user } = useAuthContext();
   const router = useRouter();
   const popupState = usePopupState({ variant: "popover", popupId: `track-list-menu-${item?.id ?? -1}` });
 
   if (item === null) {
-    const playAll = () => playlist.loadTracks(data.slice(1));
+    const playAll = () => {
+      dispatch(loadTracks(data.slice(1)));
+      dispatch(playTrack({track: 0, playNow: true}));
+    };
     const shuffleAll = () => {
-      playAll();
-      playlist.toggleShuffle();
+      dispatch(loadTracks(data.slice(1)));
+      dispatch(toggleShuffle());
+      dispatch(playTrack({track: 0, playNow: true}));
     };
     return <ListItem style={{height, transform: `translateY(${start}px)`,}}>
       <ButtonRow>
@@ -97,12 +102,12 @@ const Row = React.memo(({height, index, data, start, isScrolling}: {height: numb
   }
 
   const handlePlayNext = () => {
-    playlist.addTrackToNext(item);
+    dispatch(addTrackToNext(item));
     popupState.close();
   };
   const handlePlayInList = () => {
-    playlist.loadTracks(data.slice(1));
-    playlist.playTrack(index - 1);
+    dispatch(loadTracks(data.slice(1)));
+    dispatch(playTrack({track: index - 1, playNow: true}));
     popupState.close();
   };
   const handleShowDetails = () => {

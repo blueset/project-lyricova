@@ -14,7 +14,6 @@ import {
   Typography
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { makeStyles } from "@mui/material/styles";
 import { gql, useQuery } from "@apollo/client";
 import { AlbumFragments, MusicFileFragments } from "../../../graphql/fragments";
 import Alert from "@mui/material/Alert";
@@ -30,12 +29,13 @@ import FindInPageIcon from "@mui/icons-material/FindInPage";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { formatArtists } from "../../../frontendUtils/artists";
 import Link from "../../../components/Link";
-import { useAppContext } from "../../../components/public/AppContext";
 import { useAuthContext } from "../../../components/public/AuthContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import { MusicFile } from "../../../models/MusicFile";
 import TrackListRow from "../../../components/public/library/TrackListRow";
 import { DocumentNode } from "graphql";
+import { useAppDispatch } from "../../../redux/public/store";
+import { loadTracks, playTrack, toggleShuffle } from "../../../redux/public/playlist";
 
 const ALBUM_QUERY = gql`
   query($id: Int!) {
@@ -60,10 +60,10 @@ type ConvertedTrack = Song & {
 
 export default function LibrarySingleAlbum() {
   const router = useRouter();
-  const { playlist } = useAppContext();
   const { user } = useAuthContext();
   const albumId = parseInt(router.query.albumId as string);
   const popupState = usePopupState({ variant: "popover", popupId: "single-album-overflow-menu" });
+  const dispatch = useAppDispatch();
 
   const query = useQuery<{ album: Album }>(ALBUM_QUERY, { variables: { id: albumId } });
 
@@ -98,10 +98,14 @@ export default function LibrarySingleAlbum() {
     diskSeparatedTracked.push(i);
   }
 
-  const playAll = () => playlist.loadTracks(album.files);
+  const playAll = () => {
+    dispatch(loadTracks(album.files));
+    dispatch(playTrack({track: 0, playNow: true}));
+  };
   const shuffleAll = () => {
-    playAll();
-    playlist.toggleShuffle();
+    dispatch(loadTracks(album.files));
+    dispatch(toggleShuffle());
+    dispatch(playTrack({track: 0, playNow: true}));
   };
 
   return (
@@ -134,10 +138,10 @@ export default function LibrarySingleAlbum() {
         <Grid item md={8} xs={12}>
           <Box ml={2}>
             <Typography variant="h5">{album.name}</Typography>
-            <Typography variant="h6" color="textSecondary">{formatArtists(album.artists, v => v.map(
+            <Typography variant="h6" color="textSecondary">{formatArtists(album.artists, (v, isProd) => v.map(
               (artist, idx) => <Fragment key={artist.id}>
                 {idx > 0 && ", "}
-                <Link href={`/library/artists/${artist.id}`}>{artist.name}</Link>
+                <Link href={`/library/${isProd ? "producers" : "vocalists"}/${artist.id}`}>{artist.name}</Link>
               </Fragment>
             ))}</Typography>
             <Stack direction="row" alignItems="center" sx={{marginRight: 1,}}>
@@ -172,13 +176,13 @@ export default function LibrarySingleAlbum() {
             </Stack>
           </Box>
           <List>
-            {diskSeparatedTracked.map(v => {
+            {diskSeparatedTracked.map((v, idx) => {
               if (v === null) {
                 return <ListSubheader sx={{backgroundColor: "background.default"}} key="unknownDisc">Unknown disc</ListSubheader>;
               } else if (typeof v === "number") {
                 return <ListSubheader sx={{backgroundColor: "background.default"}} key={`disc${v}`}>Disc {v}</ListSubheader>;
               } else {
-                return <TrackListRow song={v} file={v.foundFile} files={album.files} />;
+                return <TrackListRow key={idx} song={v} file={v.foundFile} files={album.files} />;
               }
             })}
           </List>

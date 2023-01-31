@@ -4,7 +4,6 @@ import { MusicFileFragments } from "../../../graphql/fragments";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
 import { useRouter } from "next/router";
-import { makeStyles } from "@mui/material/styles";
 import { Artist } from "../../../models/Artist";
 import Alert from "@mui/material/Alert";
 import _ from "lodash";
@@ -14,12 +13,13 @@ import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import FindInPageIcon from "@mui/icons-material/FindInPage";
 import ButtonRow from "../../ButtonRow";
-import { useAppContext } from "../AppContext";
 import { useAuthContext } from "../AuthContext";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TrackListRow from "./TrackListRow";
 import { DocumentNode } from "graphql";
+import { playTrack, toggleShuffle, loadTracks } from "../../../redux/public/playlist";
+import { useAppDispatch } from "../../../redux/public/store";
 
 const ARTIST_DETAILS_QUERY = gql`
   query($id: Int!) {
@@ -67,8 +67,8 @@ interface Props {
 
 export default function ArtistDetails({id, type}: Props) {
   const router = useRouter();
-  const { playlist } = useAppContext();
   const { user } = useAuthContext();
+  const dispatch = useAppDispatch();
   const popupState = usePopupState({ variant: "popover", popupId: "single-artist-overflow-menu" });
 
   const query = useQuery<{artist: Artist}>(ARTIST_DETAILS_QUERY, {variables: {id}});
@@ -85,10 +85,14 @@ export default function ArtistDetails({id, type}: Props) {
     const totalSize = _.sumBy(files, "fileSize");
     const canPlay = trackCount > 0;
 
-    const playAll = () => playlist.loadTracks(files);
+    const playAll = () => {
+      dispatch(loadTracks(files));
+      dispatch(playTrack({track: 0, playNow: true}));
+    };
     const shuffleAll = () => {
-      playAll();
-      playlist.toggleShuffle();
+      dispatch(loadTracks(files));
+      dispatch(toggleShuffle());
+      dispatch(playTrack({track: 0, playNow: true}));
     };
 
     content = <>

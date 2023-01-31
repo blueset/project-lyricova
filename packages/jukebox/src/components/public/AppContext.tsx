@@ -36,64 +36,15 @@ export interface Playlist {
 
 const PlayerRefContext = React.createContext<RefObject<HTMLAudioElement>>(null);
 PlayerRefContext.displayName = "PlayerRefContext";
-const PlaylistContext = React.createContext<Playlist>({
-  tracks: [],
-  nowPlaying: null,
-  loopMode: LoopMode.NONE,
-  shuffleMapping: null,
-  loadTracks: () => {
-    /* do nothing */
-  },
-  playNext: () => {
-    /* do nothing */
-  },
-  playPrevious: () => {
-    /* do nothing */
-  },
-  addTrackToNext: () => {
-    /* do nothing */
-  },
-  removeTrack: () => {
-    /* do nothing */
-  },
-  playTrack: () => {
-    /* do nothing */
-  },
-  moveTrack: () => {
-    /* do nothing */
-  },
-  toggleShuffle: () => {
-    /* do nothing */
-  },
-  setLoopMode: () => {
-    /* do nothing */
-  },
-  stop: () => {
-    /* do nothing */
-  },
-  getCurrentSong: () => {
-    return null;
-  },
-  getCurrentCoverUrl: () => {
-    return null;
-  },
-  getSongByIndex: () => {
-    return null;
-  },
-});
-PlaylistContext.displayName = "PlaylistContext";
 
 export interface ContextProps {
   playerRef: RefObject<HTMLAudioElement>;
-  playlist: Playlist;
   children?: ReactChild;
 }
-export function AppContext({ playerRef, playlist, children }: ContextProps) {
+export function AppContext({ playerRef, children }: ContextProps) {
   return (
     <PlayerRefContext.Provider value={playerRef}>
-      <PlaylistContext.Provider value={playlist}>
         {children}
-      </PlaylistContext.Provider>
     </PlayerRefContext.Provider>
   );
 }
@@ -101,6 +52,5 @@ export function AppContext({ playerRef, playlist, children }: ContextProps) {
 export function useAppContext() {
   return {
     playerRef: useContext(PlayerRefContext) as RefObject<HTMLAudioElement>,
-    playlist: useContext(PlaylistContext) as Playlist,
   };
 }

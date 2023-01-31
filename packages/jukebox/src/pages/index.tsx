@@ -2,7 +2,6 @@ import { gql, useQuery } from "@apollo/client";
 import { Stack } from "@mui/material";
 import _ from "lodash";
 import { ReactNode } from "react";
-import { useAppContext } from "../components/public/AppContext";
 import { getLayout } from "../components/public/layouts/IndexLayout";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
 import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
@@ -21,6 +20,8 @@ import { StrokeLyrics } from "../components/public/lyrics/stroke";
 import { useClientPersistentState } from "../frontendUtils/clientPersistantState";
 import { DocumentNode } from "graphql";
 import { RingoTranslateLyrics } from "../components/public/lyrics/ringoTranslate";
+import { useAppSelector } from "../redux/public/store";
+import { currentSongSelector } from "../redux/public/playlist";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -70,15 +71,16 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
 };
 
 export default function Index() {
-  const { playlist } = useAppContext();
   const [module, setModule] = useClientPersistentState<keyof typeof MODULE_LIST>(_.keys(MODULE_LIST)[0], "module", "lyricovaPlayer");
 
   const keys = Object.keys(MODULE_LIST) as (keyof typeof MODULE_LIST)[];
   const moduleNode = MODULE_LIST[module] ?? MODULE_LIST[keys[0]];
+  const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
+  const currentSong = useAppSelector(currentSongSelector);
 
   const lyricsQuery = useQuery<{ musicFile?: { lyrics: LyricsKitLyrics } }>(LYRICS_QUERY, {
     variables: {
-      id: playlist.getCurrentSong()?.id
+      id: currentSong?.id
     }
   });
 
@@ -98,7 +100,7 @@ export default function Index() {
   if (lyricsQuery.loading) {
     node = <MessageBox>Loading...</MessageBox>;
   } else if (lyricsQuery.error) {
-    if (playlist.nowPlaying !== null) {
+    if (nowPlaying !== null) {
       node = <MessageBox>{`${lyricsQuery.error}`}</MessageBox>;
     } else {
       node = <MessageBox>No track.</MessageBox>;

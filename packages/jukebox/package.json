@@ -49,6 +49,7 @@
     "@mui/material": "^5.10.12",
     "@mui/x-data-grid": "^5.17.9",
     "@next/bundle-analyzer": "^12.1.1",
+    "@reduxjs/toolkit": "^1.9.2",
     "@tanstack/react-virtual": "^3.0.0-beta.30",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
@@ -119,9 +120,11 @@
     "react-final-form-arrays": "^3.1.4",
     "react-final-form-listeners": "^1.0.3",
     "react-measure": "^2.5.2",
+    "react-redux": "^8.0.5",
     "react-scenejs": "^1.1.0",
     "react-virtualized-auto-sizer": "^1.0.7",
     "react-wrap-balancer": "^0.2.3",
+    "redux-persist": "^6.0.0",
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
     "sass": "^1.26.10",
@@ -145,6 +148,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@redux-devtools/core": "^3.13.1",
     "@types/async": "^3.0.3",
     "@types/autosuggest-highlight": "^3.1.0",
     "@types/bcryptjs": "^2.4.2",

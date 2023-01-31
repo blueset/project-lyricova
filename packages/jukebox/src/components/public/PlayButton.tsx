@@ -1,18 +1,24 @@
 import style from "./PlayButton.module.scss";
 import { RefObject, useEffect, useCallback } from "react";
 import { Fab, CircularProgress, useMediaQuery, Theme } from "@mui/material";
-import { Playlist } from "./AppContext";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import { useNamedState } from "../../frontendUtils/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/public/store";
+import { playTrack } from "../../redux/public/playlist";
 
 interface Props {
   playerRef: RefObject<HTMLAudioElement>;
-  playlist: Playlist;
-  isCollapsed: boolean;
 }
 
-export function PlayButton({ playerRef, playlist, isCollapsed }: Props) {
+export function PlayButton({ playerRef }: Props) {
+  const dispatch = useAppDispatch();
+  const {
+    nowPlaying,
+    tracks,
+    isCollapsed,
+  } = useAppSelector((s) => s.playlist);
+  
   // Using state to keep this button rerendered on state change.
   const [isPlaying, setIsPlaying] = useNamedState(false, "isPlaying");
   const [isLoading, setIsLoading] = useNamedState(false, "isLoading");
@@ -41,8 +47,8 @@ export function PlayButton({ playerRef, playlist, isCollapsed }: Props) {
   }
 
   const clickPlay = useCallback(() => {
-    if (playlist.nowPlaying === null && playlist.tracks.length > 0) {
-      playlist.playTrack(0, /*playNow*/ true);
+    if (nowPlaying === null && tracks.length > 0) {
+      dispatch(playTrack({track: 0, playNow: true}));
       return;
     }
     if (playerRef.current.paused) {
@@ -50,7 +56,7 @@ export function PlayButton({ playerRef, playlist, isCollapsed }: Props) {
     } else {
       playerRef.current.pause();
     }
-  }, [playlist]);
+  }, [dispatch, nowPlaying, playerRef, tracks.length]);
 
   function onPlay() { setIsPlaying(true); }
   function onPause() { setIsPlaying(false); }
@@ -65,15 +71,11 @@ export function PlayButton({ playerRef, playlist, isCollapsed }: Props) {
       playerElm.addEventListener("pause", onPause);
     }
     return function cleanUp() {
-      // console.log("trying to remove listeners");
       if (playerElm !== null) {
-        // console.log("removing listeners");
         playerElm.removeEventListener("progress", updateProgress);
-        // playerElm.removeEventListener("play", onPlay);
-        // playerElm.removeEventListener("pause", onPause);
       }
     };
-  }, [playerRef]);
+  }, [onPause, onPlay, playerRef, updateProgress]);
 
   return (<div className={style.loadProgressContainer} id="player-play-pause">
     <Fab

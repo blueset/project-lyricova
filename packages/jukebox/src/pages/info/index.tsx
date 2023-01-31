@@ -2,16 +2,15 @@ import { NextComposedLink } from "../../components/Link";
 import { getLayout } from "../../components/public/layouts/IndexLayout";
 import { Box, Chip } from "@mui/material";
 import { useAuthContext } from "../../components/public/AuthContext";
-import { useAppContext } from "../../components/public/AppContext";
 import ButtonRow from "../../components/ButtonRow";
 import React from "react";
-import { useRouter } from "next/router";
 import FileSongInfo from "../../components/public/FileSongInfo";
+import { useAppSelector } from "../../redux/public/store";
+import { currentSongSelector } from "../../redux/public/playlist";
 
 export default function Information() {
   const { user } = useAuthContext();
-  const { playlist } = useAppContext();
-  const currentSong = playlist.getCurrentSong();
+  const currentSong = useAppSelector(currentSongSelector);
 
   return <Box p={4} pt={0}>
     {currentSong && <FileSongInfo partialFile={currentSong} fileId={null} />}

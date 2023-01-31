@@ -23,6 +23,7 @@ import { DataTypes } from "sequelize";
 import { ObjectType, Field, Int } from "type-graphql";
 import { Artist } from "./Artist";
 import { ArtistOfSong } from "./ArtistOfSong";
+import _ from "lodash";
 
 @ObjectType()
 @Table
@@ -124,8 +125,8 @@ export class Album extends Model<Album, Partial<Album>> {
 
     const artists = await Promise.all(entity.artists.filter(x => x.artist).map(x => ArtistOfAlbum.artistFromVocaDB(x))),
       tracks = await Promise.all(entity.tracks.map(x => SongInAlbum.songFromVocaDB(x)));
-    await album.$set("artists", artists);
-    await album.$set("songs", tracks);
+    await album.$set("artists", _.uniqBy(artists, a => a.id));
+    await album.$set("songs", _.uniqBy(tracks, t => t.id));
     return album;
   }
 }
