@@ -82,7 +82,7 @@
     "final-form-arrays": "^3.0.2",
     "framer-motion": "^7.10.0",
     "glob": "^7.1.6",
-    "got": "^11.8.5",
+    "got": "^12.5.3",
     "graphql": "^15.3.0",
     "graphql-type-json": "^0.3.1",
     "graphql-ws": "^5.5.5",
@@ -183,7 +183,7 @@
     "concurrently": "^6.4.0",
     "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "nodemon": "^2.0.2",
+    "nodemon": "^2.0.20",
     "ts-node": "^10.4.0",
     "typescript": "^4.0.2"
   }
