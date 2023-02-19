@@ -1,7 +1,6 @@
 import { Sequelize } from "sequelize-typescript";
 import { DB_URI } from "./utils/secret";
 import { sequelizeAdditions } from "./utils/sequelizeAdditions";
-import logger from "./utils/logger";
 
 sequelizeAdditions(Sequelize);
 

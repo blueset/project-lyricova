@@ -13,7 +13,7 @@ import {
   CreatedAt,
   UpdatedAt,
   AutoIncrement,
-  Index
+  Index,
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { FileInPlaylist } from "./FileInPlaylist";
@@ -26,7 +26,6 @@ import ffprobe from "ffprobe-client";
 import fs from "fs";
 import Path from "path";
 
-
 interface GenericMetadata {
   trackName?: string;
   trackSortOrder?: string;
@@ -36,7 +35,7 @@ interface GenericMetadata {
   albumSortOrder?: string;
   hasCover: boolean;
   duration: number;
-  fileSize: number;
+  fileSize?: number;
   // formatName?: string;
   songId?: string;
   albumId?: string;
@@ -44,8 +43,7 @@ interface GenericMetadata {
   lyrics?: string;
 }
 
-const
-  SONG_ID_TAG = "LyricovaSongID",
+const SONG_ID_TAG = "LyricovaSongID",
   ALBUM_ID_TAG = "LyricovaAlbumID",
   PLAYLIST_IDS_TAG = "LyricovaPlaylistIDs";
 
@@ -54,10 +52,10 @@ export const ID3_LYRICS_LANGUAGE = "eng";
 @ObjectType({ description: "A music file in the jukebox." })
 @Table
 export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
-  @Field(type => Int, { description: "File ID in database." })
+  @Field((type) => Int, { description: "File ID in database." })
   @AutoIncrement
   @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER })
+  @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
   @Field({ description: "Local path to the song." })
@@ -69,20 +67,26 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   })
   path: string;
 
-  @Field(type => Int, { description: "Size of file in bytes." })
+  @Field((type) => Int, { description: "Size of file in bytes." })
   @Column({ type: DataTypes.INTEGER.UNSIGNED })
   fileSize: number;
 
-  @Field(type => Int, { description: "ID of corresponding song in database.", nullable: true })
+  @Field((type) => Int, {
+    description: "ID of corresponding song in database.",
+    nullable: true,
+  })
   @AllowNull
   @ForeignKey(() => Song)
-  @Column({ type: new DataTypes.INTEGER })
+  @Column({ type: new DataTypes.INTEGER() })
   songId: number;
 
   @BelongsTo(() => Song)
   song: Song | null;
 
-  @Field(type => Int, { description: "ID of corresponding album in database.", nullable: true })
+  @Field((type) => Int, {
+    description: "ID of corresponding album in database.",
+    nullable: true,
+  })
   @AllowNull
   @ForeignKey(() => Album)
   @Column
@@ -92,8 +96,8 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   album: Album | null;
 
   @BelongsToMany(
-    type => Playlist,
-    intermediate => FileInPlaylist
+    (type) => Playlist,
+    (intermediate) => FileInPlaylist
   )
   playlists: Playlist[];
 
@@ -105,9 +109,12 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
     type: "FULLTEXT",
     parser: "ngram",
   })
-  trackName: string | null;
+  trackName?: string;
 
-  @Field({ description: "Sort order key of name of the track stored in file.", nullable: true })
+  @Field({
+    description: "Sort order key of name of the track stored in file.",
+    nullable: true,
+  })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
   @Index({
@@ -115,7 +122,7 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
     type: "FULLTEXT",
     parser: "ngram",
   })
-  trackSortOrder: string | null;
+  trackSortOrder?: string;
 
   @Field({ description: "Album of the track stored in file.", nullable: true })
   @AllowNull
@@ -125,9 +132,12 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
     type: "FULLTEXT",
     parser: "ngram",
   })
-  albumName: string | null;
+  albumName?: string;
 
-  @Field({ description: "Sort order key of album of the track stored in file.", nullable: true })
+  @Field({
+    description: "Sort order key of album of the track stored in file.",
+    nullable: true,
+  })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
   @Index({
@@ -135,7 +145,7 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
     type: "FULLTEXT",
     parser: "ngram",
   })
-  albumSortOrder: string | null;
+  albumSortOrder?: string;
 
   @Field({ description: "Artist of the track stored in file.", nullable: true })
   @AllowNull
@@ -145,9 +155,12 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
     type: "FULLTEXT",
     parser: "ngram",
   })
-  artistName: string | null;
+  artistName?: string;
 
-  @Field({ description: "Sort order key of artist of the track stored in file.", nullable: true })
+  @Field({
+    description: "Sort order key of artist of the track stored in file.",
+    nullable: true,
+  })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
   @Index({
@@ -155,7 +168,7 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
     type: "FULLTEXT",
     parser: "ngram",
   })
-  artistSortOrder: string | null;
+  artistSortOrder?: string;
 
   @Field({ description: "If the file is accompanied with a lyrics file." })
   @Column
@@ -169,8 +182,8 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   @Column
   needReview: boolean;
 
-  @Field(type => Float, { description: "Duration of the song in seconds." })
-  @Column({ type: new DataTypes.FLOAT, defaultValue: -1.0 })
+  @Field((type) => Float, { description: "Duration of the song in seconds." })
+  @Column({ type: new DataTypes.FLOAT(), defaultValue: -1.0 })
   duration: number;
 
   @Field({ description: "MD5 of the file." })
@@ -186,7 +199,7 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   updatedOn: Date;
 
   /** FileInPlaylist reflected by Playlist.$get("files"), added for GraphQL queries. */
-  @Field(type => FileInPlaylist, { nullable: true })
+  @Field((type) => FileInPlaylist, { nullable: true })
   FileInPlaylist?: Partial<FileInPlaylist>;
 
   // Virtual column that does not exist in database
@@ -209,9 +222,15 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
    */
   public async updatePlaylistsOfFileAsTags(): Promise<void> {
     const forceId3v2 = this.path.toLowerCase().endsWith(".aiff");
-    await ffMetadataWrite(this.fullPath, {
-      [PLAYLIST_IDS_TAG]: (await this.$get("playlists")).map((i) => i.slug).join(",")
-    }, { preserveStreams: true, forceId3v2: forceId3v2 });
+    await ffMetadataWrite(
+      this.fullPath,
+      {
+        [PLAYLIST_IDS_TAG]: ((await this.$get("playlists")) ?? [])
+          .map((i) => i.slug)
+          .join(","),
+      },
+      { preserveStreams: true, forceId3v2: forceId3v2 }
+    );
 
     await this.updateMD5();
   }
@@ -220,8 +239,8 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   private async getSongMetadata(): Promise<GenericMetadata> {
     const path = this.fullPath;
     const metadata = await ffprobe(path);
-    const tags = metadata.format.tags ?? {};
-    const duration = parseFloat(metadata.format.duration);
+    const tags = metadata.format?.tags ?? {};
+    const duration = parseFloat(metadata.format?.duration ?? "");
     let playlists: string[] = [];
 
     if (tags[PLAYLIST_IDS_TAG]) {
@@ -232,13 +251,12 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
       trackName: tags.title || tags.TITLE || undefined,
       trackSortOrder: tags["title-sort"] || tags.TITLESORT || undefined,
       artistName: tags.artist || tags.ARTIST || undefined,
-      artistSortOrder:
-        tags["artist-sort"] || tags.ARTISTSORT || undefined,
+      artistSortOrder: tags["artist-sort"] || tags.ARTISTSORT || undefined,
       albumName: tags.album || tags.ALBUM || undefined,
       albumSortOrder: tags["album-sort"] || tags.ALBUMSORT || undefined,
-      hasCover: metadata.streams.some(val => val.codec_type === "video"),
+      hasCover: metadata.streams.some((val) => val.codec_type === "video"),
       duration: isNaN(duration) ? -1 : duration,
-      fileSize: parseInt(metadata.format.size),
+      fileSize: parseInt(metadata.format?.size ?? ""),
       playlists: playlists,
       // formatName: get(metadata, "format.format_name", ""),
       // playlists: tags[PLAYLIST_IDS_TAG] ? tags[PLAYLIST_IDS_TAG].split(",") : undefined,
@@ -248,7 +266,8 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
     if (songId !== undefined) columns.songId = songId;
     const albumId = tags[ALBUM_ID_TAG] || undefined;
     if (albumId !== undefined) columns.albumId = albumId;
-    const lyrics = tags[`lyrics-${ID3_LYRICS_LANGUAGE}`] || tags.LYRICS || undefined;
+    const lyrics =
+      tags[`lyrics-${ID3_LYRICS_LANGUAGE}`] || tags.LYRICS || undefined;
     if (lyrics !== undefined) columns.lyrics = lyrics;
 
     return columns;
@@ -260,7 +279,13 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
     const metadataPromise = this.getSongMetadata();
     const md5 = await md5Promise,
-      { songId, albumId, playlists, lyrics, ...metadata } = await metadataPromise;
+      {
+        songId,
+        albumId,
+        playlists,
+        lyrics,
+        ...metadata
+      } = await metadataPromise;
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
     const hasLyrics = fs.existsSync(lrcPath);
 
@@ -272,10 +297,12 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
       needReview: true,
       ...metadata,
     } as Partial<this>);
-    if (parseInt(songId)) this.set({songId: parseInt(songId)});
-    if (parseInt(albumId)) this.set({songId: parseInt(albumId)});
+    if (songId && parseInt(songId)) this.set({ songId: parseInt(songId) });
+    if (albumId && parseInt(albumId)) this.set({ songId: parseInt(albumId) });
 
-    this.playlists = playlists.map(slug => Playlist.build({ slug }, { isNewRecord: false }));
+    this.playlists = playlists.map((slug) =>
+      Playlist.build({ slug }, { isNewRecord: false })
+    );
 
     return this;
   }
@@ -293,16 +320,22 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
       needUpdate = needUpdate || md5 !== this.hash;
       if (!needUpdate) return null;
 
-      const { songId, albumId, playlists, lyrics, ...metadata } = await this.getSongMetadata();
+      const {
+        songId,
+        albumId,
+        playlists,
+        lyrics,
+        ...metadata
+      } = await this.getSongMetadata();
       await this.update({
         path: Path.relative(MUSIC_FILES_PATH, path),
         hasLyrics: hasLyrics,
         fileSize: fileSize,
         hash: md5,
         needReview: true,
-        songId: songId ? parseInt(songId) : null,
-        albumId: albumId ? parseInt(albumId) : null,
-        ...metadata
+        songId: songId !== undefined ? parseInt(songId) : undefined,
+        albumId: albumId !== undefined ? parseInt(albumId) : undefined,
+        ...metadata,
       });
       await this.$set("playlists", playlists);
     } catch (e) {
@@ -315,21 +348,33 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   public async writeToFile(data: Partial<MusicFile>): Promise<void> {
     let mapping;
     if (this.path.toLowerCase().endsWith(".flac")) {
-      mapping = { trackSortOrder: "TITLESORT", artistSortOrder: "ARTISTSORT", albumSortOrder: "ALBUMSORT" };
-    } else { // FFMPEG default
-      mapping = { trackSortOrder: "title-sort", artistSortOrder: "artist-sort", albumSortOrder: "album-sort" };
+      mapping = {
+        trackSortOrder: "TITLESORT",
+        artistSortOrder: "ARTISTSORT",
+        albumSortOrder: "ALBUMSORT",
+      };
+    } else {
+      // FFMPEG default
+      mapping = {
+        trackSortOrder: "title-sort",
+        artistSortOrder: "artist-sort",
+        albumSortOrder: "album-sort",
+      };
     }
     const forceId3v2 = this.path.toLowerCase().endsWith(".aiff");
-    await ffMetadataWrite(this.fullPath, {
-      title: data.trackName,
-      [mapping.trackSortOrder]: data.trackSortOrder,
-      album: data.albumName,
-      [mapping.albumSortOrder]: data.albumSortOrder,
-      artist: data.artistName,
-      [mapping.artistSortOrder]: data.artistSortOrder,
-      [SONG_ID_TAG]: `${data.songId}`,
-      [ALBUM_ID_TAG]: `${data.albumId}`
-    }, { preserveStreams: true, forceId3v2: forceId3v2 });
+    await ffMetadataWrite(
+      this.fullPath,
+      {
+        title: data.trackName || undefined,
+        [mapping.trackSortOrder]: data.trackSortOrder || undefined,
+        album: data.albumName || undefined,
+        [mapping.albumSortOrder]: data.albumSortOrder || undefined,
+        artist: data.artistName || undefined,
+        [mapping.artistSortOrder]: data.artistSortOrder || undefined,
+        [SONG_ID_TAG]: `${data.songId}`,
+        [ALBUM_ID_TAG]: `${data.albumId}`,
+      },
+      { preserveStreams: true, forceId3v2: forceId3v2 }
+    );
   }
-
 }

@@ -1,10 +1,10 @@
-import { Song } from "../models/Song";
-import { AlbumForApiContract, ArtistForApiContract, SongForApiContract } from "../types/vocadb";
+import { Song } from "lyricova-common/models/Song";
+import type { AlbumForApiContract, ArtistForApiContract, SongForApiContract } from "lyricova-common/types/vocadb";
 import axios, { AxiosInstance } from "axios";
 import got from "got";
 import { Arg, Authorized, Int, Mutation, Resolver } from "type-graphql";
-import { Artist } from "../models/Artist";
-import { Album } from "../models/Album";
+import { Artist } from "lyricova-common/models/Artist";
+import { Album } from "lyricova-common/models/Album";
 
 
 @Resolver()

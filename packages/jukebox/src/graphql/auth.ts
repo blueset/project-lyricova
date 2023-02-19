@@ -1,5 +1,5 @@
 import { AuthChecker } from "type-graphql";
-import { User } from "../models/User";
+import { User } from "lyricova-common/models/User";
 import { Request } from "express";
 
 export type ContextType = {

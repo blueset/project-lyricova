@@ -7,11 +7,10 @@ import passport from "passport";
 
 import registerRoutes from "./routes";
 import { SESSION_SECRET } from "./utils/secret";
-import sequelize from "./db";
+import sequelize from "lyricova-common/db";
 import SequelizeStoreConstructor from "connect-session-sequelize";
 
 const SequelizeStore = SequelizeStoreConstructor(session.Store);
-
 
 export default async () => {
   const app = express();
@@ -29,8 +28,8 @@ export default async () => {
       proxy: true,
       secret: SESSION_SECRET,
       store: new SequelizeStore({
-        db: sequelize
-      })
+        db: sequelize,
+      }),
     })
   );
   app.use(passport.initialize());

@@ -1,10 +1,9 @@
-
-import { MusicFile } from "../models/MusicFile";
-import { Song } from "../models/Song";
-import { Album } from "../models/Album";
-import { Artist } from "../models/Artist";
+import { MusicFile } from "lyricova-common/models/MusicFile";
+import { Song } from "lyricova-common/models/Song";
+import { Album } from "lyricova-common/models/Album";
+import { Artist } from "lyricova-common/models/Artist";
 import { Request, Response, NextFunction, Router } from "express";
-import { SongForApiContract } from "../types/vocadb";
+import type { SongForApiContract } from "lyricova-common/types/vocadb";
 import axios, { AxiosInstance } from "axios";
 
 export class VocaDBImportController {
@@ -18,11 +17,15 @@ export class VocaDBImportController {
   }
 
   private async getSong(songId: string | number): Promise<SongForApiContract> {
-    const song = await this.axios.get<SongForApiContract>(`https://vocadb.net/api/songs/${songId}`, {
-      params: {
-        fields: "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags"
+    const song = await this.axios.get<SongForApiContract>(
+      `https://vocadb.net/api/songs/${songId}`,
+      {
+        params: {
+          fields:
+            "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
+        },
       }
-    });
+    );
     return song.data;
   }
 
@@ -30,7 +33,9 @@ export class VocaDBImportController {
    * Recursively get songs until the root original song is found.
    * @param song Leaf song to retrieve from
    */
-  private async getOriginalSong(song: SongForApiContract): Promise<SongForApiContract | null> {
+  private async getOriginalSong(
+    song: SongForApiContract
+  ): Promise<SongForApiContract | null> {
     if (!(song.songType !== "Original" && song.originalVersionId)) return null;
     do {
       song = await this.getSong(song.originalVersionId);
@@ -38,7 +43,11 @@ export class VocaDBImportController {
     return song;
   }
 
-  public enrolSong = async (req: Request, res: Response, next: NextFunction) => {
+  public enrolSong = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const songId = req.params.id;
       // Fetch song data
@@ -48,12 +57,20 @@ export class VocaDBImportController {
       let originalSongEntity: Song | null = null;
 
       if (originalSong !== null) {
-        originalSongEntity = await Song.saveFromVocaDBEntity(originalSong, null);
+        originalSongEntity = await Song.saveFromVocaDBEntity(
+          originalSong,
+          null
+        );
       }
       console.dir(originalSongEntity);
-      const songEntity = await Song.saveFromVocaDBEntity(song, originalSongEntity);
+      const songEntity = await Song.saveFromVocaDBEntity(
+        song,
+        originalSongEntity
+      );
 
       res.json({ status: "OK", data: songEntity });
-    } catch (e) { next(e); }
+    } catch (e) {
+      next(e);
+    }
   };
 }

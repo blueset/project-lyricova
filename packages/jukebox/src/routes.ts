@@ -1,14 +1,17 @@
 import express, { Request, Response } from "express";
 import { MusicFileController } from "./controller/MusicFileController";
 import { VocaDBImportController } from "./controller/VocaDBImportController";
-import { transliterate, segmentedTransliteration, SegmentedTransliterationOptions } from "./utils/transliterate";
+import {
+  transliterate,
+  segmentedTransliteration,
+  SegmentedTransliterationOptions,
+} from "lyricova-common/utils/transliterate";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController";
 import { DownloadController } from "./controller/DownloadController";
 import { AuthController } from "./controller/AuthController";
 import { PlaylistController } from "./controller/PlaylistController";
 
 export default (app: express.Express) => {
-
   const apiRouter = express.Router();
   app.use("/api", apiRouter);
 

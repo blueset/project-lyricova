@@ -1,6 +1,11 @@
-
-import { ReactChild, createContext, useEffect, useContext, ReactNode } from "react";
-import { User } from "../../models/User";
+import {
+  ReactChild,
+  createContext,
+  useEffect,
+  useContext,
+  ReactNode,
+} from "react";
+import { User } from "lyricova-common/models/User";
 import { useQuery, gql, useApolloClient } from "@apollo/client";
 import { useRouter } from "next/router";
 import { LS_JWT_KEY } from "../../frontendUtils/localStorage";
@@ -28,21 +33,26 @@ const CURRENT_USER_QUERY = gql`
     }
   }
 `;
-type QueriedUser = Pick<User, "id" | "username" | "displayName" | "role" | "creationDate" | "emailMD5">;
+type QueriedUser = Pick<
+  User,
+  "id" | "username" | "displayName" | "role" | "creationDate" | "emailMD5"
+>;
 
 type UserContextType = {
-  user?: QueriedUser
+  user?: QueriedUser;
   jwt: () => string | null;
 };
 
 const AuthContextReact = createContext<UserContextType>(null);
 
-export function AuthContext({ authRedirect, children, noRedirect }: AuthContextProps) {
-  const {
-    loading,
-    error,
-    data,
-  } = useQuery<{ currentUser: QueriedUser }>(CURRENT_USER_QUERY);
+export function AuthContext({
+  authRedirect,
+  children,
+  noRedirect,
+}: AuthContextProps) {
+  const { loading, error, data } = useQuery<{ currentUser: QueriedUser }>(
+    CURRENT_USER_QUERY
+  );
 
   const router = useRouter();
 
@@ -72,12 +82,14 @@ export function AuthContext({ authRedirect, children, noRedirect }: AuthContextP
 
   const value = {
     user: data?.currentUser ?? null,
-    jwt: () => window.localStorage?.getItem(LS_JWT_KEY)
+    jwt: () => window.localStorage?.getItem(LS_JWT_KEY),
   };
 
-  return <AuthContextReact.Provider value={value}>
-    {children}
-  </AuthContextReact.Provider>;
+  return (
+    <AuthContextReact.Provider value={value}>
+      {children}
+    </AuthContextReact.Provider>
+  );
 }
 
 export const useAuthContext = () => useContext(AuthContextReact);

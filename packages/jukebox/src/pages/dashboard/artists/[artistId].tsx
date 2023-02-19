@@ -1,13 +1,13 @@
 import { getLayout } from "../../../components/dashboard/layouts/ArtistInfoLayout";
 import { gql, useQuery } from "@apollo/client";
 import { ArtistFragments } from "../../../graphql/fragments";
-import { Artist } from "../../../models/Artist";
+import { Artist } from "lyricova-common/models/Artist";
 import { useRouter } from "next/router";
 import ArtistEntityDialog from "../../../components/dashboard/musicFilesDetails/artistEntityDialog";
 import { useCallback } from "react";
 
 const ARTIST_ENTITY_QUERY = gql`
-  query ($id: Int!) {
+  query($id: Int!) {
     artist(id: $id) {
       ...SelectArtistEntry
     }
@@ -23,7 +23,9 @@ export default function ArtistEntitySingle() {
     router.push("/dashboard/artists");
   }, [router]);
 
-  const query = useQuery<{ artist?: Artist }>(ARTIST_ENTITY_QUERY, { variables: { id } });
+  const query = useQuery<{ artist?: Artist }>(ARTIST_ENTITY_QUERY, {
+    variables: { id },
+  });
   let isOpen = false;
   if (query.data?.artist) {
     isOpen = true;
@@ -40,7 +42,8 @@ export default function ArtistEntitySingle() {
       setArtist={() => {
         /* No-op. */
       }}
-      artistToEdit={query.data?.artist} />
+      artistToEdit={query.data?.artist}
+    />
   );
 }
 

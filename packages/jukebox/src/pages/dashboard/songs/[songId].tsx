@@ -1,13 +1,13 @@
 import { getLayout } from "../../../components/dashboard/layouts/SongInfoLayout";
 import { gql, useQuery } from "@apollo/client";
 import { SongFragments } from "../../../graphql/fragments";
-import { Song } from "../../../models/Song";
+import { Song } from "lyricova-common/models/Song";
 import { useRouter } from "next/router";
 import SongEntityDialog from "../../../components/dashboard/musicFilesDetails/songEntityDialog";
 import { useCallback } from "react";
 
 const SONG_ENTITY_QUERY = gql`
-  query ($id: Int!) {
+  query($id: Int!) {
     song(id: $id) {
       ...SelectSongEntry
     }
@@ -23,7 +23,9 @@ export default function SongEntitySingle() {
     router.push("/dashboard/songs");
   }, [router]);
 
-  const query = useQuery<{ song?: Song }>(SONG_ENTITY_QUERY, { variables: { id } });
+  const query = useQuery<{ song?: Song }>(SONG_ENTITY_QUERY, {
+    variables: { id },
+  });
   let isOpen = false;
   if (query.data?.song) {
     isOpen = true;
@@ -39,7 +41,8 @@ export default function SongEntitySingle() {
       setSong={() => {
         /* No-op. */
       }}
-      songToEdit={query.data?.song} />
+      songToEdit={query.data?.song}
+    />
   );
 }
 

@@ -1,6 +1,7 @@
-import { kanaToHira } from "./transliterate";
+import { kanaToHira } from "lyricova-common/utils/transliterate";
 import { ObjectType, Field } from "type-graphql";
 
+// prettier-ignore
 const JA_MAP = {
   romanMapSingle: {
     "あ": "", "い": "", "う": "", "え": "", "お": "",
@@ -46,10 +47,15 @@ const JA_MAP = {
 
 @ObjectType({ description: "Describes the animation sequence for a word." })
 export class AnimatedWord {
-  @Field({ description: "True if the word shows a conversion-type of animation. False if it is just typing." })
+  @Field({
+    description:
+      "True if the word shows a conversion-type of animation. False if it is just typing.",
+  })
   convert: boolean;
 
-  @Field(type => [String], { description: "Actual sequence to show, one frame at a time." })
+  @Field((type) => [String], {
+    description: "Actual sequence to show, one frame at a time.",
+  })
   sequence: string[];
 }
 
@@ -64,8 +70,8 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
       const twoKanas = remainingHira.substr(0, 2);
       const oneKana = remainingHira[0];
       const secondKana = remainingHira[1];
-      if (remainingHira.length >= 2 && (twoKanas in JA_MAP.romanMapDouble)) {
-        const key = twoKanas as keyof (typeof JA_MAP)["romanMapDouble"];
+      if (remainingHira.length >= 2 && twoKanas in JA_MAP.romanMapDouble) {
+        const key = twoKanas as keyof typeof JA_MAP["romanMapDouble"];
         const romajiSeq = JA_MAP.romanMapDouble[key];
         for (let i = 1; i <= romajiSeq.length; i++) {
           sequence.push(done + romajiSeq.substr(0, i));
@@ -74,18 +80,20 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
         done += key;
         remainingHira = remainingHira.substring(2, remainingHira.length);
       } else if (
-        remainingHira.length >= 2 && 
-        remainingHira[0] == "っ" && 
-        secondKana in JA_MAP.romanMapSingle && 
-        JA_MAP.romanMapSingle[(secondKana as keyof (typeof JA_MAP["romanMapSingle"]))]
+        remainingHira.length >= 2 &&
+        remainingHira[0] == "っ" &&
+        secondKana in JA_MAP.romanMapSingle &&
+        JA_MAP.romanMapSingle[
+          secondKana as keyof typeof JA_MAP["romanMapSingle"]
+        ]
       ) {
-        const key = secondKana as keyof (typeof JA_MAP)["romanMapSingle"];
+        const key = secondKana as keyof typeof JA_MAP["romanMapSingle"];
         sequence.push(done + JA_MAP.romanMapSingle[key][0]);
         done += "っ";
         remainingHira = remainingHira.substring(1, remainingHira.length);
         // matching single char
       } else if (oneKana in JA_MAP.romanMapSingle) {
-        const key = oneKana as keyof (typeof JA_MAP)["romanMapSingle"];
+        const key = oneKana as keyof typeof JA_MAP["romanMapSingle"];
         for (let i = 1; i <= JA_MAP.romanMapSingle[key].length; i++) {
           sequence.push(done + JA_MAP.romanMapSingle[key].substr(0, i));
         }
@@ -98,7 +106,8 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
         remainingHira = remainingHira.substring(1, remainingHira.length);
       }
     }
-    if (sequence.length === 0 || sequence[sequence.length - 1] !== word[0]) sequence.push(word[0]);
+    if (sequence.length === 0 || sequence[sequence.length - 1] !== word[0])
+      sequence.push(word[0]);
     return { sequence, convert: true };
   });
 }
@@ -130,18 +139,24 @@ function animateEn(words: [string, string][]): AnimatedWord[] {
   for (let i = 1; i <= line.length; i++) {
     sequence.push(line.substring(0, i));
   }
-  return [{
-    convert: false,
-    sequence
-  }];
+  return [
+    {
+      convert: false,
+      sequence,
+    },
+  ];
 }
 
-export function buildAnimationSequence(text: [string, string][], language: "en" | "ja" | "zh"): AnimatedWord[] {
+export function buildAnimationSequence(
+  text: [string, string][],
+  language: "en" | "ja" | "zh"
+): AnimatedWord[] {
   if (language === "ja") {
     return animateJa(text);
   } else if (language === "zh") {
     return animateZh(text);
-  } else {  // language === "en"
+  } else {
+    // language === "en"
     return animateEn(text);
   }
 }

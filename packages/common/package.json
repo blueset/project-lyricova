@@ -1,0 +1,53 @@
+{
+  "name": "lyricova-common",
+  "version": "1.0.0",
+  "description": "Common code share between blog and jukebox",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "files": [
+    "./dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blueset/project-lyricova.git"
+  },
+  "keywords": [
+    "Lyricova"
+  ],
+  "author": "Eana Hufwe",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/blueset/project-lyricova/issues"
+  },
+  "homepage": "https://github.com/blueset/project-lyricova#readme",
+  "dependencies": {
+    "ffprobe-client": "^1.1.6",
+    "mecab-async": "^0.1.2",
+    "sequelize-typescript": "^2.1.5",
+    "stream-combiner": "^0.2.2",
+    "stream-filter": "^2.1.0"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./db": "./dist/db.js",
+    "./models/*": "./dist/models/*.js",
+    "./utils/*": "./dist/utils/*.js",
+    "./types/*": "./dist/types/*.js",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*"
+      ]
+    }
+  },
+  "devDependencies": {
+    "typescript": "^4.9.5"
+  }
+}

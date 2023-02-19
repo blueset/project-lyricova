@@ -1,6 +1,10 @@
 import { Song } from "./Song";
 import { Album } from "./Album";
-import { AlbumContract, SongForApiContract, SongInAlbumForApiContract } from "../types/vocadb";
+import {
+  AlbumContract,
+  SongForApiContract,
+  SongInAlbumForApiContract,
+} from "../types/vocadb";
 import {
   Model,
   Table,
@@ -13,7 +17,7 @@ import {
   UpdatedAt,
   DeletedAt,
   Unique,
-  AllowNull
+  AllowNull,
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { Field, Int, ObjectType } from "type-graphql";
@@ -23,21 +27,21 @@ import { Field, Int, ObjectType } from "type-graphql";
 export class SongInAlbum extends Model<SongInAlbum> {
   @AutoIncrement
   @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER })
+  @Column({ type: new DataTypes.INTEGER() })
   songInAlbumId: number;
 
-  @Field(type => Int, { nullable: true })
+  @Field((type) => Int, { nullable: true })
   @Unique
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   vocaDbId: number | null;
 
-  @Field(type => Int, { nullable: true })
+  @Field((type) => Int, { nullable: true })
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   diskNumber: number | null;
 
-  @Field(type => Int, { nullable: true })
+  @Field((type) => Int, { nullable: true })
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   trackNumber: number | null;
@@ -45,23 +49,19 @@ export class SongInAlbum extends Model<SongInAlbum> {
   @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(2048) })
-  name: string | null;
+  name?: string;
 
-  @BelongsTo(
-    type => Song
-  )
+  @BelongsTo((type) => Song)
   song: Song;
 
-  @ForeignKey(type => Song)
+  @ForeignKey((type) => Song)
   @Column
   songId: number;
 
-  @BelongsTo(
-    type => Album
-  )
+  @BelongsTo((type) => Album)
   album: Album;
 
-  @ForeignKey(type => Album)
+  @ForeignKey((type) => Album)
   @Column
   albumId: number;
 
@@ -78,7 +78,10 @@ export class SongInAlbum extends Model<SongInAlbum> {
    *
    * Incomplete build.
    */
-  static async albumFromVocaDB(song: SongForApiContract, entity: AlbumContract): Promise<Album> {
+  static async albumFromVocaDB(
+    song: SongForApiContract,
+    entity: AlbumContract
+  ): Promise<Album> {
     const album = await Album.fromVocaDBAlbumContract(entity);
     const songInAlbumAttrs = {
       name: song.name,
@@ -86,7 +89,7 @@ export class SongInAlbum extends Model<SongInAlbum> {
     if (album.SongInAlbum === undefined) {
       album.SongInAlbum = songInAlbumAttrs;
     } else if (album.SongInAlbum?.update) {
-      album.SongInAlbum.set(songInAlbumAttrs);
+      album.SongInAlbum.set?.(songInAlbumAttrs);
     }
     return album;
   }
@@ -96,7 +99,9 @@ export class SongInAlbum extends Model<SongInAlbum> {
    *
    * Complete build.
    */
-  static async songFromVocaDB(entity: SongInAlbumForApiContract): Promise<Song> {
+  static async songFromVocaDB(
+    entity: SongInAlbumForApiContract
+  ): Promise<Song | null> {
     const song = await Song.saveFromVocaDBEntity(entity.song, null, true);
     const songInAlbumAttrs = {
       name: entity.name,
@@ -104,10 +109,10 @@ export class SongInAlbum extends Model<SongInAlbum> {
       trackNumber: entity.trackNumber,
       vocaDbId: entity.id,
     };
-    if (song.SongInAlbum === undefined) {
+    if (song && song?.SongInAlbum === undefined) {
       song.SongInAlbum = songInAlbumAttrs;
-    } else if (song.SongInAlbum?.update) {
-      song.SongInAlbum.set(songInAlbumAttrs);
+    } else if (song?.SongInAlbum?.update) {
+      song?.SongInAlbum.set?.(songInAlbumAttrs);
     }
     return song;
   }

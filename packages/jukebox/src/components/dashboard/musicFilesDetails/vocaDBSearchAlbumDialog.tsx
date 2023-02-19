@@ -11,13 +11,16 @@ import {
   ListItemAvatar,
   ListItemSecondaryAction,
   ListItemText,
-  Radio
+  Radio,
 } from "@mui/material";
 import { ChangeEvent, useCallback, useEffect } from "react";
-import { Album } from "../../../models/Album";
+import { Album } from "lyricova-common/models/Album";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import axios from "axios";
-import { PartialFindResult, AlbumForApiContract } from "../../../types/vocadb";
+import {
+  PartialFindResult,
+  AlbumForApiContract,
+} from "lyricova-common/types/vocadb";
 import _ from "lodash";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -33,7 +36,7 @@ const IMPORT_ALBUM_MUTATION = gql`
       ...SelectAlbumEntry
     }
   }
-  
+
   ${AlbumFragments.SelectAlbumEntry}
 ` as DocumentNode;
 
@@ -45,10 +48,22 @@ interface Props {
   setAlbum: (value: Partial<Album>) => void;
 }
 
-export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, setKeyword, setAlbum }: Props) {
-  const [results, setResults] = useNamedState<AlbumForApiContract[]>([], "results");
+export default function VocaDBSearchAlbumDialog({
+  isOpen,
+  toggleOpen,
+  keyword,
+  setKeyword,
+  setAlbum,
+}: Props) {
+  const [results, setResults] = useNamedState<AlbumForApiContract[]>(
+    [],
+    "results"
+  );
   const [isLoaded, toggleLoaded] = useNamedState(false, "loaded");
-  const [selectedAlbum, setSelectedAlbum] = useNamedState<number | null>(null, "selectedAlbum");
+  const [selectedAlbum, setSelectedAlbum] = useNamedState<number | null>(
+    null,
+    "selectedAlbum"
+  );
   const [isImporting, toggleImporting] = useNamedState(false, "importing");
 
   const snackbar = useSnackbar();
@@ -61,7 +76,14 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
     toggleImporting(false);
     setSelectedAlbum(null);
     toggleLoaded(false);
-  }, [toggleOpen, setKeyword, setResults, toggleImporting, setSelectedAlbum, toggleLoaded]);
+  }, [
+    toggleOpen,
+    setKeyword,
+    setResults,
+    toggleImporting,
+    setSelectedAlbum,
+    toggleLoaded,
+  ]);
 
   const handleSubmit = useCallback(async () => {
     if (selectedAlbum === null) {
@@ -72,35 +94,55 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
 
     toggleImporting(true);
     try {
-      const result = await apolloClient.mutate<{ enrolAlbumFromVocaDB: Partial<Album> }>({
+      const result = await apolloClient.mutate<{
+        enrolAlbumFromVocaDB: Partial<Album>;
+      }>({
         mutation: IMPORT_ALBUM_MUTATION,
         variables: {
           id: selectedAlbum,
-        }
+        },
       });
 
       if (result.data) {
         setAlbum(result.data.enrolAlbumFromVocaDB);
-        snackbar.enqueueSnackbar(`Album “${result.data.enrolAlbumFromVocaDB.name}” is successfully enrolled.`, {
-          variant: "success",
-        });
+        snackbar.enqueueSnackbar(
+          `Album “${result.data.enrolAlbumFromVocaDB.name}” is successfully enrolled.`,
+          {
+            variant: "success",
+          }
+        );
         handleClose();
       } else {
         toggleImporting(false);
       }
     } catch (e) {
-      console.error(`Error occurred while importing album #${selectedAlbum}.`, e);
-      snackbar.enqueueSnackbar(`Error occurred while importing album #${selectedAlbum}. (${e})`, {
-        variant: "error",
-      });
+      console.error(
+        `Error occurred while importing album #${selectedAlbum}.`,
+        e
+      );
+      snackbar.enqueueSnackbar(
+        `Error occurred while importing album #${selectedAlbum}. (${e})`,
+        {
+          variant: "error",
+        }
+      );
       toggleImporting(false);
     }
+  }, [
+    apolloClient,
+    handleClose,
+    selectedAlbum,
+    setAlbum,
+    snackbar,
+    toggleImporting,
+  ]);
 
-  }, [apolloClient, handleClose, selectedAlbum, setAlbum, snackbar, toggleImporting]);
-
-  const handleChooseRadio = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setSelectedAlbum(parseInt(event.target.value));
-  }, [setSelectedAlbum]);
+  const handleChooseRadio = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setSelectedAlbum(parseInt(event.target.value));
+    },
+    [setSelectedAlbum]
+  );
 
   useEffect(() => {
     if (keyword === "") return;
@@ -116,7 +158,7 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
             sort: "Name",
             nameMatchMode: "Auto",
             fields: "MainPicture",
-          }
+          },
         }
       );
 
@@ -126,7 +168,10 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
           setResults(response.data.items);
         } else {
           setResults([]);
-          console.error("Error occurred while loading search results from VocaDB", response);
+          console.error(
+            "Error occurred while loading search results from VocaDB",
+            response
+          );
           snackbar.enqueueSnackbar(
             `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`,
             {
@@ -143,25 +188,32 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
   }, [keyword, setResults, snackbar, toggleLoaded]);
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
-      <DialogTitle id="form-dialog-title">Searching VocaDB for <strong>{keyword}</strong></DialogTitle>
+    <Dialog
+      open={isOpen}
+      onClose={handleClose}
+      aria-labelledby="form-dialog-title"
+      scroll="paper"
+    >
+      <DialogTitle id="form-dialog-title">
+        Searching VocaDB for <strong>{keyword}</strong>
+      </DialogTitle>
       <DialogContent dividers>
         <List>
           {isLoaded ? (
-            results.length > 0 ?
+            results.length > 0 ? (
               results.map((v) => (
-                <ListItem key={v.id} sx={{pr: 12}}>
+                <ListItem key={v.id} sx={{ pr: 12 }}>
                   <ListItemAvatar>
                     <Avatar variant="rounded" src={v.mainPicture?.urlOriginal}>
                       <MusicNoteIcon />
                     </Avatar>
                   </ListItemAvatar>
-                  <ListItemText
-                    primary={v.name}
-                    secondary={v.artistString}
-                  />
+                  <ListItemText primary={v.name} secondary={v.artistString} />
                   <ListItemSecondaryAction>
-                    <IconButton href={`https://vocadb.net/Al/${v.id}`} target="_blank">
+                    <IconButton
+                      href={`https://vocadb.net/Al/${v.id}`}
+                      target="_blank"
+                    >
                       <OpenInNewIcon />
                     </IconButton>
                     <Radio
@@ -169,33 +221,41 @@ export default function VocaDBSearchAlbumDialog({ isOpen, toggleOpen, keyword, s
                       value={v.id}
                       onChange={handleChooseRadio}
                       name="selectedAlbum"
-                      inputProps={{ "aria-label": `${v.name} / ${v.artistString}` }}
+                      inputProps={{
+                        "aria-label": `${v.name} / ${v.artistString}`,
+                      }}
                     />
                   </ListItemSecondaryAction>
                 </ListItem>
               ))
-              :
+            ) : (
               <ListItem>
                 <ListItemText secondary="No result found." />
               </ListItem>
-          ) : _.range(5).map(v => (
-            <ListItem key={v}>
-              <ListItemAvatar>
-                <Skeleton variant="rectangular"><Avatar variant="rounded" /></Skeleton>
-              </ListItemAvatar>
-              <ListItemText
-                primary={<Skeleton />}
-                secondary={<Skeleton />}
-              />
-            </ListItem>
-          ))}
+            )
+          ) : (
+            _.range(5).map((v) => (
+              <ListItem key={v}>
+                <ListItemAvatar>
+                  <Skeleton variant="rectangular">
+                    <Avatar variant="rounded" />
+                  </Skeleton>
+                </ListItemAvatar>
+                <ListItemText primary={<Skeleton />} secondary={<Skeleton />} />
+              </ListItem>
+            ))
+          )}
         </List>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="primary">
           Cancel
         </Button>
-        <Button disabled={selectedAlbum === null || isImporting} onClick={handleSubmit} color="primary">
+        <Button
+          disabled={selectedAlbum === null || isImporting}
+          onClick={handleSubmit}
+          color="primary"
+        >
           Import
         </Button>
       </DialogActions>

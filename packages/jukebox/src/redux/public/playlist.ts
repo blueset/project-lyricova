@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import _ from "lodash";
-import { MusicFile } from "../../models/MusicFile";
+import { MusicFile } from "lyricova-common/models/MusicFile";
 import type { RootState } from "./store";
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";

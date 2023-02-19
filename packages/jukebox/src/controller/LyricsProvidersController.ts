@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction, Router } from "express";
 import axios from "axios";
 import cheerio from "cheerio";
-import { Song } from "../models/Song";
-import { SongForApiContract } from "../types/vocadb";
+import { Song } from "lyricova-common/models/Song";
+import type { SongForApiContract } from "lyricova-common/types/vocadb";
 import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
 
 export class LyricsProvidersController {

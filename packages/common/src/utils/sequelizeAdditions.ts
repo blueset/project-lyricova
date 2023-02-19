@@ -2,10 +2,10 @@ import { DataTypes, AbstractDataType, Utils } from "sequelize";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-const UnproxyAbstract: DataTypes.ABSTRACT = (new DataTypes.ABSTRACT()).constructor;
+const UnproxyAbstract: DataTypes.ABSTRACT = new DataTypes.ABSTRACT()
+  .constructor;
 
 class SimpleEnumArray extends UnproxyAbstract implements AbstractDataType {
-
   private readonly _enum: string[];
   private readonly _length: number;
   public key = "SIMPLE_ENUM_ARRAY";
@@ -75,10 +75,11 @@ class SimpleEnumArray extends UnproxyAbstract implements AbstractDataType {
 }
 
 export const SIMPLE_ENUM_ARRAY = SimpleEnumArray;
-export const SIMPLE_ENUM_ARRAY_INVOCABLE = Utils.classToInvokable(SimpleEnumArray);
-
+export const SIMPLE_ENUM_ARRAY_INVOCABLE = (Utils.classToInvokable(
+  SimpleEnumArray
+) as unknown) as typeof SimpleEnumArray &
+  ((...args: ConstructorParameters<typeof SimpleEnumArray>) => SimpleEnumArray);
 export function sequelizeAdditions(Sequelize: any) {
-
   const DataTypes = Sequelize.DataTypes;
 
   DataTypes.SIMPLE_ENUM_ARRAY = SIMPLE_ENUM_ARRAY_INVOCABLE;

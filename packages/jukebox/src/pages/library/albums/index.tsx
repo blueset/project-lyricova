@@ -1,10 +1,9 @@
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
-import { makeStyles } from "@mui/material/styles";
 import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
-import React, { ReactNode } from "react";
-import { Album } from "../../../models/Album";
-import { Avatar, Box, ButtonBase, Grid, Typography } from "@mui/material";
+import React from "react";
+import { Album } from "lyricova-common/models/Album";
+import { Avatar, ButtonBase, Grid, Typography } from "@mui/material";
 import { NextComposedLink } from "../../../components/Link";
 import { formatArtistsPlainText } from "../../../frontendUtils/artists";
 import { DocumentNode } from "graphql";
@@ -30,35 +29,56 @@ export default function LibraryAlbums() {
   const query = useQuery<{ albumsHasFiles: Album[] }>(ALBUMS_QUERY);
 
   if (query.loading) return <Alert severity="info">Loading...</Alert>;
-  if (query.error) return <Alert severity="error">Error: {`${query.error}`}</Alert>;
+  if (query.error)
+    return <Alert severity="error">Error: {`${query.error}`}</Alert>;
 
   return (
-    <Grid container spacing={2} sx={{padding: 2}}>
-      {query.data.albumsHasFiles.map(val => {
+    <Grid container spacing={2} sx={{ padding: 2 }}>
+      {query.data.albumsHasFiles.map((val) => {
         return (
-          <Grid item xs={6} md={3} lg={2} xl={2} key={val.id} sx={{minWidth: 0}}>
-            <ButtonBase sx={{width: "100%"}} component={NextComposedLink} href={`/library/albums/${val.id}`}>
-              <Avatar sx={{
-                width: "100%",
-                height: 0,
-                overflow: "hidden",
-                paddingTop: "100%",
-                position: "relative",
-                marginBottom: 1,
-                "&:hover": {
-                  filter: "brightness(1.2)",
-                },
-                "& > img": {
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
+          <Grid
+            item
+            xs={6}
+            md={3}
+            lg={2}
+            xl={2}
+            key={val.id}
+            sx={{ minWidth: 0 }}
+          >
+            <ButtonBase
+              sx={{ width: "100%" }}
+              component={NextComposedLink}
+              href={`/library/albums/${val.id}`}
+            >
+              <Avatar
+                sx={{
                   width: "100%",
-                  height: "100%",
-                },
-              }} src={val.coverUrl || "/images/disk-512.jpg"} variant="rounded" />
+                  height: 0,
+                  overflow: "hidden",
+                  paddingTop: "100%",
+                  position: "relative",
+                  marginBottom: 1,
+                  "&:hover": {
+                    filter: "brightness(1.2)",
+                  },
+                  "& > img": {
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                  },
+                }}
+                src={val.coverUrl || "/images/disk-512.jpg"}
+                variant="rounded"
+              />
             </ButtonBase>
-            <Typography variant="body2" noWrap>{val.name}</Typography>
-            <Typography variant="body2" color="textSecondary" noWrap>{formatArtistsPlainText(val.artists)}</Typography>
+            <Typography variant="body2" noWrap>
+              {val.name}
+            </Typography>
+            <Typography variant="body2" color="textSecondary" noWrap>
+              {formatArtistsPlainText(val.artists)}
+            </Typography>
           </Grid>
         );
       })}

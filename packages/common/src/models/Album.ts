@@ -1,6 +1,5 @@
-
 import { SongInAlbum } from "./SongInAlbum";
-import { AlbumForApiContract, AlbumContract, SongForApiContract } from "../types/vocadb";
+import { AlbumForApiContract, AlbumContract } from "../types/vocadb";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
 import { MusicFile } from "./MusicFile";
 import { transliterate } from "../utils/transliterate";
@@ -16,21 +15,20 @@ import {
   DeletedAt,
   Default,
   AllowNull,
-  Index
+  Index,
 } from "sequelize-typescript";
 import { Song } from "./Song";
 import { DataTypes } from "sequelize";
 import { ObjectType, Field, Int } from "type-graphql";
 import { Artist } from "./Artist";
-import { ArtistOfSong } from "./ArtistOfSong";
 import _ from "lodash";
 
 @ObjectType()
 @Table
 export class Album extends Model<Album, Partial<Album>> {
-  @Field(type => Int)
+  @Field((type) => Int)
   @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER })
+  @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
   @Field()
@@ -66,11 +64,9 @@ export class Album extends Model<Album, Partial<Album>> {
   @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(4096) })
-  coverUrl: string;
+  coverUrl?: string;
 
-  @HasMany(
-    () => MusicFile
-  )
+  @HasMany(() => MusicFile)
   files: MusicFile[];
 
   @AllowNull
@@ -95,38 +91,56 @@ export class Album extends Model<Album, Partial<Album>> {
   deletionDate: Date;
 
   /** SongInAlbum reflected by Song.$get("albums"), added for GraphQL queries. */
-  @Field(type => SongInAlbum,{nullable: true})
+  @Field((type) => SongInAlbum, { nullable: true })
   SongInAlbum?: Partial<SongInAlbum>;
 
   /** Incomplete build. */
   static async fromVocaDBAlbumContract(entity: AlbumContract): Promise<Album> {
-    const obj = (await Album.findOrCreate({
-      where: { id: entity.id },
-      defaults: {
-        name: entity.name,
-        sortOrder: transliterate(entity.name),
-        incomplete: true
-      }
-    }))[0];
+    const obj = (
+      await Album.findOrCreate({
+        where: { id: entity.id },
+        defaults: {
+          name: entity.name,
+          sortOrder: transliterate(entity.name),
+          incomplete: true,
+        },
+      })
+    )[0];
     return obj;
   }
 
-  static async saveFromVocaDBEntity(entity: AlbumForApiContract): Promise<Album> {
+  static async saveFromVocaDBEntity(
+    entity: AlbumForApiContract
+  ): Promise<Album | null> {
     await Album.upsert({
       id: entity.id,
       name: entity.name,
       sortOrder: transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
-      coverUrl: entity.mainPicture?.urlOriginal ?? null,
+      coverUrl: entity.mainPicture?.urlOriginal,
       incomplete: false,
     });
 
     const album = await Album.findByPk(entity.id);
 
-    const artists = await Promise.all(entity.artists.filter(x => x.artist).map(x => ArtistOfAlbum.artistFromVocaDB(x))),
-      tracks = await Promise.all(entity.tracks.map(x => SongInAlbum.songFromVocaDB(x)));
-    await album.$set("artists", _.uniqBy(artists, a => a.id));
-    await album.$set("songs", _.uniqBy(tracks, t => t.id));
+    const artists = await Promise.all(
+        (entity.artists ?? [])
+          .filter((x) => x.artist)
+          .map((x) => ArtistOfAlbum.artistFromVocaDB(x))
+      ),
+      tracks = (
+        await Promise.all(
+          (entity.tracks ?? []).map((x) => SongInAlbum.songFromVocaDB(x))
+        )
+      ).filter((t): t is Song => t !== null);
+    await album?.$set(
+      "artists",
+      _.uniqBy(artists, (a) => a.id)
+    );
+    await album?.$set(
+      "songs",
+      _.uniqBy(tracks, (t) => t.id)
+    );
     return album;
   }
 }

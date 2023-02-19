@@ -1,5 +1,5 @@
 
-import {
+import type {
   VDBArtistRoleType,
   VDBArtistCategoryType,
   ArtistForSongContract,

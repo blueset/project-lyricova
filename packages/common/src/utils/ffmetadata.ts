@@ -34,7 +34,7 @@ export interface Metadata {
   TITLESORT?: string; // FLAC
   LYRICS?: string; // FLAC
   "lyrics-eng"?: string;
-  [key: string]: string;
+  [key: string]: string | undefined;
 }
 
 type ReadCallback = (err?: Error, data?: Metadata) => void;
@@ -52,11 +52,7 @@ function getTempPath(src: string): string {
 
 function getReadArgs(src: string, options: ReadOptions) {
   if (typeof options.coverUrl !== "undefined") {
-    return [
-      "-i",
-      src,
-      options.coverUrl
-    ];
+    return ["-i", src, options.coverUrl];
   }
 
   return [
@@ -69,7 +65,7 @@ function getReadArgs(src: string, options: ReadOptions) {
 }
 
 function spawnRead(args: string[]) {
-  return ffmpeg(args, { detached: true, encoding: "binary" });
+  return ffmpeg(args, { detached: true /*, encoding: "binary" */ });
 }
 
 function getAttachments(options: WriteOptions) {
@@ -78,7 +74,6 @@ function getAttachments(options: WriteOptions) {
   }
   return options.attachments || [];
 }
-
 
 function isNotComment(data: string): boolean {
   return data.slice(0, 1) !== ";";
@@ -94,14 +89,19 @@ function unescapeini(data: string): string {
   return data;
 }
 
-function getWriteArgs(src: string, dst: string, data: Metadata, options: WriteOptions) {
+function getWriteArgs(
+  src: string,
+  dst: string,
+  data: Metadata,
+  options: WriteOptions
+) {
   // ffmpeg options
   const inputs = ["-i", src], // src input
     maps = ["-map", options.preserveStreams ? "0" : "0:0"]; // set as the first
   let args = ["-y"]; // overwrite file
 
   // Attach additional input files if included
-  getAttachments(options).forEach(function (el) {
+  getAttachments(options).forEach(function(el) {
     const inputIndex = inputs.length / 2;
     inputs.push("-i", el);
     maps.push("-map", inputIndex + ":0");
@@ -123,9 +123,12 @@ function getWriteArgs(src: string, dst: string, data: Metadata, options: WriteOp
   }
 
   // append metadata
-  Object.keys(data).forEach(function (name) {
-    args.push("-metadata");
-    args.push(escapeini(name) + "=" + escapeini(data[name]));
+  Object.keys(data).forEach(function(name) {
+    const value = data[name];
+    if (value) {
+      args.push("-metadata");
+      args.push(escapeini(name) + "=" + escapeini(value));
+    }
   });
 
   args.push(dst); // output to src path
@@ -142,7 +145,18 @@ function parseini(callback?: (data: object) => void) {
     split(),
     filter(Boolean),
     filter(isNotComment),
-    through(parseLine)
+    through(function(data: string) {
+      data = unescapeini(data);
+      const index = data.indexOf("=");
+
+      if (index === -1) {
+        stream.data[key] += data.slice(index + 1);
+        stream.data[key] = stream.data[key].replace("\\", "\n");
+      } else {
+        key = data.slice(0, index);
+        stream.data[key] = data.slice(index + 1);
+      }
+    })
   );
 
   // Object to store INI data in
@@ -154,28 +168,10 @@ function parseini(callback?: (data: object) => void) {
 
   let key: string;
 
-  parseLine = function (data: string) {
-    data = unescapeini(data);
-    const index = data.indexOf("=");
-
-    if (index === -1) {
-      stream.data[key] += data.slice(index + 1);
-      stream.data[key] = stream.data[key].replace("\\", "\n");
-    } else {
-      key = data.slice(0, index);
-      stream.data[key] = data.slice(index + 1);
-    }
-  };
-
   return stream;
-
 }
 
-
-export function read(
-  src: string,
-  callback: ReadCallback
-): void;
+export function read(src: string, callback: ReadCallback): void;
 export function read(
   src: string,
   options: ReadOptions & { dryRun: true },
@@ -186,7 +182,11 @@ export function read(
   options: ReadOptions,
   callback: ReadCallback
 ): void;
-export function read(src: string, options: ReadOptions | ReadCallback, callback?: ReadCallback) {
+export function read(
+  src: string,
+  options: ReadOptions | ReadCallback,
+  callback?: ReadCallback
+) {
   if (typeof options === "function") {
     callback = options;
     options = {};
@@ -202,7 +202,7 @@ export function read(src: string, options: ReadOptions | ReadCallback, callback?
     stream = through(),
     output = parseini(),
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    error = concat(() => { }) as Writable & {
+    error = concat(() => {}) as Writable & {
       getBody: () => {
         toString: () => string;
       };
@@ -212,21 +212,21 @@ export function read(src: string, options: ReadOptions | ReadCallback, callback?
   proc.on("error", stream.emit.bind(stream, "error"));
 
   // Parse ffmetadata "ini" output
-  proc.stdout.pipe(output);
+  proc.stdout?.pipe(output);
 
   // Capture stderr
-  proc.stderr.pipe(error);
+  proc.stderr?.pipe(error);
 
-  proc.on("close", function (code: number) {
+  proc.on("close", function(code: number) {
     if (code === 0) {
       stream.emit("metadata", output.data);
-    }
-    else {
+    } else {
       stream.emit("error", new Error(error.getBody().toString()));
     }
   });
 
   if (callback) {
+    // @ts-ignore
     stream.on("metadata", callback.bind(null, null));
     stream.on("error", callback);
   }
@@ -236,18 +236,12 @@ export function read(src: string, options: ReadOptions | ReadCallback, callback?
 
 export function readAsync(
   src: string,
-): Promise<Metadata>;
-export function readAsync(
-  src: string,
-  options: ReadOptions
-): Promise<Metadata>;
-export function readAsync(src: string, options?: ReadOptions): Promise<Metadata> {
+  options?: ReadOptions
+): Promise<Metadata> {
   return new Promise((resolve, reject) => {
     const callback = (err?: Error, data?: Metadata) => {
-      if (err) {
-        return reject(err);
-      }
-      resolve(data);
+      if (err) return reject(err);
+      if (data) return resolve(data);
     };
     if (!options) {
       read(src, callback);
@@ -276,7 +270,12 @@ export function write(
   options: WriteOptions,
   callback: WriteCallback
 ): void;
-export function write(src: string, data: Metadata, options: WriteOptions | WriteCallback, callback?: WriteCallback): string[] | void {
+export function write(
+  src: string,
+  data: Metadata,
+  options: WriteOptions | WriteCallback,
+  callback?: WriteCallback
+): string[] | void {
   if (typeof options === "function") {
     callback = options;
     options = {};
@@ -289,28 +288,26 @@ export function write(src: string, data: Metadata, options: WriteOptions | Write
     return args;
   }
 
-  const proc = ffmpeg(args),
+  const proc = ffmpeg(args, {}),
     stream = through(),
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    error = concat(() => { }) as Writable & {
+    error = concat(() => {}) as Writable & {
       getBody: () => {
         toString: () => string;
       };
     };
 
-
   function handleError(err: unknown) {
-    fs.unlink(dst, function () {
+    fs.unlink(dst, function() {
       stream.emit("error", err);
     });
   }
 
   function finish() {
-    fs.rename(dst, src, function (err) {
+    fs.rename(dst, src, function(err) {
       if (err) {
         handleError(err);
-      }
-      else {
+      } else {
         stream.emit("end");
       }
     });
@@ -321,16 +318,15 @@ export function write(src: string, data: Metadata, options: WriteOptions | Write
 
   // Proxy child process stdout but don't end the stream until we know
   // the process exits with a zero exit code
-  proc.stdout.on("data", stream.emit.bind(stream, "data"));
+  proc.stdout?.on("data", stream.emit.bind(stream, "data"));
 
   // Capture stderr (to use in case of non-zero exit code)
-  proc.stderr.pipe(error);
+  proc.stderr?.pipe(error);
 
-  proc.on("close", function (code: number) {
+  proc.on("close", function(code: number) {
     if (code === 0) {
       finish();
-    }
-    else {
+    } else {
       handleError(new Error(error.getBody().toString()));
     }
   });
@@ -343,16 +339,17 @@ export function write(src: string, data: Metadata, options: WriteOptions | Write
   // return stream;
 }
 
-export function writeAsync(
-  src: string,
-  data: Metadata
-): Promise<void>;
+export function writeAsync(src: string, data: Metadata): Promise<void>;
 export function writeAsync(
   src: string,
   data: Metadata,
   options: WriteOptions
 ): Promise<void>;
-export function writeAsync(src: string, data: Metadata, options?: WriteOptions): Promise<void> {
+export function writeAsync(
+  src: string,
+  data: Metadata,
+  options?: WriteOptions
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const callback = (err?: Error) => {
       if (err) {
@@ -369,5 +366,8 @@ export function writeAsync(src: string, data: Metadata, options?: WriteOptions):
 }
 
 export default {
-  read, readAsync, write, writeAsync
+  read,
+  readAsync,
+  write,
+  writeAsync,
 };

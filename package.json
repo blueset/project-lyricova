@@ -4,9 +4,6 @@
   "workspaces": [
     "packages/*"
   ],
-  "resolutions": {
-    "root": "portal:/Users/blueset/Codebase/project-lyricova"
-  },
   "dependencies": {
     "react": "^18.2.0"
   }

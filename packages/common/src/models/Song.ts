@@ -6,7 +6,6 @@ import { SongInAlbum } from "./SongInAlbum";
 import { Entry } from "./Entry";
 import { transliterate } from "../utils/transliterate";
 import { DataTypes } from "sequelize";
-import { Includeable } from "sequelize/types";
 import {
   AllowNull,
   BelongsTo,
@@ -20,7 +19,7 @@ import {
   Model,
   PrimaryKey,
   Table,
-  UpdatedAt
+  UpdatedAt,
 } from "sequelize-typescript";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
@@ -34,7 +33,7 @@ import _ from "lodash";
 export class Song extends Model<Song, Partial<Song>> {
   @Field(() => Int)
   @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER })
+  @Column({ type: new DataTypes.INTEGER() })
   public id!: number;
 
   @Field()
@@ -79,7 +78,7 @@ export class Song extends Model<Song, Partial<Song>> {
   @HasMany(() => Song, "originalId")
   readonly derivedSongs: Song[];
 
-  @Field(type => GraphQLJSONObject)
+  @Field((type) => GraphQLJSONObject)
   @AllowNull
   @Column({ type: DataTypes.JSON })
   vocaDbJson!: SongForApiContract | null;
@@ -90,12 +89,15 @@ export class Song extends Model<Song, Partial<Song>> {
   @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(4096) })
-  coverUrl!: string | null;
+  coverUrl?: string;
 
   @HasMany(() => MusicFile)
   files: MusicFile[];
 
-  @BelongsToMany(() => Entry, () => SongOfEntry)
+  @BelongsToMany(
+    () => Entry,
+    () => SongOfEntry
+  )
   lyricovaEntries: Array<Entry & { SongOfEntry: SongOfEntry }>;
 
   @Field()
@@ -114,10 +116,14 @@ export class Song extends Model<Song, Partial<Song>> {
   deletionDate: Date;
 
   /** ArtistOfSong reflected by Album.$get("songs"), added for GraphQL queries. */
-  @Field(type => SongInAlbum,{nullable: true})
+  @Field((type) => SongInAlbum, { nullable: true })
   SongInAlbum?: Partial<SongInAlbum>;
 
-  static async saveFromVocaDBEntity(entity: SongForApiContract, original: Song | null, intermediate = false): Promise<Song> {
+  static async saveFromVocaDBEntity(
+    entity: SongForApiContract,
+    original: Song | null,
+    intermediate = false
+  ): Promise<Song | null> {
     await Song.upsert({
       id: entity.id,
       name: entity.name,
@@ -129,13 +135,19 @@ export class Song extends Model<Song, Partial<Song>> {
 
     const song = await Song.findByPk(entity.id);
     if (original !== null) {
-      await song.$set("original", original);
+      await song?.$set("original", original);
     }
 
-    const artists = await Promise.all(entity.artists.map(x => ArtistOfSong.artistFromVocaDB(x))),
-      albums = await Promise.all(entity.albums.map(x => SongInAlbum.albumFromVocaDB(entity, x)));
-    await song.$set("artists", artists);
-    await song.$set("albums", albums);
+    const artists = (
+        await Promise.all(
+          (entity.artists ?? []).map((x) => ArtistOfSong.artistFromVocaDB(x))
+        )
+      ).filter((x): x is Artist => x !== null),
+      albums = await Promise.all(
+        (entity.albums ?? []).map((x) => SongInAlbum.albumFromVocaDB(entity, x))
+      );
+    await song?.$set("artists", artists);
+    await song?.$set("albums", albums);
     return song;
   }
 }

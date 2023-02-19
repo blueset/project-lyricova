@@ -1,12 +1,14 @@
 import {
   AutocompleteRenderInputParams,
   Avatar,
-  Box, FilterOptionsState,
+  Box,
+  FilterOptionsState,
   Grid,
   IconButton,
-  Stack, TextField,
+  Stack,
+  TextField,
   TextField as MuiTextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useCallback, useEffect } from "react";
@@ -20,7 +22,7 @@ import { makeStyles } from "@mui/material/styles";
 import { ArtistFragments } from "../../../graphql/fragments";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EditIcon from "@mui/icons-material/Edit";
-import { Artist } from "../../../models/Artist";
+import { Artist } from "lyricova-common/models/Artist";
 import VocaDBSearchArtistDialog from "./vocaDBSearchArtistDialog";
 import ArtistEntityDialog from "./artistEntityDialog";
 import { useField, useForm } from "react-final-form";
@@ -39,7 +41,7 @@ const LOCAL_ARTIST_ENTITY_QUERY = gql`
       ...SelectArtistEntry
     }
   }
-  
+
   ${ArtistFragments.SelectArtistEntry}
 ` as DocumentNode;
 
@@ -49,22 +51,46 @@ interface Props<T extends string> {
   title?: string;
 }
 
-export default function SelectArtistEntityBox<T extends string>({ fieldName, labelName, title, }: Props<T>) {
+export default function SelectArtistEntityBox<T extends string>({
+  fieldName,
+  labelName,
+  title,
+}: Props<T>) {
   const apolloClient = useApolloClient();
-  const { input: { value } } = useField<ExtendedArtist>(fieldName);
+  const {
+    input: { value },
+  } = useField<ExtendedArtist>(fieldName);
   const setValue = useForm().mutators.setValue;
 
-  const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useNamedState<ExtendedArtist[]>([], "vocaDBAutoCompleteOptions");
-  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState("", "vocaDBAutoCompleteText");
+  const [
+    vocaDBAutoCompleteOptions,
+    setVocaDBAutoCompleteOptions,
+  ] = useNamedState<ExtendedArtist[]>([], "vocaDBAutoCompleteOptions");
+  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState(
+    "",
+    "vocaDBAutoCompleteText"
+  );
 
-  const [importDialogKeyword, setImportDialogKeyword] = useNamedState("", "importDialogKeyword");
+  const [importDialogKeyword, setImportDialogKeyword] = useNamedState(
+    "",
+    "importDialogKeyword"
+  );
 
   // Confirm import pop-up
-  const [isImportDialogOpen, toggleImportDialogOpen] = useNamedState(false, "importDialogOpen");
+  const [isImportDialogOpen, toggleImportDialogOpen] = useNamedState(
+    false,
+    "importDialogOpen"
+  );
 
   // Confirm manual enrol pop-up
-  const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(false, "manualDialogOpen");
-  const [isManualDialogForCreate, toggleManualDialogForCreate] = useNamedState(true, "manualDialogForCreate");
+  const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(
+    false,
+    "manualDialogOpen"
+  );
+  const [isManualDialogForCreate, toggleManualDialogForCreate] = useNamedState(
+    true,
+    "manualDialogForCreate"
+  );
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -87,7 +113,7 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
           params: {
             query: vocaDBAutoCompleteText,
             nameMatchMode: "Auto",
-          }
+          },
         }
       );
 
@@ -99,23 +125,27 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
           if (apolloResult.data?.searchArtists) {
             result = result.concat(apolloResult.data?.searchArtists);
           }
-        } catch (e) { /* No-Op. */
+        } catch (e) {
+          /* No-Op. */
         }
 
         try {
           const vocaDBResult = await vocaDBPromise;
           if (vocaDBResult.status === 200 && vocaDBResult.data) {
-            result = result.concat(vocaDBResult.data.map(v => ({
-              id: null,
-              name: v,
-              sortOrder: `"${v}"`,
-              vocaDBSuggestion: true,
-            })));
+            result = result.concat(
+              vocaDBResult.data.map((v) => ({
+                id: null,
+                name: v,
+                sortOrder: `"${v}"`,
+                vocaDBSuggestion: true,
+              }))
+            );
           }
-          if (value && !_.some(result, v => v.id === value.id)) {
+          if (value && !_.some(result, (v) => v.id === value.id)) {
             result = [value, ...result];
           }
-        } catch (e) { /* No-Op. */
+        } catch (e) {
+          /* No-Op. */
         }
 
         setVocaDBAutoCompleteOptions(result);
@@ -129,7 +159,11 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
 
   return (
     <>
-      {title && <Typography variant="h6" component="h3" gutterBottom>{title}</Typography>}
+      {title && (
+        <Typography variant="h6" component="h3" gutterBottom>
+          {title}
+        </Typography>
+      )}
       <Grid container spacing={1}>
         <Grid item xs={12}>
           <Autocomplete
@@ -140,9 +174,12 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
             clearOnBlur
             handleHomeEndKeys
             freeSolo
-            textFieldProps={{variant: "outlined", size: "small"}}
+            textFieldProps={{ variant: "outlined", size: "small" }}
             // renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label={labelName} />}
-            filterOptions={(v: ExtendedArtist[], params: FilterOptionsState<ExtendedArtist>) => {
+            filterOptions={(
+              v: ExtendedArtist[],
+              params: FilterOptionsState<ExtendedArtist>
+            ) => {
               if (params.inputValue !== "") {
                 v.push({
                   id: null,
@@ -162,7 +199,11 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
             onInputChange={(event: unknown, newValue: string) => {
               setVocaDBAutoCompleteText(newValue);
             }}
-            onChange={(event: unknown, newValue: ExtendedArtist | null, reason: string) => {
+            onChange={(
+              event: unknown,
+              newValue: ExtendedArtist | null,
+              reason: string
+            ) => {
               if (newValue === null) {
                 setVocaDBAutoCompleteOptions([]);
                 if (reason === "clear") {
@@ -184,11 +225,30 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
               }
             }}
             renderOption={(params, option: ExtendedArtist | null) => {
-              let icon = <MusicNoteIcon sx={{color: "text.secondary", marginRight: 2 }} />;
-              if (option.vocaDBSuggestion) icon = <SearchIcon sx={{color: "text.secondary", marginRight: 2 }} />;
-              else if (option.manual) icon = <AddCircleIcon sx={{color: "text.secondary", marginRight: 2 }} />;
+              let icon = (
+                <MusicNoteIcon
+                  sx={{ color: "text.secondary", marginRight: 2 }}
+                />
+              );
+              if (option.vocaDBSuggestion)
+                icon = (
+                  <SearchIcon
+                    sx={{ color: "text.secondary", marginRight: 2 }}
+                  />
+                );
+              else if (option.manual)
+                icon = (
+                  <AddCircleIcon
+                    sx={{ color: "text.secondary", marginRight: 2 }}
+                  />
+                );
               return (
-                <Stack component="li" {...params} flexDirection="row" alignItems="center">
+                <Stack
+                  component="li"
+                  {...params}
+                  flexDirection="row"
+                  alignItems="center"
+                >
                   {icon} {option.name}
                 </Stack>
               );
@@ -202,33 +262,41 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
         </Grid>
         {value && (
           <Grid item xs={12}>
-            <Stack direction="row" alignItems="center" sx={{marginBottom: 2, flexWrap: {"xs": "wrap"}}}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              sx={{ marginBottom: 2, flexWrap: { xs: "wrap" } }}
+            >
               <div>
                 <Avatar
-                  src={value.mainPictureUrl} variant="rounded"
-                  sx={{height: "3em", width: "3em", marginRight: 2}}
+                  src={value.mainPictureUrl}
+                  variant="rounded"
+                  sx={{ height: "3em", width: "3em", marginRight: 2 }}
                 >
                   <MusicNoteIcon />
                 </Avatar>
               </div>
-              <div style={{flexGrow: 1, flexBasis: 0,}}>
-                <Typography>
-                  {value.name}
-                </Typography>
+              <div style={{ flexGrow: 1, flexBasis: 0 }}>
+                <Typography>{value.name}</Typography>
                 <Typography color="textSecondary">
                   {value.sortOrder} ({value.type}) #{value.id}
                 </Typography>
               </div>
               <div>
                 {value.id >= 0 && (
-                  <IconButton href={`https://vocadb.net/Ar/${value.id}`} target="_blank">
+                  <IconButton
+                    href={`https://vocadb.net/Ar/${value.id}`}
+                    target="_blank"
+                  >
                     <OpenInNewIcon />
                   </IconButton>
                 )}
-                <IconButton onClick={() => {
-                  toggleManualDialogForCreate(false);
-                  toggleManualDialogOpen(true);
-                }}>
+                <IconButton
+                  onClick={() => {
+                    toggleManualDialogForCreate(false);
+                    toggleManualDialogOpen(true);
+                  }}
+                >
                   <EditIcon />
                 </IconButton>
               </div>
@@ -236,14 +304,17 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
           </Grid>
         )}
       </Grid>
-      {isImportDialogOpen && <VocaDBSearchArtistDialog
+      {isImportDialogOpen && (
+        <VocaDBSearchArtistDialog
           isOpen={isImportDialogOpen}
           toggleOpen={toggleImportDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
           setArtist={(v) => setValue(fieldName, v)}
-      />}
-      {isManualDialogOpen && <ArtistEntityDialog
+        />
+      )}
+      {isManualDialogOpen && (
+        <ArtistEntityDialog
           isOpen={isManualDialogOpen}
           toggleOpen={toggleManualDialogOpen}
           keyword={importDialogKeyword}
@@ -251,7 +322,8 @@ export default function SelectArtistEntityBox<T extends string>({ fieldName, lab
           artistToEdit={value}
           setKeyword={setImportDialogKeyword}
           setArtist={(v) => setValue(fieldName, v)}
-      />}
+        />
+      )}
     </>
   );
 }

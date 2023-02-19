@@ -1,7 +1,20 @@
-import React, { RefObject, ReactChild, ReactNode, useContext } from "react";
-import { MusicFile } from "../../models/MusicFile";
+import React, { RefObject, ReactChild, useContext } from "react";
+import { MusicFile } from "lyricova-common/models/MusicFile";
 
-export type Track = Pick<MusicFile, "id" | "fileSize" | "trackName" | "trackSortOrder" | "artistName" | "artistSortOrder" | "albumName" | "albumSortOrder" | "hasCover" | "duration" | "hasLyrics">;
+export type Track = Pick<
+  MusicFile,
+  | "id"
+  | "fileSize"
+  | "trackName"
+  | "trackSortOrder"
+  | "artistName"
+  | "artistSortOrder"
+  | "albumName"
+  | "albumSortOrder"
+  | "hasCover"
+  | "duration"
+  | "hasLyrics"
+>;
 
 export enum LoopMode {
   SINGLE = "SINGLE",
@@ -44,7 +57,7 @@ export interface ContextProps {
 export function AppContext({ playerRef, children }: ContextProps) {
   return (
     <PlayerRefContext.Provider value={playerRef}>
-        {children}
+      {children}
     </PlayerRefContext.Provider>
   );
 }

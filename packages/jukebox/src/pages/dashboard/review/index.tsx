@@ -1,6 +1,6 @@
 import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
-import { Box, IconButton, Tooltip, useTheme } from "@mui/material";
+import { Box, IconButton, Tooltip } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
 import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import React, { useCallback } from "react";
@@ -11,7 +11,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useRouter } from "next/router";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { DataGridToolbar } from "../../../components/dashboard/DataGridToolbar";
-import { NextComposedLink } from "src/components/Link";
+import { NextComposedLink } from "../../../components/Link";
 
 const PENDING_REVIEW_FILES_QUERY = gql`
   query {
@@ -83,7 +83,7 @@ export default function Review() {
                   icon={<RateReviewIcon />}
                   label="Review"
                   LinkComponent={NextComposedLink}
-                  {...{href: `/dashboard/review/${rowData?.id}`} as unknown}
+                  {...({ href: `/dashboard/review/${rowData?.id}` } as object)}
                 />
               </Tooltip>,
             ],

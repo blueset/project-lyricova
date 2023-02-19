@@ -1,13 +1,13 @@
 import { getLayout } from "../../../components/dashboard/layouts/AlbumInfoLayout";
 import { gql, useQuery } from "@apollo/client";
 import { AlbumFragments } from "../../../graphql/fragments";
-import { Album } from "../../../models/Album";
+import { Album } from "lyricova-common/models/Album";
 import { useRouter } from "next/router";
 import AlbumEntityDialog from "../../../components/dashboard/musicFilesDetails/albumEntityDialog";
 import { useCallback } from "react";
 
 const ALBUM_ENTITY_QUERY = gql`
-  query ($id: Int!) {
+  query($id: Int!) {
     album(id: $id) {
       ...FullAlbumEntry
     }
@@ -23,7 +23,9 @@ export default function AlbumEntitySingle() {
     router.push("/dashboard/albums");
   }, [router]);
 
-  const query = useQuery<{ album?: Album }>(ALBUM_ENTITY_QUERY, { variables: { id } });
+  const query = useQuery<{ album?: Album }>(ALBUM_ENTITY_QUERY, {
+    variables: { id },
+  });
   let isOpen = false;
   if (query.data?.album) {
     isOpen = true;
@@ -40,7 +42,8 @@ export default function AlbumEntitySingle() {
       setAlbum={() => {
         /* No-op. */
       }}
-      albumToEdit={query.data?.album} />
+      albumToEdit={query.data?.album}
+    />
   );
 }
 

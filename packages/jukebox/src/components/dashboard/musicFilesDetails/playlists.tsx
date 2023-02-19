@@ -1,4 +1,4 @@
-import { Playlist } from "../../../models/Playlist";
+import { Playlist } from "lyricova-common/models/Playlist";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import {
   Avatar,
@@ -10,7 +10,7 @@ import {
   ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
-  Popover
+  Popover,
 } from "@mui/material";
 import { Alert, Skeleton } from "@mui/material";
 import _ from "lodash";
@@ -19,16 +19,26 @@ import PlaylistAvatar from "../../PlaylistAvatar";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import AddIcon from "@mui/icons-material/Add";
 import { useSnackbar } from "notistack";
-import { bindPopover, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
+import {
+  bindPopover,
+  bindTrigger,
+  usePopupState,
+} from "material-ui-popup-state/hooks";
 import AddPlaylistPopoverContent from "../AddPlaylistPopoverContent";
 
 function SkeletonItem() {
-  return <ListItem>
-    <ListItemAvatar>
-      <Skeleton variant="rectangular"><Avatar variant="rounded" /></Skeleton>
-    </ListItemAvatar>
-    <ListItemText><Skeleton /></ListItemText>
-  </ListItem>;
+  return (
+    <ListItem>
+      <ListItemAvatar>
+        <Skeleton variant="rectangular">
+          <Avatar variant="rounded" />
+        </Skeleton>
+      </ListItemAvatar>
+      <ListItemText>
+        <Skeleton />
+      </ListItemText>
+    </ListItem>
+  );
 }
 
 const PLAYLISTS_QUERY = gql`
@@ -62,53 +72,77 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
 
-  const [checkedPlaylists, setCheckedPlaylists] = useNamedState<string[]>([], "checkedPlaylists");
+  const [checkedPlaylists, setCheckedPlaylists] = useNamedState<string[]>(
+    [],
+    "checkedPlaylists"
+  );
   useEffect(() => {
-    setCheckedPlaylists(playlists.map(v => v.slug));
+    setCheckedPlaylists(playlists.map((v) => v.slug));
   }, [playlists, setCheckedPlaylists]);
 
-  const popupState = usePopupState({ variant: "popover", popupId: "add-playlist-popover" });
+  const popupState = usePopupState({
+    variant: "popover",
+    popupId: "add-playlist-popover",
+  });
 
   const handleSubmit = useCallback(async () => {
     try {
-      const result = await apolloClient.mutate<{ setPlaylistsOfFile: { playlists: Playlist[] } }>({
+      const result = await apolloClient.mutate<{
+        setPlaylistsOfFile: { playlists: Playlist[] };
+      }>({
         mutation: SET_PLAYLISTS_MUTATION,
-        variables: { fileId, slugs: checkedPlaylists }
+        variables: { fileId, slugs: checkedPlaylists },
       });
       if (result.data) {
-        setCheckedPlaylists(result.data.setPlaylistsOfFile.playlists.map(v => v.slug));
+        setCheckedPlaylists(
+          result.data.setPlaylistsOfFile.playlists.map((v) => v.slug)
+        );
         snackbar.enqueueSnackbar("Playlists saved", { variant: "success" });
         await refresh();
       }
     } catch (e) {
       console.error("Error occurred while updating playlists", e);
-      snackbar.enqueueSnackbar(`Error occurred while updating playlists: ${e}`, { variant: "error" });
+      snackbar.enqueueSnackbar(
+        `Error occurred while updating playlists: ${e}`,
+        { variant: "error" }
+      );
     }
   }, [apolloClient, checkedPlaylists, fileId, snackbar]);
 
-  const handleToggle = useCallback((value: string) => () => {
-    if (checkedPlaylists.indexOf(value) < 0) {
-      setCheckedPlaylists([...checkedPlaylists, value]);
-    } else {
-      setCheckedPlaylists(checkedPlaylists.filter(v => v !== value));
-    }
-  }, [checkedPlaylists, setCheckedPlaylists]);
+  const handleToggle = useCallback(
+    (value: string) => () => {
+      if (checkedPlaylists.indexOf(value) < 0) {
+        setCheckedPlaylists([...checkedPlaylists, value]);
+      } else {
+        setCheckedPlaylists(checkedPlaylists.filter((v) => v !== value));
+      }
+    },
+    [checkedPlaylists, setCheckedPlaylists]
+  );
 
   let items: ReactNode = _.fill(Array(5), <SkeletonItem />);
   if (playlistsQuery.error) {
-    items = <Alert severity="error">Error occurred while retrieving playlists: {`${playlistsQuery.error}`}</Alert>;
+    items = (
+      <Alert severity="error">
+        Error occurred while retrieving playlists: {`${playlistsQuery.error}`}
+      </Alert>
+    );
   } else if (playlistsQuery.data) {
-    items = playlistsQuery.data.playlists.map(v => <ListItem key={v.slug} button onClick={handleToggle(v.slug)}>
-      <ListItemAvatar><PlaylistAvatar name={v.name} slug={v.slug} /></ListItemAvatar>
-      <ListItemText primary={v.name} secondary={v.slug} />
-      <ListItemSecondaryAction>
-        <Checkbox
-          edge="end"
-          onChange={handleToggle(v.slug)}
-          checked={checkedPlaylists.indexOf(v.slug) !== -1}
-        />
-      </ListItemSecondaryAction>
-    </ListItem>);
+    items = playlistsQuery.data.playlists.map((v) => (
+      <ListItem key={v.slug} button onClick={handleToggle(v.slug)}>
+        <ListItemAvatar>
+          <PlaylistAvatar name={v.name} slug={v.slug} />
+        </ListItemAvatar>
+        <ListItemText primary={v.name} secondary={v.slug} />
+        <ListItemSecondaryAction>
+          <Checkbox
+            edge="end"
+            onChange={handleToggle(v.slug)}
+            checked={checkedPlaylists.indexOf(v.slug) !== -1}
+          />
+        </ListItemSecondaryAction>
+      </ListItem>
+    ));
   }
 
   return (
@@ -122,7 +156,9 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
           <ListItemText>Add new playlist</ListItemText>
         </ListItem>
       </List>
-      <Button variant="outlined" color="secondary" onClick={handleSubmit}>Save</Button>
+      <Button variant="outlined" color="secondary" onClick={handleSubmit}>
+        Save
+      </Button>
       <Popover
         anchorOrigin={{
           vertical: "bottom",
@@ -134,7 +170,10 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
         }}
         {...bindPopover(popupState)}
       >
-        <AddPlaylistPopoverContent refresh={playlistsQuery.refetch} dismiss={popupState.close} />
+        <AddPlaylistPopoverContent
+          refresh={playlistsQuery.refetch}
+          dismiss={popupState.close}
+        />
       </Popover>
     </div>
   );

@@ -1,4 +1,4 @@
-import logger from "./logger";
+import logger from "lyricova-common/utils/logger";
 import dotenv from "dotenv";
 import fs from "fs";
 
@@ -38,7 +38,9 @@ if (!JWT_SECRET) {
 export const YTDLP_PATH = process.env["YTDLP_PATH"];
 
 if (!YTDLP_PATH) {
-  logger.error("Path to yt-dlp is not set. Set YTDLP_PATH environment variable.");
+  logger.error(
+    "Path to yt-dlp is not set. Set YTDLP_PATH environment variable."
+  );
   process.exit(1);
 }
 
@@ -52,6 +54,13 @@ export const VIDEO_FILES_PATH = process.env["VIDEO_FILES_PATH"].endsWith("/")
 
 export const DB_URI = process.env["DB_URI"];
 
+if (!DB_URI) {
+  logger.error(
+    "Database connection string is not set. Set DB_URI environment variable."
+  );
+  process.exit(1);
+}
+
 export const MXGET_API_PATH = process.env["MXGET_API_PATH"].endsWith("/")
   ? process.env["MXGET_API_PATH"]
   : process.env["MXGET_API_PATH"] + "/";
@@ -61,4 +70,3 @@ export const MXGET_BINARY = process.env["MXGET_BINARY"];
 export const QQ_API_PATH = process.env["QQ_API_PATH"].endsWith("/")
   ? process.env["QQ_API_PATH"]
   : process.env["QQ_API_PATH"] + "/";
-

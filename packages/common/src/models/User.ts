@@ -1,4 +1,14 @@
-import { Model, Table, Column, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, DeletedAt, Default } from "sequelize-typescript";
+import {
+  Model,
+  Table,
+  Column,
+  PrimaryKey,
+  AutoIncrement,
+  CreatedAt,
+  UpdatedAt,
+  DeletedAt,
+  Default,
+} from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -7,10 +17,10 @@ import { ObjectType, Field, Int } from "type-graphql";
 @ObjectType()
 @Table
 export class User extends Model<User> {
-  @Field(type => Int)
+  @Field((type) => Int)
   @AutoIncrement
   @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER })
+  @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
   @Field()
@@ -34,10 +44,10 @@ export class User extends Model<User> {
   role: "admin" | "guest";
 
   @Column({ type: new DataTypes.STRING(256) })
-  provider: string | null;
+  provider?: string;
 
   @Column({ type: new DataTypes.STRING(1024) })
-  provider_id: string | null;
+  provider_id?: string;
 
   @Field()
   @CreatedAt
@@ -51,7 +61,10 @@ export class User extends Model<User> {
 
   @Field()
   get emailMD5(): string {
-    return crypto.createHash("md5").update(this.email || "").digest("hex");
+    return crypto
+      .createHash("md5")
+      .update(this.email || "")
+      .digest("hex");
   }
 
   public async checkPassword(plaintextPassword: string): Promise<boolean> {

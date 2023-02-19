@@ -11,13 +11,16 @@ import {
   ListItemAvatar,
   ListItemSecondaryAction,
   ListItemText,
-  Radio
+  Radio,
 } from "@mui/material";
 import { ChangeEvent, useCallback, useEffect } from "react";
-import { Song } from "../../../models/Song";
+import { Song } from "lyricova-common/models/Song";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import axios from "axios";
-import { PartialFindResult, SongForApiContract } from "../../../types/vocadb";
+import {
+  PartialFindResult,
+  SongForApiContract,
+} from "lyricova-common/types/vocadb";
 import _ from "lodash";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -34,7 +37,7 @@ const IMPORT_SONG_MUTATION = gql`
       ...SelectSongEntry
     }
   }
-  
+
   ${SongFragments.SelectSongEntry}
 ` as DocumentNode;
 
@@ -46,10 +49,22 @@ interface Props {
   setSong: (value: Partial<Song>) => void;
 }
 
-export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, setKeyword, setSong }: Props) {
-  const [results, setResults] = useNamedState<SongForApiContract[]>([], "results");
+export default function VocaDBSearchSongDialog({
+  isOpen,
+  toggleOpen,
+  keyword,
+  setKeyword,
+  setSong,
+}: Props) {
+  const [results, setResults] = useNamedState<SongForApiContract[]>(
+    [],
+    "results"
+  );
   const [isLoaded, toggleLoaded] = useNamedState(false, "loaded");
-  const [selectedSong, setSelectedSong] = useNamedState<number | null>(null, "selectedSong");
+  const [selectedSong, setSelectedSong] = useNamedState<number | null>(
+    null,
+    "selectedSong"
+  );
   const [isImporting, toggleImporting] = useNamedState(false, "importing");
 
   const snackbar = useSnackbar();
@@ -62,7 +77,14 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
     toggleImporting(false);
     setSelectedSong(null);
     toggleLoaded(false);
-  }, [toggleOpen, setKeyword, setResults, toggleImporting, setSelectedSong, toggleLoaded]);
+  }, [
+    toggleOpen,
+    setKeyword,
+    setResults,
+    toggleImporting,
+    setSelectedSong,
+    toggleLoaded,
+  ]);
 
   const handleSubmit = useCallback(async () => {
     if (selectedSong === null) {
@@ -73,35 +95,52 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
 
     toggleImporting(true);
     try {
-      const result = await apolloClient.mutate<{ enrolSongFromVocaDB: Partial<Song> }>({
+      const result = await apolloClient.mutate<{
+        enrolSongFromVocaDB: Partial<Song>;
+      }>({
         mutation: IMPORT_SONG_MUTATION,
         variables: {
           id: selectedSong,
-        }
+        },
       });
 
       if (result.data) {
         setSong(result.data.enrolSongFromVocaDB);
-        snackbar.enqueueSnackbar(`Song “${result.data.enrolSongFromVocaDB.name}” is successfully enrolled.`, {
-          variant: "success",
-        });
+        snackbar.enqueueSnackbar(
+          `Song “${result.data.enrolSongFromVocaDB.name}” is successfully enrolled.`,
+          {
+            variant: "success",
+          }
+        );
         handleClose();
       } else {
         toggleImporting(false);
       }
     } catch (e) {
       console.error(`Error occurred while importing song #${selectedSong}.`, e);
-      snackbar.enqueueSnackbar(`Error occurred while importing song #${selectedSong}. (${e})`, {
-        variant: "error",
-      });
+      snackbar.enqueueSnackbar(
+        `Error occurred while importing song #${selectedSong}. (${e})`,
+        {
+          variant: "error",
+        }
+      );
       toggleImporting(false);
     }
+  }, [
+    apolloClient,
+    handleClose,
+    selectedSong,
+    setSong,
+    snackbar,
+    toggleImporting,
+  ]);
 
-  }, [apolloClient, handleClose, selectedSong, setSong, snackbar, toggleImporting]);
-
-  const handleChooseRadio = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setSelectedSong(parseInt(event.target.value));
-  }, [setSelectedSong]);
+  const handleChooseRadio = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setSelectedSong(parseInt(event.target.value));
+    },
+    [setSelectedSong]
+  );
 
   useEffect(() => {
     if (keyword === "") return;
@@ -117,7 +156,7 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
             sort: "FavoritedTimes",
             nameMatchMode: "Auto",
             fields: "ThumbUrl",
-          }
+          },
         }
       );
 
@@ -127,7 +166,10 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
           setResults(response.data.items);
         } else {
           setResults([]);
-          console.error("Error occurred while loading search results from VocaDB", response);
+          console.error(
+            "Error occurred while loading search results from VocaDB",
+            response
+          );
           snackbar.enqueueSnackbar(
             `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`,
             {
@@ -144,25 +186,32 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
   }, [keyword, setResults, snackbar, toggleLoaded]);
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
-      <DialogTitle id="form-dialog-title">Searching VocaDB for <strong>{keyword}</strong></DialogTitle>
+    <Dialog
+      open={isOpen}
+      onClose={handleClose}
+      aria-labelledby="form-dialog-title"
+      scroll="paper"
+    >
+      <DialogTitle id="form-dialog-title">
+        Searching VocaDB for <strong>{keyword}</strong>
+      </DialogTitle>
       <DialogContent dividers>
         <List>
           {isLoaded ? (
-            results.length > 0 ?
+            results.length > 0 ? (
               results.map((v) => (
-                <ListItem key={v.id} sx={{pr: 12}}>
+                <ListItem key={v.id} sx={{ pr: 12 }}>
                   <ListItemAvatar>
                     <Avatar variant="rounded" src={v.thumbUrl}>
                       <MusicNoteIcon />
                     </Avatar>
                   </ListItemAvatar>
-                  <ListItemText
-                    primary={v.name}
-                    secondary={v.artistString}
-                  />
+                  <ListItemText primary={v.name} secondary={v.artistString} />
                   <ListItemSecondaryAction>
-                    <IconButton href={`https://vocadb.net/S/${v.id}`} target="_blank">
+                    <IconButton
+                      href={`https://vocadb.net/S/${v.id}`}
+                      target="_blank"
+                    >
                       <OpenInNewIcon />
                     </IconButton>
                     <Radio
@@ -170,33 +219,41 @@ export default function VocaDBSearchSongDialog({ isOpen, toggleOpen, keyword, se
                       value={v.id}
                       onChange={handleChooseRadio}
                       name="selectedSong"
-                      inputProps={{ "aria-label": `${v.name} / ${v.artistString}` }}
+                      inputProps={{
+                        "aria-label": `${v.name} / ${v.artistString}`,
+                      }}
                     />
                   </ListItemSecondaryAction>
                 </ListItem>
               ))
-              :
+            ) : (
               <ListItem>
                 <ListItemText secondary="No result found." />
               </ListItem>
-          ) : _.range(5).map(v => (
-            <ListItem key={v}>
-              <ListItemAvatar>
-                <Skeleton variant="rectangular"><Avatar variant="rounded" /></Skeleton>
-              </ListItemAvatar>
-              <ListItemText
-                primary={<Skeleton />}
-                secondary={<Skeleton />}
-              />
-            </ListItem>
-          ))}
+            )
+          ) : (
+            _.range(5).map((v) => (
+              <ListItem key={v}>
+                <ListItemAvatar>
+                  <Skeleton variant="rectangular">
+                    <Avatar variant="rounded" />
+                  </Skeleton>
+                </ListItemAvatar>
+                <ListItemText primary={<Skeleton />} secondary={<Skeleton />} />
+              </ListItem>
+            ))
+          )}
         </List>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="primary">
           Cancel
         </Button>
-        <Button disabled={selectedSong === null || isImporting} onClick={handleSubmit} color="primary">
+        <Button
+          disabled={selectedSong === null || isImporting}
+          onClick={handleSubmit}
+          color="primary"
+        >
           Import
         </Button>
       </DialogActions>

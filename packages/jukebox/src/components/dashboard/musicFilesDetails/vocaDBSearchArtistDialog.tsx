@@ -14,15 +14,14 @@ import {
   Radio
 } from "@mui/material";
 import { ChangeEvent, useCallback, useEffect } from "react";
-import { Artist } from "../../../models/Artist";
+import { Artist } from "lyricova-common/models/Artist";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import axios from "axios";
-import { PartialFindResult, ArtistForApiContract } from "../../../types/vocadb";
+import type { PartialFindResult, ArtistForApiContract } from "lyricova-common/types/vocadb";
 import _ from "lodash";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Skeleton } from "@mui/material";
-import { makeStyles } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
 import { ArtistFragments } from "../../../graphql/fragments";

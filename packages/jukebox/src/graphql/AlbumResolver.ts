@@ -1,13 +1,13 @@
 import { Arg, Authorized, Field, FieldResolver, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
-import { Artist } from "../models/Artist";
+import { Artist } from "lyricova-common/models/Artist";
 import { DataTypes, literal } from "sequelize";
-import { Song } from "../models/Song";
-import { Album } from "../models/Album";
-import { MusicFile } from "../models/MusicFile";
+import { Song } from "lyricova-common/models/Song";
+import { Album } from "lyricova-common/models/Album";
+import { MusicFile } from "lyricova-common/models/MusicFile";
 import _ from "lodash";
-import { SongInAlbum } from "../models/SongInAlbum";
-import { AlbumForApiContract, VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
-import { ArtistOfAlbum } from "../models/ArtistOfAlbum";
+import { SongInAlbum } from "lyricova-common/models/SongInAlbum";
+import type { AlbumForApiContract, VDBArtistCategoryType, VDBArtistRoleType } from "lyricova-common/types/vocadb";
+import { ArtistOfAlbum } from "lyricova-common/models/ArtistOfAlbum";
 import sequelize from "sequelize";
 
 
