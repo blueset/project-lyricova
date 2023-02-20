@@ -1,4 +1,4 @@
-import {ReactNode, useEffect} from "react";
+import { ReactNode, useEffect } from "react";
 import {
   Toolbar,
   IconButton,
@@ -13,7 +13,11 @@ import {
   Menu,
   MenuItem,
   Avatar,
-  ListSubheader, CSSObject, styled, Box, ListItemButton
+  ListSubheader,
+  CSSObject,
+  styled,
+  Box,
+  ListItemButton,
 } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
@@ -27,13 +31,17 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import CachedIcon from "@mui/icons-material/Cached";
 import GetAppIcon from "@mui/icons-material/GetApp";
-import {useNamedState} from "../../../frontendUtils/hooks";
-import {AuthContext, AuthContextConsumer} from "../../public/AuthContext";
-import {useRouter} from "next/router";
-import {NextComposedLink} from "../../Link";
+import { useNamedState } from "../../../frontendUtils/hooks";
+import { AuthContext, AuthContextConsumer } from "../../public/AuthContext";
+import { useRouter } from "next/router";
+import { NextComposedLink } from "../../Link";
 import Head from "next/head";
 import { SnackbarProvider } from "notistack";
-import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
+import {
+  bindMenu,
+  bindTrigger,
+  usePopupState,
+} from "material-ui-popup-state/hooks";
 
 const DRAWER_WIDTH = 240;
 const DASHBOARD_TITLE = "Jukebox Dashboard";
@@ -90,22 +98,22 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== "open" })(
-  ({ theme, open }) => ({
-    width: DRAWER_WIDTH,
-    flexShrink: 0,
-    whiteSpace: "nowrap",
-    boxSizing: "border-box",
-    ...(open && {
-      ...openedMixin(theme),
-      "& .MuiDrawer-paper": openedMixin(theme),
-    }),
-    ...(!open && {
-      ...closedMixin(theme),
-      "& .MuiDrawer-paper": closedMixin(theme),
-    }),
+const Drawer = styled(MuiDrawer, {
+  shouldForwardProp: (prop) => prop !== "open",
+})(({ theme, open }) => ({
+  width: DRAWER_WIDTH,
+  flexShrink: 0,
+  whiteSpace: "nowrap",
+  boxSizing: "border-box",
+  ...(open && {
+    ...openedMixin(theme),
+    "& .MuiDrawer-paper": openedMixin(theme),
   }),
-);
+  ...(!open && {
+    ...closedMixin(theme),
+    "& .MuiDrawer-paper": closedMixin(theme),
+  }),
+}));
 
 interface NavMenuItemProps {
   href: string;
@@ -116,19 +124,30 @@ interface NavMenuItemProps {
   prefixMatch?: boolean;
 }
 
-function NavMenuItem({href, text, icon, activeCriteria, as, prefixMatch}: NavMenuItemProps) {
+function NavMenuItem({
+  href,
+  text,
+  icon,
+  activeCriteria,
+  as,
+  prefixMatch,
+}: NavMenuItemProps) {
   const router = useRouter();
-  const criteria = activeCriteria || ((v: string) => (prefixMatch ? v.startsWith(href) : v === href));
+  const criteria =
+    activeCriteria ||
+    ((v: string) => (prefixMatch ? v.startsWith(href) : v === href));
 
-  return <ListItemButton
-                   component={NextComposedLink}
-                   selected={criteria(router.pathname)}
-                   href={href}
-                   as={as}
-  >
-    {icon && <ListItemIcon>{icon}</ListItemIcon>}
-    <ListItemText primary={text}/>
-  </ListItemButton>;
+  return (
+    <ListItemButton
+      component={NextComposedLink}
+      selected={criteria(router.pathname)}
+      href={href}
+      as={as}
+    >
+      {icon && <ListItemIcon>{icon}</ListItemIcon>}
+      <ListItemText primary={text} />
+    </ListItemButton>
+  );
 }
 
 interface Props {
@@ -136,14 +155,22 @@ interface Props {
   children: ReactNode;
 }
 
-export default function DashboardLayout({title, children}: Props) {
+export default function DashboardLayout({ title, children }: Props) {
   const router = useRouter();
 
   const container = () => window.document.body || undefined;
 
-  const defaultDrawerOpen = useMediaQuery<Theme>((theme) => theme.breakpoints.up("sm"));
-  const [isDrawerOpen, setDrawerOpen] = useNamedState(defaultDrawerOpen, "isDrawerOpen");
-  const popupState = usePopupState({ variant: "popover", popupId: "appbar-menu" });
+  const defaultDrawerOpen = useMediaQuery<Theme>((theme) =>
+    theme.breakpoints.up("sm")
+  );
+  const [isDrawerOpen, setDrawerOpen] = useNamedState(
+    defaultDrawerOpen,
+    "isDrawerOpen"
+  );
+  const popupState = usePopupState({
+    variant: "popover",
+    popupId: "appbar-menu",
+  });
 
   useEffect(() => {
     setDrawerOpen(defaultDrawerOpen);
@@ -162,32 +189,74 @@ export default function DashboardLayout({title, children}: Props) {
     <>
       <DrawerHeader>
         <IconButton onClick={handleDrawerToggle}>
-          <ChevronLeftIcon/>
+          <ChevronLeftIcon />
         </IconButton>
       </DrawerHeader>
-      <Divider/>
+      <Divider />
       <List>
-        <NavMenuItem text="Dashboard" href="/dashboard" icon={<DashboardIcon/>}/>
+        <NavMenuItem
+          text="Dashboard"
+          href="/dashboard"
+          icon={<DashboardIcon />}
+        />
       </List>
-      <Divider/>
+      <Divider />
       <List>
         <ListSubheader inset>Databank</ListSubheader>
-        <NavMenuItem text="Review" href="/dashboard/review" prefixMatch icon={<RateReviewIcon/>}/>
-        <NavMenuItem text="Music entries" href="/dashboard/songs" prefixMatch icon={<MusicNoteIcon/>}/>
-        <NavMenuItem text="Artist entries" href="/dashboard/artists" prefixMatch icon={<RecentActorsIcon/>}/>
-        <NavMenuItem text="Album entries" href="/dashboard/albums" prefixMatch icon={<AlbumIcon/>}/>
-        <NavMenuItem text="Playlists" href="/dashboard/playlists" prefixMatch icon={<QueueMusicIcon/>}/>
-        <NavMenuItem text="Scan" href="/dashboard/scan" icon={<CachedIcon/>}/>
-      </List><Divider/>
+        <NavMenuItem
+          text="Review"
+          href="/dashboard/review"
+          prefixMatch
+          icon={<RateReviewIcon />}
+        />
+        <NavMenuItem
+          text="Music entries"
+          href="/dashboard/songs"
+          prefixMatch
+          icon={<MusicNoteIcon />}
+        />
+        <NavMenuItem
+          text="Artist entries"
+          href="/dashboard/artists"
+          prefixMatch
+          icon={<RecentActorsIcon />}
+        />
+        <NavMenuItem
+          text="Album entries"
+          href="/dashboard/albums"
+          prefixMatch
+          icon={<AlbumIcon />}
+        />
+        <NavMenuItem
+          text="Playlists"
+          href="/dashboard/playlists"
+          prefixMatch
+          icon={<QueueMusicIcon />}
+        />
+        <NavMenuItem text="Scan" href="/dashboard/scan" icon={<CachedIcon />} />
+      </List>
+      <Divider />
       <List>
         <ListSubheader inset>Files</ListSubheader>
-        <NavMenuItem text="Download" href="/dashboard/download" icon={<GetAppIcon/>}/>
+        <NavMenuItem
+          text="Download"
+          href="/dashboard/download"
+          icon={<GetAppIcon />}
+        />
       </List>
-      <Box sx={{display: "flex", flexGrow: 1}} />
+      <Box sx={{ display: "flex", flexGrow: 1 }} />
       <List dense>
         <ListItem>
-          <ListItemText inset primaryTypographyProps={{color: "textSecondary"}}>Project Lyricova<br/>since 2013<br/>by
-            1A23 Studio</ListItemText>
+          <ListItemText
+            inset
+            primaryTypographyProps={{ color: "textSecondary" }}
+          >
+            Project Lyricova
+            <br />
+            since 2013
+            <br />
+            by 1A23 Studio
+          </ListItemText>
         </ListItem>
       </List>
     </>
@@ -196,75 +265,85 @@ export default function DashboardLayout({title, children}: Props) {
   const pageTitle = title ? `${title} - ${DASHBOARD_TITLE}` : DASHBOARD_TITLE;
   title = title || DASHBOARD_TITLE;
 
-  return <AuthContext>
-    <Head>
-      <title>{pageTitle}</title>
-      <meta property="og:title" content={pageTitle} key="title"/>
-    </Head>
-    <SnackbarProvider maxSnack={4}>
-      <AuthContextConsumer>{(userContext) =>
-      <Box sx={{display: "flex"}}>
-        <AppBar position="fixed" open={isDrawerOpen}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{
-                marginRight: "36px",
-                ...(isDrawerOpen && {display: "none"}),
-              }}
-            >
-              <MenuIcon/>
-            </IconButton>
-            <Typography variant="h6" component="div" sx={{flexGrow: 1}} noWrap>
-              {title}
-            </Typography>
-            <IconButton
-              aria-label="account of current user"
-              color="inherit"
-              {...bindTrigger(popupState)}
-            >
-              <Avatar alt={userContext.user?.displayName} src={`https://www.gravatar.com/avatar/${userContext.user?.emailMD5}`}/>
-            </IconButton>
-            <Menu
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              {...bindMenu(popupState)}
-            >
-              <MenuItem onClick={logOut}>
-                <ListItemText
-                  primary="Log out"
-                  primaryTypographyProps={{color: "error"}}
-                />
-              </MenuItem>
-            </Menu>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          variant="permanent"
-          open={isDrawerOpen}
-        >
-          {drawer}
-        </Drawer>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <DrawerHeader />
-          {children}
-        </Box>
-      </Box>
-    }</AuthContextConsumer>
-    </SnackbarProvider>
-  </AuthContext>;
+  return (
+    <AuthContext>
+      <Head>
+        <title>{pageTitle}</title>
+        <meta property="og:title" content={pageTitle} key="title" />
+      </Head>
+      <SnackbarProvider maxSnack={4}>
+        <AuthContextConsumer>
+          {(userContext) => (
+            <Box sx={{ display: "flex" }}>
+              <AppBar position="fixed" open={isDrawerOpen}>
+                <Toolbar>
+                  <IconButton
+                    color="inherit"
+                    aria-label="open drawer"
+                    edge="start"
+                    onClick={handleDrawerToggle}
+                    sx={{
+                      marginRight: "36px",
+                      ...(isDrawerOpen && { display: "none" }),
+                    }}
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                  <Typography
+                    variant="h6"
+                    component="div"
+                    sx={{ flexGrow: 1 }}
+                    noWrap
+                  >
+                    {title}
+                  </Typography>
+                  <IconButton
+                    aria-label="account of current user"
+                    color="inherit"
+                    {...bindTrigger(popupState)}
+                  >
+                    <Avatar
+                      alt={userContext.user?.displayName}
+                      src={`https://www.gravatar.com/avatar/${userContext.user?.emailMD5}`}
+                    />
+                  </IconButton>
+                  <Menu
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    keepMounted
+                    transformOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
+                    }}
+                    {...bindMenu(popupState)}
+                  >
+                    <MenuItem onClick={logOut}>
+                      <ListItemText
+                        primary="Log out"
+                        primaryTypographyProps={{ color: "error" }}
+                      />
+                    </MenuItem>
+                  </Menu>
+                </Toolbar>
+              </AppBar>
+              <Drawer variant="permanent" open={isDrawerOpen}>
+                {drawer}
+              </Drawer>
+              <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                <DrawerHeader />
+                {children}
+              </Box>
+            </Box>
+          )}
+        </AuthContextConsumer>
+      </SnackbarProvider>
+    </AuthContext>
+  );
 }
 
 // eslint-disable-next-line react/display-name
-export const getLayout = (title?: string) => ((page: ReactNode) => <DashboardLayout
-  title={title}>{page}</DashboardLayout>);
+export const getLayout = (title?: string) => (page: ReactNode) => (
+  <DashboardLayout title={title}>{page}</DashboardLayout>
+);

@@ -1,7 +1,17 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useNamedState } from "./hooks";
 
-export function useClientPersistentState<T>(defaultValue: T, name: string, namespace: string): [T, Dispatch<SetStateAction<T>>] {
+export function useClientPersistentState<T>(
+  defaultValue: T,
+  name: string,
+  namespace: string
+): [T, Dispatch<SetStateAction<T>>] {
   // const [isMounted, toggleIsMounted] = useState(false);
   const key = `${namespace}.${name}`;
   const [value, setValue] = useNamedState(defaultValue, name);
@@ -18,18 +28,20 @@ export function useClientPersistentState<T>(defaultValue: T, name: string, names
     const stickyValue = window.localStorage.getItem(key);
 
     if (stickyValue !== null) {
-      console.log("on mount", stickyValue, );
       setValue(JSON.parse(stickyValue));
     }
 
     // toggleIsMounted(true);
   }, [key, setValue]);
 
-  const setValueWrap = useCallback((v: SetStateAction<T>) => {
-    const val = v instanceof Function ? v(value) : v;
-    setValue(val);
-    window.localStorage.setItem(key, JSON.stringify(val));
-  }, [key, setValue, value]);
+  const setValueWrap = useCallback(
+    (v: SetStateAction<T>) => {
+      const val = v instanceof Function ? v(value) : v;
+      setValue(val);
+      window.localStorage.setItem(key, JSON.stringify(val));
+    },
+    [key, setValue, value]
+  );
 
   return [value, setValueWrap];
 }

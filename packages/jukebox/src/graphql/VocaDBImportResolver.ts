@@ -1,7 +1,6 @@
 import { Song } from "lyricova-common/models/Song";
 import type { AlbumForApiContract, ArtistForApiContract, SongForApiContract } from "lyricova-common/types/vocadb";
-import axios, { AxiosInstance } from "axios";
-import got from "got";
+import got from "got-cjs";
 import { Arg, Authorized, Int, Mutation, Resolver } from "type-graphql";
 import { Artist } from "lyricova-common/models/Artist";
 import { Album } from "lyricova-common/models/Album";
@@ -9,18 +8,8 @@ import { Album } from "lyricova-common/models/Album";
 
 @Resolver()
 export class VocaDBImportResolver {
-  private axios: AxiosInstance;
-
-  constructor() {
-    this.axios = axios.create({ responseType: "json" });
-  }
 
   private async getSong(songId: string | number): Promise<SongForApiContract> {
-    // const song = await this.axios.get<SongForApiContract>(`https://vocadb.net/api/songs/${songId}`, {
-    //   params: {
-    //     fields: "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
-    //   }
-    // });
     const song = await got.get(`https://vocadb.net/api/songs/${songId}`, {
       searchParams: {
         fields: "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",

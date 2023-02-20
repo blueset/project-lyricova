@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Express } from "express";
 import compression from "compression";
 import bodyParser from "body-parser";
 import flash from "express-flash";
@@ -12,7 +12,7 @@ import SequelizeStoreConstructor from "connect-session-sequelize";
 
 const SequelizeStore = SequelizeStoreConstructor(session.Store);
 
-export default async () => {
+export default async (): Promise<Express> => {
   const app = express();
 
   app.set("port", process.env.PORT || 3000);

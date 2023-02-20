@@ -3,7 +3,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy, IVerifyOptions } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import jwt from "jsonwebtoken";
-import { User } from "lyricova-common/models/User";
+import { User } from "../models/User";
 import { JWT_SECRET } from "../utils/secret";
 import cors from "cors";
 
@@ -85,10 +85,10 @@ export class AuthController {
     );
 
     passport.deserializeUser(
-      async (id: string, done: (err: any, user: User) => void) => {
+      async (id: string, done: (err: any, user?: User) => void) => {
         const user = await User.findByPk(parseInt(id));
         if (user === null) {
-          return done("User not found", null);
+          return done("User not found");
         }
         done(null, user);
       }
@@ -114,7 +114,7 @@ export class AuthController {
             }
             return done(null, user);
           } catch (err) {
-            return done(err, null);
+            return done(err, false);
           }
         }
       )

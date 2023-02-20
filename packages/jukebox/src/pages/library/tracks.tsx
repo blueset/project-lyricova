@@ -285,7 +285,6 @@ export default function LibraryTracks() {
   });
 
   const parentRefCallback = useCallback((elm) => {
-    console.log("ref", elm);
     if (!parentRef.current) {
       parentRef.current = elm;
       rowVirtualizer.measure();

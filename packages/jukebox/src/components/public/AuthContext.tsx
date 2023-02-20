@@ -8,7 +8,7 @@ import {
 import { User } from "lyricova-common/models/User";
 import { useQuery, gql, useApolloClient } from "@apollo/client";
 import { useRouter } from "next/router";
-import { LS_JWT_KEY } from "../../frontendUtils/localStorage";
+import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
 
 interface AuthContextProps {
   /**

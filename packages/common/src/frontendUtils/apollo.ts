@@ -1,4 +1,10 @@
-import { ApolloClient, InMemoryCache, createHttpLink, split, defaultDataIdFromObject } from "@apollo/client";
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  split,
+  defaultDataIdFromObject,
+} from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { LS_JWT_KEY } from "./localStorage";
 import { WebSocketLink } from "@apollo/client/link/ws";
@@ -16,9 +22,14 @@ const authLink = setContext((_, { headers }) => {
     headers: {
       ...headers,
       authorization: token ? `Bearer ${token}` : "",
-    }
+    },
   };
 });
+
+interface Process {
+  browser: boolean;
+}
+declare var process: Process;
 
 const link = (() => {
   return authLink.concat(httpLink);
@@ -35,7 +46,7 @@ const link = (() => {
             authorization: token,
           };
         },
-      }
+      },
     });
 
     // The split function takes three parameters:
@@ -52,7 +63,7 @@ const link = (() => {
         );
       },
       wsLink,
-      authLink.concat(httpLink),
+      authLink.concat(httpLink)
     );
 
     return splitLink;
@@ -61,8 +72,7 @@ const link = (() => {
   }
 })();
 
-
 export default new ApolloClient({
   link,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache(),
 });

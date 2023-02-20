@@ -6,7 +6,7 @@ import Document, {
   NextScript,
 } from "next/document";
 import React from "react";
-import theme from "../frontendUtils/theme";
+import theme from "lyricova-common/frontendUtils/theme";
 import createCache from "@emotion/cache";
 import createEmotionServer from "@emotion/server/create-instance";
 

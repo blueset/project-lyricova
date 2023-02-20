@@ -8,7 +8,7 @@ import {
 } from "lyricova-common/utils/transliterate";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController";
 import { DownloadController } from "./controller/DownloadController";
-import { AuthController } from "./controller/AuthController";
+import { AuthController } from "lyricova-common/utils/AuthController";
 import { PlaylistController } from "./controller/PlaylistController";
 
 export default (app: express.Express) => {

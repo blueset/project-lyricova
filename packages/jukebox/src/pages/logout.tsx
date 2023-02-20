@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { LS_JWT_KEY } from "../frontendUtils/localStorage";
+import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { useApolloClient } from "@apollo/client";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const req = context.req as unknown as Express.Request;
+  const req = (context.req as unknown) as Express.Request;
   req.logout();
   return {
     props: {}, // will be passed to the page component as props

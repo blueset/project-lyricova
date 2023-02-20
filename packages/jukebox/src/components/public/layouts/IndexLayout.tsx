@@ -37,7 +37,6 @@ interface Props {
 
 const SxMotionDiv = styled(motion.div)``;
 
-
 const TEXTURE_QUERY = gql`
   query GetTexture {
     randomTexture {
@@ -77,12 +76,9 @@ export default function IndexLayout({ children }: Props) {
   const playerRef = useRef<HTMLAudioElement>();
 
   const dispatch = useAppDispatch();
-  const {
-    nowPlaying,
-    loopMode,
-    isCollapsed,
-    playNow,
-  } = useAppSelector((s) => s.playlist);
+  const { nowPlaying, loopMode, isCollapsed, playNow } = useAppSelector(
+    (s) => s.playlist
+  );
   const currentSong = useAppSelector(currentSongSelector);
 
   // Reflect nowPlaying change to player
@@ -270,8 +266,13 @@ export default function IndexLayout({ children }: Props) {
         navigator.mediaSession.metadata = null;
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSong, loadRandomTexture, randomTextureQuery.refetch, setTextureURL]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    currentSong,
+    loadRandomTexture,
+    randomTextureQuery.refetch,
+    setTextureURL,
+  ]);
 
   // Store full song list once loaded
   useEffect(() => {

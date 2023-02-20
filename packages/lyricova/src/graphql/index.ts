@@ -127,21 +127,6 @@ export async function applyApollo(app: Application): Promise<Server> {
 
   const httpServer = createServer(app);
 
-  // This is blocking next auto refresh
-  // const subscriptionServer = SubscriptionServer.create({
-  //   // This is the `schema` we just created.
-  //   schema,
-  //   // These are imported from `graphql`.
-  //   execute,
-  //   subscribe,
-  // }, {
-  //   // This is the `httpServer` we created in a previous step.
-  //   server: httpServer,
-  //   // Pass a different path here if your ApolloServer serves at
-  //   // a different path.
-  //   path: "/graphql",
-  // });
-
   const apolloServer = new ApolloServer({
     schema,
     plugins: [

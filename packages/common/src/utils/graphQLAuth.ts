@@ -1,5 +1,5 @@
 import { AuthChecker } from "type-graphql";
-import { User } from "lyricova-common/models/User";
+import { User } from "../models/User";
 import { Request } from "express";
 
 export type ContextType = {
@@ -8,7 +8,7 @@ export type ContextType = {
 };
 
 export const authChecker: AuthChecker<ContextType> = ({ context }, roles) => {
-  if (context.user ?? false) {
+  if (context.user) {
     if (roles.indexOf("ADMIN") >= 0) {
       return context.user.role === "admin";
     }
