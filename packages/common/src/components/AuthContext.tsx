@@ -56,7 +56,7 @@ export function AuthContext({
 
     const needAuth = !authRedirect;
     const token = window.localStorage?.getItem(LS_JWT_KEY);
-    let hasToken = !(token ?? null);
+    let hasToken = !!(token ?? null);
     if (hasToken) {
       if (loading) return;
       if (error) {

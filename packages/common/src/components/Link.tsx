@@ -27,9 +27,8 @@ interface LinkProps extends Omit<React.ComponentProps<typeof MuiLink>, "ref"> {
   href: string;
   innerRef: React.Ref<HTMLAnchorElement>;
   naked?: boolean;
-  onClick?: () => void;
   prefetch?: boolean;
-  children?: React.ReactChild;
+  children?: React.ReactNode;
   activeCriteria?: (pathName: string) => boolean;
 }
 

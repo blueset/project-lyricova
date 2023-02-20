@@ -1,17 +1,17 @@
-import Link from "lyricova-common/components/Link";
 import { AuthContext } from "lyricova-common/components/AuthContext";
-import { Button, Box } from "@mui/material";
+import { Button, Box, Typography, Popover, Link } from "@mui/material";
 import { useRouter } from "next/router";
 import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
 import { makeValidate, TextField } from "mui-rff";
 import * as yup from "yup";
 import { Form } from "react-final-form";
 import { useApolloClient } from "@apollo/client";
+import { useState } from "react";
 
 export default function Login() {
   const router = useRouter();
   const apolloClient = useApolloClient();
-
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   return (
     <AuthContext authRedirect="/dashboard">
       <Box
@@ -83,7 +83,12 @@ export default function Login() {
                   label="Password"
                 />
                 <div>
-                  <Link href="#">Forgot password?</Link>
+                  <Link
+                    href="#"
+                    onClick={(event) => setAnchorEl(event.currentTarget)}
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
                 <Button
                   sx={{ marginTop: 2 }}
@@ -107,6 +112,18 @@ export default function Login() {
           }}
         />
       </Box>
+
+      <Popover
+        open={!!anchorEl}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+      >
+        <Typography sx={{ p: 2 }}>Try harder.</Typography>
+      </Popover>
     </AuthContext>
   );
 }

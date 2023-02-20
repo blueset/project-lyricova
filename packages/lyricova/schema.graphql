@@ -132,6 +132,7 @@ type Playlist {
 }
 
 type Query {
+  currentUser: User
   foo: Foo!
   foos: [Foo!]!
   hash(plaintext: String!): String!
