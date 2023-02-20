@@ -46,7 +46,7 @@ import _ from "lodash";
 import SelectMusicFileBox from "../../../components/dashboard/selectMusicFileBox";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useCallback } from "react";
-import { NextComposedLink } from "../../../components/Link";
+import { NextComposedLink } from "lyricova-common/components/Link";
 import { DocumentNode } from "graphql";
 
 const PLAYLIST_QUERY = gql`

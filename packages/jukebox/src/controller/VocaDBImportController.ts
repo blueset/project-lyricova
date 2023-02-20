@@ -1,9 +1,6 @@
-import { MusicFile } from "lyricova-common/models/MusicFile";
 import { Song } from "lyricova-common/models/Song";
-import { Album } from "lyricova-common/models/Album";
-import { Artist } from "lyricova-common/models/Artist";
 import { Request, Response, NextFunction, Router } from "express";
-import type { SongForApiContract } from "lyricova-common/types/vocadb";
+import type { SongForApiContract } from "../types/vocadb";
 import axios, { AxiosInstance } from "axios";
 
 export class VocaDBImportController {

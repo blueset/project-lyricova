@@ -32,9 +32,12 @@ import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import CachedIcon from "@mui/icons-material/Cached";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import { AuthContext, AuthContextConsumer } from "../../public/AuthContext";
+import {
+  AuthContext,
+  AuthContextConsumer,
+} from "lyricova-common/components/AuthContext";
 import { useRouter } from "next/router";
-import { NextComposedLink } from "../../Link";
+import { NextComposedLink } from "lyricova-common/components/Link";
 import Head from "next/head";
 import { SnackbarProvider } from "notistack";
 import {

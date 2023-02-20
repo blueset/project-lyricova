@@ -3,14 +3,12 @@ import {
   LyricsKitLyricsLine,
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import {
-  usePlainPlayerLyricsState,
-} from "../../../frontendUtils/hooks";
+import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { Box } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import _ from "lodash";
 import { useRef, RefObject, useEffect } from "react";
-import Measure from "react-measure";
+import Measure, { MeasuredComponentProps } from "react-measure";
 import { Scene } from "react-scenejs";
 import {
   cj,
@@ -115,6 +113,7 @@ function LyricsLineElement({
   return (
     <div>
       <div lang="ja">
+        {/* @ts-ignore */}
         <Scene
           keyframes={animate ? keyframes : null}
           ref={animate ? progressorRef : null}
@@ -232,7 +231,7 @@ export function StrokeLyrics({ lyrics }: Props) {
       }}
     >
       <Measure bounds>
-        {({ contentRect, measureRef }) => (
+        {({ contentRect, measureRef }: MeasuredComponentProps) => (
           <div ref={measureRef}>{lineElement(contentRect.bounds.width)}</div>
         )}
       </Measure>

@@ -17,7 +17,7 @@ import clsx from "clsx";
 import { Artist } from "lyricova-common/models/Artist";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ButtonRow from "../ButtonRow";
-import { NextComposedLink } from "../Link";
+import { NextComposedLink } from "lyricova-common/components/Link";
 import { formatTime } from "../../frontendUtils/strings";
 import filesize from "filesize";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";

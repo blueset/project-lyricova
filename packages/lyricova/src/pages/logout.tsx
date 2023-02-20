@@ -1,0 +1,31 @@
+import { useEffect } from "react";
+import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
+import { useRouter } from "next/router";
+import { GetServerSideProps } from "next";
+import { useApolloClient } from "@apollo/client";
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const req = (context.req as unknown) as Express.Request;
+  req.logout();
+  return {
+    props: {}, // will be passed to the page component as props
+  };
+};
+
+export default function Logout() {
+  const router = useRouter();
+  const apolloClient = useApolloClient();
+
+  useEffect(() => {
+    const hasToken = Boolean(localStorage?.getItem(LS_JWT_KEY) ?? null);
+    if (hasToken) {
+      localStorage.removeItem(LS_JWT_KEY);
+      apolloClient.resetStore().then(() => {
+        router.push("/login");
+      });
+    } else {
+      router.push("/login");
+    }
+  }, [apolloClient, router]);
+  return <></>;
+}

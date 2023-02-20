@@ -4,7 +4,6 @@ import { Link as MuiLink } from "@mui/material";
 import { useRouter } from "next/router";
 import clsx from "clsx";
 
-
 interface NextComposedProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   as?: string;
   href: string;
@@ -12,12 +11,13 @@ interface NextComposedProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   className?: string;
 }
 
-export const NextComposedLink = React.forwardRef<HTMLAnchorElement, NextComposedProps>(function NextComposed(props, ref) {
+export const NextComposedLink = React.forwardRef<
+  HTMLAnchorElement,
+  NextComposedProps
+>(function NextComposed(props, ref) {
   const { as, href, ...other } = props;
 
-  return (
-    <NextLink href={href} as={as} ref={ref} {...other} />
-  );
+  return <NextLink href={href} as={as} ref={ref} {...(other as any)} />;
 });
 
 interface LinkProps extends Omit<React.ComponentProps<typeof MuiLink>, "ref"> {
@@ -32,7 +32,6 @@ interface LinkProps extends Omit<React.ComponentProps<typeof MuiLink>, "ref"> {
   children?: React.ReactChild;
   activeCriteria?: (pathName: string) => boolean;
 }
-
 
 // A styled version of the Next.js Link component:
 // https://nextjs.org/docs/#with-link
@@ -54,14 +53,30 @@ function Link(props: LinkProps) {
   });
 
   if (naked) {
-    return <NextComposedLink className={className} ref={innerRef} href={href} {...other as unknown as NextComposedProps} />;
+    return (
+      <NextComposedLink
+        className={className}
+        ref={innerRef}
+        href={href}
+        {...((other as unknown) as Omit<NextComposedProps, "href">)}
+      />
+    );
   }
 
   return (
-    <MuiLink component={NextComposedLink} className={className} ref={innerRef} href={href} {...other} />
+    <MuiLink
+      component={NextComposedLink}
+      className={className}
+      ref={innerRef}
+      href={href}
+      {...other}
+    />
   );
 }
 
-const RefLink = React.forwardRef<HTMLAnchorElement, Omit<LinkProps, "innerRef">>((props, ref) => <Link {...props} innerRef={ref} />);
+const RefLink = React.forwardRef<
+  HTMLAnchorElement,
+  Omit<LinkProps, "innerRef">
+>((props, ref) => <Link {...props} innerRef={ref} />);
 RefLink.displayName = "Link";
 export default RefLink;

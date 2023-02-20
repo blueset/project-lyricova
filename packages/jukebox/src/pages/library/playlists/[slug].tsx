@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
-import { useAuthContext } from "../../../components/public/AuthContext";
+import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {
   bindMenu,
   bindTrigger,

@@ -1,5 +1,5 @@
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
-import type { VDBArtistType } from "lyricova-common/types/vocadb";
+import type { VDBArtistType } from "../../../types/vocadb";
 import ArtistsList from "../../../components/public/library/ArtistsList";
 
 const TYPES_TO_SHOW: VDBArtistType[] = [

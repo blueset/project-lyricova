@@ -1,15 +1,25 @@
 import {
   Button,
   Chip,
-  CircularProgress, FormControlLabel, Stack,
+  CircularProgress,
+  FormControlLabel,
+  Stack,
   Step,
   StepContent,
   StepLabel,
-  Stepper, Switch,
+  Stepper,
+  Switch,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
-import { ChangeEvent, Dispatch, FormEvent, ReactNode, SetStateAction, useCallback } from "react";
+import {
+  ChangeEvent,
+  Dispatch,
+  FormEvent,
+  ReactNode,
+  SetStateAction,
+  useCallback,
+} from "react";
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
@@ -17,7 +27,7 @@ import Alert from "@mui/material/Alert";
 import filesize from "filesize";
 import { makeStyles } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { NextComposedLink } from "../Link";
+import { NextComposedLink } from "lyricova-common/components/Link";
 import { useSnackbar } from "notistack";
 import { swapExt } from "../../utils/path";
 import { DocumentNode } from "graphql";
@@ -30,7 +40,10 @@ const YOUTUBE_DL_INFO_QUERY = gql`
 
 const YOUTUBE_DL_DOWNLOAD_MUTATION = gql`
   mutation($url: String!, $filename: String, $overwrite: Boolean) {
-    youtubeDlDownloadAudio(url: $url, options: {filename: $filename, overwrite: $overwrite})
+    youtubeDlDownloadAudio(
+      url: $url
+      options: { filename: $filename, overwrite: $overwrite }
+    )
   }
 ` as DocumentNode;
 
@@ -66,7 +79,11 @@ interface Props {
   firstStep: ReactNode;
 }
 
-export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Props) {
+export default function YouTubeDlDownloadSteps({
+  step,
+  setStep,
+  firstStep,
+}: Props) {
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
 
@@ -74,58 +91,87 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
   const [filename, setFilename] = useNamedState("", "filename");
   const [overwrite, toggleOverwrite] = useNamedState(false, "overwrite");
 
-  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setVideoURL(event.target.value);
-  }, [setVideoURL]);
-
-  const handleFilename = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setFilename(event.target.value);
-  }, [setFilename]);
-
-  const handleOverwrite = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    toggleOverwrite(event.target.checked);
-  }, [toggleOverwrite]);
-
-  const [fetchInfo, fetchInfoQuery] = useLazyQuery<{ youtubeDlGetInfo: YouTubeDlInfo }>(
-    YOUTUBE_DL_INFO_QUERY,
-    {
-      onCompleted(data) {
-        if (data?.youtubeDlGetInfo) {
-          setFilename(swapExt(fetchInfoQuery.data.youtubeDlGetInfo._filename, "mp3"));
-        }
-      }
-    }
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setVideoURL(event.target.value);
+    },
+    [setVideoURL]
   );
+
+  const handleFilename = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setFilename(event.target.value);
+    },
+    [setFilename]
+  );
+
+  const handleOverwrite = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      toggleOverwrite(event.target.checked);
+    },
+    [toggleOverwrite]
+  );
+
+  const [fetchInfo, fetchInfoQuery] = useLazyQuery<{
+    youtubeDlGetInfo: YouTubeDlInfo;
+  }>(YOUTUBE_DL_INFO_QUERY, {
+    onCompleted(data) {
+      if (data?.youtubeDlGetInfo) {
+        setFilename(
+          swapExt(fetchInfoQuery.data.youtubeDlGetInfo._filename, "mp3")
+        );
+      }
+    },
+  });
   const fetchInfoQueryData = fetchInfoQuery?.data?.youtubeDlGetInfo;
-  const handleVerify = useCallback(async (e: FormEvent) => {
-    e.preventDefault();
-    await fetchInfo({ variables: { url: videoURL } });
-    setStep(v => v + 1);
-    return false;
-  }, [fetchInfo, videoURL, setStep, fetchInfoQuery.data?.youtubeDlGetInfo, setFilename]);
+  const handleVerify = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      await fetchInfo({ variables: { url: videoURL } });
+      setStep((v) => v + 1);
+      return false;
+    },
+    [
+      fetchInfo,
+      videoURL,
+      setStep,
+      fetchInfoQuery.data?.youtubeDlGetInfo,
+      setFilename,
+    ]
+  );
 
   /** Download state. Null = no result. >= 0, -1: Fail */
-  const [downloadState, setDownloadState] = useNamedState<number | null>(null, "downloadState");
+  const [downloadState, setDownloadState] = useNamedState<number | null>(
+    null,
+    "downloadState"
+  );
 
   const downloadFile = useCallback(async () => {
-    setStep(v => v + 1);
+    setStep((v) => v + 1);
     setDownloadState(null);
 
     try {
-      const outcome = await apolloClient.mutate<{ youtubeDlDownloadAudio: string | null }>({
+      const outcome = await apolloClient.mutate<{
+        youtubeDlDownloadAudio: string | null;
+      }>({
         mutation: YOUTUBE_DL_DOWNLOAD_MUTATION,
-        variables: { url: videoURL, filename, overwrite }
+        variables: { url: videoURL, filename, overwrite },
       });
 
       const filePath = outcome.data.youtubeDlDownloadAudio;
       if (filePath === null) {
-        snackbar.enqueueSnackbar(`Failed to download ${videoURL} as ${filename}`, { variant: "error" });
+        snackbar.enqueueSnackbar(
+          `Failed to download ${videoURL} as ${filename}`,
+          { variant: "error" }
+        );
         setDownloadState(-1);
         return;
       }
 
       // Scan the file downloaded.
-      const scanOutcome = await apolloClient.mutate<{ scanByPath: { id: number } }>({
+      const scanOutcome = await apolloClient.mutate<{
+        scanByPath: { id: number };
+      }>({
         mutation: SINGLE_FILE_SCAN_MUTATION,
         variables: { path: filePath },
       });
@@ -134,35 +180,75 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
         `File downloaded with database ID ${scanOutcome.data.scanByPath.id} and path ${filePath}.`,
         {
           variant: "success",
-          action: <Button component={NextComposedLink}
-                          href={`/dashboard/review/${scanOutcome.data.scanByPath.id}`}>
-            Review file
-          </Button>
+          action: (
+            <Button
+              component={NextComposedLink}
+              href={`/dashboard/review/${scanOutcome.data.scanByPath.id}`}
+            >
+              Review file
+            </Button>
+          ),
         }
       );
     } catch (e) {
       console.error("Error occurred while downloading file", e);
-      snackbar.enqueueSnackbar(`Error occurred while downloading file: ${e}`, { variant: "error" });
-      setStep(v => v - 1);
+      snackbar.enqueueSnackbar(`Error occurred while downloading file: ${e}`, {
+        variant: "error",
+      });
+      setStep((v) => v - 1);
     }
-  }, [apolloClient, downloadState, filename, overwrite, setDownloadState, setStep, snackbar, videoURL]);
-
+  }, [
+    apolloClient,
+    downloadState,
+    filename,
+    overwrite,
+    setDownloadState,
+    setStep,
+    snackbar,
+    videoURL,
+  ]);
 
   return (
     <Stepper activeStep={step} orientation="vertical">
       {firstStep}
       <Step key="youtube-dl-1">
-        <StepLabel>{step <= 1 ? <>Download from <code>yt-dlp</code></> : <>Download
-          from <code>{videoURL}</code></>}</StepLabel>
+        <StepLabel>
+          {step <= 1 ? (
+            <>
+              Download from <code>yt-dlp</code>
+            </>
+          ) : (
+            <>
+              Download from <code>{videoURL}</code>
+            </>
+          )}
+        </StepLabel>
         <StepContent>
           <form onSubmit={handleVerify}>
-            <TextField value={videoURL} label="URL" variant="outlined" fullWidth margin="normal"
-                       onChange={handleChange} />
+            <TextField
+              value={videoURL}
+              label="URL"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              onChange={handleChange}
+            />
             <ButtonRow>
-              <Button disabled={fetchInfoQuery.loading} variant="contained" color="secondary"
-                      type="submit">Verify</Button>
-              <Button disabled={fetchInfoQuery.loading} variant="outlined"
-                      onClick={() => setStep(v => v - 1)}>Back</Button>
+              <Button
+                disabled={fetchInfoQuery.loading}
+                variant="contained"
+                color="secondary"
+                type="submit"
+              >
+                Verify
+              </Button>
+              <Button
+                disabled={fetchInfoQuery.loading}
+                variant="outlined"
+                onClick={() => setStep((v) => v - 1)}
+              >
+                Back
+              </Button>
             </ButtonRow>
           </form>
         </StepContent>
@@ -170,44 +256,65 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
       <Step key="youtube-dl-2">
         <StepLabel>Verify info</StepLabel>
         <StepContent>
-          {
-            fetchInfoQuery.loading ?
-              <Alert severity="info">Loading...</Alert>
-              : fetchInfoQuery.error ?
-              <Alert severity="error">Error: {`${fetchInfoQuery.error}`}</Alert>
-              : fetchInfoQueryData ?
+          {fetchInfoQuery.loading ? (
+            <Alert severity="info">Loading...</Alert>
+          ) : fetchInfoQuery.error ? (
+            <Alert severity="error">Error: {`${fetchInfoQuery.error}`}</Alert>
+          ) : fetchInfoQueryData ? (
+            <div>
+              <Stack direction="row" alignItems="center">
+                <img
+                  src={fetchInfoQueryData.thumbnail}
+                  alt={fetchInfoQueryData.fulltitle}
+                  style={{ height: "4em", marginRight: 4, borderRadius: 4 }}
+                />
                 <div>
-                  <Stack direction="row" alignItems="center">
-                    <img src={fetchInfoQueryData.thumbnail} alt={fetchInfoQueryData.fulltitle}
-                         style={{ height: "4em", marginRight: 4, borderRadius: 4, }} />
-                    <div>
-                      <Typography
-                        variant="body1">{fetchInfoQueryData.fulltitle} ({fetchInfoQueryData._duration_hms})</Typography>
-                      <Typography variant="body2" color="textSecondary">{fetchInfoQueryData.uploader}</Typography>
-                    </div>
-                  </Stack>
-                  <Typography variant="body1"
-                              gutterBottom>Filename (video): <code>{fetchInfoQueryData._filename}</code></Typography>
-                  <div>
-                    {fetchInfoQueryData.formats.filter(v => v.abr).map(v => {
-                      let chiplabel = v.format;
-                      if (v.abr) {
-                        chiplabel = `${chiplabel}, ♪${v.abr}k@[${v.acodec || "Unknown codec"}]`;
-                      }
-                      chiplabel = `${chiplabel}, ${v.filesize ? filesize(v.filesize) : "Unknown size"}, ${v.ext}`;
-                      return <Chip
+                  <Typography variant="body1">
+                    {fetchInfoQueryData.fulltitle} (
+                    {fetchInfoQueryData._duration_hms})
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    {fetchInfoQueryData.uploader}
+                  </Typography>
+                </div>
+              </Stack>
+              <Typography variant="body1" gutterBottom>
+                Filename (video): <code>{fetchInfoQueryData._filename}</code>
+              </Typography>
+              <div>
+                {fetchInfoQueryData.formats
+                  .filter((v) => v.abr)
+                  .map((v) => {
+                    let chiplabel = v.format;
+                    if (v.abr) {
+                      chiplabel = `${chiplabel}, ♪${v.abr}k@[${v.acodec ||
+                        "Unknown codec"}]`;
+                    }
+                    chiplabel = `${chiplabel}, ${
+                      v.filesize ? filesize(v.filesize) : "Unknown size"
+                    }, ${v.ext}`;
+                    return (
+                      <Chip
                         key={v.format_id}
                         size="small"
-                        sx={{marginRight: 1, marginBottom: 1}}
-                        label={chiplabel} />;
-                    })}
-                  </div>
-                </div>
-                : "... how did you get there?"
-          }
+                        sx={{ marginRight: 1, marginBottom: 1 }}
+                        label={chiplabel}
+                      />
+                    );
+                  })}
+              </div>
+            </div>
+          ) : (
+            "... how did you get there?"
+          )}
           <TextField
-            value={filename} onChange={handleFilename}
-            label="Filename" variant="outlined" fullWidth margin="normal" />
+            value={filename}
+            onChange={handleFilename}
+            label="Filename"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+          />
           <FormControlLabel
             control={
               <Switch
@@ -219,27 +326,50 @@ export default function YouTubeDlDownloadSteps({ step, setStep, firstStep }: Pro
             label="Overwrite existing file with same name"
           />
           <ButtonRow>
-            <Button variant="contained" color="secondary" onClick={downloadFile} disabled={!fetchInfoQuery.data}>Download</Button>
-            <Button variant="outlined" onClick={() => setStep(v => v - 1)}>Back</Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={downloadFile}
+              disabled={!fetchInfoQuery.data}
+            >
+              Download
+            </Button>
+            <Button variant="outlined" onClick={() => setStep((v) => v - 1)}>
+              Back
+            </Button>
           </ButtonRow>
         </StepContent>
       </Step>
       <Step key="youtube-dl-3">
-        <StepLabel>{step !== 3 ? "Download" : downloadState === null ? "Downloading..." : "Download outcome"}</StepLabel>
+        <StepLabel>
+          {step !== 3
+            ? "Download"
+            : downloadState === null
+            ? "Downloading..."
+            : "Download outcome"}
+        </StepLabel>
         <StepContent>
           {downloadState === null && <CircularProgress color="secondary" />}
           <ButtonRow>
-            <Button disabled={downloadState === null || downloadState < 0} variant="contained" color="secondary"
-                    startIcon={<OpenInNewIcon />}
-                    component={NextComposedLink}
-                    href={`/dashboard/review/${downloadState}`}
-            >Review file</Button>
-            <Button variant="outlined" onClick={() => setStep(v => v - 1)}>Back</Button>
-            <Button variant="outlined" onClick={() => setStep(0)}>Go to first step</Button>
+            <Button
+              disabled={downloadState === null || downloadState < 0}
+              variant="contained"
+              color="secondary"
+              startIcon={<OpenInNewIcon />}
+              component={NextComposedLink}
+              href={`/dashboard/review/${downloadState}`}
+            >
+              Review file
+            </Button>
+            <Button variant="outlined" onClick={() => setStep((v) => v - 1)}>
+              Back
+            </Button>
+            <Button variant="outlined" onClick={() => setStep(0)}>
+              Go to first step
+            </Button>
           </ButtonRow>
         </StepContent>
       </Step>
-
     </Stepper>
   );
 }

@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useAuthContext } from "../AuthContext";
+import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {
   bindMenu,
   bindTrigger,

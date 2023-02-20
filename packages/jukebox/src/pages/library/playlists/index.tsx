@@ -2,7 +2,7 @@ import { getLayout } from "../../../components/public/layouts/LibraryLayout";
 import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import { Box, ButtonBase, Divider, Grid, Typography } from "@mui/material";
-import { NextComposedLink } from "../../../components/Link";
+import { NextComposedLink } from "lyricova-common/components/Link";
 import React from "react";
 import { Playlist } from "lyricova-common/models/Playlist";
 import PlaylistAvatar from "../../../components/PlaylistAvatar";

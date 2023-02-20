@@ -31,7 +31,7 @@ import {
   usePopupState,
 } from "material-ui-popup-state/hooks";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useAuthContext } from "../../components/public/AuthContext";
+import { useAuthContext } from "lyricova-common/components/AuthContext";
 import { useRouter } from "next/router";
 import ListItemTextWithTime from "../../components/public/library/ListItemTextWithTime";
 import { DocumentNode } from "graphql";
@@ -284,7 +284,7 @@ export default function LibraryTracks() {
     },
   });
 
-  const parentRefCallback = useCallback((elm) => {
+  const parentRefCallback = useCallback((elm: HTMLDivElement) => {
     if (!parentRef.current) {
       parentRef.current = elm;
       rowVirtualizer.measure();

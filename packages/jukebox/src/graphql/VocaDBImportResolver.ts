@@ -1,5 +1,5 @@
 import { Song } from "lyricova-common/models/Song";
-import type { AlbumForApiContract, ArtistForApiContract, SongForApiContract } from "lyricova-common/types/vocadb";
+import type { AlbumForApiContract, ArtistForApiContract, SongForApiContract } from "../types/vocadb";
 import got from "got-cjs";
 import { Arg, Authorized, Int, Mutation, Resolver } from "type-graphql";
 import { Artist } from "lyricova-common/models/Artist";

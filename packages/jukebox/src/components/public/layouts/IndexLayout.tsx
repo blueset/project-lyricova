@@ -15,7 +15,7 @@ import { useNamedState } from "../../../frontendUtils/hooks";
 import CurrentPlaylist from "../CurrentPlaylist";
 import { Texture } from "../../../graphql/TextureResolver";
 import { motion, AnimatePresence } from "framer-motion";
-import { AuthContext } from "../AuthContext";
+import { AuthContext } from "lyricova-common/components/AuthContext";
 import { DocumentNode } from "graphql";
 import store, {
   persistor,

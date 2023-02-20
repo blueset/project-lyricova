@@ -6,7 +6,7 @@ import { MusicFile } from "lyricova-common/models/MusicFile";
 import { VideoFile } from "lyricova-common/models/VideoFile";
 import { Artist } from "lyricova-common/models/Artist";
 import { ArtistOfSong } from "lyricova-common/models/ArtistOfSong";
-import type { VDBArtistCategoryType, VDBArtistRoleType } from "lyricova-common/types/vocadb";
+import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { SongInAlbum } from "lyricova-common/models/SongInAlbum";
 import _ from "lodash";
 

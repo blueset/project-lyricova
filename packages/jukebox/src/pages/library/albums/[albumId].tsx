@@ -29,8 +29,8 @@ import ShuffleIcon from "@mui/icons-material/Shuffle";
 import FindInPageIcon from "@mui/icons-material/FindInPage";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { formatArtists } from "../../../frontendUtils/artists";
-import Link from "../../../components/Link";
-import { useAuthContext } from "../../../components/public/AuthContext";
+import Link from "lyricova-common/components/Link";
+import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {
   bindMenu,
   bindTrigger,

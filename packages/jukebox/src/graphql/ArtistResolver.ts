@@ -15,7 +15,8 @@ import sequelize, { literal, Op } from "sequelize";
 import { Song } from "lyricova-common/models/Song";
 import { Album } from "lyricova-common/models/Album";
 import _ from "lodash";
-import type { VDBArtistType } from "lyricova-common/types/vocadb";
+import type { VDBArtistType } from "../types/vocadb";
+import { GraphQLString } from "graphql";
 
 @InputType()
 class ArtistInput implements Partial<Artist> {

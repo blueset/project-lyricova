@@ -6,7 +6,8 @@ import {
   DialogContent,
   IconButton,
   Tab,
-  Tabs, Toolbar
+  Tabs,
+  Toolbar,
 } from "@mui/material";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNamedState } from "../../../frontendUtils/hooks";
@@ -29,12 +30,15 @@ import WebAudioTaggingLyrics from "./lyrics/WebAudioTaggingLyrics";
 const WRITE_LYRICS_MUTATION = gql`
   mutation($fileId: Int!, $lyrics: String!, $ext: String!) {
     writeLyrics(fileId: $fileId, lyrics: $lyrics, ext: $ext)
-  } 
+  }
 ` as DocumentNode;
 
-function PreviewPanel({ lyricsString, fileId }: {
-  lyricsString: string,
-  fileId: number,
+function PreviewPanel({
+  lyricsString,
+  fileId,
+}: {
+  lyricsString: string;
+  fileId: number;
 }) {
   const snackbar = useSnackbar();
   const lyricsObj = useMemo(() => {
@@ -43,7 +47,9 @@ function PreviewPanel({ lyricsString, fileId }: {
       return new Lyrics(lyricsString);
     } catch (e) {
       console.error("Error while parsing lyrics", e);
-      snackbar.enqueueSnackbar(`Error while parsing lyrics: ${e}`, { variant: "error" });
+      snackbar.enqueueSnackbar(`Error while parsing lyrics: ${e}`, {
+        variant: "error",
+      });
       return null;
     }
   }, [lyricsString, snackbar]);
@@ -64,8 +70,18 @@ interface Props {
   songId?: number;
 }
 
-export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fileId, isOpen, toggleOpen, title, artists, duration, songId }: Props) {
-
+export default function LyricsEditDialog({
+  initialLrc,
+  initialLrcx,
+  refresh,
+  fileId,
+  isOpen,
+  toggleOpen,
+  title,
+  artists,
+  duration,
+  songId,
+}: Props) {
   const [lrc, setLrc] = useNamedState(initialLrc || "", "lrc");
   const [lrcx, setLrcx] = useNamedState(initialLrcx || "", "lrcx");
   const apolloClient = useApolloClient();
@@ -81,9 +97,12 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
 
   // Tab status
   const [tabIndex, setTabIndex] = useNamedState("preview", "tabIndex");
-  const onTabSwitch = useCallback((event, newValue: string) => {
-    setTabIndex(newValue);
-  }, [setTabIndex]);
+  const onTabSwitch = useCallback(
+    (event: any, newValue: string) => {
+      setTabIndex(newValue);
+    },
+    [setTabIndex]
+  );
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
@@ -96,10 +115,12 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
     toggleSubmitting(true);
     const promises: Promise<unknown>[] = [];
     if (lrc) {
-      promises.push(apolloClient.mutate<{writeLyrics: boolean}>({
-        mutation: WRITE_LYRICS_MUTATION,
-        variables: {fileId, lyrics: lrc, ext: "lrc"},
-      }));
+      promises.push(
+        apolloClient.mutate<{ writeLyrics: boolean }>({
+          mutation: WRITE_LYRICS_MUTATION,
+          variables: { fileId, lyrics: lrc, ext: "lrc" },
+        })
+      );
       // TODO: Resolve Node-id3 stripping cover when updating lyrics.
       // const tagsStripped = lrc.replace(/^(\[[0-9:.]+\])/gm, "");
       // promises.push(apolloClient.mutate<{writeLyricsToMusicFile: boolean}>({
@@ -108,36 +129,57 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
       // }));
     }
     if (lrcx && lrcx !== lrc) {
-      promises.push(apolloClient.mutate<{writeLyrics: boolean}>({
-        mutation: WRITE_LYRICS_MUTATION,
-        variables: {fileId, lyrics: lrcx, ext: "lrcx"},
-      }));
+      promises.push(
+        apolloClient.mutate<{ writeLyrics: boolean }>({
+          mutation: WRITE_LYRICS_MUTATION,
+          variables: { fileId, lyrics: lrcx, ext: "lrcx" },
+        })
+      );
     }
     try {
       await Promise.all(promises);
-      snackbar.enqueueSnackbar("Lyrics saved.", {variant: "success"});
+      snackbar.enqueueSnackbar("Lyrics saved.", { variant: "success" });
       handleClose();
       await refresh();
     } catch (e) {
       console.error(`Error occurred while saving: ${e}`, e);
-      snackbar.enqueueSnackbar(`Error occurred while saving: ${e}`, { variant: "error" });
+      snackbar.enqueueSnackbar(`Error occurred while saving: ${e}`, {
+        variant: "error",
+      });
     }
     toggleSubmitting(false);
-  }, [apolloClient, fileId, handleClose, lrc, lrcx, refresh, snackbar, toggleSubmitting]);
+  }, [
+    apolloClient,
+    fileId,
+    handleClose,
+    lrc,
+    lrcx,
+    refresh,
+    snackbar,
+    toggleSubmitting,
+  ]);
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} fullScreen maxWidth={false} scroll="paper"
-            aria-labelledby="form-dialog-title">
+    <Dialog
+      open={isOpen}
+      onClose={handleClose}
+      fullScreen
+      maxWidth={false}
+      scroll="paper"
+      aria-labelledby="form-dialog-title"
+    >
       <TabContext value={tabIndex}>
         <AppBar position="static" color="default">
           <Toolbar disableGutters variant="dense">
-            <Tabs value={tabIndex} onChange={onTabSwitch}
-                  sx={{flexGrow: 1}}
-                  aria-label="Lyrics edit dialog tabs"
-                  indicatorColor="secondary"
-                  textColor="secondary"
-                  variant="scrollable"
-                  scrollButtons="auto"
+            <Tabs
+              value={tabIndex}
+              onChange={onTabSwitch}
+              sx={{ flexGrow: 1 }}
+              aria-label="Lyrics edit dialog tabs"
+              indicatorColor="secondary"
+              textColor="secondary"
+              variant="scrollable"
+              scrollButtons="auto"
             >
               <Tab label="Preview" value="preview" />
               <Tab label="WebVTT Preview" value="webvttPreview" />
@@ -149,29 +191,45 @@ export default function LyricsEditDialog({ initialLrc, initialLrcx, refresh, fil
               <Tab label="Translation" value="translation" />
               <Tab label="Furigana" value="furigana" />
             </Tabs>
-            <IconButton color="inherit" onClick={handleClose} aria-label="close">
+            <IconButton
+              color="inherit"
+              onClick={handleClose}
+              aria-label="close"
+            >
               <CloseIcon />
             </IconButton>
           </Toolbar>
         </AppBar>
-        <DialogContent dividers sx={{padding: 0}}>
+        <DialogContent dividers sx={{ padding: 0 }}>
           <TabPanel value="preview">
             <PreviewPanel lyricsString={effectiveLyrics} fileId={fileId} />
           </TabPanel>
           <TabPanel value="webvttPreview">
-            <LyricsPreviewPanel lyricsString={effectiveLyrics} fileId={fileId} />
+            <LyricsPreviewPanel
+              lyricsString={effectiveLyrics}
+              fileId={fileId}
+            />
           </TabPanel>
           <TabPanel value="download">
             <SearchLyrics title={title} artists={artists} duration={duration} />
           </TabPanel>
           <TabPanel value="edit">
-            <EditLyrics lyrics={lrcx} setLyrics={setLrcx} songId={songId} title={title} />
+            <EditLyrics
+              lyrics={lrcx}
+              setLyrics={setLrcx}
+              songId={songId}
+              title={title}
+            />
           </TabPanel>
           <TabPanel value="editLrc">
             <EditPlainLyrics lyrics={lrc} lrcx={lrcx} setLyrics={setLrc} />
           </TabPanel>
           <TabPanel value="webAudioTagging">
-            <WebAudioTaggingLyrics lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
+            <WebAudioTaggingLyrics
+              lyrics={lrcx}
+              setLyrics={setLrcx}
+              fileId={fileId}
+            />
           </TabPanel>
           <TabPanel value="tagging">
             <TaggingLyrics lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />

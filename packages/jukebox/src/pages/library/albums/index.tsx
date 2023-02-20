@@ -4,7 +4,7 @@ import Alert from "@mui/material/Alert";
 import React from "react";
 import { Album } from "lyricova-common/models/Album";
 import { Avatar, ButtonBase, Grid, Typography } from "@mui/material";
-import { NextComposedLink } from "../../../components/Link";
+import { NextComposedLink } from "lyricova-common/components/Link";
 import { formatArtistsPlainText } from "../../../frontendUtils/artists";
 import { DocumentNode } from "graphql";
 

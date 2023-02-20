@@ -442,7 +442,6 @@ export class MusicFileController {
       console.log("Error while extracting cover art from file", e);
       return res.status(500).json({ status: 404, message: e });
     }
-    console.debug("Cover path", coverUrl);
 
     if (!fs.existsSync(coverUrl)) {
       return res
@@ -529,7 +528,6 @@ export class MusicFileController {
         console.log("Error while saving cover art to file", e);
         return res.status(500).json({ status: 500, message: e });
       }
-      console.debug("Cover path", coverPath);
 
       // Update file hash
       const md5 = await hasha.fromFile(musicFile.fullPath, {

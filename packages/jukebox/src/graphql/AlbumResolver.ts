@@ -6,7 +6,7 @@ import { Album } from "lyricova-common/models/Album";
 import { MusicFile } from "lyricova-common/models/MusicFile";
 import _ from "lodash";
 import { SongInAlbum } from "lyricova-common/models/SongInAlbum";
-import type { AlbumForApiContract, VDBArtistCategoryType, VDBArtistRoleType } from "lyricova-common/types/vocadb";
+import type { AlbumForApiContract, VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { ArtistOfAlbum } from "lyricova-common/models/ArtistOfAlbum";
 import sequelize from "sequelize";
 

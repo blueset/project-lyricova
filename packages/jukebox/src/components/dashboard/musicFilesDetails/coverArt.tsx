@@ -13,7 +13,7 @@ import { useNamedState } from "../../../frontendUtils/hooks";
 import { ChangeEvent, useCallback, useEffect } from "react";
 import axios from "axios";
 import { useDropzone } from "react-dropzone";
-import { useAuthContext } from "../../public/AuthContext";
+import { useAuthContext } from "lyricova-common/components/AuthContext";
 import { useSnackbar } from "notistack";
 
 const CoverAvatar = styled(Avatar)({

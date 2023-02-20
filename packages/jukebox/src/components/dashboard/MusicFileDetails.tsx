@@ -112,7 +112,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
   );
 
   const onTabSwitch = useCallback(
-    (event, newValue: string) => {
+    (event: any, newValue: string) => {
       setTabIndex(newValue);
     },
     [setTabIndex]

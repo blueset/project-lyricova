@@ -5,7 +5,7 @@ import type {
   SongForApiContract,
   LyricsForSongContract,
   VDBTranslationType,
-} from "lyricova-common/types/vocadb";
+} from "../types/vocadb";
 import { Lyrics, LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
 import {
   Resolver,
@@ -26,6 +26,7 @@ import { GraphQLJSONObject } from "graphql-type-json";
 import { LyricsMetadata } from "lyrics-kit/build/main/core/lyricsMetadata";
 import _ from "lodash";
 import { PubSubSessionPayload } from "./index";
+import { GraphQLString } from "graphql";
 
 @ObjectType({ description: "A search result from 初音ミク@wiki." })
 export class HmikuAtWikiSearchResultEntry {
@@ -63,7 +64,7 @@ export class VocaDBLyricsEntry implements LyricsForSongContract {
   @Field({ description: "Source of lyrics.", nullable: true })
   source: string;
 
-  @Field({ description: "Type of translation.", nullable: true })
+  @Field(/* type => GraphQLString, */{ description: "Type of translation.", nullable: true })
   translationType: VDBTranslationType;
 
   @Field({ description: "URL of the source.", nullable: true })

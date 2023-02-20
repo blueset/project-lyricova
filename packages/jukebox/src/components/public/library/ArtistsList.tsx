@@ -1,4 +1,4 @@
-import { VDBArtistType } from "lyricova-common/types/vocadb";
+import { VDBArtistType } from "../../../types/vocadb";
 import { gql, useQuery } from "@apollo/client";
 import { Artist } from "lyricova-common/models/Artist";
 import Alert from "@mui/material/Alert";
@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
-import { NextComposedLink } from "../../Link";
+import { NextComposedLink } from "lyricova-common/components/Link";
 import { DocumentNode } from "graphql";
 
 const ARTISTS_LIST_QUERY = gql`

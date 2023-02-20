@@ -39,7 +39,7 @@ import { Song } from "lyricova-common/models/Song";
 import type {
   VDBArtistCategoryType,
   VDBArtistRoleType,
-} from "lyricova-common/types/vocadb";
+} from "../../../types/vocadb";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { DocumentNode } from "graphql";
 import StringSchema from "yup/lib/string";

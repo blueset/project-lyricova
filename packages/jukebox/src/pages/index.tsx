@@ -25,7 +25,7 @@ import { currentSongSelector } from "../redux/public/playlist";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
-   musicFile(id: $id) {
+    musicFile(id: $id) {
       lyrics {
         lines {
           content
@@ -51,8 +51,8 @@ const LYRICS_QUERY = gql`
   }
 ` as DocumentNode;
 
-
-const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } = {
+// prettier-ignore
+const MODULE_LIST = {
   "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} blur />,
   "Focused Clear": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} />,
   "Focused Glow": (lyrics: LyricsKitLyrics) => <FocusedGlowLyrics lyrics={lyrics} />,
@@ -68,32 +68,44 @@ const MODULE_LIST: { [key: string]: (lyrics: LyricsKitLyrics) => JSX.Element } =
   "Typing/Stacked": (lyrics: LyricsKitLyrics) => <TypingStackedLyrics lyrics={lyrics} />,
   "Furigana/Plain": (lyrics: LyricsKitLyrics) => <PlainFuriganaLyrics lyrics={lyrics} />,
   "Stroke": (lyrics: LyricsKitLyrics) => <StrokeLyrics lyrics={lyrics} />,
-};
+} as const;
 
 export default function Index() {
-  const [module, setModule] = useClientPersistentState<keyof typeof MODULE_LIST>(_.keys(MODULE_LIST)[0], "module", "lyricovaPlayer");
+  const [module, setModule] = useClientPersistentState<
+    keyof typeof MODULE_LIST
+  >("Focused", "module", "lyricovaPlayer");
 
   const keys = Object.keys(MODULE_LIST) as (keyof typeof MODULE_LIST)[];
   const moduleNode = MODULE_LIST[module] ?? MODULE_LIST[keys[0]];
   const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
   const currentSong = useAppSelector(currentSongSelector);
 
-  const lyricsQuery = useQuery<{ musicFile?: { lyrics: LyricsKitLyrics } }>(LYRICS_QUERY, {
-    variables: {
-      id: currentSong?.id
+  const lyricsQuery = useQuery<{ musicFile?: { lyrics: LyricsKitLyrics } }>(
+    LYRICS_QUERY,
+    {
+      variables: {
+        id: currentSong?.id,
+      },
     }
-  });
+  );
 
   const MessageBox = ({ children }: { children: ReactNode }) => (
-    <Stack className="coverMask" alignItems="center" justifyContent="center" sx={{
-      width: "100%",
-      height: "100%",
-      fontWeight: 600,
-      fontSize: "2.5em",
-      fontStyle: "italic",
-      filter: "var(--jukebox-cover-filter-brighter)",
-      padding: 4,
-    }}>{children}</Stack>
+    <Stack
+      className="coverMask"
+      alignItems="center"
+      justifyContent="center"
+      sx={{
+        width: "100%",
+        height: "100%",
+        fontWeight: 600,
+        fontSize: "2.5em",
+        fontStyle: "italic",
+        filter: "var(--jukebox-cover-filter-brighter)",
+        padding: 4,
+      }}
+    >
+      {children}
+    </Stack>
   );
 
   let node;
@@ -111,10 +123,16 @@ export default function Index() {
     node = <MessageBox>No lyrics</MessageBox>;
   }
 
-  return (<>
-    {node}
-    <LyricsSwitchButton module={module} setModule={setModule} moduleNames={keys} />
-  </>);
+  return (
+    <>
+      {node}
+      <LyricsSwitchButton<keyof typeof MODULE_LIST>
+        module={module}
+        setModule={setModule}
+        moduleNames={keys}
+      />
+    </>
+  );
 }
 
 // Persisted layout pattern based on the works of Adam Wathan

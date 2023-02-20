@@ -33,7 +33,7 @@ import { Artist } from "lyricova-common/models/Artist";
 import type {
   VDBArtistCategoryType,
   VDBArtistRoleType,
-} from "lyricova-common/types/vocadb";
+} from "../../../types/vocadb";
 import { Album } from "lyricova-common/models/Album";
 import VideoThumbnailAdornment from "../VideoThumbnailAdornment";
 import { Field, Form } from "react-final-form";

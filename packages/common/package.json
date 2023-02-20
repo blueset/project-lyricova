@@ -30,6 +30,7 @@
     "@mui/material": "^5.11.9",
     "ffprobe-client": "^1.1.6",
     "mecab-async": "^0.1.2",
+    "next": "^13.1.6",
     "sequelize-typescript": "^2.1.5",
     "stream-combiner": "^0.2.2",
     "stream-filter": "^2.1.0"
@@ -39,18 +40,23 @@
     "./db": "./dist/db.js",
     "./models/*": "./dist/models/*.js",
     "./utils/*": "./dist/utils/*.js",
-    "./types/*": "./dist/types/*.js",
+    "./types/*": {
+      "types": "./dist/types/*.d.ts"
+    },
+    "./components/*": "./dist/components/*.js",
     "./frontendUtils/*": "./dist/frontendUtils/*.js",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "*": [
-        "./dist/*"
+        "./dist/*",
+        "./src/types/*"
       ]
     }
   },
   "devDependencies": {
+    "@types/react": "^18.0.28",
     "typescript": "^4.9.5"
   }
 }

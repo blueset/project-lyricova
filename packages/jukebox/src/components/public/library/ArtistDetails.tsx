@@ -24,7 +24,7 @@ import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import FindInPageIcon from "@mui/icons-material/FindInPage";
 import ButtonRow from "../../ButtonRow";
-import { useAuthContext } from "../AuthContext";
+import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {
   bindMenu,
   bindTrigger,

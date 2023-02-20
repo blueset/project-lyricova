@@ -17,7 +17,7 @@ import { ChangeEvent, useCallback, useEffect } from "react";
 import { Artist } from "lyricova-common/models/Artist";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import axios from "axios";
-import type { PartialFindResult, ArtistForApiContract } from "lyricova-common/types/vocadb";
+import type { PartialFindResult, ArtistForApiContract } from "../../../types/vocadb";
 import _ from "lodash";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";

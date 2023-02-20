@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Box, GlobalStyles, IconButton, styled } from "@mui/material";
-import Link, { NextComposedLink } from "../Link";
+import Link, { NextComposedLink } from "lyricova-common/components/Link";
 import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/router";
 import { GlobalStylesProps as StyledGlobalStylesProps } from "@mui/styled-engine/GlobalStyles/GlobalStyles";
@@ -13,7 +13,7 @@ const StyledLink = styled(Link)({
   color: "text.secondary",
   "&.active": {
     color: "primary.light",
-  }
+  },
 });
 
 interface Props {
@@ -24,124 +24,256 @@ interface Props {
 export default function DetailsPanel({ coverUrl = null, children }: Props) {
   const router = useRouter();
 
-  let backgroundNode = <div style={{
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    zIndex: 0,
-  }} />;
+  let backgroundNode = (
+    <div
+      style={{
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        zIndex: 0,
+      }}
+    />
+  );
 
   if (coverUrl) {
-    backgroundNode = (<>
-      <div style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        filter: "url(#sharpBlur)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-        zIndex: 0,
-        backgroundImage: `url(${coverUrl})`
-      }} />
-      {backgroundNode}
-    </>);
+    backgroundNode = (
+      <>
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            filter: "url(#sharpBlur)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+            zIndex: 0,
+            backgroundImage: `url(${coverUrl})`,
+          }}
+        />
+        {backgroundNode}
+      </>
+    );
   }
 
   return (
-    <div style={{
-      position: "relative",
-      overflow: "hidden",
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-    }}>
-      <GlobalStyles styles={{
-        ".coverMask": {
-          backgroundImage: coverUrl ? `url(${coverUrl})` : null,
-          color: coverUrl ? "transparent !important" : null,
-          mixBlendMode: coverUrl ? "none !important" : null,
-          backgroundClip: coverUrl ? "text" : null,
-          "-webkit-background-clip": coverUrl ? "text" : null,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-          "--jukebox-cover-filter-blur": coverUrl ? "url(#sharpBlur)" : null,
-          "--jukebox-cover-filter-bright": coverUrl ? "url(#sharpBlurBright)" : null,
-          "--jukebox-cover-filter-brighter": coverUrl ? "url(#sharpBlurBrighter)" : null,
-          "--jukebox-cover-filter-brighter-blurless": coverUrl ? "url(#brighter)" : null,
+    <div
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <GlobalStyles
+        styles={
+          ({
+            ".coverMask": {
+              backgroundImage: coverUrl ? `url(${coverUrl})` : null,
+              color: coverUrl ? "transparent !important" : null,
+              mixBlendMode: coverUrl ? "none !important" : null,
+              backgroundClip: coverUrl ? "text" : null,
+              "-webkit-background-clip": coverUrl ? "text" : null,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundAttachment: "fixed",
+              "--jukebox-cover-filter-blur": coverUrl
+                ? "url(#sharpBlur)"
+                : null,
+              "--jukebox-cover-filter-bright": coverUrl
+                ? "url(#sharpBlurBright)"
+                : null,
+              "--jukebox-cover-filter-brighter": coverUrl
+                ? "url(#sharpBlurBrighter)"
+                : null,
+              "--jukebox-cover-filter-brighter-blurless": coverUrl
+                ? "url(#brighter)"
+                : null,
+            },
+          } as unknown) as StyledGlobalStylesProps["styles"]
         }
-      } as unknown as StyledGlobalStylesProps["styles"]} />
+      />
       {backgroundNode}
-      <Box pt={2} pb={2} pl={4} pr={4} display="flex" flexDirection="row" alignItems="center" zIndex={1}>
+      <Box
+        pt={2}
+        pb={2}
+        pl={4}
+        pr={4}
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        zIndex={1}
+      >
         <StyledLink href="/">Lyrics</StyledLink>
-        <StyledLink href="/library/tracks"
-              activeCriteria={(v) => v.startsWith("/library/")}>Library</StyledLink>
-        <StyledLink href="/info"
-              activeCriteria={(v) => v.startsWith("/info")}>Info</StyledLink>
+        <StyledLink
+          href="/library/tracks"
+          activeCriteria={(v) => v.startsWith("/library/")}
+        >
+          Library
+        </StyledLink>
+        <StyledLink href="/info" activeCriteria={(v) => v.startsWith("/info")}>
+          Info
+        </StyledLink>
         <Box flexGrow={1} />
-        <IconButton component={NextComposedLink} color={router.pathname === "/search" ? "primary" : "default"}
-                    href="/search" aria-label="search" edge="end">
+        <IconButton
+          component={NextComposedLink}
+          color={router.pathname === "/search" ? "primary" : "default"}
+          href="/search"
+          aria-label="search"
+          edge="end"
+        >
           <SearchIcon />
         </IconButton>
       </Box>
-      <Box position="relative" width="1" flexGrow={1} flexBasis={0} overflow="auto">
+      <Box
+        position="relative"
+        width="1"
+        flexGrow={1}
+        flexBasis={0}
+        overflow="auto"
+      >
         {children}
       </Box>
-      <svg style={{
-        border: 0,
-        clip: "rect(0 0 0 0)",
-        height: "1px",
-        margin: "-1px",
-        overflow: "hidden",
-        padding: 0,
-        position: "absolute",
-        width: "1px",
-      }}>
+      <svg
+        style={{
+          border: 0,
+          clip: "rect(0 0 0 0)",
+          height: "1px",
+          margin: "-1px",
+          overflow: "hidden",
+          padding: 0,
+          position: "absolute",
+          width: "1px",
+        }}
+      >
         <filter id="sharpBlur">
           <feGaussianBlur stdDeviation="15" result="blur" />
-          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0" />
+          <feColorMatrix
+            in="blur"
+            type="matrix"
+            values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0"
+          />
           <feComposite in2="SourceGraphic" operator="in" />
         </filter>
         <filter id="sharpBlurBrighter">
           <feGaussianBlur stdDeviation="15" result="blur" />
-          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0"
-                         result="colorMatrix" />
+          <feColorMatrix
+            in="blur"
+            type="matrix"
+            values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0"
+            result="colorMatrix"
+          />
           <feFlood floodColor="#ffffff" floodOpacity="1" result="floodWhite" />
-          <feBlend mode="overlay" in="floodWhite" in2="colorMatrix" result="blend" />
-          <feFlood floodColor="#ffffff" floodOpacity="0.3" result="floodWhite25" />
-          <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
+          <feBlend
+            mode="overlay"
+            in="floodWhite"
+            in2="colorMatrix"
+            result="blend"
+          />
+          <feFlood
+            floodColor="#ffffff"
+            floodOpacity="0.3"
+            result="floodWhite25"
+          />
+          <feBlend
+            mode="hard-light"
+            in="floodWhite25"
+            in2="blend"
+            result="furtherBlend"
+          />
           <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
         </filter>
         <filter id="brighter">
           <feFlood floodColor="#ffffff" floodOpacity="1" result="floodWhite" />
-          <feBlend mode="overlay" in="floodWhite" in2="SourceGraphic" result="blend" />
-          <feFlood floodColor="#ffffff" floodOpacity="0.3" result="floodWhite25" />
-          <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
+          <feBlend
+            mode="overlay"
+            in="floodWhite"
+            in2="SourceGraphic"
+            result="blend"
+          />
+          <feFlood
+            floodColor="#ffffff"
+            floodOpacity="0.3"
+            result="floodWhite25"
+          />
+          <feBlend
+            mode="hard-light"
+            in="floodWhite25"
+            in2="blend"
+            result="furtherBlend"
+          />
           <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
         </filter>
         <filter id="sharpBlurBright">
           <feGaussianBlur stdDeviation="15" result="blur" />
-          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0"
-                         result="colorMatrix" />
-          <feFlood floodColor="#000000" floodOpacity="0.5" result="floodWhite" />
-          <feBlend mode="darken" in="floodWhite" in2="colorMatrix" result="blend" />
-          <feFlood floodColor="#ffffff" floodOpacity="0.2" result="floodWhite25" />
-          <feBlend mode="hard-light" in="floodWhite25" in2="blend" result="furtherBlend" />
+          <feColorMatrix
+            in="blur"
+            type="matrix"
+            values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0"
+            result="colorMatrix"
+          />
+          <feFlood
+            floodColor="#000000"
+            floodOpacity="0.5"
+            result="floodWhite"
+          />
+          <feBlend
+            mode="darken"
+            in="floodWhite"
+            in2="colorMatrix"
+            result="blend"
+          />
+          <feFlood
+            floodColor="#ffffff"
+            floodOpacity="0.2"
+            result="floodWhite25"
+          />
+          <feBlend
+            mode="hard-light"
+            in="floodWhite25"
+            in2="blend"
+            result="furtherBlend"
+          />
           <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
         </filter>
         <filter id="nicokaraBefore">
-          <feMorphology operator="dilate" radius="2" in="SourceGraphic" result="morphologyStroke" />
+          <feMorphology
+            operator="dilate"
+            radius="2"
+            in="SourceGraphic"
+            result="morphologyStroke"
+          />
           <feFlood floodColor="#000000" floodOpacity="1" result="floodStroke" />
-          <feComposite in="floodStroke" in2="morphologyStroke" operator="in" result="compositeStroke" />
-          <feMorphology operator="dilate" radius="4" in="SourceGraphic" result="morphologyShadow" />
-          <feGaussianBlur stdDeviation="4" in="morphologyShadow" edgeMode="wrap" result="blurShadow" />
+          <feComposite
+            in="floodStroke"
+            in2="morphologyStroke"
+            operator="in"
+            result="compositeStroke"
+          />
+          <feMorphology
+            operator="dilate"
+            radius="4"
+            in="SourceGraphic"
+            result="morphologyShadow"
+          />
+          <feGaussianBlur
+            stdDeviation="4"
+            in="morphologyShadow"
+            edgeMode="wrap"
+            result="blurShadow"
+          />
           <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
-          <feComposite in="floodShadow" in2="blurShadow" operator="in" result="compositeShadow" />
+          <feComposite
+            in="floodShadow"
+            in2="blurShadow"
+            operator="in"
+            result="compositeShadow"
+          />
           <feMerge result="merge">
             <feMergeNode in="compositeShadow" />
             <feMergeNode in="compositeStroke" />
@@ -149,13 +281,38 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
           </feMerge>
         </filter>
         <filter id="nicokaraAfter">
-          <feMorphology operator="dilate" radius="2" in="SourceGraphic" result="morphologyStroke" />
+          <feMorphology
+            operator="dilate"
+            radius="2"
+            in="SourceGraphic"
+            result="morphologyStroke"
+          />
           <feFlood floodColor="#ffffff" floodOpacity="1" result="floodStroke" />
-          <feComposite in="floodStroke" in2="morphologyStroke" operator="in" result="compositeStroke" />
-          <feMorphology operator="dilate" radius="4" in="SourceGraphic" result="morphologyShadow" />
-          <feGaussianBlur stdDeviation="4" in="morphologyShadow" edgeMode="wrap" result="blurShadow" />
+          <feComposite
+            in="floodStroke"
+            in2="morphologyStroke"
+            operator="in"
+            result="compositeStroke"
+          />
+          <feMorphology
+            operator="dilate"
+            radius="4"
+            in="SourceGraphic"
+            result="morphologyShadow"
+          />
+          <feGaussianBlur
+            stdDeviation="4"
+            in="morphologyShadow"
+            edgeMode="wrap"
+            result="blurShadow"
+          />
           <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
-          <feComposite in="floodShadow" in2="blurShadow" operator="in" result="compositeShadow" />
+          <feComposite
+            in="floodShadow"
+            in2="blurShadow"
+            operator="in"
+            result="compositeShadow"
+          />
           <feMerge result="merge">
             <feMergeNode in="compositeShadow" />
             <feMergeNode in="compositeStroke" />

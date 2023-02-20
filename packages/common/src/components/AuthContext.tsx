@@ -1,14 +1,9 @@
-import {
-  ReactChild,
-  createContext,
-  useEffect,
-  useContext,
-  ReactNode,
-} from "react";
-import { User } from "lyricova-common/models/User";
-import { useQuery, gql, useApolloClient } from "@apollo/client";
+import { createContext, useEffect, useContext, ReactNode } from "react";
+import { User } from "../models/User";
+import { useQuery, gql } from "@apollo/client";
 import { useRouter } from "next/router";
-import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
+import { LS_JWT_KEY } from "../frontendUtils/localStorage";
+import React from "react";
 
 interface AuthContextProps {
   /**
@@ -43,7 +38,7 @@ type UserContextType = {
   jwt: () => string | null;
 };
 
-const AuthContextReact = createContext<UserContextType>(null);
+const AuthContextReact = createContext<UserContextType>({ jwt: () => null });
 
 export function AuthContext({
   authRedirect,
@@ -59,16 +54,16 @@ export function AuthContext({
   useEffect(() => {
     if (noRedirect) return;
 
-    const needAuth = !Boolean(authRedirect);
+    const needAuth = !authRedirect;
     const token = window.localStorage?.getItem(LS_JWT_KEY);
-    let hasToken = Boolean(token ?? null);
+    let hasToken = !(token ?? null);
     if (hasToken) {
       if (loading) return;
       if (error) {
         console.error("Check auth error", error);
         return;
       }
-      hasToken = data.currentUser !== null;
+      hasToken = !!data?.currentUser;
       if (hasToken === false) {
         window.localStorage?.removeItem(LS_JWT_KEY);
       }
@@ -81,7 +76,7 @@ export function AuthContext({
   }, [loading, error, data, noRedirect, authRedirect, router]);
 
   const value = {
-    user: data?.currentUser ?? null,
+    user: data?.currentUser ?? undefined,
     jwt: () => window.localStorage?.getItem(LS_JWT_KEY),
   };
 
