@@ -33,7 +33,7 @@
   },
   "include": [
     "src/**/*"
-  ],
+, "../common/src/utils/typingSequence.ts"  ],
   "exclude": [
     "node_modules"
   ]

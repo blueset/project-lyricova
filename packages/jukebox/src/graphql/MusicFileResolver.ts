@@ -4,14 +4,12 @@ import {
 } from "lyricova-common/models/MusicFile";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";
-import ffprobe from "ffprobe-client";
 import { writeAsync as ffMetadataWrite } from "lyricova-common/utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
 import { literal, Op, WhereOptions } from "sequelize";
 import Path from "path";
-import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
 import {
   Arg,
@@ -39,7 +37,6 @@ import NodeID3 from "node-id3";
 import { swapExt } from "../utils/path";
 import { Lyrics } from "lyrics-kit";
 import { LyricsKitLyrics } from "./LyricsKitObjects";
-import { LyricsKitLyricsEntry } from "./LyricsProvidersResolver";
 import { PubSubSessionPayload } from "./index";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {

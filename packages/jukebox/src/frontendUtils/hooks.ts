@@ -7,26 +7,36 @@ import {
   useRef,
   useMemo,
   Dispatch,
-  SetStateAction
+  SetStateAction,
 } from "react";
 
 import _ from "lodash";
-import { AnimatedWord } from "../utils/typingSequence";
+import { AnimatedWord } from "lyricova-common/src/utils/typingSequence";
 import { gql, QueryResult, useQuery } from "@apollo/client";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
-import { LyricsKitLyrics, LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
+import {
+  LyricsKitLyrics,
+  LyricsKitLyricsLine,
+} from "../graphql/LyricsKitObjects";
 import { DocumentNode } from "graphql";
 
 type Timeline = gsap.core.Timeline;
 
-export function useNamedState<T>(initialValue: T | (() => T), name: string): [T, Dispatch<SetStateAction<T>>] {
+export function useNamedState<T>(
+  initialValue: T | (() => T),
+  name: string
+): [T, Dispatch<SetStateAction<T>>] {
   const ret = useState<T>(initialValue);
   useDebugValue(`${name}: ${ret[0]}`);
   return ret;
 }
 
-export function getStartEnd(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, line: number): [number, number] {
+export function getStartEnd(
+  playerRef: RefObject<HTMLAudioElement>,
+  lyrics: LyricsKitLyrics,
+  line: number
+): [number, number] {
   if (playerRef.current === null || lyrics.lines.length === 0) {
     return [null, null];
   }
@@ -42,49 +52,67 @@ export function getStartEnd(playerRef: RefObject<HTMLAudioElement>, lyrics: Lyri
   return [lyrics.lines[line].position, lyrics.lines[line + 1].position];
 }
 
-export type LyricsFrameCallback = (thisLine: number, lyrics: LyricsKitLyrics, player: HTMLAudioElement, start: number | null, end: number | null) => void;
+export type LyricsFrameCallback = (
+  thisLine: number,
+  lyrics: LyricsKitLyrics,
+  player: HTMLAudioElement,
+  start: number | null,
+  end: number | null
+) => void;
 
-export function useLyricsStateRAF(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, callback?: LyricsFrameCallback): number {
+export function useLyricsStateRAF(
+  playerRef: RefObject<HTMLAudioElement>,
+  lyrics: LyricsKitLyrics,
+  callback?: LyricsFrameCallback
+): number {
   const [line, setLine] = useNamedState<number | null>(null, "line");
   const lineRef = useRef<number>();
   lineRef.current = line;
 
-  const onTimeUpdate = useCallback((recur: boolean = true) => {
-    const player = playerRef.current;
-    if (player !== null) {
-      const time = player.currentTime;
-      const [start, end] = getStartEnd(playerRef, lyrics, lineRef.current);
-      if (start > time || time >= end) {
-        const thisLineIndex = _.sortedIndexBy<{ position: number }>(lyrics.lines, { position: time }, "position");
-        if (thisLineIndex === 0) {
-          if (lineRef.current !== null) setLine(null);
-          callback && callback(null, lyrics, player, start, end);
-        } else {
-          const thisLine =
-            (thisLineIndex >= lyrics.lines.length || lyrics.lines[thisLineIndex].position > time) ?
-              thisLineIndex - 1 :
-              thisLineIndex;
-          if (thisLine != lineRef.current) {
-            setLine(thisLine);
+  const onTimeUpdate = useCallback(
+    (recur: boolean = true) => {
+      const player = playerRef.current;
+      if (player !== null) {
+        const time = player.currentTime;
+        const [start, end] = getStartEnd(playerRef, lyrics, lineRef.current);
+        if (start > time || time >= end) {
+          const thisLineIndex = _.sortedIndexBy<{ position: number }>(
+            lyrics.lines,
+            { position: time },
+            "position"
+          );
+          if (thisLineIndex === 0) {
+            if (lineRef.current !== null) setLine(null);
+            callback && callback(null, lyrics, player, start, end);
+          } else {
+            const thisLine =
+              thisLineIndex >= lyrics.lines.length ||
+              lyrics.lines[thisLineIndex].position > time
+                ? thisLineIndex - 1
+                : thisLineIndex;
+            if (thisLine != lineRef.current) {
+              setLine(thisLine);
+            }
+            callback && callback(thisLine, lyrics, player, start, end);
           }
-          callback && callback(thisLine, lyrics, player, start, end);
+        } else {
+          callback && callback(lineRef.current, lyrics, player, start, end);
+        }
+        if (recur && !player.paused) {
+          window.requestAnimationFrame(() => onTimeUpdate());
         }
       } else {
-        callback && callback(lineRef.current, lyrics, player, start, end);
+        setLine(null);
       }
-      if (recur && !player.paused) {
-        window.requestAnimationFrame(() => onTimeUpdate());
-      }
-    } else {
-      setLine(null);
-    }
-  }, [playerRef, lyrics, lyrics.lines, callback]);
+    },
+    [playerRef, lyrics, lyrics.lines, callback]
+  );
 
   const onPlay = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate());
   }, [playerRef, onTimeUpdate]);
   const onTimeChange = useCallback(() => {
-    window.requestAnimationFrame(() => onTimeUpdate(/* recur */false));
+    window.requestAnimationFrame(() => onTimeUpdate(/* recur */ false));
   }, [playerRef, onTimeUpdate]);
 
   useEffect(() => {
@@ -107,20 +135,26 @@ export function useLyricsStateRAF(playerRef: RefObject<HTMLAudioElement>, lyrics
 }
 
 /** Refactor useLyricsState using WebVTT Cue callbacks. */
-export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: LyricsKitLyrics, callback?: LyricsFrameCallback): number {
+export function useLyricsState(
+  playerRef: RefObject<HTMLAudioElement>,
+  lyrics: LyricsKitLyrics,
+  callback?: LyricsFrameCallback
+): number {
   const [line, setLine] = useNamedState<number | null>(null, "line");
-  
+
   useEffect(() => {
     if (!playerRef.current) return;
 
     // Create track
     const track = document.createElement("track");
-    const uniqueId = Math.random().toString(36).substring(2, 15);
+    const uniqueId = Math.random()
+      .toString(36)
+      .substring(2, 15);
     track.id = `lyricsState-${uniqueId}`;
     track.kind = "subtitles";
     track.label = `Lyrics State ${uniqueId}`;
     track.src = "data:text/vtt;base64,V0VCVlRUCgoK";
-    
+
     // Add track
     playerRef.current.appendChild(track);
     track.track.mode = "hidden";
@@ -138,13 +172,19 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
         track.track.addCue(cue);
       }
       lyrics.lines.forEach((line, index) => {
-        let nextLine: number = lyrics.lines[index + 1]?.position ?? playerRef.current.duration;
+        let nextLine: number =
+          lyrics.lines[index + 1]?.position ?? playerRef.current.duration;
         if (Number.isNaN(nextLine)) nextLine = 1e10;
-        const cue = new VTTCue(line.position, nextLine, `${index},${line.position},${line.content}`);
+        const cue = new VTTCue(
+          line.position,
+          nextLine,
+          `${index},${line.position},${line.content}`
+        );
         cue.addEventListener("enter", () => {
           setLine(index);
           // console.log("WebWTT lyrics state enter", index);
-          callback && callback(index, lyrics, playerRef.current, line.position, nextLine);
+          callback &&
+            callback(index, lyrics, playerRef.current, line.position, nextLine);
         });
         track.track.addCue(cue);
       });
@@ -161,7 +201,7 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
     return () => {
       track?.parentElement?.removeChild(track);
       playerRef.current?.removeEventListener("loadedmetadata", addCues);
-    }
+    };
   }, [lyrics, playerRef.current]);
 
   return line;
@@ -169,21 +209,23 @@ export function useLyricsState(playerRef: RefObject<HTMLAudioElement>, lyrics: L
 
 // region Refactored keyframe-based lyrics state
 
-export type PlayerState = {
-  state: "playing";
-  /**
-   * `performance.now()` formatted number (millisecond) adjusted the progress music.
-   *
-   * e.g. `performance.now() - (player.currentTime * 1000)`.
-   */
-  startingAt: number;
-  /** Playback rate of the player, defaulted to 1. */
-  rate: number;
-} | {
-  state: "paused";
-  /** Progress of the current player (seconds). */
-  progress: number;
-};
+export type PlayerState =
+  | {
+      state: "playing";
+      /**
+       * `performance.now()` formatted number (millisecond) adjusted the progress music.
+       *
+       * e.g. `performance.now() - (player.currentTime * 1000)`.
+       */
+      startingAt: number;
+      /** Playback rate of the player, defaulted to 1. */
+      rate: number;
+    }
+  | {
+      state: "paused";
+      /** Progress of the current player (seconds). */
+      progress: number;
+    };
 
 export interface PlayerLyricsKeyframe<T> {
   /** Start of the frame, in seconds. */
@@ -211,9 +253,11 @@ export interface PlayerLyricsState<T> {
   endTimes: number[];
 }
 
-
 export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
-  const [playerState, setPlayerState] = useNamedState<PlayerState>({ state: "paused", progress: 0 }, "playerState");
+  const [playerState, setPlayerState] = useNamedState<PlayerState>(
+    { state: "paused", progress: 0 },
+    "playerState"
+  );
   const playerStateRef = useRef<PlayerState>();
   playerStateRef.current = playerState;
 
@@ -224,7 +268,7 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
       setPlayerState({ state: "paused", progress: player.currentTime });
     } else {
       const rate = player.playbackRate;
-      const startingAt = performance.now() - ((player.currentTime * 1000) / rate);
+      const startingAt = performance.now() - (player.currentTime * 1000) / rate;
       setPlayerState({ state: "playing", startingAt, rate });
     }
   }, [playerRef, setPlayerState]);
@@ -253,7 +297,10 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
   return playerState;
 }
 
-export function usePlayerLyricsStateRAF<T>(keyframes: PlayerLyricsKeyframe<T>[], playerRef: RefObject<HTMLAudioElement>): PlayerLyricsState<T> {
+export function usePlayerLyricsStateRAF<T>(
+  keyframes: PlayerLyricsKeyframe<T>[],
+  playerRef: RefObject<HTMLAudioElement>
+): PlayerLyricsState<T> {
   const playerState = usePlayerState(playerRef);
   const playerStateRef = useRef<PlayerState>();
   playerStateRef.current = playerState;
@@ -267,7 +314,10 @@ export function usePlayerLyricsStateRAF<T>(keyframes: PlayerLyricsKeyframe<T>[],
    * Current frame can be anything in [-1, keyframe.length - 1].
    * -1 means before the first frame starts. Final frame lasts forever.
    */
-  const [currentFrameId, setCurrentFrameId] = useNamedState(-1, "currentFrameId");
+  const [currentFrameId, setCurrentFrameId] = useNamedState(
+    -1,
+    "currentFrameId"
+  );
   const currentFrameIdRef = useRef<number>();
   currentFrameIdRef.current = currentFrameId;
 
@@ -281,39 +331,44 @@ export function usePlayerLyricsStateRAF<T>(keyframes: PlayerLyricsKeyframe<T>[],
       endTimes[idx] = v.start;
     });
 
-    if (playerRef.current) endTimes[keyframes.length] = playerRef.current.duration;
-    else if (keyframes.length > 0) endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
+    if (playerRef.current)
+      endTimes[keyframes.length] = playerRef.current.duration;
+    else if (keyframes.length > 0)
+      endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
     else endTimes[keyframes.length] = 0;
 
     return endTimes;
   }, [keyframes, playerRef]);
 
-  const startTimes = useMemo(() => keyframes.map(v => v.start), [keyframes]);
+  const startTimes = useMemo(() => keyframes.map((v) => v.start), [keyframes]);
 
   // Advance a frame when the current frame ends
-  const onFrame = useCallback((timestamp: number) => {
-    // Out of current lifespan, stop.
-    if (!thisLifespan.current) return;
+  const onFrame = useCallback(
+    (timestamp: number) => {
+      // Out of current lifespan, stop.
+      if (!thisLifespan.current) return;
 
-    const playerState = playerStateRef.current;
-    const currentFrameId = currentFrameIdRef.current;
-    const end = endTimes[currentFrameId + 1];
+      const playerState = playerStateRef.current;
+      const currentFrameId = currentFrameIdRef.current;
+      const end = endTimes[currentFrameId + 1];
 
-    let time;
-    if (playerState.state === "paused") {
-      time = playerState.progress;
-    } else {
-      time = (timestamp - playerState.startingAt) / 1000;
-    }
+      let time;
+      if (playerState.state === "paused") {
+        time = playerState.progress;
+      } else {
+        time = (timestamp - playerState.startingAt) / 1000;
+      }
 
-    if (time > end) {
-      setCurrentFrameId(currentFrameId + 1);
-    }
+      if (time > end) {
+        setCurrentFrameId(currentFrameId + 1);
+      }
 
-    if (playerState.state === "playing") {
-      frameCallbackRef.current = requestAnimationFrame(onFrame);
-    }
-  }, [endTimes, setCurrentFrameId]);
+      if (playerState.state === "playing") {
+        frameCallbackRef.current = requestAnimationFrame(onFrame);
+      }
+    },
+    [endTimes, setCurrentFrameId]
+  );
 
   // Search for the frame for current time
   const restartFrameCallback = useCallback(() => {
@@ -353,14 +408,20 @@ export function usePlayerLyricsStateRAF<T>(keyframes: PlayerLyricsKeyframe<T>[],
 }
 
 /** Refactor usePlayerLyricsState using WebVTT Cue callbacks. */
-export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], playerRef: RefObject<HTMLAudioElement>): PlayerLyricsState<T> {
+export function usePlayerLyricsState<T>(
+  keyframes: PlayerLyricsKeyframe<T>[],
+  playerRef: RefObject<HTMLAudioElement>
+): PlayerLyricsState<T> {
   const playerState = usePlayerState(playerRef);
 
   /**
    * Current frame can be anything in [-1, keyframe.length - 1].
    * -1 means before the first frame starts. Final frame lasts forever.
    */
-  const [currentFrameId, setCurrentFrameId] = useNamedState(-1, "currentFrameId");
+  const [currentFrameId, setCurrentFrameId] = useNamedState(
+    -1,
+    "currentFrameId"
+  );
 
   /**
    * `endTimes[i + 1]` is when frame `i` ends, in seconds.
@@ -372,14 +433,16 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
       endTimes[idx] = v.start;
     });
 
-    if (playerRef.current) endTimes[keyframes.length] = playerRef.current.duration;
-    else if (keyframes.length > 0) endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
+    if (playerRef.current)
+      endTimes[keyframes.length] = playerRef.current.duration;
+    else if (keyframes.length > 0)
+      endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
     else endTimes[keyframes.length] = 0;
 
     return endTimes;
   }, [keyframes, playerRef]);
 
-  const startTimes = useMemo(() => keyframes.map(v => v.start), [keyframes]);
+  const startTimes = useMemo(() => keyframes.map((v) => v.start), [keyframes]);
 
   useEffect(() => {
     if (!playerRef.current) return;
@@ -387,12 +450,14 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
 
     // Create track
     const track = document.createElement("track");
-    const uniqueId = Math.random().toString(36).substring(2, 15);
+    const uniqueId = Math.random()
+      .toString(36)
+      .substring(2, 15);
     track.id = `playerLyricsState-${uniqueId}`;
     track.kind = "subtitles";
     track.label = `Player Lyrics State ${uniqueId}`;
     track.src = "data:text/vtt;base64,V0VCVlRUCgoK";
-    
+
     // Add track
     player.appendChild(track);
     track.track.mode = "hidden";
@@ -412,7 +477,11 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
       startTimes.forEach((startTime, index) => {
         let endTime: number = endTimes[index + 1];
         if (Number.isNaN(endTime)) endTime = 1e10;
-        const cue = new VTTCue(startTime, endTime, `${index},${startTime},${endTime}`);
+        const cue = new VTTCue(
+          startTime,
+          endTime,
+          `${index},${startTime},${endTime}`
+        );
         cue.addEventListener("enter", () => {
           setCurrentFrameId(index);
           // console.log("WebWTT lyrics state enter", index);
@@ -445,11 +514,18 @@ export function usePlayerLyricsState<T>(keyframes: PlayerLyricsKeyframe<T>[], pl
   };
 }
 
-export function usePlainPlayerLyricsState(lyrics: LyricsKitLyrics, playerRef: RefObject<HTMLAudioElement>): PlayerLyricsState<LyricsKitLyricsLine> {
-  const keyFrames: PlayerLyricsKeyframe<LyricsKitLyricsLine>[] = useMemo(() => lyrics.lines.map(v => ({
-    start: v.position,
-    data: v
-  })), [lyrics]);
+export function usePlainPlayerLyricsState(
+  lyrics: LyricsKitLyrics,
+  playerRef: RefObject<HTMLAudioElement>
+): PlayerLyricsState<LyricsKitLyricsLine> {
+  const keyFrames: PlayerLyricsKeyframe<LyricsKitLyricsLine>[] = useMemo(
+    () =>
+      lyrics.lines.map((v) => ({
+        start: v.position,
+        data: v,
+      })),
+    [lyrics]
+  );
   return usePlayerLyricsState<LyricsKitLyricsLine>(keyFrames, playerRef);
 }
 
@@ -477,7 +553,8 @@ export interface SequenceQueryResult {
 /** Maximum time in second for one key stroke to take in the typing animation */
 const LONGEST_STEP_SECONDS = 1;
 
-interface PlayerLyricsTypingState extends PlayerLyricsState<LyricsKitLyricsLine> {
+interface PlayerLyricsTypingState
+  extends PlayerLyricsState<LyricsKitLyricsLine> {
   sequenceQuery: QueryResult<SequenceQueryResult>;
   timeline: Timeline;
 }
@@ -491,23 +568,32 @@ interface PlayerLyricsTypingState extends PlayerLyricsState<LyricsKitLyricsLine>
  * @param typingElementRef
  */
 export function usePlayerLyricsTypingState(
-  lyrics: LyricsKitLyrics, playerRef: RefObject<HTMLAudioElement>, perLineThreshold: number,
-  doneElementRef: RefObject<HTMLElement>, typingElementRef: RefObject<HTMLElement>
+  lyrics: LyricsKitLyrics,
+  playerRef: RefObject<HTMLAudioElement>,
+  perLineThreshold: number,
+  doneElementRef: RefObject<HTMLElement>,
+  typingElementRef: RefObject<HTMLElement>
 ): PlayerLyricsTypingState {
   const state = usePlainPlayerLyricsState(lyrics, playerRef);
   const { playerState, startTimes, endTimes } = state;
 
-  const sequenceQuery = useQuery<SequenceQueryResult>(
-    SEQUENCE_QUERY,
-    {
-      variables: {
-        text: useMemo(() => lyrics.lines.map((v) => v.content).join("\n"), [lyrics.lines]),
-        furigana: lyrics.lines.map(v => v.attachments?.furigana?.map(
-          ({ content, leftIndex, rightIndex }) => ({ content, leftIndex, rightIndex })
-        ) ?? []),
-      },
-    }
-  );
+  const sequenceQuery = useQuery<SequenceQueryResult>(SEQUENCE_QUERY, {
+    variables: {
+      text: useMemo(() => lyrics.lines.map((v) => v.content).join("\n"), [
+        lyrics.lines,
+      ]),
+      furigana: lyrics.lines.map(
+        (v) =>
+          v.attachments?.furigana?.map(
+            ({ content, leftIndex, rightIndex }) => ({
+              content,
+              leftIndex,
+              rightIndex,
+            })
+          ) ?? []
+      ),
+    },
+  });
 
   const timeline = useMemo<Timeline>(() => {
     if (!sequenceQuery.data) return null;
@@ -515,23 +601,45 @@ export function usePlayerLyricsTypingState(
     if (!doneElementRef.current || !typingElementRef.current) return null;
     const tl = gsap.timeline();
     sequenceQuery.data.transliterate.typingSequence.forEach((v, idx) => {
-      const start = startTimes[idx], lineEnd = endTimes[idx + 1];
+      const start = startTimes[idx],
+        lineEnd = endTimes[idx + 1];
       if (start === undefined || lineEnd === undefined) return;
-      const duration = Math.min((lineEnd - start) * perLineThreshold, v.length * LONGEST_STEP_SECONDS);
+      const duration = Math.min(
+        (lineEnd - start) * perLineThreshold,
+        v.length * LONGEST_STEP_SECONDS
+      );
 
-      const stepDuration = duration / Math.max(1, _.sum(v.map(w => w.sequence.length)));
-      let typed = "", i = 0;
+      const stepDuration =
+        duration / Math.max(1, _.sum(v.map((w) => w.sequence.length)));
+      let typed = "",
+        i = 0;
       for (const word of v) {
         if (word.convert) {
           for (const step of word.sequence) {
-            tl.set(doneElementRef.current, { text: typed }, start + i * stepDuration);
-            tl.set(typingElementRef.current, { text: step }, start + i * stepDuration);
+            tl.set(
+              doneElementRef.current,
+              { text: typed },
+              start + i * stepDuration
+            );
+            tl.set(
+              typingElementRef.current,
+              { text: step },
+              start + i * stepDuration
+            );
             i++;
           }
         } else {
           for (const step of word.sequence) {
-            tl.set(doneElementRef.current, { text: typed + step }, start + i * stepDuration);
-            tl.set(typingElementRef.current, { text: "" }, start + i * stepDuration);
+            tl.set(
+              doneElementRef.current,
+              { text: typed + step },
+              start + i * stepDuration
+            );
+            tl.set(
+              typingElementRef.current,
+              { text: "" },
+              start + i * stepDuration
+            );
             i++;
           }
         }
@@ -542,7 +650,14 @@ export function usePlayerLyricsTypingState(
     });
 
     return tl;
-  }, [doneElementRef.current, endTimes, perLineThreshold, sequenceQuery.data, startTimes, typingElementRef.current]);
+  }, [
+    doneElementRef.current,
+    endTimes,
+    perLineThreshold,
+    sequenceQuery.data,
+    startTimes,
+    typingElementRef.current,
+  ]);
 
   useTrackwiseTimelineControl(playerState, timeline);
 
@@ -552,8 +667,10 @@ export function usePlayerLyricsTypingState(
 /**
  * Control a GSAP timeline which covers the entire track according to the player state.
  */
-export function useTrackwiseTimelineControl(playerState: PlayerState, timeline: Timeline) {
-
+export function useTrackwiseTimelineControl(
+  playerState: PlayerState,
+  timeline: Timeline
+) {
   // Controls the progress of timeline
   useEffect(() => {
     const now = performance.now();

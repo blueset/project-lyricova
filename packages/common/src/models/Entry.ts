@@ -1,51 +1,86 @@
-
 import { Song } from "./Song";
 import { User } from "./User";
 import { Tag } from "./Tag";
 import { Verse } from "./Verse";
-import { Model, Table, Column, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, DeletedAt, BelongsToMany, ForeignKey, BelongsTo, HasMany } from "sequelize-typescript";
+import {
+  Model,
+  Table,
+  Column,
+  PrimaryKey,
+  AutoIncrement,
+  CreatedAt,
+  UpdatedAt,
+  DeletedAt,
+  BelongsToMany,
+  ForeignKey,
+  BelongsTo,
+  HasMany,
+  AllowNull,
+} from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { SongOfEntry } from "./SongOfEntry";
 import { TagOfEntry } from "./TagOfEntry";
+import { Pulse } from "./Pulse";
+import { ObjectType, Field, ID } from "type-graphql";
 
+@ObjectType({ description: "A Lyricova entry." })
 @Table
 export class Entry extends Model<Entry> {
+  @Field()
   @AutoIncrement
   @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER })
+  @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
+  @Field()
   @Column({ type: new DataTypes.STRING(512) })
   title: string;
 
+  @Field()
   @Column({ type: new DataTypes.STRING(1024) })
   producersName: string;
 
+  @Field()
   @Column({ type: new DataTypes.STRING(1024) })
   vocalistsName: string;
 
-  @BelongsToMany(() => Song, () => SongOfEntry)
+  @BelongsToMany(
+    () => Song,
+    () => SongOfEntry
+  )
   songs: Array<Song & { SongOfEntry: SongOfEntry }>;
 
+  @Field()
   @ForeignKey(() => User)
   @Column
   authorId: number;
 
-  @BelongsTo(type => User, "authorId")
+  @Field()
+  @BelongsTo((type) => User, "authorId")
   author: User;
 
+  @Field()
+  @AllowNull
   @Column({ type: "text" })
   comment: string;
 
-  @BelongsToMany(() => Tag, () => TagOfEntry)
+  @BelongsToMany(
+    () => Tag,
+    () => TagOfEntry
+  )
   tags: Array<Tag & { TagOfEntry: TagOfEntry }>;
 
-  @HasMany(type => Verse)
+  @HasMany((type) => Verse)
   verses: Verse[];
 
+  @HasMany((type) => Pulse)
+  pulses: Pulse[];
+
+  @Field()
   @CreatedAt
   creationDate: Date;
 
+  @Field()
   @UpdatedAt
   updatedOn: Date;
 

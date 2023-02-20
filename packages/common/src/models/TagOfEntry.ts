@@ -1,14 +1,26 @@
 import { DataTypes } from "sequelize";
-import { Model, CreatedAt, UpdatedAt, DeletedAt, Column, Table, PrimaryKey, ForeignKey, AutoIncrement } from "sequelize-typescript";
+import {
+  Model,
+  CreatedAt,
+  UpdatedAt,
+  DeletedAt,
+  Column,
+  Table,
+  PrimaryKey,
+  ForeignKey,
+  AutoIncrement,
+} from "sequelize-typescript";
 import { Entry } from "./Entry";
 import { Tag } from "./Tag";
+import { Field, ID, ObjectType } from "type-graphql";
 
+@ObjectType()
 @Table
 export class TagOfEntry extends Model<TagOfEntry> {
-
+  @Field((type) => ID)
   @AutoIncrement
   @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER })
+  @Column({ type: new DataTypes.INTEGER() })
   public id!: number;
 
   @ForeignKey(() => Tag)
@@ -24,5 +36,4 @@ export class TagOfEntry extends Model<TagOfEntry> {
 
   @UpdatedAt
   updatedOn: Date;
-
 }

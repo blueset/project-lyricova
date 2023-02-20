@@ -8,15 +8,13 @@ import {
   InputType,
   Field,
   Int,
+  Authorized,
 } from "type-graphql";
 import { Playlist } from "lyricova-common/models/Playlist";
 import { MusicFile } from "lyricova-common/models/MusicFile";
 import { UserInputError } from "apollo-server-express";
-import { MusicFileResolver } from "./MusicFileResolver";
 import pLimit from "p-limit";
-import { FileInPlaylist } from "lyricova-common/models/FileInPlaylist";
-import Sequelize, { Association } from "sequelize";
-import sequelize from "lyricova-common/db";
+import Sequelize from "sequelize";
 
 @InputType()
 class NewPlaylistInput implements Partial<Playlist> {
@@ -48,6 +46,7 @@ export class PlaylistResolver {
     return await Playlist.findByPk(slug);
   }
 
+  @Authorized("ADMIN")
   @Mutation((returns) => Playlist)
   public async newPlaylist(
     @Arg("data") data: NewPlaylistInput
@@ -55,6 +54,7 @@ export class PlaylistResolver {
     return await Playlist.create(data);
   }
 
+  @Authorized("ADMIN")
   @Mutation((returns) => Playlist)
   public async updatePlaylist(
     @Arg("slug") slug: string,
@@ -78,6 +78,7 @@ export class PlaylistResolver {
     return playlist;
   }
 
+  @Authorized("ADMIN")
   @Mutation((returns) => Playlist)
   public async addFileToPlaylist(
     @Arg("slug") slug: string,
@@ -106,6 +107,7 @@ export class PlaylistResolver {
     return playlist;
   }
 
+  @Authorized("ADMIN")
   @Mutation((returns) => Playlist)
   public async removeFileFromPlaylist(
     @Arg("slug") slug: string,
@@ -133,6 +135,7 @@ export class PlaylistResolver {
     return playlist;
   }
 
+  @Authorized("ADMIN")
   @Mutation((returns) => Playlist)
   public async updatePlaylistSortOrder(
     @Arg("slug") slug: string,
@@ -153,6 +156,7 @@ export class PlaylistResolver {
     return playlist;
   }
 
+  @Authorized("ADMIN")
   @Mutation((returns) => Boolean)
   public async removePlaylist(@Arg("slug") slug: string): Promise<boolean> {
     const playlist = await Playlist.findByPk(slug);
@@ -171,6 +175,7 @@ export class PlaylistResolver {
     return true;
   }
 
+  @Authorized("ADMIN")
   @Mutation((returns) => Playlist)
   public async updatePlaylistFiles(
     @Arg("slug") slug: string,

@@ -15,6 +15,17 @@ type Album {
   updatedOn: Timestamp!
 }
 
+"""Describes the animation sequence for a word."""
+type AnimatedWord {
+  """
+  True if the word shows a conversion-type of animation. False if it is just typing.
+  """
+  convert: Boolean!
+
+  """Actual sequence to show, one frame at a time."""
+  sequence: [String!]!
+}
+
 type Artist {
   ArtistOfAlbum: ArtistOfAlbum
   ArtistOfSong: ArtistOfSong
@@ -46,6 +57,41 @@ type ArtistOfSong {
   vocaDbId: Int
 }
 
+input ArtistOfSongInput {
+  artistId: Int!
+  artistRoles: [String!]!
+  categories: [String!]!
+  customName: String
+  isSupport: Boolean = false
+}
+
+"""A Lyricova entry."""
+type Entry {
+  author: User!
+  authorId: Float!
+  comment: String!
+  creationDate: Timestamp!
+  id: Float!
+  producersName: String!
+  pulses: [Pulse!]
+  songs: [Song!]
+  tags: [Tag!]
+  title: String!
+  updatedOn: Timestamp!
+  verses: [Verse!]
+  vocalistsName: String!
+}
+
+input EntryInput {
+  comment: String
+  producersName: String
+  songIds: [Float!]
+  tagSlugs: [String!]
+  title: String!
+  verses: [VerseInput!]!
+  vocalistsName: String
+}
+
 type FileInPlaylist {
   creationDate: Timestamp!
   id: Int!
@@ -60,6 +106,18 @@ type Foo {
 
   """Name of the foo."""
   name: String!
+}
+
+"""Furigana/romaji to words in a lyrics line."""
+input FuriganaLabel {
+  """Furigana/romaji content"""
+  content: String!
+
+  """Starting character per Extended Grapheme Cluster (including)"""
+  leftIndex: Int!
+
+  """Ending character per Extended Grapheme Cluster (excluding)"""
+  rightIndex: Int!
 }
 
 """
@@ -122,6 +180,25 @@ type MusicFile {
   updatedOn: Timestamp!
 }
 
+type Mutation {
+  deleteEntry(id: Float!): Boolean!
+  deleteTag(slug: String!): Boolean!
+  newEntry(data: EntryInput!): Entry!
+  newSong(data: SongInput!): Song!
+  newTag(data: NewTagInput!): Tag!
+  pulseEntry(id: Float!): Entry!
+  unpulseEntry(id: Float!, pulseId: Float!): Entry!
+  updateEntry(data: EntryInput!, id: Float!): Entry!
+  updateSong(data: SongInput!, id: Int!): Song!
+  updateTag(data: UpdateTagInput!, slug: String!): Tag!
+}
+
+input NewTagInput {
+  color: String!
+  name: String!
+  slug: String!
+}
+
 """A playlist of music files."""
 type Playlist {
   """Name of the playlist."""
@@ -131,24 +208,43 @@ type Playlist {
   slug: ID!
 }
 
+type Pulse {
+  creationDate: Timestamp!
+  id: ID!
+}
+
 type Query {
   currentUser: User
+  entries: [Entry!]!
+  entry(id: Float!): Entry
   foo: Foo!
   foos: [Foo!]!
   hash(plaintext: String!): String!
+  searchSongs(keywords: String!): [Song!]!
+  song(id: Int!): Song
+  songs: [Song!]!
   startALengthyTask(sessionId: String!): [String!]!
+  tag(slug: String!): Tag
+  tags: [Tag!]!
+  transliterate(furigana: [[FuriganaLabel!]!] = [], text: String!): TransliterationResult!
 }
 
 type Song {
   SongInAlbum: SongInAlbum
+  albums: [Album!]
+  artists: [Artist!]
   coverUrl: String
   creationDate: Timestamp!
+  derivedSongs: [Song!]
+  files: [MusicFile!]
   id: Int!
   incomplete: Boolean!
   name: String!
+  original: Song
   originalId: Int
   sortOrder: String!
   updatedOn: Timestamp!
+  videos: [VideoFile!]
   vocaDbJson: JSONObject!
 }
 
@@ -161,14 +257,84 @@ type SongInAlbum {
   vocaDbId: Int
 }
 
+input SongInAlbumOnSongInput {
+  albumId: Int!
+  diskNumber: Int
+  name: String
+  trackNumber: Int
+}
+
+input SongInput {
+  artistsOfSong: [ArtistOfSongInput!]!
+  coverUrl: String!
+  name: String!
+  originalId: Int
+  songInAlbums: [SongInAlbumOnSongInput!]!
+  sortOrder: String!
+}
+
 type Subscription {
   aLengthyTask(sessionId: String!): String
+}
+
+type Tag {
+  color: String!
+  entries: [Entry!]!
+  name: String!
+  slug: ID!
+}
+
+type TagOfEntry {
+  id: ID!
 }
 
 """
 The javascript `Date` as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
 """
 scalar Timestamp
+
+"""Result of a transliteration request."""
+type TransliterationResult {
+  karaoke(
+    """
+    Language of the query, choose from "ja", "zh", and "en". Leave blank for auto detection.
+    """
+    language: String
+  ): [[[String!]!]!]!
+  plain(
+    """
+    Language of the query, choose from "ja", "zh", and "en". Leave blank for auto detection.
+    """
+    language: String
+  ): String!
+  plainSegmented(
+    """
+    Language of the query, choose from "ja", "zh", and "en". Leave blank for auto detection.
+    """
+    language: String
+  ): [[[String!]!]!]!
+
+  """Original text."""
+  text: String!
+  typing(
+    """
+    Language of the query, choose from "ja", "zh", and "en". Leave blank for auto detection.
+    """
+    language: String
+  ): [[[String!]!]!]!
+  typingSequence(
+    """
+    Language of the query, choose from "ja", "zh", and "en". Leave blank for auto detection.
+    """
+    language: String
+  ): [[AnimatedWord!]!]!
+}
+
+input UpdateTagInput {
+  color: String
+  name: String
+  slug: String
+}
 
 type User {
   creationDate: Timestamp!
@@ -178,6 +344,30 @@ type User {
   id: Int!
   role: String!
   username: String!
+}
+
+type Verse {
+  html: String
+  id: Float!
+  isMain: Boolean!
+  isOriginal: Boolean!
+  language: String!
+  stylizedText: String
+  text: String!
+  translator: String
+  typingSequence: [[[String!]!]!]!
+}
+
+input VerseInput {
+  html: String
+  id: Float
+  isMain: Boolean = false
+  isOriginal: Boolean = false
+  language: String!
+  stylizedText: String
+  text: String!
+  translator: String
+  typingSequence: [[[String!]!]!] = []
 }
 
 type VideoFile {
