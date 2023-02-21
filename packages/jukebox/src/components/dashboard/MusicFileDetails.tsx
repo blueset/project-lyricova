@@ -1,3 +1,5 @@
+"use client";
+
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import { MusicFile } from "lyricova-common/models/MusicFile";
 import {

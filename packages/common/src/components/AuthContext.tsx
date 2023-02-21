@@ -1,7 +1,7 @@
 import { createContext, useEffect, useContext, ReactNode } from "react";
 import { User } from "../models/User";
 import { useQuery, gql } from "@apollo/client";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { LS_JWT_KEY } from "../frontendUtils/localStorage";
 import React from "react";
 

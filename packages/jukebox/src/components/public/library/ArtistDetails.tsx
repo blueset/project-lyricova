@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Avatar,
   Box,
@@ -14,7 +16,7 @@ import { gql, useQuery } from "@apollo/client";
 import { MusicFileFragments } from "../../../graphql/fragments";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { Artist } from "lyricova-common/models/Artist";
 import Alert from "@mui/material/Alert";
 import _ from "lodash";

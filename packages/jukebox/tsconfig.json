@@ -29,11 +29,18 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": false,
-    "incremental": true
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
-    "src/**/*"
-, "../common/src/utils/typingSequence.ts"  ],
+    "src/**/*",
+    "../common/src/utils/typingSequence.ts",
+    ".next/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

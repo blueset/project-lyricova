@@ -106,6 +106,19 @@ type DashboardStats {
   songCount: Int!
 }
 
+"""A Lyricova entry."""
+type Entry {
+  author: User!
+  authorId: Float!
+  comment: String!
+  creationDate: Timestamp!
+  id: Float!
+  producersName: String!
+  title: String!
+  updatedOn: Timestamp!
+  vocalistsName: String!
+}
+
 type FileInPlaylist {
   creationDate: Timestamp!
   id: Int!
@@ -497,6 +510,11 @@ type Playlist {
   slug: ID!
 }
 
+type Pulse {
+  creationDate: Timestamp!
+  id: ID!
+}
+
 type Query {
   album(id: Int!): Album
   albums: [Album!]!
@@ -608,6 +626,16 @@ type Subscription {
   youTubeDlDownloadProgress(sessionId: String!): YouTubeDlProgress
 }
 
+type Tag {
+  color: String!
+  name: String!
+  slug: ID!
+}
+
+type TagOfEntry {
+  id: ID!
+}
+
 type Texture {
   author: String!
   authorUrl: String
@@ -670,6 +698,18 @@ type User {
   id: Int!
   role: String!
   username: String!
+}
+
+type Verse {
+  html: String
+  id: Float!
+  isMain: Boolean!
+  isOriginal: Boolean!
+  language: String!
+  stylizedText: String
+  text: String!
+  translator: String
+  typingSequence: [[[String!]!]!]!
 }
 
 type VideoFile {

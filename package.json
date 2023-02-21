@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "dependencies": {
+    "next": "^13.1.6",
     "react": "^18.2.0"
   }
 }

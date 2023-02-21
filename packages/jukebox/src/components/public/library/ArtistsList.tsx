@@ -1,3 +1,5 @@
+"use client";
+
 import { VDBArtistType } from "../../../types/vocadb";
 import { gql, useQuery } from "@apollo/client";
 import { Artist } from "lyricova-common/models/Artist";

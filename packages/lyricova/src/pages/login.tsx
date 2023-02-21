@@ -1,6 +1,6 @@
 import { AuthContext } from "lyricova-common/components/AuthContext";
 import { Button, Box, Typography, Popover, Link } from "@mui/material";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
 import { makeValidate, TextField } from "mui-rff";
 import * as yup from "yup";

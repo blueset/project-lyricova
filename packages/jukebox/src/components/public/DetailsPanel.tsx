@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Box, GlobalStyles, IconButton, styled } from "@mui/material";
 import Link, { NextComposedLink } from "lyricova-common/components/Link";
 import SearchIcon from "@mui/icons-material/Search";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { GlobalStylesProps as StyledGlobalStylesProps } from "@mui/styled-engine/GlobalStyles/GlobalStyles";
 
 const StyledLink = styled(Link)({
@@ -22,7 +22,7 @@ interface Props {
 }
 
 export default function DetailsPanel({ coverUrl = null, children }: Props) {
-  const router = useRouter();
+  const pathname = usePathname();
 
   let backgroundNode = (
     <div
@@ -122,7 +122,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
         <Box flexGrow={1} />
         <IconButton
           component={NextComposedLink}
-          color={router.pathname === "/search" ? "primary" : "default"}
+          color={pathname === "/search" ? "primary" : "default"}
           href="/search"
           aria-label="search"
           edge="end"

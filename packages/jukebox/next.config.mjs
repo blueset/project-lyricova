@@ -6,8 +6,14 @@ const withBundleAnalyzer = analyzer({
 });
 
 export default withBundleAnalyzer({
+  experimental: {
+    appDir: true,
+  },
   webpack: (config, options) => {
     // config.resolve.alias.react = path.resolve(__dirname, "node_modules/react");
+    if (!config.externals) config.externals = {};
+    config.externals.bufferutil = "bufferutil";
+    config.externals["utf-8-validate"] = "utf-8-validate";
     return config;
   },
 });

@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {
   bindMenu,
