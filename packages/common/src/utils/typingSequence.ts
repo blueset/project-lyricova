@@ -1,4 +1,4 @@
-import { kanaToHira } from "lyricova-common/utils/transliterate";
+import { kanaToHira } from "./transliterate";
 import { ObjectType, Field } from "type-graphql";
 
 // prettier-ignore

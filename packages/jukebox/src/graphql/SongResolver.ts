@@ -1,4 +1,4 @@
-import { Arg, Authorized, Field, FieldResolver, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
+import { Arg, Authorized, Field, FieldResolver, Info, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
 import { Song } from "lyricova-common/models/Song";
 import { literal } from "sequelize";
 import { Album } from "lyricova-common/models/Album";
@@ -9,6 +9,8 @@ import { ArtistOfSong } from "lyricova-common/models/ArtistOfSong";
 import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { SongInAlbum } from "lyricova-common/models/SongInAlbum";
 import _ from "lodash";
+import { GraphQLResolveInfo } from "graphql";
+import { getFields } from "lyricova-common/utils/graphQL";
 
 @InputType()
 class ArtistOfSongInput implements Partial<ArtistOfSong> {
@@ -66,28 +68,34 @@ class SongInput implements Partial<Song> {
 
 @Resolver(of => Song)
 export class SongResolver {
+  includes(info: GraphQLResolveInfo): string[] {
+    const fields = getFields(info);
+    return fields.filter(f => f === "files" || f === "artists" || f === "albums");
+  }
 
   @Query(returns => Song, { nullable: true })
-  public async song(@Arg("id", type => Int) id: number): Promise<Song | null> {
-    return Song.findByPk(id);
+  public async song(@Arg("id", type => Int) id: number, @Info() info: GraphQLResolveInfo): Promise<Song | null> {
+    return Song.findByPk(id, { include: this.includes(info) });
   }
 
   @Query(returns => [Song])
-  public async searchSongs(@Arg("keywords") keywords: string): Promise<Song[]> {
+  public async searchSongs(@Arg("keywords") keywords: string, @Info() info: GraphQLResolveInfo): Promise<Song[]> {
     return Song.findAll({
       where: literal("match (name, sortOrder) against (:keywords in boolean mode)"),
       attributes: { exclude: ["vocaDbJson"] },
       replacements: {
         keywords,
       },
+      include: this.includes(info),
     });
   }
 
   @Query(returns => [Song])
-  public async songs(): Promise<Song[]> {
+  public async songs(@Info() info: GraphQLResolveInfo): Promise<Song[]> {
     return Song.findAll({
       order: ["sortOrder"],
       attributes: { exclude: ["vocaDbJson"] },
+      include: this.includes(info),
     });
   }
 

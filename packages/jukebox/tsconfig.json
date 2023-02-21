@@ -32,8 +32,7 @@
     "incremental": true
   },
   "include": [
-    "src/**/*"
-, "../common/src/utils/typingSequence.ts"  ],
+    "src/**/*" ],
   "exclude": [
     "node_modules"
   ]

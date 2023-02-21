@@ -3,6 +3,7 @@ import {
   Authorized,
   Field,
   FieldResolver,
+  Info,
   InputType,
   Int,
   Mutation,
@@ -11,12 +12,13 @@ import {
   Root,
 } from "type-graphql";
 import { Artist } from "lyricova-common/models/Artist";
-import sequelize, { literal, Op } from "sequelize";
+import { literal, Op } from "sequelize";
 import { Song } from "lyricova-common/models/Song";
 import { Album } from "lyricova-common/models/Album";
 import _ from "lodash";
 import type { VDBArtistType } from "../types/vocadb";
-import { GraphQLString } from "graphql";
+import { GraphQLResolveInfo } from "graphql";
+import { getFields } from "lyricova-common/utils/graphQL";
 
 @InputType()
 class ArtistInput implements Partial<Artist> {
@@ -35,18 +37,25 @@ class ArtistInput implements Partial<Artist> {
 
 @Resolver((of) => Artist)
 export class ArtistResolver {
+  includes(info: GraphQLResolveInfo): string[] {
+    const fields = getFields(info);
+    return fields.filter(f => f === "songs" || f === "albums");
+  }
+
   @Query((returns) => Artist, { nullable: true })
   public async artist(
-    @Arg("id", (type) => Int) id: number
+    @Arg("id", (type) => Int) id: number,
+    @Info() info: GraphQLResolveInfo
   ): Promise<Artist | null> {
-    return Artist.findByPk(id);
+    return Artist.findByPk(id, { include: this.includes(info) });
   }
 
   @Query((returns) => [Artist])
-  public async artists(): Promise<Artist[]> {
+  public async artists(@Info() info: GraphQLResolveInfo): Promise<Artist[]> {
     return Artist.findAll({
       order: ["sortOrder"],
       attributes: { exclude: ["vocaDbJson"] },
+      include: this.includes(info),
     });
   }
 
@@ -74,7 +83,8 @@ export class ArtistResolver {
         "Character",
       ],
     })
-    types: VDBArtistType[]
+    types: VDBArtistType[],
+    @Info() info: GraphQLResolveInfo
   ): Promise<Artist[]> {
     return Artist.findAll({
       order: ["sortOrder"],
@@ -94,12 +104,14 @@ export class ArtistResolver {
           ) > 0`),
         ],
       },
+      include: this.includes(info),
     });
   }
 
   @Query((returns) => [Artist])
   public async searchArtists(
-    @Arg("keywords") keywords: string
+    @Arg("keywords") keywords: string,
+    @Info() info: GraphQLResolveInfo
   ): Promise<Artist[]> {
     return Artist.findAll({
       where: literal(
@@ -109,6 +121,7 @@ export class ArtistResolver {
       replacements: {
         keywords,
       },
+      include: this.includes(info),
     });
   }
 

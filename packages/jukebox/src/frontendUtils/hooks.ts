@@ -11,7 +11,7 @@ import {
 } from "react";
 
 import _ from "lodash";
-import { AnimatedWord } from "lyricova-common/src/utils/typingSequence";
+import { AnimatedWord } from "lyricova-common/utils/typingSequence";
 import { gql, QueryResult, useQuery } from "@apollo/client";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";

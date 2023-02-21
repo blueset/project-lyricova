@@ -1,14 +1,16 @@
-import { Arg, Authorized, Field, FieldResolver, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
+import { Arg, Authorized, Field, FieldResolver, Info, InputType, Int, Mutation, Query, Resolver, Root } from "type-graphql";
 import { Artist } from "lyricova-common/models/Artist";
-import { DataTypes, literal } from "sequelize";
+import { literal } from "sequelize";
 import { Song } from "lyricova-common/models/Song";
 import { Album } from "lyricova-common/models/Album";
 import { MusicFile } from "lyricova-common/models/MusicFile";
 import _ from "lodash";
 import { SongInAlbum } from "lyricova-common/models/SongInAlbum";
-import type { AlbumForApiContract, VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
+import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { ArtistOfAlbum } from "lyricova-common/models/ArtistOfAlbum";
+import { getFields } from "lyricova-common/utils/graphQL";
 import sequelize from "sequelize";
+import { FieldNode, GraphQLResolveInfo } from "graphql";
 
 
 @InputType()
@@ -61,21 +63,27 @@ class AlbumInput implements Partial<Album> {
 
 @Resolver(of => Album)
 export class AlbumResolver {
+  includes(info: GraphQLResolveInfo): string[] {
+    const fields = getFields(info);
+    return fields.filter(f => f === "songs" || f === "artists" || f === "files");
+  }
+
   @Query(returns => Album, { nullable: true })
-  public async album(@Arg("id", type => Int) id: number): Promise<Album | null> {
-    return Album.findByPk(id);
+  public async album(@Arg("id", type => Int) id: number, @Info() info: GraphQLResolveInfo): Promise<Album | null> {
+    return Album.findByPk(id, {include: this.includes(info)});
   }
 
   @Query(returns => [Album])
-  public async albums(): Promise<Album[]> {
+  public async albums(@Info() info: GraphQLResolveInfo): Promise<Album[]> {
     return Album.findAll({
       order: ["sortOrder"],
-      attributes: { exclude: ["vocaDbJson"] }
+      attributes: { exclude: ["vocaDbJson"] },
+      include: this.includes(info),
     });
   }
 
   @Query(returns => [Album])
-  public async albumsHasFiles(): Promise<Album[]> {
+  public async albumsHasFiles(@Info() info: GraphQLResolveInfo): Promise<Album[]> {
     return Album.findAll({
       order: ["sortOrder"],
       attributes: [
@@ -92,17 +100,19 @@ export class AlbumResolver {
         WHERE 
           SongInAlbums.albumId = Album.id and MusicFiles.albumId = Album.id 
       ) > 0`),
+      include: this.includes(info),
     });
   }
 
   @Query(returns => [Album])
-  public async searchAlbums(@Arg("keywords") keywords: string): Promise<Album[]> {
+  public async searchAlbums(@Arg("keywords") keywords: string, @Info() info: GraphQLResolveInfo): Promise<Album[]> {
     return Album.findAll({
       where: literal("match (name, sortOrder) against (:keywords in boolean mode)"),
       attributes: { exclude: ["vocaDbJson"] },
       replacements: {
         keywords,
       },
+      include: this.includes(info),
     });
   }
 
@@ -113,7 +123,8 @@ export class AlbumResolver {
 
   @FieldResolver(type => [Artist], { nullable: true })
   private async artists(@Root() album: Album): Promise<Artist[] | null> {
-    return album.$get("artists");
+    if (album.artists) return album.artists;
+    return await album.$get("artists");
   }
 
   @FieldResolver(type => [MusicFile], { nullable: true })
