@@ -2,7 +2,7 @@ import { AppProps } from "next/app";
 import { ThemeProvider } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import PropTypes from "prop-types";
-import React from "react";
+import React, { ReactNode } from "react";
 import theme from "lyricova-common/frontendUtils/theme";
 import Head from "next/head";
 import { ApolloProvider } from "@apollo/client";
@@ -10,6 +10,8 @@ import apolloClient from "lyricova-common/frontendUtils/apollo";
 import { NextComponentType, NextPageContext } from "next";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import createEmotionCache from "../frontendUtils/createEmotionCache";
+
+export const getPlainLayout = (page: ReactNode) => <>{page}</>;
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
@@ -34,8 +36,8 @@ function MyApp({
     }
   }, []);
 
-  // const getLayout = Component.layout || getPlainLayout;
-  const C = Component as React.FC;
+  const getLayout = Component.layout || getPlainLayout;
+  // const C = Component as React.FC;
 
   return (
     <CacheProvider value={emotionCache}>
@@ -49,8 +51,8 @@ function MyApp({
       <ThemeProvider theme={theme}>
         <ApolloProvider client={apolloClient}>
           {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-          {/* {getLayout(<Component {...pageProps} />)} */}
-          <C {...pageProps} />
+          {getLayout(<Component {...pageProps} />)}
+          {/* <C {...pageProps} /> */}
           <CssBaseline />
         </ApolloProvider>
       </ThemeProvider>

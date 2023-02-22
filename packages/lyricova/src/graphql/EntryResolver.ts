@@ -79,7 +79,27 @@ class EntryInput implements Omit<Partial<Entry>, "verses"> {
 export class EntryResolver {
   @Query((returns) => [Entry])
   public async entries(): Promise<Entry[]> {
-    return await Entry.findAll();
+    return await Entry.findAll({
+      order: [
+        // ["pulses", "creationDate", "DESC"],
+        // ["creationDate", "DESC"],
+        ["sortDate", "DESC"],
+      ],
+      include: ["verses", "tags", "songs", "pulses"],
+      attributes: {
+        include: [
+          [
+            // use creationDate if pulses.creationDate is null
+            sequelize.fn(
+              "COALESCE",
+              sequelize.col("pulses.creationDate"),
+              sequelize.col("Entry.creationDate")
+            ),
+            "sortDate",
+          ],
+        ],
+      },
+    });
   }
 
   @Query((returns) => Entry, { nullable: true })

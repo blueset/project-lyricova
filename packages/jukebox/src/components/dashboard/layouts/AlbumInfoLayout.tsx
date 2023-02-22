@@ -9,7 +9,7 @@ import { formatArtistsPlainText } from "../../../frontendUtils/artists";
 import { Avatar, ListItemText, Tooltip } from "@mui/material";
 import { Album } from "lyricova-common/models/Album";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { DataGridToolbar } from "../../../components/dashboard/DataGridToolbar";
+import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 
 const ALBUM_INFO_LIST_QUERY = gql`
   query {

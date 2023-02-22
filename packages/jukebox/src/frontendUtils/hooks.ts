@@ -164,7 +164,7 @@ export function useLyricsState(
     const addCues = () => {
       // Generate cues
       if (lyrics?.lines?.length > 0 && lyrics.lines[0].position > 0) {
-        const cue = new VTTCue(0, lyrics.lines[0].position, `null,0`);
+        const cue = new VTTCue(0, lyrics.lines[0].position, "null,0");
         cue.addEventListener("enter", () => {
           setLine(null);
           // console.log("WebWTT lyrics state enter", null);

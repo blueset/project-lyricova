@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import { Avatar, Tooltip } from "@mui/material";
 import { Artist } from "lyricova-common/models/Artist";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { DataGridToolbar } from "../../../components/dashboard/DataGridToolbar";
+import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 
 const ARTIST_INFO_LIST_QUERY = gql`
   query {

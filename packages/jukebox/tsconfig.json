@@ -32,7 +32,7 @@
     "incremental": true
   },
   "include": [
-    "src/**/*" ],
+    "src/**/*", "../common/src/components/DataGridToolbar.tsx" ],
   "exclude": [
     "node_modules"
   ]

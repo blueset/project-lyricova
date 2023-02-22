@@ -10,7 +10,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useRouter } from "next/router";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { DataGridToolbar } from "../../../components/dashboard/DataGridToolbar";
+import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 import { NextComposedLink } from "lyricova-common/components/Link";
 
 const PENDING_REVIEW_FILES_QUERY = gql`
