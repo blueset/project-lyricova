@@ -1,11 +1,20 @@
-import { Button, ButtonGroup, InputAdornment, Menu, MenuItem } from "@mui/material";
+import {
+  Button,
+  ButtonGroup,
+  InputAdornment,
+  Menu,
+  MenuItem,
+} from "@mui/material";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { gql, useApolloClient } from "@apollo/client";
 import { useCallback, MouseEvent } from "react";
-import { makeStyles } from "@mui/material/styles";
 import { useField, useForm, useFormState } from "react-final-form";
-import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
+import {
+  bindMenu,
+  bindTrigger,
+  usePopupState,
+} from "material-ui-popup-state/hooks";
 import { DocumentNode } from "graphql";
 
 const TRANSLITRATION_QUERY = gql`
@@ -21,37 +30,48 @@ interface Props {
   destinationName: string;
 }
 
-export default function TransliterationAdornment({ sourceName, destinationName }: Props) {
+export default function TransliterationAdornment({
+  sourceName,
+  destinationName,
+}: Props) {
   const apolloClient = useApolloClient();
-  const popupState = usePopupState({ variant: "popover", popupId: "transliteration-menu" });
-  const { input: { value }} = useField(sourceName);
+  const popupState = usePopupState({
+    variant: "popover",
+    popupId: "transliteration-menu",
+  });
+  const {
+    input: { value },
+  } = useField(sourceName);
   const setValue = useForm().mutators.setValue;
 
-  const transliterateCallback = useCallback((language?: "zh" | "ja") => async () => {
-    try {
-      const result = await apolloClient.query<{
-        transliterate: { plain: string; };
-      }>({
-        query: TRANSLITRATION_QUERY,
-        variables: {
-          text: value,
-          language,
-        },
-        fetchPolicy: "no-cache",
-      });
+  const transliterateCallback = useCallback(
+    (language?: "zh" | "ja") => async () => {
+      try {
+        const result = await apolloClient.query<{
+          transliterate: { plain: string };
+        }>({
+          query: TRANSLITRATION_QUERY,
+          variables: {
+            text: value,
+            language,
+          },
+          fetchPolicy: "no-cache",
+        });
 
-      setValue(destinationName, result.data.transliterate.plain);
-    } catch (e) {
-      // No-op.
-    }
+        setValue(destinationName, result.data.transliterate.plain);
+      } catch (e) {
+        // No-op.
+      }
 
-    if (language !== null) {
-      popupState.close();
-    }
-  }, [apolloClient, destinationName, popupState, setValue, value]);
+      if (language !== null) {
+        popupState.close();
+      }
+    },
+    [apolloClient, destinationName, popupState, setValue, value]
+  );
 
   return (
-    <InputAdornment position="end" sx={{marginRight: -1.5}}>
+    <InputAdornment position="end" sx={{ marginRight: -1.5 }}>
       <ButtonGroup size="small" variant="text">
         <Button
           size="small"
@@ -63,7 +83,7 @@ export default function TransliterationAdornment({ sourceName, destinationName }
         <Button
           size="small"
           aria-label="Generate transliteration by languages"
-          sx={{paddingLeft: 0, paddingRight: 0,}}
+          sx={{ paddingLeft: 0, paddingRight: 0 }}
           {...bindTrigger(popupState)}
         >
           <ArrowDropDownIcon />
@@ -81,8 +101,12 @@ export default function TransliterationAdornment({ sourceName, destinationName }
         }}
         {...bindMenu(popupState)}
       >
-        <MenuItem onClick={transliterateCallback("zh")}>中文 → zhōngwén</MenuItem>
-        <MenuItem onClick={transliterateCallback("ja")}>日本語 → にほんご</MenuItem>
+        <MenuItem lang="zh" onClick={transliterateCallback("zh")}>
+          中文 → zhōngwén
+        </MenuItem>
+        <MenuItem lang="ja" onClick={transliterateCallback("ja")}>
+          日本語 → にほんご
+        </MenuItem>
       </Menu>
     </InputAdornment>
   );
