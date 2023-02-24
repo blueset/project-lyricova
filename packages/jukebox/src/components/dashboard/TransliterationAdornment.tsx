@@ -8,8 +8,8 @@ import {
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { gql, useApolloClient } from "@apollo/client";
-import { useCallback, MouseEvent } from "react";
-import { useField, useForm, useFormState } from "react-final-form";
+import { useCallback } from "react";
+import { useField, useForm } from "react-final-form";
 import {
   bindMenu,
   bindTrigger,
