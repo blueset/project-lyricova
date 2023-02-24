@@ -216,7 +216,7 @@ type Pulse {
 type Query {
   currentUser: User
   entries: [Entry!]!
-  entry(id: Float!): Entry
+  entry(id: Int!): Entry
   foo: Foo!
   foos: [Foo!]!
   hash(plaintext: String!): String!

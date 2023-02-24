@@ -7,6 +7,7 @@ import {
   Field,
   FieldResolver,
   InputType,
+  Int,
   Mutation,
   Query,
   Resolver,
@@ -103,7 +104,7 @@ export class EntryResolver {
   }
 
   @Query((returns) => Entry, { nullable: true })
-  public async entry(@Arg("id") id: number): Promise<Entry> {
+  public async entry(@Arg("id", (type) => Int) id: number): Promise<Entry> {
     return await Entry.findByPk(id);
   }
 

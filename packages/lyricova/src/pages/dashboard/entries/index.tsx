@@ -1,14 +1,11 @@
 import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
-import { Box, Button, Chip, IconButton, Tooltip } from "@mui/material";
+import { Box, Button, Chip, Tooltip } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
-import React, { useCallback, useState } from "react";
-import RateReviewIcon from "@mui/icons-material/RateReview";
+import React from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useRouter } from "next/router";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { NextComposedLink } from "lyricova-common/components/Link";

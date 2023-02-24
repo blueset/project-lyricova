@@ -44,7 +44,7 @@ import {
   showErrorOnChange,
   TextField,
 } from "mui-rff";
-import finalFormMutators from "../../../frontendUtils/finalFormMutators";
+import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import AvatarField from "./AvatarField";

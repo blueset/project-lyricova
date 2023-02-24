@@ -19,7 +19,7 @@ import TransliterationAdornment from "../TransliterationAdornment";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { Field, Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
-import finalFormMutators from "../../../frontendUtils/finalFormMutators";
+import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import * as yup from "yup";
 import { useSnackbar } from "notistack";
 import { DocumentNode } from "graphql";

@@ -18,7 +18,7 @@ import { ArtistFragments } from "../../../graphql/fragments";
 import { Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
 import AvatarField from "./AvatarField";
-import finalFormMutators from "../../../frontendUtils/finalFormMutators";
+import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import { DocumentNode } from "graphql";
 
 const NEW_ARTIST_MUTATION = gql`

@@ -31,7 +31,7 @@ import VideoThumbnailAdornment from "../VideoThumbnailAdornment";
 import { Artist } from "lyricova-common/models/Artist";
 import { Field, Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
-import finalFormMutators from "../../../frontendUtils/finalFormMutators";
+import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import AvatarField from "./AvatarField";
