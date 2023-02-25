@@ -19,7 +19,7 @@ import ShuffleIcon from "@mui/icons-material/Shuffle";
 import ButtonRow from "../../components/ButtonRow";
 import AutoResizer from "react-virtualized-auto-sizer";
 import { gql, useQuery } from "@apollo/client";
-import { MusicFileFragments } from "../../graphql/fragments";
+import { MusicFileFragments } from "lyricova-common/utils/fragments";
 import { MusicFilesPagination } from "../../graphql/MusicFileResolver";
 import React, { useCallback, useMemo, useRef } from "react";
 import { MusicFile } from "lyricova-common/models/MusicFile";

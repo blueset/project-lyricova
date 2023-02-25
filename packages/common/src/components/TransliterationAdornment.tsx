@@ -16,6 +16,7 @@ import {
   usePopupState,
 } from "material-ui-popup-state/hooks";
 import { DocumentNode } from "graphql";
+import React from "react";
 
 const TRANSLITRATION_QUERY = gql`
   query($text: String!, $language: String) {
@@ -76,7 +77,7 @@ export default function TransliterationAdornment({
         <Button
           size="small"
           aria-label="Generate transliteration"
-          onClick={transliterateCallback(null)}
+          onClick={transliterateCallback()}
         >
           <AutorenewIcon />
         </Button>

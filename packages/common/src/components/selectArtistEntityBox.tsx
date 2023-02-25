@@ -1,34 +1,28 @@
 import {
-  AutocompleteRenderInputParams,
   Avatar,
-  Box,
   FilterOptionsState,
   Grid,
   IconButton,
   Stack,
-  TextField,
-  TextField as MuiTextField,
   Typography,
 } from "@mui/material";
-import { useNamedState } from "../../../frontendUtils/hooks";
-import { useCallback, useEffect } from "react";
+import { useEffect, useState } from "react";
 import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SearchIcon from "@mui/icons-material/Search";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import { makeStyles } from "@mui/material/styles";
-import { ArtistFragments } from "../../../graphql/fragments";
+import { ArtistFragments } from "../utils/fragments";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EditIcon from "@mui/icons-material/Edit";
-import { Artist } from "lyricova-common/models/Artist";
+import { Artist } from "../models/Artist";
 import VocaDBSearchArtistDialog from "./vocaDBSearchArtistDialog";
 import ArtistEntityDialog from "./artistEntityDialog";
 import { useField, useForm } from "react-final-form";
-import { ExtendedSong } from "./selectSongEntityBox";
 import { Autocomplete } from "mui-rff";
 import { DocumentNode } from "graphql";
+import React from "react";
 
 export type ExtendedArtist = Partial<Artist> & {
   vocaDBSuggestion?: boolean;
@@ -62,35 +56,19 @@ export default function SelectArtistEntityBox<T extends string>({
   } = useField<ExtendedArtist>(fieldName);
   const setValue = useForm().mutators.setValue;
 
-  const [
-    vocaDBAutoCompleteOptions,
-    setVocaDBAutoCompleteOptions,
-  ] = useNamedState<ExtendedArtist[]>([], "vocaDBAutoCompleteOptions");
-  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState(
-    "",
-    "vocaDBAutoCompleteText"
-  );
+  const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useState<
+    ExtendedArtist[]
+  >([]);
+  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useState("");
 
-  const [importDialogKeyword, setImportDialogKeyword] = useNamedState(
-    "",
-    "importDialogKeyword"
-  );
+  const [importDialogKeyword, setImportDialogKeyword] = useState("");
 
   // Confirm import pop-up
-  const [isImportDialogOpen, toggleImportDialogOpen] = useNamedState(
-    false,
-    "importDialogOpen"
-  );
+  const [isImportDialogOpen, toggleImportDialogOpen] = useState(false);
 
   // Confirm manual enrol pop-up
-  const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(
-    false,
-    "manualDialogOpen"
-  );
-  const [isManualDialogForCreate, toggleManualDialogForCreate] = useNamedState(
-    true,
-    "manualDialogForCreate"
-  );
+  const [isManualDialogOpen, toggleManualDialogOpen] = useState(false);
+  const [isManualDialogForCreate, toggleManualDialogForCreate] = useState(true);
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -134,7 +112,7 @@ export default function SelectArtistEntityBox<T extends string>({
           if (vocaDBResult.status === 200 && vocaDBResult.data) {
             result = result.concat(
               vocaDBResult.data.map((v) => ({
-                id: null,
+                id: undefined,
                 name: v,
                 sortOrder: `"${v}"`,
                 vocaDBSuggestion: true,
@@ -182,13 +160,13 @@ export default function SelectArtistEntityBox<T extends string>({
             ) => {
               if (params.inputValue !== "") {
                 v.push({
-                  id: null,
+                  id: undefined,
                   name: `Search for “${params.inputValue}”`,
                   sortOrder: params.inputValue,
                   vocaDBSuggestion: true,
                 });
                 v.push({
-                  id: null,
+                  id: undefined,
                   name: `Manually add “${params.inputValue}”`,
                   sortOrder: params.inputValue,
                   manual: true,
@@ -199,11 +177,7 @@ export default function SelectArtistEntityBox<T extends string>({
             onInputChange={(event: unknown, newValue: string) => {
               setVocaDBAutoCompleteText(newValue);
             }}
-            onChange={(
-              event: unknown,
-              newValue: ExtendedArtist | null,
-              reason: string
-            ) => {
+            onChange={(event: unknown, newValue, reason: string) => {
               if (newValue === null) {
                 setVocaDBAutoCompleteOptions([]);
                 if (reason === "clear") {
@@ -211,17 +185,18 @@ export default function SelectArtistEntityBox<T extends string>({
                 }
                 return;
               }
-              if (newValue.vocaDBSuggestion) {
-                setImportDialogKeyword(newValue.sortOrder);
+              const newVal = newValue as ExtendedArtist;
+              if (newVal.vocaDBSuggestion) {
+                setImportDialogKeyword(newVal?.sortOrder ?? "");
                 toggleImportDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
-              } else if (newValue.manual) {
-                setImportDialogKeyword(newValue.sortOrder);
+              } else if (newVal.manual) {
+                setImportDialogKeyword(newVal?.sortOrder ?? "");
                 toggleManualDialogOpen(true);
                 toggleManualDialogForCreate(true);
                 setVocaDBAutoCompleteOptions([]);
               } else {
-                setValue(fieldName, newValue);
+                setValue(fieldName, newVal);
               }
             }}
             renderOption={(params, option: ExtendedArtist | null) => {
@@ -230,13 +205,13 @@ export default function SelectArtistEntityBox<T extends string>({
                   sx={{ color: "text.secondary", marginRight: 2 }}
                 />
               );
-              if (option.vocaDBSuggestion)
+              if (option?.vocaDBSuggestion)
                 icon = (
                   <SearchIcon
                     sx={{ color: "text.secondary", marginRight: 2 }}
                   />
                 );
-              else if (option.manual)
+              else if (option?.manual)
                 icon = (
                   <AddCircleIcon
                     sx={{ color: "text.secondary", marginRight: 2 }}
@@ -249,14 +224,15 @@ export default function SelectArtistEntityBox<T extends string>({
                   flexDirection="row"
                   alignItems="center"
                 >
-                  {icon} {option.name}
+                  {icon} {option?.name}
                 </Stack>
               );
             }}
-            getOptionLabel={(option: ExtendedArtist | null) => {
+            getOptionLabel={(option) => {
               // Prevent ”Manually add ...” item from being rendered
-              if (option === null || option.id === null) return "";
-              return option.name;
+              if (option === null || (option as ExtendedArtist).id === null)
+                return "";
+              return (option as ExtendedArtist).name ?? "";
             }}
           />
         </Grid>
@@ -283,7 +259,7 @@ export default function SelectArtistEntityBox<T extends string>({
                 </Typography>
               </div>
               <div>
-                {value.id >= 0 && (
+                {(value?.id ?? -1) >= 0 && (
                   <IconButton
                     href={`https://vocadb.net/Ar/${value.id}`}
                     target="_blank"

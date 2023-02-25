@@ -13,19 +13,19 @@ import {
   ListItemText,
   Radio
 } from "@mui/material";
-import { ChangeEvent, useCallback, useEffect } from "react";
-import { Artist } from "lyricova-common/models/Artist";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { Artist } from "../models/Artist";
 import axios from "axios";
-import type { PartialFindResult, ArtistForApiContract } from "../../../types/vocadb";
+import type { PartialFindResult, ArtistForApiContract } from "../types/vocadb";
 import _ from "lodash";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Skeleton } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
-import { ArtistFragments } from "../../../graphql/fragments";
+import { ArtistFragments } from "../utils/fragments";
 import { DocumentNode } from "graphql";
+import React from "react";
 
 const IMPORT_SONG_MUTATION = gql`
   mutation($id: Int!) {
@@ -46,10 +46,10 @@ interface Props {
 }
 
 export default function VocaDBSearchArtistDialog({ isOpen, toggleOpen, keyword, setKeyword, setArtist }: Props) {
-  const [results, setResults] = useNamedState<ArtistForApiContract[]>([], "results");
-  const [isLoaded, toggleLoaded] = useNamedState(false, "loaded");
-  const [selectedArtist, setSelectedArtist] = useNamedState<number | null>(null, "selectedArtist");
-  const [isImporting, toggleImporting] = useNamedState(false, "importing");
+  const [results, setResults] = useState<ArtistForApiContract[]>([]);
+  const [isLoaded, toggleLoaded] = useState(false);
+  const [selectedArtist, setSelectedArtist] = useState<number | null>(null);
+  const [isImporting, toggleImporting] = useState(false);
 
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
@@ -120,7 +120,7 @@ export default function VocaDBSearchArtistDialog({ isOpen, toggleOpen, keyword, 
       if (active) {
         toggleLoaded(true);
         if (response.status === 200) {
-          setResults(response.data.items);
+          setResults(response.data.items!);
         } else {
           setResults([]);
           console.error("Error occurred while loading search results from VocaDB", response);

@@ -23,6 +23,15 @@ import { segmentedTransliteration } from "lyricova-common/utils/transliterate";
 import sequelize from "lyricova-common/db";
 
 @InputType()
+class PulseInput implements Partial<Pulse> {
+  @Field((type) => Int, { nullable: true })
+  id?: number;
+
+  @Field()
+  creationDate: Date;
+}
+
+@InputType()
 class VerseInput implements Partial<Verse> {
   @Field({ nullable: true })
   id?: number;
@@ -53,7 +62,7 @@ class VerseInput implements Partial<Verse> {
 }
 
 @InputType()
-class EntryInput implements Omit<Partial<Entry>, "verses"> {
+class EntryInput implements Omit<Partial<Entry>, "verses" | "pulses"> {
   @Field()
   title: string;
 
@@ -74,6 +83,12 @@ class EntryInput implements Omit<Partial<Entry>, "verses"> {
 
   @Field((type) => [Number], { nullable: true })
   songIds?: number[];
+
+  @Field((type) => [PulseInput], { nullable: true })
+  pulses?: PulseInput[];
+
+  @Field({ nullable: true })
+  creationDate: Date | null;
 }
 
 @Resolver((of) => Entry)
@@ -81,11 +96,7 @@ export class EntryResolver {
   @Query((returns) => [Entry])
   public async entries(): Promise<Entry[]> {
     return await Entry.findAll({
-      order: [
-        // ["pulses", "creationDate", "DESC"],
-        // ["creationDate", "DESC"],
-        ["sortDate", "DESC"],
-      ],
+      order: [["sortDate", "DESC"]],
       include: ["verses", "tags", "songs", "pulses"],
       attributes: {
         include: [
@@ -130,10 +141,12 @@ export class EntryResolver {
       title,
       producersName,
       vocalistsName,
+      creationDate = new Date(),
       comment,
       tagSlugs,
       verses,
       songIds,
+      pulses,
     }: EntryInput,
     @Ctx() ctx: ContextType
   ): Promise<Entry> {
@@ -145,6 +158,7 @@ export class EntryResolver {
           producersName,
           vocalistsName,
           comment,
+          creationDate,
           authorId: ctx.user.id,
         },
         { transaction: t }
@@ -158,6 +172,11 @@ export class EntryResolver {
       );
       await entry.$add("song", songIds, { transaction: t });
       await entry.$add("tag", tagSlugs, { transaction: t });
+      await entry.$add(
+        "pulse",
+        pulses.map((pi) => Pulse.build(pi, { isNewRecord: true })),
+        { transaction: t }
+      );
 
       await t.commit();
       return entry;
@@ -170,16 +189,18 @@ export class EntryResolver {
   @Authorized("ADMIN")
   @Mutation((returns) => Entry)
   public async updateEntry(
-    @Arg("id") id: number,
+    @Arg("id", (type) => Int) id: number,
     @Arg("data")
     {
       title,
       producersName,
       vocalistsName,
+      creationDate,
       comment,
       tagSlugs,
       verses,
       songIds,
+      pulses,
     }: EntryInput
   ): Promise<Entry> {
     const entry = await Entry.findByPk(id);
@@ -197,10 +218,25 @@ export class EntryResolver {
         },
         { transaction: t }
       );
+      // updating creationDate need special treatment
+      if (creationDate) {
+        entry.changed("creationDate", true);
+        entry.set("creationDate", creationDate, {
+          raw: true,
+        });
+        await entry.save({
+          silent: true,
+          fields: ["creationDate"],
+          transaction: t,
+        });
+      }
       await entry.$set(
         "verses",
         verses.map((v) => {
-          const vObj = Verse.build({ id: v.id }, { isNewRecord: false });
+          const vObj = Verse.build(
+            { id: v.id || undefined },
+            { isNewRecord: !v.id }
+          );
           vObj.update(v);
           return vObj;
         }),
@@ -208,6 +244,27 @@ export class EntryResolver {
       );
       await entry.$set("songs", songIds, { transaction: t });
       await entry.$set("tags", tagSlugs, { transaction: t });
+      const pulseObjs = await Promise.all(
+        pulses.map(async (pi) => {
+          const p = Pulse.build(pi, { isNewRecord: !pi.id });
+          p.changed("creationDate", true);
+          p.set("creationDate", pi.creationDate, { raw: true });
+          await p.save({
+            silent: true,
+            fields: pi.id ? ["id", "creationDate"] : ["creationDate"],
+            transaction: t,
+          });
+          return p;
+        })
+      );
+      await entry.$set("pulses", pulseObjs, { transaction: t });
+      // Remove pulses with no entryId as Sequelize doesn’t do it
+      await Pulse.destroy({
+        where: {
+          entryId: null,
+        },
+        transaction: t,
+      });
 
       await t.commit();
       return entry;
@@ -219,7 +276,9 @@ export class EntryResolver {
 
   @Authorized("ADMIN")
   @Mutation((returns) => Boolean)
-  public async deleteEntry(@Arg("id") id: number): Promise<boolean> {
+  public async deleteEntry(
+    @Arg("id", (type) => Int) id: number
+  ): Promise<boolean> {
     const entry = await Entry.findByPk(id);
     if (!entry) {
       throw new UserInputError("Entry not found");

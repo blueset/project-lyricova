@@ -1,4 +1,4 @@
-import { Song } from "lyricova-common/models/Song";
+import { Song } from "../models/Song";
 import {
   Button,
   Dialog,
@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { Fragment, useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
-import TransliterationAdornment from "../TransliterationAdornment";
+import TransliterationAdornment from "./TransliterationAdornment";
 import { useSnackbar } from "notistack";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -26,16 +26,16 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SelectSongEntityBox from "./selectSongEntityBox";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
 import SelectAlbumEntityBox from "./selectAlbumEntityBox";
-import TrackNameAdornment from "../TrackNameAdornment";
+import TrackNameAdornment from "./TrackNameAdornment";
 import * as yup from "yup";
-import { SongFragments } from "../../../graphql/fragments";
-import { Artist } from "lyricova-common/models/Artist";
+import { SongFragments } from "../utils/fragments";
+import { Artist } from "../models/Artist";
 import type {
   VDBArtistCategoryType,
   VDBArtistRoleType,
-} from "../../../types/vocadb";
-import { Album } from "lyricova-common/models/Album";
-import VideoThumbnailAdornment from "../VideoThumbnailAdornment";
+} from "../types/vocadb";
+import { Album } from "../models/Album";
+import VideoThumbnailAdornment from "./VideoThumbnailAdornment";
 import { Field, Form } from "react-final-form";
 import {
   Checkboxes,
@@ -44,12 +44,13 @@ import {
   showErrorOnChange,
   TextField,
 } from "mui-rff";
-import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
+import finalFormMutators from "../frontendUtils/finalFormMutators";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import AvatarField from "./AvatarField";
 import StringSchema from "yup/lib/string";
 import { DocumentNode } from "graphql";
+import React from "react";
 
 const NEW_SONG_MUTATION = gql`
   mutation($data: SongInput!) {
@@ -100,8 +101,8 @@ interface FormValues {
   }[];
   albums: {
     album: Partial<Album>;
-    trackNumber?: number;
-    diskNumber?: number;
+    trackNumber: number | null;
+    diskNumber: number | null;
     name?: string;
   }[];
 }
@@ -139,15 +140,15 @@ export default function SongEntityDialog({
           name: keyword ?? "",
           sortOrder: "",
           coverUrl: "",
-          originalSong: null,
+          originalSong: undefined,
           artists: [],
           albums: [],
         }
       : {
-          name: songToEdit.name,
-          sortOrder: songToEdit.sortOrder,
-          coverUrl: songToEdit.coverUrl,
-          originalSong: songToEdit.original,
+          name: songToEdit.name!,
+          sortOrder: songToEdit.sortOrder!,
+          coverUrl: songToEdit.coverUrl!,
+          originalSong: songToEdit.original ?? undefined,
           artists:
             songToEdit.artists?.map((v) => ({
               ...v.ArtistOfSong,
@@ -162,7 +163,7 @@ export default function SongEntityDialog({
 
   const songId = songToEdit?.id ?? null;
 
-  const schema = yup.object({
+  const schema = yup.object({}).shape({
     name: yup.string().required(),
     sortOrder: yup.string().required(),
     coverUrl: yup
@@ -201,7 +202,7 @@ export default function SongEntityDialog({
         name: yup.string().required(),
       })
     ),
-  });
+  }).required();
 
   const validate = makeValidate<FormValues>(schema);
 
@@ -289,7 +290,7 @@ export default function SongEntityDialog({
             }
           } catch (e) {
             console.error(
-              `Error occurred while ${create ? "creating" : "updating"} song #${
+              `Error occurred while ${create ? "creating" : "updating"} song ${
                 values?.name
               }.`,
               e

@@ -6,14 +6,8 @@ import { Pulse } from "lyricova-common/models/Pulse";
 import { gql, useQuery, useApolloClient } from "@apollo/client";
 import { useSnackbar } from "notistack";
 import * as yup from "yup";
-import {
-  Checkboxes,
-  makeValidate,
-  Select,
-  showErrorOnChange,
-  TextField,
-} from "mui-rff";
-import { Field, Form, useField } from "react-final-form";
+import { makeValidate, Select, showErrorOnChange, TextField } from "mui-rff";
+import { Field, Form, FormSpy, useField } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
 import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import arrayMutators from "final-form-arrays";
@@ -26,60 +20,72 @@ import {
   ButtonGroup,
   FormHelperText,
   Grid,
+  IconButton,
   MenuItem,
   Stack,
   Tooltip,
   Typography,
+  TextField as MuiTextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Fragment } from "react";
 import { Box } from "@mui/system";
+import SelectSongEntityBox from "lyricova-common/components/selectSongEntityBox";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DateTimePicker } from "@mui/x-date-pickers";
+import { DateTimePickerPopup } from "./DateTimePickerPopup";
+import { useRouter } from "next/router";
+import { SongFragments } from "lyricova-common/utils/fragments";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 const monospacedFont =
   '"Rec Mono Casual", "Cascadia Code", "Fira Code", monospace';
 
-const ENTRY_QUERY = gql`
-  query Entry($id: Int!) {
-    entry(id: $id) {
+const ENTRY_FRAGMENT = gql`
+  fragment EntryFragment on Entry {
+    id
+    title
+    producersName
+    vocalistsName
+    comment
+    songs {
+      ...SelectSongEntry
+    }
+    verses {
       id
-      title
-      producersName
-      vocalistsName
-      comment
-      songs {
-        id
-        name
-        artists {
-          name
-        }
-        albums {
-          id
-          name
-        }
-      }
-      verses {
-        id
-        text
-        isMain
-        isOriginal
-        translator
-        language
-        stylizedText
-        html
-        typingSequence
-      }
-      tags {
-        name
-        slug
-        color
-      }
+      text
+      isMain
+      isOriginal
+      translator
+      language
+      stylizedText
+      html
+      typingSequence
+    }
+    tags {
+      name
+      slug
+      color
+    }
+    creationDate
+    pulses {
+      id
       creationDate
-      pulses {
-        id
-        creationDate
-      }
+    }
+  }
+
+  ${SongFragments.SelectSongEntry}
+`;
+
+const ENTRY_QUERY = gql`
+  query Entry($id: Int!, $hasEntry: Boolean!) {
+    entry(id: $id) @include(if: $hasEntry) {
+      ...EntryFragment
     }
     tags {
       color
@@ -87,6 +93,28 @@ const ENTRY_QUERY = gql`
       slug
     }
   }
+
+  ${ENTRY_FRAGMENT}
+`;
+
+const NEW_ENTRY_MUTATION = gql`
+  mutation NewEntry($data: EntryInput!) {
+    newEntry(data: $data) {
+      ...EntryFragment
+    }
+  }
+
+  ${ENTRY_FRAGMENT}
+`;
+
+const UPDATE_ENTRY_MUTATION = gql`
+  mutation UpdateEntry($id: Int!, $data: EntryInput!) {
+    updateEntry(data: $data, id: $id) {
+      ...EntryFragment
+    }
+  }
+
+  ${ENTRY_FRAGMENT}
 `;
 
 const TRANSLITRATION_QUERY = gql`
@@ -110,25 +138,18 @@ interface FormValues {
   >[];
   tags: string[];
   pulses: Partial<Pulse>[];
+  creationDate: number;
 }
 
-declare module "yup" {
-  interface ArraySchema<T> {
-    onlyOneTrue(propertyPath: string, message?: any): ArraySchema<T>;
-  }
-}
-
-yup.addMethod<yup.ArraySchema<yup.ObjectSchema<any>>>(
-  yup.array,
-  "onlyOneTrue",
-  function(propertyPath, message) {
-    return this.test("onlyOneTrue", message, function(list) {
-      const trueCount = list.filter((item) => item[propertyPath]).length;
-      console.log("onlyOneTrue", trueCount, propertyPath);
-      return trueCount === 1;
-    });
-  }
-);
+const initialFormValues = (data: { entry?: Entry }): FormValues => ({
+  ...data.entry,
+  creationDate: (data.entry.creationDate as unknown) as number,
+  tags: data.entry.tags.map((tag) => tag.slug),
+  verses: data.entry.verses.map((verse) => ({
+    ...verse,
+    typingSequence: JSON.stringify(verse.typingSequence),
+  })),
+});
 
 interface EntityFormProps {
   id?: number;
@@ -137,15 +158,17 @@ interface EntityFormProps {
 export function EntryForm({ id }: EntityFormProps) {
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
+  const router = useRouter();
 
-  const { data, error, loading } = useQuery<{ entry?: Entry; tags: Tag[] }>(
-    ENTRY_QUERY,
-    {
-      variables: { id },
-    }
-  );
+  const { data, loading, refetch } = useQuery<{
+    entry?: Entry;
+    tags: Tag[];
+  }>(ENTRY_QUERY, {
+    variables: { id: id || -1, hasEntry: !!id },
+  });
 
-  if (id && (loading || !data?.entry || !data.tags)) {
+  if (loading || (id && !data?.entry) || !data?.tags) {
+    console.log("loading", loading, id, data?.entry, data?.tags);
     return <Alert severity="info">Loading...</Alert>;
   }
 
@@ -159,15 +182,9 @@ export function EntryForm({ id }: EntityFormProps) {
         verses: [],
         tags: [],
         pulses: [],
+        creationDate: Date.now().valueOf(),
       }
-    : {
-        ...data.entry,
-        tags: data.entry.tags.map((tag) => tag.slug),
-        verses: data.entry.verses.map((verse) => ({
-          ...verse,
-          typingSequence: JSON.stringify(verse.typingSequence),
-        })),
-      };
+    : initialFormValues(data);
 
   const schema = yup.object({
     title: yup.string().required(),
@@ -188,20 +205,19 @@ export function EntryForm({ id }: EntityFormProps) {
           typingSequence: yup.string(),
         })
       )
-      // .onlyOneTrue("isMain", "Only one main verse is allowed.")
-      // .onlyOneTrue("isOriginal", "Only one original verse is allowed.")
       .test(
         "onlyOneMain",
-        "Only one main verse is allowed.",
+        { isMain: "Only one main verse is allowed." },
         (list) => list.filter((item) => item["isMain"]).length === 1
       )
       .test(
         "onlyOneOriginal",
-        "Only one original verse is allowed.",
+        { isOriginal: "Only one original verse is allowed." },
         (list) => list.filter((item) => item["isOriginal"]).length === 1
       ),
     tags: yup.array(yup.string()),
     pulses: yup.array(yup.object().typeError("Pulse entity must be selected")),
+    creationDate: yup.number().required(),
   });
 
   const validate = makeValidate<FormValues>(schema);
@@ -216,9 +232,88 @@ export function EntryForm({ id }: EntityFormProps) {
         }}
         subscription={{}}
         validate={validate}
-        onSubmit={async (values) => {}}
+        onSubmit={async (values, formApi) => {
+          try {
+            const data = {
+              title: values.title,
+              producersName: values.producersName,
+              vocalistsName: values.vocalistsName,
+              creationDate: values.creationDate || Date.now().valueOf(),
+              comment: values.comment,
+              tagSlugs: values.tags,
+              verses: values.verses.map((verse) => ({
+                id: verse.id || undefined,
+                language: verse.language,
+                text: verse.text,
+                isOriginal: verse.isOriginal,
+                isMain: verse.isMain,
+                stylizedText: verse.stylizedText,
+                html: verse.html,
+                typingSequence: JSON.parse(verse.typingSequence || "[]"),
+                translator: verse.translator,
+              })),
+              songIds: values.songs.map((song) => song.id),
+              pulses: values.pulses.map((pulse) => ({
+                id: pulse.id || undefined,
+                creationDate: pulse.creationDate || Date.now().valueOf(),
+              })),
+            };
+
+            if (!id) {
+              // create
+              const result = await apolloClient.mutate<{
+                newEntry: Partial<Entry>;
+              }>({
+                mutation: NEW_ENTRY_MUTATION,
+                variables: { data },
+              });
+              if (result.data) {
+                snackbar.enqueueSnackbar(
+                  `Entry ${result.data.newEntry.title} is successfully created.`,
+                  {
+                    variant: "success",
+                  }
+                );
+                router.push(`/dashboard/entries/${result.data.newEntry.id}`);
+              }
+            } else {
+              // update
+              const result = await apolloClient.mutate<{
+                updateEntry: Partial<Entry>;
+              }>({
+                mutation: UPDATE_ENTRY_MUTATION,
+                variables: { id, data },
+              });
+              if (result.data) {
+                snackbar.enqueueSnackbar(
+                  `Entry ${result.data.updateEntry.title} is successfully updated.`,
+                  {
+                    variant: "success",
+                  }
+                );
+                const outcome = await refetch();
+                formApi.reset(initialFormValues(outcome.data));
+              }
+            }
+          } catch (e) {
+            console.error(
+              `Error occurred while ${!id ? "creating" : "updating"} entry ${
+                values?.title
+              }.`,
+              e
+            );
+            snackbar.enqueueSnackbar(
+              `Error occurred while ${!id ? "creating" : "updating"} Entry ${
+                values?.title
+              }. (${e})`,
+              {
+                variant: "error",
+              }
+            );
+          }
+        }}
       >
-        {({ values, submitting, handleSubmit }) => {
+        {({ values, submitting, handleSubmit, form, errors }) => {
           return (
             <>
               <TextField
@@ -247,47 +342,86 @@ export function EntryForm({ id }: EntityFormProps) {
                   type="text"
                 />
               </Stack>
-              {data?.tags && (
-                <Select
-                  variant="outlined"
-                  margin="dense"
-                  fullWidth
-                  name="tags"
-                  label="Tags"
-                  multiple
-                  renderValue={(selected) => (
-                    <Stack direction="row" spacing={1}>
-                      {data.tags
-                        .filter((tag) =>
-                          (selected as string[]).includes(tag.slug)
-                        )
-                        .map((tag) => (
-                          <span
-                            key={tag.slug}
-                            style={{
-                              color: tag.color,
-                              border: `1px solid ${tag.color}`,
-                              borderRadius: 5,
-                              padding: "0 4px",
-                            }}
-                          >
-                            {tag.name}
-                          </span>
-                        ))}
-                    </Stack>
-                  )}
-                >
-                  {data?.tags.map((tag) => (
-                    <MenuItem
-                      key={tag.slug}
-                      value={tag.slug}
-                      style={{ color: tag.color }}
+              <Grid container spacing={2} my={1}>
+                <Grid item xs={12} md={6}>
+                  {data?.tags && (
+                    <Select
+                      variant="outlined"
+                      fullWidth
+                      name="tags"
+                      label="Tags"
+                      multiple
+                      renderValue={(selected) => (
+                        <Stack direction="row" spacing={1}>
+                          {data.tags
+                            .filter((tag) =>
+                              (selected as string[]).includes(tag.slug)
+                            )
+                            .map((tag) => (
+                              <span
+                                key={tag.slug}
+                                style={{
+                                  color: tag.color,
+                                  border: `1px solid ${tag.color}`,
+                                  borderRadius: 5,
+                                  padding: "0 4px",
+                                }}
+                              >
+                                {tag.name}
+                              </span>
+                            ))}
+                        </Stack>
+                      )}
                     >
-                      {tag.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
+                      {data?.tags.map((tag) => (
+                        <MenuItem
+                          key={tag.slug}
+                          value={tag.slug}
+                          style={{ color: tag.color }}
+                        >
+                          {tag.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Field name="creationDate">
+                    {({ input: { onChange, ...input }, meta }) => {
+                      return (
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DateTimePicker
+                            renderInput={({ error, helperText, ...props }) => (
+                              <MuiTextField
+                                fullWidth
+                                {...props}
+                                error={error || showErrorOnChange({ meta })}
+                                helperText={
+                                  showErrorOnChange({ meta })
+                                    ? meta.error[0] || meta.submitError
+                                    : helperText
+                                }
+                              />
+                            )}
+                            label="Created at"
+                            ampm={false}
+                            inputFormat="YYYY-MM-DD HH:mm:ss"
+                            {...input}
+                            onChange={(newValue) => {
+                              onChange(newValue?.valueOf() ?? null);
+                              form.mutators.setValue(
+                                "creationDate",
+                                newValue?.valueOf() ?? null
+                              );
+                            }}
+                          />
+                        </LocalizationProvider>
+                      );
+                    }}
+                  </Field>
+                </Grid>
+              </Grid>
+
               <Typography
                 variant="subtitle1"
                 fontWeight={600}
@@ -563,7 +697,7 @@ export function EntryForm({ id }: EntityFormProps) {
                       </Button>
                       {showErrorOnChange({ meta }) ? (
                         <FormHelperText error>
-                          {meta.submitError ?? meta.error?.[0]}
+                          {JSON.stringify(meta.submitError || meta.error?.[0])}
                         </FormHelperText>
                       ) : (
                         false
@@ -582,9 +716,25 @@ export function EntryForm({ id }: EntityFormProps) {
               </Typography>
               <FieldArray name="songs">
                 {({ fields }) => (
-                  <>
-                    {fields.map((i) => (
-                      <span key={i}>{i}</span>
+                  <Stack gap={1}>
+                    {fields.map((path, idx) => (
+                      <Stack
+                        direction="row"
+                        gap={1}
+                        key={path}
+                        alignItems="start"
+                      >
+                        <SelectSongEntityBox
+                          fieldName={path}
+                          labelName={`Linked song #${idx + 1}`}
+                        />
+                        <IconButton
+                          color="error"
+                          onClick={() => fields.remove(idx)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Stack>
                     ))}
                     <Button
                       fullWidth
@@ -595,7 +745,7 @@ export function EntryForm({ id }: EntityFormProps) {
                     >
                       Add song relation
                     </Button>
-                  </>
+                  </Stack>
                 )}
               </FieldArray>
               <Typography
@@ -609,18 +759,60 @@ export function EntryForm({ id }: EntityFormProps) {
               <FieldArray name="pulses">
                 {({ fields }) => (
                   <>
-                    {fields.map((i) => (
-                      <span key={i}>{i}</span>
+                    {fields.map((path, idx) => (
+                      <Field name={path} key={idx}>
+                        {({ input: { value } }) => (
+                          <Stack direction="row" gap={1}>
+                            <DateTimePickerPopup
+                              value={value.creationDate}
+                              onSubmit={(newValue) => {
+                                fields.update(idx, {
+                                  ...value,
+                                  creationDate: newValue?.valueOf() ?? null,
+                                });
+                              }}
+                            >
+                              <Button
+                                fullWidth
+                                color="secondary"
+                                sx={{
+                                  justifyContent: "flex-start",
+                                  px: 0,
+                                  textTransform: "none",
+                                }}
+                              >
+                                {dayjs(value.creationDate).format(
+                                  "YYYY-MM-DD HH:mm:ss (Z)"
+                                )}{" "}
+                                ({dayjs(value.creationDate).fromNow()})
+                              </Button>
+                            </DateTimePickerPopup>
+                            <IconButton
+                              color="error"
+                              onClick={() => fields.remove(idx)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        )}
+                      </Field>
                     ))}
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      color="secondary"
-                      startIcon={<AddIcon />}
-                      // onClick={() => fields.push(null)}
+                    <DateTimePickerPopup
+                      onSubmit={(newValue) => {
+                        fields.push({
+                          creationDate: newValue.valueOf(),
+                        });
+                      }}
                     >
-                      Add pulse
-                    </Button>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        color="secondary"
+                        startIcon={<AddIcon />}
+                      >
+                        Add pulse
+                      </Button>
+                    </DateTimePickerPopup>
                   </>
                 )}
               </FieldArray>
@@ -641,6 +833,29 @@ export function EntryForm({ id }: EntityFormProps) {
                 label="Comment"
                 type="text"
               />
+
+              <FormSpy
+                subscription={{
+                  errors: true,
+                }}
+              >
+                {(form) =>
+                  Object.keys(form.errors).length > 0 && (
+                    <FormHelperText error>
+                      {JSON.stringify(form.errors)}
+                    </FormHelperText>
+                  )
+                }
+              </FormSpy>
+              <Button
+                disabled={submitting}
+                onClick={handleSubmit}
+                color="primary"
+                variant="contained"
+                sx={{ my: 1 }}
+              >
+                {!id ? "Create" : "Update"}
+              </Button>
             </>
           );
         }}

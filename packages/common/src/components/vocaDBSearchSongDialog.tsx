@@ -13,19 +13,19 @@ import {
   ListItemText,
   Radio,
 } from "@mui/material";
-import { ChangeEvent, useCallback, useEffect } from "react";
-import { Song } from "lyricova-common/models/Song";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { Song } from "../models/Song";
 import axios from "axios";
-import { PartialFindResult, SongForApiContract } from "../../../types/vocadb";
+import { PartialFindResult, SongForApiContract } from "../types/vocadb";
 import _ from "lodash";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Skeleton } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
-import { SongFragments } from "../../../graphql/fragments";
+import { SongFragments } from "../utils/fragments";
 import { DocumentNode } from "graphql";
+import React from "react";
 
 const IMPORT_SONG_MUTATION = gql`
   mutation($id: Int!) {
@@ -52,16 +52,10 @@ export default function VocaDBSearchSongDialog({
   setKeyword,
   setSong,
 }: Props) {
-  const [results, setResults] = useNamedState<SongForApiContract[]>(
-    [],
-    "results"
-  );
-  const [isLoaded, toggleLoaded] = useNamedState(false, "loaded");
-  const [selectedSong, setSelectedSong] = useNamedState<number | null>(
-    null,
-    "selectedSong"
-  );
-  const [isImporting, toggleImporting] = useNamedState(false, "importing");
+  const [results, setResults] = useState<SongForApiContract[]>([]);
+  const [isLoaded, toggleLoaded] = useState(false);
+  const [selectedSong, setSelectedSong] = useState<number | null>(null);
+  const [isImporting, toggleImporting] = useState(false);
 
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
@@ -159,7 +153,7 @@ export default function VocaDBSearchSongDialog({
       if (active) {
         toggleLoaded(true);
         if (response.status === 200) {
-          setResults(response.data.items);
+          setResults(response.data.items!);
         } else {
           setResults([]);
           console.error(

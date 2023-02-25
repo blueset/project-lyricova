@@ -13,19 +13,19 @@ import {
   ListItemText,
   Radio,
 } from "@mui/material";
-import { ChangeEvent, useCallback, useEffect } from "react";
-import { Album } from "lyricova-common/models/Album";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { Album } from "../models/Album";
 import axios from "axios";
-import { PartialFindResult, AlbumForApiContract } from "../../../types/vocadb";
+import { PartialFindResult, AlbumForApiContract } from "../types/vocadb";
 import _ from "lodash";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Skeleton } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
-import { AlbumFragments } from "../../../graphql/fragments";
+import { AlbumFragments } from "../utils/fragments";
 import { DocumentNode } from "graphql";
+import React from "react";
 
 const IMPORT_ALBUM_MUTATION = gql`
   mutation($id: Int!) {
@@ -52,16 +52,10 @@ export default function VocaDBSearchAlbumDialog({
   setKeyword,
   setAlbum,
 }: Props) {
-  const [results, setResults] = useNamedState<AlbumForApiContract[]>(
-    [],
-    "results"
-  );
-  const [isLoaded, toggleLoaded] = useNamedState(false, "loaded");
-  const [selectedAlbum, setSelectedAlbum] = useNamedState<number | null>(
-    null,
-    "selectedAlbum"
-  );
-  const [isImporting, toggleImporting] = useNamedState(false, "importing");
+  const [results, setResults] = useState<AlbumForApiContract[]>([]);
+  const [isLoaded, toggleLoaded] = useState(false);
+  const [selectedAlbum, setSelectedAlbum] = useState<number | null>(null);
+  const [isImporting, toggleImporting] = useState(false);
 
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
@@ -162,7 +156,7 @@ export default function VocaDBSearchAlbumDialog({
       if (active) {
         toggleLoaded(true);
         if (response.status === 200) {
-          setResults(response.data.items);
+          setResults(response.data.items!);
         } else {
           setResults([]);
           console.error(

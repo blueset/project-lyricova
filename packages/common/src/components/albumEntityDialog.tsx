@@ -1,4 +1,4 @@
-import { Album } from "lyricova-common/models/Album";
+import { Album } from "../models/Album";
 import {
   Box,
   Button,
@@ -13,36 +13,37 @@ import {
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
-import { Fragment, useCallback, useEffect } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { gql, useApolloClient } from "@apollo/client";
-import TransliterationAdornment from "../TransliterationAdornment";
+import TransliterationAdornment from "./TransliterationAdornment";
 import { useSnackbar } from "notistack";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SortIcon from "@mui/icons-material/Sort";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import SelectSongEntityBox from "./selectSongEntityBox";
-import TrackNameAdornment from "../TrackNameAdornment";
+import TrackNameAdornment from "./TrackNameAdornment";
 import SelectArtistEntityBox from "./selectArtistEntityBox";
 import _ from "lodash";
 import * as yup from "yup";
-import { AlbumFragments } from "../../../graphql/fragments";
-import VideoThumbnailAdornment from "../VideoThumbnailAdornment";
-import { Artist } from "lyricova-common/models/Artist";
+import { AlbumFragments } from "../utils/fragments";
+import VideoThumbnailAdornment from "./VideoThumbnailAdornment";
+import { Artist } from "../models/Artist";
 import { Field, Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
-import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
+import finalFormMutators from "../frontendUtils/finalFormMutators";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import AvatarField from "./AvatarField";
-import { Song } from "lyricova-common/models/Song";
+import { Song } from "../models/Song";
 import type {
   VDBArtistCategoryType,
   VDBArtistRoleType,
-} from "../../../types/vocadb";
-import { useNamedState } from "../../../frontendUtils/hooks";
+} from "../types/vocadb";
 import { DocumentNode } from "graphql";
 import StringSchema from "yup/lib/string";
+import ArraySchema from "yup/lib/array";
+import React from "react";
 
 const NEW_ALBUM_MUTATION = gql`
   mutation($data: AlbumInput!) {
@@ -128,8 +129,8 @@ interface FormValues {
   }[];
   songs: {
     song: Partial<Song>;
-    trackNumber?: number;
-    diskNumber?: number;
+    trackNumber: number | null;
+    diskNumber: number | null;
     name?: string;
   }[];
 }
@@ -171,9 +172,9 @@ export default function AlbumEntityDialog({
           artists: [],
         }
       : {
-          name: albumToEdit.name,
-          sortOrder: albumToEdit.sortOrder,
-          coverUrl: albumToEdit.coverUrl,
+          name: albumToEdit.name!,
+          sortOrder: albumToEdit.sortOrder!,
+          coverUrl: albumToEdit.coverUrl!,
           artists:
             albumToEdit.artists?.map((v) => ({
               ...v.ArtistOfAlbum,
@@ -186,18 +187,17 @@ export default function AlbumEntityDialog({
             })) ?? [],
         };
 
-  const [initialValues, setInitialValues] = useNamedState(
-    buildInitialValues,
-    "initialValues"
+  const [initialValues, setInitialValues] = useState(
+    buildInitialValues
   );
   const albumId = albumToEdit?.id ?? null;
 
   useEffect(() => {
     if (albumToEdit) {
       setInitialValues({
-        name: albumToEdit.name,
-        sortOrder: albumToEdit.sortOrder,
-        coverUrl: albumToEdit.coverUrl,
+        name: albumToEdit.name!,
+        sortOrder: albumToEdit.sortOrder!,
+        coverUrl: albumToEdit.coverUrl!,
         artists:
           albumToEdit.artists?.map((v) => ({
             ...v.ArtistOfAlbum,
@@ -225,7 +225,7 @@ export default function AlbumEntityDialog({
         setInitialValues({
           name: album.name,
           sortOrder: album.sortOrder,
-          coverUrl: album.coverUrl,
+          coverUrl: album.coverUrl!,
           artists:
             album.artists?.map((v) => ({
               ...v.ArtistOfAlbum,
@@ -268,33 +268,31 @@ export default function AlbumEntityDialog({
         }}
         subscription={{}}
         validate={makeValidate<FormValues>(
-          yup.object({
+          yup.object().shape({
             name: yup.string().required(),
             sortOrder: yup.string().required(),
             coverUrl: yup
               .string()
-              .nullable()
+              .optional()
               .url(),
-            songs: yup.array().of(
+            songs: yup.array(
               yup.object({
                 song: yup.object().typeError("Song entity must be selected."),
                 diskNumber: yup
                   .number()
                   .optional()
-                  .nullable()
                   .positive()
                   .integer(),
                 trackNumber: yup
                   .number()
                   .optional()
-                  .nullable()
                   .positive()
                   .integer(),
-                name: yup.string().required(),
+                name: yup.string().optional(),
               })
             ),
-            artists: yup.array().of(
-              yup.object({
+            artists: yup.array(
+              yup.object({}).shape({
                 artist: yup
                   .object()
                   .typeError("Artist entity must be selected."),
@@ -303,13 +301,13 @@ export default function AlbumEntityDialog({
                 >,
                 roles: yup
                   .array(yup.string() as StringSchema<VDBArtistRoleType>)
-                  .required(),
+                  .required() as ArraySchema<StringSchema<VDBArtistRoleType>>,
                 effectiveRoles: yup
                   .array(yup.string() as StringSchema<VDBArtistRoleType>)
-                  .required(),
+                  .required() as ArraySchema<StringSchema<VDBArtistRoleType>>,
               })
             ),
-          })
+          }).required()
         )}
         onSubmit={async (values) => {
           try {

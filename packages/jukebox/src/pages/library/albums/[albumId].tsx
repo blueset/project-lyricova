@@ -16,7 +16,10 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { gql, useQuery } from "@apollo/client";
-import { AlbumFragments, MusicFileFragments } from "../../../graphql/fragments";
+import {
+  AlbumFragments,
+  MusicFileFragments,
+} from "lyricova-common/utils/fragments";
 import Alert from "@mui/material/Alert";
 import React, { Fragment } from "react";
 import { Album } from "lyricova-common/models/Album";

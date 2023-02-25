@@ -14,7 +14,7 @@ import { useNamedState } from "../../frontendUtils/hooks";
 import { makeStyles } from "@mui/material/styles";
 import { TabContext, TabPanel } from "@mui/lab";
 import InfoPanel from "./musicFilesDetails/info";
-import { SongFragments } from "../../graphql/fragments";
+import { SongFragments } from "lyricova-common/utils/fragments";
 import CoverArtPanel from "./musicFilesDetails/coverArt";
 import LyricsPanel from "./musicFilesDetails/lyrics";
 import PlaylistsPanel from "./musicFilesDetails/playlists";

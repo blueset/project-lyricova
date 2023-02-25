@@ -9,7 +9,7 @@ import {
 import { useNamedState } from "../frontendUtils/hooks";
 import React, { ChangeEvent, FormEvent, ReactNode, useCallback } from "react";
 import { gql, useLazyQuery } from "@apollo/client";
-import { MusicFileFragments } from "../graphql/fragments";
+import { MusicFileFragments } from "lyricova-common/utils/fragments";
 import { MusicFile } from "lyricova-common/models/MusicFile";
 import Alert from "@mui/material/Alert";
 import SearchIcon from "@mui/icons-material/Search";

@@ -3,15 +3,23 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useCallback } from "react";
 import { useField, useForm } from "react-final-form";
+import React from "react";
 
 interface Props {
   sourceName: string;
   destinationName: string;
 }
 
-export default function TrackNameAdornment({ sourceName, destinationName }: Props) {
-  const { input: { trackName }} = useField(sourceName);
-  const { input: { value }} = useField(destinationName);
+export default function TrackNameAdornment({
+  sourceName,
+  destinationName,
+}: Props) {
+  const {
+    input: { trackName },
+  } = useField(sourceName);
+  const {
+    input: { value },
+  } = useField(destinationName);
   const setValue = useForm().mutators.setValue;
 
   const trackNameButtonCallback = useCallback(() => {
@@ -24,16 +32,15 @@ export default function TrackNameAdornment({ sourceName, destinationName }: Prop
 
   return (
     <InputAdornment position="end">
-      {
-        (trackName !== "" || value !== "") &&
+      {(trackName !== "" || value !== "") && (
         <IconButton
-            size="small"
-            aria-label={!value ? "Clear" : "Copy from track name"}
-            onClick={trackNameButtonCallback}
+          size="small"
+          aria-label={!value ? "Clear" : "Copy from track name"}
+          onClick={trackNameButtonCallback}
         >
           {!value ? <ContentCopyIcon /> : <ClearIcon />}
         </IconButton>
-      }
+      )}
     </InputAdornment>
   );
 }

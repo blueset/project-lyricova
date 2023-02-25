@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
-import { MusicFileFragments } from "../../../graphql/fragments";
+import { MusicFileFragments } from "lyricova-common/utils/fragments";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
 import { useRouter } from "next/router";

@@ -1,4 +1,4 @@
-import { Artist } from "lyricova-common/models/Artist";
+import { Artist } from "../models/Artist";
 import {
   Button,
   Dialog,
@@ -11,15 +11,16 @@ import {
 } from "@mui/material";
 import { useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
-import TransliterationAdornment from "../TransliterationAdornment";
+import TransliterationAdornment from "./TransliterationAdornment";
 import { useSnackbar } from "notistack";
 import * as yup from "yup";
-import { ArtistFragments } from "../../../graphql/fragments";
+import { ArtistFragments } from "../utils/fragments";
 import { Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
 import AvatarField from "./AvatarField";
-import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
+import finalFormMutators from "../frontendUtils/finalFormMutators";
 import { DocumentNode } from "graphql";
+import React from "react";
 
 const NEW_ARTIST_MUTATION = gql`
   mutation($data: ArtistInput!) {

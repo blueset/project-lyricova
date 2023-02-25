@@ -10,12 +10,12 @@ import {
   Table,
 } from "sequelize-typescript";
 import { Entry } from "./Entry";
-import { Field, ID, ObjectType } from "type-graphql";
+import { Field, Int, ObjectType } from "type-graphql";
 
 @ObjectType()
 @Table({ updatedAt: false })
 export class Pulse extends Model<Pulse> {
-  @Field((type) => ID)
+  @Field((type) => Int)
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataType.INTEGER() })

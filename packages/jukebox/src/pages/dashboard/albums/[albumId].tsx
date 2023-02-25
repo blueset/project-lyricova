@@ -1,6 +1,6 @@
 import { getLayout } from "../../../components/dashboard/layouts/AlbumInfoLayout";
 import { gql, useQuery } from "@apollo/client";
-import { AlbumFragments } from "../../../graphql/fragments";
+import { AlbumFragments } from "lyricova-common/utils/fragments";
 import { Album } from "lyricova-common/models/Album";
 import { useRouter } from "next/router";
 import AlbumEntityDialog from "../../../components/dashboard/musicFilesDetails/albumEntityDialog";

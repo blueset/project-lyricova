@@ -24,7 +24,7 @@ import * as yup from "yup";
 import { useSnackbar } from "notistack";
 import { DocumentNode } from "graphql";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
-import { AlbumFragments } from "../../../graphql/fragments";
+import { AlbumFragments } from "lyricova-common/utils/fragments";
 import { useNamedState } from "../../../frontendUtils/hooks";
 
 const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`

@@ -1,4 +1,5 @@
-import { Artist } from "lyricova-common/models/Artist";
+import { Artist } from "../models/Artist";
+import React from "react";
 import { ReactNode } from "react";
 
 function splitArtists(

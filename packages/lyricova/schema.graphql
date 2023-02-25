@@ -84,7 +84,9 @@ type Entry {
 
 input EntryInput {
   comment: String
+  creationDate: Timestamp
   producersName: String
+  pulses: [PulseInput!]
   songIds: [Float!]
   tagSlugs: [String!]
   title: String!
@@ -181,14 +183,14 @@ type MusicFile {
 }
 
 type Mutation {
-  deleteEntry(id: Float!): Boolean!
+  deleteEntry(id: Int!): Boolean!
   deleteTag(slug: String!): Boolean!
   newEntry(data: EntryInput!): Entry!
   newSong(data: SongInput!): Song!
   newTag(data: NewTagInput!): Tag!
   pulseEntry(id: Float!): Entry!
   unpulseEntry(id: Float!, pulseId: Float!): Entry!
-  updateEntry(data: EntryInput!, id: Float!): Entry!
+  updateEntry(data: EntryInput!, id: Int!): Entry!
   updateSong(data: SongInput!, id: Int!): Song!
   updateTag(data: UpdateTagInput!, slug: String!): Tag!
 }
@@ -210,7 +212,12 @@ type Playlist {
 
 type Pulse {
   creationDate: Timestamp!
-  id: ID!
+  id: Int!
+}
+
+input PulseInput {
+  creationDate: Timestamp!
+  id: Int
 }
 
 type Query {

@@ -11,6 +11,10 @@ import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import { Entry } from "lyricova-common/models/Entry";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 const ENTRIES_QUERY = gql`
   query {
@@ -19,6 +23,10 @@ const ENTRIES_QUERY = gql`
       title
       producersName
       vocalistsName
+      creationDate
+      pulses {
+        creationDate
+      }
       tags {
         name
         slug
@@ -49,8 +57,8 @@ export default function Entries() {
         columns={[
           { headerName: "ID", field: "id", width: 75 },
           { headerName: "Title", field: "title", flex: 2 },
-          { headerName: "Producers name", field: "producersName", flex: 1 },
-          { headerName: "Vocalists name", field: "vocalistsName", flex: 1 },
+          { headerName: "Producers", field: "producersName", flex: 1 },
+          { headerName: "Vocalists", field: "vocalistsName", flex: 1 },
           {
             headerName: "Tags",
             field: "tags",
@@ -77,6 +85,18 @@ export default function Entries() {
             flex: 1,
             renderCell: (p) =>
               p.row.songs.map((t) => t.name).join(", ") || <em>None</em>,
+          },
+          {
+            headerName: "Recent action",
+            field: "creationDate",
+            flex: 1,
+            renderCell: (p) =>
+              `${dayjs(
+                Math.max(
+                  p.row.creationDate.valueOf(),
+                  ...p.row.pulses.map((p) => p.creationDate.valueOf())
+                )
+              ).fromNow()} (${p.row.pulses.length} pulses)`,
           },
           {
             field: "actions",

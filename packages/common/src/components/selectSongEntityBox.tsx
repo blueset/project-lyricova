@@ -1,42 +1,44 @@
 import {
   Avatar,
+  Chip,
   FilterOptionsState,
   Grid,
   IconButton,
   Stack,
   Typography,
 } from "@mui/material";
-import { useNamedState } from "../../../frontendUtils/hooks";
-import { useEffect } from "react";
+import { Song } from "../models/Song";
+import { useEffect, useState } from "react";
 import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SearchIcon from "@mui/icons-material/Search";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import { AlbumFragments } from "../../../graphql/fragments";
+import VocaDBSearchSongDialog from "./vocaDBSearchSongDialog";
+import { SongFragments } from "../utils/fragments";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EditIcon from "@mui/icons-material/Edit";
-import { Album } from "lyricova-common/models/Album";
-import VocaDBSearchAlbumDialog from "./vocaDBSearchAlbumDialog";
-import AlbumEntityDialog from "./albumEntityDialog";
+import SongEntityDialog from "./songEntityDialog";
 import { useField, useForm } from "react-final-form";
 import { Autocomplete } from "mui-rff";
+import { formatArtists } from "../frontendUtils/artists";
 import { DocumentNode } from "graphql";
+import React from "react";
 
-export type ExtendedAlbum = Partial<Album> & {
+export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
   manual?: boolean;
 };
 
-const LOCAL_ARTIST_ENTITY_QUERY = gql`
+const LOCAL_SONG_ENTITY_QUERY = gql`
   query($text: String!) {
-    searchAlbums(keywords: $text) {
-      ...SelectAlbumEntry
+    searchSongs(keywords: $text) {
+      ...SelectSongEntry
     }
   }
 
-  ${AlbumFragments.SelectAlbumEntry}
+  ${SongFragments.SelectSongEntry}
 ` as DocumentNode;
 
 interface Props<T extends string> {
@@ -45,46 +47,30 @@ interface Props<T extends string> {
   title?: string;
 }
 
-export default function SelectAlbumEntityBox<T extends string>({
+export default function SelectSongEntityBox<T extends string>({
   fieldName,
   labelName,
   title,
 }: Props<T>) {
   const apolloClient = useApolloClient();
   const {
-    input: { value },
-  } = useField<ExtendedAlbum>(fieldName);
+    input: { value, onChange, ...input },
+  } = useField<ExtendedSong>(fieldName);
   const setValue = useForm().mutators.setValue;
 
-  const [
-    vocaDBAutoCompleteOptions,
-    setVocaDBAutoCompleteOptions,
-  ] = useNamedState<ExtendedAlbum[]>([], "vocaDBAutoCompleteOptions");
-  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useNamedState(
-    "",
-    "vocaDBAutoCompleteText"
-  );
+  const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useState<
+    ExtendedSong[]
+  >([]);
+  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useState("");
 
-  const [importDialogKeyword, setImportDialogKeyword] = useNamedState(
-    "",
-    "importDialogKeyword"
-  );
+  const [importDialogKeyword, setImportDialogKeyword] = useState("");
 
   // Confirm import pop-up
-  const [isImportDialogOpen, toggleImportDialogOpen] = useNamedState(
-    false,
-    "importDialogOpen"
-  );
+  const [isImportDialogOpen, toggleImportDialogOpen] = useState(false);
 
   // Confirm manual enrol pop-up
-  const [isManualDialogOpen, toggleManualDialogOpen] = useNamedState(
-    false,
-    "manualDialogOpen"
-  );
-  const [isManualDialogForCreate, toggleManualDialogForCreate] = useNamedState(
-    true,
-    "manualDialogForCreate"
-  );
+  const [isManualDialogOpen, toggleManualDialogOpen] = useState(false);
+  const [isManualDialogForCreate, toggleManualDialogForCreate] = useState(true);
 
   // Query server for local autocomplete
   useEffect(() => {
@@ -96,13 +82,13 @@ export default function SelectAlbumEntityBox<T extends string>({
     }
 
     _.throttle(async () => {
-      const apolloPromise = apolloClient.query<{ searchAlbums: Album[] }>({
-        query: LOCAL_ARTIST_ENTITY_QUERY,
+      const apolloPromise = apolloClient.query<{ searchSongs: Song[] }>({
+        query: LOCAL_SONG_ENTITY_QUERY,
         variables: { text: vocaDBAutoCompleteText },
       });
 
       const vocaDBPromise = axios.get<string[]>(
-        "https://vocadb.net/api/albums/names",
+        "https://vocadb.net/api/songs/names",
         {
           params: {
             query: vocaDBAutoCompleteText,
@@ -110,13 +96,14 @@ export default function SelectAlbumEntityBox<T extends string>({
           },
         }
       );
+
       if (active) {
-        let result: ExtendedAlbum[] = [];
+        let result: ExtendedSong[] = [];
 
         try {
           const apolloResult = await apolloPromise;
-          if (apolloResult.data?.searchAlbums) {
-            result = result.concat(apolloResult.data?.searchAlbums);
+          if (apolloResult.data?.searchSongs) {
+            result = result.concat(apolloResult.data?.searchSongs);
           }
         } catch (e) {
           /* No-Op. */
@@ -127,7 +114,7 @@ export default function SelectAlbumEntityBox<T extends string>({
           if (vocaDBResult.status === 200 && vocaDBResult.data) {
             result = result.concat(
               vocaDBResult.data.map((v) => ({
-                id: null,
+                id: undefined,
                 name: v,
                 sortOrder: `"${v}"`,
                 vocaDBSuggestion: true,
@@ -157,31 +144,31 @@ export default function SelectAlbumEntityBox<T extends string>({
           {title}
         </Typography>
       )}
-      <Grid container spacing={1}>
+      <Grid container spacing={3}>
         <Grid item xs={12}>
           <Autocomplete
-            name={fieldName}
             options={vocaDBAutoCompleteOptions}
             label={labelName}
             selectOnFocus
             clearOnBlur
             handleHomeEndKeys
             freeSolo
+            {...input}
             textFieldProps={{ variant: "outlined", size: "small" }}
             // renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label={labelName} />}
             filterOptions={(
-              v: ExtendedAlbum[],
-              params: FilterOptionsState<ExtendedAlbum>
+              v: ExtendedSong[],
+              params: FilterOptionsState<ExtendedSong>
             ) => {
               if (params.inputValue !== "") {
                 v.push({
-                  id: null,
+                  id: undefined,
                   name: `Search for “${params.inputValue}”`,
                   sortOrder: params.inputValue,
                   vocaDBSuggestion: true,
                 });
                 v.push({
-                  id: null,
+                  id: undefined,
                   name: `Manually add “${params.inputValue}”`,
                   sortOrder: params.inputValue,
                   manual: true,
@@ -192,11 +179,8 @@ export default function SelectAlbumEntityBox<T extends string>({
             onInputChange={(event: unknown, newValue: string) => {
               setVocaDBAutoCompleteText(newValue);
             }}
-            onChange={(
-              event: unknown,
-              newValue: ExtendedAlbum | null,
-              reason: string
-            ) => {
+            onChange={(event: unknown, newValue, reason: string) => {
+              onChange(event);
               if (newValue === null) {
                 setVocaDBAutoCompleteOptions([]);
                 if (reason === "clear") {
@@ -204,32 +188,34 @@ export default function SelectAlbumEntityBox<T extends string>({
                 }
                 return;
               }
-              if (newValue.vocaDBSuggestion) {
-                setImportDialogKeyword(newValue.sortOrder);
+              const newVal = newValue as ExtendedSong;
+              if (newVal.vocaDBSuggestion) {
+                setImportDialogKeyword(newVal?.sortOrder ?? "");
                 toggleImportDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
-              } else if (newValue.manual) {
-                setImportDialogKeyword(newValue.sortOrder);
+              } else if (newVal.manual) {
+                setImportDialogKeyword(newVal?.sortOrder ?? "");
                 toggleManualDialogForCreate(true);
                 toggleManualDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
+                setValue(fieldName, null);
               } else {
-                setValue(fieldName, newValue);
+                setValue(fieldName, newVal);
               }
             }}
-            renderOption={(props, option: ExtendedAlbum | null) => {
+            renderOption={(params, option: ExtendedSong | null) => {
               let icon = (
                 <MusicNoteIcon
                   sx={{ color: "text.secondary", marginRight: 2 }}
                 />
               );
-              if (option.vocaDBSuggestion)
+              if (option?.vocaDBSuggestion)
                 icon = (
                   <SearchIcon
                     sx={{ color: "text.secondary", marginRight: 2 }}
                   />
                 );
-              else if (option.manual)
+              else if (option?.manual)
                 icon = (
                   <AddCircleIcon
                     sx={{ color: "text.secondary", marginRight: 2 }}
@@ -238,24 +224,33 @@ export default function SelectAlbumEntityBox<T extends string>({
               return (
                 <Stack
                   component="li"
-                  {...props}
+                  {...params}
                   flexDirection="row"
                   alignItems="center"
                 >
-                  {icon} {option.name}
+                  {icon} {option?.name}
                 </Stack>
               );
             }}
-            getOptionLabel={(option: ExtendedAlbum | null) => {
+            getOptionLabel={(option) => {
               // Prevent ”Manually add ...” item from being rendered
-              if (option === null || option.id === null) return "";
-              return option.name || "";
+              if (option === null || (option as ExtendedSong).id === null)
+                return "";
+              return (
+                `${(option as ExtendedSong).name} (#${
+                  (option as ExtendedSong).id
+                })` || ""
+              );
             }}
           />
         </Grid>
-        {value && (
+        {value && value.id && (
           <Grid item xs={12}>
-            <Stack direction="row" alignItems="center" sx={{ marginBottom: 2 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              sx={{ marginBottom: 2, flexWrap: { xs: "wrap" } }}
+            >
               <div>
                 <Avatar
                   src={value.coverUrl}
@@ -266,16 +261,31 @@ export default function SelectAlbumEntityBox<T extends string>({
                 </Avatar>
               </div>
               <div style={{ flexGrow: 1, flexBasis: 0 }}>
-                <Typography>{value.name}</Typography>
-                <Typography color="textSecondary">
-                  {value.sortOrder === value.name ? "" : value.sortOrder} #
-                  {value.id}
-                </Typography>
+                <div>
+                  <Typography component="span">{value.name}</Typography>{" "}
+                  <Typography color="textSecondary" component="span">
+                    ({value.sortOrder}) #{value.id}
+                  </Typography>
+                </div>
+                {value.artists && (
+                  <Stack direction="row" alignContent="center" sx={{ gap: 1 }}>
+                    {formatArtists(value.artists, (a) =>
+                      a.map((v) => (
+                        <Chip
+                          variant="outlined"
+                          size="small"
+                          key={v.sortOrder}
+                          label={v.ArtistOfSong?.customName || v.name}
+                        />
+                      ))
+                    )}
+                  </Stack>
+                )}
               </div>
               <div>
                 {value.id >= 0 && (
                   <IconButton
-                    href={`https://vocadb.net/Al/${value.id}`}
+                    href={`https://vocadb.net/S/${value.id}`}
                     target="_blank"
                   >
                     <OpenInNewIcon />
@@ -295,23 +305,23 @@ export default function SelectAlbumEntityBox<T extends string>({
         )}
       </Grid>
       {isImportDialogOpen && (
-        <VocaDBSearchAlbumDialog
+        <VocaDBSearchSongDialog
           isOpen={isImportDialogOpen}
           toggleOpen={toggleImportDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
-          setAlbum={(v) => setValue(fieldName, v)}
+          setSong={(v) => setValue(fieldName, v)}
         />
       )}
       {isManualDialogOpen && (
-        <AlbumEntityDialog
+        <SongEntityDialog
           isOpen={isManualDialogOpen}
           toggleOpen={toggleManualDialogOpen}
           keyword={importDialogKeyword}
-          setKeyword={setImportDialogKeyword}
-          albumToEdit={value}
+          songToEdit={value}
           create={isManualDialogForCreate}
-          setAlbum={(v) => setValue(fieldName, v)}
+          setKeyword={setImportDialogKeyword}
+          setSong={(v) => setValue(fieldName, v)}
         />
       )}
     </>
