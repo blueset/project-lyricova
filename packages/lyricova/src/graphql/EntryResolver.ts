@@ -287,6 +287,21 @@ export class EntryResolver {
     return true;
   }
 
+  @Authorized("ADMIN")
+  @Mutation((returns) => Boolean)
+  public async bumpEntry(
+    @Arg("id", (type) => Int) id: number
+  ): Promise<boolean> {
+    const entry = await Entry.findByPk(id);
+    if (!entry) {
+      throw new UserInputError("Entry not found");
+    }
+    const pulse = await Pulse.create({ creationDate: new Date() });
+    entry.$add("pulse", pulse);
+    await entry.save();
+    return true;
+  }
+
   @FieldResolver((type) => [Song], { nullable: true })
   private async songs(@Root() entry: Entry): Promise<Song[]> {
     return await entry.$get("songs");

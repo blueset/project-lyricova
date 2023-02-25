@@ -1,9 +1,9 @@
-import { cloneElement, ReactElement, useState } from "react";
+import { cloneElement, ReactElement, useId, useState } from "react";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import dayjs, { Dayjs } from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DateTimePicker, StaticDateTimePicker } from "@mui/x-date-pickers";
+import { StaticDateTimePicker } from "@mui/x-date-pickers";
 import { Popover, TextField } from "@mui/material";
 
 export interface DateTimePickerPopupProps {
@@ -24,8 +24,9 @@ export function DateTimePickerPopup({
   children,
 }: DateTimePickerPopupProps) {
   const [date, setDate] = useState<Dayjs | null>(value && dayjs(value));
+  const popupId = useId();
   return (
-    <PopupState variant="popover" popupId="new-pulse-popup-menu">
+    <PopupState variant="popover" popupId={popupId}>
       {(popupState) => (
         <>
           {cloneElement(children, {

@@ -183,6 +183,7 @@ type MusicFile {
 }
 
 type Mutation {
+  bumpEntry(id: Int!): Boolean!
   deleteEntry(id: Int!): Boolean!
   deleteTag(slug: String!): Boolean!
   newEntry(data: EntryInput!): Entry!

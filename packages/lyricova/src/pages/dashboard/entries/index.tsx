@@ -1,10 +1,11 @@
 import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout";
-import { gql, useQuery } from "@apollo/client";
-import { Box, Button, Chip, Tooltip } from "@mui/material";
+import { gql, useQuery, useApolloClient } from "@apollo/client";
+import { Box, Button, Chip, Popover, Tooltip, Typography } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
 import React from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useRouter } from "next/router";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
@@ -13,6 +14,9 @@ import { Entry } from "lyricova-common/models/Entry";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { useSnackbar } from "notistack";
+import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
+import { Stack } from "@mui/system";
 
 dayjs.extend(relativeTime);
 
@@ -39,9 +43,22 @@ const ENTRIES_QUERY = gql`
   }
 `;
 
+const DELETE_ENTRY_MUTATION = gql`
+  mutation DeleteEntry($id: Int!) {
+    deleteEntry(id: $id)
+  }
+`;
+
+const BUMP_ENTRY_MUTATION = gql`
+  mutation BumpEntry($id: Int!) {
+    bumpEntry(id: $id)
+  }
+`;
+
 export default function Entries() {
   const entriesQuery = useQuery<{ entries: Entry[] }>(ENTRIES_QUERY);
-
+  const apolloClient = useApolloClient();
+  const snackbar = useSnackbar();
   const router = useRouter();
   const rows = entriesQuery.data?.entries ?? [];
 
@@ -101,7 +118,7 @@ export default function Entries() {
           {
             field: "actions",
             type: "actions",
-            width: 100,
+            width: 120,
             getActions: (rowData) => [
               <Tooltip title="Edit" key="review">
                 <GridActionsCellItem
@@ -111,9 +128,80 @@ export default function Entries() {
                   {...({ href: `/dashboard/entries/${rowData?.id}` } as any)}
                 />
               </Tooltip>,
-              <Tooltip title="Bump" key="review">
-                <GridActionsCellItem icon={<UploadFileIcon />} label="Bump" />
+              <Tooltip title="Bump" key="bump">
+                <GridActionsCellItem
+                  icon={<UploadFileIcon />}
+                  label="Bump"
+                  onClick={async () => {
+                    if (rowData?.id) {
+                      await apolloClient.mutate({
+                        mutation: BUMP_ENTRY_MUTATION,
+                        variables: {
+                          id: rowData.id,
+                        },
+                      });
+                      snackbar.enqueueSnackbar("Entry bumped.", {
+                        variant: "success",
+                      });
+                      await entriesQuery.refetch();
+                    }
+                  }}
+                />
               </Tooltip>,
+              <PopupState
+                variant="popover"
+                popupId={`${rowData?.id}-delete-popup`}
+              >
+                {(popupState) => (
+                  <>
+                    <Tooltip title="Delete" key="delete">
+                      <GridActionsCellItem
+                        icon={<DeleteIcon />}
+                        label="Delete"
+                        color="error"
+                        {...bindTrigger(popupState)}
+                      />
+                    </Tooltip>
+                    <Popover
+                      {...bindPopover(popupState)}
+                      anchorOrigin={{
+                        vertical: "bottom",
+                        horizontal: "right",
+                      }}
+                      transformOrigin={{
+                        vertical: "top",
+                        horizontal: "right",
+                      }}
+                    >
+                      <Stack p={2} gap={1} alignItems="end">
+                        <Typography>
+                          Delete entry #{rowData?.id} {rowData?.row.title}?
+                        </Typography>
+                        <Button
+                          color="error"
+                          onClick={async () => {
+                            if (rowData?.id) {
+                              await apolloClient.mutate({
+                                mutation: DELETE_ENTRY_MUTATION,
+                                variables: {
+                                  id: rowData.id,
+                                },
+                              });
+                              snackbar.enqueueSnackbar("Entry deleted.", {
+                                variant: "success",
+                              });
+                              await entriesQuery.refetch();
+                              popupState.close();
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Stack>
+                    </Popover>
+                  </>
+                )}
+              </PopupState>,
             ],
           },
         ]}
