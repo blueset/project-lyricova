@@ -22,7 +22,12 @@ export function DataGridToolbar({ title, children }: DataGridToolbarProps) {
       <GridToolbarColumnsButton />
       <GridToolbarFilterButton />
       <GridToolbarDensitySelector />
-      <GridToolbarQuickFilter debounceMs={500} />
+      <GridToolbarQuickFilter
+        debounceMs={500}
+        quickFilterParser={(searchInput) =>
+          searchInput.split(",").map((value) => value.trim())
+        }
+      />
       {children}
     </GridToolbarContainer>
   );

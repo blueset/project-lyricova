@@ -5,7 +5,7 @@ import Alert from "@mui/material/Alert";
 import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import PlaylistAvatar from "../../../components/PlaylistAvatar";
 import { TextField } from "mui-rff";
-import SlugifyAdornment from "../../../components/dashboard/SlugifyAdornment";
+import SlugifyAdornment from "lyricova-common/components/SlugifyAdornment";
 import {
   Avatar,
   Box,

@@ -32,7 +32,7 @@
     "incremental": true
   },
   "include": [
-    "src/**/*", "../common/src/components/DataGridToolbar.tsx", "../common/src/frontendUtils/finalFormMutators.ts" ],
+    "src/**/*", "../common/src/components/DataGridToolbar.tsx", "../common/src/frontendUtils/finalFormMutators.ts", "../common/src/components/SlugifyAdornment.tsx" ],
   "exclude": [
     "node_modules"
   ]

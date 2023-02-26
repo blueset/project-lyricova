@@ -8,7 +8,12 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useRouter } from "next/router";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  getGridStringOperators,
+  GridActionsCellItem,
+  GridCellParams,
+} from "@mui/x-data-grid";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import { Entry } from "lyricova-common/models/Entry";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
@@ -17,6 +22,9 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { useSnackbar } from "notistack";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import { Stack } from "@mui/system";
+import { Tag } from "lyricova-common/models/Tag";
+import _ from "lodash";
+import { Song } from "lyricova-common/models/Song";
 
 dayjs.extend(relativeTime);
 
@@ -80,9 +88,18 @@ export default function Entries() {
             headerName: "Tags",
             field: "tags",
             flex: 1,
+            getApplyQuickFilterFn(value, colDef, apiRef) {
+              const pattern = new RegExp(_.escapeRegExp(value), "i");
+              return (params: GridCellParams): boolean => {
+                return params.value
+                  .map((t: Tag) => t.name)
+                  .join(",")
+                  .match(pattern);
+              };
+            },
             renderCell: (p) => (
               <>
-                {p.row.tags.map((t) => (
+                {p.row.tags.map((t: Tag) => (
                   <Chip
                     key={t.slug}
                     label={t.name}
@@ -100,8 +117,17 @@ export default function Entries() {
             headerName: "Songs",
             field: "songs",
             flex: 1,
+            getApplyQuickFilterFn(value, colDef, apiRef) {
+              const pattern = new RegExp(_.escapeRegExp(value), "i");
+              return (params: GridCellParams): boolean => {
+                return params.value
+                  .map((t: Song) => t.name)
+                  .join(",")
+                  .match(pattern);
+              };
+            },
             renderCell: (p) =>
-              p.row.songs.map((t) => t.name).join(", ") || <em>None</em>,
+              p.row.songs.map((t: Song) => t.name).join(", ") || <em>None</em>,
           },
           {
             headerName: "Recent action",
@@ -125,7 +151,9 @@ export default function Entries() {
                   icon={<EditIcon />}
                   label="Edit"
                   LinkComponent={NextComposedLink}
-                  {...({ href: `/dashboard/entries/${rowData?.id}` } as any)}
+                  {...({
+                    href: `/dashboard/entries/${rowData?.row.id}`,
+                  } as any)}
                 />
               </Tooltip>,
               <Tooltip title="Bump" key="bump">
@@ -133,11 +161,11 @@ export default function Entries() {
                   icon={<UploadFileIcon />}
                   label="Bump"
                   onClick={async () => {
-                    if (rowData?.id) {
+                    if (rowData?.row.id) {
                       await apolloClient.mutate({
                         mutation: BUMP_ENTRY_MUTATION,
                         variables: {
-                          id: rowData.id,
+                          id: rowData.row.id,
                         },
                       });
                       snackbar.enqueueSnackbar("Entry bumped.", {
@@ -150,7 +178,7 @@ export default function Entries() {
               </Tooltip>,
               <PopupState
                 variant="popover"
-                popupId={`${rowData?.id}-delete-popup`}
+                popupId={`${rowData?.row.id}-delete-popup`}
               >
                 {(popupState) => (
                   <>
@@ -180,11 +208,11 @@ export default function Entries() {
                         <Button
                           color="error"
                           onClick={async () => {
-                            if (rowData?.id) {
+                            if (rowData?.row.id) {
                               await apolloClient.mutate({
                                 mutation: DELETE_ENTRY_MUTATION,
                                 variables: {
-                                  id: rowData.id,
+                                  id: rowData.row.id,
                                 },
                               });
                               snackbar.enqueueSnackbar("Entry deleted.", {

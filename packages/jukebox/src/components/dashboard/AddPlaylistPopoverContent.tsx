@@ -7,7 +7,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { OnChange } from "react-final-form-listeners";
 import slugify from "slugify";
 import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
-import SlugifyAdornment from "./SlugifyAdornment";
+import SlugifyAdornment from "lyricova-common/components/SlugifyAdornment";
 import { DocumentNode, gql, useApolloClient } from "@apollo/client";
 import { useSnackbar } from "notistack";
 

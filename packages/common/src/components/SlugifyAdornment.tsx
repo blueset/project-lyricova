@@ -3,18 +3,24 @@ import { useCallback } from "react";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { useField, useForm } from "react-final-form";
 import slugify from "slugify";
+import React from "react";
 
 interface Props {
   sourceName: string;
   destinationName: string;
 }
 
-export default function SlugifyAdornment({ sourceName, destinationName }: Props) {
-  const { input: { value } } = useField(sourceName);
-  const {setValue, setUntouched} = useForm().mutators;
+export default function SlugifyAdornment({
+  sourceName,
+  destinationName,
+}: Props) {
+  const {
+    input: { value },
+  } = useField(sourceName);
+  const { setValue, setUntouched } = useForm().mutators;
 
   const convertUrl = useCallback(() => {
-    setValue(destinationName, slugify(value, {lower: true}));
+    setValue(destinationName, slugify(value, { lower: true }));
     setUntouched(destinationName);
   }, [destinationName, setUntouched, setValue, value]);
 

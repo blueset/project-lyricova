@@ -65,7 +65,8 @@ export class TagResolver {
     if (!tag) {
       throw new UserInputError(`Tag ${slug} not found in database.`);
     }
-    return await tag.update(data);
+    await Tag.update(data, { where: { slug } });
+    return await Tag.findByPk(data.slug);
   }
 
   @Authorized("ADMIN")

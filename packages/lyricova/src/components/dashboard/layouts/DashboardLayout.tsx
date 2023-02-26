@@ -32,6 +32,7 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import CachedIcon from "@mui/icons-material/Cached";
 import GetAppIcon from "@mui/icons-material/GetApp";
+import LabelIcon from "@mui/icons-material/Label";
 import {
   AuthContext,
   AuthContextConsumer,
@@ -241,7 +242,14 @@ export default function DashboardLayout({ title, children }: Props) {
         <NavMenuItem
           text="Entries"
           href="/dashboard/entries"
+          prefixMatch
           icon={<ArticleIcon />}
+        />
+        <NavMenuItem
+          text="Tags"
+          href="/dashboard/tags"
+          prefixMatch
+          icon={<LabelIcon />}
         />
       </List>
       <Box sx={{ display: "flex", flexGrow: 1 }} />

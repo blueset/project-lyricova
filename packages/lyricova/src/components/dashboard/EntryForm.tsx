@@ -168,7 +168,6 @@ export function EntryForm({ id }: EntityFormProps) {
   });
 
   if (loading || (id && !data?.entry) || !data?.tags) {
-    console.log("loading", loading, id, data?.entry, data?.tags);
     return <Alert severity="info">Loading...</Alert>;
   }
 
@@ -315,7 +314,7 @@ export function EntryForm({ id }: EntityFormProps) {
       >
         {({ values, submitting, handleSubmit, form, errors }) => {
           return (
-            <>
+            <form onSubmit={handleSubmit}>
               <TextField
                 variant="outlined"
                 margin="dense"
@@ -856,7 +855,7 @@ export function EntryForm({ id }: EntityFormProps) {
               >
                 {!id ? "Create" : "Update"}
               </Button>
-            </>
+            </form>
           );
         }}
       </Form>
