@@ -25,6 +25,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ArticleIcon from "@mui/icons-material/Article";
+import CloseIcon from "@mui/icons-material/Close";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import AlbumIcon from "@mui/icons-material/Album";
@@ -40,7 +41,7 @@ import {
 import { useRouter } from "next/router";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import Head from "next/head";
-import { SnackbarProvider } from "notistack";
+import { SnackbarProvider, useSnackbar } from "notistack";
 import {
   bindMenu,
   bindTrigger,
@@ -279,7 +280,17 @@ export default function DashboardLayout({ title, children }: Props) {
         <title>{pageTitle}</title>
         <meta property="og:title" content={pageTitle} key="title" />
       </Head>
-      <SnackbarProvider maxSnack={4}>
+      <SnackbarProvider
+        maxSnack={4}
+        action={(snackbarId) => {
+          const { closeSnackbar } = useSnackbar();
+          return (
+            <IconButton onClick={() => closeSnackbar(snackbarId)}>
+              <CloseIcon />
+            </IconButton>
+          );
+        }}
+      >
         <AuthContextConsumer>
           {(userContext) => (
             <Box sx={{ display: "flex" }}>

@@ -25,6 +25,8 @@ import { Stack } from "@mui/system";
 import { Tag } from "lyricova-common/models/Tag";
 import _ from "lodash";
 import { Song } from "lyricova-common/models/Song";
+import { Pulse } from "lyricova-common/models/Pulse";
+import { Verse } from "lyricova-common/models/Verse";
 
 dayjs.extend(relativeTime);
 
@@ -46,6 +48,10 @@ const ENTRIES_QUERY = gql`
       }
       songs {
         name
+      }
+      verses {
+        text
+        isMain
       }
     }
   }
@@ -82,8 +88,48 @@ export default function Entries() {
         columns={[
           { headerName: "ID", field: "id", width: 75 },
           { headerName: "Title", field: "title", flex: 2 },
-          { headerName: "Producers", field: "producersName", flex: 1 },
-          { headerName: "Vocalists", field: "vocalistsName", flex: 1 },
+          {
+            headerName: "Artists",
+            field: "artists",
+            flex: 1,
+            getApplyQuickFilterFn(value, colDef, apiRef) {
+              const pattern = new RegExp(_.escapeRegExp(value), "i");
+              return (params: GridCellParams): boolean => {
+                return !!`${params.row.producersName} feat. ${params.row.vocalistsName}`.match(
+                  pattern
+                );
+              };
+            },
+            renderCell: (p) =>
+              `${p.row.producersName} feat. ${p.row.vocalistsName}`,
+          },
+          {
+            headerName: "Text",
+            field: "text",
+            flex: 2,
+            getApplyQuickFilterFn(value, colDef, apiRef) {
+              const pattern = new RegExp(_.escapeRegExp(value), "i");
+              return (params: GridCellParams): boolean => {
+                return !!params.row.verses
+                  .filter((v: Verse) => v.isMain)[0]
+                  .text.match(pattern);
+              };
+            },
+            renderCell: (p) =>
+              p.row.verses.filter((v: Verse) => v.isMain)[0].text,
+          },
+          {
+            headerName: "Producers",
+            field: "producersName",
+            flex: 1,
+            hide: true,
+          },
+          {
+            headerName: "Vocalists",
+            field: "vocalistsName",
+            flex: 1,
+            hide: true,
+          },
           {
             headerName: "Tags",
             field: "tags",
@@ -104,9 +150,11 @@ export default function Entries() {
                     key={t.slug}
                     label={t.name}
                     variant="outlined"
+                    size="small"
                     sx={{
                       borderColor: t.color,
                       color: t.color,
+                      mr: 1,
                     }}
                   />
                 ))}
@@ -137,7 +185,7 @@ export default function Entries() {
               `${dayjs(
                 Math.max(
                   p.row.creationDate.valueOf(),
-                  ...p.row.pulses.map((p) => p.creationDate.valueOf())
+                  ...p.row.pulses.map((p: Pulse) => p.creationDate.valueOf())
                 )
               ).fromNow()} (${p.row.pulses.length} pulses)`,
           },

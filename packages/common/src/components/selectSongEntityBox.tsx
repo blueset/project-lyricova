@@ -268,7 +268,12 @@ export default function SelectSongEntityBox<T extends string>({
                   </Typography>
                 </div>
                 {value.artists && (
-                  <Stack direction="row" alignContent="center" sx={{ gap: 1 }}>
+                  <Stack
+                    direction="row"
+                    alignContent="center"
+                    sx={{ gap: 1 }}
+                    flexWrap="wrap"
+                  >
                     {formatArtists(value.artists, (a) =>
                       a.map((v) => (
                         <Chip

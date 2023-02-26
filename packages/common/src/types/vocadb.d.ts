@@ -102,6 +102,8 @@ export type VDBArtistType =
   | "Utaite"
   | "Band"
   | "Vocalist"
+  | "CoverArtist"
+  | "SynthesizerV"
   | "Character";
 export type VDBArtistForEventRoleType =
   | "Default"

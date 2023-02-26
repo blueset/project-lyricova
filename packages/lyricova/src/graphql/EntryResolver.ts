@@ -230,18 +230,23 @@ export class EntryResolver {
           transaction: t,
         });
       }
-      await entry.$set(
-        "verses",
-        verses.map((v) => {
-          const vObj = Verse.build(
-            { id: v.id || undefined },
-            { isNewRecord: !v.id }
-          );
+
+      const verseObjs = await Promise.all(
+        verses.map(async (v) => {
+          const vObj = Verse.build(v, { isNewRecord: !v.id });
           vObj.update(v);
+          await vObj.save({ transaction: t });
           return vObj;
-        }),
-        { transaction: t }
+        })
       );
+      await entry.$set("verses", verseObjs, { transaction: t });
+      // Remove pulses with no entryId as Sequelize doesn’t do it
+      await Verse.destroy({
+        where: {
+          entryId: null,
+        },
+        transaction: t,
+      });
       await entry.$set("songs", songIds, { transaction: t });
       await entry.$set("tags", tagSlugs, { transaction: t });
       const pulseObjs = await Promise.all(

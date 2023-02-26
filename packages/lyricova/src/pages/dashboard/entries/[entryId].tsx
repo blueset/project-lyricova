@@ -1,3 +1,5 @@
+import { Button } from "@mui/material";
+import { NextComposedLink } from "lyricova-common/components/Link";
 import { useRouter } from "next/router";
 import { ReactNode } from "react";
 import { EntryForm } from "../../../components/dashboard/EntryForm";
@@ -7,7 +9,19 @@ export default function EntryEdit() {
   const router = useRouter();
   const { entryId } = router.query;
 
-  return <EntryForm id={parseInt(entryId as string)} />;
+  return (
+    <>
+      <Button
+        size="small"
+        LinkComponent={NextComposedLink}
+        variant="outlined"
+        href={`/dashboard/entries/${parseInt(entryId as string) + 1}`}
+      >
+        Next entry
+      </Button>
+      <EntryForm id={parseInt(entryId as string)} />
+    </>
+  );
 }
 
 EntryEdit.layout = (page: ReactNode) => {

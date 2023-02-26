@@ -59,7 +59,7 @@ export class Entry extends Model<Entry> {
   @BelongsTo((type) => User, "authorId")
   author: User;
 
-  @Field()
+  @Field({ nullable: true })
   @AllowNull
   @Column({ type: "text" })
   comment: string;

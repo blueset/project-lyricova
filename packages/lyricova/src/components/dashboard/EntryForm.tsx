@@ -129,7 +129,7 @@ interface FormValues {
   title: string;
   producersName: string;
   vocalistsName: string;
-  comment: string;
+  comment: string | null;
   songs: Partial<Song>[];
   verses: Partial<
     Omit<Verse, "typingSequence"> & {
@@ -176,7 +176,7 @@ export function EntryForm({ id }: EntityFormProps) {
         title: "",
         producersName: "",
         vocalistsName: "",
-        comment: "",
+        comment: null,
         songs: [],
         verses: [],
         tags: [],
@@ -189,7 +189,7 @@ export function EntryForm({ id }: EntityFormProps) {
     title: yup.string().required(),
     producersName: yup.string(),
     vocalistsName: yup.string(),
-    comment: yup.string(),
+    comment: yup.string().nullable(),
     songs: yup.array(yup.object().typeError("Song entity must be selected")),
     verses: yup
       .array(
@@ -238,7 +238,7 @@ export function EntryForm({ id }: EntityFormProps) {
               producersName: values.producersName,
               vocalistsName: values.vocalistsName,
               creationDate: values.creationDate || Date.now().valueOf(),
-              comment: values.comment,
+              comment: values.comment || null,
               tagSlugs: values.tags,
               verses: values.verses.map((verse) => ({
                 id: verse.id || undefined,
@@ -246,10 +246,10 @@ export function EntryForm({ id }: EntityFormProps) {
                 text: verse.text,
                 isOriginal: verse.isOriginal,
                 isMain: verse.isMain,
-                stylizedText: verse.stylizedText,
-                html: verse.html,
+                stylizedText: verse.stylizedText || null,
+                html: verse.html || null,
                 typingSequence: JSON.parse(verse.typingSequence || "[]"),
-                translator: verse.translator,
+                translator: verse.translator || null,
               })),
               songIds: values.songs.map((song) => song.id),
               pulses: values.pulses.map((pulse) => ({
@@ -427,6 +427,100 @@ export function EntryForm({ id }: EntityFormProps) {
                 my={1}
                 color="primary"
               >
+                Songs
+              </Typography>
+              <FieldArray name="songs">
+                {({ fields }) => (
+                  <Stack gap={1}>
+                    {fields.map((path, idx) => (
+                      <Stack
+                        direction="row"
+                        gap={1}
+                        key={path}
+                        alignItems="start"
+                      >
+                        <SelectSongEntityBox
+                          fieldName={path}
+                          labelName={`Linked song #${idx + 1}`}
+                        />
+                        <IconButton
+                          color="error"
+                          onClick={() => fields.remove(idx)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Stack>
+                    ))}
+                    <Stack direction="row" gap={1} alignItems="start">
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        color="secondary"
+                        startIcon={<AddIcon />}
+                        onClick={() => fields.push(null)}
+                        sx={{ flexGrow: 1 }}
+                      >
+                        Add song relation
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => {
+                          form.mutators.setValue(
+                            "title",
+                            fields.value.map((s) => s.name).join(", ")
+                          );
+                          form.mutators.setValue(
+                            "producersName",
+                            fields.value
+                              .map((s) =>
+                                s.artists
+                                  .filter((a: any) =>
+                                    a.ArtistOfSong.categories.includes(
+                                      "Producer"
+                                    )
+                                  )
+                                  .map(
+                                    (a: any) =>
+                                      a.ArtistOfSong.customName || a.name
+                                  )
+                              )
+                              .flat()
+                              .join(", ")
+                          );
+                          form.mutators.setValue(
+                            "vocalistsName",
+                            fields.value
+                              .map((s) =>
+                                s.artists
+                                  .filter((a: any) =>
+                                    a.ArtistOfSong.categories.includes(
+                                      "Vocalist"
+                                    )
+                                  )
+                                  .map(
+                                    (a: any) =>
+                                      a.ArtistOfSong.customName || a.name
+                                  )
+                              )
+                              .flat()
+                              .join(", ")
+                          );
+                        }}
+                      >
+                        Populate
+                      </Button>
+                    </Stack>
+                  </Stack>
+                )}
+              </FieldArray>
+
+              <Typography
+                variant="subtitle1"
+                fontWeight={600}
+                my={1}
+                color="primary"
+              >
                 Verses
               </Typography>
               <FieldArray
@@ -489,6 +583,7 @@ export function EntryForm({ id }: EntityFormProps) {
                                   </Tooltip>
                                   <Tooltip title="Original Verse">
                                     <Button
+                                      color="secondary"
                                       sx={{ px: 1 }}
                                       variant={
                                         verseValues[index].isOriginal
@@ -684,8 +779,8 @@ export function EntryForm({ id }: EntityFormProps) {
                             language: "",
                             text: "",
                             translator: "",
-                            isMain: false,
-                            isOriginal: false,
+                            isMain: verseValues.length < 1,
+                            isOriginal: verseValues.length < 1,
                             stylizedText: null,
                             html: null,
                             typingSequence: "[]",
@@ -705,48 +800,7 @@ export function EntryForm({ id }: EntityFormProps) {
                   );
                 }}
               </FieldArray>
-              <Typography
-                variant="subtitle1"
-                fontWeight={600}
-                my={1}
-                color="primary"
-              >
-                Songs
-              </Typography>
-              <FieldArray name="songs">
-                {({ fields }) => (
-                  <Stack gap={1}>
-                    {fields.map((path, idx) => (
-                      <Stack
-                        direction="row"
-                        gap={1}
-                        key={path}
-                        alignItems="start"
-                      >
-                        <SelectSongEntityBox
-                          fieldName={path}
-                          labelName={`Linked song #${idx + 1}`}
-                        />
-                        <IconButton
-                          color="error"
-                          onClick={() => fields.remove(idx)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Stack>
-                    ))}
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      color="secondary"
-                      startIcon={<AddIcon />}
-                      onClick={() => fields.push(null)}
-                    >
-                      Add song relation
-                    </Button>
-                  </Stack>
-                )}
-              </FieldArray>
+
               <Typography
                 variant="subtitle1"
                 fontWeight={600}

@@ -77,7 +77,7 @@ type DashboardStats {
 type Entry {
   author: User!
   authorId: Float!
-  comment: String!
+  comment: String
   creationDate: Timestamp!
   id: Float!
   producersName: String!
@@ -194,6 +194,24 @@ type Mutation {
   bumpEntry(id: Int!): Boolean!
   deleteEntry(id: Int!): Boolean!
   deleteTag(slug: String!): Boolean!
+
+  """Insert or update an album from VocaDB."""
+  enrolAlbumFromVocaDB(
+    """Album ID in VocaDB"""
+    albumId: Int!
+  ): Album!
+
+  """Insert or update an artist from VocaDB."""
+  enrolArtistFromVocaDB(
+    """Artist ID in VocaDB"""
+    artistId: Int!
+  ): Artist!
+
+  """Insert or update a song from VocaDB."""
+  enrolSongFromVocaDB(
+    """Song ID in VocaDB"""
+    songId: Int!
+  ): Song!
   newEntry(data: EntryInput!): Entry!
   newSong(data: SongInput!): Song!
   newTag(data: NewTagInput!): Tag!
