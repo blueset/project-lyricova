@@ -65,6 +65,14 @@ input ArtistOfSongInput {
   isSupport: Boolean = false
 }
 
+type DashboardStats {
+  aliveStartedOn: Timestamp!
+  entriesCount: Int!
+  pulsesCount: Int!
+  revampStartedOn: Timestamp!
+  tagsCount: Int!
+}
+
 """A Lyricova entry."""
 type Entry {
   author: User!
@@ -223,6 +231,7 @@ input PulseInput {
 
 type Query {
   currentUser: User
+  dashboardStats: DashboardStats!
   entries: [Entry!]!
   entry(id: Int!): Entry
   foo: Foo!

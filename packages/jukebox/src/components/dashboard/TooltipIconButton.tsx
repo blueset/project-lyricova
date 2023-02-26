@@ -1,5 +1,5 @@
 import { IconButton, PropTypes, Theme, Tooltip } from "@mui/material";
-import { ComponentProps, ReactChild } from "react";
+import { ComponentProps, ReactNode } from "react";
 import { SxProps } from "@mui/system";
 
 interface TooltipIconButtonProps {
@@ -8,14 +8,19 @@ interface TooltipIconButtonProps {
   disabled?: boolean;
   "aria-label"?: string;
   onClick?: ComponentProps<typeof IconButton>["onClick"];
-  children?: ReactChild;
+  children?: ReactNode;
   sx?: SxProps<Theme>;
 }
 
 export default function TooltipIconButton(props: TooltipIconButtonProps) {
   const iconButton = (
-    <IconButton disabled={props.disabled} aria-label={props["aria-label"]}
-                color={props.color} onClick={props.onClick} sx={props.sx}>
+    <IconButton
+      disabled={props.disabled}
+      aria-label={props["aria-label"]}
+      color={props.color}
+      onClick={props.onClick}
+      sx={props.sx}
+    >
       {props.children}
     </IconButton>
   );
@@ -24,7 +29,5 @@ export default function TooltipIconButton(props: TooltipIconButtonProps) {
     return iconButton;
   }
 
-  return <Tooltip title={props.title}>
-    {iconButton}
-  </Tooltip>;
+  return <Tooltip title={props.title}>{iconButton}</Tooltip>;
 }
