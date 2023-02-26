@@ -1,15 +1,10 @@
-import { cloneElement, ReactElement, useId, useState } from "react";
+import { cloneElement, ReactElement, useId } from "react";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
-import dayjs, { Dayjs } from "dayjs";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { StaticDateTimePicker } from "@mui/x-date-pickers";
-import { Alert, Box, Button, Popover } from "@mui/material";
-import { DocumentNode, useMutation } from "@apollo/client";
+import { Alert, Box, Button, Popover, Stack } from "@mui/material";
 import { gql, useQuery, useApolloClient } from "@apollo/client";
 import { Tag } from "lyricova-common/models/Tag";
-import { Field, Form, FormSpy, useField } from "react-final-form";
-import { makeValidate, Select, showErrorOnChange, TextField } from "mui-rff";
+import { Field, Form, FormSpy } from "react-final-form";
+import { makeValidate, TextField } from "mui-rff";
 import * as yup from "yup";
 import { useSnackbar } from "notistack";
 import SlugifyAdornment from "lyricova-common/components/SlugifyAdornment";
@@ -115,59 +110,61 @@ export function TagForm({ slug = null, onSubmit }: TagFormProps) {
     >
       {({ handleSubmit, submitting, values }) => (
         <form onSubmit={handleSubmit}>
-          <TextField
-            name="name"
-            label="Name"
-            required
-            fullWidth
-            disabled={submitting}
-            variant="outlined"
-            margin="dense"
-          />
-          <TextField
-            name="slug"
-            label="Slug"
-            required
-            fullWidth
-            disabled={submitting}
-            variant="outlined"
-            margin="dense"
-            InputProps={{
-              endAdornment: (
-                <SlugifyAdornment sourceName="name" destinationName="slug" />
-              ),
-            }}
-          />
-          <TextField
-            name="color"
-            label="Color"
-            required
-            fullWidth
-            disabled={submitting}
-            variant="outlined"
-            margin="dense"
-            InputProps={{
-              endAdornment: (
-                <Box
-                  sx={{
-                    width: 24,
-                    height: 24,
-                    bgcolor: values.color,
-                    borderRadius: 1,
-                    border: "1px solid rgba(255,255,255,0.23)",
-                  }}
-                />
-              ),
-            }}
-          />
-          <Button
-            type="submit"
-            disabled={submitting}
-            color="primary"
-            variant="contained"
-          >
-            Submit
-          </Button>
+          <Stack spacing={1} alignItems="start">
+            <TextField
+              name="name"
+              label="Name"
+              required
+              sx={{ width: "250px" }}
+              disabled={submitting}
+              variant="outlined"
+              margin="dense"
+            />
+            <TextField
+              name="slug"
+              label="Slug"
+              required
+              sx={{ width: "250px" }}
+              disabled={submitting}
+              variant="outlined"
+              margin="dense"
+              InputProps={{
+                endAdornment: (
+                  <SlugifyAdornment sourceName="name" destinationName="slug" />
+                ),
+              }}
+            />
+            <TextField
+              name="color"
+              label="Color"
+              required
+              sx={{ width: "250px" }}
+              disabled={submitting}
+              variant="outlined"
+              margin="dense"
+              InputProps={{
+                endAdornment: (
+                  <Box
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      bgcolor: values.color,
+                      borderRadius: 1,
+                      border: "1px solid rgba(255,255,255,0.23)",
+                    }}
+                  />
+                ),
+              }}
+            />
+            <Button
+              type="submit"
+              disabled={submitting}
+              color="primary"
+              variant="contained"
+            >
+              Submit
+            </Button>
+          </Stack>
           {/**
            * Slugify name while slug field is untouched.
            * @link https://codesandbox.io/s/52q597j2p?file=/src/index.js:579-587

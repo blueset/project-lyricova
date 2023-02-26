@@ -8,7 +8,6 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useRouter } from "next/router";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { NextComposedLink } from "lyricova-common/components/Link";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -16,7 +15,7 @@ import { useSnackbar } from "notistack";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import { Stack } from "@mui/system";
 import { Tag } from "lyricova-common/models/Tag";
-import { TagForm, TagFormPopup } from "../../../components/dashboard/TagForm";
+import { TagFormPopup } from "../../../components/dashboard/TagForm";
 
 dayjs.extend(relativeTime);
 
@@ -96,14 +95,15 @@ export default function Tags() {
             type: "actions",
             width: 100,
             getActions: (rowData) => [
-              <Tooltip title="Edit" key="review">
-                <TagFormPopup
-                  onSubmit={() => tagsQuery.refetch()}
-                  slug={rowData?.row.slug}
-                >
+              <TagFormPopup
+                key="review"
+                onSubmit={() => tagsQuery.refetch()}
+                slug={rowData?.row.slug}
+              >
+                <Tooltip title="Edit">
                   <GridActionsCellItem icon={<EditIcon />} label="Edit" />
-                </TagFormPopup>
-              </Tooltip>,
+                </Tooltip>
+              </TagFormPopup>,
               <PopupState
                 key="delete"
                 variant="popover"
