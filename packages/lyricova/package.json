@@ -42,12 +42,14 @@
     "lodash": "^4.17.21",
     "next": "^13.1.6",
     "notistack": "^2.0.8",
+    "rss": "^1.2.2",
     "type-graphql": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^18.14.0",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
+    "@types/rss": "^0.0.30",
     "concurrently": "^6.4.0",
     "nodemon": "^2.0.20",
     "ts-node": "^10.4.0",
