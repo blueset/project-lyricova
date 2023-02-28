@@ -74,7 +74,16 @@ export default function Entries() {
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
   const router = useRouter();
-  const rows = entriesQuery.data?.entries ?? [];
+  const rows =
+    entriesQuery.data?.entries.map((e) => ({
+      ...e,
+      actionDate: new Date(
+        Math.max(
+          e.creationDate.valueOf(),
+          ...e.pulses.map((p) => p.creationDate.valueOf())
+        )
+      ),
+    })) ?? [];
 
   return (
     <Box sx={{ minHeight: "calc(100vh - 7em)", height: 0 }}>
@@ -105,7 +114,7 @@ export default function Entries() {
           },
           {
             headerName: "Text",
-            field: "text",
+            field: "verses",
             flex: 2,
             getApplyQuickFilterFn(value, colDef, apiRef) {
               const pattern = new RegExp(_.escapeRegExp(value), "i");
@@ -114,6 +123,11 @@ export default function Entries() {
                   .filter((v: Verse) => v.isMain)[0]
                   .text.match(pattern);
               };
+            },
+            sortComparator(v1: Verses[], v2: Verses[]) {
+              return v1
+                .filter((v: Verse) => v.isMain)[0]
+                .text.localeCompare(v2.filter((v: Verse) => v.isMain)[0].text);
             },
             renderCell: (p) =>
               p.row.verses.filter((v: Verse) => v.isMain)[0].text,
@@ -142,6 +156,12 @@ export default function Entries() {
                   .join(",")
                   .match(pattern);
               };
+            },
+            sortComparator(v1: Tag[], v2: Tag[]) {
+              return v1
+                .map((t) => t.name)
+                .join(",")
+                .localeCompare(v2.map((t) => t.name).join(","));
             },
             renderCell: (p) => (
               <>
@@ -174,20 +194,24 @@ export default function Entries() {
                   .match(pattern);
               };
             },
+            sortComparator(v1: Song[], v2: Song[]) {
+              return v1
+                .map((t) => t.name)
+                .join(",")
+                .localeCompare(v2.map((t) => t.name).join(","));
+            },
             renderCell: (p) =>
               p.row.songs.map((t: Song) => t.name).join(", ") || <em>None</em>,
           },
           {
             headerName: "Recent action",
-            field: "creationDate",
+            field: "actionDate",
+            type: "date",
             flex: 1,
             renderCell: (p) =>
-              `${dayjs(
-                Math.max(
-                  p.row.creationDate.valueOf(),
-                  ...p.row.pulses.map((p: Pulse) => p.creationDate.valueOf())
-                )
-              ).fromNow()} (${p.row.pulses.length} pulses)`,
+              `${dayjs(p.row.actionDate.valueOf()).fromNow()} (${
+                p.row.pulses.length
+              } pulses)`,
           },
           {
             field: "actions",

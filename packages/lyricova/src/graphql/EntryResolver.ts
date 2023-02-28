@@ -309,27 +309,33 @@ export class EntryResolver {
 
   @FieldResolver((type) => [Song], { nullable: true })
   private async songs(@Root() entry: Entry): Promise<Song[]> {
-    return await entry.$get("songs");
+    return entry.songs === undefined ? await entry.$get("songs") : entry.songs;
   }
 
   @FieldResolver((type) => [Tag], { nullable: true })
   private async tags(@Root() entry: Entry): Promise<Tag[]> {
-    return await entry.$get("tags");
+    return entry.tags === undefined ? await entry.$get("tags") : entry.tags;
   }
 
   @FieldResolver((type) => [Verse], { nullable: true })
   private async verses(@Root() entry: Entry): Promise<Verse[]> {
-    return await entry.$get("verses");
+    return entry.verses === undefined
+      ? await entry.$get("verses")
+      : entry.verses;
   }
 
   @FieldResolver((type) => [Pulse], { nullable: true })
   private async pulses(@Root() entry: Entry): Promise<Pulse[]> {
-    return await entry.$get("pulses");
+    return entry.pulses === undefined
+      ? await entry.$get("pulses")
+      : entry.pulses;
   }
 
   @FieldResolver((type) => User)
   private async author(@Root() entry: Entry): Promise<User> {
-    return await entry.$get("author");
+    return entry.author === undefined
+      ? await entry.$get("author")
+      : entry.author;
   }
 
   @Authorized("ADMIN")
