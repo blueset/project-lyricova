@@ -124,7 +124,7 @@ export default function Entries() {
                   .text.match(pattern);
               };
             },
-            sortComparator(v1: Verses[], v2: Verses[]) {
+            sortComparator(v1: Verse[], v2: Verse[]) {
               return v1
                 .filter((v: Verse) => v.isMain)[0]
                 .text.localeCompare(v2.filter((v: Verse) => v.isMain)[0].text);
