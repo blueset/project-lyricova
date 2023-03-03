@@ -21,6 +21,10 @@ const palette = {
     primaryChannel: "255 255 255",
     secondaryChannel: "255 255 255",
   },
+  background: {
+    default: "#00171F",
+    paper: "#091d25",
+  },
 };
 
 const scrollbarTrackBackground = "rgba(66, 66, 66, 0.5)";
@@ -38,14 +42,14 @@ export default createTheme({
       "Source Han Sans",
       "-apple-system",
       "BlinkMacSystemFont",
-      "\"Segoe UI\"",
+      '"Segoe UI"',
       "Roboto",
-      "\"Helvetica Neue\"",
+      '"Helvetica Neue"',
       "Arial",
       "sans-serif",
-      "\"Apple Color Emoji\"",
-      "\"Segoe UI Emoji\"",
-      "\"Segoe UI Symbol\"",
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
     ].join(","),
   },
   components: {
@@ -54,7 +58,7 @@ export default createTheme({
         ":root": {
           colorScheme: "dark",
         },
-        "html": {
+        html: {
           fontFeatureSettings: "'palt' 1",
         },
         "*::-webkit-scrollbar": {
@@ -71,7 +75,7 @@ export default createTheme({
           backgroundColor: scrollbarThumbBackground,
           borderRadius: "6px",
         },
-      }
+      },
     },
     MuiButton: {
       styleOverrides: {
@@ -82,14 +86,14 @@ export default createTheme({
         textPrimary: {
           color: palette.primary.light,
         },
-      }
+      },
     },
     MuiTypography: {
       styleOverrides: {
         root: {
           // color: palette.primary.light,
         },
-      }
+      },
     },
     MuiFormLabel: {
       styleOverrides: {
@@ -98,16 +102,16 @@ export default createTheme({
             color: palette.primary.light,
           },
         },
-      }
+      },
     },
     MuiTab: {
       styleOverrides: {
         textColorPrimary: {
           "&$selected": {
             color: palette.primary.light,
-          }
-        }
-      }
+          },
+        },
+      },
     },
-  }
+  },
 });
