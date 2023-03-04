@@ -1,0 +1,50 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+}
+
+.otherVerses {
+  color: $secondary-text;
+  text-align: right;
+  line-height: 1.1;
+}
+
+.verse {
+  font-size: 3rem;
+  font-weight: 100;
+  line-height: 1;
+  width: fit-content;
+}
+
+.title, .artists, .pulse {
+  line-height: 1.1;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.artists {
+  color: $secondary-text;
+}
+
+.pulse {
+  color: $secondary-text;
+  font-style: italic;
+}
+
+.arrow {
+  position: absolute;
+  right: $horizontal-gutter;
+  bottom: $vertical-gutter;
+  width: 4rem;
+  
+  @include media-breakpoint-down(mobile) {
+    display: none;
+  }
+}

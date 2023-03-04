@@ -1,0 +1,10 @@
+@import 'variables';
+
+.container {
+  padding-inline-start: $horizontal-gutter;
+  padding-inline-end: $horizontal-gutter;
+}
+.verticalPadding {
+  padding-block-start: $vertical-gutter;
+  padding-block-end: $vertical-gutter;
+}

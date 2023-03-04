@@ -87,30 +87,18 @@ class EntryInput implements Omit<Partial<Entry>, "verses" | "pulses"> {
   @Field((type) => [PulseInput], { nullable: true })
   pulses?: PulseInput[];
 
-  @Field({ nullable: true })
+  @Field((type) => Date, { nullable: true })
   creationDate: Date | null;
 }
 
 @Resolver((of) => Entry)
 export class EntryResolver {
   @Query((returns) => [Entry])
-  public async entries(): Promise<Entry[]> {
+  public async entries(raw: boolean = false): Promise<Entry[]> {
     return await Entry.findAll({
-      order: [["sortDate", "DESC"]],
+      order: [["recentActionDate", "DESC"]],
       include: ["verses", "tags", "songs", "pulses"],
-      attributes: {
-        include: [
-          [
-            // use creationDate if pulses.creationDate is null
-            sequelize.fn(
-              "COALESCE",
-              sequelize.col("pulses.creationDate"),
-              sequelize.col("Entry.creationDate")
-            ),
-            "sortDate",
-          ],
-        ],
-      },
+      raw,
     });
   }
 
@@ -208,6 +196,12 @@ export class EntryResolver {
       throw new UserInputError("Entry not found");
     }
     const t = await sequelize.transaction();
+    const recentActionDate = new Date(
+      Math.max(
+        creationDate.valueOf(),
+        ...pulses.map((p) => p.creationDate.valueOf())
+      )
+    );
     try {
       await entry.update(
         {
@@ -215,6 +209,7 @@ export class EntryResolver {
           producersName,
           vocalistsName,
           comment,
+          recentActionDate,
         },
         { transaction: t }
       );
@@ -301,8 +296,10 @@ export class EntryResolver {
     if (!entry) {
       throw new UserInputError("Entry not found");
     }
-    const pulse = await Pulse.create({ creationDate: new Date() });
+    const date = new Date();
+    const pulse = await Pulse.create({ creationDate: date });
     entry.$add("pulse", pulse);
+    entry.recentActionDate = date;
     await entry.save();
     return true;
   }
@@ -360,6 +357,15 @@ export class EntryResolver {
       throw new UserInputError("Entry not found");
     }
     await entry.$remove("pulse", pulseId);
+    await entry.reload({ include: ["pulses"] });
+    await entry.update({
+      recentActionDate: new Date(
+        Math.max(
+          entry.creationDate.valueOf(),
+          ...entry.pulses.map((p) => p.creationDate.valueOf())
+        )
+      ),
+    });
     return entry;
   }
 }

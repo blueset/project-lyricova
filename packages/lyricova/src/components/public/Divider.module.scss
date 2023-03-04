@@ -1,0 +1,15 @@
+@import "../../styles/variables";
+
+.divider {
+  border: 0;
+  border-bottom: 1px solid $stroke-color;
+  height: 0;
+  width: 100%;
+}
+
+.verticalDivider {
+  border: 0;
+  border-right: 1px solid $stroke-color;
+  width: 0;
+  height: 100%;
+}

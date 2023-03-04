@@ -1,0 +1,46 @@
+@import "mixins";
+
+html:has(.wrapper), .wrapper {
+  /* Fonts */
+  --fallback-fonts: var(--font-source-han-sans), -apple-system, BlinkMacSystemFont,
+  "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+  "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --headings-font: var(--font-hubot-sans), var(--fallback-fonts);
+  --body-font: var(--font-mona-sans), var(--fallback-fonts);
+
+  font-family: var(--body-font);
+  
+  font-size: 20px;
+
+  @include media-breakpoint-down(tablet) {
+    font-size: 19px;
+  }
+  @include media-breakpoint-down(mobile) {
+    font-size: 17px;
+  }
+
+  /* Sizes */
+  --horizontal-gutter: 5rem;
+  --vertical-gutter: calc(var(--horizontal-gutter) * 2 / 3);
+  --gap: 0.5rem;
+
+  @include media-breakpoint-down(desktop) {
+    --horizontal-gutter: 4rem;
+  }
+  @include media-breakpoint-down(tablet) {
+    --horizontal-gutter: 3rem;
+  }
+  @include media-breakpoint-down(mobile) {
+    --horizontal-gutter: 1rem;
+    --vertical-gutter: 1.5rem;
+  }
+
+  /* Colors */
+  --brand-color: #c56cf0;
+  --stroke-color: #{rgba(#ffffff, 0.3)};
+  --primary-text: #ffffff;
+  --secondary-text: #{rgba(#ffffff, 0.6)};
+  --background-color: #00171F;
+  --primary-text-on-brand: #00171F;
+  --secondary-text-on-brand: #{rgba(#00171F, 0.6)};
+}

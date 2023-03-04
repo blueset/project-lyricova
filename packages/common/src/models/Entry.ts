@@ -16,6 +16,7 @@ import {
   BelongsTo,
   HasMany,
   AllowNull,
+  Sequelize,
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { SongOfEntry } from "./SongOfEntry";
@@ -75,6 +76,13 @@ export class Entry extends Model<Entry> {
 
   @HasMany((type) => Pulse)
   pulses: Pulse[];
+
+  @Field()
+  @Column({
+    type: new DataTypes.DATE(),
+    defaultValue: Sequelize.literal("CURRENT_TIMESTAMP()"),
+  })
+  recentActionDate: Date;
 
   @Field()
   @CreatedAt

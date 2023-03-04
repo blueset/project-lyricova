@@ -1,0 +1,28 @@
+@import "../../styles/variables";
+
+.row {
+  width: fit-content;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: flex-start;
+
+}
+
+.tag {
+  display: inline-block;
+  color: var(--tag-color-override, var(--tag-color));
+  border: 1px solid var(--tag-color-override, var(--tag-color));
+  border-radius: 3px;
+  line-height: 1;
+  padding: 0.1em 0.3em 0;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-stretch: condensed;
+
+  &:hover {
+    background-color: var(--tag-color);
+    color: $background-color;
+  }
+}

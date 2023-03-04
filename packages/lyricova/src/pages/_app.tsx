@@ -7,9 +7,12 @@ import theme from "lyricova-common/frontendUtils/theme";
 import Head from "next/head";
 import { ApolloProvider } from "@apollo/client";
 import apolloClient from "lyricova-common/frontendUtils/apollo";
-import { NextComponentType, NextPageContext } from "next";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import createEmotionCache from "../frontendUtils/createEmotionCache";
+import { MonaSans, HubotSans, SourceHanSans } from "../fonts";
+import "../styles/global.scss";
+import { useRouter } from "next/router";
+import { RouteRounded } from "@mui/icons-material";
 
 export const getPlainLayout = (page: ReactNode) => <>{page}</>;
 
@@ -35,28 +38,41 @@ function MyApp({
       jssStyles.parentElement.removeChild(jssStyles);
     }
   }, []);
+  const router = useRouter();
+  const isDashboard =
+    router.pathname.startsWith("/dashboard") ||
+    router.pathname.startsWith("/login") ||
+    router.pathname.startsWith("/logout");
 
   const getLayout = Component.layout || getPlainLayout;
   // const C = Component as React.FC;
 
   return (
-    <CacheProvider value={emotionCache}>
-      <Head>
-        <title>Project Lyricova</title>
-        <meta
-          name="viewport"
-          content="minimum-scale=1, initial-scale=1, width=device-width"
-        />
-      </Head>
-      <ThemeProvider theme={theme}>
-        <ApolloProvider client={apolloClient}>
-          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-          {getLayout(<Component {...pageProps} />)}
-          {/* <C {...pageProps} /> */}
-          <CssBaseline />
-        </ApolloProvider>
-      </ThemeProvider>
-    </CacheProvider>
+    <div
+      className={
+        isDashboard
+          ? undefined
+          : `${MonaSans.variable} ${HubotSans.variable} ${SourceHanSans.variable} wrapper`
+      }
+    >
+      <CacheProvider value={emotionCache}>
+        <Head>
+          <title>Project Lyricova</title>
+          <meta
+            name="viewport"
+            content="minimum-scale=1, initial-scale=1, width=device-width"
+          />
+        </Head>
+        <ThemeProvider theme={theme}>
+          <ApolloProvider client={apolloClient}>
+            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+            {getLayout(<Component {...pageProps} />)}
+            {/* <C {...pageProps} /> */}
+            <CssBaseline />
+          </ApolloProvider>
+        </ThemeProvider>
+      </CacheProvider>
+    </div>
   );
 }
 

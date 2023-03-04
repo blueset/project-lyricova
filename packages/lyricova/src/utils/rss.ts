@@ -1,3 +1,4 @@
+import { Entry } from "lyricova-common/models/Entry";
 import RSS from "rss";
 import { EntryResolver } from "../graphql/EntryResolver";
 import { host, siteName, tagLine1, tagLine2 } from "./consts";
@@ -14,16 +15,13 @@ export default async function generateRssFeed() {
   };
   const feed = new RSS(feedOptions);
 
-  const entryResolver = new EntryResolver();
-  const entries = (await entryResolver.entries()).slice(0, 20);
+  const entries = await Entry.findAll({
+    include: ["verses"],
+    order: [["recentActionDate", "DESC"]],
+    limit: 20,
+  });
   entries.forEach((entry) => {
     const mainVerse = entry.verses.filter((v) => v.isMain)[0];
-    const date = new Date(
-      Math.max(
-        entry.creationDate.valueOf(),
-        ...entry.pulses.map((p) => p.creationDate.valueOf())
-      )
-    );
     feed.item({
       title: entry.title,
       description: (
@@ -31,7 +29,7 @@ export default async function generateRssFeed() {
         mainVerse.stylizedText ||
         mainVerse.text
       ).replace(/\n/g, "<br />"),
-      date,
+      date: entry.recentActionDate,
       url: `${host}/entry/${entry.id}`,
       categories: entry.tags.map((t) => t.name),
     });

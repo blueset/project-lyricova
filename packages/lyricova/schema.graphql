@@ -82,6 +82,7 @@ type Entry {
   id: Float!
   producersName: String!
   pulses: [Pulse!]
+  recentActionDate: Timestamp!
   songs: [Song!]
   tags: [Tag!]
   title: String!
