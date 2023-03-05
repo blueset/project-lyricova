@@ -1,5 +1,4 @@
-import { kanaToHira } from "./transliterate";
-import { ObjectType, Field } from "type-graphql";
+import { kanaToHira } from "./kanaUtils";
 
 // prettier-ignore
 const JA_MAP = {
@@ -45,17 +44,8 @@ const JA_MAP = {
   }
 };
 
-@ObjectType({ description: "Describes the animation sequence for a word." })
 export class AnimatedWord {
-  @Field({
-    description:
-      "True if the word shows a conversion-type of animation. False if it is just typing.",
-  })
   convert: boolean;
-
-  @Field((type) => [String], {
-    description: "Actual sequence to show, one frame at a time.",
-  })
   sequence: string[];
 }
 
@@ -67,14 +57,14 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
     let done = "";
     while (remainingHira.length > 0) {
       // Matching double kana set.
-      const twoKanas = remainingHira.substr(0, 2);
+      const twoKanas = remainingHira.substring(0, 2);
       const oneKana = remainingHira[0];
       const secondKana = remainingHira[1];
       if (remainingHira.length >= 2 && twoKanas in JA_MAP.romanMapDouble) {
         const key = twoKanas as keyof typeof JA_MAP["romanMapDouble"];
         const romajiSeq = JA_MAP.romanMapDouble[key];
         for (let i = 1; i <= romajiSeq.length; i++) {
-          sequence.push(done + romajiSeq.substr(0, i));
+          sequence.push(done + romajiSeq.substring(0, i));
         }
         sequence.push(done + key);
         done += key;
@@ -149,11 +139,11 @@ function animateEn(words: [string, string][]): AnimatedWord[] {
 
 export function buildAnimationSequence(
   text: [string, string][],
-  language: "en" | "ja" | "zh"
+  language: string
 ): AnimatedWord[] {
-  if (language === "ja") {
+  if (language.startsWith("ja")) {
     return animateJa(text);
-  } else if (language === "zh") {
+  } else if (language.startsWith("zh")) {
     return animateZh(text);
   } else {
     // language === "en"

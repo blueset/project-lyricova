@@ -11,10 +11,21 @@ import {
   segmentedTransliteration,
   getLanguage,
 } from "lyricova-common/utils/transliterate";
-import {
-  AnimatedWord,
-  buildAnimationSequence,
-} from "lyricova-common/utils/typingSequence";
+import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
+
+@ObjectType({ description: "Describes the animation sequence for a word." })
+export class AnimatedWord {
+  @Field({
+    description:
+      "True if the word shows a conversion-type of animation. False if it is just typing.",
+  })
+  convert: boolean;
+
+  @Field((type) => [String], {
+    description: "Actual sequence to show, one frame at a time.",
+  })
+  sequence: string[];
+}
 
 @InputType({ description: "Furigana/romaji to words in a lyrics line." })
 export class FuriganaLabel {

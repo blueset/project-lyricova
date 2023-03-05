@@ -6,6 +6,29 @@
   flex-direction: column;
   gap: 1rem;
   position: relative;
+  text-decoration: none;
+  color: $primary-text;
+  --typing-highlight: #{$brand-color};
+  --typing-highlight-inverse: #{$background-color};
+  transition: all 0.2s cubic-bezier(0,0,.6,1);
+
+  @media (hover: hover) {
+    &:hover {
+      color: $primary-text-on-brand;
+      background-color: $brand-color;
+      --primary-text: #{$primary-text-on-brand};
+      --secondary-text: #{$secondary-text-on-brand};
+      --tag-color-override: #{$secondary-text-on-brand};
+      --typing-highlight: #{$primary-text-on-brand};
+      --typing-highlight-inverse: #{$brand-color};
+      
+      .arrow {
+        transform: rotate(-90deg) translateX(100%);
+        color: $primary-text-on-brand;
+        opacity: 0.4;
+      }
+    }
+  }
 }
 
 .otherVerses {
@@ -19,6 +42,26 @@
   font-weight: 100;
   line-height: 1;
   width: fit-content;
+
+  .verseLine {
+    position: relative;
+    .animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: calc(100vw - 2 * #{$horizontal-gutter});
+    }
+  }
+
+  .committed {
+    color: var(--typing-highlight);
+  }
+
+  .typing {
+    background-color: var(--typing-highlight);
+    color: var(--typing-highlight-inverse);
+    font-weight: 250;
+  }
 }
 
 .title, .artists, .pulse {
@@ -44,6 +87,10 @@
   bottom: $vertical-gutter;
   width: 4rem;
   user-select: none;
+  transition: transform 0.2s cubic-bezier(0,0,.3,1);
+  transform-origin: bottom right;
+  color: $primary-text;
+  opacity: 0.15;
   
   @include media-breakpoint-down(mobile) {
     display: none;

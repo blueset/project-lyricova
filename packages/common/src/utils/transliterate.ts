@@ -2,6 +2,7 @@ import pinyin from "pinyin";
 import Segment from "novel-segment";
 import MeCab from "mecab-async";
 import _ from "lodash";
+import { kanaToHira } from "./kanaUtils";
 
 interface FuriganaLabel {
   content: string;
@@ -37,19 +38,6 @@ mecab.parser = function(data): MecabParsedResult {
 
 const segment = new Segment();
 segment.useDefault();
-
-/**
- * Convert katakana to hiragana.
- * @param str katakana
- */
-export function kanaToHira(str: string): string {
-  return (
-    str &&
-    str.replace(/[\u30a1-\u30f6]/g, (match) =>
-      String.fromCharCode(match.charCodeAt(0) - 0x60)
-    )
-  );
-}
 
 interface TransliterateOptions {
   language?: "zh" | "ja" | "en";

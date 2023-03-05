@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  transition: all 0.2s ease-out;
+  transition: all 0.2s cubic-bezier(0,0,.6,1);
   --effective-background-color: #{$background-color};
   color: $primary-text;
   text-decoration: none;
@@ -87,12 +87,12 @@
 }
 
 .cyclingVerse {
-  display: none;
+  visibility: hidden;
   font-weight: 250;
 
   @media (hover: hover) {
     .container:hover & {
-      display: block;
+      visibility: visible;
     }
   }
 }
