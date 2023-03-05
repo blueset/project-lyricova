@@ -4,7 +4,7 @@
   width: fit-content;
   display: flex;
   flex-direction: row;
-  gap: 0.5rem;
+  gap: 0.25rem;
   align-items: flex-start;
 
 }
@@ -20,6 +20,7 @@
   text-transform: uppercase;
   font-size: 0.8rem;
   font-stretch: condensed;
+  cursor: pointer;
 
   &:hover {
     background-color: var(--tag-color);

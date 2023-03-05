@@ -5,7 +5,7 @@ import { Search } from "./nav/Search";
 
 export function IndexHeader() {
   return (
-    <div className={`container verticalPadding ${classes.headerRow}`}>
+    <header className={`container verticalPadding ${classes.headerRow}`}>
       <div>
         <h1 className={classes.title}>{siteName}</h1>
         <h1 className={classes.subtitle}>
@@ -16,6 +16,6 @@ export function IndexHeader() {
         <Jukebox />
         <Search />
       </nav>
-    </div>
+    </header>
   );
 }

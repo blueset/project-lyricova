@@ -1,6 +1,6 @@
 @import "mixins";
 
-html:has(.wrapper), .wrapper {
+:root, body.wrapper {
   /* Fonts */
   --fallback-fonts: var(--font-source-han-sans), -apple-system, BlinkMacSystemFont,
   "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
@@ -9,6 +9,7 @@ html:has(.wrapper), .wrapper {
   --body-font: var(--font-mona-sans), var(--fallback-fonts);
 
   font-family: var(--body-font);
+  font-feature-settings: 'palt' 1;
   
   font-size: 20px;
 

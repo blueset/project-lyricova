@@ -1,0 +1,28 @@
+@import "../../styles/variables";
+
+.footer {
+  margin-top: $vertical-gutter;
+  margin-bottom: $vertical-gutter;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  color: $brand-color;
+  font-family: $headings-font;
+  font-weight: 500;
+  font-stretch: expanded;
+  
+  a {
+    text-decoration: none;
+    color: $brand-color;
+    transition: font-weight 0.2s ease-in-out;
+    &:hover {
+      font-weight: 700;
+    }
+  }
+
+  img {
+    height: 3rem;
+  }
+}

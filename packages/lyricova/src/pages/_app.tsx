@@ -2,7 +2,7 @@ import { AppProps } from "next/app";
 import { ThemeProvider } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import PropTypes from "prop-types";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import theme from "lyricova-common/frontendUtils/theme";
 import Head from "next/head";
 import { ApolloProvider } from "@apollo/client";
@@ -44,17 +44,29 @@ function MyApp({
     router.pathname.startsWith("/login") ||
     router.pathname.startsWith("/logout");
 
+  useEffect(() => {
+    if (!isDashboard) {
+      document.body.classList.add(
+        "wrapper",
+        MonaSans.variable,
+        HubotSans.variable,
+        SourceHanSans.variable
+      );
+    } else {
+      document.body.classList.remove(
+        "wrapper",
+        MonaSans.variable,
+        HubotSans.variable,
+        SourceHanSans.variable
+      );
+    }
+  }, [isDashboard]);
+
   const getLayout = Component.layout || getPlainLayout;
   // const C = Component as React.FC;
 
   return (
-    <div
-      className={
-        isDashboard
-          ? undefined
-          : `${MonaSans.variable} ${HubotSans.variable} ${SourceHanSans.variable} wrapper`
-      }
-    >
+    <div>
       <CacheProvider value={emotionCache}>
         <Head>
           <title>Project Lyricova</title>
@@ -62,12 +74,14 @@ function MyApp({
             name="viewport"
             content="minimum-scale=1, initial-scale=1, width=device-width"
           />
+          {isDashboard && (
+            <style>{":root { font-size: 16px !important; }"}</style>
+          )}
         </Head>
         <ThemeProvider theme={theme}>
           <ApolloProvider client={apolloClient}>
             {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
             {getLayout(<Component {...pageProps} />)}
-            {/* <C {...pageProps} /> */}
             <CssBaseline />
           </ApolloProvider>
         </ThemeProvider>

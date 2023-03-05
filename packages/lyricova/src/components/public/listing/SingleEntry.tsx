@@ -4,6 +4,7 @@ import { TagRow } from "../TagRow";
 import { PulseStatus } from "./PulseStatus";
 import gsap from "gsap";
 import classes from "./SingleEntry.module.scss";
+import Link from "next/link";
 
 function convertRemToPixels(rem: string) {
   return (
@@ -25,9 +26,9 @@ export function SingleEntry({ entry }: SingleEntryProps) {
     : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
   const verseRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLAnchorElement>(null);
 
-  const applyMask = useCallback((elm: HTMLDivElement) => {
+  const applyMask = useCallback((elm: HTMLElement) => {
     // console.log(elm.scrollWidth, elm.clientWidth, elm);
     if (elm.scrollWidth > elm.clientWidth) {
       elm.classList.add(classes.mask);
@@ -81,7 +82,11 @@ export function SingleEntry({ entry }: SingleEntryProps) {
   }, [mouseMoveCallback]);
 
   return (
-    <div className={`verticalPadding ${classes.container}`} ref={containerRef}>
+    <Link
+      className={`verticalPadding ${classes.container}`}
+      href={`/entries/${entry.id}`}
+      ref={containerRef}
+    >
       <div className={`container ${classes.meta}`}>
         <div>
           <span className={classes.title}>{entry.title}</span>
@@ -108,6 +113,6 @@ export function SingleEntry({ entry }: SingleEntryProps) {
       <div className={`container ${classes.pulse}`}>
         <PulseStatus entry={entry} />
       </div>
-    </div>
+    </Link>
   );
 }

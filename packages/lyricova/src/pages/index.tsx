@@ -2,15 +2,20 @@ import { Button } from "@mui/material";
 import sequelize from "lyricova-common/db";
 import { Entry } from "lyricova-common/models/Entry";
 import { GetStaticProps } from "next";
+import { totalmem } from "os";
 import React, { Fragment } from "react";
 import { Divider } from "../components/public/Divider";
+import { Footer } from "../components/public/Footer";
 import { IndexHeader } from "../components/public/IndexHeader";
+import { Paginator } from "../components/public/listing/Paginator";
 import { SingleEntry } from "../components/public/listing/SingleEntry";
 import { TopEntry } from "../components/public/listing/TopEntry";
 import { EntryResolver } from "../graphql/EntryResolver";
+import { entriesPerPage } from "../utils/consts";
 
 interface IndexProps {
   entries: Entry[];
+  totalPages: number;
 }
 
 export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
@@ -27,23 +32,19 @@ export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
       },
     ],
     order: [["recentActionDate", "DESC"]],
-    limit: 10,
+    limit: entriesPerPage,
   })) as Entry[];
   entries = entries.map((entry) => entry.toJSON() as Entry);
-  // const entries = await Entry.findAll({
-  //   include: ["verses"],
-  //   order: [["recentActionDate", "DESC"]],
-  //   raw: true,
-  //   limit: 10,
-  // });
+  const totalEntries = await sequelize.models.Entry.count();
   return {
     props: {
       entries,
+      totalPages: Math.ceil(totalEntries / entriesPerPage),
     },
   };
 };
 
-export default function Index({ entries }: IndexProps) {
+export default function Index({ entries, totalPages }: IndexProps) {
   return (
     <>
       <IndexHeader />
@@ -58,6 +59,8 @@ export default function Index({ entries }: IndexProps) {
           <Divider />
         </Fragment>
       ))}
+      <Paginator currentPage={1} totalPages={totalPages} prefix="/pages" />
+      <Footer />
     </>
   );
 }

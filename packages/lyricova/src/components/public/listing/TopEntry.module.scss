@@ -43,6 +43,7 @@
   right: $horizontal-gutter;
   bottom: $vertical-gutter;
   width: 4rem;
+  user-select: none;
   
   @include media-breakpoint-down(mobile) {
     display: none;

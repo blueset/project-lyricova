@@ -46,7 +46,7 @@ export function TopEntry({ entry }: TopEntryProps) {
   }, [verseRef]);
 
   return (
-    <div className={`container verticalPadding ${classes.container}`}>
+    <article className={`container verticalPadding ${classes.container}`}>
       <div className={classes.otherVerses}>
         {otherVerses.map((verse) => (
           <div key={verse.id} lang={verse.language}>
@@ -66,6 +66,6 @@ export function TopEntry({ entry }: TopEntryProps) {
         <PulseStatus entry={entry} />
       </div>
       <img src="/images/arrow.svg" className={classes.arrow} aria-hidden />
-    </div>
+    </article>
   );
 }

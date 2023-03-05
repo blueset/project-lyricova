@@ -1,0 +1,47 @@
+@import "../../../styles/variables";
+
+.paginator {
+  margin-top: $vertical-gutter;
+  margin-bottom: $vertical-gutter;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.disabledLink {
+  cursor: not-allowed;
+  opacity: 0.25;
+}
+
+.prevLink, .nextLink {
+  transition: transform 0.2s ease-in-out;
+}
+
+.prevLink:hover {
+  transform: translateX(-0.5em);
+}
+
+.nextLink:hover {
+  transform: translateX(0.5em);
+}
+
+.pageDots {
+  display: flex;
+  flex-direction: row;
+  max-width: 500px;
+  gap: 0.5rem;
+}
+
+.pageDot {
+  display: inline-block;
+  height: 5px;
+  width: 5px;
+  border-radius: 50%;
+  background-color: $primary-text;
+}
+
+.pageDotActive {
+  background-color: $brand-color;
+}

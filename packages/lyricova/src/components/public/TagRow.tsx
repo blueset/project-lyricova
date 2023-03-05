@@ -1,5 +1,6 @@
 import { Tag } from "lyricova-common/models/Tag";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { CSSProperties } from "react";
 import classes from "./TagRow.module.scss";
 
@@ -8,17 +9,33 @@ export interface TagRowProps {
 }
 
 export function TagRow({ tags }: TagRowProps) {
+  const router = useRouter();
   return (
     <div className={classes.row}>
       {tags.map((tag) => (
-        <Link
+        <span
           key={tag.slug}
           className={classes.tag}
           style={{ "--tag-color": tag.color } as CSSProperties}
-          href={`/tags/${tag.slug}`}
+          role="link"
+          onMouseDown={(e) => {
+            if ((e.button === 0 && e.ctrlKey) || e.button === 1) {
+              e.stopPropagation();
+              e.preventDefault();
+              const newWindow = window.open(`/tags/${tag.slug}`, "_blank");
+              if (e.button === 1) {
+                newWindow?.blur();
+                window.focus();
+              }
+            } else if (e.button === 0) {
+              e.stopPropagation();
+              e.preventDefault();
+              router.push(`/tags/${tag.slug}`);
+            }
+          }}
         >
           {tag.name}
-        </Link>
+        </span>
       ))}
     </div>
   );
