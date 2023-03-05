@@ -1,4 +1,5 @@
 @import "../../../styles/variables";
+@import "../../../styles/mixins";
 
 .paginator {
   margin-top: $vertical-gutter;
@@ -16,22 +17,48 @@
 }
 
 .prevLink, .nextLink {
-  transition: transform 0.2s ease-in-out;
+  color: $primary-text;
+  transition: transform 0.2s cubic-bezier(0,0,.3,1), color 0.2s cubic-bezier(0,0,.3,1);
 }
 
 .prevLink:hover {
   transform: translateX(-0.5em);
+  color: $brand-color;
 }
 
 .nextLink:hover {
   transform: translateX(0.5em);
+  color: $brand-color;
 }
 
 .pageDots {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
   max-width: 500px;
   gap: 0.5rem;
+  
+  @include media-breakpoint-down(mobile) {
+    display: none;
+  }
+}
+
+.pageNumber {
+  display: none;
+  width: 0;
+  flex-grow: 1;
+  text-align: center;
+
+  .pageNumberCurrent {
+    color: $brand-color;
+    font-weight: 600;
+  }
+
+  @include media-breakpoint-down(mobile) {
+    display: inline-block;
+    // font-weight: 600;
+  }
 }
 
 .pageDot {

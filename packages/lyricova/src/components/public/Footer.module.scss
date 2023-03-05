@@ -1,4 +1,5 @@
 @import "../../styles/variables";
+@import "../../styles/mixins";
 
 .footer {
   margin-top: $vertical-gutter;
@@ -13,7 +14,22 @@
   font-weight: 500;
   font-stretch: expanded;
   
-  a {
+  .label {
+    width: 0;
+    flex-grow: 1;
+    line-height: 1;
+
+    &:first-child {
+      text-align: left;
+    }
+
+    &:last-child {
+      text-align: right;
+    }
+    
+  }
+
+  a.label {
     text-decoration: none;
     color: $brand-color;
     transition: font-weight 0.2s ease-in-out;
@@ -22,7 +38,33 @@
     }
   }
 
-  img {
-    height: 3rem;
+  .logo {
+    img {
+      height: 3rem;
+    }
+  }
+
+  .mobileText {
+    display: none;
+    flex-grow: 1;
+    @include media-breakpoint-down(mobile) {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      
+      .label {
+        display: block;
+        width: fit-content;
+      }
+      span.label {
+        font-weight: 300;
+      }
+    }
+  }
+
+  .label {
+    @include media-breakpoint-down(mobile) {
+      display: none;
+    }
   }
 }

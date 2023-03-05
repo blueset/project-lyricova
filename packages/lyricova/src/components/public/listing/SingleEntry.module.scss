@@ -1,4 +1,5 @@
 @import "../../../styles/variables";
+@import "../../../styles/mixins";
 
 .container {
   line-height: 1;
@@ -26,6 +27,23 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  gap: 1rem;
+
+  @include media-breakpoint-down(mobile) {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+}
+
+.metaLeft {
+  display: flex;
+  flex-direction: row;
+  column-gap: 3rem;
+  flex-wrap: wrap;
+
+  @include media-breakpoint-down(mobile) {
+    flex-direction: column;
+  }
 }
 
 .title, .artists {
@@ -34,7 +52,6 @@
 
 .title {
   font-weight: 600;
-  margin-right: 3em;
 }
 
 .artists {
@@ -42,14 +59,25 @@
 }
 
 .verseContainer {
-  height: 3rem;
+  --font-size: 3rem;
+  --line-height: 1.1;
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+  height: calc(var(--font-size) * var(--line-height));
+  height: 1lh;
   transform: translateY(0.05em);
-  overflow: hidden;
-  line-height: 1.1;
+  overflow-x: hidden;
+  position: relative;
+
+  @include media-breakpoint-down(tablet) {
+    --font-size: 2.375rem;
+  }
+  @include media-breakpoint-down(mobile) {
+    --font-size: 1.75rem;
+  }
 }
 
 .verse, .cyclingVerse {
-  font-size: 3rem;
   font-weight: 100;
   white-space: nowrap;
 }
@@ -89,6 +117,11 @@
 .cyclingVerse {
   visibility: hidden;
   font-weight: 250;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
 
   @media (hover: hover) {
     .container:hover & {

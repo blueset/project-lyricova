@@ -9,7 +9,7 @@ export function IndexHeader() {
       <div>
         <h1 className={classes.title}>{siteName}</h1>
         <h1 className={classes.subtitle}>
-          <strong>{tagLine1}</strong> {tagLine2}
+          <strong>{tagLine1}</strong> <span>{tagLine2}</span>
         </h1>
       </div>
       <nav className={classes.nav}>

@@ -21,6 +21,10 @@
       --tag-color-override: #{$secondary-text-on-brand};
       --typing-highlight: #{$primary-text-on-brand};
       --typing-highlight-inverse: #{$brand-color};
+
+      .verse {
+        font-weight: 250;
+      }
       
       .arrow {
         transform: rotate(-90deg) translateX(100%);

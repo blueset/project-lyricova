@@ -29,7 +29,6 @@ export function SingleEntry({ entry }: SingleEntryProps) {
   const containerRef = useRef<HTMLAnchorElement>(null);
 
   const applyMask = useCallback((elm: HTMLElement) => {
-    // console.log(elm.scrollWidth, elm.clientWidth, elm);
     if (elm.scrollWidth > elm.clientWidth) {
       elm.classList.add(classes.mask);
     } else {
@@ -60,7 +59,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
       getComputedStyle(target).getPropertyValue("--horizontal-gutter")
     );
     const cycleWidth = cyclingVerse.scrollWidth / 5;
-    const ratio = e.screenX / target.clientWidth;
+    const ratio = e.clientX / target.clientWidth;
     const start = -(2 * cycleWidth - gutter);
     const end = -(3 * cycleWidth - target.clientWidth + gutter);
     const shift = start + (end - start) * ratio;
@@ -89,7 +88,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
       ref={containerRef}
     >
       <div className={`container ${classes.meta}`}>
-        <div>
+        <div className={classes.metaLeft}>
           <span className={classes.title}>{entry.title}</span>
           <span className={classes.artists}>{artistString}</span>
         </div>
