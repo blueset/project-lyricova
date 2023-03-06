@@ -63,10 +63,11 @@
   --line-height: 1.1;
   font-size: var(--font-size);
   line-height: var(--line-height);
-  height: calc(var(--font-size) * var(--line-height));
-  height: 1lh;
+  // height: calc(var(--font-size) * var(--line-height));
+  // height: 1lh;
   transform: translateY(0.05em);
   overflow-x: hidden;
+  overflow-y: clip;
   position: relative;
 
   @include media-breakpoint-down(tablet) {
@@ -90,7 +91,8 @@
 
   @media (hover: hover) {
     .container:hover & {
-      display: none;
+      // display: none;
+      visibility: hidden;
     }
   }
 
