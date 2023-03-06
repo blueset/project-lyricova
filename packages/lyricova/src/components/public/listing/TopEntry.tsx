@@ -117,8 +117,10 @@ export function TopEntry({ entry }: TopEntryProps) {
       href={`/entries/${entry.id}`}
       className={`container verticalPadding ${classes.container}`}
       ref={entryRef}
-      onMouseEnter={() => {
-        timelineRef.current?.restart();
+      onMouseEnter={(evt) => {
+        timelineRef.current
+          ?.timeScale(evt.ctrlKey || evt.metaKey ? 0.2 : 1)
+          .restart();
       }}
       onMouseLeave={() => {
         timelineRef.current?.pause(timelineRef.current?.endTime());
