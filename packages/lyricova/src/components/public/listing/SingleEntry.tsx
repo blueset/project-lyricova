@@ -72,8 +72,8 @@ export function SingleEntry({ entry }: SingleEntryProps) {
 
   useEffect(() => {
     const containerElm = containerRef.current;
-    mouseMoveCallback({ currentTarget: containerElm, screenX: 0 } as any);
     if (containerElm) {
+      mouseMoveCallback({ currentTarget: containerElm, clientX: 0 } as any);
       containerElm.addEventListener("mousemove", mouseMoveCallback);
       return () => {
         containerElm.removeEventListener("mousemove", mouseMoveCallback);

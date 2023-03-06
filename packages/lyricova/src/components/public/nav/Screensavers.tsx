@@ -1,16 +1,16 @@
 import { IconButton, Tooltip } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import AspectRatioIcon from "@mui/icons-material/AspectRatio";
 import { NextComposedLink } from "lyricova-common/components/Link";
 
-export function Search() {
+export function Screensavers() {
   return (
-    <Tooltip title="Search">
+    <Tooltip title="Screensavers">
       <IconButton
         LinkComponent={NextComposedLink}
-        href="/search"
-        data-nav-icon="search"
+        href="/screensaver"
+        data-nav-icon="screensavers"
       >
-        <SearchIcon />
+        <AspectRatioIcon />
       </IconButton>
     </Tooltip>
   );

@@ -9,49 +9,16 @@
   position: relative;
 }
 
-@mixin title-common {
-  font-family: $headings-font;
-  margin: 0;
-  color: $brand-color;
-  line-height: 1;
-}
-
-.title {
-  @include title-common;
-  font-size: 2.5rem;
-  font-weight: 400;
-  font-stretch: expanded;
-
-  @include media-breakpoint-down(tablet) {
-    font-size: 1.75rem;
-  }
-  @include media-breakpoint-down(mobile) {
-    font-size: 1.5rem;
-  }
-}
-
-.subtitle {
-  @include title-common;
-  font-size: 1rem;
-  font-weight: 400;
-  font-stretch: condensed;
-  strong {
-    font-weight: 600;
-  }
-
-  @include media-breakpoint-down(mobile) {
-    span, strong {
-      display: block;
-    }
-  }
-}
-
 .nav {
   display: flex;
   flex-direction: row;
   gap: $gap;
 
-  @include media-breakpoint-down(mobile) {
-    display: none;
+  @include media-breakpoint-down(tablet) {
+    [data-nav-icon="jukebox"],
+    [data-nav-icon="search"],
+    [data-nav-icon="screensavers"] {
+      display: none;
+    }
   }
 }

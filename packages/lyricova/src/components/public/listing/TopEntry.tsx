@@ -53,78 +53,76 @@ export function TopEntry({ entry }: TopEntryProps) {
     }
   }, [resizeVerse, verseRef]);
 
-  useLayoutEffect(() => {
-    const tl = gsap.timeline();
-    const verseRefEl = verseRef.current;
-    const stepDuration = 1 / 40;
-    if (!verseRefEl) {
-      return;
-    }
-    const sequence = mainVerse.typingSequence.map((i) =>
-      buildAnimationSequence(i, mainVerse.language)
-    );
-    let i = 0;
-    for (let lineIdx = 0; lineIdx < sequence.length; lineIdx++) {
-      const line = sequence[lineIdx];
-      let committed = "";
-      const lineEl = verseRefEl.querySelector(`[data-line="${lineIdx}"]`);
-      if (!lineEl) continue;
-      const outcomeEl = lineEl.querySelector(".outcome");
-      const typingEl = lineEl.querySelector(".typing");
-      const committedEl = lineEl.querySelector(".committed");
-      tl.set(outcomeEl, { opacity: 0 }, 0);
-      tl.set(typingEl, { text: "" }, 0);
-      tl.set(committedEl, { text: "" }, 0);
-      if (!outcomeEl || !typingEl || !committedEl) continue;
-      for (const step of line) {
-        if (step.convert) {
-          for (const frame of step.sequence.slice(0, -1)) {
-            tl.set(typingEl, { text: frame }, i * stepDuration);
-            i++;
-          }
-          committed += step.sequence[step.sequence.length - 1];
-          tl.set(committedEl, { text: committed }, i * stepDuration);
-          tl.set(typingEl, { text: "" }, i * stepDuration);
-          i++;
-        } else {
-          for (const frame of step.sequence) {
-            tl.set(committedEl, { text: committed + frame }, i * stepDuration);
-            i++;
-          }
-          committed += step.sequence[step.sequence.length - 1];
-        }
+  const buildTimeline = useCallback(
+    (verseRefEl: HTMLDivElement) => {
+      if (timelineRef.current) {
+        timelineRef.current.kill();
       }
-      tl.set(outcomeEl, { opacity: 1 }, i * stepDuration);
-      tl.set(committedEl, { text: "" }, i * stepDuration);
-      tl.set(typingEl, { text: "" }, i * stepDuration);
-      i++;
-    }
-    timelineRef.current = tl;
-  }, [mainVerse.typingSequence, mainVerse.language]);
 
-  useLayoutEffect(() => {
-    const entryRefEl = entryRef.current;
-    if (entryRefEl) {
-      const onEnter = () => {
-        timelineRef.current?.restart();
-      };
-      const onLeave = () => {
-        timelineRef.current?.pause(timelineRef.current?.endTime());
-      };
-      entryRefEl.addEventListener("mouseenter", onEnter);
-      entryRefEl.addEventListener("mouseleave", onLeave);
+      const tl = gsap.timeline();
+      const stepDuration = 1 / 40;
+      const sequence = mainVerse.typingSequence.map((i) =>
+        buildAnimationSequence(i, mainVerse.language)
+      );
+      let i = 0;
+      for (let lineIdx = 0; lineIdx < sequence.length; lineIdx++) {
+        const line = sequence[lineIdx];
+        let committed = "";
+        const lineEl = verseRefEl.querySelector(`[data-line="${lineIdx}"]`);
+        if (!lineEl) continue;
+        const outcomeEl = lineEl.querySelector(".outcome");
+        const typingEl = lineEl.querySelector(".typing");
+        const committedEl = lineEl.querySelector(".committed");
+        tl.set(outcomeEl, { opacity: 0 }, 0);
+        tl.set(typingEl, { text: "" }, 0);
+        tl.set(committedEl, { text: "" }, 0);
+        if (!outcomeEl || !typingEl || !committedEl) continue;
+        for (const step of line) {
+          if (step.convert) {
+            for (const frame of step.sequence.slice(0, -1)) {
+              tl.set(typingEl, { text: frame }, i * stepDuration);
+              i++;
+            }
+            committed += step.sequence[step.sequence.length - 1];
+            tl.set(committedEl, { text: committed }, i * stepDuration);
+            tl.set(typingEl, { text: "" }, i * stepDuration);
+            i++;
+          } else {
+            for (const frame of step.sequence) {
+              tl.set(
+                committedEl,
+                { text: committed + frame },
+                i * stepDuration
+              );
+              i++;
+            }
+            committed += step.sequence[step.sequence.length - 1];
+          }
+        }
+        tl.set(outcomeEl, { opacity: 1 }, i * stepDuration);
+        tl.set(committedEl, { text: "" }, i * stepDuration);
+        tl.set(typingEl, { text: "" }, i * stepDuration);
+        i++;
+      }
+      timelineRef.current = tl;
       return () => {
-        entryRefEl.removeEventListener("mouseenter", onEnter);
-        entryRefEl.removeEventListener("mouseleave", onLeave);
+        tl.kill();
       };
-    }
-  }, [timelineRef, entryRef]);
+    },
+    [mainVerse.typingSequence, mainVerse.language]
+  );
 
   return (
     <Link
       href={`/entries/${entry.id}`}
       className={`container verticalPadding ${classes.container}`}
       ref={entryRef}
+      onMouseEnter={() => {
+        timelineRef.current?.restart();
+      }}
+      onMouseLeave={() => {
+        timelineRef.current?.pause(timelineRef.current?.endTime());
+      }}
     >
       <div className={classes.otherVerses}>
         {otherVerses.map((verse) => (
@@ -134,7 +132,16 @@ export function TopEntry({ entry }: TopEntryProps) {
         ))}
       </div>
       <TagRow tags={entry.tags} />
-      <div className={classes.verse} ref={verseRef} lang={mainVerse.language}>
+      <div
+        className={classes.verse}
+        ref={(elm) => {
+          if (elm) {
+            resizeVerse(elm);
+            buildTimeline(elm);
+          }
+        }}
+        lang={mainVerse.language}
+      >
         {mainVerse.text.split("\n").map((line, i) => (
           <div key={i} data-line={i} className={classes.verseLine}>
             <span className="outcome">

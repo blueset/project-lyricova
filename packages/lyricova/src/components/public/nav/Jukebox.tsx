@@ -5,7 +5,7 @@ import LibraryMusicIcon from "@mui/icons-material/LibraryMusic";
 export function Jukebox() {
   return (
     <Tooltip title="Jukebox">
-      <IconButton LinkComponent="a" href={jukeboxUrl}>
+      <IconButton LinkComponent="a" href={jukeboxUrl} data-nav-icon="jukebox">
         <LibraryMusicIcon />
       </IconButton>
     </Tooltip>

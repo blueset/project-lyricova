@@ -91,6 +91,7 @@
   bottom: $vertical-gutter;
   width: 4rem;
   user-select: none;
+  pointer-events: none;
   transition: transform 0.2s cubic-bezier(0,0,.3,1);
   transform-origin: bottom right;
   color: $primary-text;
