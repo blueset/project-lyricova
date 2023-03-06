@@ -112,6 +112,18 @@ export function NavPanel() {
     [timelineRef]
   );
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isPanelOpen && e.key === "Escape") {
+        togglePanel(false);
+      }
+    };
+    document.body.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPanelOpen, togglePanel]);
+
   return (
     <>
       <Portal>

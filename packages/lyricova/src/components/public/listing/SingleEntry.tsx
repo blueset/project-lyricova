@@ -97,14 +97,14 @@ export function SingleEntry({ entry }: SingleEntryProps) {
       <div className={classes.verseContainer} lang={mainVerse.language}>
         <div className="container">
           <div className={classes.verse} ref={verseRef}>
-            {mainVerse.text}
+            {mainVerse.text.replace(/\n/g, " ")}
           </div>
         </div>
         <div className={classes.cyclingVerse} data-cyclingverse>
           <span className={classes.cyclingRepeats}>
             {mainVerse.text} {mainVerse.text}
           </span>{" "}
-          {mainVerse.text}{" "}
+          {mainVerse.text.replace(/\n/g, " ")}{" "}
           <span className={classes.cyclingRepeats}>
             {mainVerse.text} {mainVerse.text}
           </span>

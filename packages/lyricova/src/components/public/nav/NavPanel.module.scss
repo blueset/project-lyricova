@@ -54,7 +54,7 @@
 }
 
 .titleContainer {
-  font-size: 0.9rem;
+  font-size: min(0.9rem, 1.4vw);
   width: 40%;
   min-width: fit-content;
   opacity: 0.75;
