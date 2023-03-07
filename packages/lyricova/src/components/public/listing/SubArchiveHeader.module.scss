@@ -1,0 +1,146 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+
+.headerRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  font-stretch: expanded;
+  font-family: $headings-font;
+  color: $brand-color;
+  line-height: 1;
+}
+
+.headerMain {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.page, .right, .typeTitleLeft {
+  text-transform: uppercase;
+  font-weight: 300;
+}
+
+.pageNumberGroup {
+  display: flex;
+  align-items: center;
+}
+
+.page {
+  text-align: right;
+  align-self: flex-start;
+  margin-right: -0.25rem;
+
+  div {
+    margin-left: auto;
+  }
+}
+
+.right, .typeTitleLeft {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  strong {
+    font-weight: 900;
+  }
+
+  .keywords {
+    font-size: 1.25rem;
+  }
+}
+
+.pageNumber {
+  font-size: 6rem;
+  font-weight: 50;
+  font-style: italic;
+  width: fit-content;
+  line-height: 0.8;
+  margin-left: -0.125em;
+  margin-bottom: -0.05em;
+
+  span {
+    font-weight: 900;
+    font-style: normal;
+  }
+}
+
+.tagLine {
+  font-stretch: condensed;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.typeTitleLeft {
+  display: none;
+}
+
+@include media-breakpoint-down(desktop) {
+  .pageNumber {
+    font-size: 4.5rem;
+  }
+  
+  .page, .right {
+    font-size: 0.8rem;
+
+    .keywords {
+      font-size: 1rem;
+    }
+  }
+}
+
+@include media-breakpoint-down(tablet) {
+  .headerRow {
+    justify-content: space-between;
+    [data-nav-icon=search] {
+      display: none;
+    }
+  }
+
+  .pageNumberGroup {
+    .page {
+      align-self: flex-start;
+    }
+  }
+
+  .headerMain {
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: flex-start;
+    flex-grow: 0;
+  }
+
+  .page, .right, .typeTitleLeft {
+    align-self: center;
+    width: fit-content;
+    font-size: 0.7rem;
+    div {
+      width: fit-content;
+    }
+  }
+
+  .typeTitleLeft {
+    display: block;
+    align-self: flex-start;
+  }
+
+  .right {
+    align-self: flex-start;
+    
+    .typeTitle {
+      display: none;
+    }
+  
+    .keywords {
+      font-size: 1.1rem;
+    }
+  }
+
+  .pageNumber {
+    font-size: 3rem;
+  }
+}
+
+@include media-breakpoint-down(mobile) {
+}

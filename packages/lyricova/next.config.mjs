@@ -10,5 +10,19 @@ export default withSuperjson()(withBundleAnalyzer({
     // config.resolve.alias.react = path.resolve(__dirname, "node_modules/react");
     return config;
   },
+  async redirects() {
+    return [
+      {
+        source: "/pages/1",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/tags/:slug/pages/1",
+        destination: "/tags/:slug",
+        permanent: true,
+      },
+    ];
+  },
 }));
 

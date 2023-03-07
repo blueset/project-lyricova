@@ -13,6 +13,7 @@ import {
   enableBodyScroll,
   clearAllBodyScrollLocks,
 } from "body-scroll-lock";
+import { useRouter } from "next/router";
 
 interface NavEntryProps {
   href: string;
@@ -22,6 +23,7 @@ interface NavEntryProps {
 function NavEntry({ href, children }: NavEntryProps) {
   const isExternal = href.startsWith("http");
   const Component = isExternal ? "a" : NextComposedLink;
+  const router = useRouter();
 
   const positionChars = useCallback((elm: HTMLElement) => {
     const chars = elm.querySelectorAll("[data-animate-char]");
@@ -41,6 +43,7 @@ function NavEntry({ href, children }: NavEntryProps) {
     <Component
       href={href}
       className={classes.navEntry}
+      data-active={router.pathname.startsWith(href)}
       ref={(elm) => elm && positionChars(elm)}
     >
       <span className={classes.mainNavText}>

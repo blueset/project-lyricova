@@ -94,10 +94,23 @@
   width: fit-content;
   font-stretch: expanded;
 
+  &[data-active="true"] {
+    font-weight: 700;
+  }
+
+  @include media-breakpoint-down(tablet) {
+    font-size: 2.5rem;
+  }
+
   @include media-breakpoint-down(mobile) {
     font-size: 2rem;
     @media not (hover: hover) {
-      font-weight: 700;      
+      font-weight: 700;
+
+      &[data-active="true"] {
+        // font-weight: 700;
+        color: $background-color;
+      }
     }
   }
 

@@ -19,9 +19,6 @@ interface IndexProps {
 }
 
 export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
-  // const entryResolver = new EntryResolver();
-  // const entries = await entryResolver.entries(true);
-  // console.log("sequelize.models", sequelize.models);
   let entries = (await sequelize.models.Entry.findAll({
     include: [
       "verses",
@@ -59,7 +56,7 @@ export default function Index({ entries, totalPages }: IndexProps) {
           <Divider />
         </Fragment>
       ))}
-      <Paginator currentPage={1} totalPages={totalPages} prefix="/pages" />
+      <Paginator currentPage={1} totalPages={totalPages} prefix="/" />
       <Footer />
     </>
   );

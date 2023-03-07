@@ -66,27 +66,25 @@ function MyApp({
   // const C = Component as React.FC;
 
   return (
-    <div>
-      <CacheProvider value={emotionCache}>
-        <Head>
-          <title>Project Lyricova</title>
-          <meta
-            name="viewport"
-            content="minimum-scale=1, initial-scale=1, width=device-width"
-          />
-          {isDashboard && (
-            <style>{":root { font-size: 16px !important; }"}</style>
-          )}
-        </Head>
-        <ThemeProvider theme={theme}>
-          <ApolloProvider client={apolloClient}>
-            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-            {getLayout(<Component {...pageProps} />)}
-            <CssBaseline />
-          </ApolloProvider>
-        </ThemeProvider>
-      </CacheProvider>
-    </div>
+    <CacheProvider value={emotionCache}>
+      <Head>
+        <title>Project Lyricova</title>
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width"
+        />
+        {isDashboard && (
+          <style>{":root { font-size: 16px !important; }"}</style>
+        )}
+      </Head>
+      <ThemeProvider theme={theme}>
+        <ApolloProvider client={apolloClient}>
+          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+          {getLayout(<Component {...pageProps} />)}
+          <CssBaseline />
+        </ApolloProvider>
+      </ThemeProvider>
+    </CacheProvider>
   );
 }
 
