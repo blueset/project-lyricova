@@ -2,10 +2,11 @@ import { NextComposedLink } from "lyricova-common/components/Link";
 import sequelize from "lyricova-common/db";
 import { Tag } from "lyricova-common/models/Tag";
 import { GetStaticProps } from "next";
-import React from "react";
+import React, { useRef } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";
 import { IndexHeader } from "../../components/public/IndexHeader";
+import gsap from "gsap";
 import classes from "./index.module.scss";
 
 type TagWithCount = Tag & { entryCount: number };
@@ -35,6 +36,46 @@ export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
   };
 };
 
+function TagNode({ tag }: { tag: TagWithCount }) {
+  const animationRef = useRef<gsap.core.Tween>(null);
+  return (
+    <NextComposedLink
+      href={`/tags/${tag.slug}`}
+      className={classes.tag}
+      style={
+        {
+          "--tag-color": tag.color,
+        } as React.CSSProperties
+      }
+      onMouseEnter={(evt) => {
+        const target = evt.currentTarget.querySelector("[data-count]");
+        animationRef.current = gsap.from(target, {
+          textContent: 0,
+          duration: 1.5,
+          ease: "power3.out",
+          snap: {
+            textContent: 1,
+          },
+        });
+      }}
+      onMouseLeave={(evt) => {
+        animationRef.current?.kill();
+        const target = evt.currentTarget.querySelector("[data-count]");
+        target.textContent = String(tag.entryCount);
+      }}
+    >
+      <span className={classes.text}>
+        {[...tag.name].map((char, idx) => (
+          <span key={idx}>{char}</span>
+        ))}
+      </span>
+      <span className={classes.count}>
+        ×<span data-count>{tag.entryCount}</span>
+      </span>
+    </NextComposedLink>
+  );
+}
+
 export default function Tags({ tags }: IndexProps) {
   return (
     <>
@@ -53,23 +94,7 @@ export default function Tags({ tags }: IndexProps) {
       <Divider />
       <div className={`container verticalPadding ${classes.tags}`}>
         {tags?.map((tag, idx) => (
-          <NextComposedLink
-            href={`/tags/${tag.slug}`}
-            key={idx}
-            className={classes.tag}
-            style={
-              {
-                "--tag-color": tag.color,
-              } as React.CSSProperties
-            }
-          >
-            <span className={classes.text}>
-              {[...tag.name].map((char, idx) => (
-                <span key={idx}>{char}</span>
-              ))}
-            </span>
-            <span className={classes.count}>×{tag.entryCount}</span>
-          </NextComposedLink>
+          <TagNode key={idx} tag={tag} />
         ))}
       </div>
       <Divider />

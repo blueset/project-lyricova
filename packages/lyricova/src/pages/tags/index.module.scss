@@ -45,6 +45,7 @@
     letter-spacing: normal;
     font-stretch: expanded;
     color: var(--tag-color);
+    font-variant-numeric: tabular-nums;
   }
 
   @media (hover: hover) {
