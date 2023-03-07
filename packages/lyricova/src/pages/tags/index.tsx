@@ -64,7 +64,34 @@ function TagNode({ tag }: { tag: TagWithCount }) {
         target.textContent = String(tag.entryCount);
       }}
     >
-      <span className={classes.text}>
+      <span
+        className={classes.text}
+        ref={async (elm) => {
+          if (elm) {
+            await document.fonts.ready;
+            const fontSize = parseFloat(
+              window.getComputedStyle(elm).getPropertyValue("font-size")
+            );
+            const spans = Array.from(elm.querySelectorAll("span"));
+            spans.forEach((span) => {
+              span.style.display = "inline";
+              span.style.marginLeft = "0";
+            });
+            const offsetLeft = elm.offsetLeft;
+            const range = document.createRange();
+            range.setStartBefore(elm);
+            const lefts = spans.map((span) => {
+              range.setEndBefore(span);
+              return range.getBoundingClientRect().width + offsetLeft;
+            });
+            spans.forEach((span, idx) => {
+              span.style.display = "inline-block";
+              const diff = (lefts[idx] - span.offsetLeft) / fontSize;
+              span.style.marginLeft = `${diff}em`;
+            });
+          }
+        }}
+      >
         {[...tag.name].map((char, idx) => (
           <span key={idx}>{char}</span>
         ))}
