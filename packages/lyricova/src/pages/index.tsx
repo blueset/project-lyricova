@@ -1,8 +1,6 @@
-import { Button } from "@mui/material";
 import sequelize from "lyricova-common/db";
 import { Entry } from "lyricova-common/models/Entry";
 import { GetStaticProps } from "next";
-import { totalmem } from "os";
 import React, { Fragment } from "react";
 import { Divider } from "../components/public/Divider";
 import { Footer } from "../components/public/Footer";
@@ -10,7 +8,6 @@ import { IndexHeader } from "../components/public/IndexHeader";
 import { Paginator } from "../components/public/listing/Paginator";
 import { SingleEntry } from "../components/public/listing/SingleEntry";
 import { TopEntry } from "../components/public/listing/TopEntry";
-import { EntryResolver } from "../graphql/EntryResolver";
 import { entriesPerPage } from "../utils/consts";
 
 interface IndexProps {

@@ -1,0 +1,55 @@
+@import "../../styles/variables";
+@import "../../styles/mixins";
+
+.inputGroup {
+  display: flex;
+  flex-direction: row;
+  padding: 1rem 1.5rem;
+  margin: -1rem -1.5rem;
+  border-radius: 0.5rem;
+  align-items: center;
+  transition: background-color 0.2s cubic-bezier(0,0,.3,1);
+
+  @include media-breakpoint-down(mobile) {
+    padding: 0.5rem 0.5rem;
+    margin: -0.5rem -0.5rem;
+  }
+
+  &:focus-within {
+    background-color: #ffffff10;
+  }
+}
+
+.input {
+  font-family: $headings-font;
+  font-size: 3rem;
+  font-stretch: 80%;
+  font-weight: 300;
+  background-color: transparent;
+  border: none;
+  flex-grow: 1;
+  width: 0;
+
+  @include media-breakpoint-down(mobile) {
+    font-size: 2rem;
+  }
+  
+  &:focus {
+    outline: none;
+  }
+}
+
+.indicator {
+  width: fit-content;
+  height: fit-content;
+}
+
+.noResult {
+  font-family: $headings-font;
+  font-style: italic;
+  font-stretch: 80%;
+  color: $secondary-text;
+  font-size: 1.5rem;
+  text-align: center;
+  font-weight: 300;
+}

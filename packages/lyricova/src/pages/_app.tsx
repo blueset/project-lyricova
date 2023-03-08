@@ -12,7 +12,6 @@ import createEmotionCache from "../frontendUtils/createEmotionCache";
 import { MonaSans, HubotSans, SourceHanSans } from "../fonts";
 import "../styles/global.scss";
 import { useRouter } from "next/router";
-import { RouteRounded } from "@mui/icons-material";
 
 export const getPlainLayout = (page: ReactNode) => <>{page}</>;
 

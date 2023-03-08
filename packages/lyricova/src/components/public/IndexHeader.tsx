@@ -12,9 +12,6 @@ export function IndexHeader() {
         <Title />
       </div>
       <nav className={classes.nav}>
-        <Screensavers />
-        <Jukebox />
-        <Search />
         <NavPanel />
       </nav>
     </header>
