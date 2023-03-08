@@ -8,7 +8,10 @@
   margin: -1rem -1.5rem;
   border-radius: 0.5rem;
   align-items: center;
-  transition: background-color 0.2s cubic-bezier(0,0,.3,1);
+  border: 1px solid #ffffff30;
+  transition-property: background-color, color;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0,0,.3,1);
 
   @include media-breakpoint-down(mobile) {
     padding: 0.5rem 0.5rem;
@@ -16,7 +19,8 @@
   }
 
   &:focus-within {
-    background-color: #ffffff10;
+    border-color: transparent;
+    background-color: #ffffff20;
   }
 }
 

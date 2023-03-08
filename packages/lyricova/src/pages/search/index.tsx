@@ -8,6 +8,20 @@ import { ChangeEvent, Fragment, useState } from "react";
 import _ from "lodash";
 import { Entry } from "lyricova-common/models/Entry";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
+import { motion } from "framer-motion";
+
+const variants = (idx: number) => ({
+  hidden: { opacity: 0, y: "-50%" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      ease: "easeOut",
+      delay: 0.1 * idx,
+      duration: 0.2,
+    },
+  },
+});
 
 export default function Search() {
   const [isLoading, setIsLoading] = useState(false);
@@ -50,19 +64,25 @@ export default function Search() {
         </div>
       </div>
       <Divider />
-      {results?.length
-        ? results?.map((entry, idx) => (
-            <Fragment key={idx}>
-              <SingleEntry entry={entry} />
-              <Divider />
-            </Fragment>
-          ))
-        : results !== null && (
-            <div className={`container verticalPadding ${classes.noResult}`}>
-              No result found.
-            </div>
-          )}
-      <Divider />
+      <motion.div initial="hidden" animate="visible">
+        {results?.length
+          ? results?.map((entry, idx) => (
+              <motion.div key={entry.id} variants={variants(idx)}>
+                <SingleEntry entry={entry} />
+                <Divider />
+              </motion.div>
+            ))
+          : results !== null && (
+              <motion.div key={-1} variants={variants(0)}>
+                <div
+                  className={`container verticalPadding ${classes.noResult}`}
+                >
+                  No result found.
+                </div>
+                <Divider />
+              </motion.div>
+            )}
+      </motion.div>
       <Footer />
     </>
   );
