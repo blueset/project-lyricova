@@ -10,9 +10,18 @@ import { Entry } from "lyricova-common/models/Entry";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
 import { motion } from "framer-motion";
 
-const variants = (idx: number) => ({
-  hidden: { opacity: 0, y: "-50%" },
+const containerVariants = {
   visible: {
+    transition: {
+      delayChildren: 0.3,
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const variants = {
+  hidden: { opacity: 0, y: "-50%" },
+  visible: (idx: number) => ({
     opacity: 1,
     y: 0,
     transition: {
@@ -20,8 +29,8 @@ const variants = (idx: number) => ({
       delay: 0.1 * idx,
       duration: 0.2,
     },
-  },
-});
+  }),
+};
 
 export default function Search() {
   const [isLoading, setIsLoading] = useState(false);
@@ -64,16 +73,20 @@ export default function Search() {
         </div>
       </div>
       <Divider />
-      <motion.div initial="hidden" animate="visible">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
         {results?.length
           ? results?.map((entry, idx) => (
-              <motion.div key={entry.id} variants={variants(idx)}>
+              <motion.div key={entry.id} variants={variants} custom={idx}>
                 <SingleEntry entry={entry} />
                 <Divider />
               </motion.div>
             ))
           : results !== null && (
-              <motion.div key={-1} variants={variants(0)}>
+              <motion.div key={-1} variants={variants} custom={0}>
                 <div
                   className={`container verticalPadding ${classes.noResult}`}
                 >
