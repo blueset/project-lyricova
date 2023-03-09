@@ -15,10 +15,10 @@ import {
   Avatar,
   ListSubheader,
   CSSObject,
-  styled,
   Box,
   ListItemButton,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import MuiDrawer from "@mui/material/Drawer";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -26,13 +26,6 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ArticleIcon from "@mui/icons-material/Article";
 import CloseIcon from "@mui/icons-material/Close";
-import RateReviewIcon from "@mui/icons-material/RateReview";
-import RecentActorsIcon from "@mui/icons-material/RecentActors";
-import AlbumIcon from "@mui/icons-material/Album";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import QueueMusicIcon from "@mui/icons-material/QueueMusic";
-import CachedIcon from "@mui/icons-material/Cached";
-import GetAppIcon from "@mui/icons-material/GetApp";
 import LabelIcon from "@mui/icons-material/Label";
 import {
   AuthContext,

@@ -1,5 +1,5 @@
 import { AppProps } from "next/app";
-import { ThemeProvider } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import PropTypes from "prop-types";
 import React, { ReactNode, useEffect } from "react";
@@ -12,11 +12,32 @@ import createEmotionCache from "../frontendUtils/createEmotionCache";
 import { MonaSans, HubotSans, SourceHanSans } from "../fonts";
 import "../styles/global.scss";
 import { useRouter } from "next/router";
+import { AnimatePresence, motion } from "framer-motion";
 
 export const getPlainLayout = (page: ReactNode) => <>{page}</>;
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
+
+const variants = {
+  in: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.75,
+      delay: 0.5,
+    },
+  },
+  out: {
+    opacity: 0,
+    scale: 1,
+    y: 40,
+    transition: {
+      duration: 0.75,
+    },
+  },
+};
 
 type AppPropsExtension = AppProps & {
   emotionCache?: EmotionCache;
@@ -79,7 +100,21 @@ function MyApp({
       <ThemeProvider theme={theme}>
         <ApolloProvider client={apolloClient}>
           {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-          {getLayout(<Component {...pageProps} />)}
+          {isDashboard ? (
+            getLayout(<Component {...pageProps} />)
+          ) : (
+            <AnimatePresence initial={false} mode="wait">
+              <motion.div
+                key={router.asPath}
+                variants={variants}
+                animate="in"
+                initial="out"
+                exit="out"
+              >
+                <Component {...pageProps} />
+              </motion.div>
+            </AnimatePresence>
+          )}
           <CssBaseline />
         </ApolloProvider>
       </ThemeProvider>

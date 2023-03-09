@@ -1,4 +1,5 @@
-import { IconButton, Tooltip } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
 import { NextComposedLink } from "lyricova-common/components/Link";
 

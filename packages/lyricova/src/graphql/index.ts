@@ -11,8 +11,8 @@ import {
   Subscription,
   Root,
   PubSub,
-  Publisher,
 } from "type-graphql";
+import type { Publisher } from "type-graphql";
 import { buildSchema } from "type-graphql";
 import { authChecker } from "lyricova-common/utils/graphQLAuth";
 import bcrypt from "bcryptjs";

@@ -4,7 +4,6 @@ import { SongForApiContract } from "../types/vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { SongInAlbum } from "./SongInAlbum";
 import { Entry } from "./Entry";
-import { transliterate } from "../utils/transliterate";
 import { DataTypes } from "sequelize";
 import {
   AllowNull,
@@ -124,6 +123,8 @@ export class Song extends Model<Song, Partial<Song>> {
     original: Song | null,
     intermediate = false
   ): Promise<Song | null> {
+    // import { transliterate } from "../utils/transliterate";
+    const { transliterate } = await import("../utils/transliterate");
     await Song.upsert({
       id: entity.id,
       name: entity.name,

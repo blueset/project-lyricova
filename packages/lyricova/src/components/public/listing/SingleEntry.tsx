@@ -1,4 +1,4 @@
-import { Entry } from "lyricova-common/models/Entry";
+import type { Entry } from "lyricova-common/models/Entry";
 import { useCallback, useEffect, useRef } from "react";
 import { TagRow } from "../TagRow";
 import { PulseStatus } from "./PulseStatus";

@@ -2,7 +2,6 @@ import { siteName, tagLine1, tagLine2 } from "../../../utils/consts";
 import classes from "./SubArchiveHeader.module.scss";
 import { NavPanel } from "../nav/NavPanel";
 import { Search } from "../nav/Search";
-import { Title } from "../nav/Title";
 import { ReactNode, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import _ from "lodash";
 

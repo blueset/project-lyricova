@@ -1,7 +1,6 @@
 import sequelize from "lyricova-common/db";
-import { Entry } from "lyricova-common/models/Entry";
-import { Tag } from "lyricova-common/models/Tag";
-import { TagOfEntry } from "lyricova-common/models/TagOfEntry";
+import type { Entry } from "lyricova-common/models/Entry";
+import type { Tag } from "lyricova-common/models/Tag";
 import { GetStaticProps, GetStaticPaths } from "next";
 import { Fragment } from "react";
 import { Divider } from "../../../../components/public/Divider";
@@ -12,10 +11,11 @@ import { SubArchiveHeader } from "../../../../components/public/listing/SubArchi
 import { entriesPerPage } from "../../../../utils/consts";
 
 export const getStaticProps: GetStaticProps = async (context) => {
+  console.time("getStaticProps");
   const page = parseInt(context.params.page as string);
   const tagSlug = context.params.slug as string;
   const tag = (await sequelize.models.Tag.findByPk(tagSlug)) as Tag;
-  const totalEntries = await TagOfEntry.count({
+  const totalEntries = await sequelize.models.TagOfEntry.count({
     where: {
       tagId: tag.slug,
     },
@@ -33,8 +33,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     limit: entriesPerPage,
     offset: (page - 1) * entriesPerPage,
   })) as Entry[];
-
-  return {
+  const result = {
     props: {
       entries: entries.map((entry) => entry.toJSON() as Entry),
       page,
@@ -42,13 +41,16 @@ export const getStaticProps: GetStaticProps = async (context) => {
       tag: tag.toJSON() as Tag,
     },
   };
+  console.timeEnd("getStaticProps");
+  return result;
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
+  console.time("getStaticPaths");
   const tags = (await sequelize.models.Tag.findAll()) as Tag[];
   const totalEntries = await Promise.all(
     tags.map((t) =>
-      TagOfEntry.count({
+    sequelize.models.TagOfEntry.count({
         where: {
           tagId: t.slug,
         },
@@ -68,6 +70,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
       });
     }
   }
+  console.timeEnd("getStaticPaths");
   return {
     paths,
     fallback: "blocking",

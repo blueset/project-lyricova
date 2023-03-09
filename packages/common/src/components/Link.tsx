@@ -1,6 +1,6 @@
 import React, { AnchorHTMLAttributes } from "react";
 import NextLink from "next/link";
-import { Link as MuiLink } from "@mui/material";
+import MuiLink from "@mui/material/Link";
 import { useRouter } from "next/router";
 import clsx from "clsx";
 

@@ -6,8 +6,7 @@ import type {
 } from "../types/vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
-import { transliterate } from "../utils/transliterate";
-import { DataTypes, Includeable } from "sequelize";
+import { DataTypes } from "sequelize";
 import {
   Table,
   Column,
@@ -145,6 +144,8 @@ export class Artist extends Model<Artist, Partial<Artist>> {
   static async fromVocaDBArtistContract(
     artist: ArtistContract
   ): Promise<Artist> {
+    // import { transliterate } from "../utils/transliterate";
+    const { transliterate } = await import("../utils/transliterate");
     const obj = (
       await Artist.findOrCreate({
         where: { id: artist.id },

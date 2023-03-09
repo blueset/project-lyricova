@@ -1,5 +1,4 @@
 import { Tag } from "lyricova-common/models/Tag";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { CSSProperties, MouseEventHandler } from "react";
 import classes from "./TagRow.module.scss";

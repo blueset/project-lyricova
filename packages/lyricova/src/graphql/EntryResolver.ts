@@ -17,7 +17,7 @@ import { UserInputError } from "apollo-server-express";
 import { Song } from "lyricova-common/models/Song";
 import { Tag } from "lyricova-common/models/Tag";
 import { Pulse } from "lyricova-common/models/Pulse";
-import { ContextType } from "lyricova-common/utils/graphQLAuth";
+import type { ContextType } from "lyricova-common/utils/graphQLAuth";
 import { User } from "lyricova-common/models/User";
 import { segmentedTransliteration } from "lyricova-common/utils/transliterate";
 import sequelize from "lyricova-common/db";

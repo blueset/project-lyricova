@@ -7,6 +7,19 @@
   justify-content: space-between;
   align-items: center;
   position: relative;
+
+  a {
+    text-decoration: none;
+
+    @media (hover: hover) {
+      h1:first-child {
+        transition: font-weight 0.2s cubic-bezier(0,0,.6,1);
+      }
+      &:hover h1:first-child {
+        font-weight: 700;
+      }
+    }
+  }
 }
 
 .nav {
@@ -14,7 +27,7 @@
   flex-direction: row;
   gap: $gap;
 
-  @include media-breakpoint-down(tablet) {
+  @include media-breakpoint-down(desktop) {
     [data-nav-icon="jukebox"],
     [data-nav-icon="search"],
     [data-nav-icon="screensavers"] {

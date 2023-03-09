@@ -24,5 +24,22 @@ export default withSuperjson()(withBundleAnalyzer({
       },
     ];
   },
+  modularizeImports: {
+    lodash: {
+      transform: "lodash/{{member}}"
+    },
+    "@mui/material": {
+      transform: "@mui/material/{{member}}"
+    },
+    "@mui/core": {
+      transform: "@mui/core/{{member}}"
+    },
+    "@mui/lab": {
+      transform: "@mui/lab/{{member}}"
+    },
+    "@mui/icons-material/?(((\\w*)?/?)*)": {
+      transform: "@mui/icons-material/{{ matches.[1] }}/{{member}}"
+    }
+  }
 }));
 

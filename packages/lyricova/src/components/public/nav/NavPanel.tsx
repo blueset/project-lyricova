@@ -1,4 +1,6 @@
-import { IconButton, Portal, Tooltip } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import Portal from "@mui/material/Portal";
+import Tooltip from "@mui/material/Tooltip";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import classes from "./NavPanel.module.scss";
