@@ -25,3 +25,13 @@ $grid-breakpoints: (
     @content;
   }
 }
+
+@mixin font-style($style) {
+  // font-style: $style;
+  @if $style == italic {
+    font-variation-settings: "ital" 10, "palt" 1;
+  }
+  @else {
+    font-variation-settings: "ital" 0, "palt" 1;
+  }
+}

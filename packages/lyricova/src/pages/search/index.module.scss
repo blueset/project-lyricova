@@ -50,7 +50,7 @@
 
 .noResult {
   font-family: $headings-font;
-  font-style: italic;
+  @include font-style(italic);
   font-stretch: 80%;
   color: $secondary-text;
   font-size: 1.5rem;

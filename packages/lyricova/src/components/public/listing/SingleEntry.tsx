@@ -82,9 +82,8 @@ export function SingleEntry({ entry }: SingleEntryProps) {
   }, [mouseMoveCallback]);
 
   return (
-    <Link
+    <section
       className={`verticalPadding ${classes.container}`}
-      href={`/entries/${entry.id}`}
       ref={containerRef}
     >
       <div className={`container ${classes.meta}`}>
@@ -110,9 +109,9 @@ export function SingleEntry({ entry }: SingleEntryProps) {
           </span>
         </div>
       </div>
-      <div className={`container ${classes.pulse}`}>
+      <Link className={`container ${classes.pulse}`} href={`/entries/${entry.id}`}>
         <PulseStatus entry={entry} />
-      </div>
-    </Link>
+      </Link>
+    </section>
   );
 }

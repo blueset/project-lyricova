@@ -30,16 +30,16 @@ export function TopEntry({ entry }: TopEntryProps) {
     ? entry.producersName
     : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
-  const verseRef = useRef<HTMLDivElement>(null);
-  const entryRef = useRef<HTMLAnchorElement>(null);
+  const verseRef = useRef<HTMLElement>(null);
+  const entryRef = useRef<HTMLElement>(null);
   const timelineRef = useRef<gsap.core.Timeline>();
 
-  const resizeVerse = useCallback((elm: HTMLDivElement) => {
+  const resizeVerse = useCallback((elm: HTMLElement) => {
     elm.style.whiteSpace = "nowrap";
     const containerWidth = elm.parentElement.scrollWidth;
     const fontSize = parseInt(window.getComputedStyle(elm).fontSize);
     let scaledSize =
-      Math.round(((containerWidth * 0.6) / elm.scrollWidth) * fontSize * 100) /
+      Math.round(((containerWidth * 0.6) / elm.offsetWidth) * fontSize * 100) /
       100;
     scaledSize = (scaledSize * 100) / containerWidth;
     elm.style.whiteSpace = "unset";
@@ -54,7 +54,7 @@ export function TopEntry({ entry }: TopEntryProps) {
   }, [resizeVerse, verseRef]);
 
   const buildTimeline = useCallback(
-    (verseRefEl: HTMLDivElement) => {
+    (verseRefEl: HTMLElement) => {
       if (timelineRef.current) {
         timelineRef.current.kill();
       }
@@ -113,8 +113,7 @@ export function TopEntry({ entry }: TopEntryProps) {
   );
 
   return (
-    <Link
-      href={`/entries/${entry.id}`}
+    <section
       className={`container verticalPadding ${classes.container}`}
       ref={entryRef}
       onMouseEnter={(evt) => {
@@ -134,10 +133,12 @@ export function TopEntry({ entry }: TopEntryProps) {
         ))}
       </div>
       <TagRow tags={entry.tags} />
-      <div
+      <Link
+        href={`/entries/${entry.id}`}
         className={classes.verse}
-        ref={(elm) => {
+        ref={async (elm) => {
           if (elm) {
+            await document.fonts.ready;
             resizeVerse(elm);
             buildTimeline(elm);
           }
@@ -155,7 +156,7 @@ export function TopEntry({ entry }: TopEntryProps) {
             </span>
           </div>
         ))}
-      </div>
+      </Link>
       <div className={classes.meta}>
         <div className={classes.title}>{entry.title}</div>
         <div className={classes.artists}>{artistString}</div>
@@ -177,6 +178,6 @@ export function TopEntry({ entry }: TopEntryProps) {
           fill="currentcolor"
         />
       </svg>
-    </Link>
+    </section>
   );
 }

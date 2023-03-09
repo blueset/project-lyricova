@@ -56,7 +56,7 @@
 .center {
   font-size: 6rem;
   font-weight: 50;
-  font-style: italic;
+  @include font-style(italic);
   width: fit-content;
   line-height: 0.8;
   margin-left: -0.125em;

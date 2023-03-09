@@ -21,6 +21,7 @@
   font-size: 0.8rem;
   font-stretch: condensed;
   cursor: pointer;
+  z-index: 2;
 
   &:hover {
     background-color: var(--tag-color);

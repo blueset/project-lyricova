@@ -10,6 +10,7 @@
   --effective-background-color: #{$background-color};
   color: $primary-text;
   text-decoration: none;
+  position: relative;
 
   @media (hover: hover) {
     &:hover {
@@ -63,8 +64,6 @@
   --line-height: 1.1;
   font-size: var(--font-size);
   line-height: var(--line-height);
-  // height: calc(var(--font-size) * var(--line-height));
-  // height: 1lh;
   transform: translateY(0.05em);
   overflow-x: hidden;
   overflow-y: clip;
@@ -139,5 +138,13 @@
 
 .pulse {
   color: $secondary-text;
-  font-style: italic;
+  @include font-style(italic);
+  text-decoration: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    display: block;
+    inset: 0;
+  }
 }

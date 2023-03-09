@@ -59,6 +59,7 @@
     "@types/rss": "^0.0.30",
     "concurrently": "^6.4.0",
     "nodemon": "^2.0.20",
+    "prettier": "2.8.4",
     "sass": "^1.58.3",
     "ts-node": "^10.4.0",
     "tslint": "^6.1.3",

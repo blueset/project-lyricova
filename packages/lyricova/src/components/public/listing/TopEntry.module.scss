@@ -46,6 +46,15 @@
   font-weight: 100;
   line-height: 1;
   width: fit-content;
+  text-decoration: none;
+  color: $primary-text;
+
+  &::after {
+    content: "";
+    position: absolute;
+    display: block;
+    inset: 0;
+  }
 
   .verseLine {
     position: relative;
@@ -82,7 +91,7 @@
 
 .pulse {
   color: $secondary-text;
-  font-style: italic;
+  @include font-style(italic);
 }
 
 .arrow {
