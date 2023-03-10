@@ -10,6 +10,7 @@ import { Paginator } from "../../components/public/listing/Paginator";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
 import { SubArchiveHeader } from "../../components/public/listing/SubArchiveHeader";
 import { entriesPerPage } from "../../utils/consts";
+import { entryListingCondition } from "../../utils/queries";
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const page = 1;
@@ -21,14 +22,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     },
   });
   const entries = (await tag.$get("entries", {
-    include: [
-      "verses",
-      "tags",
-      {
-        association: "pulses",
-        attributes: ["creationDate"],
-      },
-    ],
+    ...entryListingCondition,
     order: [["recentActionDate", "DESC"]],
     limit: entriesPerPage,
     offset: (page - 1) * entriesPerPage,
@@ -52,6 +46,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   return {
     paths,
     fallback: "blocking",
+    revalidate: 10,
   };
 };
 

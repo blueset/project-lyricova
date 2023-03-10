@@ -33,6 +33,7 @@ export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
     props: {
       tags,
     },
+    revalidate: 60,
   };
 };
 

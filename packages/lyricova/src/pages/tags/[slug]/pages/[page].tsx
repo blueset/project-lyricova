@@ -9,9 +9,9 @@ import { Paginator } from "../../../../components/public/listing/Paginator";
 import { SingleEntry } from "../../../../components/public/listing/SingleEntry";
 import { SubArchiveHeader } from "../../../../components/public/listing/SubArchiveHeader";
 import { entriesPerPage } from "../../../../utils/consts";
+import { entryListingCondition } from "../../../../utils/queries";
 
 export const getStaticProps: GetStaticProps = async (context) => {
-  console.time("getStaticProps");
   const page = parseInt(context.params.page as string);
   const tagSlug = context.params.slug as string;
   const tag = (await sequelize.models.Tag.findByPk(tagSlug)) as Tag;
@@ -21,14 +21,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     },
   });
   const entries = (await tag.$get("entries", {
-    include: [
-      "verses",
-      "tags",
-      {
-        association: "pulses",
-        attributes: ["creationDate"],
-      },
-    ],
+    ...entryListingCondition,
     order: [["recentActionDate", "DESC"]],
     limit: entriesPerPage,
     offset: (page - 1) * entriesPerPage,
@@ -40,13 +33,12 @@ export const getStaticProps: GetStaticProps = async (context) => {
       totalPages: Math.ceil(totalEntries / entriesPerPage),
       tag: tag.toJSON() as Tag,
     },
+    revalidate: 10,
   };
-  console.timeEnd("getStaticProps");
   return result;
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  console.time("getStaticPaths");
   const tags = (await sequelize.models.Tag.findAll()) as Tag[];
   const totalEntries = await Promise.all(
     tags.map((t) =>
@@ -70,7 +62,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
       });
     }
   }
-  console.timeEnd("getStaticPaths");
   return {
     paths,
     fallback: "blocking",

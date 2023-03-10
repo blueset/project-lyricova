@@ -3,6 +3,7 @@ import sequelize from "lyricova-common/db";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Op } from "sequelize";
 import { Verse } from "lyricova-common/models/Verse";
+import { entryListingCondition } from "../../utils/queries";
 
 type Data = Entry[];
 
@@ -30,19 +31,7 @@ export default async function handler(
   const ids = [...entryIds.map((e) => e.id), ...verseEntryIds.map((e) => e.entryId)];
 
   const result = (await sequelize.models.Entry.findAll({
-    include: [
-      {
-        association: "verses",
-        attributes: {
-          exclude: ["typingSequence", "html", "stylizedText", "translator"],
-        },
-      },
-      "tags",
-      {
-        association: "pulses",
-        attributes: ["creationDate"],
-      },
-    ],
+    ...entryListingCondition,
     where: {
       id: { [Op.in]: ids },
     },

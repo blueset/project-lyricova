@@ -7,21 +7,14 @@ import { Footer } from "../../components/public/Footer";
 import { ArchiveHeader } from "../../components/public/listing/ArchiveHeader";
 import { Paginator } from "../../components/public/listing/Paginator";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
-import { SubArchiveHeader } from "../../components/public/listing/SubArchiveHeader";
 import { entriesPerPage } from "../../utils/consts";
+import { entryListingCondition } from "../../utils/queries";
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const page = parseInt(context.params.page as string);
   const totalEntries = await sequelize.models.Entry.count();
   const entries = (await sequelize.models.Entry.findAll({
-    include: [
-      "verses",
-      "tags",
-      {
-        association: "pulses",
-        attributes: ["creationDate"],
-      },
-    ],
+    ...entryListingCondition,
     order: [["recentActionDate", "DESC"]],
     limit: entriesPerPage,
     offset: (page - 1) * entriesPerPage,
@@ -33,6 +26,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
       page,
       totalPages: Math.ceil(totalEntries / entriesPerPage),
     },
+    revalidate: 10,
   };
 };
 

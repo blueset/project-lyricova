@@ -17,9 +17,24 @@ interface IndexProps {
 
 export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
   let entries = (await sequelize.models.Entry.findAll({
+    attributes: {
+      exclude: ["updatedAt"],
+    },
     include: [
-      "verses",
-      "tags",
+      {
+        association: "verses",
+        attributes: ["text", "isMain", "language", "typingSequence"],
+        where: {
+          isMain: true,
+        },
+      },
+      {
+        association: "tags",
+        attributes: ["name", "slug", "color"],
+        through: {
+          attributes: [],
+        },
+      },
       {
         association: "pulses",
         attributes: ["creationDate"],
@@ -35,6 +50,7 @@ export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
       entries,
       totalPages: Math.ceil(totalEntries / entriesPerPage),
     },
+    revalidate: 10,
   };
 };
 

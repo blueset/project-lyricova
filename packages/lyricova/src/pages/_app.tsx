@@ -103,17 +103,17 @@ function MyApp({
           {isDashboard ? (
             getLayout(<Component {...pageProps} />)
           ) : (
-            <AnimatePresence initial={false} mode="wait">
-              <motion.div
-                key={router.asPath}
-                variants={variants}
-                animate="in"
-                initial="out"
-                exit="out"
-              >
-                <Component {...pageProps} />
-              </motion.div>
-            </AnimatePresence>
+            // <AnimatePresence initial={false} mode="wait">
+            //   <motion.div
+            //     key={router.asPath}
+            //     variants={variants}
+            //     animate="in"
+            //     initial="out"
+            //     exit="out"
+            //   >
+            <Component {...pageProps} />
+            //   </motion.div>
+            // </AnimatePresence>
           )}
           <CssBaseline />
         </ApolloProvider>
