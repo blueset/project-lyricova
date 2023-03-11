@@ -13,6 +13,7 @@ import { MonaSans, HubotSans, SourceHanSans } from "../fonts";
 import "../styles/global.scss";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "framer-motion";
+import { TransitionCover } from "../components/public/TransitionCover";
 
 export const getPlainLayout = (page: ReactNode) => <>{page}</>;
 
@@ -118,6 +119,7 @@ function MyApp({
           <CssBaseline />
         </ApolloProvider>
       </ThemeProvider>
+      {!isDashboard && <TransitionCover />}
     </CacheProvider>
   );
 }

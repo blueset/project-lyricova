@@ -10,11 +10,9 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useRouter } from "next/router";
 import {
   DataGrid,
-  getGridStringOperators,
   GridActionsCellItem,
   GridCellParams,
 } from "@mui/x-data-grid";
-import { NextComposedLink } from "lyricova-common/components/Link";
 import { Entry } from "lyricova-common/models/Entry";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 import dayjs from "dayjs";
@@ -25,8 +23,8 @@ import { Stack } from "@mui/system";
 import { Tag } from "lyricova-common/models/Tag";
 import _ from "lodash";
 import { Song } from "lyricova-common/models/Song";
-import { Pulse } from "lyricova-common/models/Pulse";
 import { Verse } from "lyricova-common/models/Verse";
+import { NextComposedLink } from "lyricova-common/components/Link";
 
 dayjs.extend(relativeTime);
 

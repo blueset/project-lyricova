@@ -1,12 +1,12 @@
 import { IconButton, Tooltip } from "@mui/material";
 import AspectRatioIcon from "@mui/icons-material/AspectRatio";
-import { NextComposedLink } from "lyricova-common/components/Link";
+import { Link } from "../Link";
 
 export function Screensavers() {
   return (
     <Tooltip title="Screensavers">
       <IconButton
-        LinkComponent={NextComposedLink}
+        LinkComponent={Link}
         href="/screensaver"
         data-nav-icon="screensavers"
       >

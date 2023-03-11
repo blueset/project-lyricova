@@ -31,7 +31,7 @@
   text-transform: uppercase;
   font-weight: 300;
 
-  div {
+  div, a {
     width: min-content;
   }
 }
@@ -48,8 +48,29 @@
 .right {
   align-self: flex-end;
 
+  a {
+    color: $brand-color;
+    text-decoration: none;
+    display: block;
+    transition: font-weight 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+
+    strong {
+      transition: font-weight 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+    }
+  }
+
+  @media (hover: hover) {
+    a:hover {
+      font-weight: 900;
+
+      strong {
+        font-weight: 900;
+      }
+    }
+  }
+  
   strong {
-    font-weight: 900;
+    font-weight: 700;
   }
 }
 
@@ -59,12 +80,14 @@
   @include font-style(italic);
   width: fit-content;
   line-height: 0.8;
-  margin-left: -0.125em;
+  margin-left: -0.025em;
   margin-bottom: -0.05em;
+  font-stretch: condensed;
 
   span {
     font-weight: 900;
-    font-style: normal;
+    font-stretch: expanded;
+    @include font-style(normal);
   }
 }
 

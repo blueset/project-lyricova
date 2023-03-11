@@ -1,6 +1,6 @@
-import { NextComposedLink } from "lyricova-common/components/Link";
 import { useRouter } from "next/router";
 import classes from "./IndexHeader.module.scss";
+import { Link } from "./Link";
 import { Jukebox } from "./nav/Jukebox";
 import { NavPanel } from "./nav/NavPanel";
 import { Screensavers } from "./nav/Screensavers";
@@ -16,9 +16,9 @@ export function IndexHeader() {
         {isHome ? (
           <Title />
         ) : (
-          <NextComposedLink href="/">
+          <Link href="/">
             <Title />
-          </NextComposedLink>
+          </Link>
         )}
       </div>
       <nav className={classes.nav}>

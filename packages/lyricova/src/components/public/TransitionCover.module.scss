@@ -1,0 +1,43 @@
+@use "sass:color";
+@import "../../styles/variables";
+@import "../../styles/mixins";
+
+.cover {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  // transform: translateY(-100px);
+}
+
+.cover1, .cover2, .cover3, .logoContainer {
+  position: absolute;
+  inset: 0;
+  transform-origin: center;
+}
+
+.cover1 {
+  background-color: color.adjust(#00171F, $lightness: 10);
+  transform:  translateY(-50%) scaleY(0);
+}
+
+.cover2 {
+  background-color: color.adjust(#00171F, $lightness: 5);
+  transform:  translateY(-50%) scaleY(0);
+}
+
+.cover3 {
+  background-color: #00171F;
+  transform:  translateY(-50%) scaleY(0);
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $brand-color;
+
+  path {
+    stroke: $brand-color;
+  }
+}

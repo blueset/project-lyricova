@@ -3,6 +3,7 @@ import classes from "./ArchiveHeader.module.scss";
 import { NavPanel } from "../nav/NavPanel";
 import { Search } from "../nav/Search";
 import { Title } from "../nav/Title";
+import { Link } from "../Link";
 
 interface ArchiveHeaderProps {
   page: number;
@@ -26,9 +27,9 @@ export function ArchiveHeader({ page }: ArchiveHeaderProps) {
             #<span>{`${page}`.padStart(2, "0")}</span>
           </div>
           <div className={classes.right}>
-            <div>
+            <Link href="/">
               {siteNamePre} <strong>{siteNamePost}</strong>
-            </div>
+            </Link>
           </div>
         </div>
         <NavPanel />

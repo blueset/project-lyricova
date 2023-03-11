@@ -4,7 +4,7 @@ import { TagRow } from "../TagRow";
 import { PulseStatus } from "./PulseStatus";
 import gsap from "gsap";
 import classes from "./SingleEntry.module.scss";
-import Link from "next/link";
+import { Link } from "../Link";
 
 function convertRemToPixels(rem: string) {
   return (

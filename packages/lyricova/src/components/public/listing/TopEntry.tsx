@@ -1,19 +1,13 @@
 import { Entry } from "lyricova-common/models/Entry";
 import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
-import Link from "next/link";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { PlainTextHangingPunct } from "../PlainTextHangingPunct";
 import { TagRow } from "../TagRow";
 import { PulseStatus } from "./PulseStatus";
 import classes from "./TopEntry.module.scss";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
+import { Link } from "../Link";
 
 gsap.registerPlugin(TextPlugin);
 

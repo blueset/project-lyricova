@@ -32,7 +32,7 @@
   a.label {
     text-decoration: none;
     color: $brand-color;
-    transition: font-weight 0.2s ease-in-out;
+    transition: font-weight 0.6s cubic-bezier(0.33, 1, 0.68, 1);
     &:hover {
       font-weight: 700;
     }

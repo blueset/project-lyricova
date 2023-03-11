@@ -4,6 +4,7 @@ import { NavPanel } from "../nav/NavPanel";
 import { Search } from "../nav/Search";
 import { ReactNode, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import _ from "lodash";
+import { Link } from "../Link";
 
 const resizer = _.debounce((elm: HTMLElement) => {
   // console.time("resizer");
@@ -68,20 +69,14 @@ export function SubArchiveHeader({
   type,
   keywords,
 }: SubArchiveHeaderProps) {
-  // const keywordsRef = useRef<HTMLDivElement>(null);
-
   const resizeObserverRef = useRef<ResizeObserver>();
-
-  useEffect(() => {
-    console.log("Ref updated");
-  }, [resizeObserverRef]);
 
   return (
     <header className={`container verticalPadding ${classes.headerRow}`}>
       <Search />
       <div className={classes.headerMain}>
         <div className={classes.typeTitleLeft}>
-          {siteName}
+          <Link href="/">{siteName}</Link>
           <br />
           <strong>{type}</strong>
         </div>
@@ -93,7 +88,7 @@ export function SubArchiveHeader({
         </div>
         <div className={classes.right}>
           <div className={classes.typeTitle}>
-            {siteName}
+            <Link href="/">{siteName}</Link>
             <br />
             <strong>{type}</strong>
           </div>

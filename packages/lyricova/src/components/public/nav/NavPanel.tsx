@@ -7,7 +7,6 @@ import classes from "./NavPanel.module.scss";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import { Title } from "./Title";
-import { NextComposedLink } from "lyricova-common/components/Link";
 import { jukeboxUrl } from "../../../utils/consts";
 import gsap from "gsap";
 import {
@@ -16,6 +15,7 @@ import {
   clearAllBodyScrollLocks,
 } from "body-scroll-lock";
 import { useRouter } from "next/router";
+import { Link } from "../Link";
 
 interface NavEntryProps {
   href: string;
@@ -24,7 +24,7 @@ interface NavEntryProps {
 
 function NavEntry({ href, children }: NavEntryProps) {
   const isExternal = href.startsWith("http");
-  const Component = isExternal ? "a" : NextComposedLink;
+  const Component = isExternal ? "a" : Link;
   const router = useRouter();
 
   const positionChars = useCallback((elm: HTMLElement) => {
@@ -92,11 +92,12 @@ export function NavPanel() {
         timelineRef.current.kill();
       }
 
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({
+        delay: 0.1,
+      });
       navEl.querySelectorAll("a").forEach((elm, i) => {
-        tl.staggerFromTo(
+        tl.fromTo(
           elm.querySelectorAll("[data-animate-char]"),
-          0.3,
           // Reveal from bottom
           {
             y: "100%",
@@ -107,9 +108,10 @@ export function NavPanel() {
             y: "0%",
             opacity: 1,
             ease: "power4.out",
+            duration: 0.3,
+            stagger: 0.025,
           },
-          0.05,
-          "<+0.2"
+          "<+0.05"
         );
       });
       timelineRef.current = tl;
@@ -156,9 +158,9 @@ export function NavPanel() {
               <NavEntry href="/login">Log in</NavEntry>
               <NavEntry href="https://1a23.com">1A23 Studio</NavEntry>
             </nav>
-            <NextComposedLink className={classes.titleContainer} href="/">
+            <Link className={classes.titleContainer} href="/">
               <Title />
-            </NextComposedLink>
+            </Link>
           </header>
         </div>
       </Portal>

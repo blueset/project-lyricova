@@ -51,17 +51,33 @@
   }
 }
 
+.typeTitle, .typeTitleLeft {
+  a {
+    color: $brand-color;
+    text-decoration: none;
+    transition: font-weight 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  @media (hover: hover) {
+    a:hover {
+      font-weight: 900;
+    }
+  }
+}
+
 .pageNumber {
   font-size: 6rem;
   font-weight: 50;
   @include font-style(italic);
   width: fit-content;
   line-height: 0.8;
-  margin-left: -0.125em;
+  margin-left: -0.025em;
   margin-bottom: -0.05em;
+  font-stretch: condensed;
 
   span {
     font-weight: 900;
+    font-stretch: expanded;
     @include font-style(normal);
   }
 }

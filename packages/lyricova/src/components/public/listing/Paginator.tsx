@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "../Link";
 import classes from "./Paginator.module.scss";
 
 function PreviousArrow({ className }: { className?: string }) {

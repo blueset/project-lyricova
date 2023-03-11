@@ -35,6 +35,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
       totalPages: Math.ceil(totalEntries / entriesPerPage),
       tag: tag.toJSON() as Tag,
     },
+    revalidate: 10,
   };
 };
 
@@ -46,7 +47,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
   return {
     paths,
     fallback: "blocking",
-    revalidate: 10,
   };
 };
 

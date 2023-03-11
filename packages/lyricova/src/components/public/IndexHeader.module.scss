@@ -13,7 +13,7 @@
 
     @media (hover: hover) {
       h1:first-child {
-        transition: font-weight 0.2s cubic-bezier(0,0,.6,1);
+        transition: font-weight 0.6s cubic-bezier(0.33, 1, 0.68, 1);
       }
       &:hover h1:first-child {
         font-weight: 700;

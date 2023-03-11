@@ -1,4 +1,3 @@
-import { NextComposedLink } from "lyricova-common/components/Link";
 import sequelize from "lyricova-common/db";
 import { Tag } from "lyricova-common/models/Tag";
 import { GetStaticProps } from "next";
@@ -8,6 +7,7 @@ import { Footer } from "../../components/public/Footer";
 import { IndexHeader } from "../../components/public/IndexHeader";
 import gsap from "gsap";
 import classes from "./index.module.scss";
+import { Link } from "../../components/public/Link";
 
 type TagWithCount = Tag & { entryCount: number };
 
@@ -40,7 +40,7 @@ export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
 function TagNode({ tag }: { tag: TagWithCount }) {
   const animationRef = useRef<gsap.core.Tween>(null);
   return (
-    <NextComposedLink
+    <Link
       href={`/tags/${tag.slug}`}
       className={classes.tag}
       style={
@@ -100,7 +100,7 @@ function TagNode({ tag }: { tag: TagWithCount }) {
       <span className={classes.count}>
         ×<span data-count>{tag.entryCount}</span>
       </span>
-    </NextComposedLink>
+    </Link>
   );
 }
 
