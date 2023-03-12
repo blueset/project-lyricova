@@ -1,0 +1,130 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+@import "./common.scss";
+
+.pulsesCounter {
+  @include layout;
+  display: grid;
+  grid-template-columns: auto 1fr;
+
+
+  .pulsesCountContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: fit-content;
+
+    .pulsesCount {
+      font-size: 5.5rem;
+      font-stretch: expanded;
+      font-family: $headings-font;
+      font-weight: 400;
+      color: $secondary-text;
+      line-height: 0.9;
+      margin-bottom: -0.13em;
+    }
+  }
+
+  .pulsesListing {
+    text-align: right;
+    height: 100%;
+    display: flex;
+    align-self: stretch;
+    overflow: auto;
+    flex-direction: column;
+    -webkit-mask-box-image-source: linear-gradient(0deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%);
+    -webkit-mask-box-image-slice: 49% 0 fill;
+    -webkit-mask-box-image-width: 0 0 1em 0;
+
+    scrollbar-width: none;
+    &::-webkit-scrollbar{
+      display: none;
+    }
+  
+    @supports not (-webkit-mask-box-image-width: 0 2rem 0 0) {
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0), var(--background-color));
+        height: 1rem;
+      }
+    }
+
+    .pulsesListingInner {
+      height: 0;
+      flex-grow: 1;
+
+      div:last-child {
+        padding-bottom: 1rem;
+      }
+    }
+  }
+
+  @include media-breakpoint-down(tablet) {
+    display: flex;
+    .pulsesCount {
+      display: none;
+    }
+
+    .pulsesListing {
+      height: auto;
+      -webkit-mask-box-image: none;
+      @supports not (-webkit-mask-box-image-width: 0 2rem 0 0) {
+        &::after {
+          content: none;
+        }
+      }
+
+      .pulsesListingInner {
+        height: auto;
+        text-align: start;
+
+        time {
+          margin-left: 2rem;
+          display: block;
+        }
+
+        div:last-child {
+          padding-bottom: 0;
+        }
+      }
+    }
+  }
+}
+
+.pulsesIsolated {
+  @include layout;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  justify-content: space-between;
+
+  .pulsesListing {
+    text-align: right;
+  }
+
+  @include media-breakpoint-down(tablet) {
+    flex-direction: column;
+
+    .pulsesListing {
+      text-align: left;
+      
+      time {
+        margin-left: 2rem;
+        display: block;
+      }
+    }
+  }
+  
+}
+
+.pulseEntry {
+  line-height: 1;
+  @include font-style(italic);
+  time {
+    color: $secondary-text;
+  }
+}

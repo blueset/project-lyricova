@@ -1,10 +1,11 @@
 import type { Entry } from "lyricova-common/models/Entry";
-import { useCallback, useEffect, useRef } from "react";
+import { CSSProperties, useCallback, useEffect, useMemo, useRef } from "react";
 import { TagRow } from "../TagRow";
 import { PulseStatus } from "./PulseStatus";
 import gsap from "gsap";
 import classes from "./SingleEntry.module.scss";
 import { Link } from "../Link";
+import { generateColorGradient } from "../../../frontendUtils/colors";
 
 function convertRemToPixels(rem: string) {
   return (
@@ -27,6 +28,11 @@ export function SingleEntry({ entry }: SingleEntryProps) {
 
   const verseRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLAnchorElement>(null);
+  
+  const tagsGradient = useMemo(
+    () => generateColorGradient(entry.tags, true),
+    [entry.tags]
+  );
 
   const applyMask = useCallback((elm: HTMLElement) => {
     if (elm.scrollWidth > elm.clientWidth) {
@@ -85,6 +91,10 @@ export function SingleEntry({ entry }: SingleEntryProps) {
     <section
       className={`verticalPadding ${classes.container}`}
       ref={containerRef}
+      style={{ 
+        "--tags-gradient": tagsGradient,
+        "--tags-foreground": entry.tags?.[0].color,
+      } as CSSProperties}
     >
       <div className={`container ${classes.meta}`}>
         <div className={classes.metaLeft}>

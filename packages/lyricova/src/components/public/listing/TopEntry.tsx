@@ -1,6 +1,6 @@
 import { Entry } from "lyricova-common/models/Entry";
 import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
-import { useCallback, useEffect, useRef } from "react";
+import { CSSProperties, useCallback, useMemo, useRef } from "react";
 import { PlainTextHangingPunct } from "../PlainTextHangingPunct";
 import { TagRow } from "../TagRow";
 import { PulseStatus } from "./PulseStatus";
@@ -8,6 +8,8 @@ import classes from "./TopEntry.module.scss";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
 import { Link } from "../Link";
+import { generateColorGradient } from "../../../frontendUtils/colors";
+import { resizeVerse } from "../../../utils/sizing";
 
 gsap.registerPlugin(TextPlugin);
 
@@ -24,28 +26,13 @@ export function TopEntry({ entry }: TopEntryProps) {
     ? entry.producersName
     : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
-  const verseRef = useRef<HTMLElement>(null);
+  const tagsGradient = useMemo(
+    () => generateColorGradient(entry.tags, true),
+    [entry.tags]
+  );
+
   const entryRef = useRef<HTMLElement>(null);
   const timelineRef = useRef<gsap.core.Timeline>();
-
-  const resizeVerse = useCallback((elm: HTMLElement) => {
-    elm.style.whiteSpace = "nowrap";
-    const containerWidth = elm.parentElement.scrollWidth;
-    const fontSize = parseInt(window.getComputedStyle(elm).fontSize);
-    let scaledSize =
-      Math.round(((containerWidth * 0.6) / elm.offsetWidth) * fontSize * 100) /
-      100;
-    scaledSize = (scaledSize * 100) / containerWidth;
-    elm.style.whiteSpace = "unset";
-    elm.style.fontSize = `clamp(1.75rem, ${scaledSize}vw, 5rem)`;
-  }, []);
-
-  useEffect(() => {
-    const verseRefEl = verseRef.current;
-    if (verseRefEl) {
-      resizeVerse(verseRefEl);
-    }
-  }, [resizeVerse, verseRef]);
 
   const buildTimeline = useCallback(
     (verseRefEl: HTMLElement) => {
@@ -110,6 +97,12 @@ export function TopEntry({ entry }: TopEntryProps) {
     <section
       className={`container verticalPadding ${classes.container}`}
       ref={entryRef}
+      style={
+        {
+          "--tags-gradient": tagsGradient,
+          "--tags-foreground": entry.tags?.[0].color,
+        } as CSSProperties
+      }
       onMouseEnter={(evt) => {
         timelineRef.current
           ?.timeScale(evt.ctrlKey || evt.metaKey ? 0.2 : 1)
@@ -146,7 +139,12 @@ export function TopEntry({ entry }: TopEntryProps) {
             </span>
             <span className={classes.animation}>
               <span className={`committed ${classes.committed}`}></span>
-              <span className={`typing ${classes.typing}`}></span>
+              <span className={classes.typing}>
+                <span
+                  className="typing"
+                  style={{ "-webkit-background-clip": "text" } as CSSProperties}
+                ></span>
+              </span>
             </span>
           </div>
         ))}
@@ -158,7 +156,6 @@ export function TopEntry({ entry }: TopEntryProps) {
       <div className={classes.pulse}>
         <PulseStatus entry={entry} />
       </div>
-      {/* <img src="/images/arrow.svg" className={classes.arrow} aria-hidden /> */}
       <svg
         width="82"
         height="315"

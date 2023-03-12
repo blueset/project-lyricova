@@ -1,0 +1,14 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+@import "./common.scss";
+
+.verse {
+  @include layout;
+
+  cite {
+    font-style: normal;
+    font-weight: 300;
+    font-stretch: expanded;
+    color: $secondary-text;
+  }
+}

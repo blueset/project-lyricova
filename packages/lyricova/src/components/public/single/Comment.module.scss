@@ -1,0 +1,10 @@
+@import "../../../styles/variables";
+@import "./common.scss";
+
+.comment {
+  @include layout;
+
+  .commentText {
+    white-space: pre-wrap;
+  }
+}

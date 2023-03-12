@@ -1,14 +1,24 @@
 import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
-import { GetStaticProps, GetStaticPaths, GetServerSideProps } from "next";
-import { Fragment } from "react";
+import { GetStaticProps, GetStaticPaths } from "next";
+import { useMemo } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";
-import { ArchiveHeader } from "../../components/public/listing/ArchiveHeader";
-import { Paginator } from "../../components/public/listing/Paginator";
-import { SingleEntry } from "../../components/public/listing/SingleEntry";
-import { Title } from "../../components/public/nav/Title";
-import { entriesPerPage } from "../../utils/consts";
+import { PlainTextHangingPunct } from "../../components/public/PlainTextHangingPunct";
+import { TagRow } from "../../components/public/TagRow";
+import classes from "./EntryPage.module.scss";
+import { Comment } from "../../components/public/single/Comment";
+import { Pulses } from "../../components/public/single/Pulses";
+import { IndexHeader } from "../../components/public/IndexHeader";
+import { Songs } from "../../components/public/single/Songs";
+import { generateColorGradient } from "../../frontendUtils/colors";
+import { OtherVerse } from "../../components/public/single/OtherVerse";
+import type { Song } from "lyricova-common/models/Song";
+import type { PVContract } from "../../types/vocadb";
+import { MainVerse } from "../../components/public/single/MainVerse";
+
+type ExpandedSong = Song & { videoUrl?: string };
+type ExpandedEntry = Entry & { songs: ExpandedSong[] };
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const entryId = parseInt(context.params.entryId as string);
@@ -17,7 +27,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
       {
         association: "verses",
         attributes: {
-          exclude: ["creationDate", "updatedOn", "language"],
+          exclude: ["creationDate", "updatedOn"],
         },
       },
       {
@@ -29,7 +39,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
       },
       {
         association: "songs",
-        attributes: ["id", "name", "coverUrl"],
+        attributes: ["id", "name", "coverUrl", "vocaDbJson"],
         include: [
           {
             association: "artists",
@@ -48,9 +58,29 @@ export const getStaticProps: GetStaticProps = async (context) => {
     ],
   })) as Entry;
 
+  const entryObj = entry.toJSON() as ExpandedEntry;
+  entryObj.songs.forEach((song: ExpandedSong) => {
+    if (song.vocaDbJson?.pvs) {
+      const pvs = song.vocaDbJson.pvs as PVContract[];
+      let url: string | undefined = undefined;
+      url =
+        pvs.find((pv) => pv.service === "Youtube" && pv.pvType === "Original")
+          ?.url ??
+        pvs.find(
+          (pv) => pv.service === "NicoNicoDouga" && pv.pvType === "Original"
+        )?.url ??
+        pvs.find((pv) => pv.pvType === "Original")?.url ??
+        pvs.find((pv) => pv.service === "Youtube")?.url ??
+        pvs.find((pv) => pv.service === "NicoNicoDouga")?.url ??
+        pvs[0].url;
+      song.videoUrl = url;
+    }
+    delete song.vocaDbJson;
+  });
+
   return {
     props: {
-      entry: entry.toJSON(),
+      entry: entryObj,
     },
     revalidate: 10,
   };
@@ -70,14 +100,51 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 interface ArchivePageProps {
-  entry: Entry;
+  entry: ExpandedEntry;
 }
 
-export default function ArchivePage({ entry }: ArchivePageProps) {
+export default function EntryPage({ entry }: ArchivePageProps) {
+  const otherVerses = entry.verses.filter((verse) => !verse.isMain);
+
+  const tagsGradient = useMemo(
+    () => generateColorGradient(entry.tags),
+    [entry.tags]
+  );
+
   return (
     <>
-      <Title />#{entry.id}
-      <Divider />
+      <div className={classes.entryId}>
+        <span className={classes.entryIdSharp}>#</span>
+        <span className={classes.entryIdNumber}>{entry.id}</span>
+      </div>
+      <IndexHeader />
+      <MainVerse entry={entry} />
+      {entry.tags.length ? (
+        <div
+          className={classes.tagDivider}
+          style={{
+            background: tagsGradient,
+          }}
+          aria-hidden
+        >
+          <span>Hello there! :)</span>
+        </div>
+      ) : (
+        <Divider />
+      )}
+      {otherVerses.length > 0 && (
+        <>
+          <section className={classes.otherVerses}>
+            {otherVerses.map((verse, idx) => (
+              <OtherVerse verse={verse} key={verse.id} />
+            ))}
+          </section>
+          <Divider />
+        </>
+      )}
+      <Pulses pulses={entry.pulses} creationDate={entry.creationDate} />
+      <Songs songs={entry.songs} />
+      <Comment>{entry.comment}</Comment>
       <Footer />
     </>
   );

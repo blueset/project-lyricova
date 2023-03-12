@@ -1,0 +1,20 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+@import "./common.scss";
+
+.container {
+  @include animation;
+}
+
+.main .animation .typing {
+  @include mainTyping;
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+  background: $background-color;
+  transform: scaleY(0);
+  transform-origin: top;
+  z-index: 2;
+}

@@ -10,22 +10,24 @@
   color: $primary-text;
   --typing-highlight: #{$brand-color};
   --typing-highlight-inverse: #{$background-color};
-  transition: all 0.2s cubic-bezier(0,0,.6,1);
+  transition: all 0.2s cubic-bezier(0, 0, 0.6, 1);
 
   @media (hover: hover) {
     &:hover {
       color: $primary-text-on-brand;
-      background-color: $brand-color;
+      background: var(--tags-gradient, $brand-color);
       --primary-text: #{$primary-text-on-brand};
       --secondary-text: #{$secondary-text-on-brand};
       --tag-color-override: #{$secondary-text-on-brand};
       --typing-highlight: #{$primary-text-on-brand};
-      --typing-highlight-inverse: #{$brand-color};
+      // --typing-highlight-inverse: var(--tags-foreground, #{$brand-color});
+      --typing-highlight-inverse: var(--tags-gradient, #{$brand-color});
+      // --typing-highlight-inverse: #{$brand-color};
 
       .verse {
         font-weight: 250;
       }
-      
+
       .arrow {
         transform: rotate(-90deg) translateX(100%);
         color: $primary-text-on-brand;
@@ -71,13 +73,22 @@
   }
 
   .typing {
-    background-color: var(--typing-highlight);
-    color: var(--typing-highlight-inverse);
-    font-weight: 250;
+    background: var(--typing-highlight);
+
+    span {
+      background-clip: text;
+      -webkit-background-clip: text;
+      background: var(--typing-highlight-inverse);
+      -webkit-text-fill-color: transparent;
+      font-weight: 250;
+      background-attachment: fixed;
+    }
   }
 }
 
-.title, .artists, .pulse {
+.title,
+.artists,
+.pulse {
   line-height: 1.1;
 }
 
@@ -101,11 +112,11 @@
   width: 4rem;
   user-select: none;
   pointer-events: none;
-  transition: transform 0.2s cubic-bezier(0,0,.3,1);
+  transition: transform 0.2s cubic-bezier(0, 0, 0.3, 1);
   transform-origin: bottom right;
   color: $primary-text;
   opacity: 0.15;
-  
+
   @include media-breakpoint-down(mobile) {
     display: none;
   }

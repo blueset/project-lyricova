@@ -14,8 +14,8 @@
 
   @media (hover: hover) {
     &:hover {
-      background-color: $brand-color;
-      --effective-background-color: #{$brand-color};
+      background: var(--tags-gradient, $brand-color);
+      --effective-background-color: var(--tags-foreground, #{$brand-color});
       color: $primary-text-on-brand;
       --primary-text: #{$primary-text-on-brand};
       --secondary-text: #{$secondary-text-on-brand};

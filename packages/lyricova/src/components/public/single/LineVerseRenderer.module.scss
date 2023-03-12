@@ -1,0 +1,29 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+@import "./common.scss";
+
+.line {
+  @include animation;
+  min-height: 0.65em;
+}
+
+.main .animation .typing {
+  @include mainTyping;
+}
+
+.main .typing {
+  font-weight: 250;
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+  background: $background-color;
+  transform: scaleY(0);
+  transform-origin: top;
+  z-index: 2;
+}
+
+.stylized {
+  font-feature-settings: "palt" 0;
+}

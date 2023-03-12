@@ -5,9 +5,9 @@ export function Title() {
   return (
     <>
       <h1 className={classes.title}>{siteName}</h1>
-      <h1 className={classes.subtitle}>
+      <div className={classes.subtitle}>
         <strong>{tagLine1}</strong> <span>{tagLine2}</span>
-      </h1>
+      </div>
     </>
   );
 }

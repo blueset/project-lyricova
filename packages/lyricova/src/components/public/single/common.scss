@@ -1,0 +1,52 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+
+@mixin layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  line-height: 1.1;
+
+  h2 {
+    font-size: 0.8rem;
+    color: $secondary-text;
+    font-weight: 600;
+    font-stretch: expanded;
+    margin: 0;
+    text-transform: uppercase;
+  }
+}
+
+@mixin animation {
+  position: relative;
+
+  .animation {
+    position: absolute;
+    left: 0;
+    top: 0;
+    white-space: nowrap;
+  
+    .typing {
+      background: $brand-color;
+      color: $background-color;
+    }
+  }
+
+  b, strong {
+    font-weight: 500;
+    font-stretch: expanded;
+  }
+
+  i, em {
+    font-style: normal;
+    @include font-style(italic);
+  }
+
+  pre, p {
+    margin: 0;
+  }
+}
+
+@mixin mainTyping {
+  font-weight: 250;
+}

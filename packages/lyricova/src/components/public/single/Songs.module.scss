@@ -1,0 +1,109 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+@import "./common.scss";
+
+.songs {
+  @include layout;
+}
+
+.song {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+
+  a img {
+    transition: transform 0.25s ease-out;
+    @media (hover: hover) {
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  img {
+    aspect-ratio: 13/10;
+    object-fit: contain;
+    height: 4rem;
+    background-color: $card-background;
+    border-radius: 0.25rem;
+    border: 1px solid $card-background;
+  }
+
+  @include media-breakpoint-down(tablet) {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "cover . link" "meta meta meta";
+
+    img {
+      grid-area: cover;
+    }
+
+    .songMeta {
+      grid-area: meta;
+    }
+
+    .songLink {
+      grid-area: link;
+    }
+  }
+}
+
+.songMeta {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.songTitle {
+  font-weight: 600;
+  a::after {
+    height: 2px;
+  }
+}
+
+.songArtists {
+  font-weight: 300;
+  a::after {
+    height: 1px;
+  }
+}
+
+.songTitle a, .songArtists a {
+  color: $primary-text;
+  text-decoration: none;
+  display: inline-block;
+  position: relative;
+  transition: color 0.25s ease-out;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    bottom: 0;
+    left: 0;
+    background-color: $brand-color;
+    transform-origin: bottom right;
+    transition: transform 0.25s ease-out;
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      color: $brand-color;
+    }
+
+    &:hover::after {
+      transform: scaleX(1);
+      transform-origin: bottom left;
+    }
+  }
+
+  @media (hover: none) {
+    &::after {
+      height: 1px;
+      transform: scaleX(1);
+    }
+  }
+}

@@ -5,7 +5,11 @@ function CollapsedSpan({ children }: { children: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     if (ref.current) {
-      ref.current.style.marginLeft = -ref.current.offsetWidth + "px";
+      const width = ref.current.offsetWidth;
+      const fontSize = parseFloat(
+        window.getComputedStyle(ref.current).fontSize
+      );
+      ref.current.style.marginLeft = -width / fontSize + "em";
     }
   }, [ref, children]);
   if (!children) return null;
@@ -26,10 +30,10 @@ export function PlainTextHangingPunct({
     <>
       {lines.map((line, idx) => (
         <Fragment key={idx}>
+          {idx > 0 && <br />}
           <CollapsedSpan>{line[1]}</CollapsedSpan>
           {line[2]}
           {line[3] && <span className={classes.hangingRight}>{line[3]}</span>}
-          <br />
         </Fragment>
       ))}
     </>

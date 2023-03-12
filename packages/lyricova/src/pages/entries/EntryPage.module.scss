@@ -1,0 +1,119 @@
+@import "../../styles/variables";
+@import "../../styles/mixins";
+
+.siteTitle a {
+  color: $brand-color;
+  text-decoration: none;
+
+  h1 {
+    transition: font-weight 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  @media (hover: hover) {
+    &:hover h1 {
+      font-weight: 700;
+    }
+  }
+}
+
+.tagDivider {
+  height: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  overflow: hidden;
+  text-transform: uppercase;
+  
+  span {
+    position: relative;
+    display: inline-block;
+    font-size: 0.75rem;
+    transform: scaleY(0);
+    color: $primary-text-on-brand;
+    font-stretch: expanded;
+    transition: transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+    letter-spacing: 0.05em;
+    font-weight: 600;
+
+    &::before, &::after {
+      content: "Project Lyricova Project Lyricova Project Lyricova Project Lyricova Project Lyricova Project Lyricova Project Lyricova";
+      position: absolute;
+      white-space: nowrap;
+      opacity: 0.25;
+      font-weight: 400;
+    }
+
+    &::before {
+      left: -0.5em;
+      text-align: right;
+      transform: translateX(-100%);
+    }
+
+    &::after {
+      right: -0.5em;
+      // text-align: right;
+      transform: translateX(100%);
+    }
+  }
+  
+  @media (hover: hover) {
+    &:hover {
+      transform: scaleY(20);
+
+      span {
+        transform: scaleY(0.05) translateY(-20%);
+      }
+    }
+  }
+}
+
+.entryId {
+  position: absolute;
+  top: $vertical-gutter;
+  right: $horizontal-gutter;
+  writing-mode: vertical-rl;
+  font-size: clamp(5rem, 12.5vw, 10rem);
+  color: $brand-color;
+  opacity: 0.15;
+  user-select: none;
+  line-height: 0.8;
+
+  .entryIdSharp {
+    font-weight: 200;
+    // font-stretch: condensed;
+    @include font-style(italic);
+  }
+
+  .entryIdNumber {
+    font-weight: 900;
+    font-stretch: expanded;
+  }
+}
+
+.otherVerses {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+
+  & > div {
+    flex-grow: 1;
+    width: 0;
+
+    &:not(:last-child) {
+      border-right: 1px solid $stroke-color;
+    }
+  }
+
+  @include media-breakpoint-down(tablet) {
+    flex-direction: column;
+    & > div {
+      width: auto;
+
+      &:not(:last-child) {
+        border-right: none;
+        border-bottom: 1px solid $stroke-color;
+      }
+    }
+  }
+}
