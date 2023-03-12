@@ -115,7 +115,9 @@ export default function EntryPage({ entry }: ArchivePageProps) {
     <>
       <div className={classes.entryId}>
         <span className={classes.entryIdSharp}>#</span>
-        <span className={classes.entryIdNumber}>{entry.id}</span>
+        <span className={classes.entryIdNumber}>
+          {String(entry.id).padStart(3, "0")}
+        </span>
       </div>
       <IndexHeader />
       <MainVerse entry={entry} />
