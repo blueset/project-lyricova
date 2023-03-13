@@ -52,3 +52,8 @@
   --primary-text-on-brand: #00171F;
   --secondary-text-on-brand: #{rgba(#00171F, 0.6)};
 }
+
+::selection {
+  background-color: #38d1c4;
+  color: #00171f;
+}

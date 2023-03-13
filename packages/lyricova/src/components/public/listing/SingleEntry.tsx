@@ -28,7 +28,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
 
   const verseRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLAnchorElement>(null);
-  
+
   const tagsGradient = useMemo(
     () => generateColorGradient(entry.tags, true),
     [entry.tags]
@@ -87,14 +87,18 @@ export function SingleEntry({ entry }: SingleEntryProps) {
     }
   }, [mouseMoveCallback]);
 
+  const text = mainVerse.text.replace(/\n/g, " ").replace(/　/g, " ");
+
   return (
     <section
       className={`verticalPadding ${classes.container}`}
       ref={containerRef}
-      style={{ 
-        "--tags-gradient": tagsGradient,
-        "--tags-foreground": entry.tags?.[0].color,
-      } as CSSProperties}
+      style={
+        {
+          "--tags-gradient": tagsGradient,
+          "--tags-foreground": entry.tags?.[0].color,
+        } as CSSProperties
+      }
     >
       <div className={`container ${classes.meta}`}>
         <div className={classes.metaLeft}>
@@ -106,20 +110,23 @@ export function SingleEntry({ entry }: SingleEntryProps) {
       <div className={classes.verseContainer} lang={mainVerse.language}>
         <div className="container">
           <div className={classes.verse} ref={verseRef}>
-            {mainVerse.text.replace(/\n/g, " ")}
+            {text}
           </div>
         </div>
         <div className={classes.cyclingVerse} data-cyclingverse>
           <span className={classes.cyclingRepeats}>
-            {mainVerse.text} {mainVerse.text}
+            {text} {text}
           </span>{" "}
-          {mainVerse.text.replace(/\n/g, " ")}{" "}
+          {text}{" "}
           <span className={classes.cyclingRepeats}>
-            {mainVerse.text} {mainVerse.text}
+            {text} {text}
           </span>
         </div>
       </div>
-      <Link className={`container ${classes.pulse}`} href={`/entries/${entry.id}`}>
+      <Link
+        className={`container ${classes.pulse}`}
+        href={`/entries/${entry.id}`}
+      >
         <PulseStatus entry={entry} />
       </Link>
     </section>

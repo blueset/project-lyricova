@@ -48,6 +48,10 @@
 
   .keywords {
     font-size: 1.25rem;
+    > span {
+      margin-right: 1px;
+      display: block !important;
+    }
   }
 }
 
