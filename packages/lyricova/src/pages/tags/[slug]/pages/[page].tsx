@@ -1,15 +1,11 @@
 import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
 import type { Tag } from "lyricova-common/models/Tag";
+import type { TagOfEntry } from "lyricova-common/models/TagOfEntry";
 import { GetStaticProps, GetStaticPaths } from "next";
-import { Fragment } from "react";
-import { Divider } from "../../../../components/public/Divider";
-import { Footer } from "../../../../components/public/Footer";
-import { Paginator } from "../../../../components/public/listing/Paginator";
-import { SingleEntry } from "../../../../components/public/listing/SingleEntry";
-import { SubArchiveHeader } from "../../../../components/public/listing/SubArchiveHeader";
 import { entriesPerPage } from "../../../../utils/consts";
 import { entryListingCondition } from "../../../../utils/queries";
+import TagArchivePage from "../../[slug]";
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const page = parseInt(context.params.page as string);
@@ -39,24 +35,20 @@ export const getStaticProps: GetStaticProps = async (context) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const tags = (await sequelize.models.Tag.findAll()) as Tag[];
-  const totalEntries = await Promise.all(
-    tags.map((t) =>
-    sequelize.models.TagOfEntry.count({
-        where: {
-          tagId: t.slug,
-        },
-      })
-    )
-  );
+  const tags = (await sequelize.models.TagOfEntry.findAll({
+    attributes: [
+      "tagId",
+      [sequelize.fn("COUNT", sequelize.col("entryId")), "count"],
+    ],
+    group: ["tagId"],
+  })) as (TagOfEntry & { count: number })[];
   const paths = [];
-  for (let i = 0; i < tags.length; i++) {
-    const tag = tags[i];
-    const totalPages = Math.ceil(totalEntries[i] / entriesPerPage);
+  for (const i of tags) {
+    const totalPages = Math.ceil(i.count / entriesPerPage);
     for (let page = 1; page <= totalPages; page++) {
       paths.push({
         params: {
-          slug: tag.slug,
+          slug: i.tagId,
           page: page.toString(),
         },
       });
@@ -68,50 +60,4 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-interface TagArchivePageProps {
-  entries: Entry[];
-  tag: Tag;
-  page: number;
-  totalPages: number;
-}
-
-export default function TagArchivePage({
-  entries,
-  page,
-  totalPages,
-  tag,
-}: TagArchivePageProps) {
-  return (
-    <>
-      <SubArchiveHeader
-        page={page}
-        type="Tag archive"
-        keywords={
-          <span
-            style={{
-              color: tag.color,
-              border: "1px solid currentColor",
-              borderRadius: "0.25rem",
-              padding: "0.1rem 0.3rem",
-            }}
-          >
-            {tag.name}
-          </span>
-        }
-      />
-      <Divider />
-      {entries?.map((entry, idx) => (
-        <Fragment key={idx}>
-          <SingleEntry entry={entry} />
-          <Divider />
-        </Fragment>
-      ))}
-      <Paginator
-        currentPage={page}
-        totalPages={totalPages}
-        prefix={`/tags/${tag.slug}/`}
-      />
-      <Footer />
-    </>
-  );
-}
+export default TagArchivePage;

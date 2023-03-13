@@ -31,7 +31,7 @@ export function LineVerseRenderer({
       }
 
       const tl = gsap.timeline({ paused: !isMain });
-      const stepDuration = 1 / 15;
+      const stepDuration = language.match(/^(zh|ja)/) ? 1 / 15 : 1 / 30;
       const sequence = baseTypingSequence.map((i) =>
         buildAnimationSequence(i, language)
       );

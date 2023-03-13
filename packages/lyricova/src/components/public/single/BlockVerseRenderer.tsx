@@ -39,7 +39,7 @@ export function BlockVerseRenderer({
       const animationEl = verseRefEl.querySelector(".animation");
       const coverEl = verseRefEl.querySelector(".cover");
 
-      const stepDuration = 1 / 15;
+      const stepDuration = language.match(/^(zh|ja)/) ? 1 / 15 : 1 / 30;
       const sequence = baseTypingSequence.map((i) =>
         buildAnimationSequence(i, language)
       );

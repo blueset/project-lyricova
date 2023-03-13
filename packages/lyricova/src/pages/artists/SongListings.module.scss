@@ -1,0 +1,19 @@
+@import "../../styles/variables";
+
+.link {
+  color: $brand-color;
+  text-decoration: none;
+  transition: font-weight 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+
+  @media (hover: hover) {
+    &:hover {
+      font-weight: 600;
+    }
+  }
+
+  @media (hover: none) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+}

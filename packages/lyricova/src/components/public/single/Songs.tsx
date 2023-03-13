@@ -46,7 +46,11 @@ export function Songs({ songs }: SongsProps) {
         <h2 className={classes.songsTitle}>Song{songs.length > 1 && "s"}</h2>
         {songs.map((song) => (
           <div className={classes.song} key={song.id}>
-            <Link href={song.videoUrl || `/songs/${song.id}`} target="_blank">
+            <Link
+              href={song.videoUrl || `/songs/${song.id}`}
+              target="_blank"
+              rel="noreferrer"
+            >
               <img className={classes.songCover} src={song.coverUrl} />
             </Link>
             <div className={classes.songMeta}>
@@ -64,6 +68,7 @@ export function Songs({ songs }: SongsProps) {
                     LinkComponent="a"
                     href={`https://vocadb.net/S/${song.id}`}
                     target="_blank"
+                    rel="noreferrer"
                   >
                     <OpenInNewIcon />
                   </IconButton>
