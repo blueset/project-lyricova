@@ -74,7 +74,7 @@ export default function TagArchivePage({
               color: tag.color,
               border: "1px solid currentColor",
               borderRadius: "0.25rem",
-              padding: "0.1rem 0.3rem",
+              padding: "0.1rem 0.3rem 0",
             }}
           >
             {tag.name}

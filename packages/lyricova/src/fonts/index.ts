@@ -15,3 +15,15 @@ export const SourceHanSans = localFont({
   variable: "--font-source-han-sans",
   adjustFontFallback: false,
 });
+export const SourceHanSansPunct = localFont({
+  src: "./SourceHanSans-VF.otf.woff2",
+  variable: "--font-source-han-sans-punct",
+  adjustFontFallback: false,
+  declarations: [
+    {
+      prop: "unicode-range",
+      value:
+        "U+3000-303F, U+FF00-FFEF, U+2013-2014, U+2026, U+2500, U+2E3A-2E3B",
+    },
+  ],
+});

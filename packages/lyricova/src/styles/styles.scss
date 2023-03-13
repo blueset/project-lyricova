@@ -10,6 +10,11 @@
 
   font-family: var(--body-font);
   font-feature-settings: 'palt' 1;
+
+  :lang(zh), :lang(ja) {
+    --body-font: var(--font-source-han-sans-punct), var(--font-mona-sans), var(--fallback-fonts);
+    font-family: var(--body-font);
+  }
   
   font-size: 20px;
 

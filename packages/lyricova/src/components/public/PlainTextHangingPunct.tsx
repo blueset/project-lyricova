@@ -25,7 +25,7 @@ export function PlainTextHangingPunct({
 }: PlainTextHangingPunctProps) {
   const lines = children
     .split("\n")
-    .map((line) => line.match(/^(\p{P}*)(.*?)(\p{P}*)$/u));
+    .map((line) => line.match(/^([\p{Ps}\p{Pi}"]*)(.*?)(\p{Po}*)$/u));
   return (
     <>
       {lines.map((line, idx) => (

@@ -9,7 +9,12 @@ import { ApolloProvider } from "@apollo/client";
 import apolloClient from "lyricova-common/frontendUtils/apollo";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import createEmotionCache from "../frontendUtils/createEmotionCache";
-import { MonaSans, HubotSans, SourceHanSans } from "../fonts";
+import {
+  MonaSans,
+  HubotSans,
+  SourceHanSans,
+  SourceHanSansPunct,
+} from "../fonts";
 import "../styles/global.scss";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "framer-motion";
@@ -71,14 +76,16 @@ function MyApp({
         "wrapper",
         MonaSans.variable,
         HubotSans.variable,
-        SourceHanSans.variable
+        SourceHanSans.variable,
+        SourceHanSansPunct.variable
       );
     } else {
       document.body.classList.remove(
         "wrapper",
         MonaSans.variable,
         HubotSans.variable,
-        SourceHanSans.variable
+        SourceHanSans.variable,
+        SourceHanSansPunct.variable
       );
     }
   }, [isDashboard]);
