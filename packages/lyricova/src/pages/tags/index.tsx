@@ -8,6 +8,8 @@ import { IndexHeader } from "../../components/public/IndexHeader";
 import gsap from "gsap";
 import classes from "./index.module.scss";
 import { Link } from "../../components/public/Link";
+import Head from "next/head";
+import { siteName, tagLine1, tagLine2 } from "../../utils/consts";
 
 type TagWithCount = Tag & { entryCount: number };
 
@@ -107,6 +109,19 @@ function TagNode({ tag }: { tag: TagWithCount }) {
 export default function Tags({ tags }: IndexProps) {
   return (
     <>
+      <Head>
+        <title>{`Tags – ${siteName}`}</title>
+        <meta
+          name="description"
+          content={`Tags – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta name="og:title" content={`Tags – ${siteName}`} />
+        <meta
+          name="og:description"
+          content={`Tags – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta name="og:image" content="/images/og-cover.png" />
+      </Head>
       <style jsx global>{`
         html,
         body {

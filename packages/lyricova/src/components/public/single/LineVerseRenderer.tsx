@@ -92,12 +92,14 @@ export function LineVerseRenderer({
       )}
       onClick={(evt) => {
         timelineRef.current?.isActive() === false &&
+          !evt.altKey &&
           timelineRef.current
             ?.timeScale(evt.ctrlKey || evt.metaKey ? 0.5 : 1)
             .restart();
       }}
       onMouseEnter={(evt) => {
         timelineRef.current?.isActive() === false &&
+          !evt.altKey &&
           timelineRef.current
             ?.timeScale(evt.ctrlKey || evt.metaKey ? 0.5 : 1)
             .restart();

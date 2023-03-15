@@ -16,6 +16,9 @@ import { OtherVerse } from "../../components/public/single/OtherVerse";
 import type { Song } from "lyricova-common/models/Song";
 import type { PVContract } from "../../types/vocadb";
 import { MainVerse } from "../../components/public/single/MainVerse";
+import Head from "next/head";
+import { siteName } from "../../utils/consts";
+import { AdminLinks } from "../../components/public/single/AdminLinks";
 
 type ExpandedSong = Song & { videoUrl?: string };
 type ExpandedEntry = Entry & { songs: ExpandedSong[] };
@@ -105,14 +108,30 @@ interface ArchivePageProps {
 
 export default function EntryPage({ entry }: ArchivePageProps) {
   const otherVerses = entry.verses.filter((verse) => !verse.isMain);
+  const verse = entry.verses.find((verse) => verse.isMain);
 
   const tagsGradient = useMemo(
     () => generateColorGradient(entry.tags),
     [entry.tags]
   );
+  const artistString = !entry.producersName
+    ? entry.vocalistsName
+    : !entry.vocalistsName
+    ? entry.producersName
+    : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
   return (
     <>
+      <Head>
+        <title>{`${entry.title} / ${artistString} – ${siteName}`}</title>
+        <meta name="description" content={verse.text} />
+        <meta
+          name="og:title"
+          content={`${entry.title} / ${artistString} – ${siteName}`}
+        />
+        <meta name="og:description" content={verse.text} />
+        <meta name="og:image" content="/images/og-cover.png" />
+      </Head>
       <div className={classes.entryId}>
         <span className={classes.entryIdSharp}>#</span>
         <span className={classes.entryIdNumber}>
@@ -147,6 +166,7 @@ export default function EntryPage({ entry }: ArchivePageProps) {
       <Pulses pulses={entry.pulses} creationDate={entry.creationDate} />
       <Songs songs={entry.songs} />
       <Comment>{entry.comment}</Comment>
+      <AdminLinks id={entry.id} />
       <Footer />
     </>
   );

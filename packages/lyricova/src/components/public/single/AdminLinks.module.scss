@@ -1,0 +1,26 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+@import "./common.scss";
+
+.container {
+  @include layout;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  button, a {
+    font-stretch: expanded;
+    font-weight: 400;
+    font-family: $headings-font;
+    line-height: 1;
+    margin: -8px 0;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+}

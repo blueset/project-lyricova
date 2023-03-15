@@ -1,6 +1,7 @@
 import sequelize from "lyricova-common/db";
 import { Entry } from "lyricova-common/models/Entry";
 import { GetStaticProps } from "next";
+import Head from "next/head";
 import React, { Fragment } from "react";
 import { Divider } from "../components/public/Divider";
 import { Footer } from "../components/public/Footer";
@@ -8,7 +9,7 @@ import { IndexHeader } from "../components/public/IndexHeader";
 import { Paginator } from "../components/public/listing/Paginator";
 import { SingleEntry } from "../components/public/listing/SingleEntry";
 import { TopEntry } from "../components/public/listing/TopEntry";
-import { entriesPerPage } from "../utils/consts";
+import { entriesPerPage, siteName, tagLine1, tagLine2 } from "../utils/consts";
 
 interface IndexProps {
   entries: Entry[];
@@ -57,6 +58,13 @@ export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
 export default function Index({ entries, totalPages }: IndexProps) {
   return (
     <>
+      <Head>
+        <title>{siteName}</title>
+        <meta name="description" content={`${tagLine1} ${tagLine2}`} />
+        <meta name="og:title" content={siteName} />
+        <meta name="og:description" content={`${tagLine1} ${tagLine2}`} />
+        <meta name="og:image" content="/images/og-cover.png" />
+      </Head>
       <IndexHeader />
       <Divider />
       {entries?.map((entry, idx) => (

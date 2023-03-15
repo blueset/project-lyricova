@@ -3,13 +3,19 @@ import type { Entry } from "lyricova-common/models/Entry";
 import type { Song } from "lyricova-common/models/Song";
 import type { SongOfEntry } from "lyricova-common/models/SongOfEntry";
 import { GetStaticProps, GetStaticPaths } from "next";
+import Head from "next/head";
 import { Fragment } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";
 import { Paginator } from "../../components/public/listing/Paginator";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
 import { SubArchiveHeader } from "../../components/public/listing/SubArchiveHeader";
-import { entriesPerPage } from "../../utils/consts";
+import {
+  entriesPerPage,
+  siteName,
+  tagLine1,
+  tagLine2,
+} from "../../utils/consts";
 import { entryListingCondition } from "../../utils/queries";
 import classes from "./SongListings.module.scss";
 
@@ -69,6 +75,24 @@ export default function SongArchivePage({
 }: SongArchivePageProps) {
   return (
     <>
+      <Head>
+        <title>
+          {`Song Archive of ${song.name} – Page ${page} – ${siteName}`}
+        </title>
+        <meta
+          name="description"
+          content={`Song Archive of ${song.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta
+          name="og:title"
+          content={`Song Archive of ${song.name} – Page ${page} – ${siteName}`}
+        />
+        <meta
+          name="og:description"
+          content={`Song Archive of ${song.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta name="og:image" content="/images/og-cover.png" />
+      </Head>
       <SubArchiveHeader
         page={page}
         type="Song archive"

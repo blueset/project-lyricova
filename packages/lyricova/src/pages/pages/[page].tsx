@@ -1,13 +1,19 @@
 import sequelize from "lyricova-common/db";
 import { Entry } from "lyricova-common/models/Entry";
 import { GetStaticProps, GetStaticPaths, GetServerSideProps } from "next";
+import Head from "next/head";
 import { Fragment } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";
 import { ArchiveHeader } from "../../components/public/listing/ArchiveHeader";
 import { Paginator } from "../../components/public/listing/Paginator";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
-import { entriesPerPage } from "../../utils/consts";
+import {
+  entriesPerPage,
+  siteName,
+  tagLine1,
+  tagLine2,
+} from "../../utils/consts";
 import { entryListingCondition } from "../../utils/queries";
 
 export const getStaticProps: GetStaticProps = async (context) => {
@@ -55,6 +61,19 @@ export default function ArchivePage({
 }: ArchivePageProps) {
   return (
     <>
+      <Head>
+        <title>{`Archive Page ${page} – ${siteName}`}</title>
+        <meta
+          name="description"
+          content={`Archive Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta name="og:title" content={`Archive Page ${page} – ${siteName}`} />
+        <meta
+          name="og:description"
+          content={`Archive Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta name="og:image" content="/images/og-cover.png" />
+      </Head>
       <ArchiveHeader page={page} />
       <Divider />
       {entries?.map((entry, idx) => (

@@ -3,13 +3,19 @@ import { Entry } from "lyricova-common/models/Entry";
 import { Tag } from "lyricova-common/models/Tag";
 import { TagOfEntry } from "lyricova-common/models/TagOfEntry";
 import { GetStaticProps, GetStaticPaths } from "next";
+import Head from "next/head";
 import { Fragment } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";
 import { Paginator } from "../../components/public/listing/Paginator";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
 import { SubArchiveHeader } from "../../components/public/listing/SubArchiveHeader";
-import { entriesPerPage } from "../../utils/consts";
+import {
+  entriesPerPage,
+  siteName,
+  tagLine1,
+  tagLine2,
+} from "../../utils/consts";
 import { entryListingCondition } from "../../utils/queries";
 
 export const getStaticProps: GetStaticProps = async (context) => {
@@ -65,6 +71,22 @@ export default function TagArchivePage({
 }: TagArchivePageProps) {
   return (
     <>
+      <Head>
+        <title>{`Tag Archive of ${tag.name} – Page ${page} – ${siteName}`}</title>
+        <meta
+          name="description"
+          content={`Tag Archive of ${tag.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta
+          name="og:title"
+          content={`Tag Archive of ${tag.name} – Page ${page} – ${siteName}`}
+        />
+        <meta
+          name="og:description"
+          content={`Tag Archive of ${tag.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta name="og:image" content="/images/og-cover.png" />
+      </Head>
       <SubArchiveHeader
         page={page}
         type="Tag archive"

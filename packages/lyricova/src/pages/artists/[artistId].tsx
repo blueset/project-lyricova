@@ -8,10 +8,16 @@ import { Footer } from "../../components/public/Footer";
 import { Paginator } from "../../components/public/listing/Paginator";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
 import { SubArchiveHeader } from "../../components/public/listing/SubArchiveHeader";
-import { entriesPerPage } from "../../utils/consts";
+import {
+  entriesPerPage,
+  siteName,
+  tagLine1,
+  tagLine2,
+} from "../../utils/consts";
 import { entryListingCondition } from "../../utils/queries";
 import { QueryTypes } from "sequelize";
 import classes from "./SongListings.module.scss";
+import Head from "next/head";
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const page = 1;
@@ -98,6 +104,24 @@ export default function ArtistArchivePage({
     .replace("Unknown", "Artist");
   return (
     <>
+      <Head>
+        <title>
+          {`${typeName} Archive of ${artist.name} – Page ${page} – ${siteName}`}
+        </title>
+        <meta
+          name="description"
+          content={`${typeName} Archive of ${artist.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta
+          name="og:title"
+          content={`${typeName} Archive of ${artist.name} – Page ${page} – ${siteName}`}
+        />
+        <meta
+          name="og:description"
+          content={`${typeName} Archive of ${artist.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
+        />
+        <meta name="og:image" content="/images/og-cover.png" />
+      </Head>
       <SubArchiveHeader
         page={page}
         type={`${typeName} archive`}

@@ -25,26 +25,6 @@ export const getPlainLayout = (page: ReactNode) => <>{page}</>;
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
 
-const variants = {
-  in: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: {
-      duration: 0.75,
-      delay: 0.5,
-    },
-  },
-  out: {
-    opacity: 0,
-    scale: 1,
-    y: 40,
-    transition: {
-      duration: 0.75,
-    },
-  },
-};
-
 type AppPropsExtension = AppProps & {
   emotionCache?: EmotionCache;
   Component: AppProps["Component"] & {
@@ -91,7 +71,6 @@ function MyApp({
   }, [isDashboard]);
 
   const getLayout = Component.layout || getPlainLayout;
-  // const C = Component as React.FC;
 
   return (
     <CacheProvider value={emotionCache}>
@@ -106,25 +85,15 @@ function MyApp({
         )}
       </Head>
       <ThemeProvider theme={theme}>
-        <ApolloProvider client={apolloClient}>
-          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-          {isDashboard ? (
-            getLayout(<Component {...pageProps} />)
-          ) : (
-            // <AnimatePresence initial={false} mode="wait">
-            //   <motion.div
-            //     key={router.asPath}
-            //     variants={variants}
-            //     animate="in"
-            //     initial="out"
-            //     exit="out"
-            //   >
-            <Component {...pageProps} />
-            //   </motion.div>
-            // </AnimatePresence>
-          )}
-          <CssBaseline />
-        </ApolloProvider>
+        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+        {isDashboard ? (
+          <ApolloProvider client={apolloClient}>
+            {getLayout(<Component {...pageProps} />)}
+          </ApolloProvider>
+        ) : (
+          <Component {...pageProps} />
+        )}
+        <CssBaseline />
       </ThemeProvider>
       {!isDashboard && <TransitionCover />}
     </CacheProvider>
