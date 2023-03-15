@@ -1,6 +1,6 @@
 import { Button } from "@mui/material";
 import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Divider } from "../Divider";
 import classes from "./AdminLinks.module.scss";
 
@@ -11,7 +11,7 @@ interface AdminLinksProps {
 export function AdminLinks({ id }: AdminLinksProps) {
   const [isAdmin, setIsAdmin] = useState(false);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const jwtKey = localStorage?.getItem(LS_JWT_KEY);
     if (jwtKey) {
       const expiryDate = new Date(
