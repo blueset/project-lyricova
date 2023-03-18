@@ -1,0 +1,132 @@
+@import "../../styles/variables.scss";
+@import "../../styles/mixins.scss";
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: center;
+  // justify-content: center;
+  position: relative;
+
+  h1, h2, blockquote, nav {
+    flex-shrink: 0;
+  }
+
+  h1, h2, blockquote {
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+  }
+
+  h1, h2 {
+    color: $brand-color;
+  }
+  
+  h1 {
+    font-family: $headings-font;
+    font-stretch: expanded;
+    font-size: 3rem;
+    font-weight: 700;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition-duration: 0.6s;
+      transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      transition-property: font-weight, letter-spacing, margin-right;
+
+      --letter-spacing: 0em;
+      letter-spacing: var(--letter-spacing);
+      margin-right: calc(var(--letter-spacing) * -1);
+
+      @media (hover: hover) {
+        &:hover {
+          font-weight: 200;
+          --letter-spacing: 0.075em;
+        }
+      }
+    }
+  }
+
+  h2 {
+    font-family: "Roboto Flex", $headings-font;
+    font-weight: 300;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    --letter-spacing: 0.75em;
+    letter-spacing: var(--letter-spacing);
+    margin-right: calc(var(--letter-spacing) * -1);
+    align-self: center;
+    font-variation-settings: "XTRA" 600, "wdth" 150;
+    overflow: hidden;
+    width: 100%;
+  }
+
+
+  @media (max-width: 630px) {
+    h1 { 
+      line-height: 0.85em;
+      margin-bottom: 0.15em;
+    }
+    h2 { --letter-spacing: 0.9em; }
+  }
+
+  blockquote {
+    margin: 1rem 0;
+    color: $secondary-text;
+    @include font-style(italic);
+  }
+
+  .top {
+    width: 100%;
+    text-align: right;
+    padding-top: $vertical-gutter;
+    button {
+    }
+  }
+
+  .bottom {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+
+    footer {
+      padding: 0;
+    }
+  }
+  .top, .bottom {
+    flex-grow: 1;
+    flex-basis: 0;
+  }
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  align-items: stretch;
+  gap: 0.5rem;
+  a {
+    display: inline-block;
+    border-radius: 0.25rem;
+    border: 1px solid currentColor;
+    text-decoration: none;
+    // width: fit-content;
+    // margin: 0 auto;
+    padding: 0 0.5rem;
+    color: $primary-text;
+    
+    transition-duration: 0.6s;
+    transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    transition-property: color, background-color;
+
+    @media (hover: hover) {
+      &:hover {
+        background-color: $primary-text;
+        color: $background-color;
+      }
+    }
+  }
+}

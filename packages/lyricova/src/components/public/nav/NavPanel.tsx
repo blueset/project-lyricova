@@ -152,7 +152,7 @@ export function NavPanel() {
             </Tooltip>
             <nav className={classes.nav} ref={(elm) => buildTimeline(elm)}>
               <NavEntry href={jukeboxUrl}>Jukebox</NavEntry>
-              <NavEntry href="/screensaver">Screensavers</NavEntry>
+              <NavEntry href="/screensavers">Screensavers</NavEntry>
               <NavEntry href="/search">Search</NavEntry>
               <NavEntry href="/tags">Tags</NavEntry>
               <NavEntry href="/login">Log in</NavEntry>

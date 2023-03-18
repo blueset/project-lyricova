@@ -9,7 +9,7 @@ export interface TagRowProps {
 
 export function TagRow({ tags }: TagRowProps) {
   return (
-    <div className={classes.row}>
+    <div className={classes.row} lang="en">
       {tags.map((tag) => (
         <Link
           key={tag.slug}

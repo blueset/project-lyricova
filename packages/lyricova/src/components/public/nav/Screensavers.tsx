@@ -7,7 +7,7 @@ export function Screensavers() {
     <Tooltip title="Screensavers">
       <IconButton
         LinkComponent={Link}
-        href="/screensaver"
+        href="/screensavers"
         data-nav-icon="screensavers"
       >
         <AspectRatioIcon />
