@@ -147,6 +147,7 @@ export class EntryResolver {
           vocalistsName,
           comment,
           creationDate,
+          recentActionDate: creationDate,
           authorId: ctx.user.id,
         },
         { transaction: t }

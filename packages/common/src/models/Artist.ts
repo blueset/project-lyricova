@@ -164,6 +164,7 @@ export class Artist extends Model<Artist, Partial<Artist>> {
     entity: ArtistForApiContract,
     baseVoiceBank: Artist | null
   ): Promise<Artist | null> {
+    const { transliterate } = await import("../utils/transliterate");
     await Artist.upsert({
       id: entity.id,
       name: entity.name,

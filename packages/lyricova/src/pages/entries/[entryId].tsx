@@ -4,8 +4,6 @@ import { GetStaticProps, GetStaticPaths } from "next";
 import { useMemo } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";
-import { PlainTextHangingPunct } from "../../components/public/PlainTextHangingPunct";
-import { TagRow } from "../../components/public/TagRow";
 import classes from "./EntryPage.module.scss";
 import { Comment } from "../../components/public/single/Comment";
 import { Pulses } from "../../components/public/single/Pulses";
@@ -130,7 +128,7 @@ export default function EntryPage({ entry }: ArchivePageProps) {
           content={`${entry.title} / ${artistString} – ${siteName}`}
         />
         <meta name="og:description" content={verse.text} />
-        <meta name="og:image" content="/images/og-cover.png" />
+        <meta name="og:image" content={`/api/og/${entry.id}`} />
       </Head>
       <div className={classes.entryId}>
         <span className={classes.entryIdSharp}>#</span>

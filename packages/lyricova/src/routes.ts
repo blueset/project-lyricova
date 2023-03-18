@@ -10,6 +10,10 @@ export default (app: express.Express) => {
 
   const publicApiRouter = new PublicApiController();
   apiRouter.use("/", publicApiRouter.router);
+  app.get("/api/test", (req, res) => {
+    console.log("routes test");
+    res.status(200).json({});
+  });
 
   const adminApiRouter = new AdminApiController();
   apiRouter.use("/", adminApiRouter.router);
