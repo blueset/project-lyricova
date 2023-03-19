@@ -1,6 +1,6 @@
 export const entryListingCondition = {
   attributes: {
-    exclude: ["updatedAt"],
+    exclude: ["updatedOn"],
   },
   include: [
     {

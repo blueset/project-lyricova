@@ -22,12 +22,14 @@ import classes from "./SongListings.module.scss";
 export const getStaticProps: GetStaticProps = async (context) => {
   const page = 1;
   const songid = parseInt(context.params.songId as string);
-  const totalEntries = await sequelize.models.SongOfEntry.count({
-    where: { songId: songid },
-  });
   const song = (await sequelize.models.Song.findByPk(songid, {
     attributes: ["id", "name"],
   })) as Song;
+  if (!song) return { notFound: true };
+  const totalEntries = await sequelize.models.SongOfEntry.count({
+    where: { songId: songid },
+  });
+  if (totalEntries < 1) return { notFound: true };
   const entries = (await song.$get("lyricovaEntries", {
     ...entryListingCondition,
     order: [["recentActionDate", "DESC"]],

@@ -118,7 +118,7 @@ const UPDATE_ENTRY_MUTATION = gql`
 `;
 
 const TRANSLITRATION_QUERY = gql`
-  query($text: String!, $language: String) {
+  query ($text: String!, $language: String) {
     transliterate(text: $text) {
       typing(language: $language)
     }
@@ -143,7 +143,7 @@ interface FormValues {
 
 const initialFormValues = (data: { entry?: Entry }): FormValues => ({
   ...data.entry,
-  creationDate: (data.entry.creationDate as unknown) as number,
+  creationDate: data.entry.creationDate as unknown as number,
   tags: data.entry.tags.map((tag) => tag.slug),
   verses: data.entry.verses.map((verse) => ({
     ...verse,
@@ -493,10 +493,11 @@ export function EntryForm({ id }: EntityFormProps) {
                             fields.value
                               .map((s) =>
                                 s.artists
-                                  .filter((a: any) =>
-                                    a.ArtistOfSong.categories.includes(
-                                      "Vocalist"
-                                    )
+                                  .filter(
+                                    (a: any) =>
+                                      a.ArtistOfSong.categories.includes(
+                                        "Vocalist"
+                                      ) && !a.ArtistOfSong.isSupport
                                   )
                                   .map(
                                     (a: any) =>
@@ -733,19 +734,20 @@ export function EntryForm({ id }: EntityFormProps) {
                                       variant="outlined"
                                       onClick={async () => {
                                         try {
-                                          const result = await apolloClient.query<{
-                                            transliterate: {
-                                              typing: string[][][];
-                                            };
-                                          }>({
-                                            query: TRANSLITRATION_QUERY,
-                                            variables: {
-                                              text: verseValues[index].text,
-                                              language:
-                                                verseValues[index].language,
-                                            },
-                                            fetchPolicy: "no-cache",
-                                          });
+                                          const result =
+                                            await apolloClient.query<{
+                                              transliterate: {
+                                                typing: string[][][];
+                                              };
+                                            }>({
+                                              query: TRANSLITRATION_QUERY,
+                                              variables: {
+                                                text: verseValues[index].text,
+                                                language:
+                                                  verseValues[index].language,
+                                              },
+                                              fetchPolicy: "no-cache",
+                                            });
                                           fields.update(index, {
                                             ...verseValues[index],
                                             typingSequence: JSON.stringify(

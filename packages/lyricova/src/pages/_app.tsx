@@ -17,7 +17,6 @@ import {
 } from "../fonts";
 import "../styles/global.scss";
 import { useRouter } from "next/router";
-import { AnimatePresence, motion } from "framer-motion";
 import { TransitionCover } from "../components/public/TransitionCover";
 
 export const getPlainLayout = (page: ReactNode) => <>{page}</>;
@@ -49,6 +48,8 @@ function MyApp({
     router.pathname.startsWith("/dashboard") ||
     router.pathname.startsWith("/login") ||
     router.pathname.startsWith("/logout");
+  const isFullScreen =
+    router.pathname.startsWith("/screensavers") || router.pathname === "/tags";
 
   useEffect(() => {
     if (!isDashboard) {
@@ -68,7 +69,8 @@ function MyApp({
         SourceHanSansPunct.variable
       );
     }
-  }, [isDashboard]);
+    document.body.dataset.path = router.pathname;
+  }, [isDashboard, router.pathname]);
 
   const getLayout = Component.layout || getPlainLayout;
 
@@ -81,8 +83,9 @@ function MyApp({
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
         {isDashboard && (
-          <style>{":root { font-size: 16px !important; }"}</style>
+          <style global>{":root { font-size: 16px !important; }"}</style>
         )}
+        {isFullScreen && <style global>{":root { height: 100%; }"}</style>}
       </Head>
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}

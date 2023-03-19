@@ -18,6 +18,9 @@ import { entryListingCondition } from "../../utils/queries";
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const page = parseInt(context.params.page as string);
+
+  if (page === 1) return { redirect: { statusCode: 302, destination: "/" } };
+
   const totalEntries = await sequelize.models.Entry.count();
   const entries = (await sequelize.models.Entry.findAll({
     ...entryListingCondition,
@@ -25,6 +28,8 @@ export const getStaticProps: GetStaticProps = async (context) => {
     limit: entriesPerPage,
     offset: (page - 1) * entriesPerPage,
   })) as Entry[];
+
+  if (entries.length < 1) return { notFound: true };
 
   return {
     props: {

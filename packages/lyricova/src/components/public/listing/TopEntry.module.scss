@@ -11,6 +11,7 @@
   --typing-highlight: #{$brand-color};
   --typing-highlight-inverse: #{$background-color};
   transition: all 0.2s cubic-bezier(0, 0, 0.6, 1);
+  overflow: hidden;
 
   @media (hover: hover) {
     &:hover {
@@ -78,8 +79,8 @@
     span {
       background-clip: text;
       -webkit-background-clip: text;
-      background: var(--typing-highlight-inverse);
       -webkit-text-fill-color: transparent;
+      background: var(--typing-highlight-inverse);
       font-weight: 250;
       background-attachment: fixed;
     }

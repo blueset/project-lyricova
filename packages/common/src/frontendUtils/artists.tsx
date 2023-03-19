@@ -17,7 +17,10 @@ function splitArtists(
       categories.indexOf("Circle") >= 0
     ) {
       producers.push(i);
-    } else if (categories.indexOf("Vocalist") >= 0) {
+    } else if (
+      categories.indexOf("Vocalist") >= 0 &&
+      !(i?.ArtistOfSong?.isSupport ?? false)
+    ) {
       vocalists.push(i);
     }
   }

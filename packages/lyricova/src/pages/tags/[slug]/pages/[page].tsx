@@ -10,18 +10,25 @@ import TagArchivePage from "../../[slug]";
 export const getStaticProps: GetStaticProps = async (context) => {
   const page = parseInt(context.params.page as string);
   const tagSlug = context.params.slug as string;
+  if (page === 1)
+    return { redirect: { statusCode: 302, destination: `/tags/${tagSlug}` } };
+
   const tag = (await sequelize.models.Tag.findByPk(tagSlug)) as Tag;
+  if (!tag) return { notFound: true };
   const totalEntries = await sequelize.models.TagOfEntry.count({
     where: {
       tagId: tag.slug,
     },
   });
+
   const entries = (await tag.$get("entries", {
     ...entryListingCondition,
     order: [["recentActionDate", "DESC"]],
     limit: entriesPerPage,
     offset: (page - 1) * entriesPerPage,
   })) as Entry[];
+  if (entries.length < 1) return { notFound: true };
+
   const result = {
     props: {
       entries: entries.map((entry) => entry.toJSON() as Entry),

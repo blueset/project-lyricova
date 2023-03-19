@@ -10,6 +10,18 @@ import ArtistArchivePage from "../../[artistId]";
 export const getStaticProps: GetStaticProps = async (context) => {
   const page = parseInt(context.params.page as string);
   const artistId = parseInt(context.params.artistId as string);
+
+  if (page === 1)
+    return {
+      redirect: { statusCode: 302, destination: `/artists/${artistId}` },
+    };
+
+  const artist = (await sequelize.models.Artist.findByPk(artistId, {
+    attributes: ["id", "name", "type"],
+  })) as Artist;
+
+  if (!artist) return { notFound: true };
+
   const entryIds = await sequelize.query<{ entryId: number }>(
     `
     SELECT
@@ -25,9 +37,9 @@ export const getStaticProps: GetStaticProps = async (context) => {
     }
   );
   const totalEntries = entryIds.length;
-  const artist = (await sequelize.models.Artist.findByPk(artistId, {
-    attributes: ["id", "name", "type"],
-  })) as Artist;
+
+  if (totalEntries < 1) return { notFound: true };
+
   const entries = (await sequelize.models.Entry.findAll({
     ...entryListingCondition,
     where: { id: entryIds.map((e) => e.entryId) },
@@ -35,6 +47,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     limit: entriesPerPage,
     offset: (page - 1) * entriesPerPage,
   })) as Entry[];
+  if (entries.length < 1) return { notFound: true };
 
   return {
     props: {

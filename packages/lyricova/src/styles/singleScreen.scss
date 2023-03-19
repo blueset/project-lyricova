@@ -1,0 +1,10 @@
+body[data-path="/tags"],
+body[data-path^="/screensavers"] {
+  height: 100%;
+  
+  #__next {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+}

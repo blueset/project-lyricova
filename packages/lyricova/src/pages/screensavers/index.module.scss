@@ -37,14 +37,16 @@
       transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
       transition-property: font-weight, letter-spacing, margin-right;
 
-      --letter-spacing: 0em;
-      letter-spacing: var(--letter-spacing);
-      margin-right: calc(var(--letter-spacing) * -1);
+      letter-spacing: 0em;
+
+      span {
+        letter-spacing: 0;
+      }
 
       @media (hover: hover) {
         &:hover {
           font-weight: 200;
-          --letter-spacing: 0.075em;
+          letter-spacing: 0.075em;
         }
       }
     }
@@ -55,13 +57,15 @@
     font-weight: 300;
     text-transform: uppercase;
     font-size: 1.5rem;
-    --letter-spacing: 0.75em;
-    letter-spacing: var(--letter-spacing);
-    margin-right: calc(var(--letter-spacing) * -1);
+    letter-spacing: 0.75em;
     align-self: center;
     font-variation-settings: "XTRA" 600, "wdth" 150;
     overflow: hidden;
     width: 100%;
+
+    span {
+      letter-spacing: 0;
+    }
   }
 
 
@@ -70,7 +74,7 @@
       line-height: 0.85em;
       margin-bottom: 0.15em;
     }
-    h2 { --letter-spacing: 0.9em; }
+    h2 { letter-spacing: 0.9em; }
   }
 
   blockquote {
@@ -90,7 +94,7 @@
   .bottom {
     display: flex;
     flex-direction: column;
-    justify-content: end;
+    justify-content: flex-end;
 
     footer {
       padding: 0;
@@ -128,5 +132,11 @@
         color: $background-color;
       }
     }
+  }
+
+  @include media-breakpoint-up(mobile) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

@@ -22,6 +22,11 @@ import Head from "next/head";
 export const getStaticProps: GetStaticProps = async (context) => {
   const page = 1;
   const artistId = parseInt(context.params.artistId as string);
+  const artist = (await sequelize.models.Artist.findByPk(artistId, {
+    attributes: ["id", "name", "type"],
+  })) as Artist;
+  if (!artist) return { notFound: true };
+
   const entryIds = await sequelize.query<{ entryId: number }>(
     `
     SELECT
@@ -37,9 +42,9 @@ export const getStaticProps: GetStaticProps = async (context) => {
     }
   );
   const totalEntries = entryIds.length;
-  const artist = (await sequelize.models.Artist.findByPk(artistId, {
-    attributes: ["id", "name", "type"],
-  })) as Artist;
+
+  if (totalEntries < 1) return { notFound: true };
+
   const entries = (await sequelize.models.Entry.findAll({
     ...entryListingCondition,
     where: { id: entryIds.map((e) => e.entryId) },

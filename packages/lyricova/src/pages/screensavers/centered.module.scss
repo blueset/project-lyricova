@@ -1,0 +1,119 @@
+@import "../../styles/variables.scss";
+@import "../../styles/mixins.scss";
+
+.time {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  display: block;
+  font-family: $headings-font;
+  font-weight: 800;
+  font-stretch: expanded;
+  font-variant-numeric: tabular-nums;
+  writing-mode: tb-rl;
+  overflow: hidden;
+  font-size: 18.8vh;
+  line-height: 0.85;
+  opacity: 0.4;
+  transition-duration: 1s;
+  transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  transition-property: background-color, background-image;
+
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 2rem 1rem 2rem 0rem;
+
+  article {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 0;
+
+    overflow-y: auto;
+    overflow-x: visible;
+    scrollbar-width: none;
+    &::-webkit-scrollbar{
+      display: none;
+    }
+
+    .lines {
+      font-size: 2.5rem;
+      line-height: 1.3;
+      font-weight: 300;
+
+      .line {
+        margin-left: 2rem;
+
+        &.hidden {
+          display: none;
+        }
+      }
+
+      .line:last-child::after, &.done .line.prevLine:nth-last-child(2)::after {
+        content: "";
+        margin-left: 0.25rem;
+        border-right: 1px solid $primary-text;
+        animation: 1s linear 0s infinite blink;
+      }
+      
+      @keyframes blink {
+        0% {
+          opacity: 1;
+        }
+        49% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .typing {
+        color: $brand-color;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 0.125em;
+      }
+    }
+
+    .meta {
+      display: flex;
+      flex-direction: row;
+      gap: 0.5rem;
+      line-height: 1;
+      margin-left: 2rem;
+
+      .title,
+      .artists {
+        margin-bottom: -0.15em;
+      }
+
+      .title {
+        font-weight: 600;
+      }
+
+      .artists {
+        color: $secondary-text;
+      }
+    }
+  }
+
+  footer {
+    margin-left: 2rem;
+    font-size: 0.8em;
+    color: $secondary-text;
+  }
+}

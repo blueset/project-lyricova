@@ -22,6 +22,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   const page = 1;
   const tagSlug = context.params.slug as string;
   const tag = (await sequelize.models.Tag.findByPk(tagSlug)) as Tag;
+  if (!tag) return { notFound: true };
   const totalEntries = await TagOfEntry.count({
     where: {
       tagId: tag.slug,

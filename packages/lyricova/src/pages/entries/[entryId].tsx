@@ -59,6 +59,8 @@ export const getStaticProps: GetStaticProps = async (context) => {
     ],
   })) as Entry;
 
+  if (!entry) return { notFound: true };
+
   const entryObj = entry.toJSON() as ExpandedEntry;
   entryObj.songs.forEach((song: ExpandedSong) => {
     if (song.vocaDbJson?.pvs) {
