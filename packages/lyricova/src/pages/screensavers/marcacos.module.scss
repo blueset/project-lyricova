@@ -1,0 +1,73 @@
+@import "../../styles/variables.scss";
+@import "../../styles/mixins.scss";
+
+.metaRow {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  top: 1em;
+  left: 1em;
+  right: 1em;
+  gap: 1em;
+  
+  .meta {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+    align-items: baseline;
+
+    .title {
+      font-weight: 600;
+    }
+    .artists {
+      color: $secondary-text;
+    }
+  }
+}
+
+.headerTime {
+  font-size: 4.75rem;
+  font-family: $headings-font;
+  font-weight: 500;
+  font-stretch: condensed;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+  letter-spacing: -0.1em;
+  color: $secondary-text;
+
+  .colon {
+    animation: fadeIn 2s infinite cubic-bezier(0.25, 1, 0.5, 1);
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0.25;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0.25;
+      }
+    }
+  }
+}
+
+.credit {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  bottom: 1em;
+  left: 1em;
+  right: 1em;
+  gap: 1em;
+  color: $secondary-text;
+  font-size: 0.75em;
+  font-stretch: expanded;
+
+  a {
+    color: inherit;
+  }
+}

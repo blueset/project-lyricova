@@ -15,7 +15,7 @@
   overflow: hidden;
   font-size: 18.8vh;
   line-height: 0.85;
-  opacity: 0.4;
+  opacity: 0.5;
   transition-duration: 1s;
   transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
   transition-property: background-color, background-image;
@@ -53,6 +53,7 @@
 
       .line {
         margin-left: 2rem;
+        min-height: 0.5em;
 
         &.hidden {
           display: none;

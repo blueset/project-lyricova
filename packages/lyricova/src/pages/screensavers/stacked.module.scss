@@ -110,6 +110,7 @@
     transition-duration: 0.6s;
     transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
     transition-property: opacity;
+    min-height: 0.5em;
 
     &.lineActive {
       opacity: 1;
