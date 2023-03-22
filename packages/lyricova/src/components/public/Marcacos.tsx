@@ -40,6 +40,8 @@ const buildContext =
     );
     const verseLines = verses.map((v) =>
       v.text
+        .replace(/——/g, "⸺")
+        .replace(/\p{Zs}/gu, " ")
         .split("\n")
         .map((l) => l.trim())
         .filter((v) => v)
@@ -60,6 +62,10 @@ const buildContext =
     // const debug = true;
     let clrBg: p5.Color, clrChar1: p5.Color, clrChar2: p5.Color;
 
+    // Workaround of p5.js treating glyph ID 10 (C) as linebreak
+    let id10: RegExp;
+    let id10Replace: string;
+
     sketch.windowResized = () => {
       sketch.resizeCanvas(sketch.windowWidth, sketch.windowHeight);
       Matter.Body.setPosition(
@@ -68,7 +74,7 @@ const buildContext =
       );
     };
 
-    function nextVerseLine() {
+    function nextVerseLine(): void {
       if (verseIndex < 0 || lineIndex + 1 >= verseLines[verseIndex].length) {
         verseIndex = (verseIndex + 1) % verseLines.length;
         onNewVerse?.(verses[verseIndex].entryId);
@@ -76,6 +82,7 @@ const buildContext =
       }
       lineIndex++;
       const text = verseLines[verseIndex][lineIndex];
+      if (!text.trim()) return nextVerseLine();
       verse = new Verse(text);
     }
 
@@ -146,6 +153,26 @@ const buildContext =
 
       World.add(engine.world, gravity);
       mouse = new Mouse(20);
+
+      sketch.textFont(font);
+
+      id10 = new RegExp(
+        String.fromCharCode(font.font.glyphs.glyphs[10].unicode),
+        "g"
+      );
+      const targetAdvWdth = font.font.glyphs.glyphs[10].advanceWidth;
+      id10Replace = Object.values(font.font.glyphs.glyphs)
+        .filter(
+          (g: { unicode: number }) =>
+            g.unicode != font.font.glyphs.glyphs[10].unicode
+        )
+        .map<[number, string]>(
+          (g: { advanceWidth: number; unicode: number }) => [
+            Math.abs(g.advanceWidth - targetAdvWdth),
+            String.fromCharCode(g.unicode),
+          ]
+        )
+        .sort()[0][1];
 
       let alphabet = "";
       if (verses.some((v) => v.language.startsWith("en"))) alphabet += enBase;
@@ -241,7 +268,13 @@ const buildContext =
         this.color = clrChar1;
         this.char = l;
         this.size = size;
-        this.box = font.textBounds(this.char, 0, 0, this.size) as {
+        // Workaround of p5.js treating glyph ID 10 (C) as linebreak
+        this.box = font.textBounds(
+          this.char.replace(id10, id10Replace),
+          0,
+          0,
+          this.size
+        ) as {
           x: number;
           y: number;
           w: number;
@@ -417,8 +450,14 @@ const buildContext =
           sketch.textSize(typeSize);
           sketch.textFont(font);
           // const wWord = sketch.textWidth(words[i].trim());
+          // Workaround of p5.js treating glyph ID 10 (C) as linebreak
           const wWord = (
-            font.textBounds(words[i].trim(), 0, 0, typeSize) as { w: number }
+            font.textBounds(
+              words[i].trim().replace(id10, id10Replace),
+              0,
+              0,
+              typeSize
+            ) as { w: number }
           ).w;
           const nextWLine = wLine + wWord + space;
           // console.log(words[i].trim(), wWord, nextWLine, sketch.width * 0.95);
