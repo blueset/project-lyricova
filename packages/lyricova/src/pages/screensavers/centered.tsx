@@ -73,7 +73,6 @@ export default function TypingCenteredScreensaver({
         timelineRef.current.kill();
       }
 
-      console.log("using cursor", cursor);
       const verse = verses[cursor];
       const verseLines = verse.text.split("\n");
 

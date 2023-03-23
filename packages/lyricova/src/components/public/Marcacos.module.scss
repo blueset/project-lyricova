@@ -6,3 +6,20 @@
   align-items: center;
   justify-content: center;
 }
+
+.sizer {
+  position: absolute;
+  font-weight: 700;
+  width: 90%;
+  line-height: 1.1;
+  opacity: 0;
+  user-select: none;
+  pointer-events: none;
+  z-index: -1;
+
+  span {
+    display: inline-block;
+    vertical-align: top;
+    text-decoration: inherit;
+  }
+}

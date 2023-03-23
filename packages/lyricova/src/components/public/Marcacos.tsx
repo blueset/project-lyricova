@@ -12,6 +12,41 @@ import { ScreensaverProps } from "../../utils/screensaverProps";
 import { useEffect } from "react";
 import classes from "./Marcacos.module.scss";
 
+type RelayoutFn = (wrapper: HTMLElement, ratio: number) => void;
+
+const relayout: RelayoutFn = (wrapper, ratio = 1) => {
+  const container = wrapper.parentElement;
+
+  const update = (width: number) => (wrapper.style.maxWidth = width + "px");
+
+  // Reset wrapper width
+  wrapper.style.maxWidth = "";
+
+  // Get the initial container size
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+
+  // Synchronously do binary search and calculate the layout
+  let lower: number = width / 2 - 0.25;
+  let upper: number = width + 0.5;
+  let middle: number;
+
+  if (width) {
+    while (lower + 1 < upper) {
+      middle = Math.round((lower + upper) / 2);
+      update(middle);
+      if (container.clientHeight === height) {
+        upper = middle;
+      } else {
+        lower = middle;
+      }
+    }
+
+    // Update the wrapper width
+    update(upper * ratio + width * (1 - ratio));
+  }
+};
+
 const { Engine, World, Bodies, Runner } = Matter;
 
 Matter.use(MatterAttractors);
@@ -57,6 +92,8 @@ const buildContext =
     let border: number;
     let verseIndex = -1;
     let lineIndex = 0;
+    let timeout: NodeJS.Timer;
+    const range = document.createRange();
     // let mobile;
     const debug = false;
     // const debug = true;
@@ -120,6 +157,7 @@ const buildContext =
     sketch.setup = () => {
       // mouse = sketch.createVector(0, 0);
       const div = document.getElementById("p5-sketch");
+      const sizer = document.getElementById("sizer");
       const cnv = sketch.createCanvas(div.offsetWidth, div.offsetHeight);
       // div.style.setProperty("height", sketch.height + "px", "important");
 
@@ -130,6 +168,7 @@ const buildContext =
 
       typeSize = sketch.max(sketch.width, sketch.height) * 0.05;
       border = sketch.min(sketch.width, sketch.height) * 0.05;
+      sizer.style.fontSize = `${typeSize}px`;
 
       engine = Engine.create();
       Runner.run(engine);
@@ -197,12 +236,12 @@ const buildContext =
 
     function startLine() {
       nextVerseLine();
-      setTimeout(endLine, 5000);
+      timeout = setTimeout(endLine, 5000);
     }
 
     function endLine() {
       verse?.disable();
-      setTimeout(startLine, 2000);
+      timeout = setTimeout(startLine, 2000);
     }
 
     sketch.draw = () => {
@@ -249,6 +288,12 @@ const buildContext =
 
     sketch.touchMoved = () => {
       return false;
+    };
+
+    const sketchRemove = sketch.remove;
+    sketch.remove = () => {
+      sketchRemove();
+      clearTimeout(timeout);
     };
 
     class Letter {
@@ -369,6 +414,12 @@ const buildContext =
             sketch.vertex(this.body.vertices[i].x, this.body.vertices[i].y);
           }
           sketch.endShape("close");
+          // if (this.posD && this.posC && !this.free) {
+          //   sketch.stroke(0, 255, 0);
+          //   sketch.circle(this.posD.x, this.posD.y, 2);
+          //   sketch.stroke(0, 0, 255);
+          //   sketch.circle(this.posC.x, this.posC.y, 2);
+          // }
         }
       }
     }
@@ -400,46 +451,134 @@ const buildContext =
         // let posY;
         // if (mobile) posY = (this.nLines + 1) * typeSize;
         // else posY = sketch.floor(this.nLines * 0.5) * typeSize;
-        const posY = sketch.floor(this.nLines * 0.5) * typeSize;
-        for (let i = 0; i <= this.nLines; i++) {
+        // const posY = sketch.floor(this.nLines * 0.5) * typeSize;
+        const posY =
+          (Math.max(...this.pos[this.pos.length - 1].map((p) => p.y)) -
+            Math.min(...this.pos[0].map((p) => p.y + typeSize))) *
+          0.5;
+        // console.log("posY", posY);
+        for (let i = 0; i < this.nLines; i++) {
           // lines
           const adjustment = -this.w[i] * 0.5;
+          // console.log(i, this.w, this.letters);
           for (let j = 0; j < this.pos[i].length; j++) {
             // letters
             const letter =
               this.letters[sketch.min(n, this.letters.length - 1)].box;
+            // console.log(
+            //   this.letters[sketch.min(n, this.letters.length - 1)].char
+            // );
             this.pos[i][j].x += adjustment;
-            // this.pos[i][j].y -= letter.h * 0.5 - (letter.y + letter.h) + posY;
             this.pos[i][j].y -= letter.h * 0.5 - (letter.y + letter.h) + posY;
+            // this.pos[i][j].y -= letter.h * 0.5 - (letter.y + letter.h);
             n++;
           }
-          n--;
+          // n--;
         }
+        // console.log("letters", letters.length);
       }
 
-      newLetra(letter: Letter) {
+      newLetra(letter: Letter, lineIdx: number, charIdx: number) {
         const wletter = letter.box.x + letter.box.w;
         this.letters.push(letter);
-        this.pos[this.nLines][this.n] = Matter.Vector.add(
-          this.pos[this.nLines][this.n],
+        this.pos[lineIdx][charIdx] = Matter.Vector.add(
+          this.pos[lineIdx][charIdx],
           Matter.Vector.create(wletter * 0.5 + 1, 0)
         );
-        // letter.activate(mouse.body.position, this.pos[this.nLines][this.n]);
+        // letter.activate(mouse.body.position, this.pos[lineIdx][charIdx]);
         letter.activate(
-          { x: sketch.width / 2, y: (sketch.height + typeSize) / 2 },
-          this.pos[this.nLines][this.n]
+          { x: sketch.width / 2, y: sketch.height / 2 },
+          this.pos[lineIdx][charIdx]
         );
-        this.pos[this.nLines][this.n + 1] = Matter.Vector.add(
-          this.pos[this.nLines][this.n],
-          Matter.Vector.create(wletter * 0.5 + 1, 0)
-        );
-        this.n++;
-        this.w[this.nLines] += wletter;
+        // this.pos[lineIdx][charIdx + 1] = Matter.Vector.add(
+        //   this.pos[lineIdx][charIdx],
+        //   Matter.Vector.create(wletter * 0.5 + 1, 0)
+        // );
+        // charIdx++;
+        // this.w[lineIdx] += wletter;
       }
 
       createLetters() {
+        // let wLine = 0;
+        // const words = this.text.split(/\s/g);
+        const sizer = document
+          .getElementById("sizer")
+          .getElementsByTagName("span")[0];
+        sizer.innerText = this.text;
+        relayout(sizer, 1);
+
+        const node = sizer.firstChild;
+        const coordinates = [...sizer.innerText]
+          .map<[string, DOMRect]>((char, i) => {
+            range.setStart(node, i);
+            range.setEnd(node, i + 1);
+            return [char, range.getBoundingClientRect()];
+          })
+          .filter((v) => !v[0].match(/\s/g));
+        // console.log(coordinates);
+        sketch.textSize(typeSize);
+        sketch.textFont(font);
+        const coordinatesByRow = coordinates.reduce<[string, DOMRect][][]>(
+          (acc, [char, rect]) => {
+            if (acc.length === 0) return [[[char, rect]]];
+            const lastRow = acc[acc.length - 1];
+            const lastRect = lastRow[lastRow.length - 1][1];
+            if (rect.top === lastRect.top) {
+              lastRow.push([char, rect]);
+            } else {
+              acc.push([[char, rect]]);
+            }
+            return acc;
+          },
+          []
+        );
+
+        coordinatesByRow.forEach((row, rowIdx) => {
+          this.pos[rowIdx] = [];
+          this.w[rowIdx] = row[row.length - 1][1].right - row[0][1].left;
+          // console.log(this.w);
+          row.forEach(([char, rect], charIdx) => {
+            this.pos[rowIdx][charIdx] = Matter.Vector.create(rect.x, rect.y);
+            let lIdx = letters.findIndex(
+              (l) => l.free && l.char === char && checkPos(l.body, 0)
+            );
+            if (lIdx >= 0) {
+              this.newLetra(letters[lIdx], rowIdx, charIdx);
+              arrayMove(letters, lIdx, letters.length - 1);
+            } else {
+              const a = sketch.random(sketch.TWO_PI);
+              const x = sketch.sin(a) * sketch.max(sketch.width, sketch.height);
+              const y = sketch.cos(a) * sketch.max(sketch.width, sketch.height);
+              const l = new Letter(char, typeSize, x, y);
+              letters.push(l);
+              this.newLetra(l, rowIdx, charIdx);
+
+              lIdx = letters.findIndex((l) => l.free && checkPos(l.body, 0));
+              if (lIdx >= 0) {
+                letters[lIdx].remove();
+                letters.splice(lIdx, 1);
+              } else {
+                lIdx = letters.findIndex((l) => l.free);
+                if (lIdx >= 0) {
+                  letters[lIdx].remove();
+                  letters.splice(lIdx, 1);
+                } else {
+                  console.error("Failed to remove char for", char);
+                }
+              }
+            }
+          });
+        });
+        this.nLines = coordinatesByRow.length;
+        // console.log(coordinatesByRow, this.pos);
+        this.center();
+      }
+
+      createLettersOld() {
         let wLine = 0;
         // const words = this.text.split(/\s/g);
+        const sizer = document.getElementById("sizer");
+        sizer.innerText = this.text;
         const words = this.text.split(
           /(?<=[\s\p{Script_Extensions=Hiragana}\p{Script_Extensions=Katakana}\p{Script_Extensions=Han}\p{Po}\p{Pf}\p{Ps}])(?![\p{Pf}\s])/gu
         );
@@ -486,7 +625,7 @@ const buildContext =
               l = letters[k];
               if (!found && letter == l.char && l.free && checkPos(l.body, 0)) {
                 found = true;
-                this.newLetra(l);
+                this.newLetra(l, this.nLines, this.n);
                 arrayMove(letters, k, letters.length - 1);
                 break;
               }
@@ -497,7 +636,7 @@ const buildContext =
               const y = sketch.cos(a) * sketch.max(sketch.width, sketch.height);
               l = new Letter(letter, typeSize, x, y);
               letters.push(l);
-              this.newLetra(l);
+              this.newLetra(l, this.nLines, this.n);
               for (let k = 0; k < letters.length; k++) {
                 const l = letters[k];
                 if (l.free && checkPos(l.body, 0)) {
@@ -589,5 +728,12 @@ export default function Marcacos(props: ContextProps) {
       };
     }
   }, [props.verses, props.entries, props.onNewVerse]);
-  return <div id="p5-sketch" className={classes.canvas}></div>;
+  return (
+    <>
+      <div id="p5-sketch" className={classes.canvas}></div>
+      <div id="sizer" className={classes.sizer}>
+        <span>...</span>
+      </div>
+    </>
+  );
 }
