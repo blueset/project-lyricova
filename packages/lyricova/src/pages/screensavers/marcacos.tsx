@@ -74,7 +74,7 @@ export default function MarcacosScreensaver({
         <span>Project Lyricova Screensaver Gen 4</span>
         <span>
           <a href="https://www.andreburnier.com/project/marcacos">Marcacos</a>{" "}
-          by André Brunier, 2020
+          originally by André Brunier, 2020
         </span>
       </div>
       <Marcacos entries={entries} verses={verses} onNewVerse={setEntryId} />
