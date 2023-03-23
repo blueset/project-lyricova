@@ -163,7 +163,7 @@ const buildContext =
 
       // mobile = sketch.width < sketch.height
       clrBg = sketch.color("#00171F");
-      clrChar1 = sketch.color(255, 40);
+      clrChar1 = sketch.color("#1A2E35");
       clrChar2 = sketch.color(255);
 
       typeSize = sketch.max(sketch.width, sketch.height) * 0.05;
@@ -523,15 +523,32 @@ const buildContext =
             if (acc.length === 0) return [[[char, rect]]];
             const lastRow = acc[acc.length - 1];
             const lastRect = lastRow[lastRow.length - 1][1];
-            if (rect.top === lastRect.top) {
+            if (
+              (rect.top === lastRect.top || lastRect.left === 0) &&
+              rect.left > 0
+            ) {
               lastRow.push([char, rect]);
             } else {
               acc.push([[char, rect]]);
+            }
+            if (lastRow.length > 1 && lastRow[0][1].top !== lastRow[1][1].top) {
+              // workaround for Safari where the first CJK char after a wrap might end up in the previous Y coordinate instead of the new line.
+              lastRow[0][1] = {
+                right: lastRow[0][1].right,
+                bottom: lastRow[0][1].bottom,
+                width: lastRow[0][1].width,
+                height: lastRow[0][1].height,
+                left: lastRow[0][1].left,
+                top: lastRow[1][1].top,
+                x: lastRow[0][1].left,
+                y: lastRow[1][1].top,
+              } as DOMRect;
             }
             return acc;
           },
           []
         );
+        // console.log(coordinates, coordinatesByRow);
 
         coordinatesByRow.forEach((row, rowIdx) => {
           this.pos[rowIdx] = [];
@@ -574,101 +591,101 @@ const buildContext =
         this.center();
       }
 
-      createLettersOld() {
-        let wLine = 0;
-        // const words = this.text.split(/\s/g);
-        const sizer = document.getElementById("sizer");
-        sizer.innerText = this.text;
-        const words = this.text.split(
-          /(?<=[\s\p{Script_Extensions=Hiragana}\p{Script_Extensions=Katakana}\p{Script_Extensions=Han}\p{Po}\p{Pf}\p{Ps}])(?![\p{Pf}\s])/gu
-        );
-        const space = typeSize * 0.3;
-        // console.log("words", words);
+      // createLettersOld() {
+      //   let wLine = 0;
+      //   // const words = this.text.split(/\s/g);
+      //   const sizer = document.getElementById("sizer");
+      //   sizer.innerText = this.text;
+      //   const words = this.text.split(
+      //     /(?<=[\s\p{Script_Extensions=Hiragana}\p{Script_Extensions=Katakana}\p{Script_Extensions=Han}\p{Po}\p{Pf}\p{Ps}])(?![\p{Pf}\s])/gu
+      //   );
+      //   const space = typeSize * 0.3;
+      //   // console.log("words", words);
 
-        for (let i = 0; i < words.length; i++) {
-          sketch.textSize(typeSize);
-          sketch.textFont(font);
-          // const wWord = sketch.textWidth(words[i].trim());
-          // Workaround of p5.js treating glyph ID 10 (C) as linebreak
-          const wWord = (
-            font.textBounds(
-              words[i].trim().replace(id10, id10Replace),
-              0,
-              0,
-              typeSize
-            ) as { w: number }
-          ).w;
-          const nextWLine = wLine + wWord + space;
-          // console.log(words[i].trim(), wWord, nextWLine, sketch.width * 0.95);
-          let wWordShape = 0;
+      //   for (let i = 0; i < words.length; i++) {
+      //     sketch.textSize(typeSize);
+      //     sketch.textFont(font);
+      //     // const wWord = sketch.textWidth(words[i].trim());
+      //     // Workaround of p5.js treating glyph ID 10 (C) as linebreak
+      //     const wWord = (
+      //       font.textBounds(
+      //         words[i].trim().replace(id10, id10Replace),
+      //         0,
+      //         0,
+      //         typeSize
+      //       ) as { w: number }
+      //     ).w;
+      //     const nextWLine = wLine + wWord + space;
+      //     // console.log(words[i].trim(), wWord, nextWLine, sketch.width * 0.95);
+      //     let wWordShape = 0;
 
-          if (wLine > 0 && nextWLine > sketch.width * 0.95) {
-            // line break
-            this.n = 0;
-            this.nLines++;
-            this.pos[this.nLines] = [];
-            this.w[this.nLines] = 0;
-            this.pos[this.nLines][this.n] = Matter.Vector.create(
-              0,
-              typeSize * this.nLines
-            );
-            wLine = 0;
-            // console.log("Line break");
-          }
+      //     if (wLine > 0 && nextWLine > sketch.width * 0.95) {
+      //       // line break
+      //       this.n = 0;
+      //       this.nLines++;
+      //       this.pos[this.nLines] = [];
+      //       this.w[this.nLines] = 0;
+      //       this.pos[this.nLines][this.n] = Matter.Vector.create(
+      //         0,
+      //         typeSize * this.nLines
+      //       );
+      //       wLine = 0;
+      //       // console.log("Line break");
+      //     }
 
-          for (let j = 0; j < words[i].length; j++) {
-            const letter = words[i].charAt(j);
-            if (letter.match(/\s/gu)) continue;
-            let found = false;
-            let l: Letter;
-            for (let k = 0; k < letters.length; k++) {
-              l = letters[k];
-              if (!found && letter == l.char && l.free && checkPos(l.body, 0)) {
-                found = true;
-                this.newLetra(l, this.nLines, this.n);
-                arrayMove(letters, k, letters.length - 1);
-                break;
-              }
-            }
-            if (!found) {
-              const a = sketch.random(sketch.TWO_PI);
-              const x = sketch.sin(a) * sketch.max(sketch.width, sketch.height);
-              const y = sketch.cos(a) * sketch.max(sketch.width, sketch.height);
-              l = new Letter(letter, typeSize, x, y);
-              letters.push(l);
-              this.newLetra(l, this.nLines, this.n);
-              for (let k = 0; k < letters.length; k++) {
-                const l = letters[k];
-                if (l.free && checkPos(l.body, 0)) {
-                  l.remove();
-                  letters.splice(k, 1);
-                  found = true;
-                  break;
-                }
-              }
-              if (!found) {
-                for (let k = 0; k < letters.length; k++) {
-                  const l = letters[k];
-                  if (l.free) {
-                    l.remove();
-                    letters.splice(k, 1);
-                    break;
-                  }
-                }
-              }
-            }
-            wWordShape += l.box.w;
-          }
-          // console.log("wWord", wWord, "wWordShape", wWordShape);
-          wLine += wWord;
-          if (words[i].match(/\s$/gu)) {
-            this.pos[this.nLines][this.n].x += space;
-            this.w[this.nLines] += space;
-            wLine += space;
-          }
-        }
-        this.center();
-      }
+      //     for (let j = 0; j < words[i].length; j++) {
+      //       const letter = words[i].charAt(j);
+      //       if (letter.match(/\s/gu)) continue;
+      //       let found = false;
+      //       let l: Letter;
+      //       for (let k = 0; k < letters.length; k++) {
+      //         l = letters[k];
+      //         if (!found && letter == l.char && l.free && checkPos(l.body, 0)) {
+      //           found = true;
+      //           this.newLetra(l, this.nLines, this.n);
+      //           arrayMove(letters, k, letters.length - 1);
+      //           break;
+      //         }
+      //       }
+      //       if (!found) {
+      //         const a = sketch.random(sketch.TWO_PI);
+      //         const x = sketch.sin(a) * sketch.max(sketch.width, sketch.height);
+      //         const y = sketch.cos(a) * sketch.max(sketch.width, sketch.height);
+      //         l = new Letter(letter, typeSize, x, y);
+      //         letters.push(l);
+      //         this.newLetra(l, this.nLines, this.n);
+      //         for (let k = 0; k < letters.length; k++) {
+      //           const l = letters[k];
+      //           if (l.free && checkPos(l.body, 0)) {
+      //             l.remove();
+      //             letters.splice(k, 1);
+      //             found = true;
+      //             break;
+      //           }
+      //         }
+      //         if (!found) {
+      //           for (let k = 0; k < letters.length; k++) {
+      //             const l = letters[k];
+      //             if (l.free) {
+      //               l.remove();
+      //               letters.splice(k, 1);
+      //               break;
+      //             }
+      //           }
+      //         }
+      //       }
+      //       wWordShape += l.box.w;
+      //     }
+      //     // console.log("wWord", wWord, "wWordShape", wWordShape);
+      //     wLine += wWord;
+      //     if (words[i].match(/\s$/gu)) {
+      //       this.pos[this.nLines][this.n].x += space;
+      //       this.w[this.nLines] += space;
+      //       wLine += space;
+      //     }
+      //   }
+      //   this.center();
+      // }
 
       disable() {
         for (let i = 0; i < this.letters.length; i++) {

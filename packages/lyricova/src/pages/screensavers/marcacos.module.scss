@@ -14,8 +14,9 @@
   .meta {
     display: flex;
     flex-direction: row;
-    gap: 1em;
+    gap: 0.25em 1em;
     align-items: baseline;
+    flex-wrap: wrap;
 
     .title {
       font-weight: 600;
@@ -69,5 +70,9 @@
 
   a {
     color: inherit;
+  }
+
+  span:last-child {
+    text-align: right;
   }
 }
