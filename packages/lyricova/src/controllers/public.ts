@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { Entry } from "lyricova-common/models/Entry";
 import { Verse } from "lyricova-common/models/Verse";
-import { Op } from "sequelize";
+import { Op, fn } from "sequelize";
 import { entryListingCondition } from "../utils/queries";
 import { resolve } from "path";
 import { readFile } from "node:fs/promises";
@@ -54,6 +54,7 @@ export class PublicApiController {
   constructor() {
     this.router = Router();
     this.router.get("/search", this.search);
+    this.router.get("/verse", this.verse);
     this.router.get("/og/:entryId", this.og);
   }
 
@@ -91,6 +92,58 @@ export class PublicApiController {
     })) as Entry[];
 
     res.status(200).json(result);
+  };
+
+  public verse = async (req: Request, res: Response) => {
+    const type = String(req.query.type);
+    const languages = Array.isArray(req.query.languages)
+      ? req.query.languages
+      : (req.query.languages as string)?.split(",");
+    // const tags = Array.isArray(req.query.tags)
+    //   ? req.query.tags
+    //   : (req.query.tags as string)?.split(",");
+
+    const verseCondition: any = { [Op.and]: [] };
+    if (type === "original") verseCondition[Op.and].push({ isOriginal: true });
+    else if (type === "main") verseCondition[Op.and].push({ isMain: true });
+    if (languages)
+      verseCondition[Op.and].push({
+        [Op.or]: languages.map((l) => ({ language: { [Op.startsWith]: l } })),
+      });
+
+    const verse = (
+      await Verse.findOne({
+        attributes: [
+          "text",
+          "typingSequence",
+          "stylizedText",
+          "html",
+          "isMain",
+          "isOriginal",
+          "language",
+          "entryId",
+        ],
+        where: verseCondition[Op.and].length > 0 ? verseCondition : undefined,
+        order: fn("RAND"),
+        limit: 1,
+        include: [
+          {
+            association: "entry",
+            attributes: ["id", "title", "producersName", "vocalistsName"],
+            include: [
+              {
+                association: "tags",
+                attributes: ["name", "slug", "color"],
+                through: { attributes: [] },
+                // where: tags ? { slug: tags } : undefined,
+              },
+            ],
+          },
+        ],
+      })
+    )?.toJSON();
+
+    res.status(200).json(verse);
   };
 
   public og = async (req: Request, res: Response) => {

@@ -9,11 +9,19 @@ import type { Body } from "matter-js";
 import MatterAttractors from "matter-attractors";
 import p5 from "p5";
 import { ScreensaverProps } from "../../utils/screensaverProps";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import classes from "./Marcacos.module.scss";
+const IS_SERVER = typeof window === "undefined";
+const useIsomorphicLayoutEffect = IS_SERVER ? useEffect : useLayoutEffect;
 
 type RelayoutFn = (wrapper: HTMLElement, ratio: number) => void;
 
+/**
+ * Balance line wrapping algorithm
+ * @source https://github.com/shuding/react-wrap-balancer/
+ * @author Shu Ding
+ * @license MIT
+ */
 const relayout: RelayoutFn = (wrapper, ratio = 1) => {
   const container = wrapper.parentElement;
 
@@ -392,9 +400,15 @@ const buildContext =
       }
 
       draw() {
-        if (this.free)
-          this.color = sketch.lerpColor(this.color, clrChar1, 0.05);
-        else this.color = sketch.lerpColor(this.color, clrChar2, 0.1);
+        let color: p5.Color;
+        if (this.free) {
+          color = sketch.lerpColor(this.color, clrChar1, 0.05);
+          if (color.toString() == this.color.toString()) color = clrChar1;
+        } else {
+          color = sketch.lerpColor(this.color, clrChar2, 0.1);
+          if (color.toString() == this.color.toString()) color = clrChar2;
+        }
+        this.color = color;
 
         sketch.push();
         sketch.translate(this.body.position.x, this.body.position.y);
@@ -414,12 +428,6 @@ const buildContext =
             sketch.vertex(this.body.vertices[i].x, this.body.vertices[i].y);
           }
           sketch.endShape("close");
-          // if (this.posD && this.posC && !this.free) {
-          //   sketch.stroke(0, 255, 0);
-          //   sketch.circle(this.posD.x, this.posD.y, 2);
-          //   sketch.stroke(0, 0, 255);
-          //   sketch.circle(this.posC.x, this.posC.y, 2);
-          // }
         }
       }
     }
@@ -737,7 +745,7 @@ export const buildSketch = (props: ContextProps) =>
   new p5(buildContext(props), document.getElementById("p5-sketch"));
 
 export default function Marcacos(props: ContextProps) {
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (window) {
       const p5Inst = buildSketch(props);
       return () => {

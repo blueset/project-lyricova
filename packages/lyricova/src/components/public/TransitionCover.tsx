@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import {
   disableBodyScroll,
@@ -7,6 +7,8 @@ import {
   clearAllBodyScrollLocks,
 } from "body-scroll-lock";
 import classes from "./TransitionCover.module.scss";
+const IS_SERVER = typeof window === "undefined";
+const useIsomorphicLayoutEffect = IS_SERVER ? useEffect : useLayoutEffect;
 
 /// <reference types="../../types/global" />
 
@@ -114,7 +116,7 @@ export function TransitionCover() {
   const currentRouteRef = useRef<string>();
   currentRouteRef.current = router.asPath;
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const handleRouteChange = (path: string) => {
       // console.log("handleRouteChange", window.lastClickTop);
       if (coverRef.current) {
@@ -168,8 +170,66 @@ export function TransitionCover() {
       clearAllBodyScrollLocks();
     };
   }, [router]);
+
+  async function onFontLoading(elm: HTMLDivElement) {
+    if (timelineRef.current) {
+      timelineRef.current[0].kill();
+      timelineRef.current[1].kill();
+    }
+
+    timelineRef.current = buildTimeline(
+      elm,
+      window.lastClickTop ?? window.innerHeight / 2
+    );
+    console.log("startTimeline", timelineRef.current);
+    timelineRef.current[0].play("revealLogo");
+    disableBodyScroll(document.body);
+
+    // await document.fonts.ready;
+    const promises: Promise<any>[] = [];
+    document.fonts.forEach((f) => promises.push(f.loaded));
+    await Promise.race(promises);
+    promises.splice(0, promises.length);
+    document.fonts.forEach(
+      (f) => f.status === "loading" && promises.push(f.loaded)
+    );
+    await Promise.all(promises);
+
+    console.log("stopTimeline", timelineRef.current);
+    timelineRef.current[0].pause();
+    timelineRef.current[1].play();
+    enableBodyScroll(document.body);
+  }
+
+  // console.log(
+  //   typeof document === "undefined" ? typeof document : document?.fonts.status
+  // );
+  // typeof document !== "undefined" &&
+  // document?.fonts.forEach((f) => console.log(f, f.status));
+  const coverElm =
+    coverRef.current ||
+    ((typeof document !== "undefined"
+      ? document.getElementById("transitionCover")
+      : undefined) as HTMLDivElement);
+  console.log("coverElm", coverElm);
+  if (coverElm) {
+    let isLoaded = false;
+    if (typeof document !== "undefined") {
+      isLoaded = true;
+      document.fonts.forEach(
+        (f) =>
+          (isLoaded =
+            isLoaded && (f.status === "loaded"))
+      );
+    }
+    console.log("isLoaded", isLoaded);
+    if (!isLoaded) {
+      onFontLoading(coverElm);
+    }
+  }
+
   return (
-    <div ref={coverRef} className={classes.cover}>
+    <div ref={coverRef} className={classes.cover} id="transitionCover">
       <div className={classes.cover1} />
       <div className={classes.cover2} />
       <div className={classes.cover3} />
