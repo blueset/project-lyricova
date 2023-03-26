@@ -118,7 +118,7 @@ class Particle {
     this.startTime = performance.now();
     this.upDuration = 500 + Math.random() * 2000;
     this.upStartTime = (5500 - this.upDuration) * Math.random();
-    this.exitDuration = 500 + Math.random() * 500;
+    this.exitDuration = 500 + Math.random() * 1000;
   }
 
   render(ctx: CanvasRenderingContext2D, time: number) {
