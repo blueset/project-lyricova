@@ -124,7 +124,7 @@ export function TransitionCover() {
           timelineRef.current[0].kill();
           timelineRef.current[1].kill();
         }
-        console.log(path, currentRouteRef.current);
+        // console.log(path, currentRouteRef.current);
         if (path === currentRouteRef.current) {
           timelineRef.current = null;
           return;
@@ -181,7 +181,7 @@ export function TransitionCover() {
       elm,
       window.lastClickTop ?? window.innerHeight / 2
     );
-    console.log("startTimeline", timelineRef.current);
+    // console.log("startTimeline", timelineRef.current);
     timelineRef.current[0].play("revealLogo");
     disableBodyScroll(document.body);
 
@@ -195,7 +195,7 @@ export function TransitionCover() {
     );
     await Promise.all(promises);
 
-    console.log("stopTimeline", timelineRef.current);
+    // console.log("stopTimeline", timelineRef.current);
     timelineRef.current[0].pause();
     timelineRef.current[1].play();
     enableBodyScroll(document.body);
@@ -211,18 +211,16 @@ export function TransitionCover() {
     ((typeof document !== "undefined"
       ? document.getElementById("transitionCover")
       : undefined) as HTMLDivElement);
-  console.log("coverElm", coverElm);
+  // console.log("coverElm", coverElm);
   if (coverElm) {
     let isLoaded = false;
     if (typeof document !== "undefined") {
       isLoaded = true;
       document.fonts.forEach(
-        (f) =>
-          (isLoaded =
-            isLoaded && (f.status === "loaded"))
+        (f) => (isLoaded = isLoaded && f.status === "loaded")
       );
     }
-    console.log("isLoaded", isLoaded);
+    // console.log("isLoaded", isLoaded);
     if (!isLoaded) {
       onFontLoading(coverElm);
     }

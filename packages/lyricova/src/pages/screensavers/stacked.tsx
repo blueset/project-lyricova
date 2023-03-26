@@ -3,8 +3,10 @@ import { GetServerSideProps } from "next";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TagRow } from "../../components/public/TagRow";
 import { generateColorGradientSteps } from "../../frontendUtils/colors";
-import { ScreensaverProps } from "../../utils/screensaverProps";
-import { getServerSideProps as getProps } from "../../utils/screensaverProps";
+import {
+  ScreensaverProps,
+  getServerSideProps as getProps,
+} from "../../utils/screensaverProps";
 import classes from "./stacked.module.scss";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";

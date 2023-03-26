@@ -41,6 +41,7 @@ export default function ScreensaversDirectory() {
           Stacked
         </Link>
         <Link href="/screensavers/marcacos">Marcacos</Link>
+        <Link href="/screensavers/glucagon">Glucagon</Link>
         <Link href="/screensavers/docs">Options</Link>
       </nav>
       <div className={classes.bottom}>

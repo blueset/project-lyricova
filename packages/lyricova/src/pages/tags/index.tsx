@@ -72,6 +72,12 @@ function TagNode({ tag }: { tag: TagWithCount }) {
         ref={async (elm) => {
           if (elm) {
             await document.fonts.ready;
+            const promises: Promise<any>[] = [];
+            document.fonts.forEach(
+              (f) => f.family.match(/Hubot/gi) && promises.push(f.loaded)
+            );
+            await Promise.all(promises);
+            console.log(promises);
             const fontSize = parseFloat(
               window.getComputedStyle(elm).getPropertyValue("font-size")
             );
@@ -82,7 +88,7 @@ function TagNode({ tag }: { tag: TagWithCount }) {
             });
             const offsetLeft = elm.offsetLeft;
             const range = document.createRange();
-            range.setStartBefore(elm);
+            range.setStartBefore(spans[0]);
             const lefts = spans.map((span) => {
               range.setEndBefore(span);
               return range.getBoundingClientRect().width + offsetLeft;
