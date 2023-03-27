@@ -55,6 +55,7 @@ export class PublicApiController {
     this.router = Router();
     this.router.get("/search", this.search);
     this.router.get("/verse", this.verse);
+    this.router.get("/versesBySong", this.versesBySong);
     this.router.get("/og/:entryId", this.og);
   }
 
@@ -144,6 +145,27 @@ export class PublicApiController {
     )?.toJSON();
 
     res.status(200).json(verse);
+  };
+
+  public versesBySong = async (req: Request, res: Response) => {
+    const songId = Array.isArray(req.query.songId)
+      ? req.query.songId[0]
+      : req.query.songId;
+
+    const result = (await Entry.findAll({
+      attributes: entryListingCondition.attributes,
+      include: [
+        ...entryListingCondition.include,
+        {
+          association: "songs",
+          attributes: [],
+          where: { id: songId },
+        }
+      ],
+      order: [["recentActionDate", "DESC"]],
+    })) as Entry[];
+
+    res.status(200).json(result.map((e) => e.toJSON())));
   };
 
   public og = async (req: Request, res: Response) => {

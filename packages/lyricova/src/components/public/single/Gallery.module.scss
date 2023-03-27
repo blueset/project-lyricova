@@ -1,0 +1,27 @@
+@import "../../../styles/variables";
+@import "../../../styles/mixins";
+@import "./common.scss";
+
+.gallery {
+  @include layout;
+
+  .galleryEntries {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1em;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+
+      @media (hover: hover) {
+        transition: transform 0.3s ease-in-out;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
 import { GetStaticProps, GetStaticPaths } from "next";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";
 import classes from "./EntryPage.module.scss";
@@ -17,6 +17,7 @@ import { MainVerse } from "../../components/public/single/MainVerse";
 import Head from "next/head";
 import { siteName } from "../../utils/consts";
 import { AdminLinks } from "../../components/public/single/AdminLinks";
+import { Gallery } from "../../components/public/single/Gallery";
 
 type ExpandedSong = Song & { videoUrl?: string };
 type ExpandedEntry = Entry & { songs: ExpandedSong[] };
@@ -166,6 +167,7 @@ export default function EntryPage({ entry }: ArchivePageProps) {
       <Pulses pulses={entry.pulses} creationDate={entry.creationDate} />
       <Songs songs={entry.songs} />
       <Comment>{entry.comment}</Comment>
+      <Gallery entryIds={entry.songs.map((s) => s.id)} />
       <AdminLinks id={entry.id} />
       <Footer />
     </>
