@@ -17,7 +17,7 @@ import { Song } from "lyricova-common/models/Song";
 import { Album } from "lyricova-common/models/Album";
 import _ from "lodash";
 import type { VDBArtistType } from "../types/vocadb";
-import { GraphQLResolveInfo } from "graphql";
+import type { GraphQLResolveInfo } from "graphql";
 import { getFields } from "lyricova-common/utils/graphQL";
 
 @InputType()

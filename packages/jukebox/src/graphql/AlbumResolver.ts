@@ -10,7 +10,7 @@ import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { ArtistOfAlbum } from "lyricova-common/models/ArtistOfAlbum";
 import { getFields } from "lyricova-common/utils/graphQL";
 import sequelize from "sequelize";
-import { FieldNode, GraphQLResolveInfo } from "graphql";
+import type { GraphQLResolveInfo } from "graphql";
 
 
 @InputType()

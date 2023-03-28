@@ -161,8 +161,6 @@ interface Props {
 export default function DashboardLayout({ title, children }: Props) {
   const router = useRouter();
 
-  const container = () => window.document.body || undefined;
-
   const defaultDrawerOpen = useMediaQuery<Theme>((theme) =>
     theme.breakpoints.up("sm")
   );

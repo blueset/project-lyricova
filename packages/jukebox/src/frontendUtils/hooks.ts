@@ -105,15 +105,15 @@ export function useLyricsStateRAF(
         setLine(null);
       }
     },
-    [playerRef, lyrics, lyrics.lines, callback]
+    [playerRef, lyrics, setLine, callback]
   );
 
   const onPlay = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate());
-  }, [playerRef, onTimeUpdate]);
+  }, [onTimeUpdate]);
   const onTimeChange = useCallback(() => {
     window.requestAnimationFrame(() => onTimeUpdate(/* recur */ false));
-  }, [playerRef, onTimeUpdate]);
+  }, [onTimeUpdate]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -129,7 +129,7 @@ export function useLyricsStateRAF(
         player.removeEventListener("timeupdate", onTimeChange);
       };
     }
-  }, [playerRef, onPlay, onTimeChange]);
+  }, [playerRef, onPlay, onTimeChange, onTimeUpdate]);
 
   return line;
 }
@@ -144,6 +144,7 @@ export function useLyricsState(
 
   useEffect(() => {
     if (!playerRef.current) return;
+    const player = playerRef.current;
 
     // Create track
     const track = document.createElement("track");
@@ -156,10 +157,10 @@ export function useLyricsState(
     track.src = "data:text/vtt;base64,V0VCVlRUCgoK";
 
     // Add track
-    playerRef.current.appendChild(track);
+    player.appendChild(track);
     track.track.mode = "hidden";
     // Workaround for Firefox
-    playerRef.current.textTracks.getTrackById(track.id).mode = "hidden";
+    player.textTracks.getTrackById(track.id).mode = "hidden";
 
     const addCues = () => {
       // Generate cues
@@ -173,7 +174,7 @@ export function useLyricsState(
       }
       lyrics.lines.forEach((line, index) => {
         let nextLine: number =
-          lyrics.lines[index + 1]?.position ?? playerRef.current.duration;
+          lyrics.lines[index + 1]?.position ?? player.duration;
         if (Number.isNaN(nextLine)) nextLine = 1e10;
         const cue = new VTTCue(
           line.position,
@@ -183,26 +184,25 @@ export function useLyricsState(
         cue.addEventListener("enter", () => {
           setLine(index);
           // console.log("WebWTT lyrics state enter", index);
-          callback &&
-            callback(index, lyrics, playerRef.current, line.position, nextLine);
+          callback && callback(index, lyrics, player, line.position, nextLine);
         });
         track.track.addCue(cue);
       });
     };
 
-    if (playerRef.current.readyState >= 2) {
+    if (player.readyState >= 2) {
       // Set timeout to ensure the cues can be added properly.
       setTimeout(addCues, 0);
     } else {
-      playerRef.current.addEventListener("loadedmetadata", addCues);
+      player.addEventListener("loadedmetadata", addCues);
     }
 
     // Cleanup
     return () => {
       track?.parentElement?.removeChild(track);
-      playerRef.current?.removeEventListener("loadedmetadata", addCues);
+      player?.removeEventListener("loadedmetadata", addCues);
     };
-  }, [lyrics, playerRef.current]);
+  }, [callback, lyrics, playerRef, setLine]);
 
   return line;
 }
@@ -650,12 +650,13 @@ export function usePlayerLyricsTypingState(
     });
 
     return tl;
+    // Keeping doneElementRef.current and typingElementRef.current to ensure the timeline is updated accordingly
   }, [
-    doneElementRef.current,
     endTimes,
     perLineThreshold,
     sequenceQuery.data,
     startTimes,
+    doneElementRef.current,
     typingElementRef.current,
   ]);
 

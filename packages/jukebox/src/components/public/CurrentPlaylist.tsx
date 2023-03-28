@@ -17,7 +17,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useRef } from "react";
 import AutoResizer from "react-virtualized-auto-sizer";
 import React, { CSSProperties } from "react";
-import _ from "lodash";
 import {
   DragDropContext,
   DropResult,
@@ -123,7 +122,7 @@ function CurrentPlaylistItem({
           isDragging
             ? null
             : () => {
-                dispatch(playTrack({track: index, playNow: true}));
+                dispatch(playTrack({ track: index, playNow: true }));
               }
         }
       >
@@ -189,7 +188,7 @@ Row.displayName = "Row";
 
 export default function CurrentPlaylist() {
   const dispatch = useAppDispatch();
-  const { nowPlaying, isCollapsed } = useAppSelector((s) => s.playlist);
+  const { nowPlaying } = useAppSelector((s) => s.playlist);
   const tracks = useAppSelector(visualPlaylistSelector);
 
   function onDragEnd(result: DropResult) {
@@ -258,7 +257,9 @@ export default function CurrentPlaylist() {
                         if (nowPlaying !== null) {
                           // Scroll to initial position on mount
                           rowVirtualizer._willUpdate();
-                          rowVirtualizer.scrollToIndex(nowPlaying, { align: "start" });
+                          rowVirtualizer.scrollToIndex(nowPlaying, {
+                            align: "start",
+                          });
                         }
                       }
                     }}

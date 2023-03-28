@@ -5,10 +5,10 @@ import {
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
-import { Box, makeStyles, Stack } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import gsap from "gsap";
-import { CSSProperties, RefObject, useEffect, useMemo, useRef } from "react";
+import { CSSProperties, RefObject, useEffect, useRef } from "react";
 import { measureTextWidths } from "../../../frontendUtils/measure";
 
 type Timeline = gsap.core.Timeline;
@@ -28,7 +28,11 @@ function BalancedTextSpanWrap({
   style,
   progressorRef,
 }: WrapProps) {
-    return <span className={className} style={style} ref={progressorRef}>{children}</span>;
+  return (
+    <span className={className} style={style} ref={progressorRef}>
+      {children}
+    </span>
+  );
 }
 
 interface LyricsLineElementProps {
@@ -40,7 +44,6 @@ interface LyricsLineElementProps {
 
 function LyricsLineElement({
   line,
-  animate,
   theme,
   progressorRef,
 }: LyricsLineElementProps) {

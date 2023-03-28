@@ -31,7 +31,7 @@ import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import FindInPageIcon from "@mui/icons-material/FindInPage";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { formatArtists } from "../../../frontendUtils/artists";
+import { formatArtists } from "lyricova-common/frontendUtils/artists";
 import Link from "lyricova-common/components/Link";
 import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {

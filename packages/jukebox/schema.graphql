@@ -110,10 +110,11 @@ type DashboardStats {
 type Entry {
   author: User!
   authorId: Float!
-  comment: String!
+  comment: String
   creationDate: Timestamp!
   id: Float!
   producersName: String!
+  recentActionDate: Timestamp!
   title: String!
   updatedOn: Timestamp!
   vocalistsName: String!
@@ -512,7 +513,7 @@ type Playlist {
 
 type Pulse {
   creationDate: Timestamp!
-  id: ID!
+  id: Int!
 }
 
 type Query {

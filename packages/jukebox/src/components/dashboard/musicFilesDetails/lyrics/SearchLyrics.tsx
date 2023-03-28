@@ -43,8 +43,6 @@ import TooltipIconButton from "../../TooltipIconButton";
 import { DocumentNode } from "graphql";
 import { Subscription } from "zen-observable-ts";
 
-type TypographyChildren = React.ComponentProps<typeof Typography>["children"];
-
 const SEARCH_LYRICS_QUERY = gql`
   query(
     $title: String!

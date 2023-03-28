@@ -1,8 +1,4 @@
 import { Request, Response, NextFunction, Router } from "express";
-import fs from "fs";
-import Path from "path";
-import { VIDEO_FILES_PATH } from "../utils/secret";
-import { promisify } from "util";
 import { pythonBridge, PythonBridge } from "python-bridge";
 import { encrypt, decrypt } from "../utils/crypto";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
@@ -23,7 +19,11 @@ export class DownloadController {
     // TODO: find a way to open a global web socket/socket.io
   }
 
-  private publishDownloadProgress(sessionId: string, current: number, total: number) {
+  private publishDownloadProgress(
+    sessionId: string,
+    current: number,
+    total: number
+  ) {
     console.log(`Download progress of ${sessionId}: ${current} / ${total}`);
   }
 
@@ -257,13 +257,20 @@ def download():
    * Search songs via music-dl
    * GET .../music-dl?query=QUERY
    */
-  public musicDlSearch = async (req: Request, res: Response, next: NextFunction) => {
+  public musicDlSearch = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const query = req.query.query;
-      if (!query) res.status(400).json({ status: 400, error: "`query` is required." });
+      if (!query)
+        res.status(400).json({ status: 400, error: "`query` is required." });
       const python = await this.prepareMusicDlPythonSession();
       const outcome: { pickle: string }[] = await python`search(${query})`;
-      outcome.forEach(v => { v.pickle = encrypt(v.pickle); });
+      outcome.forEach((v) => {
+        v.pickle = encrypt(v.pickle);
+      });
       res.json(outcome);
       await python.end();
     } catch (e) {
@@ -276,10 +283,15 @@ def download():
    * POST .../music-dl
    * <Encrypted pickle data>
    */
-  public musicDlDownload = async (req: Request, res: Response, next: NextFunction) => {
+  public musicDlDownload = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const encrypted = req.body;
-      if (!encrypted) res.status(400).json({ status: 400, error: "payload is required." });
+      if (!encrypted)
+        res.status(400).json({ status: 400, error: "payload is required." });
       const payload = decrypt(encrypted);
       const python = await this.prepareMusicDlPythonSession();
       python.stdin.write(payload);

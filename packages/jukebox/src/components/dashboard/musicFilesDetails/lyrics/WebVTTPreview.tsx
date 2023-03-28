@@ -8,7 +8,6 @@ interface Props {
   fileId: number;
 }
 
-
 function convertLine(line: LyricsLine): string {
   let base = line.content;
 
@@ -16,8 +15,10 @@ function convertLine(line: LyricsLine): string {
   if (timeTags) {
     let ptr = 0;
     let result = "";
-    timeTags.forEach(({index, timeTag}) => {
-      result += base.substring(ptr, index) + `<${buildTimeTag(line.position + timeTag)}>`;
+    timeTags.forEach(({ index, timeTag }) => {
+      result +=
+        base.substring(ptr, index) +
+        `<${buildTimeTag(line.position + timeTag)}>`;
       ptr = index;
     });
     if (ptr < base.length) result += base.substring(ptr);
@@ -27,7 +28,7 @@ function convertLine(line: LyricsLine): string {
   const furigana = line?.attachments?.content?.[FURIGANA]?.attachment ?? [];
   let result = "";
   let ptr = 0;
-  furigana.forEach(({content, range: [start, end]}) => {
+  furigana.forEach(({ content, range: [start, end] }) => {
     if (start > ptr) {
       result += base.substring(ptr, start);
     }
@@ -53,21 +54,27 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
   const trackDataUrl = useMemo<string | null>(() => {
     if (!lyrics) return null;
     let webvtt = "WEBVTT\n\n";
-    webvtt += "STYLE\n::cue {\n  font-family: Inter, \"Source Han Sans\", \"Noto Sans CJK\", sans-serif;\n}\n\n";
-    webvtt += "STYLE\n::cue(.tt) {\n  font-variant-numeric: \"tabular-nums\";\n}\n\n";
-    webvtt += lyrics.lines.map((v, idx) => {
-      const start = v.timeTag.substring(0, 10);
-      const end = lyrics.lines[idx + 1]?.timeTag?.substring(0, 10) ?? "99:59.999";
-      let text = `${convertLine(v)}`;
-      if (v.attachments.translation()) {
-        text += `\n${v.attachments.translation()}`;
-      }
+    webvtt +=
+      'STYLE\n::cue {\n  font-family: Inter, "Source Han Sans", "Noto Sans CJK", sans-serif;\n}\n\n';
+    webvtt +=
+      'STYLE\n::cue(.tt) {\n  font-variant-numeric: "tabular-nums";\n}\n\n';
+    webvtt += lyrics.lines
+      .map((v, idx) => {
+        const start = v.timeTag.substring(0, 10);
+        const end =
+          lyrics.lines[idx + 1]?.timeTag?.substring(0, 10) ?? "99:59.999";
+        let text = `${convertLine(v)}`;
+        if (v.attachments.translation()) {
+          text += `\n${v.attachments.translation()}`;
+        }
 
-      return `${idx + 1}\n${start} --> ${end} line:50% align:start\n<c.tt>[${start}]</c>\n${text}`;
-    }).join("\n\n");
+        return `${idx +
+          1}\n${start} --> ${end} line:50% align:start\n<c.tt>[${start}]</c>\n${text}`;
+      })
+      .join("\n\n");
     // console.log(webvtt);
     const vttBlob = new Blob([webvtt], {
-      type: "text/plain"
+      type: "text/plain",
     });
     return URL.createObjectURL(vttBlob);
   }, [lyrics]);
@@ -77,11 +84,24 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
     const track = playerRef.current.textTracks[0];
     if (!track) return;
     track.mode = "showing";
-  }, [playerRef.current]);
+  }, []);
 
-  return <div>
-    <video ref={playerRef} src={`/api/files/${fileId}/file`} controls style={{width: "calc(100vw - 5em)", height: "calc(100vh - 10em)"}}>
-      <track src={trackDataUrl} kind="subtitles" srcLang="ja" label="LRCX Preview" default />
-    </video>
-  </div>;
+  return (
+    <div>
+      <video
+        ref={playerRef}
+        src={`/api/files/${fileId}/file`}
+        controls
+        style={{ width: "calc(100vw - 5em)", height: "calc(100vh - 10em)" }}
+      >
+        <track
+          src={trackDataUrl}
+          kind="subtitles"
+          srcLang="ja"
+          label="LRCX Preview"
+          default
+        />
+      </video>
+    </div>
+  );
 }

@@ -3,7 +3,7 @@ import { gql, useQuery } from "@apollo/client";
 import { ArtistFragments } from "lyricova-common/utils/fragments";
 import { Artist } from "lyricova-common/models/Artist";
 import { useRouter } from "next/router";
-import ArtistEntityDialog from "../../../components/dashboard/musicFilesDetails/artistEntityDialog";
+import ArtistEntityDialog from "lyricova-common/components/artistEntityDialog";
 import { useCallback } from "react";
 
 const ARTIST_ENTITY_QUERY = gql`

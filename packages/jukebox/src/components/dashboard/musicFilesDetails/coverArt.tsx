@@ -93,7 +93,7 @@ export default function CoverArtPanel({
         setSelectedImage({ blob: event.target.files[0] });
       }
     },
-    [setUrlField]
+    [setSelectedImage]
   );
 
   // Drag and drop file
@@ -178,7 +178,15 @@ export default function CoverArtPanel({
       });
       toggleSubmitting(false);
     }
-  }, [authContext, fileId, selectedImage]);
+  }, [
+    authContext,
+    fileId,
+    refresh,
+    selectedImage,
+    setCacheBustingToken,
+    snackBar,
+    toggleSubmitting,
+  ]);
 
   return (
     <Grid

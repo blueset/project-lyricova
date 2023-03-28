@@ -61,8 +61,7 @@
  * - Edge 13
  */
 
-
-interface Range { start: number; end: number; }
+// interface Range { start: number; end: number; }
 
 /**
  * Line breaking global vars
@@ -73,13 +72,13 @@ let breakMatches: number[] | null;
  * Selectors and elements to watch;
  * calling $.balanceText(elements) adds "elements" to this list.
  */
-const watching: {
-  sel: string[];
-  el: HTMLElement[];
-} = {
-  sel: [], // default class to watch
-  el: [],
-};
+// const watching: {
+//   sel: string[];
+//   el: HTMLElement[];
+// } = {
+//   sel: [], // default class to watch
+//   el: [],
+// };
 
 /**
  * Debounces a function over a threshold
@@ -89,19 +88,19 @@ const watching: {
  * @param args
  * @return {Function} Debounced function
  */
-function debounce<Args extends unknown[]>(func: (...args: Args) => unknown, wait: number) {
-  let timeout: number | undefined = undefined;
+// function debounce<Args extends unknown[]>(func: (...args: Args) => unknown, wait: number) {
+//   let timeout: number | undefined = undefined;
 
-  return function executedFunction(...args: Args) {
-    const later = () => {
-      window.clearTimeout(timeout);
-      func(...args);
-    };
+//   return function executedFunction(...args: Args) {
+//     const later = () => {
+//       window.clearTimeout(timeout);
+//       func(...args);
+//     };
 
-    window.clearTimeout(timeout);
-    timeout = window.setTimeout(later, wait);
-  };
-}
+//     window.clearTimeout(timeout);
+//     timeout = window.setTimeout(later, wait);
+//   };
+// }
 
 /**
  * Object for tracking next whitespace params
@@ -128,13 +127,17 @@ class NextWS_params {
  */
 function removeTags(el: SVGTextElement) {
   // Remove soft-hyphen breaks
-  const lines = el.querySelectorAll<SVGTSpanElement>("tspan[data-owner^=\"balance-text-line\"]");
+  const lines = el.querySelectorAll<SVGTSpanElement>(
+    'tspan[data-owner^="balance-text-line"]'
+  );
   lines.forEach((line) => {
     line.outerHTML = line.innerHTML;
   });
 
   // Restore hyphens inserted for soft-hyphens
-  const spans = el.querySelectorAll<SVGTSpanElement>("tspan[data-owner=\"balance-text-softhyphen\"]");
+  const spans = el.querySelectorAll<SVGTSpanElement>(
+    'tspan[data-owner="balance-text-softhyphen"]'
+  );
   spans.forEach((span) => {
     span.outerHTML = "\u00ad";
   });
@@ -150,7 +153,13 @@ function removeTags(el: SVGTextElement) {
  * @param {string}  dy       - height of the line
  * @return {string} Justified text
  */
-function justify(el: SVGTextElement, txt: string, conWidth: number, x?: string, dy?: number): string {
+function justify(
+  el: SVGTextElement,
+  txt: string,
+  conWidth: number,
+  x?: string,
+  dy?: number
+): string {
   txt = txt.trim();
   const words = txt.split(" ").length;
   txt = `${txt}`;
@@ -183,7 +192,7 @@ function justify(el: SVGTextElement, txt: string, conWidth: number, x?: string, 
  * Returns true iff char at index is a break char outside of HTML < > tags.
  * Break char can be: whitespace (except non-breaking-space: u00a0),
  * hypen, emdash (u2014), endash (u2013), or soft-hyphen (u00ad).
- * 
+ *
  * For C-J, Zero Width Space (u200B) is also added.
  *
  * @param {string} txt   - the text to check
@@ -224,8 +233,11 @@ function isBreakChar(txt: string, index: number): boolean {
  * @return {boolean}
  */
 function isBreakOpportunity(txt: string, index: number): boolean {
-  return ((index === 0) || (index === txt.length) ||
-    (isBreakChar(txt, index - 1) && !isBreakChar(txt, index)));
+  return (
+    index === 0 ||
+    index === txt.length ||
+    (isBreakChar(txt, index - 1) && !isBreakChar(txt, index))
+  );
 }
 
 interface BreakOpportunity {
@@ -249,11 +261,19 @@ interface BreakOpportunity {
  * @param {number}  c        - char index (0 <= c && c <= txt.length)
  * @param {Object}  ret      - return {index: {number}, width: {number}} of previous/next break
  */
-function findBreakOpportunity(el: SVGTextElement, txt: string, conWidth: number, desWidth: number, dir: number, c: number, ret: BreakOpportunity) {
+function findBreakOpportunity(
+  el: SVGTextElement,
+  txt: string,
+  conWidth: number,
+  desWidth: number,
+  dir: number,
+  c: number,
+  ret: BreakOpportunity
+) {
   let w = 0;
 
   if (txt && typeof txt === "string") {
-    for (; ;) {
+    for (;;) {
       while (!isBreakOpportunity(txt, c)) {
         c += dir;
       }
@@ -262,10 +282,10 @@ function findBreakOpportunity(el: SVGTextElement, txt: string, conWidth: number,
       w = el.getComputedTextLength();
 
       if (dir < 0) {
-        if ((w <= desWidth) || (w <= 0) || (c === 0)) {
+        if (w <= desWidth || w <= 0 || c === 0) {
           break;
         }
-      } else if ((desWidth <= w) || (conWidth <= w) || (c === txt.length)) {
+      } else if (desWidth <= w || conWidth <= w || c === txt.length) {
         break;
       }
 
@@ -275,15 +295,18 @@ function findBreakOpportunity(el: SVGTextElement, txt: string, conWidth: number,
   ret.index = c;
   ret.width = w;
 }
-const kana = "あアいイうウえエおオかカきキくクけケこコさサしシすスせセそソたタちチつツてテとトなナにニぬヌねネのノはハひヒふフへヘほホまマみミむムめメもモやヤゆユよヨらラりリるルれレろロわワをヲんンがガぎギぐグげゲごゴざザじジずズぜゼぞゾだダぢヂづヅでデどドばバびビぶブべベぼボぱパぴピぷプぺペぽポ";
-const smallKana = "ぁぃぅぇぉァィゥェォっゃゅょゎゕゖッャュョヮヵヶㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿㇷ゚ー・゠ヽヾゝゞ々〻\u3099-\u309e";
+const kana =
+  "あアいイうウえエおオかカきキくクけケこコさサしシすスせセそソたタちチつツてテとトなナにニぬヌねネのノはハひヒふフへヘほホまマみミむムめメもモやヤゆユよヨらラりリるルれレろロわワをヲんンがガぎギぐグげゲごゴざザじジずズぜゼぞゾだダぢヂづヅでデどドばバびビぶブべベぼボぱパぴピぷプぺペぽポ";
+const smallKana =
+  "ぁぃぅぇぉァィゥェォっゃゅょゎゕゖッャュョヮヵヶㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿㇷ゚ー・゠ヽヾゝゞ々〻\u3099-\u309e";
 const inseparable = "—…‥";
 const openingBracket = "‘“（〔［｛〈《「『【｟〘〖«〝";
 const closingBracket = "’”）〕］｝〉》」』】｠〙〗»〟";
 const hyphens = "‐〜゠–";
 const puncts = "！？‼⁇⁈⁉・：；。．、，";
 export const cj = `\\p{Script=Han}${kana}`;
-export const notBefore = smallKana + inseparable + closingBracket + hyphens + puncts;
+export const notBefore =
+  smallKana + inseparable + closingBracket + hyphens + puncts;
 export const notAfter = openingBracket;
 export const ascIINonSpace = "\x21-\x7E";
 
@@ -294,12 +317,21 @@ export const ascIINonSpace = "\x21-\x7E";
  * @returns Processed text and if the text is processed.
  */
 function preprocessCJ(text: string): [string, boolean] {
-  if (text.match(/\u200B/g) || !text.match(/(\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Han})/ug)) {
+  if (
+    text.match(/\u200B/g) ||
+    !text.match(/(\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Han})/gu)
+  ) {
     return [text, false];
   }
   // eslint-disable-next-line no-misleading-character-class
-  text = text.replace(new RegExp(`([${cj}${notBefore}])([^${notBefore}])`, "ug"), "$1\u200B$2");
-  text = text.replace(new RegExp(`([${ascIINonSpace}])([${cj}${notAfter}])`, "ug"), "$1\u200B$2");
+  text = text.replace(
+    new RegExp(`([${cj}${notBefore}])([^${notBefore}])`, "ug"),
+    "$1\u200B$2"
+  );
+  text = text.replace(
+    new RegExp(`([${ascIINonSpace}])([${cj}${notAfter}])`, "ug"),
+    "$1\u200B$2"
+  );
   return [text, true];
 }
 
@@ -313,7 +345,12 @@ function preprocessCJ(text: string): [string, boolean] {
  * @param lineHeightFactor - Multiples of line height (1 by default)
  * @param shouldJustify - Justify text (not working on CJ text) (false by default)
  */
-export function balanceText(el: SVGTextElement, containerWidth: number, lineHeightFactor: number = 1, shouldJustify: boolean = false): void {
+export function balanceText(
+  el: SVGTextElement,
+  containerWidth: number,
+  lineHeightFactor: number = 1,
+  shouldJustify: boolean = false
+): void {
   // In a lower level language, this algorithm takes time
   // comparable to normal text layout other than the fact
   // that we do two passes instead of one, so we should
@@ -322,7 +359,8 @@ export function balanceText(el: SVGTextElement, containerWidth: number, lineHeig
 
   removeTags(el);
 
-  const lineHeight = parseFloat(window.getComputedStyle(el).fontSize) * lineHeightFactor;
+  const lineHeight =
+    parseFloat(window.getComputedStyle(el).fontSize) * lineHeightFactor;
 
   let nowrapWidth = el.getComputedTextLength();
   const xCoord = el.x.baseVal.getItem(0).valueAsString;
@@ -332,9 +370,12 @@ export function balanceText(el: SVGTextElement, containerWidth: number, lineHeig
   // to trimming trailing space that we expect over all
   // lines other than the last.
 
-  if (containerWidth > 0 &&               // prevent divide by zero
+  if (
+    containerWidth > 0 && // prevent divide by zero
     nowrapWidth > containerWidth && // text is more than 1 line
-    nowrapWidth < maxTextWidth) {   // text is less than arbitrary limit (make this a param?)
+    nowrapWidth < maxTextWidth
+  ) {
+    // text is less than arbitrary limit (make this a param?)
     let remainingText = el.innerHTML;
     let newText = "";
     let lineText = "";
@@ -346,7 +387,14 @@ export function balanceText(el: SVGTextElement, containerWidth: number, lineHeig
     [remainingText, preprocessed] = preprocessCJ(remainingText);
 
     // loop vars
-    let desiredWidth, guessIndex, le, ge, splitIndex, isHyphen, isSoftHyphen, isZWS;
+    let desiredWidth,
+      guessIndex,
+      le,
+      ge,
+      splitIndex,
+      isHyphen,
+      isSoftHyphen,
+      isZWS;
 
     // Determine where to break:
     while (remLines > 1) {
@@ -356,10 +404,10 @@ export function balanceText(el: SVGTextElement, containerWidth: number, lineHeig
       // Fix C-J custom breakpoints may resulting desiredWidth larger than container width.
       // This is caused by totLines might not always be equivalent to the
       // resulting length, as browsers do not take in consideration of custom line break chances.
-      desiredWidth = Math.round((nowrapWidth) / remLines);
+      desiredWidth = Math.round(nowrapWidth / remLines);
       if (desiredWidth > containerWidth) {
         remLines++;
-        desiredWidth = Math.round((nowrapWidth) / remLines);
+        desiredWidth = Math.round(nowrapWidth / remLines);
       }
 
       // Guessed char index
@@ -369,27 +417,52 @@ export function balanceText(el: SVGTextElement, containerWidth: number, lineHeig
 
       // Find a breaking space somewhere before (or equal to) desired width,
       // not necessarily the closest to the desired width.
-      findBreakOpportunity(el, remainingText, containerWidth, desiredWidth, -1, guessIndex, le);
+      findBreakOpportunity(
+        el,
+        remainingText,
+        containerWidth,
+        desiredWidth,
+        -1,
+        guessIndex,
+        le
+      );
 
       // Find first breaking char after (or equal to) desired width.
       ge = new NextWS_params();
       guessIndex = le.index;
-      findBreakOpportunity(el, remainingText, containerWidth, desiredWidth, +1, guessIndex, ge);
+      findBreakOpportunity(
+        el,
+        remainingText,
+        containerWidth,
+        desiredWidth,
+        +1,
+        guessIndex,
+        ge
+      );
 
       // Find first breaking char before (or equal to) desired width.
       le.reset();
       guessIndex = ge.index;
-      findBreakOpportunity(el, remainingText, containerWidth, desiredWidth, -1, guessIndex, le);
+      findBreakOpportunity(
+        el,
+        remainingText,
+        containerWidth,
+        desiredWidth,
+        -1,
+        guessIndex,
+        le
+      );
 
       // Find closest string to desired length
       if (le.index === 0) {
         splitIndex = ge.index;
-      } else if ((containerWidth < ge.width) || (le.index === ge.index)) {
+      } else if (containerWidth < ge.width || le.index === ge.index) {
         splitIndex = le.index;
       } else {
-        splitIndex = ((Math.abs(desiredWidth - le.width) < Math.abs(ge.width - desiredWidth))
-          ? le.index
-          : ge.index);
+        splitIndex =
+          Math.abs(desiredWidth - le.width) < Math.abs(ge.width - desiredWidth)
+            ? le.index
+            : ge.index;
       }
 
       // Break string
@@ -398,7 +471,10 @@ export function balanceText(el: SVGTextElement, containerWidth: number, lineHeig
       isSoftHyphen = Boolean(lineText.match(/\u00ad$/));
       if (isSoftHyphen) {
         // Replace soft-hyphen causing break with explicit hyphen
-        lineText = lineText.replace(/\u00ad$/, "<tspan data-owner=\"balance-text-softhyphen\">-</tspan>");
+        lineText = lineText.replace(
+          /\u00ad$/,
+          '<tspan data-owner="balance-text-softhyphen">-</tspan>'
+        );
       }
 
       if (shouldJustify) {
@@ -409,7 +485,8 @@ export function balanceText(el: SVGTextElement, containerWidth: number, lineHeig
         }
       } else {
         const posAttr = newText.length > 0 ? " " + positioning : "";
-        isHyphen = isSoftHyphen || Boolean(lineText.match(/(-|\u2014|\u2013)$/));
+        isHyphen =
+          isSoftHyphen || Boolean(lineText.match(/(-|\u2014|\u2013)$/));
         isZWS = Boolean(lineText.match(/\u200B$/));
         let newLineBreak = `<tspan data-owner="balance-text-line"${posAttr}>`;
         if (isHyphen) {
@@ -440,6 +517,8 @@ export function balanceText(el: SVGTextElement, containerWidth: number, lineHeig
       remainingText = remainingText.replace(/\u200B/g, "");
     }
     const posAttr = newText.length > 0 ? " " + positioning : "";
-    el.innerHTML = newText + `<tspan data-owner="balance-text-line"${posAttr}>${remainingText}</tspan>`;
+    el.innerHTML =
+      newText +
+      `<tspan data-owner="balance-text-line"${posAttr}>${remainingText}</tspan>`;
   }
 }

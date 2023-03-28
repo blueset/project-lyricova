@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../frontendUtils/hooks";
-import { makeStyles } from "@mui/material/styles";
 import { TabContext, TabPanel } from "@mui/lab";
 import InfoPanel from "./musicFilesDetails/info";
 import { SongFragments } from "lyricova-common/utils/fragments";
@@ -112,7 +111,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
   );
 
   const onTabSwitch = useCallback(
-    (event: any, newValue: string) => {
+    (event: unknown, newValue: string) => {
       setTabIndex(newValue);
     },
     [setTabIndex]

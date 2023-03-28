@@ -451,7 +451,11 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         ev.preventDefault();
         if (!playerRef.current || !playerStateRef.current) return;
         const perfNow = performance.now();
-        const time = playerStateRef.current.state === "playing" ? (perfNow - playerStateRef.current.startingAt) / 1000 * playerStateRef.current.rate : playerStateRef.current.progress;
+        const time =
+          playerStateRef.current.state === "playing"
+            ? ((perfNow - playerStateRef.current.startingAt) / 1000) *
+              playerStateRef.current.rate
+            : playerStateRef.current.progress;
         console.log("Tag time", time);
         const cursor = cursorRef.current;
         if (!isInExtrapolateModeRef.current) {
@@ -522,7 +526,6 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       document.removeEventListener("keydown", listener);
     };
   }, [
-    playerRef.current,
     linesPerTag,
     moveCursor,
     setCurrentLine,

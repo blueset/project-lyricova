@@ -22,7 +22,7 @@ export default function ButtonRow({ children, className, sx }: Props) {
       }}
       className={className}
     >
-      {Children.map(children, (child, idx) => {
+      {Children.map(children, (child) => {
         if (!isValidElement(child)) {
           return null;
         }

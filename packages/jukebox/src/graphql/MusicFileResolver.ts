@@ -21,13 +21,13 @@ import {
   Int,
   Mutation,
   ObjectType,
-  Publisher,
   PubSub,
   Query,
   Resolver,
   Root,
   Subscription,
 } from "type-graphql";
+import type { Publisher } from "type-graphql";
 import { PaginationArgs, PaginationInfo } from "./commons";
 import { UserInputError } from "apollo-server-express";
 import { Playlist } from "lyricova-common/models/Playlist";
@@ -37,7 +37,7 @@ import NodeID3 from "node-id3";
 import { swapExt } from "../utils/path";
 import { Lyrics } from "lyrics-kit";
 import { LyricsKitLyrics } from "./LyricsKitObjects";
-import { PubSubSessionPayload } from "./index";
+import type { PubSubSessionPayload } from "./index";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter((val) => !other.has(val)));

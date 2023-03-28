@@ -7,13 +7,11 @@ import {
   DialogContentText,
   DialogTitle,
   IconButton,
-  Typography,
 } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
 import { HmikuAtWikiEntry } from "../../../../graphql/LyricsProvidersResolver";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useSnackbar } from "notistack";
-import { makeStyles } from "@mui/material/styles";
 import Link from "lyricova-common/components/Link";
 import { DocumentNode } from "graphql";
 

@@ -14,8 +14,8 @@ import {
 import { gql, useApolloClient } from "@apollo/client";
 import { Song } from "lyricova-common/models/Song";
 import { Album } from "lyricova-common/models/Album";
-import SelectSongEntityBox from "./selectSongEntityBox";
-import TransliterationAdornment from "../TransliterationAdornment";
+import SelectSongEntityBox from "lyricova-common/components/selectSongEntityBox";
+import TransliterationAdornment from "lyricova-common/components/TransliterationAdornment";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { Field, Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
@@ -126,7 +126,7 @@ export default function InfoPanel({
             .integer(),
         })
       )}
-      onSubmit={async (values, formApi) => {
+      onSubmit={async (values) => {
         try {
           const result = await apolloClient.mutate<{
             writeTagsToMusicFile: { trackName: string };

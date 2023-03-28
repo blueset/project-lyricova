@@ -10,7 +10,6 @@ import React, {
 } from "react";
 import { gql, useLazyQuery } from "@apollo/client";
 import { AppContext, Track } from "../AppContext";
-import _ from "lodash";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import CurrentPlaylist from "../CurrentPlaylist";
 import { Texture } from "../../../graphql/TextureResolver";

@@ -416,11 +416,7 @@ export class MusicFileController {
    *
    * Not in GraphQL.
    */
-  public getCoverArt = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  public getCoverArt = async (req: Request, res: Response) => {
     const musicFile = await MusicFile.findByPk(parseInt(req.params.id));
     if (musicFile === null) {
       return res
@@ -467,11 +463,7 @@ export class MusicFileController {
    * Note:
    *   Either cover or url must be supplied.
    */
-  public uploadCoverArt = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  public uploadCoverArt = async (req: Request, res: Response) => {
     let coverPath = "";
 
     try {

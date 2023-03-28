@@ -16,7 +16,7 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import { formatArtistsPlainText } from "../../../frontendUtils/artists";
+import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { MusicFile } from "lyricova-common/models/MusicFile";
 import { Song } from "lyricova-common/models/Song";

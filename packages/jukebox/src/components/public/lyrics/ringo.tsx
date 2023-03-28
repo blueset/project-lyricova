@@ -1,10 +1,18 @@
-import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
+import {
+  LyricsKitLyrics,
+  LyricsKitLyricsLine,
+} from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { styled, Theme, useTheme } from "@mui/material";
-import { motion, Variants, AnimatePresence, Transition, TargetAndTransition } from "framer-motion";
+import {
+  motion,
+  Variants,
+  AnimatePresence,
+  Transition,
+  TargetAndTransition,
+} from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import _ from "lodash";
 import { CSSProperties } from "react";
 import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
@@ -22,8 +30,12 @@ const MotionDivLine = styled(motion.div)`
   display: flex;
   flex-direction: column-reverse;
   color: rgba(255, 255, 255, 0.4);
-  --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright) blur(var(--jukebox-ringo-blur-radius));
-  filter: var(--jukebox-cover-filter-bright-blur, blur(var(--jukebox-ringo-blur-radius)));
+  --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright)
+    blur(var(--jukebox-ringo-blur-radius));
+  filter: var(
+    --jukebox-cover-filter-bright-blur,
+    blur(var(--jukebox-ringo-blur-radius))
+  );
   transform-origin: top left;
   & .translation {
     display: block;
@@ -60,7 +72,12 @@ interface LyricsLineElementProps {
   sx?: SxProps<Theme>;
 }
 
-function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }: LyricsLineElementProps) {
+function LyricsLineElement({
+  className,
+  line,
+  offsetIndex,
+  animate,
+}: LyricsLineElementProps) {
   const theme = useTheme();
   if (!line) return null;
   const transition: Transition = animate ? TRANSITION : { duration: 0 };
@@ -73,7 +90,8 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
     fontSize: theme.typography.fontSize * 3,
     // trans
     transitionEnd: {
-      filter: "var(--jukebox-cover-filter-brighter, blur(var(--jukebox-ringo-blur-radius)))",
+      filter:
+        "var(--jukebox-cover-filter-brighter, blur(var(--jukebox-ringo-blur-radius)))",
       mixBlendMode: "hard-light",
     },
   };
@@ -95,7 +113,7 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
       styles.height = 35;
     }
   }
-  
+
   // const translationVariants = resize ? TRANSLATION_LINE_VARIANTS : {
   //   exit: TRANSLATION_LINE_VARIANTS.exit,
   // };
@@ -117,25 +135,23 @@ function LyricsLineElement({ className, line, offsetIndex, animate, resize, sx }
       }}
     >
       <div className="wrapper">
-        {
-          animate ? (
-            <Balancer>{line.content}</Balancer>
-          ) : line.content}
-        {
-          line.attachments?.translation && (
-            <motion.div
-              variants={translationVariants}
-              transition={transition}
-              animate={offsetIndex === 0 ? "current" : "next"}
-              exit="exit"
-              className="translation"
-              lang="zh">
-              {animate ? (
-                <Balancer>{line.attachments.translation}</Balancer>
-              ) : line.attachments.translation}
-            </motion.div>
-          )
-        }
+        {animate ? <Balancer>{line.content}</Balancer> : line.content}
+        {line.attachments?.translation && (
+          <motion.div
+            variants={translationVariants}
+            transition={transition}
+            animate={offsetIndex === 0 ? "current" : "next"}
+            exit="exit"
+            className="translation"
+            lang="zh"
+          >
+            {animate ? (
+              <Balancer>{line.attachments.translation}</Balancer>
+            ) : (
+              line.attachments.translation
+            )}
+          </motion.div>
+        )}
       </div>
     </MotionDivLine>
   );
@@ -155,42 +171,57 @@ export function RingoLyrics({ lyrics, resize }: Props) {
   const lineNumber = line || 0;
 
   return (
-    <SxMotionDiv sx={{
-      paddingLeft: 4,
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "start",
-      overflow: "hidden",
-      maskBorderImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBorderImageSlice: "49% 0 fill",
-      maskBorderImageWidth: "100px 0",
-      maskBoxImageSource: "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      maskBoxImageSlice: "49% 0 fill",
-      maskBoxImageWidth: "35px 0 50%",
-      "-webkit-mask-box-image-source": "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-      "-webkit-mask-box-image-slice": "49% 0 fill",
-      "-webkit-mask-box-image-width": "35px 0 50%",
-    } as unknown as CSSProperties} transition={{staggerChildren: 1}}>
+    <SxMotionDiv
+      sx={
+        ({
+          paddingLeft: 4,
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "start",
+          overflow: "hidden",
+          maskBorderImageSource:
+            "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+          maskBorderImageSlice: "49% 0 fill",
+          maskBorderImageWidth: "100px 0",
+          maskBoxImageSource:
+            "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+          maskBoxImageSlice: "49% 0 fill",
+          maskBoxImageWidth: "35px 0 50%",
+          "-webkit-mask-box-image-source":
+            "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+          "-webkit-mask-box-image-slice": "49% 0 fill",
+          "-webkit-mask-box-image-width": "35px 0 50%",
+        } as unknown) as CSSProperties
+      }
+      transition={{ staggerChildren: 1 }}
+    >
       <AnimatePresence initial={false} mode="popLayout">
-        {lineNumber === 0 && <motion.div animate={{ minHeight: 35, }} exit={{ minHeight: 0, }} />}
+        {lineNumber === 0 && (
+          <motion.div animate={{ minHeight: 35 }} exit={{ minHeight: 0 }} />
+        )}
         {lines.map((l, idx) => {
           if (idx < lineNumber - 1 || idx > lineNumber + 12) return null;
           const animate =
-            (idx + 1 > lines.length) || (!lines[idx + 1]) ||
-            (lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD);
+            idx + 1 > lines.length ||
+            !lines[idx + 1] ||
+            lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD;
           return (
             <LyricsLineElement
-              sx={{
-                ...(resize && {width: "62.5%",})
-              } as unknown as CSSProperties}
+              sx={
+                ({
+                  ...(resize && { width: "62.5%" }),
+                } as unknown) as CSSProperties
+              }
               className="coverMask"
               line={l}
               key={idx}
               animate={animate}
               resize={resize}
-              offsetIndex={line !== null ? idx - line : idx + 1} />);
+              offsetIndex={line !== null ? idx - line : idx + 1}
+            />
+          );
         })}
       </AnimatePresence>
     </SxMotionDiv>

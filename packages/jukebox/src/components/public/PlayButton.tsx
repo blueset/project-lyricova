@@ -13,19 +13,16 @@ interface Props {
 
 export function PlayButton({ playerRef }: Props) {
   const dispatch = useAppDispatch();
-  const {
-    nowPlaying,
-    tracks,
-    isCollapsed,
-  } = useAppSelector((s) => s.playlist);
-  
+  const { nowPlaying, tracks, isCollapsed } = useAppSelector((s) => s.playlist);
+
   // Using state to keep this button rerendered on state change.
   const [isPlaying, setIsPlaying] = useNamedState(false, "isPlaying");
   const [isLoading, setIsLoading] = useNamedState(false, "isLoading");
   const [loadProgress, setLoadProgress] = useNamedState(0, "loadProgress");
-  const useSmallSize = useMediaQuery<Theme>((theme) => theme.breakpoints.up("md")) && isCollapsed;
+  const useSmallSize =
+    useMediaQuery<Theme>((theme) => theme.breakpoints.up("md")) && isCollapsed;
 
-  function updateProgress() {
+  const updateProgress = useCallback(() => {
     if (!playerRef.current) {
       setLoadProgress(0);
       setIsLoading(false);
@@ -44,11 +41,11 @@ export function PlayButton({ playerRef }: Props) {
       setLoadProgress(0);
       setIsLoading(false);
     }
-  }
+  }, [playerRef, setIsLoading, setLoadProgress]);
 
   const clickPlay = useCallback(() => {
     if (nowPlaying === null && tracks.length > 0) {
-      dispatch(playTrack({track: 0, playNow: true}));
+      dispatch(playTrack({ track: 0, playNow: true }));
       return;
     }
     if (playerRef.current.paused) {
@@ -58,8 +55,12 @@ export function PlayButton({ playerRef }: Props) {
     }
   }, [dispatch, nowPlaying, playerRef, tracks.length]);
 
-  function onPlay() { setIsPlaying(true); }
-  function onPause() { setIsPlaying(false); }
+  const onPlay = useCallback(() => {
+    setIsPlaying(true);
+  }, [setIsPlaying]);
+  const onPause = useCallback(() => {
+    setIsPlaying(false);
+  }, [setIsPlaying]);
 
   useEffect(() => {
     const playerElm = playerRef.current;
@@ -77,31 +78,27 @@ export function PlayButton({ playerRef }: Props) {
     };
   }, [onPause, onPlay, playerRef, updateProgress]);
 
-  return (<div className={style.loadProgressContainer} id="player-play-pause">
-    <Fab
-      color="primary"
-      aria-label={
-        !isPlaying ? "Play" : "Pause"
-      }
-      size={useSmallSize ? "small" : "medium"}
-      className={style.playPauseButton}
-      onClick={clickPlay}
-    >
-      {(!isPlaying) ? (
-        <PlayArrowIcon />
-      ) : (
-          <PauseIcon />
-        )}
-    </Fab>
-    {isLoading && (
-      <CircularProgress
-        size={useSmallSize ? 51 : 60}
-        thickness={2.4}
-        color="secondary"
-        variant="determinate"
-        value={loadProgress}
-        className={style.loadProgressSpinner}
-      />
-    )}
-  </div>);
+  return (
+    <div className={style.loadProgressContainer} id="player-play-pause">
+      <Fab
+        color="primary"
+        aria-label={!isPlaying ? "Play" : "Pause"}
+        size={useSmallSize ? "small" : "medium"}
+        className={style.playPauseButton}
+        onClick={clickPlay}
+      >
+        {!isPlaying ? <PlayArrowIcon /> : <PauseIcon />}
+      </Fab>
+      {isLoading && (
+        <CircularProgress
+          size={useSmallSize ? 51 : 60}
+          thickness={2.4}
+          color="secondary"
+          variant="determinate"
+          value={loadProgress}
+          className={style.loadProgressSpinner}
+        />
+      )}
+    </div>
+  );
 }

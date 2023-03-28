@@ -8,18 +8,11 @@ import {
   PlayerLyricsState,
   usePlayerLyricsState,
 } from "../../../frontendUtils/hooks";
-import { Box, makeStyles, styled } from "@mui/material";
+import { Box, styled } from "@mui/material";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
 import clsx from "clsx";
-import {
-  MutableRefObject,
-  RefObject,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { MutableRefObject, RefObject, useEffect, useMemo, useRef } from "react";
 import Measure, { MeasuredComponentProps } from "react-measure";
 import measureElement, {
   measureTextWidths,

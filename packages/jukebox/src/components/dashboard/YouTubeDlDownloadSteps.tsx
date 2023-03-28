@@ -25,7 +25,6 @@ import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import filesize from "filesize";
-import { makeStyles } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import { useSnackbar } from "notistack";
@@ -131,13 +130,7 @@ export default function YouTubeDlDownloadSteps({
       setStep((v) => v + 1);
       return false;
     },
-    [
-      fetchInfo,
-      videoURL,
-      setStep,
-      fetchInfoQuery.data?.youtubeDlGetInfo,
-      setFilename,
-    ]
+    [fetchInfo, videoURL, setStep]
   );
 
   /** Download state. Null = no result. >= 0, -1: Fail */
@@ -199,7 +192,6 @@ export default function YouTubeDlDownloadSteps({
     }
   }, [
     apolloClient,
-    downloadState,
     filename,
     overwrite,
     setDownloadState,

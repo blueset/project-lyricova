@@ -1,15 +1,12 @@
 // import youtubedl, { Info, Options } from "youtube-dl";
-import fs from "fs";
 import Path from "path";
 import {
   MUSIC_FILES_PATH,
   MXGET_API_PATH,
   MXGET_BINARY,
   QQ_API_PATH,
-  VIDEO_FILES_PATH,
   YTDLP_PATH
 } from "../utils/secret";
-import { promisify } from "util";
 import { pythonBridge, PythonBridge } from "python-bridge";
 import { GraphQLJSONObject } from "graphql-type-json";
 import { decrypt, encrypt } from "../utils/crypto";
@@ -23,18 +20,18 @@ import {
   InputType,
   Int,
   Mutation,
-  ObjectType, Publisher, PubSub,
+  ObjectType,
   Query,
   Resolver, Root, Subscription
 } from "type-graphql";
+import type { Publisher } from "type-graphql";
 import { exec, execSync } from "child_process";
 import { findFilesModifiedAfter } from "../utils/fs";
 import sanitize from "sanitize-filename";
 import Stream from "stream";
 import { downloadFromStream } from "../utils/download";
 import path from "path";
-import { PubSubSessionPayload } from "./index";
-import { LyricsKitLyricsEntry } from "./LyricsProvidersResolver";
+import type { PubSubSessionPayload } from "./index";
 import { swapExt } from "../utils/path";
 import YTDlpWrap from "yt-dlp-wrap";
 

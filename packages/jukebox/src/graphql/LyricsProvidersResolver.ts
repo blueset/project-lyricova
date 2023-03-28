@@ -17,16 +17,15 @@ import {
   Float,
   InputType,
   PubSub,
-  Publisher,
   Subscription,
   Root,
 } from "type-graphql";
+import type { Publisher } from "type-graphql";
 import { ApolloError } from "apollo-server-express";
 import { GraphQLJSONObject } from "graphql-type-json";
 import { LyricsMetadata } from "lyrics-kit/build/main/core/lyricsMetadata";
 import _ from "lodash";
-import { PubSubSessionPayload } from "./index";
-import { GraphQLString } from "graphql";
+import type { PubSubSessionPayload } from "./index";
 
 @ObjectType({ description: "A search result from 初音ミク@wiki." })
 export class HmikuAtWikiSearchResultEntry {

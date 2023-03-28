@@ -1,14 +1,13 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { Box, makeStyles, styled } from "@mui/material";
+import { styled } from "@mui/material";
 import { useRef, useEffect, CSSProperties } from "react";
 import clsx from "clsx";
 import Balancer from "react-wrap-balancer";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import React from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import AutoResizer from "react-virtualized-auto-sizer";
 
 const ANIMATION_THRESHOLD = 0.25;
 const MemoBalanceText = React.memo(Balancer);
@@ -56,7 +55,7 @@ export function PlainLyrics({ lyrics }: Props) {
   });
 
   useEffect(() => {
-    const cont = container.current;
+    // const cont = container.current;
     const lines = lyrics.lines;
     const animate =
       lines &&
@@ -78,7 +77,7 @@ export function PlainLyrics({ lyrics }: Props) {
     });
     // window.virtualizer = virtualizer;
     // console.log("scrolling to", line + 1);
-  }, [container, line, lyrics.lines]);
+  }, [container, line, lyrics.lines, virtualizer]);
   // console.log(line);
 
   return (

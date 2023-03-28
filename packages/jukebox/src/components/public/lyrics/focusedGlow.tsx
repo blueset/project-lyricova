@@ -4,11 +4,9 @@ import {
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { makeStyles, styled } from "@mui/material";
+import { styled } from "@mui/material";
 import { motion, Transition } from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import _ from "lodash";
-import clsx from "clsx";
 
 const ANIMATION_THRESHOLD = 0.25;
 

@@ -98,7 +98,7 @@ export default function LyricsEditDialog({
   // Tab status
   const [tabIndex, setTabIndex] = useNamedState("preview", "tabIndex");
   const onTabSwitch = useCallback(
-    (event: any, newValue: string) => {
+    (event: unknown, newValue: string) => {
       setTabIndex(newValue);
     },
     [setTabIndex]

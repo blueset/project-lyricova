@@ -6,7 +6,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Song } from "lyricova-common/models/Song";
 import { useRouter } from "next/router";
-import { formatArtistsPlainText } from "../../../frontendUtils/artists";
+import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
 import { Avatar, ListItemText, Tooltip } from "@mui/material";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";

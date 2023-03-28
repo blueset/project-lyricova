@@ -9,11 +9,7 @@ export class PlaylistController {
     this.router.get("/:slug.m3u8", this.buildPlaylist);
   }
 
-  public buildPlaylist = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  public buildPlaylist = async (req: Request, res: Response) => {
     const playlist = await Playlist.findByPk(req.params.slug);
     if (playlist === null) {
       return res

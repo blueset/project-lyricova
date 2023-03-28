@@ -6,7 +6,6 @@ import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { styled } from "@mui/material";
 import { motion, Variants, AnimatePresence, Transition } from "framer-motion";
-import _ from "lodash";
 import Balancer from "react-wrap-balancer";
 
 const ANIMATION_THRESHOLD = 0.25;

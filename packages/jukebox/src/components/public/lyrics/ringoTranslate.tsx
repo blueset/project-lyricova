@@ -9,7 +9,7 @@ import Balancer from "react-wrap-balancer";
 import _ from "lodash";
 import { useLayoutEffect, useRef } from "react";
 
-const ANIMATION_THRESHOLD = 0.25;
+// const ANIMATION_THRESHOLD = 0.25;
 const RENDER_LINES = 20;
 
 const ContainerDiv = styled("div")`
@@ -67,7 +67,8 @@ const LineDiv = styled("div")`
   opacity: 0.3;
   mix-blend-mode: overlay;
   color: white;
-  transition: top 0.25s ease-out, transform 0.25s ease-out, opacity 0.25s ease-out, translate 0.25s ease-out, scale 0.25s ease-out;
+  transition: top 0.25s ease-out, transform 0.25s ease-out,
+    opacity 0.25s ease-out, translate 0.25s ease-out, scale 0.25s ease-out;
 
   & .translation {
     display: block;
@@ -133,7 +134,7 @@ interface Props {
   resize?: boolean;
 }
 
-export function RingoTranslateLyrics({ lyrics, resize }: Props) {
+export function RingoTranslateLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -157,12 +158,14 @@ export function RingoTranslateLyrics({ lyrics, resize }: Props) {
       if (isChromium) {
         lines[0].style.top = `${offset - gap - lines[0].clientHeight}px`;
       } else {
-        lines[0].style.translate = `0 ${offset - gap - lines[0].clientHeight}px`;
+        lines[0].style.translate = `0 ${offset -
+          gap -
+          lines[0].clientHeight}px`;
       }
     }
     for (let i = start; i < lines.length; i++) {
       const line = lines[i];
-      const scale = line.dataset.offset === "0" ? 1/0.9 : 1;
+      const scale = line.dataset.offset === "0" ? 1 / 0.9 : 1;
       if (isChromium) {
         line.style.top = `${offset}px`;
         line.style.scale = `${scale}`;
@@ -172,7 +175,7 @@ export function RingoTranslateLyrics({ lyrics, resize }: Props) {
       }
       offset += line.clientHeight * scale + gap;
     }
-  }, [line, containerRef.current]);
+  }, [line, isChromium]);
 
   return (
     <ContainerDiv ref={containerRef}>

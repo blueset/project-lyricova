@@ -1,13 +1,10 @@
-import { Box, Button, Grid, List, ListItem, ListItemText, TextField, Typography } from "@mui/material";
-import DismissibleAlert from "../../DismissibleAlert";
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef } from "react";
-import { buildTimeTag, resolveTimeTag } from "lyrics-kit/build/main/utils/regexPattern";
+import { Box, Button, Grid, List, ListItem, ListItemText } from "@mui/material";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Lyrics, LyricsLine, RangeAttribute } from "lyrics-kit";
 import { useSnackbar } from "notistack";
 import { useNamedState } from "../../../../frontendUtils/hooks";
-import { FURIGANA, TRANSLATION } from "lyrics-kit/build/main/core/lyricsLineAttachment";
+import { FURIGANA } from "lyrics-kit/build/main/core/lyricsLineAttachment";
 import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
-import { makeStyles } from "@mui/material/styles";
 import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";
 import { DocumentNode } from "graphql";
@@ -40,7 +37,10 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
       return new Lyrics(lyrics);
     } catch (e) {
       console.error(`Error occurred while loading lyrics text: ${e}`, e);
-      snackbar.enqueueSnackbar(`Error occurred while loading lyrics text: ${e}`, { variant: "error" });
+      snackbar.enqueueSnackbar(
+        `Error occurred while loading lyrics text: ${e}`,
+        { variant: "error" }
+      );
       return null;
     }
   }, [lyrics, snackbar]);
@@ -64,9 +64,11 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
   // Generate furigana
   const overrideFurigana = useCallback(async () => {
     try {
-      const result = await apolloClient.query<{ transliterate: { karaoke: [string, string][][] } }>({
+      const result = await apolloClient.query<{
+        transliterate: { karaoke: [string, string][][] };
+      }>({
         query: KARAOKE_TRANSLITERATION_QUERY,
-        variables: { text: lines.map(v => v.content).join("\n") },
+        variables: { text: lines.map((v) => v.content).join("\n") },
       });
       if (result.data) {
         // Copy `lines` for React to recognize it as a new state
@@ -78,14 +80,18 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
             delete line.attachments.content[FURIGANA];
           } else {
             const { tags } = v.reduce<{
-              len: number; tags: [string, [number, number]][];
-            }>(({ len, tags }, [base, furigana]) => {
-              if (base === furigana) return { len: len + base.length, tags };
-              else {
-                tags.push([furigana, [len, len + base.length]]);
-                return { len: len + base.length, tags };
-              }
-            }, { len: 0, tags: [] });
+              len: number;
+              tags: [string, [number, number]][];
+            }>(
+              ({ len, tags }, [base, furigana]) => {
+                if (base === furigana) return { len: len + base.length, tags };
+                else {
+                  tags.push([furigana, [len, len + base.length]]);
+                  return { len: len + base.length, tags };
+                }
+              },
+              { len: 0, tags: [] }
+            );
             if (tags.length < 1) delete line.attachments.content[FURIGANA];
             else line.attachments.content[FURIGANA] = new RangeAttribute(tags);
           }
@@ -94,56 +100,92 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
       }
     } catch (e) {
       console.error(`Error occurred while generating furigana: ${e}`, e);
-      snackbar.enqueueSnackbar(`Error occurred while generating furigana: ${e}`, { variant: "error" });
+      snackbar.enqueueSnackbar(
+        `Error occurred while generating furigana: ${e}`,
+        { variant: "error" }
+      );
     }
   }, [apolloClient, lines, setLines, snackbar]);
 
   // Save current line furigana
-  const saveCurrentLine = useCallback((idx: number) => (line: LyricsLine) => {
-    // Copy `lines` for React to recognize it as a new state
-    setLines((l) => {
-      l[idx] = line;
-      return l;
-    });
-  }, [setLines]);
+  const saveCurrentLine = useCallback(
+    (idx: number) => (line: LyricsLine) => {
+      // Copy `lines` for React to recognize it as a new state
+      setLines((l) => {
+        l[idx] = line;
+        return l;
+      });
+    },
+    [setLines]
+  );
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12} sx={{
-        position: "sticky",
-        top: 2,
-        left: 0,
-        zIndex: 2,
-      }} >
-        <audio src={`/api/files/${fileId}/file`} controls style={{width: "100%"}} />
+      <Grid
+        item
+        xs={12}
+        sx={{
+          position: "sticky",
+          top: 2,
+          left: 0,
+          zIndex: 2,
+        }}
+      >
+        <audio
+          src={`/api/files/${fileId}/file`}
+          controls
+          style={{ width: "100%" }}
+        />
       </Grid>
-      <Grid item xs={12} sm={5} sx={{
-        position: "sticky",
-        top: 60,
-        left: 0,
-        height: "fit-content",
-        zIndex: 2,
-      }}>
-        <Box sx={{marginTop: 2, marginBottom: 2}}>
-          <Button variant="outlined" onClick={overrideFurigana}>Override with generated furigana</Button>
+      <Grid
+        item
+        xs={12}
+        sm={5}
+        sx={{
+          position: "sticky",
+          top: 60,
+          left: 0,
+          height: "fit-content",
+          zIndex: 2,
+        }}
+      >
+        <Box sx={{ marginTop: 2, marginBottom: 2 }}>
+          <Button variant="outlined" onClick={overrideFurigana}>
+            Override with generated furigana
+          </Button>
         </Box>
-        <Box sx={{marginTop: 2, marginBottom: 2}}>
-          {selectedLine != null && selectedLine < lines.length &&
-          <EditFuriganaLine line={lines[selectedLine]} setLine={saveCurrentLine(selectedLine)} />}
+        <Box sx={{ marginTop: 2, marginBottom: 2 }}>
+          {selectedLine != null && selectedLine < lines.length && (
+            <EditFuriganaLine
+              line={lines[selectedLine]}
+              setLine={saveCurrentLine(selectedLine)}
+            />
+          )}
         </Box>
       </Grid>
       <Grid item xs={12} sm={7}>
         <List dense>
-          {lines.map((v, idx) =>
-            <ListItem key={idx} button onClick={() => setSelectedLine(idx)} selected={selectedLine === idx}>
-              <ListItemText primaryTypographyProps={{ variant: "body1", lang: "ja", sx: {
-                  fontSize: "2em",
-                  minHeight: "1em",
-                }}}>
+          {lines.map((v, idx) => (
+            <ListItem
+              key={idx}
+              button
+              onClick={() => setSelectedLine(idx)}
+              selected={selectedLine === idx}
+            >
+              <ListItemText
+                primaryTypographyProps={{
+                  variant: "body1",
+                  lang: "ja",
+                  sx: {
+                    fontSize: "2em",
+                    minHeight: "1em",
+                  },
+                }}
+              >
                 <FuriganaLyricsLine lyricsKitLine={v} />
               </ListItemText>
             </ListItem>
-          )}
+          ))}
         </List>
       </Grid>
     </Grid>

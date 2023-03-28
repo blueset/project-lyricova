@@ -107,7 +107,14 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
         { variant: "error" }
       );
     }
-  }, [apolloClient, checkedPlaylists, fileId, snackbar]);
+  }, [
+    apolloClient,
+    checkedPlaylists,
+    fileId,
+    refresh,
+    setCheckedPlaylists,
+    snackbar,
+  ]);
 
   const handleToggle = useCallback(
     (value: string) => () => {

@@ -6,7 +6,6 @@ import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { Box } from "@mui/material";
 import Balancer from "react-wrap-balancer";
-import _ from "lodash";
 import { useRef, RefObject, useEffect } from "react";
 import Measure, { MeasuredComponentProps } from "react-measure";
 import { Scene } from "react-scenejs";
@@ -113,7 +112,8 @@ function LyricsLineElement({
   return (
     <div>
       <div lang="ja">
-        {/* @ts-ignore */}
+        {/* // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          @ts-ignore */}
         <Scene
           keyframes={animate ? keyframes : null}
           ref={animate ? progressorRef : null}
@@ -202,7 +202,8 @@ export function StrokeLyrics({ lyrics }: Props) {
         progressorScene.setTime(inlineProgress);
       }
     }
-  }, [playerState.state, progressorRef.current, currentFrame]);
+    // Player progress is not included to prevent animation loop.
+  }, [playerState.state, currentFrame, currentFrameId, lyrics.lines.length]);
 
   let lineElement: (width: number) => JSX.Element | null = () => null;
   if (currentFrame !== null) {

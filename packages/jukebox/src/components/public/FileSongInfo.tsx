@@ -1,5 +1,4 @@
 import { gql, useQuery } from "@apollo/client";
-import { makeStyles } from "@mui/material/styles";
 import { MusicFile } from "lyricova-common/models/MusicFile";
 import { useRouter } from "next/router";
 import React, { ReactNode, useCallback, useMemo } from "react";
@@ -9,11 +8,9 @@ import {
   Chip,
   Divider,
   Grid,
-  styled,
   Typography,
   Alert,
 } from "@mui/material";
-import clsx from "clsx";
 import { Artist } from "lyricova-common/models/Artist";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ButtonRow from "../ButtonRow";

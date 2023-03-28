@@ -9,7 +9,7 @@ import { ArtistOfSong } from "lyricova-common/models/ArtistOfSong";
 import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { SongInAlbum } from "lyricova-common/models/SongInAlbum";
 import _ from "lodash";
-import { GraphQLResolveInfo } from "graphql";
+import type { GraphQLResolveInfo } from "graphql";
 import { getFields } from "lyricova-common/utils/graphQL";
 
 @InputType()

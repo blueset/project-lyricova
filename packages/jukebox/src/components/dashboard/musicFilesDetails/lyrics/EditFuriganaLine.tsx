@@ -1,24 +1,8 @@
 import { LyricsLine, RangeAttribute } from "lyrics-kit";
-import {
-  ChangeEvent,
-  FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef } from "react";
 import { FURIGANA } from "lyrics-kit/build/main/core/lyricsLineAttachment";
 import { useNamedState } from "../../../../frontendUtils/hooks";
-import { makeStyles } from "@mui/material/styles";
-import {
-  BackdropProps,
-  Box,
-  IconButton,
-  Modal,
-  Paper,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, IconButton, Paper, TextField, Typography } from "@mui/material";
 import _ from "lodash";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
@@ -164,7 +148,7 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
       selection.anchorNode === selection.focusNode &&
       selection.toString().length > 0 &&
       lineContainerRef.current &&
-        lineContainerRef.current.contains(selection.anchorNode);
+      lineContainerRef.current.contains(selection.anchorNode);
     if (!trigger) return;
     const show =
       selection.anchorNode.parentElement &&
@@ -187,7 +171,7 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
       setFloatingWindow(null);
       setFloatingWindowInput("");
     }
-  }, [floatingWindow, setFloatingWindow, setFloatingWindowInput]);
+  }, [setFloatingWindow, setFloatingWindowInput]);
 
   useEffect(() => {
     const debounced = _.debounce(onSelect, 250);

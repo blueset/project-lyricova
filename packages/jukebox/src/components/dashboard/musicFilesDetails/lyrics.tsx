@@ -30,11 +30,23 @@ interface Props {
 
 dayjs.extend(utc);
 
-export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, title, artists, duration, songId }: Props) {
+export default function LyricsPanel({
+  fileId,
+  lrcLyrics,
+  lrcxLyrics,
+  refresh,
+  title,
+  artists,
+  duration,
+  songId,
+}: Props) {
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
 
-  const [isLyricsEditDialogOpen, toggleLyricsEditDialogOpen] = useNamedState(false, "isLyricsEditDialogOpen");
+  const [isLyricsEditDialogOpen, toggleLyricsEditDialogOpen] = useNamedState(
+    false,
+    "isLyricsEditDialogOpen"
+  );
 
   const handleOpenLyricsEditDialog = useCallback(() => {
     toggleLyricsEditDialogOpen(true);
@@ -42,19 +54,25 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
 
   const handleRemoveLyrics = useCallback(async () => {
     try {
-      const result = await apolloClient.mutate<{removeLyrics: boolean}>({
+      const result = await apolloClient.mutate<{ removeLyrics: boolean }>({
         mutation: REMOVE_LYRICS_MUTATION,
-        variables: {fileId},
+        variables: { fileId },
       });
       if (result) {
-        snackbar.enqueueSnackbar(`Lyrics removed for ${title}.`, {variant: "success"});
+        snackbar.enqueueSnackbar(`Lyrics removed for ${title}.`, {
+          variant: "success",
+        });
         await refresh();
       } else {
-        snackbar.enqueueSnackbar(`Lyrics not removed for ${title}.`, {variant: "error"});
+        snackbar.enqueueSnackbar(`Lyrics not removed for ${title}.`, {
+          variant: "error",
+        });
       }
     } catch (e) {
       console.error("Lyrics removal failed", e);
-      snackbar.enqueueSnackbar(`Lyrics not removed for ${title}: ${e}`, {variant: "error"});
+      snackbar.enqueueSnackbar(`Lyrics not removed for ${title}: ${e}`, {
+        variant: "error",
+      });
     }
   }, [apolloClient, fileId, refresh, snackbar, title]);
 
@@ -66,17 +84,23 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
       return new Lyrics(effectiveLyricsText);
     } catch (e) {
       console.error("Error while parsing lyrics", e);
-      snackbar.enqueueSnackbar(`Error while parsing lyrics: ${e}`, { variant: "error" });
+      snackbar.enqueueSnackbar(`Error while parsing lyrics: ${e}`, {
+        variant: "error",
+      });
       return null;
     }
   }, [effectiveLyricsText, snackbar]);
 
-  let lyricsNode = <Typography variant="h6" component="div">No lyrics</Typography>;
+  let lyricsNode = (
+    <Typography variant="h6" component="div">
+      No lyrics
+    </Typography>
+  );
   if (lyrics) {
     lyricsNode = <LyricsPreview lyrics={lyrics} fileId={fileId} />;
   }
 
-  const analysisResult = useMemo(() => lyricsAnalysis(lyrics), [effectiveLyricsText]);
+  const analysisResult = useMemo(() => lyricsAnalysis(lyrics), [lyrics]);
 
   return (
     <>
@@ -85,33 +109,99 @@ export default function LyricsPanel({ fileId, lrcLyrics, lrcxLyrics, refresh, ti
           {lyricsNode}
         </Grid>
         <Grid item xs={12} sm={3}>
-          <Typography variant="h6" component="h3">Lyric state</Typography>
-          <Box component="section" sx={{marginBottom: 2}}>
-            <Typography>Lyrics type: {lrcxLyrics ?
-              <Typography component="span" color="secondary">LRCX</Typography> : lrcLyrics ? "LRC" :
-                <Typography component="span" color="textSecondary">No lyrics</Typography>}</Typography>
-            {effectiveLyricsText !== null && (<>
-              {lrcxLyrics !== null && <>
-                  <Typography>Has translation: {analysisResult.hasTranslation ?
-                    <Typography component="span" color="secondary">Yes</Typography> :
-                    <Typography component="span">No</Typography>}</Typography>
-                  <Typography>Has inline time tags: {analysisResult.hasInlineTimeTags ?
-                    <Typography component="span" color="secondary">Yes</Typography> :
-                    <Typography component="span">No</Typography>}</Typography>
-                  <Typography>Has furigana: {analysisResult.hasFurigana ?
-                    <Typography component="span" color="secondary">Yes</Typography> :
-                    <Typography component="span">No</Typography>}</Typography>
-              </>}
-              <Typography>Has “Simplified Japanese”: {analysisResult.hasSimplifiedJapanese ?
-                <Typography component="span" color="error">Yes</Typography> :
-                <Typography component="span" color="secondary">No</Typography>}</Typography>
-              <Typography>Last
-                timestamp: {dayjs.utc(analysisResult.lastTimestamp * 1000).format("HH:mm:ss")}</Typography>
-            </>)}
+          <Typography variant="h6" component="h3">
+            Lyric state
+          </Typography>
+          <Box component="section" sx={{ marginBottom: 2 }}>
+            <Typography>
+              Lyrics type:{" "}
+              {lrcxLyrics ? (
+                <Typography component="span" color="secondary">
+                  LRCX
+                </Typography>
+              ) : lrcLyrics ? (
+                "LRC"
+              ) : (
+                <Typography component="span" color="textSecondary">
+                  No lyrics
+                </Typography>
+              )}
+            </Typography>
+            {effectiveLyricsText !== null && (
+              <>
+                {lrcxLyrics !== null && (
+                  <>
+                    <Typography>
+                      Has translation:{" "}
+                      {analysisResult.hasTranslation ? (
+                        <Typography component="span" color="secondary">
+                          Yes
+                        </Typography>
+                      ) : (
+                        <Typography component="span">No</Typography>
+                      )}
+                    </Typography>
+                    <Typography>
+                      Has inline time tags:{" "}
+                      {analysisResult.hasInlineTimeTags ? (
+                        <Typography component="span" color="secondary">
+                          Yes
+                        </Typography>
+                      ) : (
+                        <Typography component="span">No</Typography>
+                      )}
+                    </Typography>
+                    <Typography>
+                      Has furigana:{" "}
+                      {analysisResult.hasFurigana ? (
+                        <Typography component="span" color="secondary">
+                          Yes
+                        </Typography>
+                      ) : (
+                        <Typography component="span">No</Typography>
+                      )}
+                    </Typography>
+                  </>
+                )}
+                <Typography>
+                  Has “Simplified Japanese”:{" "}
+                  {analysisResult.hasSimplifiedJapanese ? (
+                    <Typography component="span" color="error">
+                      Yes
+                    </Typography>
+                  ) : (
+                    <Typography component="span" color="secondary">
+                      No
+                    </Typography>
+                  )}
+                </Typography>
+                <Typography>
+                  Last timestamp:{" "}
+                  {dayjs
+                    .utc(analysisResult.lastTimestamp * 1000)
+                    .format("HH:mm:ss")}
+                </Typography>
+              </>
+            )}
           </Box>
-          <Typography variant="h6" component="h3">What to do?</Typography>
-          <Button sx={{marginRight: 1, marginBottom: 1}} variant="outlined" onClick={handleOpenLyricsEditDialog}>Adjust</Button>
-          <Button sx={{marginRight: 1, marginBottom: 1}} variant="outlined" color="primary" onClick={handleRemoveLyrics}>Remove</Button>
+          <Typography variant="h6" component="h3">
+            What to do?
+          </Typography>
+          <Button
+            sx={{ marginRight: 1, marginBottom: 1 }}
+            variant="outlined"
+            onClick={handleOpenLyricsEditDialog}
+          >
+            Adjust
+          </Button>
+          <Button
+            sx={{ marginRight: 1, marginBottom: 1 }}
+            variant="outlined"
+            color="primary"
+            onClick={handleRemoveLyrics}
+          >
+            Remove
+          </Button>
         </Grid>
       </Grid>
       <LyricsEditDialog
