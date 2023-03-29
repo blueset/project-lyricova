@@ -523,6 +523,7 @@ type Query {
   artist(id: Int!): Artist
   artists: [Artist!]!
   artistsHasFiles(types: [String!] = ["Unknown", "Circle", "Label", "Producer", "Animator", "Illustrator", "Lyricist", "Vocaloid", "UTAU", "CeVIO", "OtherVoiceSynthesizer", "OtherVocalist", "OtherGroup", "OtherIndividual", "Utaite", "Band", "Vocalist", "Character"]): [Artist!]!
+  artistsWithFilesNeedEnrol: [Int!]!
   currentUser: User
   dashboardStats: DashboardStats!
   foo: Foo!

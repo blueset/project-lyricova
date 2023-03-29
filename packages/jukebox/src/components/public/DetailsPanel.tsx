@@ -75,6 +75,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
           ({
             ".coverMask": {
               backgroundImage: coverUrl ? `url(${coverUrl})` : null,
+              backgroundColor: coverUrl ? "rgba(255, 255, 255, 0.8)" : null,
               color: coverUrl ? "transparent !important" : null,
               mixBlendMode: coverUrl ? "none !important" : null,
               backgroundClip: coverUrl ? "text" : null,

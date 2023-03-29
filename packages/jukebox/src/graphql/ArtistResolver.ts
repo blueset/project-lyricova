@@ -7,6 +7,7 @@ import {
   InputType,
   Int,
   Mutation,
+  ObjectType,
   Query,
   Resolver,
   Root,
@@ -175,5 +176,32 @@ export class ArtistResolver {
     });
 
     return artist;
+  }
+
+  @Authorized("ADMIN")
+  @Query((type) => [Int])
+  public async artistsWithFilesNeedEnrol(): Promise<number[]> {
+    const artistsToEnroll = await Artist.findAll({
+      attributes: ["id"],
+      order: ["sortOrder"],
+      where: {
+        [Op.and]: [
+          { id: { [Op.gt]: 0 } },
+          { incomplete: true },
+          literal(`(
+            SELECT
+              COUNT(MusicFiles.id) 
+            FROM ArtistOfSongs 
+            INNER JOIN 
+              MusicFiles 
+            ON
+              ArtistOfSongs.songId = MusicFiles.songId
+            WHERE 
+              ArtistOfSongs.artistId = Artist.id and ArtistOfSongs.artistId = Artist.id 
+          ) > 0`),
+        ],
+      },
+    });
+    return artistsToEnroll.map(a => a.id);
   }
 }

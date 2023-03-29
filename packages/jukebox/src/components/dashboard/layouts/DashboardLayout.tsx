@@ -31,6 +31,7 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import CachedIcon from "@mui/icons-material/Cached";
 import GetAppIcon from "@mui/icons-material/GetApp";
+import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import {
   AuthContext,
@@ -235,6 +236,12 @@ export default function DashboardLayout({ title, children }: Props) {
           icon={<QueueMusicIcon />}
         />
         <NavMenuItem text="Scan" href="/dashboard/scan" icon={<CachedIcon />} />
+        <NavMenuItem
+          text="Imports"
+          href="/dashboard/imports"
+          prefixMatch
+          icon={<SaveAltIcon />}
+        />
       </List>
       <Divider />
       <List>
