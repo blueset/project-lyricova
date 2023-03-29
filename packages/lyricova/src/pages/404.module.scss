@@ -1,0 +1,59 @@
+@import "../styles/variables";
+
+.container {
+  width: 100%;
+  height: 100%;
+  --404-padding: 2rem;
+  font-size: max(4.5vw, 2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  position: relative;
+  overflow: hidden;
+}
+
+.codes, .messages {
+  position: absolute;
+  -webkit-background-clip: text;
+  background-image: linear-gradient(to bottom, #ffffff16 0, #ffffff16 calc(50% - 0.5em), #fff calc(50% - 0.5em), #fff calc(50% + 0.5em), #ffffff16 calc(50% + 0.5em), #ffffff16 100%);
+  color: transparent;
+  background-attachment: fixed;
+}
+
+.codes {
+  font-variant-numeric: tabular-nums;
+  font-stretch: expanded;
+  left: var(--404-padding);
+  top: 0;
+}
+
+.messages {
+  font-stretch: semi-condensed;
+  left: calc(var(--404-padding) + 1rem + 4ch);
+  bottom: 0;
+
+  div {
+    white-space: nowrap;
+  }
+}
+
+.caption {
+  position: absolute;
+  font-stretch: expanded;
+  top: calc(50% + 0.25rem + 2.75vw);
+  left: var(--404-padding);
+  line-height: 1.4;
+  font-size: max(1.4vw, 0.75rem);
+  font-weight: 400;
+
+  a {
+    color: $brand-color;
+    text-decoration: none;
+    transition: font-weight 0.2s cubic-bezier(0,0,.6,1);
+
+    @media (hover: hover) {
+      &:hover {
+        font-weight: 700;
+      }
+    }
+  }
+}

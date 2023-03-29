@@ -165,7 +165,7 @@ export class PublicApiController {
       order: [["recentActionDate", "DESC"]],
     })) as Entry[];
 
-    res.status(200).json(result.map((e) => e.toJSON())));
+    res.status(200).json(result.map((e) => e.toJSON()));
   };
 
   public og = async (req: Request, res: Response) => {
