@@ -17,6 +17,10 @@
   background-image: linear-gradient(to bottom, #ffffff16 0, #ffffff16 calc(50% - 0.5em), #fff calc(50% - 0.5em), #fff calc(50% + 0.5em), #ffffff16 calc(50% + 0.5em), #ffffff16 100%);
   color: transparent;
   background-attachment: fixed;
+
+  div[aria-hidden="true"] {
+    user-select: none;
+  }
 }
 
 .codes {
