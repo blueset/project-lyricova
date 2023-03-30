@@ -221,3 +221,4 @@ modules.xml
 # End of https://www.gitignore.io/api/node,react,webstorm+all,visualstudiocode
 
 .yarn
+assets
