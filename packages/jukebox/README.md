@@ -1,25 +1,37 @@
-# JukeBox
+# Jukebox
 
 ## Node dependencies
 
 ```bash
-yarn install
+npm install
 ```
 
 ## Python 3 dependencies
 
 ```bash
+pip install yt-dlp
+```
+
+<!--
+## Python 3 dependencies
+
+```bash
 pip install pytimeparse pymusic-dl click  # pending dropping due to bad support
 ```
+-->
 
 ## Binary dependencies
 
 - MySQL
-    - Setup `ngram` index: add `ngram_token_size=1` under `[mysqld]` section of `my.cnf`.
-      See [MySQL docs](https://dev.mysql.com/doc/refman/8.0/en/fulltext-search-ngram.html) for details.
+  - Setup `ngram` index: add `ngram_token_size=1` under `[mysqld]` section of
+    `my.cnf`. See
+    [MySQL docs](https://dev.mysql.com/doc/refman/8.0/en/fulltext-search-ngram.html)
+    for details.
 - [MeCab](https://taku910.github.io/mecab/)
-- [MeCab IPADic NeologD](https://github.com/neologd/mecab-ipadic-neologd) @ `/usr/local/lib/mecab/dic/mecab-ipadic-neologd`
+- [MeCab IPADic NeologD](https://github.com/neologd/mecab-ipadic-neologd) @
+  `/usr/local/lib/mecab/dic/mecab-ipadic-neologd`
 
+<!--
 ## Music downloader dependencies
 ### Install
 - Install `go` and `git`
@@ -40,11 +52,13 @@ mxget serve  # serving on port 8080
 cd QQMusicApi
 ./startup.py  # serving on port 3300
 ```
+-->
 
-<!-- 
- yarn run concurrently "~/go/bin/mxget serve" "~/Codebase/QQMusicApi/startup.py" -n mxget,qq 
+<!--
+ yarn run concurrently "~/go/bin/mxget serve" "~/Codebase/QQMusicApi/startup.py" -n mxget,qq
  -->
 
+<!--
 <details>
 <summary>Content of <code>startup.py</code></summary>
 
@@ -85,6 +99,7 @@ except KeyboardInterrupt:
 ```
 
 </details>
+-->
 
 ## Config
 

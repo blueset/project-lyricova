@@ -44,33 +44,6 @@ function asyncExec(command: string): Promise<{ stderr: string, stdout: string }>
   });
 }
 
-interface QQSongInfoPartial {
-  result: number;
-  data: {
-    trackInfo: {
-      name: string;
-      singer: {
-        name: string;
-      }[];
-      album: {
-        name: string;
-      };
-      file: {
-        media_mid: string;
-        size_128mp3: number;
-        size_320mp3: number;
-        size_ape: number;
-        size_flac: number;
-      };
-    };
-  };
-}
-
-type QQAPIDownloadResult = { result: 100, data: string } | { result: 400, errMsg: string };
-
-type MxGetSourceType = "netease" | "qq" | "migu" | "kugou" | "kuwo" | "xiami" | "qianqian";
-const MXGET_SOURCES: MxGetSourceType[] = ["netease", "qq", "migu", "kugou", "kuwo", "xiami", "qianqian"];
-
 interface MxGetSearchResultItem {
   album: string;
   artist: string;
@@ -81,26 +54,6 @@ interface MxGetSearchResultItem {
 interface MxGetSearchResultDetails extends MxGetSearchResultItem {
   listen_url?: string;
   lyric?: string;
-  pic_url?: string;
-}
-
-@ObjectType()
-export class MxGetSearchResult implements MxGetSearchResultItem {
-  @Field()
-  source: MxGetSourceType;
-  @Field()
-  album: string;
-  @Field()
-  artist: string;
-  @Field(type => ID)
-  id: string;
-  @Field()
-  name: string;
-  @Field({ nullable: true })
-  listen_url?: string;
-  @Field({ nullable: true })
-  lyric?: string;
-  @Field({ nullable: true })
   pic_url?: string;
 }
 
@@ -322,7 +275,7 @@ export class DownloadResolver {
   // }
 
   @Authorized("ADMIN")
-  @Mutation(() => String, { description: "Download audio via youtube-dl.", nullable: true })
+  @Mutation(() => String, { description: "Download audio via yt-dlp.", nullable: true })
   public async youtubeDlDownloadAudio(
     @Arg("url") url: string,
     @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
@@ -388,6 +341,7 @@ export class DownloadResolver {
   //   return thumbInfo;
   // }
 
+  /*
   private async prepareMusicDlPythonSession(): Promise<PythonBridge> {
     const python = pythonBridge({ python: "/usr/local/bin/python3" });
     await python.ex`
@@ -435,11 +389,13 @@ def download():
     `;
     return python;
   }
+  */
 
   /**
    * Search songs via music-dl
    * GET .../music-dl?query=QUERY
    */
+  /*
   @Authorized("ADMIN")
   @Query(returns => [MusicDlSearchResult])
   public async musicDlSearch(@Arg("query") query: string): Promise<MusicDlSearchResult[]> {
@@ -451,12 +407,14 @@ def download():
     await python.end();
     return outcome;
   }
+  */
 
   /**
    * Download song via music-dl
    * POST .../music-dl
    * <Encrypted pickle data>
    */
+  /*
   @Authorized("ADMIN")
   @Mutation(returns => String, {
     nullable: true,
@@ -472,7 +430,9 @@ def download():
     await python.end();
     return outcome;
   }
+  */
 
+  /*
   @Authorized("ADMIN")
   @Query(returns => [MxGetSearchResult])
   public async mxGetSearch(@Arg("query") query: string): Promise<MxGetSearchResult[]> {
@@ -570,4 +530,5 @@ def download():
       return null;
     }
   }
+  */
 }

@@ -48,9 +48,9 @@ export const MUSIC_FILES_PATH = process.env["MUSIC_FILES_PATH"].endsWith("/")
   ? process.env["MUSIC_FILES_PATH"]
   : process.env["MUSIC_FILES_PATH"] + "/";
 
-export const VIDEO_FILES_PATH = process.env["VIDEO_FILES_PATH"].endsWith("/")
-  ? process.env["VIDEO_FILES_PATH"]
-  : process.env["VIDEO_FILES_PATH"] + "/";
+// export const VIDEO_FILES_PATH = process.env["VIDEO_FILES_PATH"].endsWith("/")
+//   ? process.env["VIDEO_FILES_PATH"]
+//   : process.env["VIDEO_FILES_PATH"] + "/";
 
 export const DB_URI = process.env["DB_URI"];
 
@@ -61,12 +61,12 @@ if (!DB_URI) {
   process.exit(1);
 }
 
-export const MXGET_API_PATH = process.env["MXGET_API_PATH"].endsWith("/")
-  ? process.env["MXGET_API_PATH"]
-  : process.env["MXGET_API_PATH"] + "/";
+// export const MXGET_API_PATH = process.env["MXGET_API_PATH"].endsWith("/")
+//   ? process.env["MXGET_API_PATH"]
+//   : process.env["MXGET_API_PATH"] + "/";
 
-export const MXGET_BINARY = process.env["MXGET_BINARY"];
+// export const MXGET_BINARY = process.env["MXGET_BINARY"];
 
-export const QQ_API_PATH = process.env["QQ_API_PATH"].endsWith("/")
-  ? process.env["QQ_API_PATH"]
-  : process.env["QQ_API_PATH"] + "/";
+// export const QQ_API_PATH = process.env["QQ_API_PATH"].endsWith("/")
+//   ? process.env["QQ_API_PATH"]
+//   : process.env["QQ_API_PATH"] + "/";
