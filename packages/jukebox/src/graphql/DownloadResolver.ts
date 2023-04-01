@@ -2,9 +2,6 @@
 import Path from "path";
 import {
   MUSIC_FILES_PATH,
-  MXGET_API_PATH,
-  MXGET_BINARY,
-  QQ_API_PATH,
   YTDLP_PATH
 } from "../utils/secret";
 import { pythonBridge, PythonBridge } from "python-bridge";

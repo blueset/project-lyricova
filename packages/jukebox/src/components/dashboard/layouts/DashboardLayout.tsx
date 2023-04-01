@@ -32,6 +32,7 @@ import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import CachedIcon from "@mui/icons-material/Cached";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
+import CloseIcon from "@mui/icons-material/Close";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import {
   AuthContext,
@@ -40,7 +41,7 @@ import {
 import { useRouter } from "next/router";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import Head from "next/head";
-import { SnackbarProvider } from "notistack";
+import { SnackbarKey, SnackbarProvider, useSnackbar } from "notistack";
 import {
   bindMenu,
   bindTrigger,
@@ -151,6 +152,15 @@ function NavMenuItem({
       {icon && <ListItemIcon>{icon}</ListItemIcon>}
       <ListItemText primary={text} />
     </ListItemButton>
+  );
+}
+
+function CloseSnackbarButton({ id }: { id: SnackbarKey }) {
+  const { closeSnackbar } = useSnackbar();
+  return (
+    <IconButton onClick={() => closeSnackbar(id)}>
+      <CloseIcon />
+    </IconButton>
   );
 }
 
@@ -279,7 +289,10 @@ export default function DashboardLayout({ title, children }: Props) {
         <title>{pageTitle}</title>
         <meta property="og:title" content={pageTitle} key="title" />
       </Head>
-      <SnackbarProvider maxSnack={4}>
+      <SnackbarProvider
+        maxSnack={4}
+        action={(snackbarId) => <CloseSnackbarButton id={snackbarId} />}
+      >
         <AuthContextConsumer>
           {(userContext) => (
             <Box sx={{ display: "flex" }}>

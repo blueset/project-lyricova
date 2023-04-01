@@ -77,6 +77,7 @@ input ArtistOfAlbumInput {
 }
 
 type ArtistOfSong {
+  artistOfSongId: Int!
   artistRoles: [String!]!
   categories: [String!]!
   creationDate: Timestamp!
@@ -400,12 +401,6 @@ type Mutation {
     """Song ID in VocaDB"""
     songId: Int!
   ): Song!
-
-  """Download a file via music-dl and return the path downloaded."""
-  musicDlDownload(pickle: String!): String
-
-  """Download a file via MxGet and return the path downloaded."""
-  mxGetDownload(id: ID!, source: String!): String
   newAlbum(data: AlbumInput!): Album!
   newArtist(data: ArtistInput!): Artist!
   newPlaylist(data: NewPlaylistInput!): Playlist!
@@ -474,19 +469,8 @@ type Mutation {
   ): Boolean!
   writeTagsToMusicFile(data: MusicFileInput!, id: Int!): MusicFile!
 
-  """Download audio via youtube-dl."""
+  """Download audio via yt-dlp."""
   youtubeDlDownloadAudio(options: YouTubeDlDownloadOptions!, url: String!): String
-}
-
-type MxGetSearchResult {
-  album: String!
-  artist: String!
-  id: ID!
-  listen_url: String
-  lyric: String
-  name: String!
-  pic_url: String
-  source: String!
 }
 
 input NewPlaylistInput {
@@ -541,10 +525,8 @@ type Query {
     sessionId: String
     title: String!
   ): [LyricsKitLyricsEntry!]!
-  musicDlSearch(query: String!): [MusicDlSearchResult!]!
   musicFile(id: Int!): MusicFile
   musicFiles(after: String, first: Int = 25, options: MusicFilesQueryOptions): MusicFilesPagination!
-  mxGetSearch(query: String!): [MxGetSearchResult!]!
   playlist(slug: String!): Playlist
   playlists: [Playlist!]!
   randomTexture: Texture!

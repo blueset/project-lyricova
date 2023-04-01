@@ -81,7 +81,7 @@ export class SongResolver {
   @Query(returns => [Song])
   public async searchSongs(@Arg("keywords") keywords: string, @Info() info: GraphQLResolveInfo): Promise<Song[]> {
     return Song.findAll({
-      where: literal("match (name, sortOrder) against (:keywords in boolean mode)"),
+      where: literal("match (Song.name, Song.sortOrder) against (:keywords in boolean mode)"),
       attributes: { exclude: ["vocaDbJson"] },
       replacements: {
         keywords,

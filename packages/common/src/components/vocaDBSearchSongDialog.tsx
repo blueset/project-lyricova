@@ -150,10 +150,20 @@ export default function VocaDBSearchSongDialog({
         }
       );
 
+      const idResponse = keyword.match(/^\d+$/)
+        ? await axios.get<SongForApiContract>(
+            `https://vocadb.net/api/songs/${keyword}`,
+            { params: { fields: "ThumbUrl" } }
+          )
+        : null;
+
       if (active) {
         toggleLoaded(true);
         if (response.status === 200) {
           setResults(response.data.items!);
+          if (idResponse?.status === 200) {
+            setResults((res) => [idResponse.data, ...res]);
+          }
         } else {
           setResults([]);
           console.error(

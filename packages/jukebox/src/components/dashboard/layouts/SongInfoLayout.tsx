@@ -23,6 +23,7 @@ const SONG_INFO_LIST_QUERY = gql`
         name
         ArtistOfSong {
           categories
+          artistRoles
         }
       }
       incomplete

@@ -134,6 +134,8 @@ export default function SongEntityDialog({
     setKeyword("");
   }, [toggleOpen, setKeyword]);
 
+  console.log("songToEdit", songToEdit);
+
   const initialValues: FormValues =
     create || !songToEdit
       ? {
@@ -285,6 +287,7 @@ export default function SongEntityDialog({
                     variant: "success",
                   }
                 );
+                apolloClient.cache.evict({ id: `Song:${songId}` });
                 handleClose();
               }
             }

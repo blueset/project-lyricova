@@ -18,6 +18,7 @@ import {
 import "../styles/global.scss";
 import { useRouter } from "next/router";
 import { TransitionCover } from "../components/public/TransitionCover";
+import GlobalStyles from "@mui/material/GlobalStyles";
 
 export const getPlainLayout = (page: ReactNode) => <>{page}</>;
 
@@ -82,12 +83,26 @@ function MyApp({
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
-        {isDashboard && (
-          <style global>{":root { font-size: 16px !important; }"}</style>
+        {/* {isDashboard && (
+          <style jsx global>
+            {":root { font-size: 16px !important; }"}
+          </style>
         )}
-        {isFullScreen && <style global>{":root { height: 100%; }"}</style>}
+        {isFullScreen && (
+          <style jsx global>
+            {":root { height: 100%; }"}
+          </style>
+        )} */}
       </Head>
       <ThemeProvider theme={theme}>
+        <GlobalStyles
+          styles={{
+            ":root": {
+              fontSize: isDashboard ? ["16px", "!important"] : "unset",
+              height: isFullScreen ? "100%" : "unset",
+            },
+          }}
+        />
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         {isDashboard ? (
           <ApolloProvider client={apolloClient}>

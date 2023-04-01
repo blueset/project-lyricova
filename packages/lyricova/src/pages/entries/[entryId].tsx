@@ -76,7 +76,8 @@ export const getStaticProps: GetStaticProps = async (context) => {
         pvs.find((pv) => pv.pvType === "Original")?.url ??
         pvs.find((pv) => pv.service === "Youtube")?.url ??
         pvs.find((pv) => pv.service === "NicoNicoDouga")?.url ??
-        pvs[0].url;
+        pvs[0]?.url ??
+        undefined;
       song.videoUrl = url;
     }
     delete song.vocaDbJson;

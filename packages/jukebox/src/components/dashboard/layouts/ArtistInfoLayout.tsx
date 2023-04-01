@@ -85,7 +85,7 @@ export default function ArtistInfoLayout({ children }: Props) {
                   label="Edit"
                   onClick={async () => {
                     if (rowData?.id !== undefined) {
-                      await router.push(`/dashboard/artist/${rowData.id}`);
+                      await router.push(`/dashboard/artists/${rowData.id}`);
                     }
                   }}
                 />

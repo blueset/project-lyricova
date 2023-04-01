@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run serve",
     "build": "npm run build-ts && npm run lint && npm run build-next",
-    "serve": "ts-node dist/server.js",
+    "serve": "node dist/server.js",
     "watch-node": "nodemon dist/server.js",
     "watch": "concurrently -n node,tscr -c green,blue npm:watch-node npm:watch-ts",
     "build-ts": "tsc",
@@ -36,6 +36,7 @@
     "@mui/x-data-grid": "^5.17.24",
     "@next/font": "^13.2.3",
     "@resvg/resvg-js": "^2.4.1",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@vercel/og": "^0.4.0",
     "body-scroll-lock": "^4.0.0-beta.0",
     "clsx": "^1.2.1",

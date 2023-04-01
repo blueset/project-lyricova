@@ -8,6 +8,10 @@ export default (app: express.Express) => {
   const apiRouter = express.Router();
   app.use("/api", apiRouter);
 
+  const authController = new AuthController();
+  apiRouter.use("/", authController.router);
+  app.use("/", authController.injectionRouter);
+
   const publicApiRouter = new PublicApiController();
   apiRouter.use("/", publicApiRouter.router);
   app.get("/api/test", (req, res) => {
@@ -17,10 +21,6 @@ export default (app: express.Express) => {
 
   const adminApiRouter = new AdminApiController();
   apiRouter.use("/", adminApiRouter.router);
-
-  const authController = new AuthController();
-  apiRouter.use("/", authController.router);
-  app.use("/", authController.injectionRouter);
 
   app.get("/feed", async (req: Request, res: Response) => {
     const xml = await generateRssFeed();

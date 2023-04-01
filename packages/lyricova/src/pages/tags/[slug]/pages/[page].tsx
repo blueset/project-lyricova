@@ -52,7 +52,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const paths = [];
   for (const i of tags) {
     const totalPages = Math.ceil(i.count / entriesPerPage);
-    for (let page = 1; page <= totalPages; page++) {
+    for (let page = 2; page <= totalPages; page++) {
       paths.push({
         params: {
           slug: i.tagId,

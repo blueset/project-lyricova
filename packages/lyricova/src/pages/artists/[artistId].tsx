@@ -73,6 +73,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
     FROM
       SongOfEntries
       LEFT JOIN ArtistOfSongs ON SongOfEntries.songId = ArtistOfSongs.songId
+    WHERE
+      artistId is not NULL
     GROUP BY ArtistOfSongs.artistId;
     `,
     {

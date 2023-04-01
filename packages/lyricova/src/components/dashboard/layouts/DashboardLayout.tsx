@@ -34,7 +34,7 @@ import {
 import { useRouter } from "next/router";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import Head from "next/head";
-import { SnackbarProvider, useSnackbar } from "notistack";
+import { SnackbarKey, SnackbarProvider, useSnackbar } from "notistack";
 import {
   bindMenu,
   bindTrigger,
@@ -145,6 +145,15 @@ function NavMenuItem({
       {icon && <ListItemIcon>{icon}</ListItemIcon>}
       <ListItemText primary={text} />
     </ListItemButton>
+  );
+}
+
+function CloseSnackbarButton({ id }: { id: SnackbarKey }) {
+  const { closeSnackbar } = useSnackbar();
+  return (
+    <IconButton onClick={() => closeSnackbar(id)}>
+      <CloseIcon />
+    </IconButton>
   );
 }
 
@@ -275,14 +284,7 @@ export default function DashboardLayout({ title, children }: Props) {
       </Head>
       <SnackbarProvider
         maxSnack={4}
-        action={(snackbarId) => {
-          const { closeSnackbar } = useSnackbar();
-          return (
-            <IconButton onClick={() => closeSnackbar(snackbarId)}>
-              <CloseIcon />
-            </IconButton>
-          );
-        }}
+        action={(snackbarId) => <CloseSnackbarButton id={snackbarId} />}
       >
         <AuthContextConsumer>
           {(userContext) => (
@@ -356,6 +358,5 @@ export default function DashboardLayout({ title, children }: Props) {
 }
 
 // eslint-disable-next-line react/display-name
-export const getLayout = (title?: string) => (page: ReactNode) => (
-  <DashboardLayout title={title}>{page}</DashboardLayout>
-);
+export const getLayout = (title?: string) => (page: ReactNode) =>
+  <DashboardLayout title={title}>{page}</DashboardLayout>;

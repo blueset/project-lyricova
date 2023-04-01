@@ -23,6 +23,9 @@ const PENDING_REVIEW_FILES_QUERY = gql`
           trackName
           artistName
           albumName
+          trackSortOrder
+          artistSortOrder
+          albumSortOrder
           needReview
         }
       }
@@ -65,8 +68,15 @@ export default function Review() {
         columns={[
           { headerName: "ID", field: "id", width: 75 },
           { headerName: "Track name", field: "trackName", flex: 2 },
+          { headerName: "Track sort order", field: "trackSortOrder", flex: 1 },
           { headerName: "Artist name", field: "artistName", flex: 1 },
+          {
+            headerName: "Artist sort order",
+            field: "artistSortOrder",
+            flex: 1,
+          },
           { headerName: "Album name", field: "albumName", flex: 1 },
+          { headerName: "Album sort order", field: "albumSortOrder", flex: 1 },
           {
             headerName: "Need review",
             field: "needReview",
@@ -90,6 +100,15 @@ export default function Review() {
           },
         ]}
         rows={rows}
+        initialState={{
+          columns: {
+            columnVisibilityModel: {
+              trackSortOrder: false,
+              artistSortOrder: false,
+              albumSortOrder: false,
+            },
+          },
+        }}
         components={{ Toolbar: DataGridToolbar }}
         componentsProps={{
           toolbar: {

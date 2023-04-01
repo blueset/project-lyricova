@@ -153,6 +153,7 @@ export default function ArtistEntityDialog({
                     variant: "success",
                   }
                 );
+                apolloClient.cache.evict({ id: `Artist:${artistId}` });
                 handleClose();
               }
             }

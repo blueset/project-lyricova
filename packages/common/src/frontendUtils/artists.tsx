@@ -13,11 +13,13 @@ function splitArtists(
       i.ArtistOfAlbum?.categories,
     ];
     if (
-      categories.indexOf("Producer") >= 0 ||
-      categories.indexOf("Circle") >= 0
+      (categories.indexOf("Producer") >= 0 ||
+        categories.indexOf("Circle") >= 0) &&
+      !(i?.ArtistOfSong?.isSupport ?? false)
     ) {
       producers.push(i);
-    } else if (
+    }
+    if (
       categories.indexOf("Vocalist") >= 0 &&
       !(i?.ArtistOfSong?.isSupport ?? false)
     ) {

@@ -247,12 +247,13 @@ export default function Entries() {
                 />
               </Tooltip>,
               <PopupState
+                key="deletePopup"
                 variant="popover"
                 popupId={`${rowData?.row.id}-delete-popup`}
               >
                 {(popupState) => (
                   <>
-                    <Tooltip title="Delete" key="delete">
+                    <Tooltip title="Delete">
                       <GridActionsCellItem
                         icon={<DeleteIcon />}
                         label="Delete"

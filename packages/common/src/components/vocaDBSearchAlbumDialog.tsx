@@ -153,10 +153,20 @@ export default function VocaDBSearchAlbumDialog({
         }
       );
 
+      const idResponse = keyword.match(/^\d+$/)
+        ? await axios.get<AlbumForApiContract>(
+            `https://vocadb.net/api/albums/${keyword}`,
+            { params: { fields: "MainPicture" } }
+          )
+        : null;
+
       if (active) {
         toggleLoaded(true);
         if (response.status === 200) {
           setResults(response.data.items!);
+          if (idResponse?.status === 200) {
+            setResults((res) => [idResponse.data, ...res]);
+          }
         } else {
           setResults([]);
           console.error(

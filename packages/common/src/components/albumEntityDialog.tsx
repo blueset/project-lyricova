@@ -220,6 +220,7 @@ export default function AlbumEntityDialog({
           id: albumId,
         },
       });
+      apolloClient.cache.evict({ id: `Album:${albumId}` });
       if (result.data.album) {
         const album = result.data.album;
         setInitialValues({
@@ -366,6 +367,7 @@ export default function AlbumEntityDialog({
                     variant: "success",
                   }
                 );
+                apolloClient.cache.evict({ id: `Album:${albumId}` });
                 handleClose();
               }
             }
@@ -647,7 +649,7 @@ export default function AlbumEntityDialog({
                           })
                         }
                       >
-                        Add Album
+                        Add Song
                       </Button>
                     </Stack>
                   </>

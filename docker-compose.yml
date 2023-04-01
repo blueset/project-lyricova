@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  lyricova:
+    build: .
+    ports:
+      - "59742:8001"
+      - "58532:8002"
+    environment:
+      LYRICOVA_PORT: 8001
+      JUKEBOX_PORT: 8002
+    volumes:
+      - .:/app
+      - /var/lyricova/music:/var/music/
+    env_file:
+      - .env

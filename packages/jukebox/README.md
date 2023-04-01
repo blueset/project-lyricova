@@ -1,5 +1,7 @@
 # Jukebox
 
+The jukebox component as a music player and manager.
+
 ## Node dependencies
 
 ```bash

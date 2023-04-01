@@ -15,7 +15,7 @@ const SequelizeStore = SequelizeStoreConstructor(session.Store);
 export default async (): Promise<Express> => {
   const app = express();
 
-  app.set("port", process.env.PORT || 3000);
+  app.set("port", process.env.LYRICOVA_PORT || 3000);
   app.use(compression());
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));

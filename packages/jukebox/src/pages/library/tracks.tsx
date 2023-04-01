@@ -151,7 +151,7 @@ const Row = React.memo(
     };
     const handlePlayInList = () => {
       dispatch(loadTracks(data.slice(1)));
-      dispatch(playTrack({ track: index - 1, playNow: true }));
+      dispatch(playTrack({ track: index, playNow: true }));
       popupState.close();
     };
     const handleShowDetails = () => {
@@ -178,20 +178,20 @@ const Row = React.memo(
       >
         <ListItemTextWithTime
           primary={
-            isScrolling && item.trackSortOrder
-              ? item.trackSortOrder
-              : item.trackName
+            (isScrolling && item?.trackSortOrder
+              ? item?.trackSortOrder
+              : item?.trackName) ?? <em>No title</em>
           }
           secondary={
             <>
-              {item.artistName || <em>Various artists</em>}
+              {item?.artistName ?? <em>Various artists</em>}
               {" / "}
-              {item.albumName || <em>Unknown album</em>}
+              {item?.albumName ?? <em>Unknown album</em>}
             </>
           }
           primaryTypographyProps={{ noWrap: true }}
           secondaryTypographyProps={{ noWrap: true }}
-          time={item.duration}
+          time={item?.duration ?? 0}
         />
         <ListItemSecondaryAction>
           <IconButton
@@ -202,7 +202,7 @@ const Row = React.memo(
             <MoreVertIcon />
           </IconButton>
           <Menu
-            id={`currentPlaylist-menu-${item.id}`}
+            id={`currentPlaylist-menu-${item?.id}`}
             anchorOrigin={{
               vertical: "bottom",
               horizontal: "right",
@@ -246,8 +246,7 @@ export default function LibraryTracks() {
     if (query.data) {
       return _.sortBy<MusicFile>(
         query.data.musicFiles.edges.map((v) => v.node),
-        (n: MusicFile) =>
-          n.trackSortOrder && n.trackSortOrder.toLocaleLowerCase()
+        (n: MusicFile) => n?.trackSortOrder?.toLocaleLowerCase()
       );
     } else {
       return [];
@@ -303,7 +302,7 @@ export default function LibraryTracks() {
     rows.forEach((i, idx) => {
       if (i === null) return;
       let key: string;
-      if (i.trackSortOrder === null || i.trackSortOrder === "") key = "?";
+      if (!i?.trackSortOrder) key = "?";
       else {
         const firstChar = i.trackSortOrder.charAt(0);
         if (firstChar.codePointAt(0) < 65 /* "A" */) key = "#";

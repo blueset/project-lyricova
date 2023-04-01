@@ -9,7 +9,7 @@
   "scripts": {
     "start": "npm run serve",
     "build": "npm run build-ts && npm run lint && npm run build-next",
-    "serve": "ts-node dist/server.js",
+    "serve": "node dist/server.js",
     "watch-node": "nodemon dist/server.js",
     "watch": "concurrently -n node,tscr -c green,blue npm:watch-node npm:watch-ts",
     "build-ts": "tsc",
@@ -102,7 +102,7 @@
     "next": "^13.0.1",
     "node-id3": "^0.2.1",
     "nodejieba": "^2.6.0",
-    "notistack": "^2.0.8",
+    "notistack": "^3.0.1",
     "novel-segment": "^2.7.53",
     "p-limit": "^3.1.0",
     "passport": "^0.6.0",

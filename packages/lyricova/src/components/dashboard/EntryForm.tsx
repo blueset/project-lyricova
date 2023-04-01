@@ -535,6 +535,7 @@ export function EntryForm({ id }: EntityFormProps) {
                 }}
               >
                 {({ fields, meta }) => {
+                  // eslint-disable-next-line react-hooks/rules-of-hooks
                   const verseFieldProps = useField("verses");
                   const verseValues = verseFieldProps.input.value;
                   const columns = Math.floor(

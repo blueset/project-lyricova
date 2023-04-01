@@ -96,7 +96,12 @@ export default function ArtistsList({ types, typeName }: Props) {
                   <div style={{ flexGrow: 1, width: 0 }}>
                     <Typography variant="body1">{v.name}</Typography>
                     <Typography variant="body2" color="textSecondary">
-                      {v.type}
+                      {v.type
+                        .replace("Other", "")
+                        .split(/(?=[A-Z])/)
+                        .join(" ")
+                        .replace("U T A U", "UTAU")
+                        .replace(" V I O", "VIO")}
                     </Typography>
                   </div>
                 </ButtonBase>

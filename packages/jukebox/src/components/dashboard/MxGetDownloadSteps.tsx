@@ -29,7 +29,6 @@ import {
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
-import { MxGetSearchResult } from "../../graphql/DownloadResolver";
 import Alert from "@mui/material/Alert";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import {
@@ -207,7 +206,7 @@ export default function MxGetDownloadSteps({
     },
     [setSearchKeyword]
   );
-
+  /*
   const [searchMusic, searchMusicQuery] = useLazyQuery<{
     mxGetSearch: MxGetSearchResult[];
   }>(MUSIC_DL_SEARCH_QUERY);
@@ -220,6 +219,7 @@ export default function MxGetDownloadSteps({
     },
     [searchKeyword, searchMusic, setStep]
   );
+  */
 
   /** Download state. Null = no result. >= 0, -1: Fail */
   const [downloadState, setDownloadState] = useNamedState<number | null>(
@@ -227,6 +227,7 @@ export default function MxGetDownloadSteps({
     "downloadState"
   );
 
+  /*
   const downloadFile = useCallback(
     (file: MxGetSearchResult) => async () => {
       setStep((v) => v + 1);
@@ -282,10 +283,12 @@ export default function MxGetDownloadSteps({
     },
     [apolloClient, downloadState, setDownloadState, setStep, snackbar]
   );
+  */
 
   return (
     <Stepper activeStep={step} orientation="vertical">
       {firstStep}
+      {/*
       <Step key="mxget-1">
         <StepLabel>
           {step <= 1 ? (
@@ -473,6 +476,7 @@ export default function MxGetDownloadSteps({
           </ButtonRow>
         </StepContent>
       </Step>
+          */}
     </Stepper>
   );
 }

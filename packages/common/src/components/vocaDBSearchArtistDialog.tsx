@@ -117,10 +117,20 @@ export default function VocaDBSearchArtistDialog({ isOpen, toggleOpen, keyword, 
         }
       );
 
+      const idResponse = keyword.match(/^\d+$/)
+        ? await axios.get<ArtistForApiContract>(
+            `https://vocadb.net/api/artists/${keyword}`,
+            { params: { fields: "MainPicture" } }
+          )
+        : null;
+
       if (active) {
         toggleLoaded(true);
         if (response.status === 200) {
           setResults(response.data.items!);
+          if (idResponse?.status === 200) {
+            setResults((res) => [idResponse.data, ...res]);
+          }
         } else {
           setResults([]);
           console.error("Error occurred while loading search results from VocaDB", response);

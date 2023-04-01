@@ -69,6 +69,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
     FROM
       SongOfEntries
       LEFT JOIN ArtistOfSongs ON SongOfEntries.songId = ArtistOfSongs.songId
+    WHERE
+      artistId is not NULL
     GROUP BY ArtistOfSongs.artistId;
     `,
     {
@@ -78,7 +80,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const paths = [];
   for (const { artistId, count } of result) {
     const totalPages = Math.ceil(count / entriesPerPage);
-    for (let page = 1; page <= totalPages; page++) {
+    for (let page = 2; page <= totalPages; page++) {
       paths.push({
         params: {
           artistId: String(artistId),

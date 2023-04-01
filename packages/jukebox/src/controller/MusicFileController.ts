@@ -316,7 +316,7 @@ export class MusicFileController {
       if (!fs.existsSync(path)) {
         return res.status(404).json({ status: 404, message: "File not found" });
       }
-
+      res.header("Cache-Control", "public, max-age=604800");
       if (req.query.download !== undefined) {
         res.attachment(Path.basename(path));
       }
@@ -445,6 +445,7 @@ export class MusicFileController {
         .json({ status: 404, message: "Music file has no cover (via file)." });
     }
 
+    res.header("Cache-Control", "public, max-age=604800");
     res.sendFile(coverUrl, () => {
       fs.unlinkSync(coverUrl);
     });

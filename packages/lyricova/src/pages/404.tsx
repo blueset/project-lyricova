@@ -153,7 +153,9 @@ export default function NotFound() {
           Retrun to <Link href="/">{siteName}</Link>
         </div>
       </div>
-      <style global>{":root, body, #__next { height: 100%; }"}</style>
+      <style jsx global>
+        {":root, body, #__next { height: 100%; }"}
+      </style>
     </>
   );
 }

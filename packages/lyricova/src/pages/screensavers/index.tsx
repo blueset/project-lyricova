@@ -47,7 +47,7 @@ export default function ScreensaversDirectory() {
       <div className={classes.bottom}>
         <Footer />
       </div>
-      <style global jsx>{`
+      <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght,XTRA@8..144,150,300,600&display=swap");
       `}</style>
     </div>
