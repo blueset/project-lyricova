@@ -144,7 +144,7 @@ export class PublicApiController {
       })
     )?.toJSON();
 
-    res.status(200).json(verse);
+    res.status(200).header("Access-Control-Allow-Origin", "*").json(verse);
   };
 
   public versesBySong = async (req: Request, res: Response) => {
@@ -160,12 +160,15 @@ export class PublicApiController {
           association: "songs",
           attributes: [],
           where: { id: songId },
-        }
+        },
       ],
       order: [["recentActionDate", "DESC"]],
     })) as Entry[];
 
-    res.status(200).json(result.map((e) => e.toJSON()));
+    res
+      .status(200)
+      .header("Access-Control-Allow-Origin", "*")
+      .json(result.map((e) => e.toJSON()));
   };
 
   public og = async (req: Request, res: Response) => {
