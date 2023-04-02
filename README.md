@@ -1,5 +1,7 @@
 # Project Lyricova
 
+![Project Lyricova](./banner.svg)
+
 Project Lyricova is a free and open source suit of web apps for lyrics blogging
 and music management focused on Vocaloid\* contents.
 
@@ -20,6 +22,40 @@ in VocaDB.net.</small>
 - `lyricova`: Lyrics blog (similar to version 1).
 - `common`: Common code shared between `jukebox` and `lyricova`.
 - `lyrics-kit`: Fetch and parse lyrics from various sources.
+
+## Install
+
+- Database
+
+  - Setup a MySQL database and import the schema from `lyricova-schema.sql`.
+  - Create a MySQL user and grant it access to the database.
+  - Create a Lyricova user in the database as admin. Put password in the format
+    of a [bcrypt hash](https://en.wikipedia.org/wiki/Bcrypt).
+
+    ```sql
+    INSERT INTO Users
+      (id, username, displayName, password, email, role, provider, provider_id, creationDate, updatedOn, deletionDate)
+    VALUES
+      (1, 'admin', 'Administrator', '$2a$10$anT02XU53WKpNV3p30nA2.EZ19ucaWys0MRhMjsCGcIYhdeKyJnfe', 'admin@example.com', 'admin', NULL, NULL, '1970-01-01 00:00:00', '1970-01-01 00:00:00', NULL);
+    ```
+
+- Music file storage
+  - Create a directory for storing music files (defaulted to
+    `/var/lyricova/music`).
+- Environment variables
+  - Configure the environment variables in `.env` file. Refer to `.env.sample`
+    for examples.
+- Node.js
+  - Install Node.js and npm.
+  - Install dependencies: `npm install`
+  - Build: `npm run build --workspace=packages`
+    - Note, env var `DB_URI` is required for building.
+- Runtime
+  - Runtime is supported by Docker.
+  - Build the image: `docker-compose build`
+  - Run the container: `docker-compose up -d`
+  - Lyricova blog is listening at port 59742
+  - Jukebox is listening at port 58532
 
 ## Etymology
 
