@@ -209,7 +209,7 @@ export default function CurrentPlaylist() {
   const rowVirtualizer = useVirtualizer({
     // tracks.length on load is 0, we need at least `playlist.nowPlaying` plus an offset to ensure that
     // the list scrolls to the correct position before we have the data.
-    count: Math.max(tracks.length, nowPlaying ? nowPlaying + 50 : 0),
+    count: Math.min(tracks.length, nowPlaying ? nowPlaying + 50 : 0),
     getScrollElement: () => {
       return parentRef.current;
     },
