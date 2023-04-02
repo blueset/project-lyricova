@@ -7,7 +7,7 @@ export default async function generateRssFeed() {
     title: siteName,
     description: `${tagLine1} ${tagLine2}}`,
     site_url: host,
-    feed_url: `${host}/rss.xml`,
+    feed_url: `${host}/feed/`,
     image_url: `${host}/logo.png`,
     pubDate: new Date(),
     copyright: `All rights reserved © ${new Date().getFullYear()}`,
