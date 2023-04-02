@@ -6,7 +6,12 @@ import { Link } from "../Link";
 export function Search() {
   return (
     <Tooltip title="Search">
-      <IconButton LinkComponent={Link} href="/search" data-nav-icon="search">
+      <IconButton
+        LinkComponent={Link}
+        href="/search"
+        data-nav-icon="search"
+        rel="search"
+      >
         <SearchIcon />
       </IconButton>
     </Tooltip>

@@ -59,6 +59,7 @@
     "type-graphql": "^1.1.1"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^13.2.4",
     "@types/body-scroll-lock": "^3.1.0",
     "@types/matter-js": "^0.18.2",
     "@types/node": "^18.14.0",

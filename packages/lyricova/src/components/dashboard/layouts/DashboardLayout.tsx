@@ -40,6 +40,8 @@ import {
   bindTrigger,
   usePopupState,
 } from "material-ui-popup-state/hooks";
+import { ApolloProvider } from "@apollo/client";
+import apolloClient from "lyricova-common/frontendUtils/apollo";
 
 const DRAWER_WIDTH = 240;
 const DASHBOARD_TITLE = "Lyricova Dashboard";
@@ -277,83 +279,85 @@ export default function DashboardLayout({ title, children }: Props) {
   title = title || DASHBOARD_TITLE;
 
   return (
-    <AuthContext>
-      <Head>
-        <title>{pageTitle}</title>
-        <meta property="og:title" content={pageTitle} key="title" />
-      </Head>
-      <SnackbarProvider
-        maxSnack={4}
-        action={(snackbarId) => <CloseSnackbarButton id={snackbarId} />}
-      >
-        <AuthContextConsumer>
-          {(userContext) => (
-            <Box sx={{ display: "flex" }}>
-              <AppBar position="fixed" open={isDrawerOpen}>
-                <Toolbar>
-                  <IconButton
-                    color="inherit"
-                    aria-label="open drawer"
-                    edge="start"
-                    onClick={handleDrawerToggle}
-                    sx={{
-                      marginRight: "36px",
-                      ...(isDrawerOpen && { display: "none" }),
-                    }}
-                  >
-                    <MenuIcon />
-                  </IconButton>
-                  <Typography
-                    variant="h6"
-                    component="div"
-                    sx={{ flexGrow: 1 }}
-                    noWrap
-                  >
-                    {title}
-                  </Typography>
-                  <IconButton
-                    aria-label="account of current user"
-                    color="inherit"
-                    {...bindTrigger(popupState)}
-                  >
-                    <Avatar
-                      alt={userContext.user?.displayName}
-                      src={`https://www.gravatar.com/avatar/${userContext.user?.emailMD5}`}
-                    />
-                  </IconButton>
-                  <Menu
-                    anchorOrigin={{
-                      vertical: "bottom",
-                      horizontal: "right",
-                    }}
-                    keepMounted
-                    transformOrigin={{
-                      vertical: "top",
-                      horizontal: "right",
-                    }}
-                    {...bindMenu(popupState)}
-                  >
-                    <MenuItem onClick={logOut}>
-                      <ListItemText
-                        primary="Log out"
-                        primaryTypographyProps={{ color: "error" }}
+    <ApolloProvider client={apolloClient}>
+      <AuthContext>
+        <Head>
+          <title>{pageTitle}</title>
+          <meta property="og:title" content={pageTitle} key="title" />
+        </Head>
+        <SnackbarProvider
+          maxSnack={4}
+          action={(snackbarId) => <CloseSnackbarButton id={snackbarId} />}
+        >
+          <AuthContextConsumer>
+            {(userContext) => (
+              <Box sx={{ display: "flex" }}>
+                <AppBar position="fixed" open={isDrawerOpen}>
+                  <Toolbar>
+                    <IconButton
+                      color="inherit"
+                      aria-label="open drawer"
+                      edge="start"
+                      onClick={handleDrawerToggle}
+                      sx={{
+                        marginRight: "36px",
+                        ...(isDrawerOpen && { display: "none" }),
+                      }}
+                    >
+                      <MenuIcon />
+                    </IconButton>
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      sx={{ flexGrow: 1 }}
+                      noWrap
+                    >
+                      {title}
+                    </Typography>
+                    <IconButton
+                      aria-label="account of current user"
+                      color="inherit"
+                      {...bindTrigger(popupState)}
+                    >
+                      <Avatar
+                        alt={userContext.user?.displayName}
+                        src={`https://www.gravatar.com/avatar/${userContext.user?.emailMD5}`}
                       />
-                    </MenuItem>
-                  </Menu>
-                </Toolbar>
-              </AppBar>
-              <Drawer variant="permanent" open={isDrawerOpen}>
-                {drawer}
-              </Drawer>
-              <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-                <DrawerHeader />
-                {children}
+                    </IconButton>
+                    <Menu
+                      anchorOrigin={{
+                        vertical: "bottom",
+                        horizontal: "right",
+                      }}
+                      keepMounted
+                      transformOrigin={{
+                        vertical: "top",
+                        horizontal: "right",
+                      }}
+                      {...bindMenu(popupState)}
+                    >
+                      <MenuItem onClick={logOut}>
+                        <ListItemText
+                          primary="Log out"
+                          primaryTypographyProps={{ color: "error" }}
+                        />
+                      </MenuItem>
+                    </Menu>
+                  </Toolbar>
+                </AppBar>
+                <Drawer variant="permanent" open={isDrawerOpen}>
+                  {drawer}
+                </Drawer>
+                <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                  <DrawerHeader />
+                  {children}
+                </Box>
               </Box>
-            </Box>
-          )}
-        </AuthContextConsumer>
-      </SnackbarProvider>
-    </AuthContext>
+            )}
+          </AuthContextConsumer>
+        </SnackbarProvider>
+      </AuthContext>
+    </ApolloProvider>
   );
 }
 

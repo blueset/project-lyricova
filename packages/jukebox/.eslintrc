@@ -3,7 +3,8 @@
   "extends": [
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:@next/next/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": 2018,
@@ -25,5 +26,10 @@
     ],
     "@typescript-eslint/no-unused-vars": "warn",
     "react/display-name": "warn"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
   }
 }

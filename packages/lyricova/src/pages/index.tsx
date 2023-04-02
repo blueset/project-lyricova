@@ -9,7 +9,13 @@ import { IndexHeader } from "../components/public/IndexHeader";
 import { Paginator } from "../components/public/listing/Paginator";
 import { SingleEntry } from "../components/public/listing/SingleEntry";
 import { TopEntry } from "../components/public/listing/TopEntry";
-import { entriesPerPage, siteName, tagLine1, tagLine2 } from "../utils/consts";
+import {
+  entriesPerPage,
+  host,
+  siteName,
+  tagLine1,
+  tagLine2,
+} from "../utils/consts";
 
 interface IndexProps {
   entries: Entry[];
@@ -63,7 +69,13 @@ export default function Index({ entries, totalPages }: IndexProps) {
         <meta name="description" content={`${tagLine1} ${tagLine2}`} />
         <meta name="og:title" content={siteName} />
         <meta name="og:description" content={`${tagLine1} ${tagLine2}`} />
-        <meta name="og:image" content="/images/og-cover.png" />
+        <meta name="og:image" content={`${host}/images/og-cover.png`} />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title={`RSS Feed for ${siteName}`}
+          href="/feed/"
+        />
       </Head>
       <IndexHeader />
       <Divider />

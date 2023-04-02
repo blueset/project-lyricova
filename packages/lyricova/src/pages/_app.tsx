@@ -5,8 +5,6 @@ import PropTypes from "prop-types";
 import React, { ReactNode, useEffect } from "react";
 import theme from "lyricova-common/frontendUtils/theme";
 import Head from "next/head";
-import { ApolloProvider } from "@apollo/client";
-import apolloClient from "lyricova-common/frontendUtils/apollo";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import createEmotionCache from "../frontendUtils/createEmotionCache";
 import {
@@ -19,6 +17,7 @@ import "../styles/global.scss";
 import { useRouter } from "next/router";
 import { TransitionCover } from "../components/public/TransitionCover";
 import GlobalStyles from "@mui/material/GlobalStyles";
+import { siteName } from "../utils/consts";
 
 export const getPlainLayout = (page: ReactNode) => <>{page}</>;
 
@@ -78,21 +77,34 @@ function MyApp({
   return (
     <CacheProvider value={emotionCache}>
       <Head>
-        <title>Project Lyricova</title>
+        <title>{siteName}</title>
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
-        {/* {isDashboard && (
-          <style jsx global>
-            {":root { font-size: 16px !important; }"}
-          </style>
-        )}
-        {isFullScreen && (
-          <style jsx global>
-            {":root { height: 100%; }"}
-          </style>
-        )} */}
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#c56cf0" />
+        <meta name="apple-mobile-web-app-title" content={siteName} />
+        <meta name="application-name" content={siteName} />
+        <meta name="theme-color" content="#c56cf0" />
       </Head>
       <ThemeProvider theme={theme}>
         <GlobalStyles
@@ -105,9 +117,7 @@ function MyApp({
         />
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         {isDashboard ? (
-          <ApolloProvider client={apolloClient}>
-            {getLayout(<Component {...pageProps} />)}
-          </ApolloProvider>
+          getLayout(<Component {...pageProps} />)
         ) : (
           <Component {...pageProps} />
         )}

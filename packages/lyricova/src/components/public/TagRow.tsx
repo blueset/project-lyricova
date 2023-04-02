@@ -17,6 +17,7 @@ export function TagRow({ tags }: TagRowProps) {
           className={classes.tag}
           style={{ "--tag-color": tag.color } as CSSProperties}
           role="link"
+          rel="tag"
         >
           {tag.name}
         </Link>

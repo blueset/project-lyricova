@@ -5,10 +5,11 @@ import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
 import { makeValidate, TextField } from "mui-rff";
 import * as yup from "yup";
 import { Form } from "react-final-form";
-import { useApolloClient } from "@apollo/client";
 import { useState } from "react";
+import { useApolloClient, ApolloProvider } from "@apollo/client";
+import apolloClient from "lyricova-common/frontendUtils/apollo";
 
-export default function Login() {
+function Login() {
   const router = useRouter();
   const apolloClient = useApolloClient();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -125,5 +126,13 @@ export default function Login() {
         <Typography sx={{ p: 2 }}>Try harder.</Typography>
       </Popover>
     </AuthContext>
+  );
+}
+
+export default function LoginWithApollo() {
+  return (
+    <ApolloProvider client={apolloClient}>
+      <Login />
+    </ApolloProvider>
   );
 }

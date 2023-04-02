@@ -4,13 +4,13 @@ import { IndexHeader } from "../../components/public/IndexHeader";
 import classes from "./index.module.scss";
 import SearchIcon from "@mui/icons-material/Search";
 import { CircularProgress } from "@mui/material";
-import { ChangeEvent, Fragment, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import _ from "lodash";
 import { Entry } from "lyricova-common/models/Entry";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
 import { motion } from "framer-motion";
 import Head from "next/head";
-import { siteName, tagLine1, tagLine2 } from "../../utils/consts";
+import { host, siteName, tagLine1, tagLine2 } from "../../utils/consts";
 
 const containerVariants = {
   visible: {
@@ -69,7 +69,7 @@ export default function Search() {
           name="og:description"
           content={`Search – ${siteName}: ${tagLine1} ${tagLine2}`}
         />
-        <meta name="og:image" content="/images/og-cover.png" />
+        <meta name="og:image" content={`${host}/images/og-cover.png`} />
       </Head>
       <IndexHeader />
       <Divider />

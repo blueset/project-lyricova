@@ -1,7 +1,7 @@
 import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
 import { GetStaticProps, GetStaticPaths } from "next";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";
 import classes from "./EntryPage.module.scss";
@@ -15,7 +15,7 @@ import type { Song } from "lyricova-common/models/Song";
 import type { PVContract } from "../../types/vocadb";
 import { MainVerse } from "../../components/public/single/MainVerse";
 import Head from "next/head";
-import { siteName } from "../../utils/consts";
+import { host, siteName } from "../../utils/consts";
 import { AdminLinks } from "../../components/public/single/AdminLinks";
 import { Gallery } from "../../components/public/single/Gallery";
 
@@ -132,7 +132,7 @@ export default function EntryPage({ entry }: ArchivePageProps) {
           content={`${entry.title} / ${artistString} – ${siteName}`}
         />
         <meta name="og:description" content={verse.text} />
-        <meta name="og:image" content={`/api/og/${entry.id}`} />
+        <meta name="og:image" content={`${host}/api/og/${entry.id}`} />
       </Head>
       <div className={classes.entryId}>
         <span className={classes.entryIdSharp}>#</span>
@@ -158,7 +158,7 @@ export default function EntryPage({ entry }: ArchivePageProps) {
       {otherVerses.length > 0 && (
         <>
           <section className={classes.otherVerses}>
-            {otherVerses.map((verse, idx) => (
+            {otherVerses.map((verse) => (
               <OtherVerse verse={verse} key={verse.id} />
             ))}
           </section>

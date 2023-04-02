@@ -20,9 +20,10 @@ import { Link } from "../Link";
 interface NavEntryProps {
   href: string;
   children: string;
+  rel?: string;
 }
 
-function NavEntry({ href, children }: NavEntryProps) {
+function NavEntry({ href, children, rel }: NavEntryProps) {
   const isExternal = href.startsWith("http");
   const Component = isExternal ? "a" : Link;
   const router = useRouter();
@@ -47,6 +48,7 @@ function NavEntry({ href, children }: NavEntryProps) {
       className={classes.navEntry}
       data-active={router.pathname.startsWith(href)}
       ref={(elm) => elm && positionChars(elm)}
+      rel={rel}
     >
       <span className={classes.mainNavText}>
         {[...children].map((char, i) => (
@@ -153,7 +155,9 @@ export function NavPanel() {
             <nav className={classes.nav} ref={(elm) => buildTimeline(elm)}>
               <NavEntry href={jukeboxUrl}>Jukebox</NavEntry>
               <NavEntry href="/screensavers">Screensavers</NavEntry>
-              <NavEntry href="/search">Search</NavEntry>
+              <NavEntry href="/search" rel="search">
+                Search
+              </NavEntry>
               <NavEntry href="/tags">Tags</NavEntry>
               <NavEntry href="/login">Log in</NavEntry>
               <NavEntry href="https://1a23.com">1A23 Studio</NavEntry>

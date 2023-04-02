@@ -9,7 +9,7 @@ import gsap from "gsap";
 import classes from "./index.module.scss";
 import { Link } from "../../components/public/Link";
 import Head from "next/head";
-import { siteName, tagLine1, tagLine2 } from "../../utils/consts";
+import { host, siteName, tagLine1, tagLine2 } from "../../utils/consts";
 
 type TagWithCount = Tag & { entryCount: number };
 
@@ -126,7 +126,7 @@ export default function Tags({ tags }: IndexProps) {
           name="og:description"
           content={`Tags – ${siteName}: ${tagLine1} ${tagLine2}`}
         />
-        <meta name="og:image" content="/images/og-cover.png" />
+        <meta name="og:image" content={`${host}/images/og-cover.png`} />
       </Head>
       <style jsx global>{`
         html,

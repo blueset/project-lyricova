@@ -1,6 +1,6 @@
 import sequelize from "lyricova-common/db";
 import { Entry } from "lyricova-common/models/Entry";
-import { GetStaticProps, GetStaticPaths, GetServerSideProps } from "next";
+import { GetStaticProps, GetStaticPaths } from "next";
 import Head from "next/head";
 import { Fragment } from "react";
 import { Divider } from "../../components/public/Divider";
@@ -10,6 +10,7 @@ import { Paginator } from "../../components/public/listing/Paginator";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
 import {
   entriesPerPage,
+  host,
   siteName,
   tagLine1,
   tagLine2,
@@ -77,7 +78,7 @@ export default function ArchivePage({
           name="og:description"
           content={`Archive Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
         />
-        <meta name="og:image" content="/images/og-cover.png" />
+        <meta name="og:image" content={`${host}/images/og-cover.png`} />
       </Head>
       <ArchiveHeader page={page} />
       <Divider />

@@ -42,7 +42,9 @@ export default function ScreensaversDirectory() {
         </Link>
         <Link href="/screensavers/marcacos">Marcacos</Link>
         <Link href="/screensavers/glucagon">Glucagon</Link>
-        <Link href="/screensavers/docs">Options</Link>
+        <Link href="/screensavers/docs" rel="help">
+          Options
+        </Link>
       </nav>
       <div className={classes.bottom}>
         <Footer />

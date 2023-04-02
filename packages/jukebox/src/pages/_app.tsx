@@ -35,6 +35,29 @@ function MyApp({ Component, pageProps }: AppPropsExtension) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#c56cf0" />
+        <meta name="apple-mobile-web-app-title" content="Lyricova Jukebox" />
+        <meta name="application-name" content="Lyricova Jukebox" />
+        <meta name="theme-color" content="#c56cf0" />
       </Head>
       <ApolloProvider client={apolloClient}>
         <ThemeProvider theme={theme}>

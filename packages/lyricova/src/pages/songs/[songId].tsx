@@ -12,6 +12,7 @@ import { SingleEntry } from "../../components/public/listing/SingleEntry";
 import { SubArchiveHeader } from "../../components/public/listing/SubArchiveHeader";
 import {
   entriesPerPage,
+  host,
   siteName,
   tagLine1,
   tagLine2,
@@ -93,7 +94,7 @@ export default function SongArchivePage({
           name="og:description"
           content={`Song Archive of ${song.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`}
         />
-        <meta name="og:image" content="/images/og-cover.png" />
+        <meta name="og:image" content={`${host}/images/og-cover.png`} />
       </Head>
       <SubArchiveHeader
         page={page}

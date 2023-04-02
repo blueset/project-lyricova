@@ -145,6 +145,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^13.2.4",
     "@redux-devtools/core": "^3.13.1",
     "@types/async": "^3.0.3",
     "@types/autosuggest-highlight": "^3.1.0",
