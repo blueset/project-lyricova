@@ -53,7 +53,6 @@ function MyApp({ Component, pageProps }: AppPropsExtension) {
           sizes="16x16"
           href="/favicon-16x16.png"
         />
-        <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#c56cf0" />
         <meta name="apple-mobile-web-app-title" content="Lyricova Jukebox" />
         <meta name="application-name" content="Lyricova Jukebox" />

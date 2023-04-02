@@ -100,7 +100,6 @@ function MyApp({
           sizes="16x16"
           href="/favicon-16x16.png"
         />
-        <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#c56cf0" />
         <meta name="apple-mobile-web-app-title" content={siteName} />
         <meta name="application-name" content={siteName} />
@@ -110,8 +109,8 @@ function MyApp({
         <GlobalStyles
           styles={{
             ":root": {
-              fontSize: isDashboard ? ["16px", "!important"] : "unset",
-              height: isFullScreen ? "100%" : "unset",
+              fontSize: isDashboard ? ["16px", "!important"] : undefined,
+              height: isFullScreen ? "100%" : undefined,
             },
           }}
         />

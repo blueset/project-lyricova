@@ -70,6 +70,9 @@ export default function LibraryAlbums() {
                   },
                 }}
                 src={val.coverUrl || "/images/disk-512.jpg"}
+                imgProps={{
+                  loading: "lazy",
+                }}
                 variant="rounded"
               />
             </ButtonBase>

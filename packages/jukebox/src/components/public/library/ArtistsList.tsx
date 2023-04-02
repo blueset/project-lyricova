@@ -89,6 +89,10 @@ export default function ArtistsList({ types, typeName }: Props) {
                       height: "3em",
                       width: "3em",
                       marginRight: 1,
+                      objectPosition: "top center",
+                    }}
+                    imgProps={{
+                      loading: "lazy",
                     }}
                   >
                     <RecentActorsIcon fontSize="large" />

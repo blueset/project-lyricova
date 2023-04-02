@@ -57,6 +57,7 @@ export function Paginator({ currentPage, totalPages, prefix }: PaginatorProps) {
         <Link
           href={currentPage > 2 ? `${prefix}pages/${currentPage - 1}` : prefix}
           rel="prev"
+          aria-label="Previous page"
         >
           <PreviousArrow className={classes.prevLink} />
         </Link>
@@ -82,7 +83,11 @@ export function Paginator({ currentPage, totalPages, prefix }: PaginatorProps) {
       {currentPage >= totalPages ? (
         <NextArrow className={classes.disabledLink} />
       ) : (
-        <Link href={`${prefix}pages/${currentPage + 1}`} rel="next">
+        <Link
+          href={`${prefix}pages/${currentPage + 1}`}
+          rel="next"
+          aria-label="Next page"
+        >
           <NextArrow className={classes.nextLink} />
         </Link>
       )}
