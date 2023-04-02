@@ -4,17 +4,30 @@ import { Lyrics } from "../../core/lyrics";
 import { LyricsProviderSource } from "../lyricsProviderSource";
 import axios from "axios";
 import { TITLE, ARTIST, ALBUM, LRC_BY } from "../../core/idTagKey";
-import { id3TagRegex, krcLineRegex, netEaseInlineTagRegex } from "../../utils/regexPattern";
-import { WordTimeTag, WordTimeTagLabel, Attachments, TIME_TAG } from "../../core/lyricsLineAttachment";
+import {
+  id3TagRegex,
+  krcLineRegex,
+  netEaseInlineTagRegex,
+} from "../../utils/regexPattern";
+import {
+  WordTimeTag,
+  WordTimeTagLabel,
+  Attachments,
+  TIME_TAG,
+} from "../../core/lyricsLineAttachment";
 import { LyricsLine } from "../../core/lyricsLine";
-import { NetEaseResponseSong, NetEaseResponseSearchResult } from "../types/netease/searchResult";
+import {
+  NetEaseResponseSong,
+  NetEaseResponseSearchResult,
+} from "../types/netease/searchResult";
 import { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
 
 const SEARCH_URL = "http://music.163.com/api/search/pc";
 const LYRICS_URL = "http://music.163.com/api/song/lyric";
 const headers = {
   Referer: "http://music.163.com/",
-  "user-agent": "Mozilla/5.0 (Windows NT 10.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.3987.132 Safari/537.36",
+  "user-agent":
+    "Mozilla/5.0 (Windows NT 10.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.3987.132 Safari/537.36",
   Cookie: "NMTID=",
 };
 
@@ -23,7 +36,8 @@ class NeteaseKLyrics extends Lyrics {
     super();
     const matches = content.matchAll(id3TagRegex);
     for (const match of matches) {
-      const key = match[1].trim(), value = match[2].trim();
+      const key = match[1].trim(),
+        value = match[2].trim();
       if (key && value) {
         this.idTags[key] = value;
       }
@@ -31,15 +45,15 @@ class NeteaseKLyrics extends Lyrics {
     const krcLineMatches = content.matchAll(krcLineRegex);
     const lines = [];
     for (const match of krcLineMatches) {
-      const
-        timeTagStr = match[1],
+      const timeTagStr = match[1],
         timeTag = parseFloat(timeTagStr) / 1000,
         durationStr = match[2],
         duration = parseFloat(durationStr) / 1000;
 
       let lineContent = "";
       const attachment = new WordTimeTag(
-        [new WordTimeTagLabel(0, 0)], duration
+        [new WordTimeTagLabel(0, 0)],
+        duration
       );
       let dt = 0;
       const inlineTagMatches = match[3].matchAll(netEaseInlineTagRegex);
@@ -73,13 +87,15 @@ class NeteaseKLyrics extends Lyrics {
 }
 
 export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
-  static source = LyricsProviderSource.netease;
+  // static source = LyricsProviderSource.netease;
 
   constructor() {
     super();
   }
 
-  async searchLyrics(request: LyricsSearchRequest): Promise<NetEaseResponseSong[]> {
+  async searchLyrics(
+    request: LyricsSearchRequest
+  ): Promise<NetEaseResponseSong[]> {
     try {
       const parameters = {
         s: request.searchTerm.toString(),
@@ -87,10 +103,14 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
         type: 1,
       };
       // Use axios to make request
-      const outcome = await axios.post<NetEaseResponseSearchResult>(SEARCH_URL, "", {
-        params: parameters,
-        headers,
-      });
+      const outcome = await axios.post<NetEaseResponseSearchResult>(
+        SEARCH_URL,
+        "",
+        {
+          params: parameters,
+          headers,
+        }
+      );
       if (outcome.status !== 200) {
         console.error(outcome.data);
         return [];
@@ -103,24 +123,35 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
     }
   }
 
-  public async fetchLyrics(token: NetEaseResponseSong): Promise<Lyrics | undefined> {
+  public async fetchLyrics(
+    token: NetEaseResponseSong
+  ): Promise<Lyrics | undefined> {
     try {
       const parameters = {
         id: token.id,
-        lv: 1, kd: 1, tv: -1
+        lv: 1,
+        kd: 1,
+        tv: -1,
       };
-      const response = await axios.get<NetEaseResponseSingleLyrics>(LYRICS_URL, {
-        params: parameters,
-        headers,
-      });
+      const response = await axios.get<NetEaseResponseSingleLyrics>(
+        LYRICS_URL,
+        {
+          params: parameters,
+          headers,
+        }
+      );
       if (response.status !== 200) {
         console.error(response.data);
         return undefined;
       }
       const data = response.data;
       let lyrics: Lyrics = undefined;
-      const transLrc = data?.tlyric?.lyric ? new Lyrics(data.tlyric.lyric) : null;
-      const kLrc = data?.klyric?.lyric ? new NeteaseKLyrics(data.klyric.lyric) : null;
+      const transLrc = data?.tlyric?.lyric
+        ? new Lyrics(data.tlyric.lyric)
+        : null;
+      const kLrc = data?.klyric?.lyric
+        ? new NeteaseKLyrics(data.klyric.lyric)
+        : null;
       if (kLrc) {
         if (transLrc) {
           kLrc.forceMerge(transLrc);
