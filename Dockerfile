@@ -4,7 +4,7 @@ FROM node:18
 WORKDIR /app
 
 # Install mecab and mecab-ipadic-neologd
-RUN apt-get update && apt-get install -y mecab libmecab-dev mecab-ipadic-utf8 git make curl xz-utils file
+RUN apt-get update && apt-get install -y mecab libmecab-dev mecab-ipadic-utf8 git make curl xz-utils file ffmpeg
 # Make sudo dummy replacement, so we don't weaken docker security
 RUN echo "#!/bin/bash\n\$@" > /usr/bin/sudo
 RUN chmod +x /usr/bin/sudo
