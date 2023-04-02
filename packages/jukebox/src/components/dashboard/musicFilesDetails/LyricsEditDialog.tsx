@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { TabContext, TabPanel } from "@mui/lab";
 import LyricsPreview from "./LyricsPreview";
-import { Lyrics } from "lyrics-kit";
+import { Lyrics } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 import EditLyrics from "./lyrics/EditLyrics";
 import SearchLyrics from "./lyrics/SearchLyrics";

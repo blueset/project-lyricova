@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Lyrics, LyricsLine } from "lyrics-kit";
+import { Lyrics, LyricsLine } from "lyrics-kit/core";
 import {
   PlayerLyricsKeyframe,
   usePlayerLyricsState,

@@ -35,7 +35,7 @@ import { Song } from "lyricova-common/models/Song";
 import { Album } from "lyricova-common/models/Album";
 import NodeID3 from "node-id3";
 import { swapExt } from "../utils/path";
-import { Lyrics } from "lyrics-kit";
+import { Lyrics } from "lyrics-kit/core";
 import { LyricsKitLyrics } from "./LyricsKitObjects";
 import type { PubSubSessionPayload } from "./index";
 

@@ -94,6 +94,7 @@
     "lyrics-kit": "file:../lyrics-kit",
     "material-ui-popup-state": "^5.0.4",
     "mecab-async": "^0.1.2",
+    "million": "^2.1.0",
     "mime": "^3.0.0",
     "mui-rff": "^6.1.4",
     "multer": "^1.4.2",

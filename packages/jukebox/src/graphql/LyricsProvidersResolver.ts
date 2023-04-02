@@ -6,7 +6,8 @@ import type {
   LyricsForSongContract,
   VDBTranslationType,
 } from "../types/vocadb";
-import { Lyrics, LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
+import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit/service";
+import { Lyrics, LyricsMetadata } from "lyrics-kit/core";
 import {
   Resolver,
   ObjectType,
@@ -23,7 +24,6 @@ import {
 import type { Publisher } from "type-graphql";
 import { ApolloError } from "apollo-server-express";
 import { GraphQLJSONObject } from "graphql-type-json";
-import { LyricsMetadata } from "lyrics-kit/build/main/core/lyricsMetadata";
 import _ from "lodash";
 import type { PubSubSessionPayload } from "./index";
 

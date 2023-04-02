@@ -1,9 +1,8 @@
 import { Box, Button, Grid, List, ListItem, ListItemText } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Lyrics, LyricsLine, RangeAttribute } from "lyrics-kit";
+import { Lyrics, LyricsLine, RangeAttribute, FURIGANA } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 import { useNamedState } from "../../../../frontendUtils/hooks";
-import { FURIGANA } from "lyrics-kit/build/main/core/lyricsLineAttachment";
 import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
 import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";

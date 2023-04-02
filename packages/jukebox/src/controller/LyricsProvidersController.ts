@@ -3,7 +3,7 @@ import axios from "axios";
 import cheerio from "cheerio";
 import { Song } from "lyricova-common/models/Song";
 import type { SongForApiContract } from "../types/vocadb";
-import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit";
+import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit/service";
 
 export class LyricsProvidersController {
   public router: Router;

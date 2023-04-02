@@ -1,10 +1,9 @@
 import { Grid, TextField, Typography } from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef } from "react";
-import { Lyrics } from "lyrics-kit";
+import { Lyrics, TRANSLATION } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 import { useNamedState } from "../../../../frontendUtils/hooks";
-import { TRANSLATION } from "lyrics-kit/build/main/core/lyricsLineAttachment";
 
 interface Props {
   lyrics: string;

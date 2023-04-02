@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "ES2019",
     "outDir": "build/main",
     "rootDir": "src",
     "moduleResolution": "node",
@@ -42,8 +42,7 @@
     // "normalTypeScriptOptions": "here"
   },
   "include": [
-    "src/**/*.ts",
-    "../../node_modules/@types/cheerio/index.d.ts"
+    "src/**/*.ts"
   ],
   "exclude": ["node_modules/**"],
   "compileOnSave": false,

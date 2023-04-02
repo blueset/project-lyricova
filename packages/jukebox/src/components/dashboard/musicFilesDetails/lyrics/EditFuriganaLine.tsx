@@ -1,6 +1,5 @@
-import { LyricsLine, RangeAttribute } from "lyrics-kit";
+import { LyricsLine, RangeAttribute, FURIGANA } from "lyrics-kit/core";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef } from "react";
-import { FURIGANA } from "lyrics-kit/build/main/core/lyricsLineAttachment";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import { Box, IconButton, Paper, TextField, Typography } from "@mui/material";
 import _ from "lodash";

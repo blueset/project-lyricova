@@ -37,7 +37,7 @@ import {
   lyricsAnalysis,
   LyricsAnalysisResult,
 } from "../../../../utils/lyricsCheck";
-import { Lyrics } from "lyrics-kit";
+import { Lyrics } from "lyrics-kit/core";
 import { useCallback, useMemo } from "react";
 import TooltipIconButton from "../../TooltipIconButton";
 import { DocumentNode } from "graphql";

@@ -11,7 +11,7 @@ import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 import axiosCookieJarSupport from "axios-cookiejar-support";
 import tough from "tough-cookie";
-import cheerio from "cheerio";
+import cheerio, { Node } from "cheerio";
 import { URL, URLSearchParams } from "url";
 
 import { LyricsProviderSource } from "../lyricsProviderSource";
@@ -23,7 +23,7 @@ import {
   RangeAttribute,
   TRANSLATION,
   PlainText,
-  Attachments
+  Attachments,
 } from "../../core/lyricsLineAttachment";
 import { LyricsLine } from "../../core/lyricsLine";
 import { MarumaruResponseSingleLyrics } from "../types/marumaru/singleLyrics";
@@ -40,9 +40,7 @@ class MarumaruLyrics extends Lyrics {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [, h, m, s] = timeTag.match(/^(\d+):(\d+):([\d.]+)$/);
-      return parseFloat(h) * 60 * 60 +
-        parseFloat(m) * 60 +
-        parseFloat(s);
+      return parseFloat(h) * 60 * 60 + parseFloat(m) * 60 + parseFloat(s);
     } catch {
       console.error(`${timeTag} is not a valid time tag.`);
       return 0;
@@ -59,8 +57,8 @@ class MarumaruLyrics extends Lyrics {
       LyricsYomi.length,
       Translate_zh.length,
       StartTime.length,
-      EndTime.length
-    ].filter(v => v > 0);
+      EndTime.length,
+    ].filter((v) => v > 0);
     if (numberOfLinesCandidates.length === 0) {
       throw new Error("Lyrics is empty.");
     }
@@ -75,8 +73,7 @@ class MarumaruLyrics extends Lyrics {
       } else if (EndTime[i] !== StartTime[i + 1]) {
         addBlankLine = true;
       }
-      const
-        start = MarumaruLyrics.parseTimeTag(StartTime[i]),
+      const start = MarumaruLyrics.parseTimeTag(StartTime[i]),
         end = MarumaruLyrics.parseTimeTag(EndTime[i]);
       let lineContent = "";
 
@@ -84,19 +81,23 @@ class MarumaruLyrics extends Lyrics {
       const attachments: AttachmentsContent = {};
       if (LyricsYomi[i]) {
         const furigana: [string, Range][] = [];
-        let segments: CheerioElement[] = [];
+        let segments: Node[] = [];
         if (LyricsYomi[i].indexOf("<") >= 0) {
-          segments = $(LyricsYomi[i]).map((_, x) => x).get();
+          segments = $(LyricsYomi[i])
+            .map((_, x) => x)
+            .get();
         }
         if (segments.length === 0) {
           lineContent = LyricsYomi[i];
         } else {
           for (const segment of segments) {
             if ($(segment).children().length > 0) {
-              const
-                segmentText = $("rb", segment).text(),
+              const segmentText = $("rb", segment).text(),
                 segmentRuby = $("rt", segment).text();
-              furigana.push([segmentRuby, [lineContent.length, lineContent.length + segmentText.length]]);
+              furigana.push([
+                segmentRuby,
+                [lineContent.length, lineContent.length + segmentText.length],
+              ]);
               lineContent += segmentText;
             } else {
               lineContent += $(segment).text();
@@ -141,24 +142,27 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
     jar: new tough.CookieJar(),
     withCredentials: true,
     maxRedirects: 10,
-    validateStatus: function (status) {
+    validateStatus: function(status) {
       return status >= 200 && status < 303;
-    }
+    },
   });
 
   constructor() {
     super();
 
-    this.axios.get(SEARCH_URL)
+    this.axios
+      .get(SEARCH_URL)
       // .then(resp => {
       // console.log(resp);
       // })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
       });
   }
 
-  public async searchLyrics(request: LyricsSearchRequest): Promise<MarumaruEntry[]> {
+  public async searchLyrics(
+    request: LyricsSearchRequest
+  ): Promise<MarumaruEntry[]> {
     try {
       let keyword = "";
       if (request.searchTerm.state === "info") {
@@ -175,7 +179,7 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
         AvgScore: "",
         OrderBy: "",
         MySong: "",
-        Page: "1"
+        Page: "1",
       };
 
       const { data } = await this.axios.post(
@@ -184,25 +188,29 @@ export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
         {
           headers: {
             Accept: "*/*",
-            "Content-Type": "application/x-www-form-urlencoded"
-          }
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
         }
       );
       const $ = cheerio.load(data);
-      return $("table.song-list").map((_, elm) => {
-        const href = $("a", elm).attr("href");
-        const songPK = href.match(/\d+/g)[0];
-        const title = $("a > span[lang=ja]", elm).text();
-        const artist = $("td > span[lang=ja]", elm).text().replace(/^ - /g, "");
-        const coverRaw = $("img", elm).attr("src");
-        const cover = new URL(coverRaw, SEARCH_URL).href;
-        return {
-          songPK: songPK,
-          title: title,
-          artist: artist,
-          cover: cover
-        };
-      }).get() as MarumaruEntry[];
+      return $("table.song-list")
+        .map((_, elm) => {
+          const href = $("a", elm).attr("href");
+          const songPK = href.match(/\d+/g)[0];
+          const title = $("a > span[lang=ja]", elm).text();
+          const artist = $("td > span[lang=ja]", elm)
+            .text()
+            .replace(/^ - /g, "");
+          const coverRaw = $("img", elm).attr("src");
+          const cover = new URL(coverRaw, SEARCH_URL).href;
+          return {
+            songPK: songPK,
+            title: title,
+            artist: artist,
+            cover: cover,
+          };
+        })
+        .get() as MarumaruEntry[];
     } catch (e) {
       console.error(e);
       return [];

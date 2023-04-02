@@ -35,10 +35,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import _ from "lodash";
-import {
-  buildTimeTag,
-  resolveTimeTag,
-} from "lyrics-kit/build/main/utils/regexPattern";
+import { buildTimeTag, resolveTimeTag } from "lyrics-kit/core";
 import { linearRegression } from "simple-statistics";
 import DismissibleAlert from "../../DismissibleAlert";
 

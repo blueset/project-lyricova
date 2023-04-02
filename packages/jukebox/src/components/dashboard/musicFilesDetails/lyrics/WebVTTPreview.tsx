@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Lyrics, LyricsLine } from "lyrics-kit";
-import { FURIGANA } from "lyrics-kit/build/main/core/lyricsLineAttachment";
-import { buildTimeTag } from "lyrics-kit/build/main/utils/regexPattern";
+import { Lyrics, LyricsLine, FURIGANA, buildTimeTag } from "lyrics-kit/core";
 
 interface Props {
   lyricsString: string;

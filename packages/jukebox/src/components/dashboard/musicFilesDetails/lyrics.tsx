@@ -5,7 +5,7 @@ import { lyricsAnalysis } from "../../../utils/lyricsCheck";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useSnackbar } from "notistack";
-import { Lyrics } from "lyrics-kit";
+import { Lyrics } from "lyrics-kit/core";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import LyricsEditDialog from "./LyricsEditDialog";
 import { gql, useApolloClient } from "@apollo/client";

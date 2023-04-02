@@ -1,5 +1,5 @@
-import { Lyrics } from "lyrics-kit";
-import { FURIGANA } from "lyrics-kit/build/main/core/lyricsLineAttachment";
+import type { Lyrics } from "lyrics-kit/core";
+import { FURIGANA } from "lyrics-kit/core";
 
 const simplifiedJapanesePattern = /(言叶|缲|纷失|顷|顽张|时世|纳得|一绪|冗谈|踬|运命|马鹿|绝対|([梦飞闻谁鸣话赈见试远动仆终踴溫聲數攜积头无])(\p{sc=Hiragana}|\p{sc=Katakana}))/ug;
 
