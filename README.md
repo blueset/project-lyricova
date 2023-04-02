@@ -1,6 +1,7 @@
-# Project Lyricova (歌语计划)
+# Project Lyricova
 
-Project Lyricova is a free and open source blogging tool focused on lyrics.
+Project Lyricova is a free and open source suit of web apps for lyrics blogging
+and music management focused on Vocaloid\* contents.
 
 Project Lyricova is currently under the progress of a complete rewrite. The new
 program will consist of 2 parts: a jukebox + music library manager and a lyrics
@@ -9,6 +10,9 @@ Express.js + React.
 
 For the current version of Project Lyricova released in 2015, see the `v1`
 branch.
+
+<small>\* The term “Vocaloid” here includes all voice synthesizers, as defined
+in VocaDB.net.</small>
 
 ## Packages
 
