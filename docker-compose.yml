@@ -14,3 +14,4 @@ services:
       - /var/lyricova/music:/var/music/
     env_file:
       - .env
+    network_mode: host
