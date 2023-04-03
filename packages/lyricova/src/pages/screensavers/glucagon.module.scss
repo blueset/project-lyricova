@@ -16,6 +16,7 @@
 
   .sizer {
     width: 80%;
+    max-width: 80%;
     span {
       display: inline-block;
       vertical-align: top;
@@ -40,6 +41,7 @@
     flex-direction: row;
     gap: 0.25em 1em;
     align-items: baseline;
+    align-content: flex-start;
     flex-wrap: wrap;
     line-height: 1;
 

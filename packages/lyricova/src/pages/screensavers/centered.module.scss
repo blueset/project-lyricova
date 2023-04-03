@@ -6,6 +6,7 @@
   top: 0;
   bottom: 0;
   right: 0;
+  z-index: -1;
   display: block;
   font-family: $headings-font;
   font-weight: 800;
@@ -16,7 +17,10 @@
   font-size: 18.8vh;
   font-size: 18.8svh;
   line-height: 0.85;
-  opacity: 0.5;
+  opacity: 0.25;
+  @supports (-moz-appearance: none) {
+    opacity: 0.45;
+  }
   transition-duration: 1s;
   transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
   transition-property: background-color, background-image;
@@ -93,6 +97,7 @@
 
     .meta {
       display: flex;
+      flex-wrap: wrap;
       flex-direction: row;
       gap: 0.5rem;
       line-height: 1;

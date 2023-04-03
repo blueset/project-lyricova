@@ -48,6 +48,7 @@ type ArtistOfAlbum {
 }
 
 type ArtistOfSong {
+  artistOfSongId: Int!
   artistRoles: [String!]!
   categories: [String!]!
   creationDate: Timestamp!
@@ -179,6 +180,9 @@ type MusicFile {
 
   """Local path to the song."""
   path: String!
+
+  """Number of times the file has been played."""
+  playCount: Int!
 
   """ID of corresponding song in database."""
   songId: Int

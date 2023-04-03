@@ -24,9 +24,9 @@ export function generateColorGradientFunction(
     );
   return (pos: number) =>
     stringifyColor(
-      ranges[Math.floor(pos * ranges.length)](
-        (pos * ranges.length) % 1
-      ) as unknown as Color
+      (ranges[
+        Math.max(Math.min(ranges.length, Math.floor(pos * ranges.length)), 0)
+      ]?.((pos * ranges.length) % 1) as unknown as Color) ?? colorObjs[0]
     );
 }
 
