@@ -190,6 +190,12 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   @Column({ type: new DataTypes.STRING(128) })
   hash: string;
 
+  @Field((type) => Int, {
+    description: "Number of times the file has been played.",
+  })
+  @Column({ type: DataTypes.INTEGER.UNSIGNED })
+  playCount: number;
+
   @Field()
   @CreatedAt
   creationDate: Date;

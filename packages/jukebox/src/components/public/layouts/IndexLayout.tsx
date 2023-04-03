@@ -8,7 +8,7 @@ import React, {
   useCallback,
   CSSProperties,
 } from "react";
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import { AppContext, Track } from "../AppContext";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import CurrentPlaylist from "../CurrentPlaylist";
@@ -47,6 +47,12 @@ const TEXTURE_QUERY = gql`
   }
 ` as DocumentNode;
 
+const BUMP_PLAY_COUNT_MUTATION = gql`
+  mutation bumpPlayCount($id: Int!) {
+    bumpPlayCount(fileId: $id)
+  }
+` as DocumentNode;
+
 function getTrackCoverURL(track: Track): string {
   return `/api/files/${track.id}/cover`;
 }
@@ -73,6 +79,7 @@ function generateBackgroundStyle(
 
 export default function IndexLayout({ children }: Props) {
   const playerRef = useRef<HTMLAudioElement>();
+  const apolloClient = useApolloClient();
 
   const dispatch = useAppDispatch();
   const { nowPlaying, loopMode, isCollapsed, playNow } = useAppSelector(
@@ -107,6 +114,18 @@ export default function IndexLayout({ children }: Props) {
     } else {
       // Play next
       dispatch(playNext());
+    }
+    try {
+      if (currentSong?.id) {
+        apolloClient.mutate({
+          mutation: BUMP_PLAY_COUNT_MUTATION,
+          variables: {
+            id: currentSong.id,
+          },
+        });
+      }
+    } catch (error) {
+      console.error(error);
     }
   }, [loopMode, dispatch]);
 

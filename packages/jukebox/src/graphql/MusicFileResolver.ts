@@ -8,7 +8,7 @@ import { writeAsync as ffMetadataWrite } from "lyricova-common/utils/ffmetadata"
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
-import { literal, Op, WhereOptions } from "sequelize";
+import { literal, Op, Sequelize, WhereOptions } from "sequelize";
 import Path from "path";
 import _ from "lodash";
 import {
@@ -620,4 +620,17 @@ export class MusicFileResolver {
 
     return file;
   }
+
+  @Authorized("ADMIN")
+  @Mutation((returns) => Int, { description: "Bump play count of a file" })
+  public async bumpPlayCount(
+    @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number
+  ): Promise<number> {
+    const file = await MusicFile.findByPk(fileId);
+    if (file === null) return 0;
+    const playCount = file.playCount + 1;
+    await file.update({ playCount });
+    return playCount;
+  }
+
 }

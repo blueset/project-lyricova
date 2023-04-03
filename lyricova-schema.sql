@@ -186,6 +186,7 @@ CREATE TABLE `MusicFiles` (
   `needReview` tinyint(1) DEFAULT NULL,
   `duration` float DEFAULT '-1',
   `hash` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `playCount` int unsigned NOT NULL DEFAULT '0',
   `creationDate` datetime NOT NULL,
   `updatedOn` datetime NOT NULL,
   PRIMARY KEY (`id`),
