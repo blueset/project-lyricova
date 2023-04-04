@@ -2,7 +2,7 @@ import Color from "colorjs.io";
 import type { Tag } from "lyricova-common/models/Tag";
 
 function stringifyColor(color: Color) {
-  return color.to("srgb").toString();
+  return color.to("srgb").toString({ format: "hex" });
 }
 
 export function generateColorGradientFunction(

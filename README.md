@@ -5,10 +5,10 @@
 Project Lyricova is a free and open source suit of web apps for lyrics blogging
 and music management focused on Vocaloid\* contents.
 
-Project Lyricova is currently under the progress of a complete rewrite. The new
-program will consist of 2 parts: a jukebox + music library manager and a lyrics
-blog. The new tech stack is planned to be TypeScript + Node.js + MySQL +
-Express.js + React + Next.js.
+Project Lyricova is currently under the progress of a complete rewrite. The
+rewrite will consist of 2 parts: a jukebox + music library manager and a lyrics
+blog. The new tech stack is TypeScript + Node.js + MySQL + Express.js + React +
+Next.js.
 
 For music manangement, this project relies on [VocaDB](https://vocadb.net) for
 its database of Vocaloid songs, and allow manual addition of entries that does

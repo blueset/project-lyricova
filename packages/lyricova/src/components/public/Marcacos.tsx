@@ -304,7 +304,7 @@ const buildContext =
 
         const w = this.box.w;
         const h = this.box.h;
-        this.midX = w * 0.5 + this.box.x;
+        this.midX = (w + this.box.x) * 0.5;
         this.midY = h * 0.5 - (this.box.y + h);
         this.body = Bodies.rectangle(
           x + this.midX,
@@ -313,6 +313,7 @@ const buildContext =
           h,
           options
         );
+        console.log(this.char, this.box.x, w);
         Matter.Body.setMass(this.body, 3);
         World.add(engine.world, this.body);
       }
