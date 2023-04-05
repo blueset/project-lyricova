@@ -518,8 +518,6 @@ export class MusicFileController {
             attachments: [coverPath],
           }
         );
-
-        await musicFile.update({ hasCover: true });
       } catch (e) {
         console.log("Error while saving cover art to file", e);
         return res.status(500).json({ status: 500, message: e });
