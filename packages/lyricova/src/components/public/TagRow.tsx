@@ -1,5 +1,5 @@
-import { Tag } from "lyricova-common/models/Tag";
-import { CSSProperties } from "react";
+import type { Tag } from "lyricova-common/models/Tag";
+import type { CSSProperties } from "react";
 import { Link } from "./Link";
 import classes from "./TagRow.module.scss";
 

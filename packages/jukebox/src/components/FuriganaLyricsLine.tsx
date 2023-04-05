@@ -1,5 +1,6 @@
-import { LyricsLine, FURIGANA } from "lyrics-kit/core";
-import { LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
+import type { LyricsLine} from "lyrics-kit/core";
+import { FURIGANA } from "lyrics-kit/core";
+import type { LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
 
 interface Props {
   lyricsKitLine?: LyricsLine;

@@ -12,12 +12,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import {
+import type {
   ChangeEvent,
   Dispatch,
   FormEvent,
   ReactNode,
-  SetStateAction,
+  SetStateAction} from "react";
+import {
   useCallback,
 } from "react";
 import ButtonRow from "../ButtonRow";
@@ -29,7 +30,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import { useSnackbar } from "notistack";
 import { swapExt } from "../../utils/path";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 const YOUTUBE_DL_INFO_QUERY = gql`
   query($url: String!) {

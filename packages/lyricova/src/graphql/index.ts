@@ -1,4 +1,4 @@
-import { Application } from "express";
+import type { Application } from "express";
 import { ApolloServer } from "apollo-server-express";
 import {
   ObjectType,
@@ -17,7 +17,8 @@ import { buildSchema } from "type-graphql";
 import { authChecker } from "lyricova-common/utils/graphQLAuth";
 import bcrypt from "bcryptjs";
 import _ from "lodash";
-import { createServer, Server } from "http";
+import type { Server } from "http";
+import { createServer } from "http";
 
 export interface PubSubSessionPayload<T> {
   sessionId: string;

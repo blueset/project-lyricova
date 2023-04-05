@@ -18,8 +18,8 @@ import {
 } from "@mui/material";
 import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { MusicFile } from "lyricova-common/models/MusicFile";
-import { Song } from "lyricova-common/models/Song";
+import type { MusicFile } from "lyricova-common/models/MusicFile";
+import type { Song } from "lyricova-common/models/Song";
 import ListItemTextWithTime from "./ListItemTextWithTime";
 import {
   playTrack,

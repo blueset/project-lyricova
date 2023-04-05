@@ -1,7 +1,7 @@
 import { Button } from "@mui/material";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import { useRouter } from "next/router";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { EntryForm } from "../../../components/dashboard/EntryForm";
 import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout";
 

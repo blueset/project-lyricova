@@ -22,10 +22,10 @@ import {
 } from "lyricova-common/utils/fragments";
 import Alert from "@mui/material/Alert";
 import React, { Fragment } from "react";
-import { Album } from "lyricova-common/models/Album";
+import type { Album } from "lyricova-common/models/Album";
 import _ from "lodash";
 import filesize from "filesize";
-import { Song } from "lyricova-common/models/Song";
+import type { Song } from "lyricova-common/models/Song";
 import ButtonRow from "../../../components/ButtonRow";
 import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
@@ -39,9 +39,9 @@ import {
   bindTrigger,
   usePopupState,
 } from "material-ui-popup-state/hooks";
-import { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "lyricova-common/models/MusicFile";
 import TrackListRow from "../../../components/public/library/TrackListRow";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "../../../redux/public/store";
 import {
   loadTracks,

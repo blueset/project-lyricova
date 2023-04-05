@@ -10,7 +10,8 @@ import {
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import ImageNotSupportedIcon from "@mui/icons-material/ImageNotSupported";
 import { useNamedState } from "../../../frontendUtils/hooks";
-import { ChangeEvent, useCallback, useEffect } from "react";
+import type { ChangeEvent} from "react";
+import { useCallback, useEffect } from "react";
 import axios from "axios";
 import { useDropzone } from "react-dropzone";
 import { useAuthContext } from "lyricova-common/components/AuthContext";

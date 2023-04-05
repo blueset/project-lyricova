@@ -1,6 +1,8 @@
-import { cloneElement, ReactElement, useId, useState } from "react";
+import type { ReactElement} from "react";
+import { cloneElement, useId, useState } from "react";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
-import dayjs, { Dayjs } from "dayjs";
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { StaticDateTimePicker } from "@mui/x-date-pickers";

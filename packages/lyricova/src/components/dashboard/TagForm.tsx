@@ -1,8 +1,9 @@
-import { cloneElement, ReactElement, useId } from "react";
+import type { ReactElement} from "react";
+import { cloneElement, useId } from "react";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import { Alert, Box, Button, Popover, Stack } from "@mui/material";
 import { gql, useQuery, useApolloClient } from "@apollo/client";
-import { Tag } from "lyricova-common/models/Tag";
+import type { Tag } from "lyricova-common/models/Tag";
 import { Field, Form, FormSpy } from "react-final-form";
 import { makeValidate, TextField } from "mui-rff";
 import * as yup from "yup";

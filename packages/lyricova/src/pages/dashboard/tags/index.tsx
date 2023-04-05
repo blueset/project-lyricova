@@ -6,7 +6,6 @@ import React from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useRouter } from "next/router";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 import dayjs from "dayjs";
@@ -14,7 +13,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { useSnackbar } from "notistack";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import { Stack } from "@mui/system";
-import { Tag } from "lyricova-common/models/Tag";
+import type { Tag } from "lyricova-common/models/Tag";
 import { TagFormPopup } from "../../../components/dashboard/TagForm";
 
 dayjs.extend(relativeTime);
@@ -42,7 +41,6 @@ export default function Tags() {
   const tagsQuery = useQuery<{ tags: Tag[] }>(TAGS_QUERY);
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
-  const router = useRouter();
   const rows = tagsQuery.data?.tags ?? [];
 
   return (

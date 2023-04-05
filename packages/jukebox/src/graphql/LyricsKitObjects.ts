@@ -1,13 +1,14 @@
 import { ObjectType, Field, Float, Int, InputType } from "type-graphql";
-import {
+import type {
   Lyrics,
   LyricsLine,
   Attachments,
-  FURIGANA,
-  ROMAJI,
   WordTimeTag,
   WordTimeTagLabel,
-  RangeAttributeLabel,
+  RangeAttributeLabel} from "lyrics-kit/core";
+import {
+  FURIGANA,
+  ROMAJI
 } from "lyrics-kit/core";
 
 @ObjectType({ description: "Furigana/romaji to words in a lyrics line." })

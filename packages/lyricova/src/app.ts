@@ -1,4 +1,5 @@
-import express, { Express } from "express";
+import type { Express } from "express";
+import express from "express";
 import compression from "compression";
 import bodyParser from "body-parser";
 import flash from "express-flash";

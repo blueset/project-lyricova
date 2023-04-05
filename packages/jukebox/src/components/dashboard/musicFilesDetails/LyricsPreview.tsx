@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Lyrics, LyricsLine } from "lyrics-kit/core";
+import type { Lyrics, LyricsLine } from "lyrics-kit/core";
+import type {
+  PlayerLyricsKeyframe} from "../../../frontendUtils/hooks";
 import {
-  PlayerLyricsKeyframe,
   usePlayerLyricsState,
 } from "../../../frontendUtils/hooks";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";

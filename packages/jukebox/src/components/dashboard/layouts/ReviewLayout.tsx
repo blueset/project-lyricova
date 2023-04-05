@@ -1,4 +1,5 @@
-import { ReactNode, useCallback } from "react";
+import type { ReactNode} from "react";
+import { useCallback } from "react";
 import { Box, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { getLayout as getDashboardLayout } from "./DashboardLayout";
@@ -8,7 +9,7 @@ import type { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TooltipIconButton from "../TooltipIconButton";
-import { DocumentNode } from "@apollo/client/core";
+import type { DocumentNode } from "@apollo/client/core";
 
 const PENDING_REVIEW_FILES_QUERY = gql`
   query {

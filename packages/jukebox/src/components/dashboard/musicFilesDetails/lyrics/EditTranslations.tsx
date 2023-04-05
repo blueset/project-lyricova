@@ -1,6 +1,7 @@
 import { Grid, TextField, Typography } from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef } from "react";
+import type { ChangeEvent} from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Lyrics, TRANSLATION } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 import { useNamedState } from "../../../../frontendUtils/hooks";

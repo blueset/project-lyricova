@@ -1,4 +1,4 @@
-import { Playlist } from "lyricova-common/models/Playlist";
+import type { Playlist } from "lyricova-common/models/Playlist";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import {
   Avatar,
@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 import { Alert, Skeleton } from "@mui/material";
 import _ from "lodash";
-import { ReactNode, useCallback, useEffect } from "react";
+import type { ReactNode} from "react";
+import { useCallback, useEffect } from "react";
 import PlaylistAvatar from "../../PlaylistAvatar";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import AddIcon from "@mui/icons-material/Add";

@@ -1,5 +1,5 @@
 import fs from "fs";
-import Stream from "stream";
+import type Stream from "stream";
 
 export function downloadFromStream(stream: Stream, destination: string): Promise<void> {
   return new Promise<void>(((resolve, reject) => {

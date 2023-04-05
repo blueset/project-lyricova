@@ -18,12 +18,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import {
+import type {
   ChangeEvent,
   Dispatch,
-  FormEvent,
   ReactNode,
-  SetStateAction,
+  SetStateAction} from "react";
+import {
+  FormEvent,
   useCallback,
 } from "react";
 import ButtonRow from "../ButtonRow";
@@ -50,7 +51,7 @@ import { NextComposedLink } from "lyricova-common/components/Link";
 import parse from "autosuggest-highlight/parse";
 import match from "autosuggest-highlight/match";
 import { useSnackbar } from "notistack";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 const MUSIC_DL_SEARCH_QUERY = gql`
   query($query: String!) {

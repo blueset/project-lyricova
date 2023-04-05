@@ -1,5 +1,6 @@
 import { Button, Grid, styled, TextField, Typography } from "@mui/material";
-import { ChangeEvent, useCallback } from "react";
+import type { ChangeEvent} from "react";
+import { useCallback } from "react";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import VocaDBLyricsDialog from "./VocaDBLyricsDialog";
 import HMikuWikiSearchDialog from "./HMikuWikiSearchDialog";

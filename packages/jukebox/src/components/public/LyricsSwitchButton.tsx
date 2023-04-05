@@ -6,7 +6,7 @@ import {
   bindTrigger,
   usePopupState,
 } from "material-ui-popup-state/hooks";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface Props<T extends ReactNode> {
   module: T;

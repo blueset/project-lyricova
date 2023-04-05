@@ -9,7 +9,7 @@ import { Lyrics } from "lyrics-kit/core";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import LyricsEditDialog from "./LyricsEditDialog";
 import { gql, useApolloClient } from "@apollo/client";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 const REMOVE_LYRICS_MUTATION = gql`
   mutation($fileId: Int!) {

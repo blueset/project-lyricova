@@ -1,10 +1,11 @@
-import React, { ReactNode } from "react";
+import type { ReactNode } from "react";
+import React from "react";
 import { getLayout as getDashboardLayout } from "./DashboardLayout";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { Song } from "lyricova-common/models/Song";
+import type { Song } from "lyricova-common/models/Song";
 import { useRouter } from "next/router";
 import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
 import { Avatar, ListItemText, Tooltip } from "@mui/material";

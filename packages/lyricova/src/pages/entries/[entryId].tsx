@@ -1,6 +1,6 @@
 import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
-import { GetStaticProps, GetStaticPaths } from "next";
+import type { GetStaticProps, GetStaticPaths } from "next";
 import { useMemo } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";

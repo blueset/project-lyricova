@@ -1,5 +1,5 @@
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
-import { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "lyricova-common/models/MusicFile";
 import {
   AppBar,
   Button,
@@ -18,7 +18,7 @@ import CoverArtPanel from "./musicFilesDetails/coverArt";
 import LyricsPanel from "./musicFilesDetails/lyrics";
 import PlaylistsPanel from "./musicFilesDetails/playlists";
 import { useSnackbar } from "notistack";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 const SINGLE_FILE_DATA = gql`
   query($id: Int!) {

@@ -1,6 +1,8 @@
 import style from "./PlayButton.module.scss";
-import { RefObject, useEffect, useCallback } from "react";
-import { Fab, CircularProgress, useMediaQuery, Theme } from "@mui/material";
+import type { RefObject} from "react";
+import { useEffect, useCallback } from "react";
+import type { Theme } from "@mui/material";
+import { Fab, CircularProgress, useMediaQuery } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import { useNamedState } from "../../frontendUtils/hooks";

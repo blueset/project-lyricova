@@ -1,4 +1,5 @@
-import express, { Request, Response } from "express";
+import type { Request, Response } from "express";
+import express from "express";
 import { AuthController } from "lyricova-common/utils/AuthController";
 import { AdminApiController } from "./controllers/admin";
 import { PublicApiController } from "./controllers/public";

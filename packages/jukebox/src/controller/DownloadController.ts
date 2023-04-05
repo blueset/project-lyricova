@@ -1,5 +1,7 @@
-import { Request, Response, NextFunction, Router } from "express";
-import { pythonBridge, PythonBridge } from "python-bridge";
+import type { Request, Response, NextFunction} from "express";
+import { Router } from "express";
+import type { PythonBridge } from "python-bridge";
+import { pythonBridge } from "python-bridge";
 import { encrypt, decrypt } from "../utils/crypto";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 

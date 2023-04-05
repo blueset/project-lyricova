@@ -8,7 +8,7 @@ import Matter from "matter-js";
 import type { Body } from "matter-js";
 import MatterAttractors from "matter-attractors";
 import p5 from "p5";
-import { ScreensaverProps } from "../../utils/screensaverProps";
+import type { ScreensaverProps } from "../../utils/screensaverProps";
 import { useEffect, useLayoutEffect } from "react";
 import classes from "./Marcacos.module.scss";
 import { relayout } from "../../frontendUtils/relayout";

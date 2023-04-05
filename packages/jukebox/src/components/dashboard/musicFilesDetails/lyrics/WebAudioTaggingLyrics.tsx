@@ -8,15 +8,16 @@
  * Copyright (c) mkpoli licensed under MIT License
  */
 import { useNamedState } from "../../../../frontendUtils/hooks";
+import type {
+  MouseEvent,
+  ChangeEvent,
+  MouseEventHandler} from "react";
 import {
   useCallback,
   useEffect,
   useRef,
-  MouseEvent,
-  ChangeEvent,
   useMemo,
   memo,
-  MouseEventHandler,
   useState,
 } from "react";
 import {

@@ -1,11 +1,12 @@
-import {
+import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { styled } from "@mui/material";
-import { motion, Transition } from "framer-motion";
+import type { Transition } from "framer-motion";
+import { motion } from "framer-motion";
 import Balancer from "react-wrap-balancer";
 
 const ANIMATION_THRESHOLD = 0.25;

@@ -1,6 +1,7 @@
-import { IconButton, PropTypes, Theme, Tooltip } from "@mui/material";
-import { ComponentProps, ReactNode } from "react";
-import { SxProps } from "@mui/system";
+import type { PropTypes, Theme} from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
+import type { ComponentProps, ReactNode } from "react";
+import type { SxProps } from "@mui/system";
 
 interface TooltipIconButtonProps {
   title: string;

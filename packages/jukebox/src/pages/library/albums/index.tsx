@@ -2,11 +2,11 @@ import { getLayout } from "../../../components/public/layouts/LibraryLayout";
 import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import React from "react";
-import { Album } from "lyricova-common/models/Album";
+import type { Album } from "lyricova-common/models/Album";
 import { Avatar, ButtonBase, Grid, Typography } from "@mui/material";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 const ALBUMS_QUERY = gql`
   query {

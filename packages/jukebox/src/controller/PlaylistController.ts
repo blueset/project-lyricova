@@ -1,5 +1,6 @@
 import { Playlist } from "lyricova-common/models/Playlist";
-import { Router, Request, Response, NextFunction } from "express";
+import type { Request, Response} from "express";
+import { Router, NextFunction } from "express";
 
 export class PlaylistController {
   public router: Router;

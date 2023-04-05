@@ -1,5 +1,6 @@
-import React, { RefObject, ReactChild, useContext } from "react";
-import { MusicFile } from "lyricova-common/models/MusicFile";
+import type { RefObject, ReactChild} from "react";
+import React, { useContext } from "react";
+import type { MusicFile } from "lyricova-common/models/MusicFile";
 
 export type Track = Pick<
   MusicFile,

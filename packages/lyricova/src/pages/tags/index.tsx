@@ -1,6 +1,6 @@
 import sequelize from "lyricova-common/db";
-import { Tag } from "lyricova-common/models/Tag";
-import { GetStaticProps } from "next";
+import type { Tag } from "lyricova-common/models/Tag";
+import type { GetStaticProps } from "next";
 import React, { useRef } from "react";
 import { Divider } from "../../components/public/Divider";
 import { Footer } from "../../components/public/Footer";

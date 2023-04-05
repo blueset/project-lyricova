@@ -7,23 +7,19 @@ import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import { useRouter } from "next/router";
-import {
-  DataGrid,
-  GridActionsCellItem,
-  GridCellParams,
-} from "@mui/x-data-grid";
-import { Entry } from "lyricova-common/models/Entry";
+import type { GridCellParams } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import type { Entry } from "lyricova-common/models/Entry";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useSnackbar } from "notistack";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import { Stack } from "@mui/system";
-import { Tag } from "lyricova-common/models/Tag";
+import type { Tag } from "lyricova-common/models/Tag";
 import _ from "lodash";
-import { Song } from "lyricova-common/models/Song";
-import { Verse } from "lyricova-common/models/Verse";
+import type { Song } from "lyricova-common/models/Song";
+import type { Verse } from "lyricova-common/models/Verse";
 import { NextComposedLink } from "lyricova-common/components/Link";
 
 dayjs.extend(relativeTime);
@@ -71,7 +67,6 @@ export default function Entries() {
   const entriesQuery = useQuery<{ entries: Entry[] }>(ENTRIES_QUERY);
   const apolloClient = useApolloClient();
   const snackbar = useSnackbar();
-  const router = useRouter();
   const rows =
     entriesQuery.data?.entries.map((e) => ({
       ...e,
@@ -99,7 +94,7 @@ export default function Entries() {
             headerName: "Artists",
             field: "artists",
             flex: 1,
-            getApplyQuickFilterFn(value, colDef, apiRef) {
+            getApplyQuickFilterFn(value) {
               const pattern = new RegExp(_.escapeRegExp(value), "i");
               return (params: GridCellParams): boolean => {
                 return !!`${params.row.producersName} feat. ${params.row.vocalistsName}`.match(
@@ -114,7 +109,7 @@ export default function Entries() {
             headerName: "Text",
             field: "verses",
             flex: 2,
-            getApplyQuickFilterFn(value, colDef, apiRef) {
+            getApplyQuickFilterFn(value) {
               const pattern = new RegExp(_.escapeRegExp(value), "i");
               return (params: GridCellParams): boolean => {
                 return !!params.row.verses
@@ -146,7 +141,7 @@ export default function Entries() {
             headerName: "Tags",
             field: "tags",
             flex: 1,
-            getApplyQuickFilterFn(value, colDef, apiRef) {
+            getApplyQuickFilterFn(value) {
               const pattern = new RegExp(_.escapeRegExp(value), "i");
               return (params: GridCellParams): boolean => {
                 return params.value
@@ -183,7 +178,7 @@ export default function Entries() {
             headerName: "Songs",
             field: "songs",
             flex: 1,
-            getApplyQuickFilterFn(value, colDef, apiRef) {
+            getApplyQuickFilterFn(value) {
               const pattern = new RegExp(_.escapeRegExp(value), "i");
               return (params: GridCellParams): boolean => {
                 return params.value

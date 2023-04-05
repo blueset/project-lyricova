@@ -1,4 +1,4 @@
-import { SvgIcon } from "@mui/material";
+import type { SvgIcon } from "@mui/material";
 import AddBox from "@mui/icons-material/AddBox";
 import ArrowDownward from "@mui/icons-material/ArrowDownward";
 import Check from "@mui/icons-material/Check";
@@ -14,7 +14,8 @@ import Remove from "@mui/icons-material/Remove";
 import SaveAlt from "@mui/icons-material/SaveAlt";
 import Search from "@mui/icons-material/Search";
 import ViewColumn from "@mui/icons-material/ViewColumn";
-import { forwardRef, PropsWithoutRef } from "react";
+import type { PropsWithoutRef } from "react";
+import { forwardRef } from "react";
 
 function iconForwardRef(Node: typeof SvgIcon) {
   const result = forwardRef<SVGSVGElement,

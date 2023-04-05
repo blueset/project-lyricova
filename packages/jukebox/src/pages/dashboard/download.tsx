@@ -9,7 +9,8 @@ import {
 import { useNamedState } from "../../frontendUtils/hooks";
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
 import { makeStyles } from "@mui/material/styles";
-import { ReactNode, useCallback } from "react";
+import type { ReactNode} from "react";
+import { useCallback } from "react";
 import YouTubeDlDownloadSteps from "../../components/dashboard/YouTubeDlDownloadSteps";
 import MusicDlDownloadSteps from "../../components/dashboard/MusicDlDownloadSteps";
 import ButtonRow from "../../components/ButtonRow";

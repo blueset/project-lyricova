@@ -2,7 +2,7 @@ import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
 import type { Song } from "lyricova-common/models/Song";
 import type { SongOfEntry } from "lyricova-common/models/SongOfEntry";
-import { GetStaticProps, GetStaticPaths } from "next";
+import type { GetStaticProps, GetStaticPaths } from "next";
 import { entriesPerPage } from "../../../../utils/consts";
 import { entryListingCondition } from "../../../../utils/queries";
 import SongArchivePage from "../../[songId]";

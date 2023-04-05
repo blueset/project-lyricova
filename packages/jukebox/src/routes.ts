@@ -1,10 +1,12 @@
-import express, { Request, Response } from "express";
+import type { Request, Response } from "express";
+import express from "express";
 import { MusicFileController } from "./controller/MusicFileController";
 import { VocaDBImportController } from "./controller/VocaDBImportController";
+import type {
+  SegmentedTransliterationOptions} from "lyricova-common/utils/transliterate";
 import {
   transliterate,
-  segmentedTransliteration,
-  SegmentedTransliterationOptions,
+  segmentedTransliteration
 } from "lyricova-common/utils/transliterate";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController";
 import { DownloadController } from "./controller/DownloadController";

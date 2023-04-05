@@ -8,7 +8,8 @@ import { OnChange } from "react-final-form-listeners";
 import slugify from "slugify";
 import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import SlugifyAdornment from "lyricova-common/components/SlugifyAdornment";
-import { DocumentNode, gql, useApolloClient } from "@apollo/client";
+import type { DocumentNode} from "@apollo/client";
+import { gql, useApolloClient } from "@apollo/client";
 import { useSnackbar } from "notistack";
 
 const NEW_PLAYLIST_MUTATION = gql`

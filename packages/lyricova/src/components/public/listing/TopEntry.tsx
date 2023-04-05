@@ -1,6 +1,7 @@
-import { Entry } from "lyricova-common/models/Entry";
+import type { Entry } from "lyricova-common/models/Entry";
 import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
-import { CSSProperties, useCallback, useMemo, useRef } from "react";
+import type { CSSProperties} from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { PlainTextHangingPunct } from "../PlainTextHangingPunct";
 import { TagRow } from "../TagRow";
 import { PulseStatus } from "./PulseStatus";

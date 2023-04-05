@@ -1,5 +1,6 @@
 import { MusicFile } from "lyricova-common/models/MusicFile";
-import { Request, Response, NextFunction, Router } from "express";
+import type { Request, Response, NextFunction} from "express";
+import { Router } from "express";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";
 import ffprobe from "ffprobe-client";
@@ -15,7 +16,7 @@ import multer from "multer";
 import { swapExt } from "../utils/path";
 import axios from "axios";
 import mime from "mime";
-import * as Stream from "stream";
+import type * as Stream from "stream";
 import { downloadFromStream } from "../utils/download";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 import tempy from "tempy";
@@ -264,7 +265,7 @@ export class MusicFileController {
       const updatedCount = updateResults.reduce(
         (prev: number, curr) => prev + (curr === null ? 0 : 1),
         0
-      ) as number;
+      ) ;
       res.send({
         status: "ok",
         data: {

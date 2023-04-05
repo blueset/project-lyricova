@@ -29,13 +29,14 @@ import { Field, Form, FormSpy } from "react-final-form";
 import { OnChange } from "react-final-form-listeners";
 import slugify from "slugify";
 import { useSnackbar } from "notistack";
-import { Playlist } from "lyricova-common/models/Playlist";
-import { MusicFile } from "lyricova-common/models/MusicFile";
+import type { Playlist } from "lyricova-common/models/Playlist";
+import type { MusicFile } from "lyricova-common/models/MusicFile";
+import type {
+  DropResult} from "react-beautiful-dnd";
 import {
   DragDropContext,
   Draggable,
-  Droppable,
-  DropResult,
+  Droppable
 } from "react-beautiful-dnd";
 import { move } from "../../../frontendUtils/arrays";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
@@ -47,7 +48,7 @@ import SelectMusicFileBox from "../../../components/dashboard/selectMusicFileBox
 import { useNamedState } from "../../../frontendUtils/hooks";
 import { useCallback } from "react";
 import { NextComposedLink } from "lyricova-common/components/Link";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 const PLAYLIST_QUERY = gql`
   query($slug: String!) {

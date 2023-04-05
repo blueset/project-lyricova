@@ -1,8 +1,9 @@
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
-import { Box, Button, CircularProgress, LinearProgress, LinearProgressProps, Typography } from "@mui/material";
+import type { LinearProgressProps} from "@mui/material";
+import { Box, Button, CircularProgress, LinearProgress, Typography } from "@mui/material";
 import { gql, useApolloClient, useMutation } from "@apollo/client";
 import { useCallback } from "react";
-import { MusicFilesScanOutcome } from "../../graphql/MusicFileResolver";
+import type { MusicFilesScanOutcome } from "../../graphql/MusicFileResolver";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { LyricsKitLyricsEntry } from "../../graphql/LyricsProvidersResolver";
 

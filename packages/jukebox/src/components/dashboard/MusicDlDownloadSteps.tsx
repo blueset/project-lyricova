@@ -1,3 +1,5 @@
+import type {
+  Theme} from "@mui/material";
 import {
   Avatar,
   Badge,
@@ -14,20 +16,20 @@ import {
   StepLabel,
   Stepper,
   TextField,
-  Theme,
   Typography,
 } from "@mui/material";
-import {
+import type {
   ChangeEvent,
   Dispatch,
   ReactNode,
-  SetStateAction,
+  SetStateAction} from "react";
+import {
   useCallback,
 } from "react";
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useLazyQuery } from "@apollo/client";
-import { MusicDlSearchResult } from "../../graphql/DownloadResolver";
+import type { MusicDlSearchResult } from "../../graphql/DownloadResolver";
 import Alert from "@mui/material/Alert";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { blue, lightBlue, lightGreen, red } from "@mui/material/colors";
@@ -36,8 +38,8 @@ import ClearIcon from "@mui/icons-material/Clear";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import GetAppIcon from "@mui/icons-material/GetApp";
-import { DocumentNode } from "graphql";
-import { SxProps } from "@mui/system";
+import type { DocumentNode } from "graphql";
+import type { SxProps } from "@mui/system";
 
 const MUSIC_DL_SEARCH_QUERY = gql`
   query($query: String!) {

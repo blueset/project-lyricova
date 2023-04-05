@@ -1,7 +1,8 @@
 import { gql, useQuery } from "@apollo/client";
-import { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "lyricova-common/models/MusicFile";
 import { useRouter } from "next/router";
-import React, { ReactNode, useCallback, useMemo } from "react";
+import type { ReactNode} from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   Avatar,
   Box,
@@ -11,16 +12,16 @@ import {
   Typography,
   Alert,
 } from "@mui/material";
-import { Artist } from "lyricova-common/models/Artist";
+import type { Artist } from "lyricova-common/models/Artist";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ButtonRow from "../ButtonRow";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import { formatTime } from "../../frontendUtils/strings";
 import filesize from "filesize";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { DocumentNode } from "graphql";
-import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
-import { Theme } from "@emotion/react";
+import type { DocumentNode } from "graphql";
+import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { Theme } from "@emotion/react";
 
 const SINGLE_FILE_SONG_QUERY = gql`
   query($id: Int!) {

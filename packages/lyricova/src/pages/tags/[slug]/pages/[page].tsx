@@ -2,7 +2,7 @@ import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
 import type { Tag } from "lyricova-common/models/Tag";
 import type { TagOfEntry } from "lyricova-common/models/TagOfEntry";
-import { GetStaticProps, GetStaticPaths } from "next";
+import type { GetStaticProps, GetStaticPaths } from "next";
 import { entriesPerPage } from "../../../../utils/consts";
 import { entryListingCondition } from "../../../../utils/queries";
 import TagArchivePage from "../../[slug]";

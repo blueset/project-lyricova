@@ -1,4 +1,5 @@
-import { Avatar, AvatarProps, styled } from "@mui/material";
+import type { AvatarProps} from "@mui/material";
+import { Avatar, styled } from "@mui/material";
 import _ from "lodash";
 import { useMemo } from "react";
 

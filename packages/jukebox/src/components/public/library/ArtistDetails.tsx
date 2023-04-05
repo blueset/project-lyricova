@@ -15,7 +15,7 @@ import { MusicFileFragments } from "lyricova-common/utils/fragments";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
 import { useRouter } from "next/router";
-import { Artist } from "lyricova-common/models/Artist";
+import type { Artist } from "lyricova-common/models/Artist";
 import Alert from "@mui/material/Alert";
 import _ from "lodash";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
@@ -32,7 +32,7 @@ import {
 } from "material-ui-popup-state/hooks";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TrackListRow from "./TrackListRow";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 import {
   playTrack,
   toggleShuffle,

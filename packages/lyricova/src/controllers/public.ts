@@ -1,4 +1,5 @@
-import { Router, Request, Response } from "express";
+import type { Request, Response } from "express";
+import { Router } from "express";
 import { Entry } from "lyricova-common/models/Entry";
 import { Verse } from "lyricova-common/models/Verse";
 import { Op, fn } from "sequelize";

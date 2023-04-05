@@ -1,7 +1,7 @@
-import { GetServerSideProps } from "next";
+import type { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
 // import { buildSketch } from "../../frontendUtils/marcacos";
-import { ScreensaverProps } from "../../utils/screensaverProps";
+import type { ScreensaverProps } from "../../utils/screensaverProps";
 import { getServerSideProps as getProps } from "../../utils/screensaverProps";
 import dynamic from "next/dynamic";
 import classes from "./marcacos.module.scss";

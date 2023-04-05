@@ -13,16 +13,16 @@ import {
   Slider,
   Tooltip,
 } from "@mui/material";
-import { SliderValueLabel } from "@mui/material/Slider";
+import type { SliderValueLabel } from "@mui/material/Slider";
 import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import ButtonRow from "../../components/ButtonRow";
 import AutoResizer from "react-virtualized-auto-sizer";
 import { gql, useQuery } from "@apollo/client";
 import { MusicFileFragments } from "lyricova-common/utils/fragments";
-import { MusicFilesPagination } from "../../graphql/MusicFileResolver";
+import type { MusicFilesPagination } from "../../graphql/MusicFileResolver";
 import React, { useCallback, useMemo, useRef } from "react";
-import { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "lyricova-common/models/MusicFile";
 import _ from "lodash";
 import { useNamedState } from "../../frontendUtils/hooks";
 import {
@@ -34,8 +34,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useAuthContext } from "lyricova-common/components/AuthContext";
 import { useRouter } from "next/router";
 import ListItemTextWithTime from "../../components/public/library/ListItemTextWithTime";
-import { DocumentNode } from "graphql";
-import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { DocumentNode } from "graphql";
+import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAppDispatch } from "../../redux/public/store";
 import {

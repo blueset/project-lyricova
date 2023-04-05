@@ -1,7 +1,8 @@
+import type {
+  ListItemTextProps} from "@mui/material";
 import {
   Box,
   ListItemText,
-  ListItemTextProps,
   Typography,
 } from "@mui/material";
 import * as React from "react";

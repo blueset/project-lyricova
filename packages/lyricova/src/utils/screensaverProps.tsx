@@ -1,8 +1,9 @@
 import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
 import type { Verse } from "lyricova-common/models/Verse";
-import { GetStaticProps, GetStaticPaths, GetServerSideProps } from "next";
+import type { GetServerSideProps } from "next";
 import shuffle from "lodash/shuffle";
+import type { WhereOptions } from "sequelize";
 import { Op } from "sequelize";
 
 export interface ScreensaverProps {
@@ -17,7 +18,7 @@ export const getServerSideProps: GetServerSideProps<ScreensaverProps> = async (
   const languages = (context.query.languages as string | undefined)?.split(",");
   const tags = (context.query.tags as string | undefined)?.split(",");
 
-  const verseCondition: any = { [Op.and]: [] };
+  const verseCondition = { [Op.and]: [] as unknown[] };
   if (type === "original") verseCondition[Op.and].push({ isOriginal: true });
   else if (type === "main") verseCondition[Op.and].push({ isMain: true });
   if (languages)

@@ -1,7 +1,7 @@
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
 import { Grid, Typography, Box, Button } from "@mui/material";
-import { DashboardStats } from "../../graphql/StatsResolver";
+import type { DashboardStats } from "../../graphql/StatsResolver";
 import { useNamedState } from "../../frontendUtils/hooks";
 import dayjs from "dayjs";
 import { useEffect } from "react";
@@ -9,7 +9,7 @@ import RateReviewIcon from "@mui/icons-material/RateReview";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import CachedIcon from "@mui/icons-material/Cached";
 import { NextComposedLink } from "lyricova-common/components/Link";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 import { CountCard } from "lyricova-common/components/CountCard";
 import { CountUpCard } from "lyricova-common/components/CountUpCard";
 import { PercentageCard } from "lyricova-common/components/PercentageCard";

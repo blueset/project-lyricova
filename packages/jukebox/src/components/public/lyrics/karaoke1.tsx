@@ -1,4 +1,4 @@
-import {
+import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
   LyricsKitWordTimeTag,
@@ -8,7 +8,8 @@ import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { Box, Stack } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import gsap from "gsap";
-import { CSSProperties, RefObject, useEffect, useRef } from "react";
+import type { CSSProperties, RefObject} from "react";
+import { useEffect, useRef } from "react";
 import { measureTextWidths } from "../../../frontendUtils/measure";
 
 type Timeline = gsap.core.Timeline;

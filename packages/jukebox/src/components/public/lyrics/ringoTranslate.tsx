@@ -1,4 +1,4 @@
-import {
+import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
 } from "../../../graphql/LyricsKitObjects";

@@ -3,13 +3,6 @@ import type { Tag } from "lyricova-common/models/Tag";
 
 function stringifyColor(color: Color) {
   const c = color.to("srgb") as Color & { r: number; g: number; b: number };
-  // return `#${Math.floor(c.r * 255)
-  //   .toString(16)
-  //   .padStart(2, "0")}${Math.floor(c.g * 255)
-  //   .toString(16)
-  //   .padStart(2, "0")}${Math.floor(c.b * 255)
-  //   .toString(16)
-  //   .padStart(2, "0")}`;
   return `rgb(${c.r * 255}, ${c.g * 255}, ${c.b * 255})`;
 }
 

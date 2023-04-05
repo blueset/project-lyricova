@@ -12,7 +12,7 @@ import SequelizeStoreConstructor from "connect-session-sequelize";
 
 const SequelizeStore = SequelizeStoreConstructor(session.Store);
 
-export default async () => {
+export default () => {
   const app = express();
 
   app.set("port", process.env.JUKEBOX_PORT || 3000);

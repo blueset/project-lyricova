@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { EntryForm } from "../../../components/dashboard/EntryForm";
 import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout";
 

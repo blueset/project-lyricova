@@ -1,20 +1,22 @@
-import {
+import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import { styled, Theme, useTheme } from "@mui/material";
+import type { Theme} from "@mui/material";
+import { styled, useTheme } from "@mui/material";
+import type {
+  Variants,
+  Transition,
+  TargetAndTransition} from "framer-motion";
 import {
   motion,
-  Variants,
-  AnimatePresence,
-  Transition,
-  TargetAndTransition,
+  AnimatePresence
 } from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import { CSSProperties } from "react";
-import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { CSSProperties } from "react";
+import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
 const ANIMATION_THRESHOLD = 0.25;
 

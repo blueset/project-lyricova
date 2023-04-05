@@ -1,21 +1,23 @@
 import { Paper, styled } from "@mui/material";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
+import type {
+  ReactNode,
+  CSSProperties} from "react";
 import React, {
   useEffect,
-  ReactNode,
   useRef,
-  useCallback,
-  CSSProperties,
+  useCallback
 } from "react";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
-import { AppContext, Track } from "../AppContext";
+import type { Track } from "../AppContext";
+import { AppContext } from "../AppContext";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import CurrentPlaylist from "../CurrentPlaylist";
-import { Texture } from "../../../graphql/TextureResolver";
+import type { Texture } from "../../../graphql/TextureResolver";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "lyricova-common/components/AuthContext";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 import store, {
   persistor,
   useAppDispatch,

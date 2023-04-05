@@ -1,4 +1,4 @@
-import {
+import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
 } from "../../../graphql/LyricsKitObjects";
@@ -6,8 +6,10 @@ import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { Box } from "@mui/material";
 import Balancer from "react-wrap-balancer";
-import { useRef, RefObject, useEffect } from "react";
-import Measure, { MeasuredComponentProps } from "react-measure";
+import type { RefObject} from "react";
+import { useRef, useEffect } from "react";
+import type { MeasuredComponentProps } from "react-measure";
+import Measure from "react-measure";
 import { Scene } from "react-scenejs";
 import {
   cj,

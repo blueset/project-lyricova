@@ -23,7 +23,7 @@ import EditPlainLyrics from "./lyrics/EditPlainLyrics";
 import EditTranslations from "./lyrics/EditTranslations";
 import EditFurigana from "./lyrics/EditFurigana";
 import { gql, useApolloClient } from "@apollo/client";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 import LyricsPreviewPanel from "./lyrics/WebVTTPreview";
 import WebAudioTaggingLyrics from "./lyrics/WebAudioTaggingLyrics";
 

@@ -18,9 +18,11 @@ import { applyApollo } from "./graphql/index";
    */
   app.use(errorHandler());
 
-  app.all("*", (req, res) => { return nextHandler(req, res); });
+  app.all("*", (req, res) => {
+    return nextHandler(req, res);
+  });
 
-  const server = httpServer.listen(app.get("port"), async () => {
+  const server = httpServer.listen(app.get("port"), () => {
     console.log(
       "  App is running at http://localhost:%d in %s mode",
       app.get("port"),

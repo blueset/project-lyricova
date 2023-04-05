@@ -1,14 +1,12 @@
-import { Entry } from "lyricova-common/models/Entry";
+import type { Entry } from "lyricova-common/models/Entry";
 import type { Verse } from "lyricova-common/models/Verse";
-import { GetServerSideProps } from "next";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { GetServerSideProps } from "next";
+import { useEffect, useRef, useState } from "react";
 import { TagRow } from "../../components/public/TagRow";
 import { generateColorGradientFunction } from "../../frontendUtils/colors";
 import { relayout } from "../../frontendUtils/relayout";
-import {
-  ScreensaverProps,
-  getServerSideProps as getProps,
-} from "../../utils/screensaverProps";
+import type { ScreensaverProps } from "../../utils/screensaverProps";
+import { getServerSideProps as getProps } from "../../utils/screensaverProps";
 import classes from "./glucagon.module.scss";
 
 export const getServerSideProps: GetServerSideProps<ScreensaverProps> =

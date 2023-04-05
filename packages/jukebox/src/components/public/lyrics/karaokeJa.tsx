@@ -1,25 +1,28 @@
-import {
+import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import {
+import type {
   PlayerLyricsKeyframe,
-  PlayerLyricsState,
+  PlayerLyricsState} from "../../../frontendUtils/hooks";
+import {
   usePlayerLyricsState,
 } from "../../../frontendUtils/hooks";
 import { Box, styled } from "@mui/material";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
 import clsx from "clsx";
-import { MutableRefObject, RefObject, useEffect, useMemo, useRef } from "react";
-import Measure, { MeasuredComponentProps } from "react-measure";
+import type { MutableRefObject, RefObject} from "react";
+import { useEffect, useMemo, useRef } from "react";
+import type { MeasuredComponentProps } from "react-measure";
+import Measure from "react-measure";
 import measureElement, {
   measureTextWidths,
 } from "../../../frontendUtils/measure";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 type Timeline = gsap.core.Timeline;
 const COUNTDOWN_DURATION = 3;

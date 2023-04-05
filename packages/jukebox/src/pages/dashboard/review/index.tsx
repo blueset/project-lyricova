@@ -2,7 +2,7 @@ import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout
 import { gql, useQuery } from "@apollo/client";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
-import { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
+import type { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import React, { useCallback } from "react";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import RateReviewIcon from "@mui/icons-material/RateReview";

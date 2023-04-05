@@ -1,6 +1,8 @@
-import { Children, isValidElement, ReactNode } from "react";
-import { Box, Theme } from "@mui/material";
-import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { ReactNode } from "react";
+import { Children, isValidElement } from "react";
+import type { Theme } from "@mui/material";
+import { Box } from "@mui/material";
+import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
 interface Props {
   children: ReactNode;

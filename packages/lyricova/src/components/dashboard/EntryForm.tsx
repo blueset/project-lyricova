@@ -1,8 +1,8 @@
-import { Entry } from "lyricova-common/models/Entry";
-import { Song } from "lyricova-common/models/Song";
-import { Verse } from "lyricova-common/models/Verse";
-import { Tag } from "lyricova-common/models/Tag";
-import { Pulse } from "lyricova-common/models/Pulse";
+import type { Entry } from "lyricova-common/models/Entry";
+import type { Song } from "lyricova-common/models/Song";
+import type { Verse } from "lyricova-common/models/Verse";
+import type { Tag } from "lyricova-common/models/Tag";
+import type { Pulse } from "lyricova-common/models/Pulse";
 import { gql, useQuery, useApolloClient } from "@apollo/client";
 import { useSnackbar } from "notistack";
 import * as yup from "yup";

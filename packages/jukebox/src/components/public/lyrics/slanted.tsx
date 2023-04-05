@@ -1,11 +1,12 @@
-import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import {
   usePlainPlayerLyricsState,
   useTrackwiseTimelineControl,
 } from "../../../frontendUtils/hooks";
 import { Box } from "@mui/material";
-import { CSSProperties, useMemo, useRef } from "react";
+import type { CSSProperties} from "react";
+import { useMemo, useRef } from "react";
 import gsap from "gsap";
 import _ from "lodash";
 

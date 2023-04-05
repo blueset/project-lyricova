@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { Alert, Skeleton } from "@mui/material";
 import PlaylistAvatar from "../../../components/PlaylistAvatar";
-import { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import _ from "lodash";
 import {
@@ -21,8 +21,8 @@ import {
 } from "material-ui-popup-state/hooks";
 import AddPlaylistPopoverContent from "../../../components/dashboard/AddPlaylistPopoverContent";
 import AddIcon from "@mui/icons-material/Add";
-import { DocumentNode } from "graphql";
-import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { DocumentNode } from "graphql";
+import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 
 const PLAYLISTS_QUERY = gql`
   query {

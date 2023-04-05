@@ -1,11 +1,13 @@
-import { AppProps } from "next/app";
+import type { AppProps } from "next/app";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import PropTypes from "prop-types";
-import React, { ReactNode, useEffect } from "react";
+import type { ReactNode} from "react";
+import React, { useEffect } from "react";
 import theme from "lyricova-common/frontendUtils/theme";
 import Head from "next/head";
-import { CacheProvider, EmotionCache } from "@emotion/react";
+import type { EmotionCache } from "@emotion/react";
+import { CacheProvider } from "@emotion/react";
 import createEmotionCache from "../frontendUtils/createEmotionCache";
 import {
   MonaSans,

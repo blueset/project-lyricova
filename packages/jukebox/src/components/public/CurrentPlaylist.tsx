@@ -1,5 +1,5 @@
 import style from "./CurrentPlaylist.module.scss";
-import { Track } from "./AppContext";
+import type { Track } from "./AppContext";
 import {
   List,
   ListItem,
@@ -16,15 +16,17 @@ import DragHandleIcon from "@mui/icons-material/DragHandle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useRef } from "react";
 import AutoResizer from "react-virtualized-auto-sizer";
-import React, { CSSProperties } from "react";
-import {
-  DragDropContext,
+import type { CSSProperties } from "react";
+import React from "react";
+import type {
   DropResult,
-  Droppable,
   DraggableProvided,
   DraggableStateSnapshot,
   DraggableRubric,
-  DroppableProvided,
+  DroppableProvided} from "react-beautiful-dnd";
+import {
+  DragDropContext,
+  Droppable,
   Draggable,
 } from "react-beautiful-dnd";
 import {

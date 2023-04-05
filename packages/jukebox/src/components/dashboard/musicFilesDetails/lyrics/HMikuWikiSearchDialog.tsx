@@ -9,7 +9,7 @@ import {
   Typography
 } from "@mui/material";
 import { gql, useApolloClient } from "@apollo/client";
-import {
+import type {
   HmikuAtWikiSearchResultEntry,
 } from "../../../../graphql/LyricsProvidersResolver";
 import { useSnackbar } from "notistack";
@@ -17,7 +17,7 @@ import { useNamedState } from "../../../../frontendUtils/hooks";
 import { TextField } from "mui-rff";
 import { Form } from "react-final-form";
 import HMikuWikiResultDialog from "./HMikuWikiResultDialog";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 
 const HMIKU_ATWIKI_LYRICS_QUERY = gql`

@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import passport from "passport";
-import { User } from "lyricova-common/models/User";
+import type { User } from "lyricova-common/models/User";
 
 export function adminOnlyMiddleware(
   req: Request,

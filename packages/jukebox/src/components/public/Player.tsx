@@ -1,12 +1,14 @@
+import type {
+  Theme} from "@mui/material";
 import {
   CardContent,
   Typography,
   IconButton,
   ButtonBase,
-  useMediaQuery,
-  Theme, Box, Stack,
+  useMediaQuery, Box, Stack,
 } from "@mui/material";
-import React, { CSSProperties } from "react";
+import type { CSSProperties } from "react";
+import React from "react";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
@@ -14,7 +16,8 @@ import RepeatOneIcon from "@mui/icons-material/RepeatOne";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
-import { useAppContext, Track } from "./AppContext";
+import type { Track } from "./AppContext";
+import { useAppContext } from "./AppContext";
 import { TimeSlider } from "./TimeSlider";
 import { PlayButton } from "./PlayButton";
 import { useAppDispatch, useAppSelector } from "../../redux/public/store";

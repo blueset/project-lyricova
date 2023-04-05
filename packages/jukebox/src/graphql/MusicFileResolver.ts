@@ -8,7 +8,8 @@ import { writeAsync as ffMetadataWrite } from "lyricova-common/utils/ffmetadata"
 import fs from "fs";
 import hasha from "hasha";
 import pLimit from "p-limit";
-import { literal, Op, Sequelize, WhereOptions } from "sequelize";
+import type { WhereOptions } from "sequelize";
+import { literal, Op } from "sequelize";
 import Path from "path";
 import _ from "lodash";
 import {
@@ -64,7 +65,7 @@ export class MusicFilesPagination {
   @Field((type) => [MusicFilesPaginationEdge])
   edges: MusicFilesPaginationEdge[];
 
-  @Field()
+  @Field((type) => PaginationInfo)
   pageInfo: PaginationInfo;
 }
 

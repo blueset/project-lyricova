@@ -1,4 +1,4 @@
-import { Entry } from "lyricova-common/models/Entry";
+import type { Entry } from "lyricova-common/models/Entry";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 

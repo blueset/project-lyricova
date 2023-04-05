@@ -194,7 +194,7 @@ export class PlaylistResolver {
     const limit = pLimit(10);
 
     // Remove files
-    const toRemoveObjs = await oldFiles.filter((v) => !fileIdsSet.has(v.id));
+    const toRemoveObjs = oldFiles.filter((v) => !fileIdsSet.has(v.id));
     await playlist.$remove("files", toRemoveObjs);
     await Promise.all(
       toRemoveObjs.map((i) =>

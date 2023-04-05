@@ -1,5 +1,6 @@
 import type { Entry } from "lyricova-common/models/Entry";
-import { CSSProperties, useCallback, useEffect, useMemo, useRef } from "react";
+import type { CSSProperties} from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { TagRow } from "../TagRow";
 import { PulseStatus } from "./PulseStatus";
 import gsap from "gsap";

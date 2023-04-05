@@ -1,7 +1,7 @@
 import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
 import type { Artist } from "lyricova-common/models/Artist";
-import { GetStaticProps, GetStaticPaths } from "next";
+import type { GetStaticProps, GetStaticPaths } from "next";
 import { entriesPerPage } from "../../../../utils/consts";
 import { entryListingCondition } from "../../../../utils/queries";
 import { QueryTypes } from "sequelize";

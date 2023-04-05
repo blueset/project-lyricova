@@ -1,8 +1,9 @@
-import { Router, Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
+import { Router } from "express";
 import { Entry } from "lyricova-common/models/Entry";
 import { Pulse } from "lyricova-common/models/Pulse";
 import passport from "passport";
-import { User } from "lyricova-common/models/User";
+import type { User } from "lyricova-common/models/User";
 
 function adminOnlyMiddleware(
   req: Request,

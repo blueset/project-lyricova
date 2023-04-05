@@ -1,10 +1,10 @@
-import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { Box } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
-import { DocumentNode } from "graphql";
-import { CSSProperties } from "react";
+import type { DocumentNode } from "graphql";
+import type { CSSProperties } from "react";
 
 const SEQUENCE_QUERY = gql`
   query TypingSequence($text: String!) {

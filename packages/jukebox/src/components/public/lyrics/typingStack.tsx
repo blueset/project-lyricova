@@ -1,7 +1,8 @@
-import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { Box } from "@mui/material";
-import { CSSProperties, useRef } from "react";
+import type { CSSProperties} from "react";
+import { useRef } from "react";
 import { usePlayerLyricsTypingState } from "../../../frontendUtils/hooks";
 
 interface Props {

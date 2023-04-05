@@ -29,9 +29,9 @@ import TrackListRow from "../../../components/public/library/TrackListRow";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
 import { MusicFileFragments } from "lyricova-common/utils/fragments";
-import { Playlist } from "lyricova-common/models/Playlist";
+import type { Playlist } from "lyricova-common/models/Playlist";
 import PlaylistAvatar from "../../../components/PlaylistAvatar";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "../../../redux/public/store";
 import {
   addTrackToNext,

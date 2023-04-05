@@ -1,8 +1,9 @@
-import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { Box, styled } from "@mui/material";
-import { useRef, useEffect, CSSProperties } from "react";
+import type { CSSProperties } from "react";
+import { useRef, useEffect } from "react";
 import clsx from "clsx";
 
 const ANIMATION_THRESHOLD = 0.25;

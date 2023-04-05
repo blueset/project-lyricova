@@ -4,9 +4,9 @@ import Alert from "@mui/material/Alert";
 import { Box, ButtonBase, Divider, Grid, Typography } from "@mui/material";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import React from "react";
-import { Playlist } from "lyricova-common/models/Playlist";
+import type { Playlist } from "lyricova-common/models/Playlist";
 import PlaylistAvatar from "../../../components/PlaylistAvatar";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 const PLAYLISTS_LIST_QUERY = gql`
   query {

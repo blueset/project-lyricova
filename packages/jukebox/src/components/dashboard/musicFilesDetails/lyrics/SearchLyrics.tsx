@@ -16,7 +16,7 @@ import {
 import { TextField } from "mui-rff";
 import { gql, useApolloClient } from "@apollo/client";
 import { useNamedState } from "../../../../frontendUtils/hooks";
-import { LyricsKitLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
+import type { LyricsKitLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
 import { useSnackbar } from "notistack";
 import {
   red,
@@ -33,15 +33,16 @@ import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
+import type {
+  LyricsAnalysisResult} from "../../../../utils/lyricsCheck";
 import {
-  lyricsAnalysis,
-  LyricsAnalysisResult,
+  lyricsAnalysis
 } from "../../../../utils/lyricsCheck";
 import { Lyrics } from "lyrics-kit/core";
 import { useCallback, useMemo } from "react";
 import TooltipIconButton from "../../TooltipIconButton";
-import { DocumentNode } from "graphql";
-import { Subscription } from "zen-observable-ts";
+import type { DocumentNode } from "graphql";
+import type { Subscription } from "zen-observable-ts";
 
 const SEARCH_LYRICS_QUERY = gql`
   query(

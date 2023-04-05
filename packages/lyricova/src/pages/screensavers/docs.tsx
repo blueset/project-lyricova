@@ -3,7 +3,7 @@ import Head from "next/head";
 import { NavPanel } from "../../components/public/nav/NavPanel";
 import { Footer } from "../../components/public/Footer";
 import { Link } from "../../components/public/Link";
-import { GetStaticProps, GetStaticPaths, GetServerSideProps } from "next";
+import type { GetStaticProps } from "next";
 import type { Tag } from "lyricova-common/models/Tag";
 import sequelize from "lyricova-common/db";
 import { Recursive } from "@next/font/google";

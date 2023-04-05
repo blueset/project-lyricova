@@ -1,25 +1,27 @@
+import type {
+  RefObject,
+  Dispatch,
+  SetStateAction} from "react";
 import {
   useState,
   useDebugValue,
   useEffect,
-  RefObject,
   useCallback,
   useRef,
-  useMemo,
-  Dispatch,
-  SetStateAction,
+  useMemo
 } from "react";
 
 import _ from "lodash";
-import { AnimatedWord } from "lyricova-common/utils/typingSequence";
-import { gql, QueryResult, useQuery } from "@apollo/client";
+import type { AnimatedWord } from "lyricova-common/utils/typingSequence";
+import type { QueryResult} from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
-import {
+import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
 } from "../graphql/LyricsKitObjects";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 type Timeline = gsap.core.Timeline;
 
@@ -541,7 +543,7 @@ const SEQUENCE_QUERY = gql`
       }
     }
   }
-` as DocumentNode;
+` ;
 
 export interface SequenceQueryResult {
   transliterate: {

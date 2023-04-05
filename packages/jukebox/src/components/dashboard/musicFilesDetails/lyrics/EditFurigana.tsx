@@ -1,12 +1,13 @@
 import { Box, Button, Grid, List, ListItem, ListItemText } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Lyrics, LyricsLine, RangeAttribute, FURIGANA } from "lyrics-kit/core";
+import type { LyricsLine} from "lyrics-kit/core";
+import { Lyrics, RangeAttribute, FURIGANA } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
 import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 
 const KARAOKE_TRANSLITERATION_QUERY = gql`
   query($text: String!) {

@@ -1,4 +1,5 @@
-import React, { ReactNode } from "react";
+import type { ReactNode } from "react";
+import React from "react";
 import { getLayout as getDashboardLayout } from "./DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
@@ -7,7 +8,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useRouter } from "next/router";
 import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
 import { Avatar, ListItemText, Tooltip } from "@mui/material";
-import { Album } from "lyricova-common/models/Album";
+import type { Album } from "lyricova-common/models/Album";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 

@@ -1,4 +1,8 @@
-import { ReactNode, useEffect } from "react";
+import type { ReactNode} from "react";
+import { useEffect } from "react";
+import type {
+  Theme,
+  CSSObject} from "@mui/material";
 import {
   Toolbar,
   IconButton,
@@ -9,18 +13,17 @@ import {
   ListItemIcon,
   ListItemText,
   useMediaQuery,
-  Theme,
   Menu,
   MenuItem,
   Avatar,
   ListSubheader,
-  CSSObject,
   styled,
   Box,
   ListItemButton,
 } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import type { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import MuiAppBar from "@mui/material/AppBar";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -41,7 +44,8 @@ import {
 import { useRouter } from "next/router";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import Head from "next/head";
-import { SnackbarKey, SnackbarProvider, useSnackbar } from "notistack";
+import type { SnackbarKey} from "notistack";
+import { SnackbarProvider, useSnackbar } from "notistack";
 import {
   bindMenu,
   bindTrigger,

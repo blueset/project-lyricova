@@ -1,7 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { persistStore } from "redux-persist";
 import playlistReducer from "./playlist";
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import type { TypedUseSelectorHook} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const store = configureStore({
   reducer: {

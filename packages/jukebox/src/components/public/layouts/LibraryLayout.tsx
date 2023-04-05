@@ -1,4 +1,4 @@
-import { ChangeEvent, ReactNode } from "react";
+import type { ChangeEvent, ReactNode } from "react";
 import { getLayout as getIndexLayout } from "./IndexLayout";
 import { AppBar, Box, Paper, Tab, Tabs } from "@mui/material";
 import { useRouter } from "next/router";

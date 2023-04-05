@@ -12,8 +12,8 @@ import {
   Tooltip,
 } from "@mui/material";
 import { gql, useApolloClient } from "@apollo/client";
-import { Song } from "lyricova-common/models/Song";
-import { Album } from "lyricova-common/models/Album";
+import type { Song } from "lyricova-common/models/Song";
+import type { Album } from "lyricova-common/models/Album";
 import SelectSongEntityBox from "lyricova-common/components/selectSongEntityBox";
 import TransliterationAdornment from "lyricova-common/components/TransliterationAdornment";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
@@ -22,7 +22,7 @@ import { makeValidate, Select, TextField } from "mui-rff";
 import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import * as yup from "yup";
 import { useSnackbar } from "notistack";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import { AlbumFragments } from "lyricova-common/utils/fragments";
 import { useNamedState } from "../../../frontendUtils/hooks";

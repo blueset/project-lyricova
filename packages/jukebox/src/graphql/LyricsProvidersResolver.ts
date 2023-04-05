@@ -7,7 +7,7 @@ import type {
   VDBTranslationType,
 } from "../types/vocadb";
 import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit/service";
-import { Lyrics, LyricsMetadata } from "lyrics-kit/core";
+import type { Lyrics, LyricsMetadata } from "lyrics-kit/core";
 import {
   Resolver,
   ObjectType,

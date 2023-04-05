@@ -2,7 +2,7 @@ import sequelize from "lyricova-common/db";
 import type { Entry } from "lyricova-common/models/Entry";
 import type { Song } from "lyricova-common/models/Song";
 import type { SongOfEntry } from "lyricova-common/models/SongOfEntry";
-import { GetStaticProps, GetStaticPaths } from "next";
+import type { GetStaticProps, GetStaticPaths } from "next";
 import Head from "next/head";
 import { Fragment } from "react";
 import { Divider } from "../../components/public/Divider";

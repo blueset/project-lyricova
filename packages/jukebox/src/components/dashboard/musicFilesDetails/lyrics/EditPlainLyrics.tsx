@@ -1,5 +1,6 @@
 import { Button, Grid, styled, TextField, Typography } from "@mui/material";
-import { ChangeEvent, useCallback } from "react";
+import type { ChangeEvent} from "react";
+import { useCallback } from "react";
 import { Lyrics } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 

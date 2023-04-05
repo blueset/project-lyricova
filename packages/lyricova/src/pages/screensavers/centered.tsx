@@ -1,5 +1,5 @@
-import { GetServerSideProps } from "next";
-import { ScreensaverProps } from "../../utils/screensaverProps";
+import type { GetServerSideProps } from "next";
+import type { ScreensaverProps } from "../../utils/screensaverProps";
 import { getServerSideProps as getProps } from "../../utils/screensaverProps";
 import classes from "./centered.module.scss";
 import gsap from "gsap";
@@ -7,10 +7,7 @@ import { TextPlugin } from "gsap/dist/TextPlugin";
 import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
 import { PlainTextHangingPunct } from "../../components/public/PlainTextHangingPunct";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  generateColorGradient,
-  generateColorGradientSteps,
-} from "../../frontendUtils/colors";
+import { generateColorGradient } from "../../frontendUtils/colors";
 import { TagRow } from "../../components/public/TagRow";
 import clsx from "clsx";
 

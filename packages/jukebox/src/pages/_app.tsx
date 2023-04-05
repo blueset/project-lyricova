@@ -1,4 +1,4 @@
-import { AppProps } from "next/app";
+import type { AppProps } from "next/app";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import PropTypes from "prop-types";
 import React, { ReactNode } from "react";
@@ -6,7 +6,7 @@ import theme from "lyricova-common/frontendUtils/theme";
 import Head from "next/head";
 import { ApolloProvider } from "@apollo/client";
 import apolloClient from "lyricova-common/frontendUtils/apollo";
-import { NextComponentType } from "next";
+import type { NextComponentType } from "next";
 import { getLayout as getPlainLayout } from "../components/public/layouts/PlainLayout";
 
 type AppPropsExtension = AppProps & {

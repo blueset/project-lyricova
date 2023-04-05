@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction, Router } from "express";
+import type { Request, Response, NextFunction} from "express";
+import { Router } from "express";
 import axios from "axios";
 import cheerio from "cheerio";
 import { Song } from "lyricova-common/models/Song";

@@ -1,7 +1,8 @@
 import { Slider, Typography, Stack, Box } from "@mui/material";
 import { formatTime } from "../../frontendUtils/strings";
 import { useNamedState } from "../../frontendUtils/hooks";
-import { RefObject, useEffect, useCallback } from "react";
+import type { RefObject} from "react";
+import { useEffect, useCallback } from "react";
 import _ from "lodash";
 
 interface Props {

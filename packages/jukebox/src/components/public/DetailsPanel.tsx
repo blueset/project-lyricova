@@ -1,9 +1,9 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Box, GlobalStyles, IconButton, styled } from "@mui/material";
 import Link, { NextComposedLink } from "lyricova-common/components/Link";
 import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/router";
-import { GlobalStylesProps as StyledGlobalStylesProps } from "@mui/styled-engine/GlobalStyles/GlobalStyles";
+import type { GlobalStylesProps as StyledGlobalStylesProps } from "@mui/styled-engine/GlobalStyles/GlobalStyles";
 
 const StyledLink = styled(Link)({
   fontSize: "1.75em",

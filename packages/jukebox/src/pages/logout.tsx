@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
 import { useRouter } from "next/router";
-import { GetServerSideProps } from "next";
+import type { GetServerSideProps } from "next";
 import { useApolloClient } from "@apollo/client";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {

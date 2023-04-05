@@ -1,4 +1,4 @@
-import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { Box } from "@mui/material";
 import { useRef } from "react";
