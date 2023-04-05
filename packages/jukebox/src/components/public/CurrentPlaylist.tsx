@@ -221,7 +221,6 @@ export default function CurrentPlaylist() {
   });
 
   useEffect(() => {
-    console.log("scrollTo, nowPlaying", nowPlaying, parentRef.current);
     if (nowPlaying !== null) {
       rowVirtualizer.scrollToIndex(nowPlaying, { align: "start" });
     }

@@ -8,6 +8,8 @@ import { styled } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import _ from "lodash";
 import { useLayoutEffect, useRef } from "react";
+import { useAppSelector } from "../../../redux/public/store";
+import { currentSongSelector } from "../../../redux/public/playlist";
 
 // const ANIMATION_THRESHOLD = 0.25;
 const RENDER_LINES = 20;
@@ -67,8 +69,8 @@ const LineDiv = styled("div")`
   opacity: 0.3;
   mix-blend-mode: overlay;
   color: white;
-  transition: top 0.25s ease-out, transform 0.25s ease-out,
-    opacity 0.25s ease-out, translate 0.25s ease-out, scale 0.25s ease-out;
+  transition: top 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), translate 0.35s cubic-bezier(0.16, 1, 0.3, 1), scale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
   & .translation {
     display: block;
@@ -98,7 +100,7 @@ const LineDiv = styled("div")`
     return `
     &[data-offset="${v}"] {
       --jukebox-ringo-blur-radius: ${0.4 * v}px;
-      transition-delay: ${0.035 * v}s;
+      transition-delay: ${0.035 * (v - 1)}s;
     }
     `;
   })}
@@ -138,12 +140,13 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
   const containerRef = useRef<HTMLDivElement>(null);
+  const currentSong = useAppSelector(currentSongSelector);
 
   const lines = lyrics.lines;
 
   const lineNumber = line || 0;
 
-  const isChromium = navigator.userAgent.includes("Chrome");
+  const useTop = navigator.userAgent.includes("Chrome") && currentSong?.hasCover;
 
   useLayoutEffect(() => {
     if (!containerRef.current) return;
@@ -155,7 +158,7 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
     if (lines[0].dataset.offset === "-1") {
       start += 1;
       lines[0].style.scale = "1";
-      if (isChromium) {
+      if (useTop) {
         lines[0].style.top = `${offset - gap - lines[0].clientHeight}px`;
       } else {
         lines[0].style.translate = `0 ${offset -
@@ -166,7 +169,7 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
     for (let i = start; i < lines.length; i++) {
       const line = lines[i];
       const scale = line.dataset.offset === "0" ? 1 / 0.9 : 1;
-      if (isChromium) {
+      if (useTop) {
         line.style.top = `${offset}px`;
         line.style.scale = `${scale}`;
       } else {
@@ -175,7 +178,7 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
       }
       offset += line.clientHeight * scale + gap;
     }
-  }, [line, isChromium]);
+  }, [line, useTop]);
 
   return (
     <ContainerDiv ref={containerRef}>
@@ -184,7 +187,7 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
           return null;
         return (
           <LyricsLineElement
-            className={isChromium ? "coverMask" : ""}
+            className={useTop ? "coverMask" : ""}
             line={l}
             key={idx}
             offsetIndex={line !== null ? idx - line : idx + 1}

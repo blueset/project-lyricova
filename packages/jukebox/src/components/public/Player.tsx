@@ -59,8 +59,8 @@ export default function Player() {
 
   const isFlatPlayer = useMediaQuery<Theme>((theme) => theme.breakpoints.up("md")) && isCollapsed;
 
-  const nextTrack = () => dispatch(playNext());
-  const previousTrack = () => dispatch(playPrevious());
+  const nextTrack = () => dispatch(playNext(!playerRef?.current.paused));
+  const previousTrack = () => dispatch(playPrevious(!playerRef?.current.paused));
   const toggleShuffleHandler = () => dispatch(toggleShuffle());
   const switchLoopMode = () => dispatch(setLoopMode(LOOP_MODE_SWITCH[loopMode]));
 

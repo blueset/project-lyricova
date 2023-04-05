@@ -11,13 +11,6 @@ import { useRef, useEffect } from "react";
 import type { MeasuredComponentProps } from "react-measure";
 import Measure from "react-measure";
 import { Scene } from "react-scenejs";
-import {
-  cj,
-  notAfter,
-  ascIINonSpace,
-  notBefore,
-  balanceText,
-} from "../../../frontendUtils/balancedTextCJSVG";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -47,6 +40,112 @@ const keyframes: { [key: string]: ((idx: number) => unknown) | unknown } = {
   }),
 };
 
+/**
+ * Measure line wraps in a text node.
+ * @author Ben Nadel
+ * @source https://www.bennadel.com/blog/4310-detecting-rendered-line-breaks-in-a-text-node-in-javascript.htm
+ * @license MIT License
+ */
+function extractLinesFromTextNode(textNode: Text) {
+  if (textNode.nodeType !== 3) {
+    throw new Error("Lines can only be extracted from text nodes.");
+  }
+
+  // BECAUSE SAFARI: None of the "modern" browsers seem to care about the actual
+  // layout of the underlying markup. However, Safari seems to create range
+  // rectangles based on the physical structure of the markup (even when it
+  // makes no difference in the rendering of the text). As such, let's rewrite
+  // the text content of the node to REMOVE SUPERFLUOS WHITE-SPACE. This will
+  // allow Safari's .getClientRects() to work like the other modern browsers.
+  textNode.textContent = textNode.textContent.trim().replace(/\s+/g, " ");
+
+  // A Range represents a fragment of the document which contains nodes and
+  // parts of text nodes. One thing that's really cool about a Range is that we
+  // can access the bounding boxes that contain the contents of the Range. By
+  // incrementally adding characters - from our text node - into the range, and
+  // then looking at the Range's client rectangles, we can determine which
+  // characters belong in which rendered line.
+  const textContent = textNode.textContent;
+  const range = document.createRange();
+  const lines: string[][] = [];
+  let lineCharacters: string[] = [];
+
+  // Iterate over every character in the text node.
+  for (let i = 0; i < textContent.length; i++) {
+    // Set the range to span from the beginning of the text node up to and
+    // including the current character (offset).
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, i + 1);
+
+    // At this point, the Range's client rectangles will include a rectangle
+    // for each visually-rendered line of text. Which means, the last
+    // character in our Range (the current character in our for-loop) will be
+    // the last character in the last line of text (in our Range). As such, we
+    // can use the current rectangle count to determine the line of text.
+    const lineIndex = range.getClientRects().length - 1;
+
+    // If this is the first character in this line, create a new buffer for
+    // this line.
+    if (!lines[lineIndex]) {
+      lines.push((lineCharacters = []));
+    }
+
+    // Add this character to the currently pending line of text.
+    lineCharacters.push(textContent.charAt(i));
+  }
+
+  // At this point, we have an array (lines) of arrays (characters). Let's
+  // collapse the character buffers down into a single text value.
+  const linesText = lines.map(function operator(characters) {
+    return characters.join("").trim().replace(/\s+/g, " ");
+  });
+
+  const rects = range.getClientRects();
+
+  return linesText;
+}
+
+type RelayoutFn = (wrapper: HTMLElement, ratio: number) => void;
+/**
+ * Balance line wrapping algorithm
+ * @source https://github.com/shuding/react-wrap-balancer/
+ * @author Shu Ding
+ * @license MIT
+ */
+export const relayout: RelayoutFn = (wrapper, ratio = 1) => {
+  const container = wrapper.parentElement;
+
+  const update = (width: number) => (wrapper.style.maxWidth = width + "px");
+
+  // Reset wrapper width
+  wrapper.style.maxWidth = "";
+
+  // Get the initial container size
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+
+  // Synchronously do binary search and calculate the layout
+  let lower: number = width / 2 - 0.25;
+  let upper: number = width + 0.5;
+  let middle: number;
+
+  if (width) {
+    while (lower + 1 < upper) {
+      middle = Math.round((lower + upper) / 2);
+      update(middle);
+      if (container.clientHeight === height) {
+        upper = middle;
+      } else {
+        lower = middle;
+      }
+    }
+
+    // Update the wrapper width
+    update(upper * ratio + width * (1 - ratio));
+  }
+};
+
+
 interface LyricsLineElementProps {
   translationClassName: string;
   line: LyricsKitLyricsLine | null;
@@ -63,35 +162,21 @@ function LyricsLineElement({
   progressorRef,
 }: LyricsLineElementProps) {
   const textRef = useRef<SVGTextElement>();
+  const sizerRef = useRef<HTMLDivElement>();
   const canvasRef = useRef<SVGSVGElement>();
   const animate = duration >= ANIMATION_THRESHOLD;
 
   useEffect(() => {
-    if (textRef.current) {
-      // Generate segmented lyrics line
-      const segmentedLine = [...line.content]
-        .map((v, idx, arr) => {
-          if (v === " ") v = "\u00A0"; // NBSP
-          const charNode = `<tspan class="char">${v}</tspan>`;
-          const next = arr[idx + 1];
-          if (
-            v === "\u00A0" ||
-            (next !== undefined &&
-              ((new RegExp(`[${cj}${notBefore}]`, "u").test(v) &&
-                new RegExp(`[^${notBefore}]`, "u").test(next)) ||
-                (new RegExp(`[${ascIINonSpace}]`, "u").test(v) &&
-                  new RegExp(`[${cj}${notAfter}]`, "u").test(next))))
-          ) {
-            return `${charNode}\u200B`;
-          } else {
-            return charNode;
-          }
-        })
-        .join("");
-      textRef.current.innerHTML = segmentedLine;
+    if (textRef.current && sizerRef.current) {
+      const sizerSpan = sizerRef.current.querySelector("span");
+      sizerSpan.innerText = line?.content ?? "";
+      relayout(sizerSpan, 1);
+      const lines = sizerSpan.firstChild ? extractLinesFromTextNode(sizerSpan.firstChild as Text) : [];
+      const lineHeight = parseFloat(window.getComputedStyle(textRef.current).fontSize) * 1.2;
 
-      // Reflow text
-      balanceText(textRef.current, width, 1.2);
+      // Generate segmented lyrics line
+      const segmentedLines = lines.map((line, idx) => `<tspan dy="${idx === 0 ? 0 : lineHeight}" x="0">` + [...line].map(chr => `<tspan class="char">${chr}</tspan>`).join("") + "</tspan>").join("");
+      textRef.current.innerHTML = segmentedLines;
 
       // Resize SVG canvas to fit text
       if (canvasRef.current) {
@@ -114,6 +199,17 @@ function LyricsLineElement({
   return (
     <div>
       <div lang="ja">
+        <Box ref={sizerRef} sx={{
+          position: "absolute",
+          top: 0,
+          left: 32,
+          right: 32,
+          lineHeight: 1,
+          fontWeight: 600,
+          fontSize: "4em",
+          zIndex: -1,
+          opacity: 0,
+        }}><span style={{display: "inline-block"}} /></Box>
         {/* // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           @ts-ignore */}
         <Scene

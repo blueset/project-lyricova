@@ -115,7 +115,7 @@ export default function IndexLayout({ children }: Props) {
       playerRef.current.play();
     } else {
       // Play next
-      dispatch(playNext());
+      dispatch(playNext(true));
     }
     try {
       if (currentSong?.id) {
@@ -124,12 +124,13 @@ export default function IndexLayout({ children }: Props) {
           variables: {
             id: currentSong.id,
           },
+          errorPolicy: "ignore",
         });
       }
     } catch (error) {
       console.error(error);
     }
-  }, [loopMode, dispatch]);
+  }, [loopMode, dispatch, currentSong]);
 
   // Add onEnded listener
   useEffect(() => {
@@ -180,11 +181,11 @@ export default function IndexLayout({ children }: Props) {
       });
       navigator.mediaSession.setActionHandler("previoustrack", function() {
         console.log("Media session action: previoustrack");
-        dispatch(playPrevious());
+        dispatch(playPrevious(!playerRef?.current.paused));
       });
       navigator.mediaSession.setActionHandler("nexttrack", function() {
         console.log("Media session action: nexttrack");
-        dispatch(playNext());
+        dispatch(playNext(!playerRef?.current.paused));
       });
       try {
         navigator.mediaSession.setActionHandler("stop", function() {

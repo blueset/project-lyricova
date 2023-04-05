@@ -61,7 +61,7 @@ export const playlistSlice = createSlice({
         state.playNow = action.payload.playNow;
       }
     },
-    playPrevious: (state) => {
+    playPrevious: (state, action: PayloadAction<boolean | undefined>) => {
       if (state.tracks.length < 1) return;
       if (state.nowPlaying === null) {
         state.nowPlaying = state.tracks.length - 1;
@@ -72,8 +72,9 @@ export const playlistSlice = createSlice({
       } else {
         state.nowPlaying = null;
       }
+      state.playNow = !!action.payload;
     },
-    playNext: (state) => {
+    playNext: (state, action: PayloadAction<boolean | undefined>) => {
       if (state.tracks.length < 1) return;
       if (state.nowPlaying === null) {
         state.nowPlaying = 0;
@@ -84,6 +85,7 @@ export const playlistSlice = createSlice({
       } else {
         state.nowPlaying = null;
       }
+      state.playNow = !!action.payload;
     },
     addTrackToNext: (state, action: PayloadAction<Track>) => {
       const index = state.nowPlaying ?? 0;
