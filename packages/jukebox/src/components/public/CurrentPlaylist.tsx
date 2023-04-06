@@ -211,13 +211,13 @@ export default function CurrentPlaylist() {
   const rowVirtualizer = useVirtualizer({
     // tracks.length on load is 0, we need at least `playlist.nowPlaying` plus an offset to ensure that
     // the list scrolls to the correct position before we have the data.
-    count: Math.min(tracks.length, nowPlaying ? nowPlaying + 50 : 0),
+    count: tracks.length || (nowPlaying ? nowPlaying + 50 : 0),
     getScrollElement: () => {
       return parentRef.current;
     },
     estimateSize: () => 60,
     overscan: 10,
-    initialOffset: nowPlaying ? nowPlaying * 60 : undefined,
+    initialOffset: nowPlaying ? nowPlaying * 60 : 0,
   });
 
   useEffect(() => {
