@@ -74,13 +74,9 @@ function CurrentPlaylistItem({
     <ListItem
       ref={provided.innerRef}
       {...provided.draggableProps}
-      ContainerProps={{
-        style: {
-          opacity: index < nowPlaying ? 0.375 : 1,
-        },
-      }}
       style={{
         ...provided.draggableProps.style,
+        opacity: index < nowPlaying ? 0.375 : 1,
         ...style,
       }}
       ContainerComponent={isDragging ? "div" : (<li />).type}
@@ -120,6 +116,7 @@ function CurrentPlaylistItem({
       }
     >
       <ListItemButton
+        sx={{px: 0}}
         onClick={
           isDragging
             ? null
@@ -132,7 +129,7 @@ function CurrentPlaylistItem({
           <DragHandleIcon />
         </ListItemIcon>
         <ListItemText
-          sx={{ width: 0, mr: 8 }}
+          sx={{ width: 0 }}
           primary={track?.trackName || "No title"}
           primaryTypographyProps={{ noWrap: true }}
           secondary={track?.artistName || "Unknown artist"}
