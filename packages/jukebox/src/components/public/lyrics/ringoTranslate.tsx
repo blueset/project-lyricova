@@ -10,6 +10,7 @@ import _ from "lodash";
 import { useLayoutEffect, useRef } from "react";
 import { useAppSelector } from "../../../redux/public/store";
 import { currentSongSelector } from "../../../redux/public/playlist";
+import clsx from "clsx";
 
 // const ANIMATION_THRESHOLD = 0.25;
 const RENDER_LINES = 20;
@@ -66,11 +67,15 @@ const LineDiv = styled("div")`
     blur(var(--jukebox-ringo-blur-radius))
   );
   transform-origin: top left;
-  opacity: 0.3;
-  mix-blend-mode: overlay;
+  opacity: 0.2;
   color: white;
-  transition: top 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+  transition: top 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), font-size 0.35s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), translate 0.35s cubic-bezier(0.16, 1, 0.3, 1), scale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.hasCover {
+    mix-blend-mode: overlay;
+    opacity: 0.5;
+  }
 
   & .translation {
     display: block;
@@ -171,7 +176,8 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
       const scale = line.dataset.offset === "0" ? 1 / 0.9 : 1;
       if (useTop) {
         line.style.top = `${offset}px`;
-        line.style.scale = `${scale}`;
+        // line.style.scale = `${scale}`;
+        line.style.fontSize = `${scale * 3}em`;
       } else {
         line.style.translate = `0 ${offset}px`;
         line.style.scale = `${scale}`;
@@ -187,7 +193,7 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
           return null;
         return (
           <LyricsLineElement
-            className={useTop ? "coverMask" : ""}
+            className={clsx(useTop && "coverMask", currentSong?.hasCover && "hasCover")}
             line={l}
             key={idx}
             offsetIndex={line !== null ? idx - line : idx + 1}
