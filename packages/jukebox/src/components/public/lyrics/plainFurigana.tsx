@@ -51,9 +51,11 @@ export function PlainFuriganaLyrics({ lyrics }: Props) {
             fontWeight: 700,
             fontSize: "2.5em",
             fontFamily: "serif",
-            "& rt": {
-              transform: "translateY(0.5em)",
-            },
+            "@supports (-moz-appearance: none)": {
+              "& rt": {
+                transform: "translateY(0.5em)",
+              },
+            }
           }}
         >
           {seq.map(([text, ruby], k) => {

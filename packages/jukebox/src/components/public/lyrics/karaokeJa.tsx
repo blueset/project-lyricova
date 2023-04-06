@@ -228,7 +228,7 @@ function useNicokaraLyricsState(
               start: v.end,
               data: { pageIdx: idx, lineIdx: v.lines.length, showNext: false },
             });
-            if (gapAfter > COUNTDOWN_DURATION * 2) {
+            if (gapAfter > COUNTDOWN_DURATION * 3) {
               frames.push({
                 start: v.end + COUNTDOWN_DURATION,
                 data: { pageIdx: null, lineIdx: null, showNext: false },
@@ -296,7 +296,7 @@ function LyricsLine({
         fontSize: "3.5rem",
         fontFamily:
           '"Source Han Serif", "Noto Serif CJK", "Noto Serif JP", serif',
-        whiteSpace: "pre",
+        whiteSpace: "nowrap",
         "& span.after": {
           color: "primary.dark",
           clipPath: "inset(-30% 102% 0 -2%)",
@@ -817,6 +817,11 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
               color: "#fff",
               filter: "url(#nicokaraBefore)",
             },
+            "@supports (-moz-appearance: none)": {
+              "& rt": {
+                marginBottom: "-0.7em",
+              },
+            }
           }}
           lang="ja"
           ref={measureRef}
