@@ -53,6 +53,7 @@ export default function SelectArtistEntityBox<T extends string>({
   const apolloClient = useApolloClient();
   const {
     input: { value },
+    meta: { touched },
   } = useField<ExtendedArtist>(fieldName);
   const setValue = useForm().mutators.setValue;
 
@@ -74,7 +75,7 @@ export default function SelectArtistEntityBox<T extends string>({
   useEffect(() => {
     let active = true;
 
-    if (vocaDBAutoCompleteText === "") {
+    if (vocaDBAutoCompleteText === "" || !touched) {
       setVocaDBAutoCompleteOptions(value ? [value] : []);
       return undefined;
     }
@@ -133,7 +134,12 @@ export default function SelectArtistEntityBox<T extends string>({
     return () => {
       active = false;
     };
-  }, [vocaDBAutoCompleteText, apolloClient, setVocaDBAutoCompleteOptions]);
+  }, [
+    vocaDBAutoCompleteText,
+    apolloClient,
+    setVocaDBAutoCompleteOptions,
+    touched,
+  ]);
 
   return (
     <>

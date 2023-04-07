@@ -229,7 +229,6 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
                   flexDirection: "column",
                   alignItems: "center",
                   "& > ruby": {
-                    display: "inline-block",
                     border: 1,
                     borderColor: "divider",
                     borderRadius: 1,
