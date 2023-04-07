@@ -19,6 +19,8 @@ RUN pip3 install yt-dlp
 
 RUN npm install -g concurrently
 
+COPY mecabrc /etc/
+
 ENV YTDLP_PATH=/usr/local/bin/yt-dlp
 ENV MUSIC_FILES_PATH=/var/music/
 ENV NODE_ENV production
