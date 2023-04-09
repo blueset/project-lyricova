@@ -159,7 +159,7 @@ function furiganaSeparator(
   kana = `${pre}${kana}${post}`;
   // 正規表現文 /(\p{sc=Hiragana}+)うさ(\p{sc=Hiragana}+)るさ/u のようなものを作る
   const pattern = new RegExp(
-    mixed.replace(/(\p{sc=Han}+|\p{sc=Katakana}+)/gu, "(\\p{sc=Hiragana}+)"),
+    kanaToHira(mixed).replace(/(\p{sc=Han}+)/gu, "(\\p{sc=Hiragana}+)"),
     "u"
   );
 
