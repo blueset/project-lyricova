@@ -22,6 +22,7 @@ import type { DocumentNode } from "graphql";
 import { RingoTranslateLyrics } from "../components/public/lyrics/ringoTranslate";
 import { useAppSelector } from "../redux/public/store";
 import { currentSongSelector } from "../redux/public/playlist";
+import { RingoSingLyrics } from "../components/public/lyrics/ringoSing";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -59,6 +60,7 @@ const MODULE_LIST = {
   "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
   "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
   "Ringo": (lyrics: LyricsKitLyrics) => <RingoTranslateLyrics lyrics={lyrics} />,
+  "Ringo Sing": (lyrics: LyricsKitLyrics) => <RingoSingLyrics lyrics={lyrics} />,
   "Karaoke/1/Underline": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} />,
   "Karaoke/1/Cover": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} cover />,
   "Nicokara": (lyrics: LyricsKitLyrics) => <KaraokeJaLyrics lyrics={lyrics} />,

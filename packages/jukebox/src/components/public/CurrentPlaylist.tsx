@@ -23,12 +23,9 @@ import type {
   DraggableProvided,
   DraggableStateSnapshot,
   DraggableRubric,
-  DroppableProvided} from "react-beautiful-dnd";
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
+  DroppableProvided,
 } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   bindMenu,
   bindTrigger,
@@ -116,7 +113,9 @@ function CurrentPlaylistItem({
       }
     >
       <ListItemButton
-        sx={{px: 0}}
+        style={{
+          paddingRight: 0,
+        }}
         onClick={
           isDragging
             ? null
