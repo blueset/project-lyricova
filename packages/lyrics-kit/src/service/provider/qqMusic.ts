@@ -79,7 +79,7 @@ class QQMusicQLyrics extends Lyrics {
       lineObjs.push(lineObj);
 
       if (
-        idx < lines.length - 1 &&
+        idx == lines.length - 1 ||
         lines[idx + 1][0] - start - duration > 500
       ) {
         const blankLine = new LyricsLine("", (start + duration) / 1000);
