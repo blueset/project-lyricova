@@ -26,18 +26,14 @@ input AlbumInput {
   sortOrder: String!
 }
 
-"""
-Describes the animation sequence for a word.
-"""
+"""Describes the animation sequence for a word."""
 type AnimatedWord {
   """
   True if the word shows a conversion-type of animation. False if it is just typing.
   """
   convert: Boolean!
 
-  """
-  Actual sequence to show, one frame at a time.
-  """
+  """Actual sequence to show, one frame at a time."""
   sequence: [String!]!
 }
 
@@ -111,9 +107,7 @@ type DashboardStats {
   songCount: Int!
 }
 
-"""
-A Lyricova entry.
-"""
+"""A Lyricova entry."""
 type Entry {
   author: User!
   authorId: Float!
@@ -134,97 +128,60 @@ type FileInPlaylist {
   updatedOn: Timestamp!
 }
 
-"""
-Foo is not foolish.
-"""
+"""Foo is not foolish."""
 type Foo {
-  """
-  Not a value to drink.
-  """
+  """Not a value to drink."""
   bar: Int!
 
-  """
-  Name of the foo.
-  """
+  """Name of the foo."""
   name: String!
 }
 
-"""
-Furigana/romaji to words in a lyrics line.
-"""
+"""Furigana/romaji to words in a lyrics line."""
 input FuriganaLabel {
-  """
-  Furigana/romaji content
-  """
+  """Furigana/romaji content"""
   content: String!
 
-  """
-  Starting character per Extended Grapheme Cluster (including)
-  """
+  """Starting character per Extended Grapheme Cluster (including)"""
   leftIndex: Int!
 
-  """
-  Ending character per Extended Grapheme Cluster (excluding)
-  """
+  """Ending character per Extended Grapheme Cluster (excluding)"""
   rightIndex: Int!
 }
 
-"""
-A lyrics entry from 初音ミク@wiki.
-"""
+"""A lyrics entry from 初音ミク@wiki."""
 type HmikuAtWikiEntry {
-  """
-  Furigana of the entry name.
-  """
+  """Furigana of the entry name."""
   furigana: String!
 
-  """
-  Entry ID.
-  """
+  """Entry ID."""
   id: String!
 
-  """
-  Lyrics content.
-  """
+  """Lyrics content."""
   lyrics: String!
 
-  """
-  Entry name.
-  """
+  """Entry name."""
   name: String!
 }
 
-"""
-A search result from 初音ミク@wiki.
-"""
+"""A search result from 初音ミク@wiki."""
 type HmikuAtWikiSearchResultEntry {
-  """
-  A short summary of contents in the entry.
-  """
+  """A short summary of contents in the entry."""
   desc: String!
 
-  """
-  Entry ID.
-  """
+  """Entry ID."""
   id: String!
 
-  """
-  Entry name.
-  """
+  """Entry name."""
   name: String!
 }
 
 """
 The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
-scalar JSONObject
-  @specifiedBy(
-    url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf"
-  )
+scalar JSONObject @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
 
-"""
-Attachments to a lyrics line.
-"""
+"""Attachments to a lyrics line."""
 type LyricsKitAttachment {
   furigana: [LyricsKitRangeAttachment!]
   romaji: [LyricsKitRangeAttachment!]
@@ -232,108 +189,70 @@ type LyricsKitAttachment {
   translation: String
 }
 
-"""
-Parsed lyrics.
-"""
+"""Parsed lyrics."""
 type LyricsKitLyrics {
-  """
-  Duration of the lyrics in seconds.
-  """
+  """Duration of the lyrics in seconds."""
   length: Float
   lines: [LyricsKitLyricsLine!]!
   quality: Float
 }
 
-"""
-A lyrics entry from lyrics-kit search engine.
-"""
+"""A lyrics entry from lyrics-kit search engine."""
 type LyricsKitLyricsEntry {
-  """
-  If the query is matched in this entry.
-  """
+  """If the query is matched in this entry."""
   isMatched: Boolean!
   lyrics: String!
   metadata: JSONObject!
 
-  """
-  Quality of the matching.
-  """
+  """Quality of the matching."""
   quality: Float
   tags: JSONObject!
 }
 
-"""
-A line of parsed lyrics.
-"""
+"""A line of parsed lyrics."""
 type LyricsKitLyricsLine {
   attachments: LyricsKitAttachment!
   content: String!
 
-  """
-  Offset of the line in seconds
-  """
+  """Offset of the line in seconds"""
   position: Float!
 }
 
-"""
-Furigana/romaji to words in a lyrics line.
-"""
+"""Furigana/romaji to words in a lyrics line."""
 type LyricsKitRangeAttachment {
-  """
-  Furigana/romaji content
-  """
+  """Furigana/romaji content"""
   content: String!
 
-  """
-  Starting character per Extended Grapheme Cluster (including)
-  """
+  """Starting character per Extended Grapheme Cluster (including)"""
   leftIndex: Int!
 
-  """
-  Ending character per Extended Grapheme Cluster (excluding)
-  """
+  """Ending character per Extended Grapheme Cluster (excluding)"""
   rightIndex: Int!
 }
 
 input LyricsKitSearchOptions {
-  """
-  Duration of the song (if known).
-  """
+  """Duration of the song (if known)."""
   duration: Float = 0
 
-  """
-  Whether to output LRCX syntax.
-  """
+  """Whether to output LRCX syntax."""
   useLRCX: Boolean = false
 }
 
-"""
-Time tag per word to a lyrics line.
-"""
+"""Time tag per word to a lyrics line."""
 type LyricsKitWordTimeAttachment {
-  """
-  Duration of line in seconds.
-  """
+  """Duration of line in seconds."""
   duration: Float
 
-  """
-  Tags in the line.
-  """
+  """Tags in the line."""
   tags: [LyricsKitWordTimeTag!]
 }
 
-"""
-Time tag per word to a lyrics line.
-"""
+"""Time tag per word to a lyrics line."""
 type LyricsKitWordTimeTag {
-  """
-  Starting character per Extended Grapheme Cluster of this tag
-  """
+  """Starting character per Extended Grapheme Cluster of this tag"""
   index: Int!
 
-  """
-  Time when the time tag happens, in seconds.
-  """
+  """Time when the time tag happens, in seconds."""
   timeTag: Float!
 }
 
@@ -350,153 +269,99 @@ type MusicDlSearchResult {
   title: String
 }
 
-"""
-A music file in the jukebox.
-"""
+"""A music file in the jukebox."""
 type MusicFile {
   FileInPlaylist: FileInPlaylist
   album: Album
 
-  """
-  ID of corresponding album in database.
-  """
+  """ID of corresponding album in database."""
   albumId: Int
 
-  """
-  Album of the track stored in file.
-  """
+  """Album of the track stored in file."""
   albumName: String
 
-  """
-  Sort order key of album of the track stored in file.
-  """
+  """Sort order key of album of the track stored in file."""
   albumSortOrder: String
 
-  """
-  Artist of the track stored in file.
-  """
+  """Artist of the track stored in file."""
   artistName: String
 
-  """
-  Sort order key of artist of the track stored in file.
-  """
+  """Sort order key of artist of the track stored in file."""
   artistSortOrder: String
   creationDate: Timestamp!
 
-  """
-  Duration of the song in seconds.
-  """
+  """Duration of the song in seconds."""
   duration: Float!
 
-  """
-  Size of file in bytes.
-  """
+  """Size of file in bytes."""
   fileSize: Int!
 
-  """
-  If the file has an embedded cover art.
-  """
+  """If the file has an embedded cover art."""
   hasCover: Boolean!
 
-  """
-  If the file is accompanied with a lyrics file.
-  """
+  """If the file is accompanied with a lyrics file."""
   hasLyrics: Boolean!
 
-  """
-  MD5 of the file.
-  """
+  """MD5 of the file."""
   hash: String!
 
-  """
-  File ID in database.
-  """
+  """File ID in database."""
   id: Int!
   lyrics: LyricsKitLyrics
   lyricsText(ext: String = "lrc"): String
 
-  """
-  If this entry needs review.
-  """
+  """If this entry needs review."""
   needReview: Boolean!
 
-  """
-  Local path to the song.
-  """
+  """Local path to the song."""
   path: String!
 
-  """
-  Number of times the file has been played.
-  """
+  """Number of times the file has been played."""
   playCount: Int!
   playlists: [Playlist!]!
   song: Song
 
-  """
-  ID of corresponding song in database.
-  """
+  """ID of corresponding song in database."""
   songId: Int
 
-  """
-  Name of the track stored in file.
-  """
+  """Name of the track stored in file."""
   trackName: String
 
-  """
-  Sort order key of name of the track stored in file.
-  """
+  """Sort order key of name of the track stored in file."""
   trackSortOrder: String
   updatedOn: Timestamp!
 }
 
-"""
-Write metadata to music file.
-"""
+"""Write metadata to music file."""
 input MusicFileInput {
-  """
-  ID of corresponding album in database.
-  """
+  """ID of corresponding album in database."""
   albumId: Int
 
-  """
-  Album of the track stored in file.
-  """
+  """Album of the track stored in file."""
   albumName: String
 
-  """
-  Sort order key of album of the track stored in file.
-  """
+  """Sort order key of album of the track stored in file."""
   albumSortOrder: String
 
-  """
-  Artist of the track stored in file.
-  """
+  """Artist of the track stored in file."""
   artistName: String
 
-  """
-  Sort order key of artist of the track stored in file.
-  """
+  """Sort order key of artist of the track stored in file."""
   artistSortOrder: String
 
-  """
-  ID of corresponding song in database.
-  """
+  """ID of corresponding song in database."""
   songId: Int
 
-  """
-  Name of the track stored in file.
-  """
+  """Name of the track stored in file."""
   trackName: String
 
-  """
-  Sort order key of name of the track stored in file.
-  """
+  """Sort order key of name of the track stored in file."""
   trackSortOrder: String
 }
 
 type MusicFilesPagination {
   edges: [MusicFilesPaginationEdge!]!
-  pageInfo: PaginationInfo!
+  pageInfo: [PaginationInfo!]!
   totalCount: Int!
 }
 
@@ -505,13 +370,9 @@ type MusicFilesPaginationEdge {
   node: MusicFile!
 }
 
-"""
-Music files query options
-"""
+"""Music files query options"""
 input MusicFilesQueryOptions {
-  """
-  Filter by review status of files
-  """
+  """Filter by review status of files"""
   needReview: Boolean
 }
 
@@ -526,43 +387,27 @@ type MusicFilesScanOutcome {
 type Mutation {
   addFileToPlaylist(fileId: Int!, slug: String!): Playlist!
 
-  """
-  Bump play count of a file
-  """
+  """Bump play count of a file"""
   bumpPlayCount(
-    """
-    Music file ID
-    """
+    """Music file ID"""
     fileId: Int!
   ): Int!
 
-  """
-  Insert or update an album from VocaDB.
-  """
+  """Insert or update an album from VocaDB."""
   enrolAlbumFromVocaDB(
-    """
-    Album ID in VocaDB
-    """
+    """Album ID in VocaDB"""
     albumId: Int!
   ): Album!
 
-  """
-  Insert or update an artist from VocaDB.
-  """
+  """Insert or update an artist from VocaDB."""
   enrolArtistFromVocaDB(
-    """
-    Artist ID in VocaDB
-    """
+    """Artist ID in VocaDB"""
     artistId: Int!
   ): Artist!
 
-  """
-  Insert or update a song from VocaDB.
-  """
+  """Insert or update a song from VocaDB."""
   enrolSongFromVocaDB(
-    """
-    Song ID in VocaDB
-    """
+    """Song ID in VocaDB"""
     songId: Int!
   ): Song!
   newAlbum(data: AlbumInput!): Album!
@@ -571,13 +416,9 @@ type Mutation {
   newSong(data: SongInput!): Song!
   removeFileFromPlaylist(fileId: Int!, slug: String!): Playlist!
 
-  """
-  Remove lyrics of a file
-  """
+  """Remove lyrics of a file"""
   removeLyrics(
-    """
-    Music file ID
-    """
+    """Music file ID"""
     fileId: Int!
   ): Boolean!
   removePlaylist(slug: String!): Boolean!
@@ -587,39 +428,25 @@ type Mutation {
   Scan a single file based on its path. This may create, update or delete an entry.
   """
   scanByPath(
-    """
-    Path to scan relative to MUSIC_DATA_PATH.
-    """
+    """Path to scan relative to MUSIC_DATA_PATH."""
     path: String!
   ): MusicFile
 
-  """
-  Set which playlist a file belong to, this replaces existing values.
-  """
+  """Set which playlist a file belong to, this replaces existing values."""
   setPlaylistsOfFile(
-    """
-    Music file ID
-    """
+    """Music file ID"""
     fileId: Int!
 
-    """
-    Playlists to set
-    """
+    """Playlists to set"""
     playlistSlugs: [String!]!
   ): MusicFile!
 
-  """
-  Write lyrics to music file as a tag
-  """
+  """Write lyrics to music file as a tag"""
   toggleMusicFileReviewStatus(
-    """
-    Music file ID
-    """
+    """Music file ID"""
     fileId: Int!
 
-    """
-    If the file still needs review
-    """
+    """If the file still needs review"""
     needReview: Boolean!
   ): MusicFile!
   updateAlbum(data: AlbumInput!, id: Int!): Album!
@@ -629,49 +456,30 @@ type Mutation {
   updatePlaylistSortOrder(fileIds: [Int!]!, slug: String!): Playlist!
   updateSong(data: SongInput!, id: Int!): Song!
 
-  """
-  Write lyrics to a separate file
-  """
+  """Write lyrics to a separate file"""
   writeLyrics(
-    """
-    Lyrics file extension
-    """
+    """Lyrics file extension"""
     ext: String = "lrc"
 
-    """
-    Music file ID
-    """
+    """Music file ID"""
     fileId: Int!
 
-    """
-    Lyrics file content
-    """
+    """Lyrics file content"""
     lyrics: String!
   ): Boolean!
 
-  """
-  Write lyrics to music file as a tag
-  """
+  """Write lyrics to music file as a tag"""
   writeLyricsToMusicFile(
-    """
-    Music file ID
-    """
+    """Music file ID"""
     fileId: Int!
 
-    """
-    Lyrics content
-    """
+    """Lyrics content"""
     lyrics: String!
   ): Boolean!
   writeTagsToMusicFile(data: MusicFileInput!, id: Int!): MusicFile!
 
-  """
-  Download audio via yt-dlp.
-  """
-  youtubeDlDownloadAudio(
-    options: YouTubeDlDownloadOptions!
-    url: String!
-  ): String
+  """Download audio via yt-dlp."""
+  youtubeDlDownloadAudio(options: YouTubeDlDownloadOptions!, url: String!): String
 }
 
 input NewPlaylistInput {
@@ -684,21 +492,15 @@ type PaginationInfo {
   hasNextPage: Boolean!
 }
 
-"""
-A playlist of music files.
-"""
+"""A playlist of music files."""
 type Playlist {
   files: [MusicFile!]!
   filesCount: Int!
 
-  """
-  Name of the playlist.
-  """
+  """Name of the playlist."""
   name: String!
 
-  """
-  Slug of the playlist.
-  """
+  """Slug of the playlist."""
   slug: ID!
 }
 
@@ -713,28 +515,7 @@ type Query {
   albumsHasFiles: [Album!]!
   artist(id: Int!): Artist
   artists: [Artist!]!
-  artistsHasFiles(
-    types: [String!] = [
-      "Unknown"
-      "Circle"
-      "Label"
-      "Producer"
-      "Animator"
-      "Illustrator"
-      "Lyricist"
-      "Vocaloid"
-      "UTAU"
-      "CeVIO"
-      "OtherVoiceSynthesizer"
-      "OtherVocalist"
-      "OtherGroup"
-      "OtherIndividual"
-      "Utaite"
-      "Band"
-      "Vocalist"
-      "Character"
-    ]
-  ): [Artist!]!
+  artistsHasFiles(types: [String!] = ["Unknown", "Circle", "Label", "Producer", "Animator", "Illustrator", "Lyricist", "Vocaloid", "UTAU", "CeVIO", "OtherVoiceSynthesizer", "OtherVocalist", "OtherGroup", "OtherIndividual", "Utaite", "Band", "Vocalist", "Character"]): [Artist!]!
   artistsWithFilesNeedEnrol: [Int!]!
   currentUser: User
   dashboardStats: DashboardStats!
@@ -754,11 +535,7 @@ type Query {
     title: String!
   ): [LyricsKitLyricsEntry!]!
   musicFile(id: Int!): MusicFile
-  musicFiles(
-    after: String
-    first: Int = 25
-    options: MusicFilesQueryOptions
-  ): MusicFilesPagination!
+  musicFiles(after: String, first: Int = 25, options: MusicFilesQueryOptions): MusicFilesPagination!
   playlist(slug: String!): Playlist
   playlists: [Playlist!]!
   randomTexture: Texture!
@@ -769,10 +546,7 @@ type Query {
   song(id: Int!): Song
   songs: [Song!]!
   startALengthyTask(sessionId: String!): [String!]!
-  transliterate(
-    furigana: [[FuriganaLabel!]!] = []
-    text: String!
-  ): TransliterationResult!
+  transliterate(furigana: [[FuriganaLabel!]!] = [], text: String!): TransliterationResult!
   vocaDBLyrics(id: Int!): [VocaDBLyricsEntry!]!
   youtubeDlGetInfo(url: String!): JSONObject!
 }
@@ -836,9 +610,7 @@ type Subscription {
   """
   lyricsKitSearchIncremental(sessionId: String!): LyricsKitLyricsEntry
 
-  """
-  Progress of a `scan`. Session ID is required when performing search.
-  """
+  """Progress of a `scan`. Session ID is required when performing search."""
   scanProgress(sessionId: String!): MusicFilesScanOutcome
 
   """
@@ -869,9 +641,7 @@ The javascript `Date` as integer. Type represents date and time as number of mil
 """
 scalar Timestamp
 
-"""
-Result of a transliteration request.
-"""
+"""Result of a transliteration request."""
 type TransliterationResult {
   karaoke(
     """
@@ -892,9 +662,7 @@ type TransliterationResult {
     language: String
   ): [[[String!]!]!]!
 
-  """
-  Original text.
-  """
+  """Original text."""
   text: String!
   typing(
     """
@@ -941,38 +709,24 @@ type VideoFile {
   id: Int!
 }
 
-"""
-A lyrics entry from VocaDB.
-"""
+"""A lyrics entry from VocaDB."""
 type VocaDBLyricsEntry {
-  """
-  Language/culture code.
-  """
+  """Language/culture code."""
   cultureCode: String
 
-  """
-  Lyrics entry ID.
-  """
+  """Lyrics entry ID."""
   id: Int!
 
-  """
-  Source of lyrics.
-  """
+  """Source of lyrics."""
   source: String
 
-  """
-  Type of translation.
-  """
+  """Type of translation."""
   translationType: String
 
-  """
-  URL of the source.
-  """
+  """URL of the source."""
   url: String
 
-  """
-  Lyrics content.
-  """
+  """Lyrics content."""
   value: String
 }
 
@@ -981,14 +735,10 @@ type YouTubeDlDownloadMessage {
 }
 
 input YouTubeDlDownloadOptions {
-  """
-  Name of file to save as.
-  """
+  """Name of file to save as."""
   filename: String
 
-  """
-  Whether to overwrite if a file already exists.
-  """
+  """Whether to overwrite if a file already exists."""
   overwrite: Boolean = false
 }
 
@@ -996,48 +746,31 @@ type YouTubeDlInfo {
   filename: String!
   metadata: JSONObject!
 
-  """
-  Size of file in bytes, precision to every 10486 bytes.
-  """
+  """Size of file in bytes, precision to every 10486 bytes."""
   size: Int!
 }
 
-union YouTubeDlProgress =
-    YouTubeDlProgressDone
-  | YouTubeDlProgressError
-  | YouTubeDlProgressValue
+union YouTubeDlProgress = YouTubeDlProgressDone | YouTubeDlProgressError | YouTubeDlProgressValue
 
-"""
-youtube-dl download progress when download is finished.
-"""
+"""youtube-dl download progress when download is finished."""
 type YouTubeDlProgressDone {
-  """
-  Type of update, "done".
-  """
+  """Type of update, "done"."""
   type: String!
 }
 
-"""
-youtube-dl download progress when download failed.
-"""
+"""youtube-dl download progress when download failed."""
 type YouTubeDlProgressError {
   message: String!
 
-  """
-  Type of update, "error".
-  """
+  """Type of update, "error"."""
   type: String!
 }
 
-"""
-youtube-dl download progress object.
-"""
+"""youtube-dl download progress object."""
 type YouTubeDlProgressValue {
   current: Int!
   total: Int!
 
-  """
-  Type of update, "progress".
-  """
+  """Type of update, "progress"."""
   type: String!
 }

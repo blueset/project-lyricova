@@ -11,7 +11,8 @@ interface FuriganaLabel {
 }
 
 /** List of commonly used characters that is only used in Japanese */
-const jaOnly = /(\p{Script=Hira}|\p{Script=Kana}|[゛゜゠ーｰ���〱〲〳〴〵゛゜゠・ー･ｰ����㍻㍼㍽㍾㍿増楽薬霊塡犠渓著雑祖猟槇祉栄畳福込帰朗鉱獣砕呉響碑捗僧繊粋瀬繁層厳隠変頬剰拠剤斎専琢廃匂巣転黒社舗蔵伝歩鋳餠愼験抜読猪廊郞曽仮駅譲欄酔桟済気斉囲択経乗満穀難錬嘆戻醸虜寛銭様歳毎奨艶帯侮挙逸署器両釈節墨挿従権憎嬢都倹豊戦庁謁卑歓駆観揺徴悪徳壌団暑営娯弾渇恵祝縁枠勤隣対漢謹検卽摂類視発緖壊拡粛掲涙穏総圏拝沢贈圧浄顔仏図陥歴亀壱梅眞煮闘髪円扱塩騒懐覚敏軽峠戸頼荘黙晩諸継蛍遅逓祥練喩応悩姫険齢撃聴覧痩値鉄禍塀続勉臭鶏辺縄悔絵郷捜懲者鬪海児実薫亜渚歯駄渋弐広姉巻剣証塁単顕価禎祐突穂暦払栃訳渉県労麺糸焼勲神舎縦賓髄丼暁桜滝脳稲勧鎭祈売])/u;
+const jaOnly =
+  /(\p{Script=Hira}|\p{Script=Kana}|[゛゜゠ーｰ���〱〲〳〴〵゛゜゠・ー･ｰ����㍻㍼㍽㍾㍿増楽薬霊塡犠渓著雑祖猟槇祉栄畳福込帰朗鉱獣砕呉響碑捗僧繊粋瀬繁層厳隠変頬剰拠剤斎専琢廃匂巣転黒社舗蔵伝歩鋳餠愼験抜読猪廊郞曽仮駅譲欄酔桟済気斉囲択経乗満穀難錬嘆戻醸虜寛銭様歳毎奨艶帯侮挙逸署器両釈節墨挿従権憎嬢都倹豊戦庁謁卑歓駆観揺徴悪徳壌団暑営娯弾渇恵祝縁枠勤隣対漢謹検卽摂類視発緖壊拡粛掲涙穏総圏拝沢贈圧浄顔仏図陥歴亀壱梅眞煮闘髪円扱塩騒懐覚敏軽峠戸頼荘黙晩諸継蛍遅逓祥練喩応悩姫険齢撃聴覧痩値鉄禍塀続勉臭鶏辺縄悔絵郷捜懲者鬪海児実薫亜渚歯駄渋弐広姉巻剣証塁単顕価禎祐突穂暦払栃訳渉県労麺糸焼勲神舎縦賓髄丼暁桜滝脳稲勧鎭祈売])/u;
 /** Test the string if has Han characters */
 const isHan = /\p{Script=Han}/u;
 
@@ -26,7 +27,7 @@ interface MecabParsedResult {
 const mecab = new MeCab<MecabParsedResult>();
 mecab.command =
   'mecab --node-format="%M\u200C%f[7]\u200C%pA\n" --unk-format="%M\u200C%M\u200C%pA\n" --marginal';
-mecab.parser = function(data): MecabParsedResult {
+mecab.parser = function (data): MecabParsedResult {
   const [kanji, reading, alphaForwardLogRateStr] = data[0].split("\u200C");
   return {
     kanji,
@@ -391,12 +392,10 @@ export function segmentedTransliteration(
             }, [])
             .reduce<[string, string][]>((prev, [text, ruby]) => {
               // Normalize whitespaces around a ruby item.
-              const [_t, textL, textC, textR] = text.match(
-                /^(\s*)(.*?)(\s*)$/u
-              )!;
-              const [_r, rubyL, rubyC, rubyR] = ruby.match(
-                /^(\s*)(.*?)(\s*)$/u
-              )!;
+              const [_t, textL, textC, textR] =
+                text.match(/^(\s*)(.*?)(\s*)$/u)!;
+              const [_r, rubyL, rubyC, rubyR] =
+                ruby.match(/^(\s*)(.*?)(\s*)$/u)!;
               if (textL.length > 0 || rubyL.length > 0) {
                 const spaceL: [string, string] = [textL, rubyL];
                 if (textL.length === 0) spaceL[0] = rubyL;
