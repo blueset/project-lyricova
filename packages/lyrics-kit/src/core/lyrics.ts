@@ -3,29 +3,35 @@ import {
   lyricsLineRegex,
   resolveTimeTag,
   lyricsLineAttachmentRegex,
-  base60TimeRegex
+  base60TimeRegex,
 } from "../utils/regexPattern";
 import { LyricsLine, ToLegacyStringOptions } from "./lyricsLine";
 import { LyricsMetadata, ATTACHMENT_TAGS } from "./lyricsMetadata";
 import _ from "lodash";
 import { OFFSET, LENGTH, ARTIST, TITLE } from "./idTagKey";
 import { TIME_TAG, TRANSLATION } from "./lyricsLineAttachment";
-import { isCaseInsensitiveSimilar, similarity, similarityIn } from "./stringExtensions";
+import {
+  isCaseInsensitiveSimilar,
+  similarity,
+  similarityIn,
+} from "./stringExtensions";
 
-type LyricsMatch = {
-  state: "found";
-  at: number;
-} | {
-  state: "notFound";
-  insertAt: number;
-};
+type LyricsMatch =
+  | {
+      state: "found";
+      at: number;
+    }
+  | {
+      state: "notFound";
+      insertAt: number;
+    };
 
 type CustomSyntaxConfig = {
   idTag?: (key: string, value: string) => string;
   line?: (line: LyricsLine) => string;
-}
+};
 
-const mergeTimetagThreshold = 0.02;
+const mergeTimetagThreshold = 0.1;
 
 export interface ToPlainLRCOptions {
   lineOptions?: ToLegacyStringOptions;
@@ -44,7 +50,8 @@ export class Lyrics {
     if (description === undefined) return;
 
     for (const match of description.matchAll(id3TagRegex)) {
-      const key = match[1].trim(), value = match[2].trim();
+      const key = match[1].trim(),
+        value = match[2].trim();
       if (value !== "") {
         this.idTags[key] = value;
       }
@@ -52,11 +59,9 @@ export class Lyrics {
 
     const lines: LyricsLine[] = [];
     for (const match of description.matchAll(lyricsLineRegex)) {
-      const
-        timeTagStr = match[1],
+      const timeTagStr = match[1],
         timeTags = resolveTimeTag(timeTagStr);
-      const
-        lyricsContentStr = match[2],
+      const lyricsContentStr = match[2],
         line = new LyricsLine(lyricsContentStr, 0);
 
       const translationStr = match[3];
@@ -64,12 +69,14 @@ export class Lyrics {
         line.attachments.setTranslation(translationStr);
       }
 
-      lines.push(...timeTags.map((tag) => {
-        const l = _.clone(line);
-        l.position = tag;
-        l.lyrics = this;
-        return l;
-      }));
+      lines.push(
+        ...timeTags.map((tag) => {
+          const l = _.clone(line);
+          l.position = tag;
+          l.lyrics = this;
+          return l;
+        })
+      );
     }
     lines.sort((a, b) => a.position - b.position);
 
@@ -78,19 +85,19 @@ export class Lyrics {
 
     const tags: Set<string> = new Set();
     for (const match of description.matchAll(lyricsLineAttachmentRegex)) {
-      const
-        timeTagStr = match[1],
+      const timeTagStr = match[1],
         timeTags = resolveTimeTag(timeTagStr);
 
-      const
-        attachmentTagStr = match[2],
+      const attachmentTagStr = match[2],
         attachmentStr = match[3] || "";
 
       for (const timeTag of timeTags) {
         const indexOutcome = this.lineIndex(timeTag);
         if (indexOutcome.state === "found") {
-          this.lines[indexOutcome.at]
-            .attachments.setTag(attachmentTagStr, attachmentStr);
+          this.lines[indexOutcome.at].attachments.setTag(
+            attachmentTagStr,
+            attachmentStr
+          );
         }
       }
       tags.add(attachmentTagStr);
@@ -98,7 +105,9 @@ export class Lyrics {
     this.metadata.data[ATTACHMENT_TAGS] = tags;
 
     if (lines.length === 0) {
-      throw new Error(`No valid line is found in this lyric file: ${description}`);
+      throw new Error(
+        `No valid line is found in this lyric file: ${description}`
+      );
     }
 
     this.lines = lines;
@@ -109,41 +118,51 @@ export class Lyrics {
    * @param position Time offset in seconds
    */
   private lineIndex(position: number): LyricsMatch {
-    const index = _.sortedIndexBy<{ position: number }>(this.lines, { position }, "position");
+    const index = _.sortedIndexBy<{ position: number }>(
+      this.lines,
+      { position },
+      "position"
+    );
     if (index < this.lines.length && this.lines[index].position === position) {
       return {
         state: "found",
-        at: index
+        at: index,
       };
     }
     return {
       state: "notFound",
-      insertAt: index
+      insertAt: index,
     };
   }
 
   /** Build LRCX string. */
   public toString(): string {
-    const components = Object.entries(this.idTags).map(v => `[${v[0]}:${v[1]}]`);
-    components.push(...this.lines.map(v => v.toString()));
+    const components = Object.entries(this.idTags).map(
+      (v) => `[${v[0]}:${v[1]}]`
+    );
+    components.push(...this.lines.map((v) => v.toString()));
     return components.join("\n");
   }
 
   /** Build LRCX string in legacy syntax. */
   public legacyToString(): string {
-    const components = Object.entries(this.idTags).map(v => `[${v[0]}:${v[1]}]`);
-    components.push(...this.lines.map(v => v.toLegacyString()));
+    const components = Object.entries(this.idTags).map(
+      (v) => `[${v[0]}:${v[1]}]`
+    );
+    components.push(...this.lines.map((v) => v.toLegacyString()));
     return components.join("\n");
   }
 
   private static customSyntaxConfig: CustomSyntaxConfig = {
     idTag: (key, val) => `[${key}:${val}]`,
-    line: line => line.toString()
+    line: (line) => line.toString(),
   };
 
   public toCustomSyntax(config: CustomSyntaxConfig): string {
     config = _.defaults(config, Lyrics.customSyntaxConfig);
-    const components = Object.entries(this.idTags).map(v => config.idTag(v[0], v[1]));
+    const components = Object.entries(this.idTags).map((v) =>
+      config.idTag(v[0], v[1])
+    );
     components.push(...this.lines.map(config.line));
     return components.join("\n");
   }
@@ -154,7 +173,7 @@ export class Lyrics {
    */
   public toPlainLRC(options: ToPlainLRCOptions = { lineOptions: {} }): string {
     return this.toCustomSyntax({
-      line: line => line.toLegacyString(options.lineOptions),
+      line: (line) => line.toLegacyString(options.lineOptions),
     });
   }
 
@@ -187,8 +206,7 @@ export class Lyrics {
       console.error(`"${len}" (${typeof len}) is an invalid length.`);
       return undefined;
     }
-    const
-      min = parseFloat(match[1]) || 0,
+    const min = parseFloat(match[1]) || 0,
       sec = parseFloat(match[2]) || 0;
     return min * 60 + sec;
   }
@@ -245,7 +263,8 @@ export class Lyrics {
   }
 
   public isMatched(): boolean {
-    const artist = this.idTags[ARTIST], title = this.idTags[TITLE];
+    const artist = this.idTags[ARTIST],
+      title = this.idTags[TITLE];
     if (artist === undefined || title === undefined) {
       return false;
     }
@@ -254,12 +273,16 @@ export class Lyrics {
       return false;
     }
     if (searchTerm.state === "info") {
-      return isCaseInsensitiveSimilar(title, searchTerm.title) &&
-        isCaseInsensitiveSimilar(artist, searchTerm.artist);
+      return (
+        isCaseInsensitiveSimilar(title, searchTerm.title) &&
+        isCaseInsensitiveSimilar(artist, searchTerm.artist)
+      );
     }
     if (searchTerm.state === "keyword") {
-      return isCaseInsensitiveSimilar(title, searchTerm.keyword) &&
-        isCaseInsensitiveSimilar(artist, searchTerm.keyword);
+      return (
+        isCaseInsensitiveSimilar(title, searchTerm.keyword) &&
+        isCaseInsensitiveSimilar(artist, searchTerm.keyword)
+      );
     }
     return false;
   }
@@ -309,8 +332,7 @@ export class Lyrics {
   }
 
   private get durationQuality(): number {
-    const
-      duration = this.length,
+    const duration = this.length,
       searchDuration = this.metadata.request?.duration;
     if (searchDuration === undefined) {
       return this.noDurationFactor;
@@ -322,17 +344,24 @@ export class Lyrics {
     return 0.7;
   }
 
-  public merge(other: Lyrics) {
-    let index = 0, otherIndex = 0;
+  public merge(other: Lyrics): void {
+    let index = 0,
+      otherIndex = 0;
     while (index < this.lines.length && otherIndex < other.lines.length) {
-      if (Math.abs(this.lines[index].position - other.lines[otherIndex].position) < mergeTimetagThreshold) {
+      if (
+        Math.abs(
+          this.lines[index].position - other.lines[otherIndex].position
+        ) < mergeTimetagThreshold
+      ) {
         const transStr = other.lines[otherIndex].content;
         if (transStr !== "") {
           this.lines[index].attachments.setTranslation(transStr);
         }
         index++;
         otherIndex++;
-      } else if (this.lines[index].position > other.lines[otherIndex].position) {
+      } else if (
+        this.lines[index].position > other.lines[otherIndex].position
+      ) {
         otherIndex++;
       } else {
         index++;
@@ -342,7 +371,7 @@ export class Lyrics {
   }
 
   /** Merge without matching timetag */
-  public forceMerge(other: Lyrics) {
+  public forceMerge(other: Lyrics): void {
     if (this.lines.length !== other.lines.length) return;
     for (let i = 0; i < this.lines.length; i++) {
       const otherStr = other.lines[i].content;

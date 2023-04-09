@@ -1,18 +1,24 @@
 export interface QQSongItem {
-    songmid: string;
-    songname: string;
-    albumname: string;
-    interval: number;
-    singer: {
-        name: string;
-    }[];
+  title: string;
+  id: number;
+  mid: string;
+  interval: number;
+  singer: {
+    title: string;
+  }[];
+  album: {
+    title: string;
+  };
 }
 
 export interface QQResponseSearchResult {
+  req_1: {
     data: {
+      body: {
         song: {
-            list: QQSongItem[];
+          list: QQSongItem[];
         };
+      };
     };
-    code: number;
+  };
 }
