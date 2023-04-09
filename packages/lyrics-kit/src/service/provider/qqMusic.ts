@@ -37,7 +37,7 @@ const headers = {
     "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
 };
 
-const timeTagPattern = /^\[(\d+),(\d+)\]/;
+const timeTagPattern = /^\[(\d+),(\d+)\](.*)/;
 
 class QQMusicQLyrics extends Lyrics {
   constructor(content: string) {
@@ -54,23 +54,26 @@ class QQMusicQLyrics extends Lyrics {
       const timeTag = line.match(timeTagPattern);
       const start = parseInt(timeTag[1]);
       const duration = parseInt(timeTag[2]);
-      return [start, duration, line];
+      return [start, duration, timeTag[3]];
     });
     const lineObjs = [];
 
     lines.forEach(([start, duration, line], idx) => {
       let lineContent = "";
-      const attachment = new WordTimeTag([], duration);
-      line.split(/([\[\(]\d+,\d+[\]\)])/g).forEach((segment) => {
+      const attachment = new WordTimeTag([], duration / 1000);
+      const segments = line.split(/([\[\(]\d+,\d+[\]\)])/g);
+      segments.forEach((segment, idx) => {
         const match = segment.match(/[\[\(](\d+),(\d+)[\]\)]/);
         if (match) {
           const time = parseInt(match[1]);
           const dt = (time - start) / 1000;
           attachment.tags.push(new WordTimeTagLabel(dt, lineContent.length));
-        } else {
-          lineContent += segment;
+          lineContent += segments[idx - 1];
         }
       });
+      attachment.tags.push(
+        new WordTimeTagLabel(duration / 1000, lineContent.length)
+      );
 
       const att = new Attachments({ [TIME_TAG]: attachment });
       const lineObj = new LyricsLine(lineContent, start / 1000, att);
@@ -128,7 +131,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       }
       const data = response.data;
       return data.req_1.data.body.song.list;
-      // return data.req_1.data.body.song.list.slice(0, 2);
+      // return data.req_1.data.body.song.list.slice(0, 1);
     } catch (e) {
       console.error(e);
       return [];
