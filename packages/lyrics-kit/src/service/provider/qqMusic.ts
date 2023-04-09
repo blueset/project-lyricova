@@ -127,8 +127,8 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         return [];
       }
       const data = response.data;
-      // return data.req_1.data.body.song.list;
-      return data.req_1.data.body.song.list.slice(0, 2);
+      return data.req_1.data.body.song.list;
+      // return data.req_1.data.body.song.list.slice(0, 2);
     } catch (e) {
       console.error(e);
       return [];
