@@ -26,9 +26,10 @@ import { gql, useApolloClient } from "@apollo/client";
 import type { DocumentNode } from "graphql";
 import LyricsPreviewPanel from "./lyrics/WebVTTPreview";
 import WebAudioTaggingLyrics from "./lyrics/WebAudioTaggingLyrics";
+import InlineTagging from "./lyrics/InlineTagging";
 
 const WRITE_LYRICS_MUTATION = gql`
-  mutation($fileId: Int!, $lyrics: String!, $ext: String!) {
+  mutation ($fileId: Int!, $lyrics: String!, $ext: String!) {
     writeLyrics(fileId: $fileId, lyrics: $lyrics, ext: $ext)
   }
 ` as DocumentNode;
@@ -190,6 +191,7 @@ export default function LyricsEditDialog({
               <Tab label="WebAudioAPI Tagging" value="webAudioTagging" />
               <Tab label="Translation" value="translation" />
               <Tab label="Furigana" value="furigana" />
+              <Tab label="Inline Tagging" value="inline" />
             </Tabs>
             <IconButton
               color="inherit"
@@ -239,6 +241,9 @@ export default function LyricsEditDialog({
           </TabPanel>
           <TabPanel value="furigana">
             <EditFurigana lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
+          </TabPanel>
+          <TabPanel value="inline">
+            <InlineTagging lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
           </TabPanel>
         </DialogContent>
       </TabContext>

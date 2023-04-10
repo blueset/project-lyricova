@@ -1,4 +1,3 @@
-
 export const timeTagRegex = /\[([-+]?\d+):(\d+(?:\.\d+)?)\]/g;
 
 /**
@@ -7,15 +6,14 @@ export const timeTagRegex = /\[([-+]?\d+):(\d+(?:\.\d+)?)\]/g;
  * @returns array of time intervals (in seconds)
  */
 export function resolveTimeTag(str: string): number[] {
-    const matches = str.matchAll(timeTagRegex);
-    const results = [];
-    for (const i of matches) {
-        const 
-            min = parseFloat(i[1]),
-            sec = parseFloat(i[2]);
-        results.push(min * 60 + sec);
-    }
-    return results;
+  const matches = str.matchAll(timeTagRegex);
+  const results = [];
+  for (const i of matches) {
+    const min = parseFloat(i[1]),
+      sec = parseFloat(i[2]);
+    results.push(min * 60 + sec);
+  }
+  return results;
 }
 
 /**
@@ -27,10 +25,12 @@ export function resolveTimeTag(str: string): number[] {
  * buildTimeTag(121.9423); // returns "02:01.942"
  */
 export function buildTimeTag(position: number): string {
-    const
-      min = Math.floor(position / 60),
-      sec = position - min * 60;
-    return `${min.toString().padStart(2, "0")}:${sec.toFixed(3).padStart(6, "0")}`;
+  if (isNaN(position)) return null;
+  const min = Math.floor(position / 60),
+    sec = position - min * 60;
+  return `${min.toString().padStart(2, "0")}:${sec
+    .toFixed(3)
+    .padStart(6, "0")}`;
 }
 
 export const id3TagRegex = /^(?!\[[+-]?\d+:\d+(?:\.\d+)?\])\[(.+?):(.+)\]$/gm;

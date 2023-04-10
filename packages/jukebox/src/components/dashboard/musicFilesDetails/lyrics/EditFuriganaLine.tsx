@@ -1,6 +1,6 @@
-import type { LyricsLine} from "lyrics-kit/core";
+import type { LyricsLine } from "lyrics-kit/core";
 import { RangeAttribute, FURIGANA } from "lyrics-kit/core";
-import type { ChangeEvent, FormEvent} from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import { Box, IconButton, Paper, TextField, Typography } from "@mui/material";
@@ -32,10 +32,8 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
   const [renderableFurigana, setRenderableFurigana] = useNamedState<
     RenderableFuriganaElement[]
   >([], "renderableFurigana");
-  const [
-    floatingWindow,
-    setFloatingWindow,
-  ] = useNamedState<FloatingWindowProps | null>(null, "floatingWindow");
+  const [floatingWindow, setFloatingWindow] =
+    useNamedState<FloatingWindowProps | null>(null, "floatingWindow");
   const [floatingWindowInput, setFloatingWindowInput] = useNamedState(
     "",
     "floatingWindowInput"
@@ -275,9 +273,9 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
           >
             <TextField
               id="outlined-multiline-flexible"
-              label={(renderableFurigana[
-                floatingWindow.nodeIdx
-              ] as string).slice(floatingWindow.start, floatingWindow.end)}
+              label={(
+                renderableFurigana[floatingWindow.nodeIdx] as string
+              ).slice(floatingWindow.start, floatingWindow.end)}
               value={floatingWindowInput}
               onChange={handleFloatingInputChange}
               margin="dense"

@@ -1,6 +1,6 @@
 import { Box, Button, Grid, List, ListItem, ListItemText } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { LyricsLine} from "lyrics-kit/core";
+import type { LyricsLine } from "lyrics-kit/core";
 import { Lyrics, RangeAttribute, FURIGANA } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 import { useNamedState } from "../../../../frontendUtils/hooks";
@@ -10,7 +10,7 @@ import EditFuriganaLine from "./EditFuriganaLine";
 import type { DocumentNode } from "graphql";
 
 const KARAOKE_TRANSLITERATION_QUERY = gql`
-  query($text: String!) {
+  query ($text: String!) {
     transliterate(text: $text) {
       karaoke(language: "ja")
     }

@@ -48,8 +48,34 @@ export class Lyrics {
    */
   constructor(description?: string) {
     if (description === undefined) return;
+    const descriptionLines = description.split("\n");
+    const {
+      id3Tags,
+      mainLines,
+      attachments,
+      others,
+    } = descriptionLines.reduce<{
+      id3Tags: RegExpMatchArray[];
+      mainLines: RegExpMatchArray[];
+      attachments: RegExpMatchArray[];
+      others: string[];
+    }>(
+      (accu, curr) => {
+        if (curr.match(id3TagRegex)) {
+          accu.id3Tags.push(...curr.matchAll(id3TagRegex));
+        } else if (curr.match(lyricsLineRegex)) {
+          accu.mainLines.push(...curr.matchAll(lyricsLineRegex));
+        } else if (curr.match(lyricsLineAttachmentRegex)) {
+          accu.attachments.push(...curr.matchAll(lyricsLineAttachmentRegex));
+        } else {
+          accu.others.push(curr);
+        }
+        return accu;
+      },
+      { id3Tags: [], mainLines: [], attachments: [], others: [] }
+    );
 
-    for (const match of description.matchAll(id3TagRegex)) {
+    for (const match of id3Tags) {
       const key = match[1].trim(),
         value = match[2].trim();
       if (value !== "") {
@@ -58,7 +84,7 @@ export class Lyrics {
     }
 
     const lines: LyricsLine[] = [];
-    for (const match of description.matchAll(lyricsLineRegex)) {
+    for (const match of mainLines) {
       const timeTagStr = match[1],
         timeTags = resolveTimeTag(timeTagStr);
       const lyricsContentStr = match[2],
@@ -84,7 +110,7 @@ export class Lyrics {
     this.lines = lines;
 
     const tags: Set<string> = new Set();
-    for (const match of description.matchAll(lyricsLineAttachmentRegex)) {
+    for (const match of attachments) {
       const timeTagStr = match[1],
         timeTags = resolveTimeTag(timeTagStr);
 
@@ -102,6 +128,28 @@ export class Lyrics {
       }
       tags.add(attachmentTagStr);
     }
+
+    // Match lines without time tag
+    if (others.some(Boolean)) {
+      let lastLine: LyricsLine = null;
+      others.forEach((line) => {
+        const match = line.match(/\[(.+?)\](.*)/);
+        if (match) {
+          if (lastLine === null) {
+            lastLine = new LyricsLine("", NaN);
+            this.lines.push(lastLine);
+          }
+          const attachmentTagStr = match[1],
+            attachmentStr = match[2];
+          lastLine.attachments.setTag(attachmentTagStr, attachmentStr);
+          tags.add(attachmentTagStr);
+        } else {
+          lastLine = new LyricsLine(line, NaN);
+          this.lines.push(lastLine);
+        }
+      });
+    }
+
     this.metadata.data[ATTACHMENT_TAGS] = tags;
 
     if (lines.length === 0) {
@@ -119,7 +167,7 @@ export class Lyrics {
    */
   private lineIndex(position: number): LyricsMatch {
     const index = _.sortedIndexBy<{ position: number }>(
-      this.lines,
+      this.lines.filter((l) => !isNaN(l.position)),
       { position },
       "position"
     );

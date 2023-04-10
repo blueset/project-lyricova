@@ -1,19 +1,16 @@
-import type {
-  RefObject,
-  Dispatch,
-  SetStateAction} from "react";
+import type { RefObject, Dispatch, SetStateAction } from "react";
 import {
   useState,
   useDebugValue,
   useEffect,
   useCallback,
   useRef,
-  useMemo
+  useMemo,
 } from "react";
 
 import _ from "lodash";
 import type { AnimatedWord } from "lyricova-common/utils/typingSequence";
-import type { QueryResult} from "@apollo/client";
+import type { QueryResult } from "@apollo/client";
 import { gql, useQuery } from "@apollo/client";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
@@ -150,9 +147,7 @@ export function useLyricsState(
 
     // Create track
     const track = document.createElement("track");
-    const uniqueId = Math.random()
-      .toString(36)
-      .substring(2, 15);
+    const uniqueId = Math.random().toString(36).substring(2, 15);
     track.id = `lyricsState-${uniqueId}`;
     track.kind = "subtitles";
     track.label = `Lyrics State ${uniqueId}`;
@@ -452,9 +447,7 @@ export function usePlayerLyricsState<T>(
 
     // Create track
     const track = document.createElement("track");
-    const uniqueId = Math.random()
-      .toString(36)
-      .substring(2, 15);
+    const uniqueId = Math.random().toString(36).substring(2, 15);
     track.id = `playerLyricsState-${uniqueId}`;
     track.kind = "subtitles";
     track.label = `Player Lyrics State ${uniqueId}`;
@@ -543,7 +536,7 @@ const SEQUENCE_QUERY = gql`
       }
     }
   }
-` ;
+`;
 
 export interface SequenceQueryResult {
   transliterate: {
@@ -581,9 +574,10 @@ export function usePlayerLyricsTypingState(
 
   const sequenceQuery = useQuery<SequenceQueryResult>(SEQUENCE_QUERY, {
     variables: {
-      text: useMemo(() => lyrics.lines.map((v) => v.content).join("\n"), [
-        lyrics.lines,
-      ]),
+      text: useMemo(
+        () => lyrics.lines.map((v) => v.content).join("\n"),
+        [lyrics.lines]
+      ),
       furigana: lyrics.lines.map(
         (v) =>
           v.attachments?.furigana?.map(
@@ -696,4 +690,190 @@ export function useTrackwiseTimelineControl(
       tl.kill();
     };
   }, [timeline]);
+}
+
+export type WebAudioPlayerState = {
+  rate: number;
+} & (
+  | {
+      state: "playing";
+      startingOffset: number;
+      bufferSource: AudioBufferSourceNode;
+    }
+  | { state: "paused"; progress: number }
+);
+
+/**
+ * Manage audio playback with Web Audio API.
+ *
+ * Based on the work of PaletteWork Editor.
+ *
+ * PaletteWorks Editor (https://github.com/mkpoli/paletteworks-editor)
+ * Copyright (c) mkpoli licensed under MIT License
+ */
+export function useWebAudio(mediaUrl: string) {
+  // Mount-scope variables
+  const [audioContext, audioGain] = useMemo(() => {
+    const audioContext = new AudioContext();
+    const audioGain = audioContext.createGain();
+    audioGain.connect(audioContext.destination);
+    return [audioContext, audioGain];
+  }, []);
+  useEffect(() => {
+    return () => {
+      audioContext?.close();
+    };
+  }, [audioContext]);
+
+  // File-scope variables
+  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  useEffect(() => {
+    let active = true;
+    setTimeout(load, 0);
+    return () => {
+      active = false;
+    };
+
+    async function load() {
+      setPlayerStatus((ps) => {
+        if (ps.state === "playing" && ps.bufferSource) {
+          ps.bufferSource?.stop();
+          ps.bufferSource?.disconnect();
+          return { state: "paused", rate: 1, progress: 0 };
+        }
+        return ps;
+      });
+      if (!active) return;
+      const response = await fetch(mediaUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      if (!active) return;
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      if (!active) return;
+      setAudioBuffer(audioBuffer);
+    }
+  }, [mediaUrl, audioContext, setAudioBuffer, audioGain]);
+
+  // Session-scope variables
+  const [playerStatus, setPlayerStatus] = useState<WebAudioPlayerState>({
+    rate: 1,
+    state: "paused",
+    progress: 0,
+  });
+  const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
+  playerStatusRef.current = playerStatus;
+
+  const getBufferSource = useCallback(() => {
+    const bufferSource = audioContext.createBufferSource();
+    const playerStatus = playerStatusRef.current;
+    bufferSource.buffer = audioBuffer;
+    bufferSource.connect(audioGain);
+    bufferSource.playbackRate.value = playerStatus.rate;
+    return bufferSource;
+  }, [audioContext, audioBuffer, audioGain]);
+
+  const play = useCallback(() => {
+    if (!audioContext) return;
+    const playerStatus = playerStatusRef.current;
+    if (playerStatus.state === "playing") return;
+    const currentTime = audioContext.currentTime;
+    const startingOffset =
+      currentTime - playerStatus.progress / playerStatus.rate;
+    const bufferSource = getBufferSource();
+    bufferSource.start(currentTime, playerStatus.progress);
+    setPlayerStatus({
+      state: "playing",
+      rate: playerStatus.rate,
+      startingOffset,
+      bufferSource,
+    });
+  }, [audioContext, getBufferSource]);
+
+  const pause = useCallback(() => {
+    if (!audioContext) return;
+    const playerStatus = playerStatusRef.current;
+    if (playerStatus.state === "paused") return;
+    const currentTime = audioContext.currentTime;
+    const progress =
+      (currentTime - playerStatus.startingOffset) * playerStatus.rate;
+    setPlayerStatus((ps) => {
+      if (ps.state === "playing" && ps.bufferSource) {
+        ps.bufferSource?.stop();
+        ps.bufferSource?.disconnect();
+      }
+      return { state: "paused", rate: playerStatus.rate, progress };
+    });
+  }, [audioContext]);
+
+  const seek = useCallback(
+    (progress: number) => {
+      if (!audioContext) return;
+      progress = Math.max(0, Math.min(progress, audioBuffer.duration));
+      const currentTime = audioContext.currentTime;
+      const playerStatus = playerStatusRef.current;
+      if (playerStatus.state === "playing") {
+        setPlayerStatus((ps) => {
+          if (ps.state === "playing" && ps.bufferSource) {
+            ps.bufferSource?.stop();
+            ps.bufferSource?.disconnect();
+          }
+          const bufferSource = getBufferSource();
+          bufferSource.start(audioContext.currentTime, progress);
+          return {
+            state: "playing",
+            rate: playerStatus.rate,
+            startingOffset: currentTime - progress / playerStatus.rate,
+            bufferSource,
+          };
+        });
+      } else {
+        setPlayerStatus({ state: "paused", rate: playerStatus.rate, progress });
+      }
+    },
+    [audioBuffer, audioContext, getBufferSource]
+  );
+
+  const setRate = useCallback(
+    (rate: number) => {
+      if (!audioContext) return;
+      const currentTime = audioContext.currentTime;
+      const playerStatus = playerStatusRef.current;
+      if (playerStatus.state === "playing") {
+        playerStatus.bufferSource.playbackRate.value = rate;
+        const progress =
+          (currentTime - playerStatus.startingOffset) * playerStatus.rate;
+        setPlayerStatus((ps) => ({
+          state: "playing",
+          rate,
+          startingOffset: currentTime - progress / rate,
+          bufferSource: ps.state === "playing" && ps.bufferSource,
+        }));
+      } else {
+        setPlayerStatus({
+          state: "paused",
+          rate,
+          progress: playerStatus.progress,
+        });
+      }
+    },
+    [audioContext]
+  );
+
+  const getProgress = useCallback(() => {
+    const playerStatus = playerStatusRef.current;
+    if (playerStatus.state === "paused") return playerStatus.progress;
+    if (!audioContext) return 0;
+    const currentTime = audioContext.currentTime;
+    return (currentTime - playerStatus.startingOffset) * playerStatus.rate;
+  }, [audioContext]);
+
+  return {
+    playerStatus,
+    play,
+    pause,
+    seek,
+    setRate,
+    getProgress,
+    audioContext,
+    audioBuffer,
+  };
 }

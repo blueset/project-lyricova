@@ -7,19 +7,13 @@
  * PaletteWorks Editor (https://github.com/mkpoli/paletteworks-editor)
  * Copyright (c) mkpoli licensed under MIT License
  */
-import { useNamedState } from "../../../../frontendUtils/hooks";
-import type {
-  MouseEvent,
-  ChangeEvent,
-  MouseEventHandler} from "react";
 import {
-  useCallback,
-  useEffect,
-  useRef,
-  useMemo,
-  memo,
-  useState,
-} from "react";
+  WebAudioPlayerState,
+  useNamedState,
+  useWebAudio,
+} from "../../../../frontendUtils/hooks";
+import type { MouseEvent, ChangeEvent, MouseEventHandler } from "react";
+import { useCallback, useEffect, useRef, useMemo, memo, useState } from "react";
 import {
   Box,
   Button,
@@ -49,184 +43,6 @@ import PauseIcon from "@mui/icons-material/Pause";
 import Forward5Icon from "@mui/icons-material/Forward5";
 import Replay5Icon from "@mui/icons-material/Replay5";
 import SpeedIcon from "@mui/icons-material/Speed";
-
-type WebAudioPlayerState = {
-  rate: number;
-} & (
-  | {
-      state: "playing";
-      startingOffset: number;
-      bufferSource: AudioBufferSourceNode;
-    }
-  | { state: "paused"; progress: number }
-);
-
-function useWebAudio(mediaUrl: string) {
-  // Mount-scope variables
-  const [audioContext, audioGain] = useMemo(() => {
-    const audioContext = new AudioContext();
-    const audioGain = audioContext.createGain();
-    audioGain.connect(audioContext.destination);
-    return [audioContext, audioGain];
-  }, []);
-  useEffect(() => {
-    return () => {
-      audioContext?.close();
-    };
-  }, [audioContext]);
-
-  // File-scope variables
-  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
-  useEffect(() => {
-    let active = true;
-    setTimeout(load, 0);
-    return () => {
-      active = false;
-    };
-
-    async function load() {
-      setPlayerStatus((ps) => {
-        if (ps.state === "playing" && ps.bufferSource) {
-          ps.bufferSource?.stop();
-          ps.bufferSource?.disconnect();
-          return { state: "paused", rate: 1, progress: 0 };
-        }
-        return ps;
-      });
-      if (!active) return;
-      const response = await fetch(mediaUrl);
-      const arrayBuffer = await response.arrayBuffer();
-      if (!active) return;
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      if (!active) return;
-      setAudioBuffer(audioBuffer);
-    }
-  }, [mediaUrl, audioContext, setAudioBuffer, audioGain]);
-
-  // Session-scope variables
-  const [playerStatus, setPlayerStatus] = useState<WebAudioPlayerState>({
-    rate: 1,
-    state: "paused",
-    progress: 0,
-  });
-  const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
-  playerStatusRef.current = playerStatus;
-
-  const getBufferSource = useCallback(() => {
-    const bufferSource = audioContext.createBufferSource();
-    const playerStatus = playerStatusRef.current;
-    bufferSource.buffer = audioBuffer;
-    bufferSource.connect(audioGain);
-    bufferSource.playbackRate.value = playerStatus.rate;
-    return bufferSource;
-  }, [audioContext, audioBuffer, audioGain]);
-
-  const play = useCallback(() => {
-    if (!audioContext) return;
-    const playerStatus = playerStatusRef.current;
-    if (playerStatus.state === "playing") return;
-    const currentTime = audioContext.currentTime;
-    const startingOffset =
-      currentTime - playerStatus.progress / playerStatus.rate;
-    const bufferSource = getBufferSource();
-    bufferSource.start(currentTime, playerStatus.progress);
-    setPlayerStatus({
-      state: "playing",
-      rate: playerStatus.rate,
-      startingOffset,
-      bufferSource,
-    });
-  }, [audioContext, getBufferSource]);
-
-  const pause = useCallback(() => {
-    if (!audioContext) return;
-    const playerStatus = playerStatusRef.current;
-    if (playerStatus.state === "paused") return;
-    const currentTime = audioContext.currentTime;
-    const progress =
-      (currentTime - playerStatus.startingOffset) * playerStatus.rate;
-    setPlayerStatus((ps) => {
-      if (ps.state === "playing" && ps.bufferSource) {
-        ps.bufferSource?.stop();
-        ps.bufferSource?.disconnect();
-      }
-      return { state: "paused", rate: playerStatus.rate, progress };
-    });
-  }, [audioContext]);
-
-  const seek = useCallback(
-    (progress: number) => {
-      if (!audioContext) return;
-      progress = Math.max(0, Math.min(progress, audioBuffer.duration));
-      const currentTime = audioContext.currentTime;
-      const playerStatus = playerStatusRef.current;
-      if (playerStatus.state === "playing") {
-        setPlayerStatus((ps) => {
-          if (ps.state === "playing" && ps.bufferSource) {
-            ps.bufferSource?.stop();
-            ps.bufferSource?.disconnect();
-          }
-          const bufferSource = getBufferSource();
-          bufferSource.start(audioContext.currentTime, progress);
-          return {
-            state: "playing",
-            rate: playerStatus.rate,
-            startingOffset: currentTime - progress / playerStatus.rate,
-            bufferSource,
-          };
-        });
-      } else {
-        setPlayerStatus({ state: "paused", rate: playerStatus.rate, progress });
-      }
-    },
-    [audioBuffer, audioContext, getBufferSource]
-  );
-
-  const setRate = useCallback(
-    (rate: number) => {
-      if (!audioContext) return;
-      const currentTime = audioContext.currentTime;
-      const playerStatus = playerStatusRef.current;
-      if (playerStatus.state === "playing") {
-        playerStatus.bufferSource.playbackRate.value = rate;
-        const progress =
-          (currentTime - playerStatus.startingOffset) * playerStatus.rate;
-        setPlayerStatus((ps) => ({
-          state: "playing",
-          rate,
-          startingOffset: currentTime - progress / rate,
-          bufferSource: ps.state === "playing" && ps.bufferSource,
-        }));
-      } else {
-        setPlayerStatus({
-          state: "paused",
-          rate,
-          progress: playerStatus.progress,
-        });
-      }
-    },
-    [audioContext]
-  );
-
-  const getProgress = useCallback(() => {
-    const playerStatus = playerStatusRef.current;
-    if (playerStatus.state === "paused") return playerStatus.progress;
-    if (!audioContext) return 0;
-    const currentTime = audioContext.currentTime;
-    return (currentTime - playerStatus.startingOffset) * playerStatus.rate;
-  }, [audioContext]);
-
-  return {
-    playerStatus,
-    play,
-    pause,
-    seek,
-    setRate,
-    getProgress,
-    audioContext,
-    audioBuffer,
-  };
-}
 
 interface LineListItemProps {
   isCurrent: boolean;
@@ -373,15 +189,8 @@ export default function WebAudioTaggingLyrics({
   const currentLineRef = useRef<CurrentLineState>();
   currentLineRef.current = currentLine;
 
-  const {
-    playerStatus,
-    play,
-    pause,
-    seek,
-    setRate,
-    getProgress,
-    audioBuffer,
-  } = useWebAudio(`/api/files/${fileId}/file`);
+  const { playerStatus, play, pause, seek, setRate, getProgress, audioBuffer } =
+    useWebAudio(`/api/files/${fileId}/file`);
   const playerStatusRef = useRef<WebAudioPlayerState>();
   playerStatusRef.current = playerStatus;
 
@@ -444,7 +253,11 @@ export default function WebAudioTaggingLyrics({
         mapping[tag].push(content);
       } else {
         const contents = [content];
-        lpt.push([tag, contents]);
+        if (!tag && lpt.length && content.match(/^\[.+\]/)) {
+          lpt[lpt.length - 1][1].push(content);
+        } else {
+          lpt.push([tag, contents]);
+        }
         if (tag) {
           mapping[tag] = contents;
         }

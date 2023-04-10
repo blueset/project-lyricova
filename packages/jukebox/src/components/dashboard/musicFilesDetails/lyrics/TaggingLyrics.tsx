@@ -4,23 +4,10 @@
  * LRC Maker (https://github.com/magic-akari/lrc-maker)
  * Copyright (c) 阿卡琳 licensed under MIT License
  */
-import type {
-  PlayerState} from "../../../../frontendUtils/hooks";
-import {
-  useNamedState,
-  usePlayerState,
-} from "../../../../frontendUtils/hooks";
-import type {
-  MouseEvent,
-  ChangeEvent,
-  MouseEventHandler} from "react";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useMemo,
-  memo
-} from "react";
+import type { PlayerState } from "../../../../frontendUtils/hooks";
+import { useNamedState, usePlayerState } from "../../../../frontendUtils/hooks";
+import type { MouseEvent, ChangeEvent, MouseEventHandler } from "react";
+import { useCallback, useEffect, useRef, useMemo, memo } from "react";
 import {
   Box,
   Button,
@@ -238,7 +225,11 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         mapping[tag].push(content);
       } else {
         const contents = [content];
-        lpt.push([tag, contents]);
+        if (!tag && lpt.length && content.match(/^\[.+\]/)) {
+          lpt[lpt.length - 1][1].push(content);
+        } else {
+          lpt.push([tag, contents]);
+        }
         if (tag) {
           mapping[tag] = contents;
         }
