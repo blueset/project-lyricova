@@ -257,7 +257,13 @@ export class PublicApiController {
           ...lines.map((l) =>
             React.createElement(
               "div",
-              { style: { display: "flex", flexDirection: "row" } },
+              {
+                style: {
+                  display: "flex",
+                  flexDirection: "row",
+                  minHeight: "0.5em",
+                },
+              },
               React.createElement(
                 "div",
                 {

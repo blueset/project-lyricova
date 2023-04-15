@@ -5,15 +5,24 @@ function CollapsedSpan({ children }: { children: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     if (ref.current) {
-      const width = ref.current.offsetWidth;
-      const fontSize = parseFloat(
-        window.getComputedStyle(ref.current).fontSize
-      );
-      ref.current.style.marginLeft = -width / fontSize + "em";
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const target = entry.target as HTMLSpanElement;
+          const width = target.offsetWidth;
+          const fontSize = parseFloat(window.getComputedStyle(target).fontSize);
+          target.style.marginLeft = -width / fontSize + "em";
+        }
+      });
+      resizeObserver.observe(ref.current);
+      return () => resizeObserver.disconnect();
     }
   }, [ref, children]);
   if (!children) return null;
-  return <span ref={ref}>{children}</span>;
+  return (
+    <span ref={ref} className={classes.hangingLeft}>
+      {children}
+    </span>
+  );
 }
 
 interface PlainTextHangingPunctProps {
