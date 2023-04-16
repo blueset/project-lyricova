@@ -361,7 +361,7 @@ input MusicFileInput {
 
 type MusicFilesPagination {
   edges: [MusicFilesPaginationEdge!]!
-  pageInfo: [PaginationInfo!]!
+  pageInfo: PaginationInfo!
   totalCount: Int!
 }
 

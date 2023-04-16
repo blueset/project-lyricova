@@ -94,7 +94,8 @@ const LineDiv = styled("div")`
   }
 
   & [data-spanner] {
-    vertical-align: -1px;
+    // vertical-align: -1px;
+    display: inline-block;
     transform-origin: bottom center;
     background-image: linear-gradient(to right, white, white);
     -webkit-background-clip: text;
@@ -134,6 +135,14 @@ const LineDiv = styled("div")`
     }
     `;
   })}
+
+  @media (max-width: 540px) {
+    font-size: 2em;
+
+    & .translation {
+      font-size: 0.6em;
+    }
+  }
 `;
 const CountdownDiv = styled("div")`
   display: block;
@@ -249,9 +258,9 @@ export function RingoSingLyrics({ lyrics }: Props) {
     if (!containerRef.current) return;
     const container = containerRef.current;
     const lines = container.querySelectorAll<HTMLDivElement>(":scope > div");
-    const gap = 35;
+    const gap = window.innerWidth > 560 ? 35 : 15;
     let start = 0,
-      offset = 100;
+      offset = window.innerWidth > 560 ? 100 : 50;
     if (lines[0].dataset.offset === "-1") {
       start += 1;
       lines[0].style.scale = "1";
@@ -285,16 +294,16 @@ export function RingoSingLyrics({ lyrics }: Props) {
             if (!spans[idx]) return;
             tl.fromTo(
               spans[idx],
-              { y: -1 },
+              { y: 1 },
               {
                 y: 0,
                 duration: 0.2,
-                onUpdate() {
-                  const tgt = this.targets()[0];
-                  tgt.style.verticalAlign = tgt._gsap.y;
-                },
+                // onUpdate() {
+                //   const tgt = this.targets()[0];
+                //   tgt.style.verticalAlign = tgt._gsap.y;
+                // },
               },
-              start
+              start + duration / 3
             );
             if (duration <= 1) {
               tl.fromTo(
@@ -313,7 +322,7 @@ export function RingoSingLyrics({ lyrics }: Props) {
               );
             } else {
               const halfTime = duration / 2;
-              tl.set(spans[idx], { display: "inline-block" }, start);
+              // tl.set(spans[idx], { display: "inline-block" }, start);
               tl.fromTo(
                 spans[idx],
                 {
@@ -342,7 +351,7 @@ export function RingoSingLyrics({ lyrics }: Props) {
                 },
                 start + halfTime
               );
-              tl.set(spans[idx], { display: "inline" }, start + duration);
+              // tl.set(spans[idx], { display: "inline" }, start + duration);
             }
           });
         }

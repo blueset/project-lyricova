@@ -69,8 +69,12 @@ const LineDiv = styled("div")`
   transform-origin: top left;
   opacity: 0.2;
   color: white;
-  transition: top 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), font-size 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), translate 0.35s cubic-bezier(0.16, 1, 0.3, 1), scale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: top 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    font-size 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    translate 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    scale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
   &.hasCover {
     mix-blend-mode: overlay;
@@ -109,6 +113,14 @@ const LineDiv = styled("div")`
     }
     `;
   })}
+
+  @media (max-width: 540px) {
+    font-size: 2em;
+
+    & .translation {
+      font-size: 0.6em;
+    }
+  }
 `;
 
 interface LyricsLineElementProps {
@@ -151,24 +163,25 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
 
   const lineNumber = line || 0;
 
-  const useTop = navigator.userAgent.includes("Chrome") && currentSong?.hasCover;
+  const useTop =
+    navigator.userAgent.includes("Chrome") && currentSong?.hasCover;
 
   useLayoutEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
     const lines = container.querySelectorAll<HTMLDivElement>(":scope > div");
-    const gap = 35;
+    const gap = window.innerWidth > 560 ? 35 : 15;
     let start = 0,
-      offset = 100;
+      offset = window.innerWidth > 560 ? 100 : 50;
     if (lines[0].dataset.offset === "-1") {
       start += 1;
       lines[0].style.scale = "1";
       if (useTop) {
         lines[0].style.top = `${offset - gap - lines[0].clientHeight}px`;
       } else {
-        lines[0].style.translate = `0 ${offset -
-          gap -
-          lines[0].clientHeight}px`;
+        lines[0].style.translate = `0 ${
+          offset - gap - lines[0].clientHeight
+        }px`;
       }
     }
     for (let i = start; i < lines.length; i++) {
@@ -193,7 +206,10 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
           return null;
         return (
           <LyricsLineElement
-            className={clsx(useTop && "coverMask", currentSong?.hasCover && "hasCover")}
+            className={clsx(
+              useTop && "coverMask",
+              currentSong?.hasCover && "hasCover"
+            )}
             line={l}
             key={idx}
             offsetIndex={line !== null ? idx - line : idx + 1}

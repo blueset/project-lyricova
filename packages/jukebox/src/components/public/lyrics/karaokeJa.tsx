@@ -5,15 +5,14 @@ import type {
 import { useAppContext } from "../AppContext";
 import type {
   PlayerLyricsKeyframe,
-  PlayerLyricsState} from "../../../frontendUtils/hooks";
-import {
-  usePlayerLyricsState,
+  PlayerLyricsState,
 } from "../../../frontendUtils/hooks";
+import { usePlayerLyricsState } from "../../../frontendUtils/hooks";
 import { Box, styled } from "@mui/material";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
 import clsx from "clsx";
-import type { MutableRefObject, RefObject} from "react";
+import type { MutableRefObject, RefObject } from "react";
 import { useEffect, useMemo, useRef } from "react";
 import type { MeasuredComponentProps } from "react-measure";
 import Measure from "react-measure";
@@ -293,7 +292,6 @@ function LyricsLine({
       sx={{
         position: "relative",
         fontWeight: 800,
-        fontSize: "3.5rem",
         fontFamily:
           '"Source Han Serif", "Noto Serif CJK", "Noto Serif JP", serif',
         whiteSpace: "nowrap",
@@ -353,7 +351,7 @@ function LyricsLineHTML({ textLine, furiganaLine }: LyricsLineProps): string {
         })
         .join("")
     : `<span>${textLine}</span>`;
-  return `<span style="position:relative;font-weight: 800;font-size:3.5rem;font-family: Source Han Serif,Noto Serif CJK,Noto Serif JP,serif;white-space:pre;">${content}</span>`;
+  return `<span style="position:relative;font-weight: 800;font-family: Source Han Serif,Noto Serif CJK,Noto Serif JP,serif;white-space:pre;">${content}</span>`;
 }
 
 const LINE_OVERLAP_FACTOR = 0.1;
@@ -598,10 +596,10 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
 
   // Page should only be rebuild if the 2 parameters change
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const pages = useMemo(() => buildPages(lyrics, playerRef.current.duration), [
-    lyrics,
-    playerRef.current.duration,
-  ]);
+  const pages = useMemo(
+    () => buildPages(lyrics, playerRef.current.duration),
+    [lyrics, playerRef.current.duration]
+  );
   const activeRef = useRef<HTMLSpanElement>();
 
   const { currentFrame, playerState } = useNicokaraLyricsState(
@@ -781,6 +779,11 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             display: "flex",
             flexDirection: "column",
             justifyContent: "flex-end",
+            fontSize: {
+              lg: "3.5rem",
+              sm: "2.5rem",
+              xs: "2rem",
+            },
             "& .row": {
               height: "9rem",
               display: "flex",
@@ -819,9 +822,9 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             },
             "@supports (-moz-appearance: none)": {
               "& rt": {
-                marginBottom: "-0.7em",
+                marginBottom: "-0.5em",
               },
-            }
+            },
           }}
           lang="ja"
           ref={measureRef}

@@ -1,11 +1,12 @@
-import type {
-  Theme} from "@mui/material";
+import type { Theme } from "@mui/material";
 import {
   CardContent,
   Typography,
   IconButton,
   ButtonBase,
-  useMediaQuery, Box, Stack,
+  useMediaQuery,
+  Box,
+  Stack,
 } from "@mui/material";
 import type { CSSProperties } from "react";
 import React from "react";
@@ -21,51 +22,55 @@ import { useAppContext } from "./AppContext";
 import { TimeSlider } from "./TimeSlider";
 import { PlayButton } from "./PlayButton";
 import { useAppDispatch, useAppSelector } from "../../redux/public/store";
-import { currentSongSelector, playNext, playPrevious, setCollapsed, setLoopMode, toggleShuffle } from "../../redux/public/playlist";
+import {
+  currentSongSelector,
+  playNext,
+  playPrevious,
+  setCollapsed,
+  setLoopMode,
+  toggleShuffle,
+} from "../../redux/public/playlist";
 
 const LOOP_MODE_SWITCH = {
-  "all": "single",
-  "single": "none",
-  "none": "all",
+  all: "single",
+  single: "none",
+  none: "all",
 } as const;
 
-function generateBackgroundStyle(
-  track: Track,
-): CSSProperties {
+function generateBackgroundStyle(track: Track): CSSProperties {
   if (track?.hasCover) {
     return {
       backgroundImage: `url(/api/files/${track.id}/cover)`,
     };
   } else {
-    console.log("Disk photo by Giorgio Trovato on Unsplash (https://unsplash.com/photos/_H4uyF7ZlV0).");
+    console.log(
+      "Disk photo by Giorgio Trovato on Unsplash (https://unsplash.com/photos/_H4uyF7ZlV0)."
+    );
     return {
       backgroundImage: "url(/images/disk-256.jpg)",
     };
   }
 }
 
-
 export default function Player() {
   const dispatch = useAppDispatch();
-  const {
-    nowPlaying,
-    loopMode,
-    shuffleMapping,
-    isCollapsed,
-    tracks,
-  } = useAppSelector((s) => s.playlist);
+  const { nowPlaying, loopMode, shuffleMapping, isCollapsed, tracks } =
+    useAppSelector((s) => s.playlist);
   const currentSong = useAppSelector(currentSongSelector);
   const { playerRef } = useAppContext();
 
-  const isFlatPlayer = useMediaQuery<Theme>((theme) => theme.breakpoints.up("md")) && isCollapsed;
+  const isFlatPlayer =
+    useMediaQuery<Theme>((theme) => theme.breakpoints.up("sm")) && isCollapsed;
 
   const nextTrack = () => dispatch(playNext(!playerRef?.current.paused));
-  const previousTrack = () => dispatch(playPrevious(!playerRef?.current.paused));
+  const previousTrack = () =>
+    dispatch(playPrevious(!playerRef?.current.paused));
   const toggleShuffleHandler = () => dispatch(toggleShuffle());
-  const switchLoopMode = () => dispatch(setLoopMode(LOOP_MODE_SWITCH[loopMode]));
+  const switchLoopMode = () =>
+    dispatch(setLoopMode(LOOP_MODE_SWITCH[loopMode]));
 
   const loopModeButton = {
-    "all": (
+    all: (
       <IconButton
         id="player-loop-mode"
         color="default"
@@ -75,7 +80,7 @@ export default function Player() {
         <RepeatIcon />
       </IconButton>
     ),
-    "single": (
+    single: (
       <IconButton
         id="player-loop-mode"
         color="default"
@@ -85,7 +90,7 @@ export default function Player() {
         <RepeatOneIcon />
       </IconButton>
     ),
-    "none": (
+    none: (
       <IconButton
         id="player-loop-mode"
         color="default"
@@ -99,10 +104,12 @@ export default function Player() {
   };
 
   return (
-    <CardContent sx={{
-      padding: 2,
-      ...(isCollapsed && {height: {xs: "12.5rem", md: "auto"},})
-    }}>
+    <CardContent
+      sx={{
+        padding: 2,
+        ...(isCollapsed && { height: { xs: "12.5rem", sm: "auto" } }),
+      }}
+    >
       <ButtonBase
         sx={{
           width: "4rem",
@@ -133,47 +140,74 @@ export default function Player() {
         }}
         aria-label={isCollapsed ? "Expand player" : "Collapse player"}
         style={generateBackgroundStyle(currentSong)}
-        onClick={() => dispatch(setCollapsed(!isCollapsed))}>
+        onClick={() => dispatch(setCollapsed(!isCollapsed))}
+      >
         <div className="backdrop">
           {isCollapsed ? <UnfoldMoreIcon /> : <UnfoldLessIcon />}
         </div>
       </ButtonBase>
-      <Box sx={isFlatPlayer ? {marginTop: "-0.3rem", marginBottom: "-0.3rem",} : undefined}>
-        <Typography variant={isFlatPlayer ? "subtitle1" : "h6"} component={isFlatPlayer ? "span" : null} noWrap={true}>
+      <Box
+        sx={
+          isFlatPlayer
+            ? { marginTop: "-0.3rem", marginBottom: "-0.3rem" }
+            : undefined
+        }
+      >
+        <Typography
+          variant={isFlatPlayer ? "subtitle1" : "h6"}
+          component={isFlatPlayer ? "span" : null}
+          noWrap={true}
+        >
           {currentSong?.trackName || "No title"}
         </Typography>
         {isFlatPlayer && " / "}
-        <Typography variant="subtitle1" component={isFlatPlayer ? "span" : null}
-                    sx={{opacity: isFlatPlayer ? 0.75 : 1,}} noWrap={true}>
+        <Typography
+          variant="subtitle1"
+          component={isFlatPlayer ? "span" : null}
+          sx={{ opacity: isFlatPlayer ? 0.75 : 1 }}
+          noWrap={true}
+        >
           {currentSong?.artistName || "Unknown artists"}
         </Typography>
       </Box>
       <Stack
-        direction="row" alignItems="center" justifyContent="space-around"
-        sx={isCollapsed ? {
-          flexWrap: {xs: "wrap", md: "inherit"},
-          width: {xs: "100%", md: "auto"},
-          marginBottom: {md: "-1rem"},
-          marginTop: {md: "0.5rem"},
-          "& #player-previous": {
-            order: {md: -3},
-            marginLeft: {md: "-0.5rem"},
-          },
-          "& #player-play-pause": {
-            order: {md: -2},
-          },
-          "& #player-next": {
-            order: {md: -2},
-          },
-          "& #player-time-slider": {
-            margin: {md: "0 1rem"},
-          },
-        } : {
-          flexWrap: "wrap",
-          width: "100%",
-        }}>
-        <TimeSlider playerRef={playerRef} disabled={nowPlaying === null} isCollapsed={isCollapsed} />
-        <IconButton id="player-shuffle"
+        direction="row"
+        alignItems="center"
+        justifyContent="space-around"
+        sx={
+          isCollapsed
+            ? {
+                flexWrap: { xs: "wrap", sm: "inherit" },
+                width: { xs: "100%", sm: "auto" },
+                marginBottom: { sm: "-1rem" },
+                marginTop: { sm: "0.5rem" },
+                "& #player-previous": {
+                  order: { sm: -3 },
+                  marginLeft: { sm: "-0.5rem" },
+                },
+                "& #player-play-pause": {
+                  order: { sm: -2 },
+                },
+                "& #player-next": {
+                  order: { sm: -2 },
+                },
+                "& #player-time-slider": {
+                  margin: { sm: "0 1rem" },
+                },
+              }
+            : {
+                flexWrap: "wrap",
+                width: "100%",
+              }
+        }
+      >
+        <TimeSlider
+          playerRef={playerRef}
+          disabled={nowPlaying === null}
+          isCollapsed={isCollapsed}
+        />
+        <IconButton
+          id="player-shuffle"
           color="default"
           aria-label="Shuffle"
           style={{ opacity: shuffleMapping ? 1 : 0.5 }}
@@ -182,7 +216,8 @@ export default function Player() {
         >
           <ShuffleIcon />
         </IconButton>
-        <IconButton id="player-previous"
+        <IconButton
+          id="player-previous"
           color="default"
           aria-label="Previous track"
           onClick={previousTrack}
@@ -190,7 +225,12 @@ export default function Player() {
           <SkipPreviousIcon />
         </IconButton>
         <PlayButton playerRef={playerRef} />
-        <IconButton id="player-next" color="default" aria-label="Next track" onClick={nextTrack}>
+        <IconButton
+          id="player-next"
+          color="default"
+          aria-label="Next track"
+          onClick={nextTrack}
+        >
           <SkipNextIcon />
         </IconButton>
         {loopModeButton[loopMode]}

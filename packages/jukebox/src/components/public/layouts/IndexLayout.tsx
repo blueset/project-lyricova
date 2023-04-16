@@ -1,14 +1,8 @@
 import { Paper, styled } from "@mui/material";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
-import type {
-  ReactNode,
-  CSSProperties} from "react";
-import React, {
-  useEffect,
-  useRef,
-  useCallback
-} from "react";
+import type { ReactNode, CSSProperties } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import type { Track } from "../AppContext";
 import { AppContext } from "../AppContext";
@@ -146,15 +140,15 @@ export default function IndexLayout({ children }: Props) {
   // Set media session controllers
   useEffect(() => {
     if (navigator.mediaSession !== undefined) {
-      navigator.mediaSession.setActionHandler("play", function() {
+      navigator.mediaSession.setActionHandler("play", function () {
         console.log("Media session action: play");
         playerRef.current?.play();
       });
-      navigator.mediaSession.setActionHandler("pause", function() {
+      navigator.mediaSession.setActionHandler("pause", function () {
         console.log("Media session action: pause");
         playerRef.current?.pause();
       });
-      navigator.mediaSession.setActionHandler("seekbackward", function() {
+      navigator.mediaSession.setActionHandler("seekbackward", function () {
         console.log("Media session action: seekbackward");
         if (playerRef.current?.src) {
           const newValue = Math.max(playerRef.current.currentTime - 5, 0);
@@ -165,7 +159,7 @@ export default function IndexLayout({ children }: Props) {
           }
         }
       });
-      navigator.mediaSession.setActionHandler("seekforward", function() {
+      navigator.mediaSession.setActionHandler("seekforward", function () {
         console.log("Media session action: seekforward");
         if (playerRef.current?.src) {
           const newValue = Math.min(
@@ -179,22 +173,22 @@ export default function IndexLayout({ children }: Props) {
           }
         }
       });
-      navigator.mediaSession.setActionHandler("previoustrack", function() {
+      navigator.mediaSession.setActionHandler("previoustrack", function () {
         console.log("Media session action: previoustrack");
         dispatch(playPrevious(!playerRef?.current.paused));
       });
-      navigator.mediaSession.setActionHandler("nexttrack", function() {
+      navigator.mediaSession.setActionHandler("nexttrack", function () {
         console.log("Media session action: nexttrack");
         dispatch(playNext(!playerRef?.current.paused));
       });
       try {
-        navigator.mediaSession.setActionHandler("stop", function() {
+        navigator.mediaSession.setActionHandler("stop", function () {
           dispatch(stop());
         });
       } catch (error) {}
 
       try {
-        navigator.mediaSession.setActionHandler("seekto", function(event) {
+        navigator.mediaSession.setActionHandler("seekto", function (event) {
           if (event.fastSeek === true) return;
           if (playerRef.current.fastSeek) {
             playerRef.current.fastSeek(event.seekTime);
@@ -359,7 +353,7 @@ export default function IndexLayout({ children }: Props) {
                 layout
                 sx={{
                   flexGrow: 1,
-                  maxHeight: { xs: "calc(100% - 12.5rem)", md: "unset" },
+                  maxHeight: { xs: "calc(100% - 12.5rem)", sm: "unset" },
                   ...(isCollapsed
                     ? {
                         height: { md: 0, xs: "100%" },

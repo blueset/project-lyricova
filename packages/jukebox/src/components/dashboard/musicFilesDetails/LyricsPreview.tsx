@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { Lyrics, LyricsLine } from "lyrics-kit/core";
-import type {
-  PlayerLyricsKeyframe} from "../../../frontendUtils/hooks";
-import {
-  usePlayerLyricsState,
-} from "../../../frontendUtils/hooks";
+import type { PlayerLyricsKeyframe } from "../../../frontendUtils/hooks";
+import { usePlayerLyricsState } from "../../../frontendUtils/hooks";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
 import { measureTextWidths } from "../../../frontendUtils/measure";
@@ -30,12 +27,8 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
       })),
     [lyrics]
   );
-  const {
-    playerState,
-    currentFrame,
-    currentFrameId,
-    endTime,
-  } = usePlayerLyricsState(keyFrames, playerRef);
+  const { playerState, currentFrame, currentFrameId, endTime } =
+    usePlayerLyricsState(keyFrames, playerRef);
 
   const timelineRef = useRef<Timeline>();
   useEffect(() => {

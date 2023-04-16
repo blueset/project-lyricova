@@ -1,11 +1,15 @@
 /**
  * Measure the dimension of an element given its HTML code.
- * 
+ *
  * Note: requires a `div` with ID `measure-layer` present in the current DOM
  * for it to apply proper styles.
  */
-export function measureElement(element: string): { height: number, width: number } {
-  const measureLayer = document.getElementById("measure-layer") || document.body;
+export function measureElement(element: string): {
+  height: number;
+  width: number;
+} {
+  const measureLayer =
+    document.getElementById("measure-layer") || document.body;
   const container = document.createElement("div");
   container.style.display = "inline-block";
   container.style.position = "absolute";
@@ -34,11 +38,11 @@ function* recursivelyFindTextNode(el: Node): Generator<Node> {
   } else if (el.nodeType === Node.ELEMENT_NODE) {
     if (el.nodeName === "RUBY") {
       if (el.childNodes.length > 0) {
-        yield * recursivelyFindTextNode(el.childNodes[0]);
+        yield* recursivelyFindTextNode(el.childNodes[0]);
       }
     } else {
       for (let i = 0; i < el.childNodes.length; i++) {
-        yield * recursivelyFindTextNode(el.childNodes[i]);
+        yield* recursivelyFindTextNode(el.childNodes[i]);
       }
     }
   }
@@ -51,7 +55,7 @@ function* recursivelyFindTextNode(el: Node): Generator<Node> {
  * - `<span>text</span>`
  * - `<ruby>text<rt>...</rt></ruby>`
  *
- * Length is measured in a single line with `pre` wrap settings.
+ * Length is measured in a single line with `nowrap` wrap settings.
  *
  * @returns list of length in pixels for for the sum of length up to n-th character in the element.
  */

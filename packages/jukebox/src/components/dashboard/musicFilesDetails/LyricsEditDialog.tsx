@@ -242,7 +242,7 @@ export default function LyricsEditDialog({
           <TabPanel value="furigana">
             <EditFurigana lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
           </TabPanel>
-          <TabPanel value="inline">
+          <TabPanel value="inline" sx={{ height: "100%" }}>
             <InlineTagging lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
           </TabPanel>
         </DialogContent>
