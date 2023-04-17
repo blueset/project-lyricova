@@ -138,12 +138,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         });
         return [...tagValues];
       });
-      setLines(
-        parsedLyrics.lines.map((l) => {
-          const ll = l as LyricsLine;
-          return ll;
-        })
-      );
+      setLines([...parsedLyrics.lines]);
       setDots(
         parsedLyrics.lines.map<number[]>((l, idx) => {
           const dots = l.attachments.getTag("dots");
@@ -177,8 +172,11 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
 
       return () => {
         const lines = linesRef.current.map((l, idx) => {
+          const prevTags = tagsRef.current?.[idx - 1]?.flat();
+          const prevEndTime = prevTags ? Math.max(...prevTags) : null;
+          const fallbackStartTime = Math.max(l.position, prevEndTime ?? 0);
           const startTime =
-            tagsRef.current[idx]?.find((t) => t?.[0])?.[0] ?? l.position;
+            tagsRef.current[idx]?.find((t) => t?.[0])?.[0] ?? fallbackStartTime;
           l.position = startTime;
           l.attachments.setTag("dots", dotsRef.current[idx].join(","));
           l.attachments.setTag(

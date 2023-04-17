@@ -100,6 +100,7 @@ const LineDiv = styled("div")`
     background-image: linear-gradient(to right, white, white);
     -webkit-background-clip: text;
     color: transparent;
+    white-space: pre;
   }
 
   &:not([data-offset="0"]) [data-spanner] {

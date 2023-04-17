@@ -129,7 +129,8 @@ function buildPages(lyrics: LyricsKitLyrics, duration: number): KaraokePage[] {
       pages.push({
         countdown,
         lines,
-        start: countdown ? start - COUNTDOWN_DURATION : start,
+        // start: countdown ? start - COUNTDOWN_DURATION : start,
+        start,
         end,
       });
       i = lines[lines.length - 1] + 1;
@@ -197,8 +198,16 @@ function useNicokaraLyricsState(
           : v.end + COUNTDOWN_DURATION + 1) - v.end; // fallback to 11
 
       if (v.countdown) {
+        if (
+          (frames?.[frames.length - 1]?.start ?? 0) <
+          v.start - COUNTDOWN_DURATION * 2
+        )
+          frames.push({
+            start: v.start - COUNTDOWN_DURATION * 2,
+            data: { pageIdx: idx, lineIdx: null, showNext: false },
+          });
         frames.push({
-          start: v.start - COUNTDOWN_DURATION * 2,
+          start: v.start - COUNTDOWN_DURATION,
           data: { pageIdx: idx, lineIdx: -1, showNext: false },
         });
       }
@@ -622,7 +631,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     }
 
     // Countdown pages starts COUNTDOWN_DURATION seconds earlier than first line.
-    if (lineIdx < 0) return [null, page.start, page.start + COUNTDOWN_DURATION];
+    if (lineIdx < 0) return [null, currentFrame.start, page.start];
     const line = lyrics.lines[page.lines[lineIdx]];
     if (!line) return [null, null, null];
     const start = line.position;
@@ -716,7 +725,8 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
                 clipPath: "inset(-30% -2% -10% -2%)",
                 ease: "none",
                 duration,
-              }
+              },
+              0
             );
           } else {
             // Countdown
@@ -729,7 +739,8 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
                 clipPath: "inset(-30% -2% -10% -2%)",
                 ease: "none",
                 duration,
-              }
+              },
+              0
             );
           }
         }
@@ -744,12 +755,10 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
       const start = currentLineStartRef.current || 0;
       if (playerState.state === "playing") {
         const inlineProgress = (now - playerState.startingAt) / 1000 - start;
-        timeline.seek(inlineProgress);
-        timeline.play();
+        timeline.play(inlineProgress);
       } else {
         const inlineProgress = playerState.progress - start;
-        timeline.pause();
-        timeline.seek(inlineProgress);
+        timeline.pause(inlineProgress);
       }
     }
   }, [
@@ -792,10 +801,11 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
               alignItems: "flex-end",
             },
             "& .countdown": {
-              position: "absolute",
-              top: "-1em",
+              position: "relative",
+              width: "0",
               fontSize: "1.5rem",
               letterSpacing: "0.1em",
+              transform: "translateY(-4.5em)",
             },
             "& .countdown > span.after": {
               color: "primary.dark",
