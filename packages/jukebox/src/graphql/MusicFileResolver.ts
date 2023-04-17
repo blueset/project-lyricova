@@ -452,7 +452,9 @@ export class MusicFileResolver {
         );
       }
 
-      return new LyricsKitLyrics(new Lyrics(content));
+      const lrcs = new LyricsKitLyrics(new Lyrics(content));
+      lrcs.lines = lrcs.lines.filter((l) => isFinite(l.position));
+      return lrcs;
     } catch (e) {
       console.error("Error while reading lyrics file:", e);
       return null;
@@ -633,5 +635,4 @@ export class MusicFileResolver {
     await file.update({ playCount });
     return playCount;
   }
-
 }
