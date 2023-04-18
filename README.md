@@ -63,11 +63,12 @@ in VocaDB.net.</small>
 
 ## Etymology
 
-The name _Lyricova_ is a made up word from “lyrics” and “nova” (taking the
-meaning of _new_), which signifies a new way to write blogs. This project was
-previously known as _Project Gy_ which is taken from its name in Chinese, Gē-yǔ
-(歌語). 歌 means _songs_, and 語 means _to express_, putting together, Gē-yǔ is
-making a sense of expressing oneself through songs and lyrics.
+The name _Lyricova_ is a made up word from “lyrics” and “voca” (taken from
+_Vocaloid_) or “nova” (taking the meaning of _new_), which signifies a new way
+of working with Vocaloid lyrics. This project was previously known as _Project
+Gy_ which is taken from its name in Chinese, Gē-yǔ (歌語). 歌 means _songs_, and
+語 means _to express_, putting together, Gē-yǔ is making a sense of expressing
+oneself through songs and lyrics.
 
 ## See also
 
