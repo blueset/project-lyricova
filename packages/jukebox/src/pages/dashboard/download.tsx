@@ -9,7 +9,7 @@ import {
 import { useNamedState } from "../../frontendUtils/hooks";
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
 import { makeStyles } from "@mui/material/styles";
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { useCallback } from "react";
 import YouTubeDlDownloadSteps from "../../components/dashboard/YouTubeDlDownloadSteps";
 import MusicDlDownloadSteps from "../../components/dashboard/MusicDlDownloadSteps";
@@ -46,7 +46,8 @@ export default function DownloadMusicFile() {
       </StepLabel>
       <StepContent>
         <Typography gutterBottom>
-          You can choose from one of the 3 sources for downloads.
+          You can choose from one of the <del>3 sources</del> 1 source for
+          downloads.
         </Typography>
         <ButtonRow>
           <Button variant="outlined" onClick={chooseSource("yt-dlp")}>
