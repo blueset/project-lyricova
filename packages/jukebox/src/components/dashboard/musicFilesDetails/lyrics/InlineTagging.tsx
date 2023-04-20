@@ -12,32 +12,15 @@ import {
   useMemo,
   useRef,
   useState,
+  memo,
 } from "react";
 import {
   WebAudioPlayerState,
   useNamedState,
   useWebAudio,
 } from "../../../../frontendUtils/hooks";
-import {
-  Box,
-  Button,
-  Fab,
-  IconButton,
-  Slider,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography,
-  styled,
-} from "@mui/material";
+import { Box, Button, Stack, styled } from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
-import Forward5Icon from "@mui/icons-material/Forward5";
-import Replay5Icon from "@mui/icons-material/Replay5";
-import SpeedIcon from "@mui/icons-material/Speed";
-import { formatTime } from "../../../../frontendUtils/strings";
 import { InlineTaggingLineMemo } from "./InlineTaggingLine";
 import { useSnackbar } from "notistack";
 import {
@@ -62,6 +45,21 @@ import {
   setDropMark,
 } from "./InlineTaggingKeyPresses";
 import { populateDots } from "./InlineTaggingDots";
+import { WebAudioControls } from "./WebAudioControls";
+
+function Instructions() {
+  return (
+    <DismissibleAlert
+      severity="warning"
+      collapseProps={{ sx: { flexGrow: 1 } }}
+    >
+      Switch to another tab to save changes. Arrow keys: Navigate; Space: Tag;
+      Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter: play/pause,
+      ←/→: +/-5 seconds).
+    </DismissibleAlert>
+  );
+}
+const InstructionsMemo = memo(Instructions);
 
 interface CurrentLineState {
   index: number;
@@ -173,7 +171,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
       return () => {
         const lines = linesRef.current.map((l, idx) => {
           const prevTags = tagsRef.current?.[idx - 1]?.flat();
-          const prevEndTime = prevTags ? Math.max(...prevTags) : null;
+          const prevEndTime = prevTags ? Math.max(...prevTags) / 1000 : null;
           const fallbackStartTime = Math.max(
             isNaN(l.position) ? 0 : l.position,
             prevEndTime ?? 0
@@ -529,101 +527,19 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           >
             Populate&nbsp;marks
           </Button>
-          <DismissibleAlert
-            severity="warning"
-            collapseProps={{ sx: { flexGrow: 1 } }}
-          >
-            Switch to another tab to save changes. Arrow keys: Navigate; Space:
-            Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter:
-            play/pause, ←/→: +/-5 seconds).
-          </DismissibleAlert>
+          <InstructionsMemo />
         </ControlRow>
         <ControlRow p={1} spacing={2} direction="row" alignItems="center">
-          <Stack direction="row">
-            <Tooltip title="Rewind 5 seconds">
-              <IconButton
-                disabled={audioBuffer === null}
-                onClick={() => seek(Math.max(0, getProgress() - 5))}
-              >
-                <Replay5Icon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={playerStatus.state === "paused" ? "Play" : "Pause"}>
-              <Fab
-                color="primary"
-                disabled={audioBuffer === null}
-                size="small"
-                onClick={() => {
-                  playerStatus.state === "playing" ? pause() : play();
-                }}
-              >
-                {playerStatus.state === "paused" ? (
-                  <PlayArrowIcon />
-                ) : (
-                  <PauseIcon />
-                )}
-              </Fab>
-            </Tooltip>
-            <Tooltip title="Forward 5 seconds">
-              <IconButton
-                disabled={audioBuffer === null}
-                onClick={() =>
-                  seek(Math.min(audioBuffer.duration, getProgress() + 5))
-                }
-              >
-                <Forward5Icon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Speed down 0.05x">
-              <IconButton
-                disabled={audioBuffer === null}
-                onClick={() => setRate(Math.min(2, playerStatus.rate - 0.05))}
-              >
-                <SpeedIcon sx={{ transform: "scaleX(-1)" }} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Speed up 0.05x">
-              <IconButton
-                disabled={audioBuffer === null}
-                onClick={() => setRate(Math.max(0.5, playerStatus.rate + 0.05))}
-              >
-                <SpeedIcon />
-              </IconButton>
-            </Tooltip>
-          </Stack>
-          <Slider
-            sx={{
-              "& .MuiSlider-track, & .MuiSlider-thumb": {
-                transitionDuration: "0s",
-              },
-            }}
-            aria-label="Playback progress"
-            value={!isDragging ? playbackProgress * 1 : seekBarTime}
-            getAriaValueText={formatTime}
-            min={0}
-            max={audioBuffer?.duration ?? 0}
-            disabled={audioBuffer === null}
-            onChange={(evt, newValue, activeThumb) => {
-              setIsDragging(true);
-              setSeekBarTime(newValue as number);
-            }}
-            onChangeCommitted={(evt, newValue) => {
-              seek(newValue as number);
-              setIsDragging(false);
-            }}
+          <WebAudioControls
+            audioBuffer={audioBuffer}
+            seek={seek}
+            play={play}
+            pause={pause}
+            setRate={setRate}
+            getProgress={getProgress}
+            playerStatus={playerStatus}
+            playbackProgress={playbackProgress}
           />
-          <Typography
-            variant="body1"
-            sx={{
-              marginTop: 2,
-              marginBottom: 2,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {formatTime(playbackProgress)}/
-            {formatTime(audioBuffer?.duration ?? NaN)}@
-            {playerStatus.rate.toFixed(2)}x
-          </Typography>
         </ControlRow>
       </Box>
       <Box sx={{ flexGrow: 1, height: 0, overflow: "auto", mx: -1, px: 1 }}>

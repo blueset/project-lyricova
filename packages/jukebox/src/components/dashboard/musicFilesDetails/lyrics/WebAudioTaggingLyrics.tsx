@@ -13,23 +13,19 @@ import {
   useWebAudio,
 } from "../../../../frontendUtils/hooks";
 import type { MouseEvent, ChangeEvent, MouseEventHandler } from "react";
-import { useCallback, useEffect, useRef, useMemo, memo, useState } from "react";
+import { useCallback, useEffect, useRef, useMemo, memo } from "react";
 import {
   Box,
   Button,
-  Fab,
   FormControlLabel,
-  IconButton,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
-  Slider,
   Stack,
   styled,
   Switch,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -37,12 +33,46 @@ import _ from "lodash";
 import { buildTimeTag, resolveTimeTag } from "lyrics-kit/core";
 import { linearRegression } from "simple-statistics";
 import DismissibleAlert from "../../DismissibleAlert";
-import { formatTime } from "../../../../frontendUtils/strings";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
-import Forward5Icon from "@mui/icons-material/Forward5";
-import Replay5Icon from "@mui/icons-material/Replay5";
-import SpeedIcon from "@mui/icons-material/Speed";
+import { WebAudioControls } from "./WebAudioControls";
+
+function Instructions() {
+  return (
+    <ControlRow p={1} spacing={2} direction="row" alignItems="center">
+      <DismissibleAlert
+        severity="warning"
+        collapseProps={{ sx: { flexGrow: 1 } }}
+      >
+        Switch to another tab to save changes. ↑WJ/↓RK: Navigate; Home/End:
+        First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5 seconds; Space: Tag;
+        Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter:
+        play/pause).
+      </DismissibleAlert>
+    </ControlRow>
+  );
+}
+const InstructionsMemo = memo(Instructions);
+
+function ExtrapolateModeToggle({
+  isInExtrapolateMode,
+  handleExtrapolateModeToggle,
+}: {
+  isInExtrapolateMode: boolean;
+  handleExtrapolateModeToggle: (event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <FormControlLabel
+      control={
+        <Switch
+          checked={isInExtrapolateMode}
+          onChange={handleExtrapolateModeToggle}
+          color="secondary"
+        />
+      }
+      label="Extrapolate mode"
+    />
+  );
+}
+const ExtrapolateModeToggleMemo = memo(ExtrapolateModeToggle);
 
 interface LineListItemProps {
   isCurrent: boolean;
@@ -173,8 +203,6 @@ export default function WebAudioTaggingLyrics({
     0,
     "playbackProgress"
   );
-  const [seekBarTime, setSeekBarTime] = useNamedState(0, "seekBarTime");
-  const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
 
   const listRef = useRef<HTMLUListElement>();
 
@@ -558,113 +586,21 @@ export default function WebAudioTaggingLyrics({
           paddingBottom: 1,
         }}
       >
+        <InstructionsMemo />
         <ControlRow p={1} spacing={2} direction="row" alignItems="center">
-          <DismissibleAlert
-            severity="warning"
-            collapseProps={{ sx: { flexGrow: 1 } }}
-          >
-            Switch to another tab to save changes. ↑WJ/↓RK: Navigate; Home/End:
-            First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5 seconds; Space:
-            Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter:
-            play/pause).
-          </DismissibleAlert>
-        </ControlRow>
-        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
-          <Stack direction="row">
-            <Tooltip title="Rewind 5 seconds">
-              <IconButton
-                disabled={audioBuffer === null}
-                onClick={() => seek(Math.max(0, getProgress() - 5))}
-              >
-                <Replay5Icon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={playerStatus.state === "paused" ? "Play" : "Pause"}>
-              <Fab
-                color="primary"
-                disabled={audioBuffer === null}
-                size="small"
-                onClick={() => {
-                  playerStatus.state === "playing" ? pause() : play();
-                }}
-              >
-                {playerStatus.state === "paused" ? (
-                  <PlayArrowIcon />
-                ) : (
-                  <PauseIcon />
-                )}
-              </Fab>
-            </Tooltip>
-            <Tooltip title="Forward 5 seconds">
-              <IconButton
-                disabled={audioBuffer === null}
-                onClick={() =>
-                  seek(Math.min(audioBuffer.duration, getProgress() + 5))
-                }
-              >
-                <Forward5Icon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Speed down 0.05x">
-              <IconButton
-                disabled={audioBuffer === null}
-                onClick={() => setRate(Math.min(2, playerStatus.rate - 0.05))}
-              >
-                <SpeedIcon sx={{ transform: "scaleX(-1)" }} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Speed up 0.05x">
-              <IconButton
-                disabled={audioBuffer === null}
-                onClick={() => setRate(Math.max(0.5, playerStatus.rate + 0.05))}
-              >
-                <SpeedIcon />
-              </IconButton>
-            </Tooltip>
-          </Stack>
-          <Slider
-            sx={{
-              "& .MuiSlider-track, & .MuiSlider-thumb": {
-                transitionDuration: "0s",
-              },
-            }}
-            aria-label="Playback progress"
-            value={!isDragging ? playbackProgress * 1 : seekBarTime}
-            getAriaValueText={formatTime}
-            min={0}
-            max={audioBuffer?.duration ?? 0}
-            disabled={audioBuffer === null}
-            onChange={(evt, newValue, activeThumb) => {
-              console.log("onChange", evt, newValue, activeThumb);
-              setIsDragging(true);
-              setSeekBarTime(newValue as number);
-            }}
-            onChangeCommitted={(evt, newValue) => {
-              seek(newValue as number);
-              setIsDragging(false);
-            }}
+          <WebAudioControls
+            audioBuffer={audioBuffer}
+            seek={seek}
+            play={play}
+            pause={pause}
+            setRate={setRate}
+            getProgress={getProgress}
+            playerStatus={playerStatus}
+            playbackProgress={playbackProgress}
           />
-          <Typography
-            variant="body1"
-            sx={{
-              marginTop: 2,
-              marginBottom: 2,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {formatTime(playbackProgress)}/
-            {formatTime(audioBuffer?.duration ?? NaN)}@
-            {playerStatus.rate.toFixed(2)}x
-          </Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isInExtrapolateMode}
-                onChange={handleExtrapolateModeToggle}
-                color="secondary"
-              />
-            }
-            label="Extrapolate mode"
+          <ExtrapolateModeToggleMemo
+            isInExtrapolateMode={isInExtrapolateMode}
+            handleExtrapolateModeToggle={handleExtrapolateModeToggle}
           />
         </ControlRow>
         {isInExtrapolateMode && (
