@@ -1,21 +1,27 @@
-import { styled } from "@mui/material";
+import { IconButton, Tooltip, styled } from "@mui/material";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
-import {
-  MutableRefObject,
-  memo,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { MutableRefObject, memo, useEffect, useRef, useState } from "react";
 import { measureTextWidths } from "../../../../frontendUtils/measure";
 import { WebAudioPlayerState } from "../../../../frontendUtils/hooks";
+import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import gsap from "gsap";
 
 const InlineTagRowContainer = styled("div")`
   white-space: nowrap;
   font-size: 1.5em;
   margin-bottom: 0.5rem;
+  position: relative;
+
+  & > button {
+    visibility: hidden;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  &:hover > button {
+    visibility: visible;
+  }
 `;
 
 const InlineTagContainer = styled("div")`
@@ -74,6 +80,35 @@ const InlineMainContainer = styled("div")`
   }
 `;
 
+function ApplyMarksToAllButton({
+  applyMarksToAll,
+  lineContent,
+}: {
+  applyMarksToAll: () => void;
+  lineContent: string;
+}) {
+  return (
+    <Tooltip
+      title={
+        <span>
+          Apply marks to all identical lines
+          <br />
+          {lineContent}
+        </span>
+      }
+      placement="bottom-end"
+    >
+      <IconButton onClick={applyMarksToAll}>
+        <PlaylistAddCheckIcon />
+      </IconButton>
+    </Tooltip>
+  );
+}
+const ApplyMarksToAllButtonMemo = memo(
+  ApplyMarksToAllButton,
+  (prev, next) => prev.content === next.content
+);
+
 interface InlineTaggingLineProps {
   line: LyricsLine;
   dots: number[];
@@ -85,6 +120,7 @@ interface InlineTaggingLineProps {
   timelineRef: MutableRefObject<gsap.core.Timeline>;
   playerStatusRef: MutableRefObject<WebAudioPlayerState>;
   getProgress: () => number;
+  applyMarksToAll: () => void;
 }
 
 export function InlineTaggingLine({
@@ -98,6 +134,7 @@ export function InlineTaggingLine({
   timelineRef,
   playerStatusRef,
   getProgress,
+  applyMarksToAll,
 }: InlineTaggingLineProps) {
   const hasCursor = cursorIdx >= 0;
   const hasDotCursor = !!dotCursorIdx;
@@ -195,6 +232,7 @@ export function InlineTaggingLine({
     }
     // Explicitly only depends on relativeProgress to prevent excessive re-renders
   }, [relativeProgress]);
+
   return (
     <InlineTagRowContainer>
       <InlineTagContainer>
@@ -276,6 +314,10 @@ export function InlineTaggingLine({
             </span>
           ))}
       </InlineLabelContainer>
+      <ApplyMarksToAllButtonMemo
+        applyMarksToAll={applyMarksToAll}
+        lineContent={line.content}
+      />
     </InlineTagRowContainer>
   );
 }

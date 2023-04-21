@@ -1,4 +1,14 @@
-import { Box, Button, Grid, List, ListItem, ListItemText } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Tooltip,
+} from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 import { Lyrics, RangeAttribute, FURIGANA } from "lyrics-kit/core";
@@ -8,6 +18,7 @@ import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
 import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";
 import type { DocumentNode } from "graphql";
+import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
 const KARAOKE_TRANSLITERATION_QUERY = gql`
   query ($text: String!) {
@@ -112,11 +123,33 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
     (idx: number) => (line: LyricsLine) => {
       // Copy `lines` for React to recognize it as a new state
       setLines((l) => {
-        l[idx] = line;
-        return l;
+        const newLines = [...l];
+        newLines[idx] = line;
+        return newLines;
       });
     },
     [setLines]
+  );
+
+  // Apply furigana to all identical lines
+  const applyFuriganaToAll = useCallback(
+    (idx: number) => () => {
+      const line = lines[idx];
+      if (!line?.content) return;
+      const furigana = line.attachments.content[FURIGANA];
+      setLines((l) => {
+        const newLines = [...l];
+        newLines.forEach((v, i) => {
+          if (i === idx) return;
+          if (v.content === line.content) {
+            if (furigana) v.attachments.content[FURIGANA] = furigana;
+            else delete v.attachments.content[FURIGANA];
+          }
+        });
+        return newLines;
+      });
+    },
+    [lines, setLines]
   );
 
   return (
@@ -168,22 +201,44 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
           {lines.map((v, idx) => (
             <ListItem
               key={idx}
-              button
-              onClick={() => setSelectedLine(idx)}
-              selected={selectedLine === idx}
-            >
-              <ListItemText
-                primaryTypographyProps={{
-                  variant: "body1",
-                  lang: "ja",
-                  sx: {
-                    fontSize: "2em",
-                    minHeight: "1em",
+              disablePadding
+              secondaryAction={
+                <Tooltip
+                  title="Apply furigana to all identical lines"
+                  placement="bottom-end"
+                >
+                  <IconButton onClick={applyFuriganaToAll(idx)}>
+                    <PlaylistAddCheckIcon />
+                  </IconButton>
+                </Tooltip>
+              }
+              sx={{
+                "& .MuiListItemSecondaryAction-root": {
+                  visibility: "hidden",
+                },
+                "&:hover .MuiListItemSecondaryAction-root, &:focus .MuiListItemSecondaryAction-root":
+                  {
+                    visibility: "visible",
                   },
-                }}
+              }}
+            >
+              <ListItemButton
+                onClick={() => setSelectedLine(idx)}
+                selected={selectedLine === idx}
               >
-                <FuriganaLyricsLine lyricsKitLine={v} />
-              </ListItemText>
+                <ListItemText
+                  primaryTypographyProps={{
+                    variant: "body1",
+                    lang: "ja",
+                    sx: {
+                      fontSize: "2em",
+                      minHeight: "1em",
+                    },
+                  }}
+                >
+                  <FuriganaLyricsLine lyricsKitLine={v} />
+                </ListItemText>
+              </ListItemButton>
             </ListItem>
           ))}
         </List>

@@ -93,8 +93,6 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     0,
     "playbackProgress"
   );
-  const [seekBarTime, setSeekBarTime] = useNamedState(0, "seekBarTime");
-  const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
   const section = playerStatus.state === "playing" ? "tag" : "mark";
   const [dots, setDots] = useNamedState<number[][]>([], "dots");
   const dotsRef = useRef<number[][]>();
@@ -507,6 +505,27 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     };
   }, [audioBuffer, getProgress, pause, play, seek, setRate]);
 
+  // Apply marks to all identical lines
+  const applyMarksToAll = useCallback(
+    (lineIdx: number) => () => {
+      setLines((lines) => {
+        const line = lines[lineIdx];
+        if (!line?.content) return lines;
+        setDots((prevDots) => {
+          const newDots = [...prevDots];
+          lines.forEach((l, i) => {
+            if (l.content === line.content) {
+              newDots[i] = [...prevDots[lineIdx]];
+            }
+          });
+          return newDots;
+        });
+        return lines;
+      });
+    },
+    [setLines, setDots]
+  );
+
   return (
     <Stack gap={1} sx={{ height: "100%" }}>
       <Box
@@ -547,11 +566,12 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           <InlineTaggingLineMemo
             key={idx}
             line={l}
-            dots={dots[idx]}
             tags={tags[idx]}
+            dots={dots[idx]}
             timelineRef={timelineRef}
             playerStatusRef={playerStatusRef}
             getProgress={getProgress}
+            applyMarksToAll={applyMarksToAll(idx)}
             relativeProgress={
               currentLine.index === idx ? 0 : currentLine.index > idx ? -1 : 1
             }

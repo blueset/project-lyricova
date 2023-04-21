@@ -76,6 +76,7 @@ function CurrentPlaylistItem({
         opacity: index < nowPlaying ? 0.375 : 1,
         ...style,
       }}
+      disablePadding
       ContainerComponent={isDragging ? "div" : (<li />).type}
       selected={nowPlaying === index || isDragging}
       secondaryAction={
@@ -113,9 +114,6 @@ function CurrentPlaylistItem({
       }
     >
       <ListItemButton
-        style={{
-          paddingRight: 0,
-        }}
         onClick={
           isDragging
             ? null

@@ -1,5 +1,5 @@
 import { Button, Grid, styled, TextField, Typography } from "@mui/material";
-import type { ChangeEvent} from "react";
+import type { ChangeEvent } from "react";
 import { useCallback } from "react";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import VocaDBLyricsDialog from "./VocaDBLyricsDialog";
@@ -30,7 +30,7 @@ function replaceWithPattern(
 
 function smartTranslationSeparation(text: string): string {
   const lines = text.split("\n").map((v): [string, string] => {
-    const groups = v.match(/^(\[.+\])?(.*)$/);
+    const groups = v.trimEnd("\r").match(/^(\[.+\])?(.*)$/);
     if (groups) return [groups[1], groups[2]];
     return ["", ""];
   });

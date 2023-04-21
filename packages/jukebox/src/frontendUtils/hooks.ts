@@ -471,7 +471,8 @@ export function usePlayerLyricsState<T>(
       }
       startTimes.forEach((startTime, index) => {
         let endTime: number = endTimes[index + 1];
-        if (Number.isNaN(endTime)) endTime = 1e10;
+        if (isNaN(startTime)) return;
+        if (isNaN(endTime)) endTime = 1e10;
         const cue = new VTTCue(
           startTime,
           endTime,
