@@ -106,7 +106,7 @@ function ApplyMarksToAllButton({
 }
 const ApplyMarksToAllButtonMemo = memo(
   ApplyMarksToAllButton,
-  (prev, next) => prev.content === next.content
+  (prev, next) => prev.lineContent === next.lineContent
 );
 
 interface InlineTaggingLineProps {

@@ -30,7 +30,7 @@ function replaceWithPattern(
 
 function smartTranslationSeparation(text: string): string {
   const lines = text.split("\n").map((v): [string, string] => {
-    const groups = v.trimEnd("\r").match(/^(\[.+\])?(.*)$/);
+    const groups = v.trimEnd().match(/^(\[.+\])?(.*)$/);
     if (groups) return [groups[1], groups[2]];
     return ["", ""];
   });
