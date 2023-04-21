@@ -177,6 +177,14 @@ export function TransitionCover() {
       timelineRef.current[1].kill();
     }
 
+    const isIosDevice =
+      typeof window !== "undefined" &&
+      window.navigator?.platform &&
+      (/iP(ad|hone|od)/.test(window.navigator.platform) ||
+        (window.navigator.platform === "MacIntel" &&
+          window.navigator.maxTouchPoints > 1));
+    if (isIosDevice) return;
+
     timelineRef.current = buildTimeline(
       elm,
       window.lastClickTop ?? window.innerHeight / 2
@@ -193,7 +201,7 @@ export function TransitionCover() {
     document.fonts.forEach(
       (f) => f.status === "loading" && promises.push(f.loaded)
     );
-    await Promise.all(promises);
+    if (promises.length) await Promise.all(promises);
 
     // console.log("stopTimeline", timelineRef.current);
     timelineRef.current[0].pause();
