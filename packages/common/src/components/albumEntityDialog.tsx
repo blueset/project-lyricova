@@ -36,17 +36,14 @@ import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import AvatarField from "./AvatarField";
 import { Song } from "../models/Song";
-import type {
-  VDBArtistCategoryType,
-  VDBArtistRoleType,
-} from "../types/vocadb";
+import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { DocumentNode } from "graphql";
 import StringSchema from "yup/lib/string";
 import ArraySchema from "yup/lib/array";
 import React from "react";
 
 const NEW_ALBUM_MUTATION = gql`
-  mutation($data: AlbumInput!) {
+  mutation ($data: AlbumInput!) {
     newAlbum(data: $data) {
       ...SelectAlbumEntry
     }
@@ -56,7 +53,7 @@ const NEW_ALBUM_MUTATION = gql`
 ` as DocumentNode;
 
 const UPDATE_ALBUM_MUTATION = gql`
-  mutation($id: Int!, $data: AlbumInput!) {
+  mutation ($id: Int!, $data: AlbumInput!) {
     updateAlbum(id: $id, data: $data) {
       ...SelectAlbumEntry
     }
@@ -66,7 +63,7 @@ const UPDATE_ALBUM_MUTATION = gql`
 ` as DocumentNode;
 
 const FULL_ALBUM_QUERY = gql`
-  query($id: Int!) {
+  query ($id: Int!) {
     album(id: $id) {
       ...FullAlbumEntry
     }
@@ -187,9 +184,7 @@ export default function AlbumEntityDialog({
             })) ?? [],
         };
 
-  const [initialValues, setInitialValues] = useState(
-    buildInitialValues
-  );
+  const [initialValues, setInitialValues] = useState(buildInitialValues);
   const albumId = albumToEdit?.id ?? null;
 
   useEffect(() => {
@@ -253,7 +248,6 @@ export default function AlbumEntityDialog({
       );
     }
   }, [albumId, apolloClient, setInitialValues, snackbar]);
-  console.log("initialValues", initialValues, create, albumToEdit);
   return (
     <Dialog
       open={isOpen}
@@ -269,46 +263,38 @@ export default function AlbumEntityDialog({
         }}
         subscription={{}}
         validate={makeValidate<FormValues>(
-          yup.object().shape({
-            name: yup.string().required(),
-            sortOrder: yup.string().required(),
-            coverUrl: yup
-              .string()
-              .optional()
-              .url(),
-            songs: yup.array(
-              yup.object({
-                song: yup.object().typeError("Song entity must be selected."),
-                diskNumber: yup
-                  .number()
-                  .optional()
-                  .positive()
-                  .integer(),
-                trackNumber: yup
-                  .number()
-                  .optional()
-                  .positive()
-                  .integer(),
-                name: yup.string().optional(),
-              })
-            ),
-            artists: yup.array(
-              yup.object({}).shape({
-                artist: yup
-                  .object()
-                  .typeError("Artist entity must be selected."),
-                categories: yup.string().required() as StringSchema<
-                  VDBArtistCategoryType
-                >,
-                roles: yup
-                  .array(yup.string() as StringSchema<VDBArtistRoleType>)
-                  .required() as ArraySchema<StringSchema<VDBArtistRoleType>>,
-                effectiveRoles: yup
-                  .array(yup.string() as StringSchema<VDBArtistRoleType>)
-                  .required() as ArraySchema<StringSchema<VDBArtistRoleType>>,
-              })
-            ),
-          }).required()
+          yup
+            .object()
+            .shape({
+              name: yup.string().required(),
+              sortOrder: yup.string().required(),
+              coverUrl: yup.string().optional().url(),
+              songs: yup.array(
+                yup.object({
+                  song: yup.object().typeError("Song entity must be selected."),
+                  diskNumber: yup.number().optional().positive().integer(),
+                  trackNumber: yup.number().optional().positive().integer(),
+                  name: yup.string().optional(),
+                })
+              ),
+              artists: yup.array(
+                yup.object({}).shape({
+                  artist: yup
+                    .object()
+                    .typeError("Artist entity must be selected."),
+                  categories: yup
+                    .string()
+                    .required() as StringSchema<VDBArtistCategoryType>,
+                  roles: yup
+                    .array(yup.string() as StringSchema<VDBArtistRoleType>)
+                    .required() as ArraySchema<StringSchema<VDBArtistRoleType>>,
+                  effectiveRoles: yup
+                    .array(yup.string() as StringSchema<VDBArtistRoleType>)
+                    .required() as ArraySchema<StringSchema<VDBArtistRoleType>>,
+                })
+              ),
+            })
+            .required()
         )}
         onSubmit={async (values) => {
           try {
@@ -319,10 +305,9 @@ export default function AlbumEntityDialog({
               songsInAlbum: values.songs.map((v) => ({
                 name: v.name,
                 diskNumber:
-                  v.diskNumber && parseInt((v.diskNumber as unknown) as string),
+                  v.diskNumber && parseInt(v.diskNumber as unknown as string),
                 trackNumber:
-                  v.trackNumber &&
-                  parseInt((v.trackNumber as unknown) as string),
+                  v.trackNumber && parseInt(v.trackNumber as unknown as string),
                 songId: v.song.id,
               })),
               artistsOfAlbum: values.artists.map((v) => ({
@@ -559,10 +544,11 @@ export default function AlbumEntityDialog({
                             sx={{
                               mt: 0,
                               width: "10em",
-                              "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-                                appearance: "none",
-                                margin: 0,
-                              },
+                              "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
+                                {
+                                  appearance: "none",
+                                  margin: 0,
+                                },
                               "input[type=number]": {
                                 appearance: "textfield",
                               },
@@ -576,10 +562,11 @@ export default function AlbumEntityDialog({
                           <TextField
                             sx={{
                               width: "10em",
-                              "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-                                appearance: "none",
-                                margin: 0,
-                              },
+                              "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
+                                {
+                                  appearance: "none",
+                                  margin: 0,
+                                },
                               "input[type=number]": {
                                 appearance: "textfield",
                               },

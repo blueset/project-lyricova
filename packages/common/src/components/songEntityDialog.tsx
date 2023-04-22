@@ -30,10 +30,7 @@ import TrackNameAdornment from "./TrackNameAdornment";
 import * as yup from "yup";
 import { SongFragments } from "../utils/fragments";
 import { Artist } from "../models/Artist";
-import type {
-  VDBArtistCategoryType,
-  VDBArtistRoleType,
-} from "../types/vocadb";
+import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { Album } from "../models/Album";
 import VideoThumbnailAdornment from "./VideoThumbnailAdornment";
 import { Field, Form } from "react-final-form";
@@ -53,7 +50,7 @@ import { DocumentNode } from "graphql";
 import React from "react";
 
 const NEW_SONG_MUTATION = gql`
-  mutation($data: SongInput!) {
+  mutation ($data: SongInput!) {
     newSong(data: $data) {
       ...SelectSongEntry
     }
@@ -63,7 +60,7 @@ const NEW_SONG_MUTATION = gql`
 ` as DocumentNode;
 
 const UPDATE_SONG_MUTATION = gql`
-  mutation($id: Int!, $data: SongInput!) {
+  mutation ($id: Int!, $data: SongInput!) {
     updateSong(id: $id, data: $data) {
       ...SelectSongEntry
     }
@@ -134,8 +131,6 @@ export default function SongEntityDialog({
     setKeyword("");
   }, [toggleOpen, setKeyword]);
 
-  console.log("songToEdit", songToEdit);
-
   const initialValues: FormValues =
     create || !songToEdit
       ? {
@@ -165,46 +160,36 @@ export default function SongEntityDialog({
 
   const songId = songToEdit?.id ?? null;
 
-  const schema = yup.object({}).shape({
-    name: yup.string().required(),
-    sortOrder: yup.string().required(),
-    coverUrl: yup
-      .string()
-      .nullable()
-      .url(),
-    originalSong: yup.object().nullable(),
-    artists: yup.array(
-      yup.object({
-        artist: yup.object().typeError("Artist entity must be selected."),
-        artistRoles: yup
-          .array(yup.string() as StringSchema<VDBArtistRoleType>)
-          .required(),
-        categories: yup
-          .array(yup.string() as StringSchema<VDBArtistCategoryType>)
-          .required(),
-        customName: yup.string().nullable(),
-        isSupport: yup.boolean().required(),
-      })
-    ),
-    albums: yup.array(
-      yup.object({
-        album: yup.object().typeError("Album entity must be selected."),
-        diskNumber: yup
-          .number()
-          .optional()
-          .nullable()
-          .positive()
-          .integer(),
-        trackNumber: yup
-          .number()
-          .optional()
-          .nullable()
-          .positive()
-          .integer(),
-        name: yup.string().required(),
-      })
-    ),
-  }).required();
+  const schema = yup
+    .object({})
+    .shape({
+      name: yup.string().required(),
+      sortOrder: yup.string().required(),
+      coverUrl: yup.string().nullable().url(),
+      originalSong: yup.object().nullable(),
+      artists: yup.array(
+        yup.object({
+          artist: yup.object().typeError("Artist entity must be selected."),
+          artistRoles: yup
+            .array(yup.string() as StringSchema<VDBArtistRoleType>)
+            .required(),
+          categories: yup
+            .array(yup.string() as StringSchema<VDBArtistCategoryType>)
+            .required(),
+          customName: yup.string().nullable(),
+          isSupport: yup.boolean().required(),
+        })
+      ),
+      albums: yup.array(
+        yup.object({
+          album: yup.object().typeError("Album entity must be selected."),
+          diskNumber: yup.number().optional().nullable().positive().integer(),
+          trackNumber: yup.number().optional().nullable().positive().integer(),
+          name: yup.string().required(),
+        })
+      ),
+    })
+    .required();
 
   const validate = makeValidate<FormValues>(schema);
 
@@ -233,10 +218,9 @@ export default function SongEntityDialog({
               songInAlbums: values.albums.map((v) => ({
                 name: v.name,
                 diskNumber:
-                  v.diskNumber && parseInt((v.diskNumber as unknown) as string),
+                  v.diskNumber && parseInt(v.diskNumber as unknown as string),
                 trackNumber:
-                  v.trackNumber &&
-                  parseInt((v.trackNumber as unknown) as string),
+                  v.trackNumber && parseInt(v.trackNumber as unknown as string),
                 albumId: v.album.id,
               })),
               artistsOfSong: values.artists.map((v) => ({
