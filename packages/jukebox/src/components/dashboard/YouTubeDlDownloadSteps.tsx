@@ -17,10 +17,9 @@ import type {
   Dispatch,
   FormEvent,
   ReactNode,
-  SetStateAction} from "react";
-import {
-  useCallback,
+  SetStateAction,
 } from "react";
+import { useCallback } from "react";
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
@@ -31,24 +30,56 @@ import { NextComposedLink } from "lyricova-common/components/Link";
 import { useSnackbar } from "notistack";
 import { swapExt } from "../../utils/path";
 import type { DocumentNode } from "graphql";
+import { YouTubeDlProgressType } from "../../graphql/DownloadResolver";
 
 const YOUTUBE_DL_INFO_QUERY = gql`
-  query($url: String!) {
+  query ($url: String!) {
     youtubeDlGetInfo(url: $url)
   }
 ` as DocumentNode;
 
 const YOUTUBE_DL_DOWNLOAD_MUTATION = gql`
-  mutation($url: String!, $filename: String, $overwrite: Boolean) {
+  mutation (
+    $url: String!
+    $filename: String
+    $overwrite: Boolean
+    $sessionId: String
+  ) {
     youtubeDlDownloadAudio(
       url: $url
       options: { filename: $filename, overwrite: $overwrite }
+      sessionId: $sessionId
     )
   }
 ` as DocumentNode;
 
+const YOUTUBE_DL_DOWNLOAD_PROGRESS_SUBSCRIPTION = gql`
+  subscription YouTubeDlDownloadProgress($sessionId: String!) {
+    youTubeDlDownloadProgress(sessionId: $sessionId) {
+      ... on YouTubeDlProgressDone {
+        type
+      }
+      ... on YouTubeDlProgressError {
+        type
+        message
+      }
+      ... on YouTubeDlProgressValue {
+        type
+        current
+        total
+        speed
+        eta
+      }
+      ... on YouTubeDlProgressMessage {
+        type
+        message
+      }
+    }
+  }
+`;
+
 const SINGLE_FILE_SCAN_MUTATION = gql`
-  mutation($path: String!) {
+  mutation ($path: String!) {
     scanByPath(path: $path) {
       id
     }
@@ -90,6 +121,11 @@ export default function YouTubeDlDownloadSteps({
   const [videoURL, setVideoURL] = useNamedState("", "videoURL");
   const [filename, setFilename] = useNamedState("", "filename");
   const [overwrite, toggleOverwrite] = useNamedState(false, "overwrite");
+  const [downloadProgress, setDownloadProgress] = useNamedState<number | null>(
+    null,
+    "downloadProgress"
+  );
+  const [downloadInfo, setDownloadInfo] = useNamedState("", "downloadInfo");
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -145,13 +181,51 @@ export default function YouTubeDlDownloadSteps({
     setDownloadState(null);
 
     try {
-      const outcome = await apolloClient.mutate<{
+      const sessionId = `${Math.random()}`;
+      const outcomePromise = apolloClient.mutate<{
         youtubeDlDownloadAudio: string | null;
       }>({
         mutation: YOUTUBE_DL_DOWNLOAD_MUTATION,
-        variables: { url: videoURL, filename, overwrite },
+        variables: { url: videoURL, filename, overwrite, sessionId },
       });
 
+      // Subscribe to download progress.
+      const subscription = apolloClient.subscribe<{
+        youTubeDlDownloadProgress: YouTubeDlProgressType;
+      }>({
+        query: YOUTUBE_DL_DOWNLOAD_PROGRESS_SUBSCRIPTION,
+        variables: { sessionId },
+      });
+      const zenSubscription = subscription.subscribe({
+        start(subscription) {
+          console.log("subscription started", subscription);
+        },
+        next(x) {
+          console.log("subscription event", x);
+          if (x.data.youTubeDlDownloadProgress?.type === "progress") {
+            const progress = x.data.youTubeDlDownloadProgress;
+            setDownloadProgress((progress.current / progress.total) * 100);
+            setDownloadInfo(
+              `${progress.current}/${progress.total}, ${progress.speed}, ETA: ${progress.eta}`
+            );
+          } else if (x.data.youTubeDlDownloadProgress?.type === "message") {
+            setDownloadProgress(null);
+            setDownloadInfo(x.data.youTubeDlDownloadProgress.message);
+          } else {
+            setDownloadProgress(null);
+            setDownloadInfo("");
+          }
+        },
+        error(err) {
+          console.log(`Finished with error: ${err}`);
+        },
+        complete() {
+          console.log("Finished");
+        },
+      });
+
+      const outcome = await outcomePromise;
+      zenSubscription.unsubscribe();
       const filePath = outcome.data.youtubeDlDownloadAudio;
       if (filePath === null) {
         snackbar.enqueueSnackbar(
@@ -280,8 +354,9 @@ export default function YouTubeDlDownloadSteps({
                   .map((v) => {
                     let chiplabel = v.format;
                     if (v.abr) {
-                      chiplabel = `${chiplabel}, ♪${v.abr}k@[${v.acodec ||
-                        "Unknown codec"}]`;
+                      chiplabel = `${chiplabel}, ♪${v.abr}k@[${
+                        v.acodec || "Unknown codec"
+                      }]`;
                     }
                     chiplabel = `${chiplabel}, ${
                       v.filesize ? filesize(v.filesize) : "Unknown size"
@@ -342,7 +417,18 @@ export default function YouTubeDlDownloadSteps({
             : "Download outcome"}
         </StepLabel>
         <StepContent>
-          {downloadState === null && <CircularProgress color="secondary" />}
+          {downloadState === null && (
+            <>
+              <CircularProgress
+                value={downloadProgress}
+                variant={
+                  downloadProgress === null ? "indeterminate" : "determinate"
+                }
+                color="secondary"
+              />
+              {downloadInfo}
+            </>
+          )}
           <ButtonRow>
             <Button
               disabled={downloadState === null || downloadState < 0}

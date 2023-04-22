@@ -479,7 +479,7 @@ type Mutation {
   writeTagsToMusicFile(data: MusicFileInput!, id: Int!): MusicFile!
 
   """Download audio via yt-dlp."""
-  youtubeDlDownloadAudio(options: YouTubeDlDownloadOptions!, url: String!): String
+  youtubeDlDownloadAudio(options: YouTubeDlDownloadOptions!, sessionId: String = null, url: String!): String
 }
 
 input NewPlaylistInput {
@@ -750,7 +750,7 @@ type YouTubeDlInfo {
   size: Int!
 }
 
-union YouTubeDlProgress = YouTubeDlProgressDone | YouTubeDlProgressError | YouTubeDlProgressValue
+union YouTubeDlProgress = YouTubeDlProgressDone | YouTubeDlProgressError | YouTubeDlProgressMessage | YouTubeDlProgressValue
 
 """youtube-dl download progress when download is finished."""
 type YouTubeDlProgressDone {
@@ -766,10 +766,19 @@ type YouTubeDlProgressError {
   type: String!
 }
 
+type YouTubeDlProgressMessage {
+  message: String!
+
+  """Type of update, "message"."""
+  type: String!
+}
+
 """youtube-dl download progress object."""
 type YouTubeDlProgressValue {
-  current: Int!
-  total: Int!
+  current: Float!
+  eta: String
+  speed: String
+  total: Float!
 
   """Type of update, "progress"."""
   type: String!

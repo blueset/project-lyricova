@@ -16,6 +16,7 @@ import {
   Int,
   Mutation,
   ObjectType,
+  PubSub,
   Query,
   Resolver,
   Root,
@@ -104,11 +105,19 @@ class YouTubeDlProgressValue {
   @Field((type) => String, { description: 'Type of update, "progress".' })
   type: "progress";
 
-  @Field((type) => Int)
+  @Field((type) => Float)
   current: number;
 
-  @Field((type) => Int)
+  @Field((type) => Float)
   total: number;
+
+  @Field((type) => String, { nullable: true })
+  speed?: string;
+
+  @Field((type) => String, { nullable: true })
+  eta?: string;
+
+  __typename: "YouTubeDlProgressValue";
 }
 
 @ObjectType({
@@ -117,6 +126,8 @@ class YouTubeDlProgressValue {
 class YouTubeDlProgressDone {
   @Field((type) => String, { description: 'Type of update, "done".' })
   type: "done";
+
+  __typename: "YouTubeDlProgressDone";
 }
 
 @ObjectType({
@@ -128,27 +139,45 @@ class YouTubeDlProgressError {
 
   @Field()
   message: string;
+
+  __typename: "YouTubeDlProgressError";
 }
 
-type YouTubeDlProgressType =
+@ObjectType()
+export class YouTubeDlProgressMessage {
+  @Field((type) => String, { description: 'Type of update, "message".' })
+  type: "message";
+
+  @Field()
+  message: string;
+
+  __typename: "YouTubeDlProgressMessage";
+}
+
+export type YouTubeDlProgressType =
   | YouTubeDlProgressDone
   | YouTubeDlProgressError
-  | YouTubeDlProgressValue;
+  | YouTubeDlProgressValue
+  | YouTubeDlProgressMessage;
 
 const YouTubeDlProgress = createUnionType({
   name: "YouTubeDlProgress",
-  types: () => [
-    YouTubeDlProgressDone,
-    YouTubeDlProgressError,
-    YouTubeDlProgressValue,
-  ],
+  types: () =>
+    [
+      YouTubeDlProgressDone,
+      YouTubeDlProgressError,
+      YouTubeDlProgressValue,
+      YouTubeDlProgressMessage,
+    ] as const,
   resolveType: (value) => {
     if (value?.type === "progress") {
-      return YouTubeDlDownloadMessage;
+      return "YouTubeDlProgressValue";
+    } else if (value?.type === "message") {
+      return "YouTubeDlProgressMessage";
     } else if (value?.type === "done") {
-      return YouTubeDlProgressDone;
+      return "YouTubeDlProgressDone";
     } else {
-      return YouTubeDlProgressError;
+      return "YouTubeDlProgressError";
     }
   },
 });
@@ -192,10 +221,24 @@ export class DownloadResolver {
     publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>,
     sessionId: string,
     current: number,
-    total: number
+    total: number,
+    speed: string = null,
+    eta: string = null
   ): Promise<void> {
-    console.log(`Download progress of ${sessionId}: ${current} / ${total}`);
-    return publish({ sessionId, data: { type: "progress", current, total } });
+    console.log(
+      `Download progress of ${sessionId}: ${current} / ${total} @ ${speed} ETA: ${eta}}`
+    );
+    return publish({
+      sessionId,
+      data: {
+        type: "progress",
+        __typename: "YouTubeDlProgressValue",
+        current,
+        total,
+        speed,
+        eta,
+      },
+    });
   }
 
   private publishDownloadSuccess(
@@ -203,7 +246,26 @@ export class DownloadResolver {
     sessionId: string
   ): Promise<void> {
     console.log(`Download success: ${sessionId}`);
-    return publish({ sessionId, data: { type: "done" } });
+    return publish({
+      sessionId,
+      data: { type: "done", __typename: "YouTubeDlProgressDone" },
+    });
+  }
+
+  private publishDownloadMessage(
+    publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>,
+    sessionId: string,
+    message: string
+  ): Promise<void> {
+    console.log(`Download message: ${sessionId}, ${message}`);
+    return publish({
+      sessionId,
+      data: {
+        type: "message",
+        message,
+        __typename: "YouTubeDlProgressMessage",
+      },
+    });
   }
 
   private publishDownloadFail(
@@ -212,7 +274,14 @@ export class DownloadResolver {
     error: unknown
   ): Promise<void> {
     console.error(`Download failed: ${sessionId}`, error);
-    return publish({ sessionId, data: { type: "error", message: `${error}` } });
+    return publish({
+      sessionId,
+      data: {
+        type: "error",
+        message: `${error}`,
+        __typename: "YouTubeDlProgressError",
+      },
+    });
   }
 
   @Subscription(() => YouTubeDlProgress, {
@@ -303,7 +372,11 @@ export class DownloadResolver {
   })
   public async youtubeDlDownloadAudio(
     @Arg("url") url: string,
-    @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions
+    @Arg("options") { overwrite, filename }: YouTubeDlDownloadOptions,
+    @Arg("sessionId", { nullable: true, defaultValue: null })
+    sessionId: string | null,
+    @PubSub("YOUTUBE_DL_PROGRESS")
+    publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>
   ): Promise<string> {
     const ytdlpWrap = new YTDlpWrap(YTDLP_PATH);
     if (!filename) {
@@ -328,15 +401,38 @@ export class DownloadResolver {
     if (!overwrite) {
       params.push("--no-overwrites");
     }
-
-    try {
-      const result = await ytdlpWrap.execPromise(params);
-      console.log(result);
-      return filename;
-    } catch (e) {
-      console.error("Failed to download music from youtube-dl.", e);
-      return null;
-    }
+    return new Promise((resolve, reject) => {
+      // const result = await ytdlpWrap.execPromise(params);
+      const stream = ytdlpWrap.exec(params);
+      console.log(stream);
+      stream.on("progress", (progress) => {
+        if (sessionId) {
+          this.publishDownloadProgress(
+            publish,
+            sessionId,
+            progress.percent,
+            100,
+            progress.currentSpeed,
+            progress.eta
+          );
+        }
+      });
+      stream.on("ytDlpEvent", (event, data) => {
+        console.log("yt-dlp event", event, data);
+        if (sessionId)
+          this.publishDownloadMessage(publish, sessionId, `[${event}] ${data}`);
+      });
+      stream.on("error", (err) => {
+        console.error("yt-dlp error", err);
+        if (sessionId) this.publishDownloadFail(publish, sessionId, err);
+        reject(err);
+      });
+      stream.on("close", () => {
+        console.log("yt-dlp finished downloading!");
+        if (sessionId) this.publishDownloadSuccess(publish, sessionId);
+        resolve(filename);
+      });
+    });
   }
 
   /**
