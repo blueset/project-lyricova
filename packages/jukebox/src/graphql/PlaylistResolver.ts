@@ -12,7 +12,7 @@ import {
 } from "type-graphql";
 import { Playlist } from "lyricova-common/models/Playlist";
 import { MusicFile } from "lyricova-common/models/MusicFile";
-import { UserInputError } from "apollo-server-express";
+import { GraphQLError } from "graphql";
 import pLimit from "p-limit";
 import Sequelize from "sequelize";
 
@@ -62,7 +62,7 @@ export class PlaylistResolver {
   ): Promise<Playlist> {
     const playlist = await Playlist.findByPk(slug);
     if (playlist === null) {
-      throw new UserInputError(
+      throw new GraphQLError(
         `Playlist with slug ${slug} is not found in database.`
       );
     }
@@ -86,19 +86,19 @@ export class PlaylistResolver {
   ): Promise<Playlist> {
     const playlist = await Playlist.findByPk(slug);
     if (playlist === null) {
-      throw new UserInputError(
+      throw new GraphQLError(
         `Playlist with slug ${slug} is not found in database.`
       );
     }
     const musicFile = await MusicFile.findByPk(fileId);
     if (musicFile === null) {
-      throw new UserInputError(
+      throw new GraphQLError(
         `Music file with ID ${fileId} is not found in database.`
       );
     }
     const has = await playlist.$has("file", musicFile);
     if (has)
-      throw new UserInputError(
+      throw new GraphQLError(
         `Music file ${fileId} is already in playlist ${slug}.`
       );
     const count = await playlist.$count("files");
@@ -115,19 +115,19 @@ export class PlaylistResolver {
   ): Promise<Playlist> {
     const playlist = await Playlist.findByPk(slug);
     if (playlist === null) {
-      throw new UserInputError(
+      throw new GraphQLError(
         `Playlist with slug ${slug} is not found in database.`
       );
     }
     const musicFile = await MusicFile.findByPk(fileId);
     if (musicFile === null) {
-      throw new UserInputError(
+      throw new GraphQLError(
         `Music file with ID ${fileId} is not found in database.`
       );
     }
     const has = await playlist.$has("file", musicFile);
     if (!has)
-      throw new UserInputError(
+      throw new GraphQLError(
         `Music file ${fileId} is not in playlist ${slug}.`
       );
     await playlist.$remove("file", musicFile);
@@ -143,7 +143,7 @@ export class PlaylistResolver {
   ): Promise<Playlist> {
     const playlist = await Playlist.findByPk(slug);
     if (playlist === null) {
-      throw new UserInputError(
+      throw new GraphQLError(
         `Playlist with slug ${slug} is not found in database.`
       );
     }
@@ -183,7 +183,7 @@ export class PlaylistResolver {
   ): Promise<Playlist> {
     const playlist = await Playlist.findByPk(slug);
     if (playlist === null) {
-      throw new UserInputError(
+      throw new GraphQLError(
         `Playlist with slug ${slug} is not found in database.`
       );
     }

@@ -30,6 +30,7 @@
     "@mui/icons-material": "^5.11.9",
     "@mui/material": "^5.11.9",
     "ffprobe-client": "^1.1.6",
+    "graphql-ws": "^5.12.1",
     "mecab-async": "^0.1.2",
     "next": "^13.1.6",
     "sequelize-typescript": "^2.1.5",

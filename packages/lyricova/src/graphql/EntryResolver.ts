@@ -13,7 +13,7 @@ import {
   Resolver,
   Root,
 } from "type-graphql";
-import { UserInputError } from "apollo-server-express";
+import { GraphQLError } from "graphql";
 import { Song } from "lyricova-common/models/Song";
 import { Tag } from "lyricova-common/models/Tag";
 import { Pulse } from "lyricova-common/models/Pulse";
@@ -194,7 +194,7 @@ export class EntryResolver {
   ): Promise<Entry> {
     const entry = await Entry.findByPk(id);
     if (!entry) {
-      throw new UserInputError("Entry not found");
+      throw new GraphQLError("Entry not found");
     }
     const t = await sequelize.transaction();
     const recentActionDate = new Date(
@@ -282,7 +282,7 @@ export class EntryResolver {
   ): Promise<boolean> {
     const entry = await Entry.findByPk(id);
     if (!entry) {
-      throw new UserInputError("Entry not found");
+      throw new GraphQLError("Entry not found");
     }
     await entry.destroy();
     return true;
@@ -295,7 +295,7 @@ export class EntryResolver {
   ): Promise<boolean> {
     const entry = await Entry.findByPk(id);
     if (!entry) {
-      throw new UserInputError("Entry not found");
+      throw new GraphQLError("Entry not found");
     }
     const date = new Date();
     const pulse = await Pulse.create({ creationDate: date });
@@ -341,7 +341,7 @@ export class EntryResolver {
   public async pulseEntry(@Arg("id") id: number): Promise<Entry> {
     const entry = await Entry.findByPk(id);
     if (!entry) {
-      throw new UserInputError("Entry not found");
+      throw new GraphQLError("Entry not found");
     }
     await entry.$create("pulse", {});
     return entry;
@@ -355,7 +355,7 @@ export class EntryResolver {
   ): Promise<Entry> {
     const entry = await Entry.findByPk(id);
     if (!entry) {
-      throw new UserInputError("Entry not found");
+      throw new GraphQLError("Entry not found");
     }
     await entry.$remove("pulse", pulseId);
     await entry.reload({ include: ["pulses"] });

@@ -30,7 +30,7 @@ import {
 } from "type-graphql";
 import type { Publisher } from "type-graphql";
 import { PaginationArgs, PaginationInfo } from "./commons";
-import { UserInputError } from "apollo-server-express";
+import { GraphQLError } from "graphql";
 import { Playlist } from "lyricova-common/models/Playlist";
 import { Song } from "lyricova-common/models/Song";
 import { Album } from "lyricova-common/models/Album";
@@ -369,7 +369,7 @@ export class MusicFileResolver {
   ): Promise<MusicFile> {
     const song = await MusicFile.findByPk(id);
     if (song === null) {
-      throw new UserInputError(`Music file with id ${id} is not found.`);
+      throw new GraphQLError(`Music file with id ${id} is not found.`);
     }
 
     // write song file

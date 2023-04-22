@@ -1,5 +1,7 @@
 import type { Application } from "express";
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import {
   ObjectType,
   Field,
@@ -19,6 +21,11 @@ import bcrypt from "bcryptjs";
 import _ from "lodash";
 import type { Server } from "http";
 import { createServer } from "http";
+import { ServerOptions, WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/lib/use/ws";
+import cors from "cors";
+import bodyParser from "body-parser";
+import passport from "passport";
 
 export interface PubSubSessionPayload<T> {
   sessionId: string;
@@ -32,6 +39,10 @@ interface LengthyTaskPayload {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+interface Context {
+  user?: Express.User;
 }
 
 @ObjectType({ description: "Foo is not foolish." })
@@ -115,7 +126,7 @@ export async function applyApollo(app: Application): Promise<Server> {
     // `FooResolver as unknown as string` is a workaround to mitigate the
     // strict type check of type-graphql.buildSchema({resolvers})
     resolvers: [
-      (FooResolver as unknown) as string,
+      FooResolver as unknown as string,
       `${__dirname}/**/*Resolver.{ts,js}`,
     ],
     dateScalarMode: "timestamp",
@@ -128,58 +139,62 @@ export async function applyApollo(app: Application): Promise<Server> {
 
   const httpServer = createServer(app);
 
-  // This is blocking next auto refresh
-  // const subscriptionServer = SubscriptionServer.create({
-  //   // This is the `schema` we just created.
-  //   schema,
-  //   // These are imported from `graphql`.
-  //   execute,
-  //   subscribe,
-  // }, {
-  //   // This is the `httpServer` we created in a previous step.
-  //   server: httpServer,
-  //   // Pass a different path here if your ApolloServer serves at
-  //   // a different path.
-  //   path: "/graphql",
-  // });
+  const wsConfig: ServerOptions = {
+    path: "/graphql",
+    // server: httpServer,
+  };
+  if (process.env.NODE_ENV === "development") {
+    wsConfig.port = 30001;
+  } else {
+    wsConfig.server = httpServer;
+  }
 
-  const apolloServer = new ApolloServer({
+  const wsServer = new WebSocketServer(wsConfig, () =>
+    console.log("Websocket server started")
+  );
+  // Not a React hook.
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const serverCleanup = useServer(
+    {
+      schema,
+      context: async (ctx, msg, args) => {
+        const token = ctx.connectionParams.authToken;
+        return { user: null };
+      },
+    },
+    wsServer
+  );
+
+  const apolloServer = new ApolloServer<Context>({
     schema,
     plugins: [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+
+      // Proper shutdown for the WebSocket server.
       {
         async serverWillStart() {
           return {
             async drainServer() {
-              // subscriptionServer.close();
+              await serverCleanup.dispose();
             },
           };
         },
       },
     ],
-    context: ({ req }) => {
-      return {
-        req,
-        user: req.user, // That should come from passport strategy JWT
-      };
-    },
     cache: "bounded",
   });
 
   await apolloServer.start();
-  // app.use(cors());
 
-  // app.post("/graphql", cors({
-  //   origin: "*",
-  //   credentials: true,
-  //   optionsSuccessStatus: 204
-  // }), apolloServer.getMiddleware({ path: "/graphql" }));
-
-  apolloServer.applyMiddleware({
-    app,
-    // cors: {
-    //   credentials: true,
-    // },
-  });
+  app.use(
+    "/graphql",
+    cors<cors.CorsRequest>(),
+    bodyParser.json(),
+    expressMiddleware(apolloServer, {
+      context: async ({ req }) => ({ user: req.user }),
+    })
+  );
 
   return httpServer;
 }

@@ -37,7 +37,7 @@ export class AuthController {
     // Inject user context before Apollo server
     this.injectionRouter.use(
       "/graphql",
-      function(req, res, next) {
+      function (req, res, next) {
         if (req.headers["access-control-request-private-network"]) {
           res.setHeader("access-control-allow-private-network", "true");
         }
@@ -162,7 +162,7 @@ export class AuthController {
     passport.authenticate(
       "jwt",
       { session: false, failWithError: false },
-      function(err: unknown, user: User | null) {
+      function (err: unknown, user: User | null) {
         if (user) {
           req.logIn(user, { session: false }, next);
         } else {

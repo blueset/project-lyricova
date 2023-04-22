@@ -3,12 +3,13 @@ import {
   InMemoryCache,
   createHttpLink,
   split,
-  defaultDataIdFromObject,
+  HttpLink,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { LS_JWT_KEY } from "./localStorage";
-import { WebSocketLink } from "@apollo/client/link/ws";
 import { getMainDefinition } from "@apollo/client/utilities";
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { createClient } from "graphql-ws";
 
 const httpLink = createHttpLink({
   uri: "/graphql",
@@ -27,28 +28,28 @@ const authLink = setContext((_, { headers }) => {
 });
 
 interface Process {
+  env: Record<string, string | undefined>;
   browser: boolean;
 }
 declare var process: Process;
 
 const link = (() => {
-  return authLink.concat(httpLink);
+  // return authLink.concat(httpLink);
   if (process.browser) {
     const protocol = location.protocol === "http:" ? "ws:" : "wss:";
-    const host = location.hostname + (location.port ? ":" + location.port : "");
-    const wsLink = new WebSocketLink({
-      uri: `${protocol}//${host}/graphql`,
-      options: {
-        reconnect: true,
-        connectionParams: () => {
-          const token = localStorage?.getItem(LS_JWT_KEY) ?? null;
-          return {
-            authorization: token,
-          };
+    let wsPort = location.port;
+    if (process.env.NODE_ENV === "development") {
+      wsPort = "30001";
+    }
+    const wsHost = location.hostname + (wsPort ? ":" + wsPort : "");
+    const wsLink = new GraphQLWsLink(
+      createClient({
+        url: `${protocol}//${wsHost}/graphql`,
+        connectionParams: {
+          authToken: localStorage?.getItem(LS_JWT_KEY) ?? null,
         },
-      },
-    });
-
+      })
+    );
     // The split function takes three parameters:
     //
     // * A function that's called for each operation to execute

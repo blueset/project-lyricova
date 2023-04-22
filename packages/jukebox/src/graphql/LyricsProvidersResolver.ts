@@ -22,7 +22,7 @@ import {
   Root,
 } from "type-graphql";
 import type { Publisher } from "type-graphql";
-import { ApolloError } from "apollo-server-express";
+import { GraphQLError } from "graphql";
 import { GraphQLJSONObject } from "graphql-type-json";
 import _ from "lodash";
 import type { PubSubSessionPayload } from "./index";
@@ -63,7 +63,12 @@ export class VocaDBLyricsEntry implements LyricsForSongContract {
   @Field({ description: "Source of lyrics.", nullable: true })
   source: string;
 
-  @Field(/* type => GraphQLString, */{ description: "Type of translation.", nullable: true })
+  @Field(
+    /* type => GraphQLString, */ {
+      description: "Type of translation.",
+      nullable: true,
+    }
+  )
   translationType: VDBTranslationType;
 
   @Field({ description: "URL of the source.", nullable: true })
@@ -125,7 +130,7 @@ export class LyricsProvidersResolver {
       },
     });
     if (response.status !== 200) {
-      throw new ApolloError(`${response.status}: ${response.data}`);
+      throw new GraphQLError(`${response.status}: ${response.data}`);
     }
     const urlRegex = /(?<=pageid=)\d+/;
     const $ = cheerio.load(response.data);
@@ -164,7 +169,7 @@ export class LyricsProvidersResolver {
         `https://w.atwiki.jp/hmiku/pages/${id}.html`
       );
       if (response.status !== 200) {
-        throw new ApolloError(`${response.status}: ${response.data}`);
+        throw new GraphQLError(`${response.status}: ${response.data}`);
       }
       const $ = cheerio.load(response.data);
       const titleNode = $("h2");
@@ -172,9 +177,10 @@ export class LyricsProvidersResolver {
         return null;
       }
       const title = titleNode.text();
-      const furiganaMatch = /(?:【検索用:)?([^:【\n]+?)[\u00a0\s]*【?登録タグ/g.exec(
-        $("#wikibody").text()
-      );
+      const furiganaMatch =
+        /(?:【検索用:)?([^:【\n]+?)[\u00a0\s]*【?登録タグ/g.exec(
+          $("#wikibody").text()
+        );
       console.log("wikibody", JSON.stringify($("#wikibody").text()));
       console.log("wikibody match", furiganaMatch);
       const furigana = furiganaMatch ? furiganaMatch[1] : title;

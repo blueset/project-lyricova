@@ -112,8 +112,9 @@ export default function Review() {
         components={{ Toolbar: DataGridToolbar }}
         componentsProps={{
           toolbar: {
-            title: `${needReviewCount ?? "..."} / ${totalCount ??
-              "..."} files pending review.`,
+            title: `${needReviewCount ?? "..."} / ${
+              totalCount ?? "..."
+            } files pending review.`,
             children: (
               <>
                 <Tooltip title={showAll ? "Hide reviewed" : "Show all"}>

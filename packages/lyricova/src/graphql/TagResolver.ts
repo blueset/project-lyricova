@@ -11,7 +11,7 @@ import {
 } from "type-graphql";
 import { Tag } from "lyricova-common/models/Tag";
 import { Entry } from "lyricova-common/models/Entry";
-import { UserInputError } from "apollo-server-express";
+import { GraphQLError } from "graphql";
 
 @InputType()
 class NewTagInput implements Partial<Tag> {
@@ -63,7 +63,7 @@ export class TagResolver {
   ): Promise<Tag> {
     const tag = await Tag.findByPk(slug);
     if (!tag) {
-      throw new UserInputError(`Tag ${slug} not found in database.`);
+      throw new GraphQLError(`Tag ${slug} not found in database.`);
     }
     await Tag.update(data, { where: { slug } });
     return await Tag.findByPk(data.slug);
@@ -74,7 +74,7 @@ export class TagResolver {
   public async deleteTag(@Arg("slug") slug: string): Promise<boolean> {
     const tag = await Tag.findByPk(slug);
     if (!tag) {
-      throw new UserInputError(`Tag ${slug} not found in database.`);
+      throw new GraphQLError(`Tag ${slug} not found in database.`);
     }
     await tag.destroy();
     return true;

@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "dependencies": {
+    "graphql": "^16.6.0",
     "react": "^18.2.0"
   },
   "devDependencies": {
