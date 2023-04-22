@@ -1,4 +1,4 @@
-import { Paper, styled } from "@mui/material";
+import { Box, Paper, styled } from "@mui/material";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
 import type { ReactNode, CSSProperties } from "react";
@@ -124,7 +124,7 @@ export default function IndexLayout({ children }: Props) {
     } catch (error) {
       console.error(error);
     }
-  }, [loopMode, dispatch, currentSong]);
+  }, [loopMode, dispatch, currentSong.id, apolloClient]);
 
   // Add onEnded listener
   useEffect(() => {
@@ -305,73 +305,68 @@ export default function IndexLayout({ children }: Props) {
       <audio ref={playerRef} />
       <AppContext playerRef={playerRef}>
         <AuthContext noRedirect>
-          <AnimatePresence>
-            <SxMotionDiv
-              layout
+          <Box
+            sx={{
+              height: "100vh",
+              display: "flex",
+              ...(isCollapsed
+                ? { flexDirection: "column" }
+                : {
+                    flexDirection: { xs: "column", md: "row" },
+                  }),
+            }}
+            style={generateBackgroundStyle(currentSong, textureURL)}
+          >
+            <Box
               sx={{
-                height: "100vh",
-                display: "flex",
+                zIndex: 2,
                 ...(isCollapsed
-                  ? { flexDirection: "column" }
+                  ? { order: 1 }
                   : {
-                      flexDirection: { xs: "column", md: "row" },
+                      width: { md: "clamp(25em, 33%, 45em)" },
+                      padding: { md: "24px" },
+                      height: { md: "100%" },
+                      position: { xs: "absolute", md: "unset" },
+                      left: { xs: 0, md: "unset" },
+                      right: { xs: 0, md: "unset" },
+                      top: { xs: 0, md: "unset" },
+                      bottom: { xs: 0, md: "unset" },
                     }),
               }}
-              style={generateBackgroundStyle(currentSong, textureURL)}
             >
-              <SxMotionDiv
-                layout
+              <Paper
                 sx={{
-                  zIndex: 2,
-                  ...(isCollapsed
-                    ? { order: 1 }
-                    : {
-                        width: { md: "clamp(25em, 33%, 45em)" },
-                        padding: { md: "24px" },
-                        height: { md: "100%" },
-                        position: { xs: "absolute", md: "unset" },
-                        left: { xs: 0, md: "unset" },
-                        right: { xs: 0, md: "unset" },
-                        top: { xs: 0, md: "unset" },
-                        bottom: { xs: 0, md: "unset" },
-                      }),
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                <Paper
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Player />
-                  {!isCollapsed && <CurrentPlaylist />}
-                </Paper>
-              </SxMotionDiv>
-              <SxMotionDiv
-                layout
-                sx={{
-                  flexGrow: 1,
-                  maxHeight: { xs: "calc(100% - 12.5rem)", sm: "unset" },
-                  ...(isCollapsed
-                    ? {
-                        height: { md: 0, xs: "100%" },
-                      }
-                    : {
-                        height: "100%",
-                        width: 0,
-                      }),
-                }}
+                <Player />
+                {!isCollapsed && <CurrentPlaylist />}
+              </Paper>
+            </Box>
+            <Box
+              sx={{
+                flexGrow: 1,
+                maxHeight: { xs: "calc(100% - 12.5rem)", sm: "unset" },
+                ...(isCollapsed
+                  ? {
+                      height: { md: 0, xs: "100%" },
+                    }
+                  : {
+                      height: "100%",
+                      width: 0,
+                    }),
+              }}
+            >
+              <DetailsPanel
+                coverUrl={currentSong ? getTrackCoverURL(currentSong) : null}
               >
-                <DetailsPanel
-                  coverUrl={currentSong ? getTrackCoverURL(currentSong) : null}
-                >
-                  {children}
-                </DetailsPanel>
-              </SxMotionDiv>
-            </SxMotionDiv>
-          </AnimatePresence>
+                {children}
+              </DetailsPanel>
+            </Box>
+          </Box>
         </AuthContext>
       </AppContext>
     </>
