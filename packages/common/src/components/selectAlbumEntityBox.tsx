@@ -30,7 +30,7 @@ export type ExtendedAlbum = Partial<Album> & {
 };
 
 const LOCAL_ARTIST_ENTITY_QUERY = gql`
-  query($text: String!) {
+  query ($text: String!) {
     searchAlbums(keywords: $text) {
       ...SelectAlbumEntry
     }
@@ -53,7 +53,6 @@ export default function SelectAlbumEntityBox<T extends string>({
   const apolloClient = useApolloClient();
   const {
     input: { value },
-    meta: { touched },
   } = useField<ExtendedAlbum>(fieldName);
   const setValue = useForm().mutators.setValue;
 
@@ -63,6 +62,7 @@ export default function SelectAlbumEntityBox<T extends string>({
   const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useState("");
 
   const [importDialogKeyword, setImportDialogKeyword] = useState("");
+  const [touched, setTouched] = useState(false);
 
   // Confirm import pop-up
   const [isImportDialogOpen, toggleImportDialogOpen] = useState(false);
@@ -239,6 +239,7 @@ export default function SelectAlbumEntityBox<T extends string>({
                 return "";
               return (option as ExtendedAlbum).name || "";
             }}
+            onFocus={() => setTouched(true)}
           />
         </Grid>
         {value && (

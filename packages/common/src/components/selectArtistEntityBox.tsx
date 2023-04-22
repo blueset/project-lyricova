@@ -30,7 +30,7 @@ export type ExtendedArtist = Partial<Artist> & {
 };
 
 const LOCAL_ARTIST_ENTITY_QUERY = gql`
-  query($text: String!) {
+  query ($text: String!) {
     searchArtists(keywords: $text) {
       ...SelectArtistEntry
     }
@@ -53,7 +53,6 @@ export default function SelectArtistEntityBox<T extends string>({
   const apolloClient = useApolloClient();
   const {
     input: { value },
-    meta: { touched },
   } = useField<ExtendedArtist>(fieldName);
   const setValue = useForm().mutators.setValue;
 
@@ -63,6 +62,7 @@ export default function SelectArtistEntityBox<T extends string>({
   const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useState("");
 
   const [importDialogKeyword, setImportDialogKeyword] = useState("");
+  const [touched, setTouched] = useState(false);
 
   // Confirm import pop-up
   const [isImportDialogOpen, toggleImportDialogOpen] = useState(false);
@@ -240,6 +240,7 @@ export default function SelectArtistEntityBox<T extends string>({
                 return "";
               return (option as ExtendedArtist).name ?? "";
             }}
+            onFocus={() => setTouched(true)}
           />
         </Grid>
         {value && (
