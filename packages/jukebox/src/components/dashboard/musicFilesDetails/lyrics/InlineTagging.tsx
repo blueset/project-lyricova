@@ -87,8 +87,13 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
 
   const { playerStatus, play, pause, seek, setRate, getProgress, audioBuffer } =
     useWebAudio(`/api/files/${fileId}/file`);
-  const playerStatusRef = useRef<WebAudioPlayerState>();
+  const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
   playerStatusRef.current = playerStatus;
+  // console.log(
+  //   "playerStatus",
+  //   playerStatus.state,
+  //   playerStatusRef.current.state
+  // );
   const [playbackProgress, setPlaybackProgress] = useNamedState(
     0,
     "playbackProgress"
@@ -130,7 +135,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         if (!tags) return null;
         const tagValues: (number | undefined)[] = [];
         tags.tags.forEach((t) => {
-          tagValues[t.index] = Math.floor((t.timeTag + l.position) * 1000);
+          tagValues[t.index] = t.timeTag + l.position;
         });
         return [...tagValues];
       });
@@ -169,19 +174,21 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
       return () => {
         const lines = linesRef.current.map((l, idx) => {
           const prevTags = tagsRef.current?.[idx - 1]?.flat();
-          const prevEndTime = prevTags ? Math.max(...prevTags) / 1000 : null;
+          const prevEndTime = prevTags ? Math.max(...prevTags) : null;
           const fallbackStartTime = Math.max(
             isNaN(l.position) ? 0 : l.position,
             prevEndTime ?? 0
           );
-          const startTime =
-            tagsRef.current[idx]?.find((t) => t?.[0])?.[0] ?? fallbackStartTime;
+          const firstTag = tagsRef.current[idx]?.find((t) => t?.[0])?.[0];
+          const startTime = firstTag ? firstTag : fallbackStartTime;
           l.position = startTime;
           l.attachments.setTag("dots", dotsRef.current[idx].join(","));
           l.attachments.setTag(
             "tags",
             tagsRef.current[idx]
-              .map((t) => t.map((v) => v && Math.floor(v * 1000)).join("/"))
+              .map((t) =>
+                t.map((t) => (t ? Math.floor(t * 1000) : t)).join("/")
+              )
               .join(",")
           );
           if (tagsRef.current[idx]?.length) {
@@ -391,6 +398,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
   // Update time tags
   const onFrame = useCallback(() => {
     const playerStatus = playerStatusRef.current;
+    // console.log("onFrame", playerStatus.state);
     const currentLine = currentLineRef.current;
     const tags = tagsRef.current;
     const startPerLine = tags.map((t) => {
@@ -431,7 +439,13 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     if (playerStatus.state === "playing") {
       requestAnimationFrame(onFrame);
     }
-  }, [getProgress, setCurrentLine, setPlaybackProgress]);
+  }, [
+    getProgress,
+    setCurrentLine,
+    setPlaybackProgress,
+    playerStatusRef,
+    currentLineRef,
+  ]);
 
   useEffect(() => {
     // console.log("useEffect playPauseTimeline");
