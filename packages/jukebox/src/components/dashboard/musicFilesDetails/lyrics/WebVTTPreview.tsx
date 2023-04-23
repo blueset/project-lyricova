@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import type { LyricsLine} from "lyrics-kit/core";
+import type { LyricsLine } from "lyrics-kit/core";
 import { Lyrics, FURIGANA, buildTimeTag } from "lyrics-kit/core";
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
 
 function convertLine(line: LyricsLine): string {
   let base = line.content;
+  if (!base) return "";
 
   const timeTags = line?.attachments?.timeTag?.tags;
   if (timeTags) {
@@ -67,8 +68,9 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
           text += `\n${v.attachments.translation()}`;
         }
 
-        return `${idx +
-          1}\n${start} --> ${end} line:50% align:start\n<c.tt>[${start}]</c>\n${text}`;
+        return `${
+          idx + 1
+        }\n${start} --> ${end} line:50% align:start\n<c.tt>[${start}]</c>\n${text}`;
       })
       .join("\n\n");
     // console.log(webvtt);
