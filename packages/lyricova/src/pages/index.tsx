@@ -31,9 +31,6 @@ export const getStaticProps: GetStaticProps<IndexProps> = async (context) => {
       {
         association: "verses",
         attributes: ["text", "isMain", "language", "typingSequence"],
-        where: {
-          isMain: true,
-        },
       },
       {
         association: "tags",

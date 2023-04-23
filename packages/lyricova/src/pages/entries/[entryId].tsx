@@ -46,7 +46,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
           {
             association: "artists",
             attributes: ["id", "name"],
-            through: { attributes: ["artistRoles", "categories"] },
+            through: { attributes: ["artistRoles", "categories", "isSupport"] },
           },
         ],
         through: {
