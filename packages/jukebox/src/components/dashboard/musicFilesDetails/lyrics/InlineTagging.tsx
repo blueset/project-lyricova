@@ -413,8 +413,9 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     setPlaybackProgress(time);
 
     if (
-      (time < currentLine.start || time > currentLine.end) &&
-      startPerLine.length > 0
+      ((time < currentLine.start || time > currentLine.end) &&
+        startPerLine.length > 0) ||
+      playerStatus.state === "paused"
     ) {
       // console.log("set current line", startPerLine, time);
       const record = startPerLine.reduce(
