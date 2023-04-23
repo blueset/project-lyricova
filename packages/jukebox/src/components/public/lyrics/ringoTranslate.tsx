@@ -175,7 +175,6 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
       offset = window.innerWidth > 560 ? 100 : 50;
     if (lines[0].dataset.offset === "-1") {
       start += 1;
-      lines[0].style.scale = "1";
       if (useTop) {
         lines[0].style.top = `${offset - gap - lines[0].clientHeight}px`;
       } else {
@@ -186,16 +185,12 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
     }
     for (let i = start; i < lines.length; i++) {
       const line = lines[i];
-      const scale = line.dataset.offset === "0" ? 1 / 0.9 : 1;
       if (useTop) {
         line.style.top = `${offset}px`;
-        // line.style.scale = `${scale}`;
-        line.style.fontSize = `${scale * 3}em`;
       } else {
         line.style.translate = `0 ${offset}px`;
-        line.style.scale = `${scale}`;
       }
-      offset += line.clientHeight * scale + gap;
+      offset += line.clientHeight + gap;
     }
   }, [line, useTop]);
 

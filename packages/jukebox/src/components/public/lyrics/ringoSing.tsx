@@ -8,7 +8,13 @@ import { useLyricsState, usePlayerState } from "../../../frontendUtils/hooks";
 import { styled } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import _ from "lodash";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import {
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
 import { useAppSelector } from "../../../redux/public/store";
 import { currentSongSelector } from "../../../redux/public/playlist";
 import clsx from "clsx";
@@ -62,7 +68,7 @@ const LineDiv = styled("div")`
   background-position: center;
   background-attachment: fixed;
   position: absolute;
-  width: 90%;
+  width: calc((100% - 60px));
   left: 30px;
   color: rgba(255, 255, 255, 0.4);
   --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright)
@@ -168,8 +174,7 @@ const CountdownDiv = styled("div")`
 
 function LineSpanner({ line }: { line: LyricsKitLyricsLine | null }) {
   if (!line?.content) return null;
-  if (!line.attachments.timeTag?.tags)
-    return <span data-spanner>{line.content}</span>;
+  if (!line.attachments.timeTag?.tags) return <>{line.content}</>;
   const tags = line.attachments.timeTag.tags;
   let ptr = 0;
   const result: string[] = [];
@@ -184,11 +189,13 @@ function LineSpanner({ line }: { line: LyricsKitLyricsLine | null }) {
   return (
     <>
       {line.content.slice(0, tags[0].index)}
-      {result.map((v, idx) => (
-        <span data-spanner key={idx}>
-          {v}
-        </span>
-      ))}
+      {result.length > 1
+        ? result.map((v, idx) => (
+            <span data-spanner key={idx}>
+              {v}
+            </span>
+          ))
+        : result[0]}
       {line.content.slice(ptr)}
     </>
   );
@@ -264,15 +271,16 @@ export function RingoSingLyrics({ lyrics }: Props) {
       offset = window.innerWidth > 560 ? 100 : 50;
     if (lines[0].dataset.offset === "-1") {
       start += 1;
-      lines[0].style.scale = "1";
+      // lines[0].style.scale = "1";
       lines[0].style.translate = `0 ${offset - gap - lines[0].clientHeight}px`;
     }
     for (let i = start; i < lines.length; i++) {
       const line = lines[i];
-      const scale = line.dataset.offset === "0" ? 1 / 0.9 : 1;
+      // const scale = line.dataset.offset === "0" ? 1 / 0.9 : 1;
       line.style.translate = `0 ${offset}px`;
-      line.style.scale = `${scale}`;
-      offset += line.clientHeight * scale + gap;
+      // line.style.scale = `${scale}`;
+      // offset += line.clientHeight * scale + gap;
+      offset += line.clientHeight + gap;
     }
   }, [line]);
 
