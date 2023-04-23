@@ -46,6 +46,7 @@ import {
 } from "./InlineTaggingKeyPresses";
 import { populateDots } from "./InlineTaggingDots";
 import { WebAudioControls } from "./WebAudioControls";
+import { isNaN } from "lodash";
 
 function Instructions() {
   return (
@@ -174,13 +175,17 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
       return () => {
         const lines = linesRef.current.map((l, idx) => {
           const prevTags = tagsRef.current?.[idx - 1]?.flat();
-          const prevEndTime = prevTags ? Math.max(...prevTags) : null;
-          const fallbackStartTime = Math.max(
-            isNaN(l.position) ? 0 : l.position,
-            prevEndTime ?? 0
-          );
+          const prevEndTime = prevTags?.length ? Math.max(...prevTags) : null;
+          const fallbackStartTime =
+            isNaN(l.position) && !prevEndTime
+              ? NaN
+              : isNaN(l.position)
+              ? prevEndTime
+              : !prevEndTime
+              ? l.position
+              : Math.max(isNaN(l.position) ? 0 : l.position, prevEndTime ?? 0);
           const firstTag = tagsRef.current[idx]?.find((t) => t?.[0])?.[0];
-          const startTime = firstTag ? firstTag : fallbackStartTime;
+          const startTime = firstTag || fallbackStartTime;
           l.position = startTime;
           l.attachments.setTag("dots", dotsRef.current[idx].join(","));
           l.attachments.setTag(

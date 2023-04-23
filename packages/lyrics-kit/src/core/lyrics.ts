@@ -49,16 +49,10 @@ export class Lyrics {
   constructor(description?: string) {
     if (description === undefined) return;
     const descriptionLines = description.split("\n");
-    const {
-      id3Tags,
-      mainLines,
-      attachments,
-      others,
-    } = descriptionLines.reduce<{
+    const { id3Tags, mainLines, attachments } = descriptionLines.reduce<{
       id3Tags: RegExpMatchArray[];
-      mainLines: RegExpMatchArray[];
+      mainLines: (RegExpMatchArray | string)[];
       attachments: RegExpMatchArray[];
-      others: string[];
     }>(
       (accu, curr) => {
         if (curr.match(id3TagRegex)) {
@@ -68,11 +62,11 @@ export class Lyrics {
         } else if (curr.match(lyricsLineAttachmentRegex)) {
           accu.attachments.push(...curr.matchAll(lyricsLineAttachmentRegex));
         } else {
-          accu.others.push(curr);
+          accu.mainLines.push(curr);
         }
         return accu;
       },
-      { id3Tags: [], mainLines: [], attachments: [], others: [] }
+      { id3Tags: [], mainLines: [], attachments: [] }
     );
 
     for (const match of id3Tags) {
@@ -84,32 +78,60 @@ export class Lyrics {
     }
 
     const lines: LyricsLine[] = [];
-    for (const match of mainLines) {
-      const timeTagStr = match[1],
-        timeTags = resolveTimeTag(timeTagStr);
-      const lyricsContentStr = match[2],
-        line = new LyricsLine(lyricsContentStr, 0);
+    const tags: Set<string> = new Set();
+    let lastEmptyLine: LyricsLine = null;
+    let hasUntimedLine = false;
+    let shouldSort = true;
+    for (const entry of mainLines) {
+      if (typeof entry === "string") {
+        // Match lines without time tag
+        hasUntimedLine = true;
+        const match = entry.match(/\[(.+?)\](.*)/);
+        if (match) {
+          if (lastEmptyLine === null) {
+            lastEmptyLine = new LyricsLine("", NaN);
+            lines.push(lastEmptyLine);
+          }
+          const attachmentTagStr = match[1],
+            attachmentStr = match[2];
+          lastEmptyLine.attachments.setTag(attachmentTagStr, attachmentStr);
+          tags.add(attachmentTagStr);
+        } else {
+          lastEmptyLine = new LyricsLine(entry, NaN);
+          lines.push(lastEmptyLine);
+        }
+      } else {
+        // Match lines with time tag
 
-      const translationStr = match[3];
-      if (translationStr) {
-        line.attachments.setTranslation(translationStr);
+        // Do not sort if an untimed line is found before a timed line.
+        shouldSort = !hasUntimedLine;
+        const match = entry;
+        lastEmptyLine = null;
+        const timeTagStr = match[1],
+          timeTags = resolveTimeTag(timeTagStr);
+        const lyricsContentStr = match[2],
+          line = new LyricsLine(lyricsContentStr, 0);
+
+        const translationStr = match[3];
+        if (translationStr) {
+          line.attachments.setTranslation(translationStr);
+        }
+
+        lines.push(
+          ...timeTags.map((tag) => {
+            const l = _.clone(line);
+            l.position = tag;
+            l.lyrics = this;
+            return l;
+          })
+        );
       }
-
-      lines.push(
-        ...timeTags.map((tag) => {
-          const l = _.clone(line);
-          l.position = tag;
-          l.lyrics = this;
-          return l;
-        })
-      );
     }
-    lines.sort((a, b) => a.position - b.position);
+
+    if (shouldSort) lines.sort((a, b) => a.position - b.position);
 
     // Assign to object property here for the use of lineIndex later.
     this.lines = lines;
-
-    const tags: Set<string> = new Set();
     for (const match of attachments) {
       const timeTagStr = match[1],
         timeTags = resolveTimeTag(timeTagStr);
@@ -118,7 +140,9 @@ export class Lyrics {
         attachmentStr = match[3] || "";
 
       for (const timeTag of timeTags) {
-        const indexOutcome = this.lineIndex(timeTag);
+        const indexOutcome = shouldSort
+          ? this.lineIndex(timeTag)
+          : this.lineIndexLinear(timeTag);
         if (indexOutcome.state === "found") {
           this.lines[indexOutcome.at].attachments.setTag(
             attachmentTagStr,
@@ -127,27 +151,6 @@ export class Lyrics {
         }
       }
       tags.add(attachmentTagStr);
-    }
-
-    // Match lines without time tag
-    if (others.some(Boolean)) {
-      let lastLine: LyricsLine = null;
-      others.forEach((line) => {
-        const match = line.match(/\[(.+?)\](.*)/);
-        if (match) {
-          if (lastLine === null) {
-            lastLine = new LyricsLine("", NaN);
-            this.lines.push(lastLine);
-          }
-          const attachmentTagStr = match[1],
-            attachmentStr = match[2];
-          lastLine.attachments.setTag(attachmentTagStr, attachmentStr);
-          tags.add(attachmentTagStr);
-        } else {
-          lastLine = new LyricsLine(line, NaN);
-          this.lines.push(lastLine);
-        }
-      });
     }
 
     this.metadata.data[ATTACHMENT_TAGS] = tags;
@@ -181,6 +184,12 @@ export class Lyrics {
       state: "notFound",
       insertAt: index,
     };
+  }
+
+  private lineIndexLinear(position: number): LyricsMatch {
+    const index = this.lines.findIndex((l) => l.position === position);
+    if (index >= 0) return { state: "found", at: index };
+    return { state: "notFound", insertAt: this.lines.length };
   }
 
   /** Build LRCX string. */

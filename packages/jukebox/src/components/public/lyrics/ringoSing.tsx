@@ -8,15 +8,7 @@ import { useLyricsState, usePlayerState } from "../../../frontendUtils/hooks";
 import { styled } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import _ from "lodash";
-import {
-  ReactElement,
-  ReactNode,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-} from "react";
-import { useAppSelector } from "../../../redux/public/store";
-import { currentSongSelector } from "../../../redux/public/playlist";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import clsx from "clsx";
 import gsap from "gsap";
 
