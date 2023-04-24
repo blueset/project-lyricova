@@ -8,22 +8,23 @@ interface Props {
 }
 
 function convertLine(line: LyricsLine): string {
-  let base = line.content;
+  const base = line.content;
   if (!base) return "";
 
-  const timeTags = line?.attachments?.timeTag?.tags;
-  if (timeTags) {
-    let ptr = 0;
-    let result = "";
-    timeTags.forEach(({ index, timeTag }) => {
-      result +=
-        base.substring(ptr, index) +
-        `<${buildTimeTag(line.position + timeTag)}>`;
-      ptr = index;
-    });
-    if (ptr < base.length) result += base.substring(ptr);
-    base = result;
-  }
+  // Time tag support is disabled until major browser ships support for it
+  // const timeTags = line?.attachments?.timeTag?.tags;
+  // if (timeTags) {
+  //   let ptr = 0;
+  //   let result = "";
+  //   timeTags.forEach(({ index, timeTag }) => {
+  //     result +=
+  //       base.substring(ptr, index) +
+  //       `<${buildTimeTag(line.position + timeTag)}>`;
+  //     ptr = index;
+  //   });
+  //   if (ptr < base.length) result += base.substring(ptr);
+  //   base = result;
+  // }
 
   const furigana = line?.attachments?.content?.[FURIGANA]?.attachment ?? [];
   let result = "";
