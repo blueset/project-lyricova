@@ -104,6 +104,12 @@ interface FormValues {
   }[];
 }
 
+const SquareButton = styled(Button)`
+  width: 1em;
+  min-width: 1em;
+  margin-left: 8px;
+`;
+
 interface Props {
   isOpen: boolean;
   create?: boolean;
@@ -450,6 +456,54 @@ export default function SongEntityDialog({
                             <MenuItem value="Illustrator">Illustrator</MenuItem>
                             <MenuItem value="Subject">Subject</MenuItem>
                           </Select>
+                          <Field name={`${name}`}>
+                            {({ input: { value } }) =>
+                              value.artist?.type === "Producer" ? (
+                                <SquareButton
+                                  variant="outlined"
+                                  size="large"
+                                  onClick={() => {
+                                    form.mutators.setValue(
+                                      `${name}.artistRoles`,
+                                      ["Composer", "Lyricist"]
+                                    );
+                                    form.mutators.setValue(
+                                      `${name}.categories`,
+                                      ["Producer"]
+                                    );
+                                  }}
+                                >
+                                  P
+                                </SquareButton>
+                              ) : value.artist?.type === "Vocaloid" ||
+                                value.artist?.type === "UTAU" ||
+                                value.artist?.type === "CeVIO" ||
+                                value.artist?.type ===
+                                  "OtherVoiceSynthesizer" ||
+                                value.artist?.type === "OtherVocalist" ||
+                                value.artist?.type === "Utaite" ||
+                                value.artist?.type === "Vocalist" ||
+                                value.artist?.type === "CoverArtist" ||
+                                value.artist?.type === "SynthesizerV" ? (
+                                <SquareButton
+                                  variant="outlined"
+                                  size="large"
+                                  onClick={() => {
+                                    form.mutators.setValue(
+                                      `${name}.artistRoles`,
+                                      ["Vocalist"]
+                                    );
+                                    form.mutators.setValue(
+                                      `${name}.categories`,
+                                      ["Vocalist"]
+                                    );
+                                  }}
+                                >
+                                  V
+                                </SquareButton>
+                              ) : null
+                            }
+                          </Field>
                         </Stack>
                         <Stack flexDirection="row" alignItems="center">
                           <Checkboxes

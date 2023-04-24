@@ -28,7 +28,7 @@ import { AlbumFragments } from "lyricova-common/utils/fragments";
 import { useNamedState } from "../../../frontendUtils/hooks";
 
 const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
-  mutation($id: Int!, $data: MusicFileInput!) {
+  mutation ($id: Int!, $data: MusicFileInput!) {
     writeTagsToMusicFile(id: $id, data: $data) {
       trackName
     }
@@ -36,7 +36,7 @@ const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
 ` as DocumentNode;
 
 const IMPORT_ALBUM_MUTATION = gql`
-  mutation($id: Int!) {
+  mutation ($id: Int!) {
     enrolAlbumFromVocaDB(albumId: $id) {
       ...SelectAlbumEntry
     }
@@ -120,10 +120,7 @@ export default function InfoPanel({
             otherwise: yup.string().optional(),
           }),
           song: yup.object().nullable(),
-          album: yup
-            .number()
-            .nullable()
-            .integer(),
+          album: yup.number().nullable().integer(),
         })
       )}
       onSubmit={async (values) => {
@@ -410,7 +407,7 @@ export default function InfoPanel({
                             const producers = value.artists.filter(
                               (v) =>
                                 v.ArtistOfSong.categories.indexOf("Producer") >=
-                                0
+                                  0 && !v.ArtistOfSong.isSupport
                             );
                             artistName += producers
                               .map((v) => v.ArtistOfSong.customName || v.name)
@@ -424,7 +421,7 @@ export default function InfoPanel({
                             const vocalists = value.artists.filter(
                               (v) =>
                                 v.ArtistOfSong.categories.indexOf("Vocalist") >=
-                                0
+                                  0 && !v.ArtistOfSong.isSupport
                             );
                             if (vocalists.length > 0) {
                               artistName +=
