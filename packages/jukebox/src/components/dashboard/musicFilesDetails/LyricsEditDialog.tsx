@@ -105,6 +105,13 @@ export default function LyricsEditDialog({
     [setTabIndex]
   );
 
+  const needsCommit =
+    tabIndex === "webAudioTagging" ||
+    tabIndex === "tagging" ||
+    tabIndex === "translation" ||
+    tabIndex === "furigana" ||
+    tabIndex === "inline";
+
   const handleClose = useCallback(() => {
     toggleOpen(false);
     setLrc("");
@@ -187,11 +194,23 @@ export default function LyricsEditDialog({
               <Tab label="Download" value="download" />
               <Tab label="Edit" value="edit" />
               <Tab label="Edit Plain" value="editLrc" />
-              <Tab label="Tagging" value="tagging" />
-              <Tab label="WebAudioAPI Tagging" value="webAudioTagging" />
-              <Tab label="Translation" value="translation" />
-              <Tab label="Furigana" value="furigana" />
-              <Tab label="Inline Tagging" value="inline" />
+              <Tab disabled={needsCommit} label="Tagging" value="tagging" />
+              <Tab
+                disabled={needsCommit}
+                label="WebAudioAPI Tagging"
+                value="webAudioTagging"
+              />
+              <Tab
+                disabled={needsCommit}
+                label="Translation"
+                value="translation"
+              />
+              <Tab disabled={needsCommit} label="Furigana" value="furigana" />
+              <Tab
+                disabled={needsCommit}
+                label="Inline Tagging"
+                value="inline"
+              />
             </Tabs>
             <IconButton
               color="inherit"
@@ -252,16 +271,7 @@ export default function LyricsEditDialog({
           Cancel
         </Button>
         <Button
-          disabled={
-            submitting ||
-            !lrcx ||
-            !lrc ||
-            tabIndex === "webAudioTagging" ||
-            tabIndex === "tagging" ||
-            tabIndex === "translation" ||
-            tabIndex === "furigana" ||
-            tabIndex === "inline"
-          }
+          disabled={submitting || !lrcx || !lrc || needsCommit}
           onClick={handleSubmit}
           color="primary"
         >
