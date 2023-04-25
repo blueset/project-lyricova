@@ -391,6 +391,8 @@ export class DownloadResolver {
       "--extract-audio",
       "--audio-format",
       "mp3",
+      "--audio-quality",
+      "128K",
       "-f",
       format,
       "--embed-thumbnail",

@@ -251,7 +251,20 @@ export default function LyricsEditDialog({
         <Button onClick={handleClose} color="primary">
           Cancel
         </Button>
-        <Button disabled={submitting} onClick={handleSubmit} color="primary">
+        <Button
+          disabled={
+            submitting ||
+            !lrcx ||
+            !lrc ||
+            tabIndex === "webAudioTagging" ||
+            tabIndex === "tagging" ||
+            tabIndex === "translation" ||
+            tabIndex === "furigana" ||
+            tabIndex === "inline"
+          }
+          onClick={handleSubmit}
+          color="primary"
+        >
           Save
         </Button>
       </DialogActions>

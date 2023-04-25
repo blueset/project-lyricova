@@ -124,7 +124,7 @@ export default function IndexLayout({ children }: Props) {
     } catch (error) {
       console.error(error);
     }
-  }, [loopMode, dispatch, currentSong.id, apolloClient]);
+  }, [loopMode, dispatch, currentSong?.id, apolloClient]);
 
   // Add onEnded listener
   useEffect(() => {
