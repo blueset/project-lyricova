@@ -26,7 +26,7 @@ export interface PlaylistState {
 
   /** Track index number AFTER shuffle mapping. */
   nowPlaying: number | null;
-  
+
   /** Should play immediately when `nowPlaying` is changed. */
   playNow: boolean | null;
 
@@ -53,7 +53,10 @@ export const playlistSlice = createSlice({
       state.tracks = action.payload;
       state.shuffleMapping = null;
     },
-    playTrack: (state, action: PayloadAction<number | {track: number, playNow: boolean}>) => {
+    playTrack: (
+      state,
+      action: PayloadAction<number | { track: number; playNow: boolean }>
+    ) => {
       if (typeof action.payload === "number") {
         state.nowPlaying = action.payload;
       } else {
@@ -70,7 +73,8 @@ export const playlistSlice = createSlice({
       } else if (state.loopMode === "all") {
         state.nowPlaying = state.tracks.length - 1;
       } else {
-        state.nowPlaying = null;
+        // no-op.
+        // state.nowPlaying = null;
       }
       state.playNow = !!action.payload;
     },
@@ -83,7 +87,8 @@ export const playlistSlice = createSlice({
       } else if (state.loopMode === "all") {
         state.nowPlaying = 0;
       } else {
-        state.nowPlaying = null;
+        // no-op.
+        // state.nowPlaying = null;
       }
       state.playNow = !!action.payload;
     },
@@ -156,11 +161,11 @@ export const playlistSlice = createSlice({
     },
     setCollapsed: (state, action: PayloadAction<boolean>) => {
       state.isCollapsed = action.payload;
-    }
+    },
   },
 });
 
-export const { 
+export const {
   loadTracks,
   playTrack,
   playPrevious,
@@ -173,7 +178,6 @@ export const {
   stop,
   setCollapsed,
 } = playlistSlice.actions;
-
 
 const persistConfig = {
   key: "lyricovaJukeboxPublicReduxPlaylist",
