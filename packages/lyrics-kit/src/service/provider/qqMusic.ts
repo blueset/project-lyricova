@@ -299,7 +299,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
 
         // Matches either single kanji or a group of full-width digits together.
         const kanjis = [
-          ...line.content.matchAll(/(\p{Script=Han}|[０-９]+)/gu),
+          ...line.content.matchAll(/(\p{Script=Han}|[０-９0-9]+)/gu),
         ];
         const furigana: [string, Range][] = [];
 

@@ -405,7 +405,13 @@ export class Lyrics {
     let index = 0,
       otherIndex = 0;
     while (index < this.lines.length && otherIndex < other.lines.length) {
-      if (
+      if (isNaN(this.lines[index].position)) {
+        index++;
+        continue;
+      } else if (isNaN(other.lines[otherIndex].position)) {
+        otherIndex++;
+        continue;
+      } else if (
         Math.abs(
           this.lines[index].position - other.lines[otherIndex].position
         ) < mergeTimetagThreshold
