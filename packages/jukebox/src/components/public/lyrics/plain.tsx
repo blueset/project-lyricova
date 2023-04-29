@@ -2,15 +2,13 @@ import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
 import { styled } from "@mui/material";
-import { CSSProperties, memo } from "react";
+import { memo } from "react";
 import { useRef, useEffect } from "react";
 import clsx from "clsx";
-import Balancer from "react-wrap-balancer";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import React from "react";
 
 const ANIMATION_THRESHOLD = 0.25;
-const MemoBalanceText = React.memo(Balancer);
 
 interface Props {
   lyrics: LyricsKitLyrics;
@@ -43,13 +41,9 @@ function Line({
 }) {
   return (
     <StyledLine data-index={idx} className={clsx(active && "active")}>
-      <MemoBalanceText>
-        <FuriganaLyricsLine graphQLSourceLine={lineObj} />
-      </MemoBalanceText>
+      <FuriganaLyricsLine graphQLSourceLine={lineObj} />
       {lineObj.attachments.translation && (
-        <div className="translation">
-          <MemoBalanceText>{lineObj.attachments.translation}</MemoBalanceText>
-        </div>
+        <div className="translation">{lineObj.attachments.translation}</div>
       )}
     </StyledLine>
   );
