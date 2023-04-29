@@ -19,6 +19,7 @@ export default function ButtonRow({ children, className, sx }: Props) {
         marginBottom: 1,
         display: "flex",
         flexDirection: "row",
+        flexWrap: "wrap",
         gap: 1,
         ...sx,
       }}

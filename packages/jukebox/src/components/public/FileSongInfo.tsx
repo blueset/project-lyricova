@@ -1,7 +1,7 @@
 import { gql, useQuery } from "@apollo/client";
 import type { MusicFile } from "lyricova-common/models/MusicFile";
 import { useRouter } from "next/router";
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import React, { useCallback, useMemo } from "react";
 import {
   Avatar,
@@ -24,7 +24,7 @@ import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 import type { Theme } from "@emotion/react";
 
 const SINGLE_FILE_SONG_QUERY = gql`
-  query($id: Int!) {
+  query ($id: Int!) {
     musicFile(id: $id) {
       id
       trackName
@@ -59,7 +59,7 @@ const SINGLE_FILE_SONG_QUERY = gql`
 const ResponsiveTableCellSx: SxProps<Theme> = {
   display: { md: "table-cell" },
   paddingTop: { md: 1 },
-  paddingBottom: { md: 1 },
+  paddingBottom: 1,
   borderBottom: { md: 1 },
   borderBottomColor: { md: "divider" },
 };
