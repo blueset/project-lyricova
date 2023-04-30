@@ -30,7 +30,10 @@ export function LyricsFullScreenOverlay({
   children?: ReactNode;
 }) {
   const { playerRef } = useAppContext();
-  const [isPlaying, setIsPlaying] = useNamedState(false, "isPlaying");
+  const [isPlaying, setIsPlaying] = useNamedState(
+    !playerRef.current?.paused ?? false,
+    "isPlaying"
+  );
   const [isVisible, setIsVisible] = useNamedState(false, "isVisible");
   const toggleVisibleTimeout = useRef<number | null>(null);
   const lastClickTime = useRef<number>(0);

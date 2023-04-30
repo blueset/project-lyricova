@@ -803,7 +803,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             "& .countdown": {
               position: "relative",
               width: "0",
-              fontSize: "1.5rem",
+              fontSize: "max(0.75em, 1.5rem)",
               letterSpacing: "0.1em",
               transform: "translateY(-4.5em)",
             },
