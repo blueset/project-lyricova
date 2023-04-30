@@ -4,6 +4,7 @@ import Link, { NextComposedLink } from "lyricova-common/components/Link";
 import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/router";
 import type { GlobalStylesProps as StyledGlobalStylesProps } from "@mui/styled-engine/GlobalStyles/GlobalStyles";
+import { useAppSelector } from "../../redux/public/store";
 
 const StyledLink = styled(Link)({
   fontSize: "1.75em",
@@ -23,6 +24,7 @@ interface Props {
 
 export default function DetailsPanel({ coverUrl = null, children }: Props) {
   const router = useRouter();
+  const { isFullscreen, textureUrl } = useAppSelector((s) => s.display);
 
   let backgroundNode = (
     <div
@@ -62,17 +64,21 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
   return (
     <div
       style={{
-        position: "relative",
+        position: isFullscreen ? "fixed" : "relative",
+        inset: 0,
         overflow: "hidden",
         width: "100%",
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        zIndex: isFullscreen ? 2 : 0,
+        backgroundColor: "#00171F",
+        backgroundImage: textureUrl ? `url(/textures/${textureUrl})` : null,
       }}
     >
       <GlobalStyles
         styles={
-          ({
+          {
             ".coverMask": {
               backgroundImage: coverUrl ? `url(${coverUrl})` : null,
               backgroundColor: coverUrl ? "rgba(255, 255, 255, 0.8)" : null,
@@ -96,41 +102,46 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
                 ? "url(#brighter)"
                 : null,
             },
-          } as unknown) as StyledGlobalStylesProps["styles"]
+          } as unknown as StyledGlobalStylesProps["styles"]
         }
       />
       {backgroundNode}
-      <Box
-        pt={2}
-        pb={2}
-        pl={4}
-        pr={4}
-        display="flex"
-        flexDirection="row"
-        alignItems="center"
-        zIndex={1}
-      >
-        <StyledLink href="/">Lyrics</StyledLink>
-        <StyledLink
-          href="/library/tracks"
-          activeCriteria={(v) => v.startsWith("/library/")}
+      {!isFullscreen && (
+        <Box
+          pt={2}
+          pb={2}
+          pl={4}
+          pr={4}
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          zIndex={1}
         >
-          Library
-        </StyledLink>
-        <StyledLink href="/info" activeCriteria={(v) => v.startsWith("/info")}>
-          Info
-        </StyledLink>
-        <Box flexGrow={1} />
-        <IconButton
-          component={NextComposedLink}
-          color={router.pathname === "/search" ? "primary" : "default"}
-          href="/search"
-          aria-label="search"
-          edge="end"
-        >
-          <SearchIcon />
-        </IconButton>
-      </Box>
+          <StyledLink href="/">Lyrics</StyledLink>
+          <StyledLink
+            href="/library/tracks"
+            activeCriteria={(v) => v.startsWith("/library/")}
+          >
+            Library
+          </StyledLink>
+          <StyledLink
+            href="/info"
+            activeCriteria={(v) => v.startsWith("/info")}
+          >
+            Info
+          </StyledLink>
+          <Box flexGrow={1} />
+          <IconButton
+            component={NextComposedLink}
+            color={router.pathname === "/search" ? "primary" : "default"}
+            href="/search"
+            aria-label="search"
+            edge="end"
+          >
+            <SearchIcon />
+          </IconButton>
+        </Box>
+      )}
       <Box
         position="relative"
         width="1"

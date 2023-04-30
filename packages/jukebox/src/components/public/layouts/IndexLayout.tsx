@@ -1,4 +1,4 @@
-import { Box, Paper, styled } from "@mui/material";
+import { Box, Paper } from "@mui/material";
 import Player from "../Player";
 import DetailsPanel from "../DetailsPanel";
 import type { ReactNode, CSSProperties } from "react";
@@ -9,7 +9,6 @@ import { AppContext } from "../AppContext";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import CurrentPlaylist from "../CurrentPlaylist";
 import type { Texture } from "../../../graphql/TextureResolver";
-import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "lyricova-common/components/AuthContext";
 import type { DocumentNode } from "graphql";
 import store, {
@@ -25,12 +24,11 @@ import {
   playPrevious,
   stop,
 } from "../../../redux/public/playlist";
+import { setTextureUrl } from "../../../redux/public/display";
 
 interface Props {
   children: ReactNode;
 }
-
-const SxMotionDiv = styled(motion.div)``;
 
 const TEXTURE_QUERY = gql`
   query GetTexture {
@@ -241,10 +239,11 @@ export default function IndexLayout({ children }: Props) {
   }, [playerRef]);
 
   // Random fallback background
-  const [textureURL, setTextureURL] = useNamedState<string | null>(
-    null,
-    "textureURL"
-  );
+  // const [textureURL, setTextureURL] = useNamedState<string | null>(
+  //   null,
+  //   "textureURL"
+  // );
+  const textureURL = useAppSelector((state) => state.display.textureUrl);
   const [loadRandomTexture, randomTextureQuery] = useLazyQuery<{
     randomTexture: Texture;
   }>(TEXTURE_QUERY);
@@ -257,7 +256,7 @@ export default function IndexLayout({ children }: Props) {
         randomTextureQuery?.refetch();
       }
     } else {
-      setTextureURL(null);
+      dispatch(setTextureUrl(undefined));
     }
 
     if ("mediaSession" in navigator) {
@@ -282,12 +281,7 @@ export default function IndexLayout({ children }: Props) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    currentSong,
-    loadRandomTexture,
-    randomTextureQuery.refetch,
-    setTextureURL,
-  ]);
+  }, [currentSong, loadRandomTexture, randomTextureQuery.refetch]);
 
   // Store full song list once loaded
   useEffect(() => {
@@ -296,9 +290,9 @@ export default function IndexLayout({ children }: Props) {
       console.log(
         `Texture background ${texture.name} by ${texture.author} (${texture.authorUrl}) from https://www.transparenttextures.com/.`
       );
-      setTextureURL(texture.url);
+      dispatch(setTextureUrl(texture.url));
     }
-  }, [randomTextureQuery.data, setTextureURL]);
+  }, [randomTextureQuery.data]);
 
   return (
     <>

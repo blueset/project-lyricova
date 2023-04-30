@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { persistStore } from "redux-persist";
 import playlistReducer from "./playlist";
-import type { TypedUseSelectorHook} from "react-redux";
+import displayReducer from "./display";
+import type { TypedUseSelectorHook } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 
 const store = configureStore({
   reducer: {
     playlist: playlistReducer,
+    display: displayReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

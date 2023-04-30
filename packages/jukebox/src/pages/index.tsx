@@ -1,5 +1,5 @@
 import { gql, useQuery } from "@apollo/client";
-import { Stack } from "@mui/material";
+import { Stack, styled } from "@mui/material";
 import _ from "lodash";
 import type { ReactNode } from "react";
 import { getLayout } from "../components/public/layouts/IndexLayout";
@@ -20,9 +20,14 @@ import { StrokeLyrics } from "../components/public/lyrics/stroke";
 import { useClientPersistentState } from "../frontendUtils/clientPersistantState";
 import type { DocumentNode } from "graphql";
 import { RingoTranslateLyrics } from "../components/public/lyrics/ringoTranslate";
-import { useAppSelector } from "../redux/public/store";
+import { useAppDispatch, useAppSelector } from "../redux/public/store";
 import { currentSongSelector } from "../redux/public/playlist";
 import { RingoSingLyrics } from "../components/public/lyrics/ringoSing";
+import TooltipIconButton from "../components/dashboard/TooltipIconButton";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import { toggleFullscreen } from "../redux/public/display";
+import { LyricsFullScreenOverlay } from "../components/public/LyricsFullScreenOverlay";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -72,6 +77,15 @@ const MODULE_LIST = {
   "Stroke": (lyrics: LyricsKitLyrics) => <StrokeLyrics lyrics={lyrics} />,
 } as const;
 
+const LyricsControlsDiv = styled("div")`
+  position: absolute;
+  top: 0;
+  right: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+`;
+
 export default function Index() {
   const [module, setModule] = useClientPersistentState<
     keyof typeof MODULE_LIST
@@ -81,6 +95,9 @@ export default function Index() {
   const moduleNode = MODULE_LIST[module] ?? MODULE_LIST[keys[0]];
   const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
   const currentSong = useAppSelector(currentSongSelector);
+
+  const isFullscreen = useAppSelector((s) => s.display.isFullscreen);
+  const dispatch = useAppDispatch();
 
   const lyricsQuery = useQuery<{ musicFile?: { lyrics: LyricsKitLyrics } }>(
     LYRICS_QUERY,
@@ -125,14 +142,34 @@ export default function Index() {
     node = <MessageBox>No lyrics</MessageBox>;
   }
 
-  return (
-    <>
-      {node}
+  const controls = (
+    <LyricsControlsDiv
+      sx={{ pt: isFullscreen ? 2 : 0 }}
+      onClick={(evt) => evt.stopPropagation()}
+    >
+      <TooltipIconButton
+        title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+        color="primary"
+        onClick={() => dispatch(toggleFullscreen())}
+      >
+        {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+      </TooltipIconButton>
       <LyricsSwitchButton<keyof typeof MODULE_LIST>
         module={module}
         setModule={setModule}
         moduleNames={keys}
       />
+    </LyricsControlsDiv>
+  );
+
+  return (
+    <>
+      {node}
+      {isFullscreen ? (
+        <LyricsFullScreenOverlay>{controls}</LyricsFullScreenOverlay>
+      ) : (
+        controls
+      )}
     </>
   );
 }

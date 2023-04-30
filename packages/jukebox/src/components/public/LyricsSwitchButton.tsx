@@ -41,7 +41,6 @@ export function LyricsSwitchButton<T extends ReactNode>({
         variant="outlined"
         color="primary"
         endIcon={<ArrowDropDownIcon />}
-        sx={{ position: "absolute", top: 0, right: 16 }}
         {...bindTrigger(popupState)}
       >
         {module}
