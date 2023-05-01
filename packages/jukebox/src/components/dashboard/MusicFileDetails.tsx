@@ -19,9 +19,10 @@ import LyricsPanel from "./musicFilesDetails/lyrics";
 import PlaylistsPanel from "./musicFilesDetails/playlists";
 import { useSnackbar } from "notistack";
 import type { DocumentNode } from "graphql";
+import StatsPanel from "./musicFilesDetails/stats";
 
 const SINGLE_FILE_DATA = gql`
-  query($id: Int!) {
+  query ($id: Int!) {
     musicFile(id: $id) {
       id
       path
@@ -35,6 +36,9 @@ const SINGLE_FILE_DATA = gql`
       hasCover
       duration
       needReview
+      playCount
+      lastPlayed
+
       song {
         ...SelectSongEntry
       }
@@ -57,7 +61,7 @@ const SINGLE_FILE_DATA = gql`
 ` as DocumentNode;
 
 const TOGGLE_NEED_REVIEW_MUTATION = gql`
-  mutation($fileId: Int!, $needReview: Boolean!) {
+  mutation ($fileId: Int!, $needReview: Boolean!) {
     toggleMusicFileReviewStatus(fileId: $fileId, needReview: $needReview) {
       needReview
     }
@@ -81,6 +85,8 @@ type ExtendedMusicFile = Pick<
   | "duration"
   | "playlists"
   | "needReview"
+  | "playCount"
+  | "lastPlayed"
 > & {
   lrcLyrics?: string;
   lrcxLyrics?: string;
@@ -157,6 +163,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
               <Tab label="Cover art" value="cover-art" />
               <Tab label="Lyrics" value="lyrics" />
               <Tab label="Playlists" value="playlists" />
+              <Tab label="Stats" value="stats" />
             </Tabs>
           </AppBar>
           <TabPanel value="info">
@@ -202,6 +209,14 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
             <PlaylistsPanel
               fileId={fileId}
               playlists={fileData.data?.musicFile.playlists ?? []}
+              refresh={fileData.refetch}
+            />
+          </TabPanel>
+          <TabPanel value="stats">
+            <StatsPanel
+              fileId={fileId}
+              playCount={fileData.data?.musicFile.playCount}
+              lastPlayed={fileData.data?.musicFile.lastPlayed}
               refresh={fileData.refetch}
             />
           </TabPanel>

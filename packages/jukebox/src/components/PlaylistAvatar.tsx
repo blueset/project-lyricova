@@ -1,4 +1,4 @@
-import type { AvatarProps} from "@mui/material";
+import type { AvatarProps } from "@mui/material";
 import { Avatar, styled } from "@mui/material";
 import _ from "lodash";
 import { useMemo } from "react";
@@ -8,7 +8,7 @@ import { useMemo } from "react";
  * @by UIGradients contributors (https://github.com/ghosh/uiGradients)
  * @license MIT
  */
-const gradients = [
+export const gradients = [
   { name: "Omolon", colors: ["#091E3A", "#2F80ED", "#2D9EE0"] },
   {
     name: "Farhan",

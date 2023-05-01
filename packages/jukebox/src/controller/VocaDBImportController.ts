@@ -1,9 +1,10 @@
 import { Song } from "lyricova-common/models/Song";
-import type { Request, Response, NextFunction} from "express";
+import type { Request, Response, NextFunction } from "express";
 import { Router } from "express";
 import type { SongForApiContract } from "../types/vocadb";
 import type { AxiosInstance } from "axios";
 import axios from "axios";
+import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 
 export class VocaDBImportController {
   private axios: AxiosInstance;
@@ -12,7 +13,11 @@ export class VocaDBImportController {
   constructor() {
     this.axios = axios.create({ responseType: "json" });
     this.router = Router();
-    this.router.get("/enrolSong/:id(\\d+)", this.enrolSong);
+    this.router.get(
+      "/enrolSong/:id(\\d+)",
+      adminOnlyMiddleware,
+      this.enrolSong
+    );
   }
 
   private async getSong(songId: string | number): Promise<SongForApiContract> {

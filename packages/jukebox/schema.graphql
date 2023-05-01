@@ -307,6 +307,9 @@ type MusicFile {
 
   """File ID in database."""
   id: Int!
+
+  """Date when the file was last played."""
+  lastPlayed: Timestamp
   lyrics: LyricsKitLyrics
   lyricsText(ext: String! = "lrc"): String
 
@@ -451,6 +454,16 @@ type Mutation {
   ): MusicFile!
   updateAlbum(data: AlbumInput!, id: Int!): Album!
   updateArtist(data: ArtistInput!, id: Int!): Artist!
+  updateMusicFileStats(
+    """Music file ID"""
+    fileId: Int!
+
+    """Last played"""
+    lastPlayed: Timestamp
+
+    """Play count"""
+    playCount: Int!
+  ): MusicFile!
   updatePlaylist(data: UpdatePlaylistInput!, slug: String!): Playlist!
   updatePlaylistFiles(fileIds: [Int!]!, slug: String!): Playlist!
   updatePlaylistSortOrder(fileIds: [Int!]!, slug: String!): Playlist!
@@ -536,9 +549,21 @@ type Query {
   ): [LyricsKitLyricsEntry!]!
   musicFile(id: Int!): MusicFile
   musicFiles(after: String, first: Int! = 25, options: MusicFilesQueryOptions): MusicFilesPagination!
+
+  """Get music files added in 30 days"""
+  newMusicFiles: [MusicFile!]!
   playlist(slug: String!): Playlist
   playlists: [Playlist!]!
+
+  """Get music files played the most"""
+  popularMusicFiles(
+    """Limit of results"""
+    limit: Int!
+  ): [MusicFile!]!
   randomTexture: Texture!
+
+  """Get music files played in 30 days"""
+  recentMusicFiles: [MusicFile!]!
   searchAlbums(keywords: String!): [Album!]!
   searchArtists(keywords: String!): [Artist!]!
   searchMusicFiles(keywords: String!): [MusicFile!]!

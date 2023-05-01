@@ -10,6 +10,7 @@ import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import _ from "lodash";
 import {
+  Avatar,
   Box,
   Chip,
   IconButton,
@@ -30,7 +31,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
 import { MusicFileFragments } from "lyricova-common/utils/fragments";
 import type { Playlist } from "lyricova-common/models/Playlist";
-import PlaylistAvatar from "../../../components/PlaylistAvatar";
+import PlaylistAvatar, { gradients } from "../../../components/PlaylistAvatar";
 import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "../../../redux/public/store";
 import {
@@ -39,9 +40,13 @@ import {
   playTrack,
   toggleShuffle,
 } from "../../../redux/public/playlist";
+import type { MusicFile } from "lyricova-common/models/MusicFile";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import LocalPlayIcon from "@mui/icons-material/LocalPlay";
+import WhatshotIcon from "@mui/icons-material/Whatshot";
 
 const PLAYLIST_DETAILS_QUERY = gql`
-  query($slug: String!) {
+  query ($slug: String!) {
     playlist(slug: $slug) {
       slug
       name
@@ -58,6 +63,36 @@ const PLAYLIST_DETAILS_QUERY = gql`
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
 ` as DocumentNode;
 
+const NEW_QUERY = gql`
+  query {
+    newMusicFiles {
+      ...MusicFileForPlaylistAttributes
+    }
+  }
+
+  ${MusicFileFragments.MusicFileForPlaylistAttributes}
+` as DocumentNode;
+
+const RECENT_QUERY = gql`
+  query {
+    recentMusicFiles {
+      ...MusicFileForPlaylistAttributes
+    }
+  }
+
+  ${MusicFileFragments.MusicFileForPlaylistAttributes}
+` as DocumentNode;
+
+const POPULAR_QUERY = gql`
+  query {
+    popularMusicFiles(limit: 100) {
+      ...MusicFileForPlaylistAttributes
+    }
+  }
+
+  ${MusicFileFragments.MusicFileForPlaylistAttributes}
+` as DocumentNode;
+
 export default function PlaylistDetails() {
   const router = useRouter();
   const slug = router.query.slug as string;
@@ -68,9 +103,27 @@ export default function PlaylistDetails() {
   });
   const dispatch = useAppDispatch();
 
-  const query = useQuery<{ playlist: Playlist }>(PLAYLIST_DETAILS_QUERY, {
-    variables: { slug },
-  });
+  const isPredefined =
+    slug === "new" || slug === "recent" || slug === "popular";
+
+  const query = useQuery<{
+    playlist?: Playlist;
+    newMusicFiles?: MusicFile[];
+    recentMusicFiles?: MusicFile[];
+    popularMusicFiles?: MusicFile[];
+  }>(
+    slug === "new"
+      ? NEW_QUERY
+      : slug === "recent"
+      ? RECENT_QUERY
+      : slug === "popular"
+      ? POPULAR_QUERY
+      : PLAYLIST_DETAILS_QUERY,
+    {
+      variables: !isPredefined ? { slug } : undefined,
+    }
+  );
+
   let content;
 
   if (query.loading) content = <Alert severity="info">Loading...</Alert>;
@@ -82,11 +135,31 @@ export default function PlaylistDetails() {
     );
   else {
     const playlistData = query.data.playlist;
-    const files = playlistData.files;
+    const files =
+      playlistData?.files ??
+      query.data.newMusicFiles ??
+      query.data.recentMusicFiles ??
+      query.data.popularMusicFiles;
     const trackCount = files.length;
     const totalMinutes = Math.round(_.sumBy(files, "duration") / 60);
     const totalSize = _.sumBy(files, "fileSize");
     const canPlay = trackCount > 0;
+    const name =
+      slug === "new"
+        ? "Recently Added"
+        : slug === "recent"
+        ? "Recently Played"
+        : slug === "popular"
+        ? "Most Played"
+        : playlistData?.name;
+    const displaySlug =
+      slug === "new"
+        ? "Track added in 30 days"
+        : slug === "recent"
+        ? "Track played in 30 days"
+        : slug === "popular"
+        ? "Most played tracks"
+        : playlistData?.slug;
 
     const playAll = () => dispatch(loadTracks(files));
     const shuffleAll = () => {
@@ -97,23 +170,52 @@ export default function PlaylistDetails() {
     content = (
       <>
         <Stack direction="row" alignItems="center">
-          <PlaylistAvatar
-            name={playlistData.name}
-            slug={playlistData.slug}
-            sx={{
-              marginRight: 1,
-              height: "6rem",
-              width: "6rem",
-              fontSize: "3em",
-            }}
-          />
+          {playlistData ? (
+            <PlaylistAvatar
+              name={name}
+              slug={displaySlug}
+              sx={{
+                marginRight: 1,
+                height: "6rem",
+                width: "6rem",
+                fontSize: "3em",
+              }}
+            />
+          ) : (
+            <Avatar
+              variant="rounded"
+              sx={{
+                height: "6rem",
+                width: "6rem",
+                marginRight: 1,
+                fontSize: "3em",
+                color: "white",
+                backgroundImage: `linear-gradient(225deg, ${gradients[
+                  slug === "new"
+                    ? 1
+                    : slug === "recent"
+                    ? 2
+                    : slug === "popular"
+                    ? 3
+                    : 4
+                ].colors.join(", ")})`,
+              }}
+            >
+              {slug === "new" ? (
+                <AutoAwesomeIcon fontSize="inherit" />
+              ) : slug === "recent" ? (
+                <LocalPlayIcon fontSize="inherit" />
+              ) : slug === "popular" ? (
+                <WhatshotIcon fontSize="inherit" />
+              ) : null}
+            </Avatar>
+          )}
           <div style={{ flexGrow: 1, width: 0 }}>
-            <Typography variant="h6">{playlistData.name}</Typography>
+            <Typography variant="h6">{name}</Typography>
             <Typography variant="body2" color="textSecondary">
-              {playlistData.slug}
-              {": "}
-              {trackCount} {trackCount < 2 ? "song" : "songs"}, {totalMinutes}{" "}
-              {totalMinutes < 2 ? "minute" : "minutes"}, {filesize(totalSize)}
+              {displaySlug}: {trackCount} {trackCount < 2 ? "song" : "songs"},{" "}
+              {totalMinutes} {totalMinutes < 2 ? "minute" : "minutes"},{" "}
+              {filesize(totalSize)}
             </Typography>
           </div>
           <ButtonRow>
@@ -172,7 +274,7 @@ export default function PlaylistDetails() {
           </ButtonRow>
         </Stack>
         <List>
-          {_.sortBy(files, (v) => v.FileInPlaylist.sortOrder).map((v) => (
+          {files.map((v) => (
             <TrackListRow
               song={null}
               file={v}

@@ -1,12 +1,22 @@
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
 import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
-import { Box, ButtonBase, Divider, Grid, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  ButtonBase,
+  Divider,
+  Grid,
+  Typography,
+} from "@mui/material";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import React from "react";
 import type { Playlist } from "lyricova-common/models/Playlist";
-import PlaylistAvatar from "../../../components/PlaylistAvatar";
+import PlaylistAvatar, { gradients } from "../../../components/PlaylistAvatar";
 import type { DocumentNode } from "graphql";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import LocalPlayIcon from "@mui/icons-material/LocalPlay";
+import WhatshotIcon from "@mui/icons-material/Whatshot";
 
 const PLAYLISTS_LIST_QUERY = gql`
   query {
@@ -30,7 +40,7 @@ export default function PlaylistsList() {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Typography variant="overline">
-            {query.data.playlists.length} playlists
+            {query.data.playlists.length} curated playlists
           </Typography>
           <Divider />
         </Grid>
@@ -64,6 +74,109 @@ export default function PlaylistsList() {
             </ButtonBase>
           </Grid>
         ))}
+        <Grid item xs={12}>
+          <Typography variant="overline">3 generated playlists</Typography>
+          <Divider />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <ButtonBase
+            component={NextComposedLink}
+            href="/library/playlists/new"
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Avatar
+              variant="rounded"
+              sx={{
+                height: "4rem",
+                width: "4rem",
+                marginRight: 1,
+                fontSize: "2.25em",
+                color: "white",
+                backgroundImage: `linear-gradient(225deg, ${gradients[1].colors.join(
+                  ", "
+                )})`,
+              }}
+            >
+              <AutoAwesomeIcon fontSize="inherit" />
+            </Avatar>
+            <div style={{ flexGrow: 1, width: 0 }}>
+              <Typography variant="body1">Recently added</Typography>
+              <Typography variant="body2" color="textSecondary">
+                Tracks added in 30 days
+              </Typography>
+            </div>
+          </ButtonBase>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <ButtonBase
+            component={NextComposedLink}
+            href="/library/playlists/recent"
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Avatar
+              variant="rounded"
+              sx={{
+                height: "4rem",
+                width: "4rem",
+                marginRight: 1,
+                fontSize: "2.25em",
+                color: "white",
+                backgroundImage: `linear-gradient(225deg, ${gradients[2].colors.join(
+                  ", "
+                )})`,
+              }}
+            >
+              <LocalPlayIcon fontSize="inherit" />
+            </Avatar>
+            <div style={{ flexGrow: 1, width: 0 }}>
+              <Typography variant="body1">Recently played</Typography>
+              <Typography variant="body2" color="textSecondary">
+                Tracks played in 30 days
+              </Typography>
+            </div>
+          </ButtonBase>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <ButtonBase
+            component={NextComposedLink}
+            href="/library/playlists/popular"
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Avatar
+              variant="rounded"
+              sx={{
+                height: "4rem",
+                width: "4rem",
+                marginRight: 1,
+                fontSize: "2.25em",
+                color: "white",
+                backgroundImage: `linear-gradient(225deg, ${gradients[3].colors.join(
+                  ", "
+                )})`,
+              }}
+            >
+              <WhatshotIcon fontSize="inherit" />
+            </Avatar>
+            <div style={{ flexGrow: 1, width: 0 }}>
+              <Typography variant="body1">Most played</Typography>
+              <Typography variant="body2" color="textSecondary">
+                Most played tracks
+              </Typography>
+            </div>
+          </ButtonBase>
+        </Grid>
       </Grid>
     </Box>
   );

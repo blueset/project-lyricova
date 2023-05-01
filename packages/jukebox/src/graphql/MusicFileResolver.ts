@@ -632,7 +632,79 @@ export class MusicFileResolver {
     const file = await MusicFile.findByPk(fileId);
     if (file === null) return 0;
     const playCount = file.playCount + 1;
+    file.lastPlayed = new Date();
     await file.update({ playCount });
     return playCount;
+  }
+
+  @Authorized("ADMIN")
+  @Mutation((returns) => MusicFile)
+  public async updateMusicFileStats(
+    @Arg("fileId", () => Int, { description: "Music file ID" }) fileId: number,
+    @Arg("playCount", () => Int, { description: "Play count" })
+    playCount: number,
+    @Arg("lastPlayed", () => Date, {
+      description: "Last played",
+      nullable: true,
+    })
+    lastPlayed: Date | null
+  ): Promise<MusicFile> {
+    const file = await MusicFile.findByPk(fileId);
+    if (file === null) throw new Error("Music file is not found.");
+    await file.update({ playCount, lastPlayed });
+    return file;
+  }
+
+  @Query((returns) => [MusicFile], {
+    description: "Get music files added in 30 days",
+  })
+  public async newMusicFiles(): Promise<MusicFile[]> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return await MusicFile.findAll({
+      where: {
+        creationDate: {
+          [Op.gte]: thirtyDaysAgo,
+        },
+      },
+      order: [["creationDate", "DESC"]],
+    });
+  }
+
+  @Query((returns) => [MusicFile], {
+    description: "Get music files played in 30 days",
+  })
+  public async recentMusicFiles(): Promise<MusicFile[]> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return await MusicFile.findAll({
+      where: {
+        lastPlayed: {
+          [Op.gte]: thirtyDaysAgo,
+        },
+      },
+      order: [["lastPlayed", "DESC"]],
+    });
+  }
+
+  @Query((returns) => [MusicFile], {
+    description: "Get music files played the most",
+  })
+  public async popularMusicFiles(
+    @Arg("limit", () => Int, { description: "Limit of results" })
+    limit: number
+  ): Promise<MusicFile[]> {
+    return await MusicFile.findAll({
+      where: {
+        playCount: {
+          [Op.gt]: 0,
+        },
+      },
+      order: [
+        ["playCount", "DESC"],
+        ["lastPlayed", "DESC"],
+      ],
+      limit,
+    });
   }
 }

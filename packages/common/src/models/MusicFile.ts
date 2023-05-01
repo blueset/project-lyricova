@@ -95,10 +95,7 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   @BelongsTo(() => Album)
   album: Album | null;
 
-  @BelongsToMany(
-    (type) => Playlist,
-    (intermediate) => FileInPlaylist
-  )
+  @BelongsToMany((type) => Playlist, (intermediate) => FileInPlaylist)
   playlists: Playlist[];
 
   @Field({ description: "Name of the track stored in file.", nullable: true })
@@ -196,6 +193,14 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   @Column({ type: DataTypes.INTEGER.UNSIGNED })
   playCount: number;
 
+  @Field((type) => Date, {
+    description: "Date when the file was last played.",
+    nullable: true,
+  })
+  @AllowNull
+  @Column({ type: DataTypes.DATE })
+  lastPlayed?: Date;
+
   @Field()
   @CreatedAt
   creationDate: Date;
@@ -285,13 +290,8 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
     const metadataPromise = this.getSongMetadata();
     const md5 = await md5Promise,
-      {
-        songId,
-        albumId,
-        playlists,
-        lyrics,
-        ...metadata
-      } = await metadataPromise;
+      { songId, albumId, playlists, lyrics, ...metadata } =
+        await metadataPromise;
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
     const hasLyrics = fs.existsSync(lrcPath);
 
@@ -326,13 +326,8 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
       needUpdate = needUpdate || md5 !== this.hash;
       if (!needUpdate) return null;
 
-      const {
-        songId,
-        albumId,
-        playlists,
-        lyrics,
-        ...metadata
-      } = await this.getSongMetadata();
+      const { songId, albumId, playlists, lyrics, ...metadata } =
+        await this.getSongMetadata();
       await this.update({
         path: Path.relative(MUSIC_FILES_PATH, path),
         hasLyrics: hasLyrics,
