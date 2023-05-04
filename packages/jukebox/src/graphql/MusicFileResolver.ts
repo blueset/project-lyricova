@@ -632,8 +632,7 @@ export class MusicFileResolver {
     const file = await MusicFile.findByPk(fileId);
     if (file === null) return 0;
     const playCount = file.playCount + 1;
-    file.lastPlayed = new Date();
-    await file.update({ playCount });
+    await file.update({ playCount, lastPlayed: new Date() });
     return playCount;
   }
 
