@@ -235,42 +235,46 @@ export default function PlaylistDetails() {
                 onClick={shuffleAll}
               />
             )}
-            <IconButton {...bindTrigger(popupState)}>
-              <MoreVertIcon />
-            </IconButton>
-            <Menu
-              id={"single-album-overflow-menu"}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              {...bindMenu(popupState)}
-            >
-              <MenuItem
-                disabled={!user}
-                onClick={() => {
-                  window.open(`/dashboard/playlists/${playlistData.slug}`);
-                  popupState.close();
-                }}
-              >
-                <ListItemText primary="Edit playlist entity" />
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  window.open(
-                    `/api/playlists/${playlistData.slug}.m3u8`,
-                    "_blank"
-                  );
-                  popupState.close();
-                }}
-              >
-                <ListItemText primary="Download playlist M3U8" />
-              </MenuItem>
-            </Menu>
+            {!isPredefined && (
+              <>
+                <IconButton {...bindTrigger(popupState)}>
+                  <MoreVertIcon />
+                </IconButton>
+                <Menu
+                  id={"single-album-overflow-menu"}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                  {...bindMenu(popupState)}
+                >
+                  <MenuItem
+                    disabled={!user}
+                    onClick={() => {
+                      window.open(`/dashboard/playlists/${playlistData.slug}`);
+                      popupState.close();
+                    }}
+                  >
+                    <ListItemText primary="Edit playlist entity" />
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      window.open(
+                        `/api/playlists/${playlistData.slug}.m3u8`,
+                        "_blank"
+                      );
+                      popupState.close();
+                    }}
+                  >
+                    <ListItemText primary="Download playlist M3U8" />
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
           </ButtonRow>
         </Stack>
         <List>
