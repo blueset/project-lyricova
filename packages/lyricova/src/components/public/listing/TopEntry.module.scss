@@ -12,11 +12,13 @@
   --typing-highlight-inverse: #{$background-color};
   transition: all 0.2s cubic-bezier(0, 0, 0.6, 1);
   overflow: hidden;
+  background-image: url(https://grainy-gradients.vercel.app/noise.svg), linear-gradient(#{$background-color}, #{$background-color});
+  background-blend-mode: soft-light;
 
   @media (hover: hover) {
     &:hover {
       color: $primary-text-on-brand;
-      background: var(--tags-gradient, $brand-color);
+      background: url(https://grainy-gradients.vercel.app/noise.svg), var(--tags-gradient, linear-gradient($brand-color, $brand-color));
       --primary-text: #{$primary-text-on-brand};
       --secondary-text: #{$secondary-text-on-brand};
       --tag-color-override: #{$secondary-text-on-brand};

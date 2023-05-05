@@ -11,10 +11,12 @@
   color: $primary-text;
   text-decoration: none;
   position: relative;
+  background-image: url(https://grainy-gradients.vercel.app/noise.svg), linear-gradient($background-color, $background-color);
+  background-blend-mode: soft-light;
 
   @media (hover: hover) {
     &:hover {
-      background: var(--tags-gradient, $brand-color);
+      background: url(https://grainy-gradients.vercel.app/noise.svg), var(--tags-gradient, linear-gradient($brand-color, $brand-color));
       --effective-background-color: var(--tags-foreground, #{$brand-color});
       color: $primary-text-on-brand;
       --primary-text: #{$primary-text-on-brand};
