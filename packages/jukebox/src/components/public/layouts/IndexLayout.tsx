@@ -198,7 +198,7 @@ export default function IndexLayout({ children }: Props) {
     }
   });
 
-  function updatePositionState() {
+  const updatePositionState = useCallback(() => {
     if (playerRef.current) {
       if (navigator.mediaSession !== undefined) {
         if (navigator.mediaSession.setPositionState !== undefined) {
@@ -214,7 +214,31 @@ export default function IndexLayout({ children }: Props) {
           : "playing";
       }
     }
-  }
+  }, [playerRef]);
+
+  const updateSessionMetadata = useCallback(() => {
+    if ("mediaSession" in navigator) {
+      if (currentSong) {
+        const data: MediaMetadataInit = {
+          title: currentSong.trackName || "",
+          artist: currentSong.artistName || "",
+          album: currentSong.albumName || "",
+        };
+        if (currentSong.hasCover) {
+          data.artwork = [
+            {
+              src: getTrackCoverURL(currentSong),
+              type: "image/png",
+              sizes: "512x512",
+            },
+          ];
+        }
+        navigator.mediaSession.metadata = new MediaMetadata(data);
+      } else {
+        navigator.mediaSession.metadata = null;
+      }
+    }
+  }, [currentSong]);
 
   useEffect(() => {
     const playerElm = playerRef.current;
@@ -225,6 +249,8 @@ export default function IndexLayout({ children }: Props) {
       playerElm.addEventListener("playing", updatePositionState);
       playerElm.addEventListener("pause", updatePositionState);
       playerElm.addEventListener("durationchange", updatePositionState);
+      playerElm.addEventListener("playing", updateSessionMetadata);
+      playerElm.addEventListener("pause", updateSessionMetadata);
     }
     return function cleanUp() {
       // trying to remove listeners
@@ -234,9 +260,11 @@ export default function IndexLayout({ children }: Props) {
         playerElm.removeEventListener("playing", updatePositionState);
         playerElm.removeEventListener("pause", updatePositionState);
         playerElm.removeEventListener("durationchange", updatePositionState);
+        playerElm.removeEventListener("playing", updateSessionMetadata);
+        playerElm.removeEventListener("pause", updateSessionMetadata);
       }
     };
-  }, [playerRef]);
+  }, [playerRef, updatePositionState, updateSessionMetadata]);
 
   // Random fallback background
   // const [textureURL, setTextureURL] = useNamedState<string | null>(
@@ -259,31 +287,15 @@ export default function IndexLayout({ children }: Props) {
       dispatch(setTextureUrl(undefined));
     }
 
-    if ("mediaSession" in navigator) {
-      if (currentSong) {
-        const data: MediaMetadataInit = {
-          title: currentSong.trackName || "",
-          artist: currentSong.artistName || "",
-          album: currentSong.albumName || "",
-        };
-        if (currentSong.hasCover) {
-          data.artwork = [
-            {
-              src: getTrackCoverURL(currentSong),
-              type: "image/png",
-              sizes: "512x512",
-            },
-          ];
-        }
-        navigator.mediaSession.metadata = new MediaMetadata(data);
-      } else {
-        navigator.mediaSession.metadata = null;
-      }
-    }
+    updateSessionMetadata();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSong, loadRandomTexture, randomTextureQuery.refetch]);
+  }, [
+    currentSong,
+    loadRandomTexture,
+    randomTextureQuery.refetch,
+    updateSessionMetadata,
+  ]);
 
-  // Store full song list once loaded
   useEffect(() => {
     if (randomTextureQuery?.data?.randomTexture) {
       const texture = randomTextureQuery.data.randomTexture;
@@ -292,7 +304,7 @@ export default function IndexLayout({ children }: Props) {
       );
       dispatch(setTextureUrl(texture.url));
     }
-  }, [randomTextureQuery.data]);
+  }, [dispatch, randomTextureQuery.data]);
 
   return (
     <>
