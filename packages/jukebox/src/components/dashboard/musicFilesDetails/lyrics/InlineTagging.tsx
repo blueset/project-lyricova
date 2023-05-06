@@ -231,14 +231,14 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
       let [lineIdx, charIdx] = cursorPos;
       while (
         dots.length &&
-        charIdx < dots[lineIdx]?.length &&
-        lineIdx < dots.length
+        lineIdx < dots.length &&
+        charIdx < dots[lineIdx]?.length
       ) {
         if (dots[lineIdx][charIdx]) {
           // console.log("set dot cursor pos", lineIdx, charIdx, 0);
           setDotCursorPos([lineIdx, charIdx, 0]);
           return;
-        } else if (charIdx === dots[lineIdx].length - 1) {
+        } else if (charIdx === dots[lineIdx]?.length - 1) {
           lineIdx++;
           charIdx = 0;
         } else {
@@ -247,14 +247,13 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
       }
       if (
         !dots.length ||
-        charIdx >= dots[lineIdx].length ||
+        charIdx >= dots[lineIdx]?.length ||
         lineIdx >= dots.length
       ) {
         // console.log("set dot cursor pos (fallback)", 0, 0, 0);
         setDotCursorPos([0, 0, 0]);
       }
     } else if (section === "mark") {
-      // console.log("set cursor pos", dotCursorPos[0], dotCursorPos[1]);
       setCursorPos([dotCursorPos[0], dotCursorPos[1]]);
     }
     // explicitly only depend on `section` to reduce unnecessary re-renders.
