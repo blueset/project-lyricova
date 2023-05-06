@@ -7,7 +7,7 @@ import {
   usePlainPlayerLyricsState,
   useTrackwiseTimelineControl,
 } from "../../../frontendUtils/hooks";
-import type { Theme } from "@mui/material";
+import { Button, Theme } from "@mui/material";
 import { styled } from "@mui/material";
 import type { Transition } from "framer-motion";
 import { motion } from "framer-motion";
@@ -290,8 +290,12 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
     const canvas = canvasRef.current;
     const video = videoRef.current;
     if (!canvas || !video) return;
-    canvas.width = 800;
     canvas.height = 100;
+    canvas.width = 800;
+
+    if (navigator.userAgent.match(/Android/i)) {
+      canvas.width = 240;
+    }
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
@@ -322,6 +326,17 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
       <canvas ref={canvasRef} />
       <p>Video</p>
       <video ref={videoRef} />
+      <p>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            videoRef.current?.play();
+            videoRef.current?.requestPictureInPicture?.();
+          }}
+        >
+          Request PIP
+        </Button>
+      </p>
     </div>
   );
 }
