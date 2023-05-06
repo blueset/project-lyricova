@@ -28,6 +28,7 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import { toggleFullscreen } from "../redux/public/display";
 import { LyricsFullScreenOverlay } from "../components/public/LyricsFullScreenOverlay";
+import { PictureInPictureLyrics } from "../components/public/lyrics/pip";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -75,6 +76,7 @@ const MODULE_LIST = {
   "Typing/Stacked": (lyrics: LyricsKitLyrics) => <TypingStackedLyrics lyrics={lyrics} />,
   "Furigana/Plain": (lyrics: LyricsKitLyrics) => <PlainFuriganaLyrics lyrics={lyrics} />,
   "Stroke": (lyrics: LyricsKitLyrics) => <StrokeLyrics lyrics={lyrics} />,
+  "PIP (Alpha)": (lyrics: LyricsKitLyrics) => <PictureInPictureLyrics lyrics={lyrics} />,
 } as const;
 
 const LyricsControlsDiv = styled("div")`

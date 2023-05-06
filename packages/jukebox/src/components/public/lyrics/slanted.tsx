@@ -5,7 +5,7 @@ import {
   useTrackwiseTimelineControl,
 } from "../../../frontendUtils/hooks";
 import { Box } from "@mui/material";
-import type { CSSProperties} from "react";
+import type { CSSProperties } from "react";
 import { useMemo, useRef } from "react";
 import gsap from "gsap";
 import _ from "lodash";
@@ -33,18 +33,13 @@ export function SlantedLyrics({ lyrics }: Props) {
     [lyrics.lines]
   );
 
-  const {
-    playerState,
-    currentFrameId,
-    startTimes,
-    endTimes,
-  } = usePlainPlayerLyricsState(lyrics, playerRef);
+  const { playerState, currentFrameId, startTimes, endTimes } =
+    usePlainPlayerLyricsState(lyrics, playerRef);
 
   const timeline = useMemo(() => {
     const tl = gsap.timeline({
       paused: true,
     });
-    console.log("wrapper-current", wrapper.current);
     if (wrapper.current && container.current) {
       const lines = wrapper.current.children;
       tl.set(wrapper.current, { x: 0 }, 0);
@@ -96,7 +91,7 @@ export function SlantedLyrics({ lyrics }: Props) {
   return (
     <Box
       sx={
-        ({
+        {
           width: "100%",
           height: "100%",
           overflow: "hidden",
@@ -115,7 +110,7 @@ export function SlantedLyrics({ lyrics }: Props) {
             "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
           "-webkit-mask-box-image-slice": "0 49% fill",
           "-webkit-mask-box-image-width": "0 40px",
-        } as unknown) as CSSProperties
+        } as unknown as CSSProperties
       }
     >
       <Box

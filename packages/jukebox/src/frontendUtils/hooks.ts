@@ -675,11 +675,9 @@ export function useTrackwiseTimelineControl(
     if (!timeline) return;
     if (playerState.state === "playing") {
       const progress = (now - playerState.startingAt) / 1000;
-      timeline.seek(progress);
-      timeline.play();
+      timeline.play(progress, false);
     } else {
-      timeline.pause();
-      timeline.seek(playerState.progress);
+      timeline.pause(playerState.progress, false);
     }
   }, [playerState, timeline]);
 
