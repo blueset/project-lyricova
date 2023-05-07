@@ -177,6 +177,7 @@ const Row = React.memo(
         }}
       >
         <ListItemTextWithTime
+          lang="ja"
           primary={
             (isScrolling && item?.trackSortOrder
               ? item?.trackSortOrder

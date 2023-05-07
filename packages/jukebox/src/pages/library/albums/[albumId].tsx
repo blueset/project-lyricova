@@ -50,7 +50,7 @@ import {
 } from "../../../redux/public/playlist";
 
 const ALBUM_QUERY = gql`
-  query($id: Int!) {
+  query ($id: Int!) {
     album(id: $id) {
       files {
         ...MusicFileForPlaylistAttributes
@@ -173,8 +173,10 @@ export default function LibrarySingleAlbum() {
         </Grid>
         <Grid item md={8} xs={12}>
           <Box ml={2}>
-            <Typography variant="h5">{album.name}</Typography>
-            <Typography variant="h6" color="textSecondary">
+            <Typography variant="h5" lang="ja">
+              {album.name}
+            </Typography>
+            <Typography variant="h6" color="textSecondary" lang="ja">
               {formatArtists(album.artists, (v, isProd) =>
                 v.map((artist, idx) => (
                   <Fragment key={artist.id}>

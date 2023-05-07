@@ -41,7 +41,7 @@ import {
 import { useAppDispatch } from "../../../redux/public/store";
 
 const ARTIST_DETAILS_QUERY = gql`
-  query($id: Int!) {
+  query ($id: Int!) {
     artist(id: $id) {
       id
       name
@@ -138,8 +138,10 @@ export default function ArtistDetails({ id, type }: Props) {
             <RecentActorsIcon fontSize="large" />
           </Avatar>
           <Box sx={{ flexGrow: 1, width: 0 }}>
-            <Typography variant="h6">{artist.name}</Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="h6" lang="ja">
+              {artist.name}
+            </Typography>
+            <Typography variant="body2" color="textSecondary" lang="ja">
               {artist.sortOrder}, {artist.type}
               {". "}
               {trackCount} {trackCount < 2 ? "song" : "songs"}, {totalMinutes}{" "}

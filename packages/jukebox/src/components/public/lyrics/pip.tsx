@@ -317,7 +317,7 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
   useTrackwiseTimelineControl(playerState, timeline);
 
   return (
-    <div>
+    <div lang="ja">
       <p>
         Note: Alpha version. PIP status cannot persist across different files,
         controls on PIP are not working as expected.

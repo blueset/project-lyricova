@@ -40,10 +40,12 @@ function Line({
   idx: number;
 }) {
   return (
-    <StyledLine data-index={idx} className={clsx(active && "active")}>
+    <StyledLine data-index={idx} className={clsx(active && "active")} lang="ja">
       <FuriganaLyricsLine graphQLSourceLine={lineObj} />
       {lineObj.attachments.translation && (
-        <div className="translation">{lineObj.attachments.translation}</div>
+        <div className="translation" lang="zh">
+          {lineObj.attachments.translation}
+        </div>
       )}
     </StyledLine>
   );

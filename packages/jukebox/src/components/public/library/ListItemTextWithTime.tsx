@@ -1,10 +1,5 @@
-import type {
-  ListItemTextProps} from "@mui/material";
-import {
-  Box,
-  ListItemText,
-  Typography,
-} from "@mui/material";
+import type { ListItemTextProps } from "@mui/material";
+import { Box, ListItemText, Typography } from "@mui/material";
 import * as React from "react";
 import { formatTime } from "../../../frontendUtils/strings";
 
@@ -30,12 +25,13 @@ export default function ListItemTextWithTime({
       disableTypography
     >
       <Box sx={{ flexGrow: 1, width: 0, marginRight: 1 }}>
-        <Typography variant="body1" {...primaryTypographyProps}>
+        <Typography variant="body1" lang="ja" {...primaryTypographyProps}>
           {primary}
         </Typography>
         <Typography
           variant="body2"
           color="textSecondary"
+          lang="ja"
           {...secondaryTypographyProps}
         >
           {secondary}

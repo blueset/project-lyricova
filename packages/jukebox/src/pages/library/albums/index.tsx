@@ -76,10 +76,10 @@ export default function LibraryAlbums() {
                 variant="rounded"
               />
             </ButtonBase>
-            <Typography variant="body2" noWrap>
+            <Typography variant="body2" noWrap lang="ja">
               {val.name}
             </Typography>
-            <Typography variant="body2" color="textSecondary" noWrap>
+            <Typography variant="body2" color="textSecondary" noWrap lang="ja">
               {formatArtistsPlainText(val.artists)}
             </Typography>
           </Grid>

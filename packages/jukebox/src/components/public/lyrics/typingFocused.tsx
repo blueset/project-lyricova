@@ -50,6 +50,7 @@ export function TypingFocusedLyrics({ lyrics }: Props) {
         flexDirection: "column",
         justifyContent: "center",
       }}
+      lang="ja"
     >
       {node}
     </Box>

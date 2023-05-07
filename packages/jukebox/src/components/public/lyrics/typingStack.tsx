@@ -1,7 +1,7 @@
 import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { Box } from "@mui/material";
-import type { CSSProperties} from "react";
+import type { CSSProperties } from "react";
 import { useRef } from "react";
 import { usePlayerLyricsTypingState } from "../../../frontendUtils/hooks";
 
@@ -43,7 +43,7 @@ export function TypingStackedLyrics({ lyrics }: Props) {
   return (
     <Box
       sx={
-        ({
+        {
           width: "100%",
           height: "100%",
           overflow: "hidden",
@@ -63,8 +63,9 @@ export function TypingStackedLyrics({ lyrics }: Props) {
             "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
           "-webkit-mask-box-image-slice": "49% 0 fill",
           "-webkit-mask-box-image-width": "0 0 40px",
-        } as unknown) as CSSProperties
+        } as unknown as CSSProperties
       }
+      lang="ja"
     >
       {node}
       {sequenceQuery.data &&

@@ -16,7 +16,7 @@ import { NextComposedLink } from "lyricova-common/components/Link";
 import type { DocumentNode } from "graphql";
 
 const ARTISTS_LIST_QUERY = gql`
-  query($types: [String!]!) {
+  query ($types: [String!]!) {
     artistsHasFiles(types: $types) {
       id
       name
@@ -98,7 +98,9 @@ export default function ArtistsList({ types, typeName }: Props) {
                     <RecentActorsIcon fontSize="large" />
                   </Avatar>
                   <div style={{ flexGrow: 1, width: 0 }}>
-                    <Typography variant="body1">{v.name}</Typography>
+                    <Typography variant="body1" lang="ja">
+                      {v.name}
+                    </Typography>
                     <Typography variant="body2" color="textSecondary">
                       {v.type
                         .replace("Other", "")

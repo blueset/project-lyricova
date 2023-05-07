@@ -6,7 +6,7 @@ import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { Box } from "@mui/material";
 import Balancer from "react-wrap-balancer";
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useRef, useEffect } from "react";
 import type { MeasuredComponentProps } from "react-measure";
 import Measure from "react-measure";
@@ -17,11 +17,11 @@ const ANIMATION_THRESHOLD = 0.25;
 const keyframes: { [key: string]: ((idx: number) => unknown) | unknown } = {
   ".char": (i: number) => ({
     0: {
-      "stroke-dashoffset": 600,
+      "stroke-dashoffset": 700,
       "fill-opacity": 0,
     },
     0.125: {
-      "stroke-dashoffset": 300,
+      "stroke-dashoffset": 350,
       "fill-opacity": 0,
     },
     0.25: {
@@ -145,7 +145,6 @@ export const relayout: RelayoutFn = (wrapper, ratio = 1) => {
   }
 };
 
-
 interface LyricsLineElementProps {
   translationClassName: string;
   line: LyricsKitLyricsLine | null;
@@ -171,11 +170,23 @@ function LyricsLineElement({
       const sizerSpan = sizerRef.current.querySelector("span");
       sizerSpan.innerText = line?.content ?? "";
       relayout(sizerSpan, 1);
-      const lines = sizerSpan.firstChild ? extractLinesFromTextNode(sizerSpan.firstChild as Text) : [];
-      const lineHeight = parseFloat(window.getComputedStyle(textRef.current).fontSize) * 1.2;
+      const lines = sizerSpan.firstChild
+        ? extractLinesFromTextNode(sizerSpan.firstChild as Text)
+        : [];
+      const lineHeight =
+        parseFloat(window.getComputedStyle(textRef.current).fontSize) * 1.2;
 
       // Generate segmented lyrics line
-      const segmentedLines = lines.map((line, idx) => `<tspan dy="${idx === 0 ? 0 : lineHeight}" x="0">` + [...line].map(chr => `<tspan class="char">${chr}</tspan>`).join("") + "</tspan>").join("");
+      const segmentedLines = lines
+        .map(
+          (line, idx) =>
+            `<tspan dy="${idx === 0 ? 0 : lineHeight}" x="0">` +
+            [...line]
+              .map((chr) => `<tspan class="char">${chr}</tspan>`)
+              .join("") +
+            "</tspan>"
+        )
+        .join("");
       textRef.current.innerHTML = segmentedLines;
 
       // Resize SVG canvas to fit text
@@ -199,17 +210,22 @@ function LyricsLineElement({
   return (
     <div>
       <div lang="ja">
-        <Box ref={sizerRef} sx={{
-          position: "absolute",
-          top: 0,
-          left: 32,
-          right: 32,
-          lineHeight: 1,
-          fontWeight: 600,
-          fontSize: "4em",
-          zIndex: -1,
-          opacity: 0,
-        }}><span style={{display: "inline-block"}} /></Box>
+        <Box
+          ref={sizerRef}
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 32,
+            right: 32,
+            lineHeight: 1,
+            fontWeight: 600,
+            fontSize: "4em",
+            zIndex: -1,
+            opacity: 0,
+          }}
+        >
+          <span style={{ display: "inline-block" }} />
+        </Box>
         {/* // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           @ts-ignore */}
         <Scene
@@ -274,12 +290,8 @@ export function StrokeLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const progressorRef = useRef<Scene>();
 
-  const {
-    currentFrame,
-    currentFrameId,
-    endTime,
-    playerState,
-  } = usePlainPlayerLyricsState(lyrics, playerRef);
+  const { currentFrame, currentFrameId, endTime, playerState } =
+    usePlainPlayerLyricsState(lyrics, playerRef);
 
   useEffect(() => {
     if (!progressorRef.current) return;

@@ -347,6 +347,7 @@ export default function IndexLayout({ children }: Props) {
                   display: "flex",
                   flexDirection: "column",
                 }}
+                lang="ja"
               >
                 <Player />
                 {!isCollapsed && <CurrentPlaylist />}
