@@ -15,6 +15,11 @@
   background-image: url(https://grainy-gradients.vercel.app/noise.svg), linear-gradient(#{$background-color}, #{$background-color});
   background-blend-mode: soft-light;
 
+  // Disable grainy pattern on Safari mobile
+  @supports (-webkit-text-size-adjust:none) and (not (-ms-ime-align:auto)) and (not (-moz-appearance:none)) {
+    background-image: linear-gradient(#{$background-color}, #{$background-color});
+  }
+
   @media (hover: hover) {
     &:hover {
       color: $primary-text-on-brand;
@@ -23,9 +28,12 @@
       --secondary-text: #{$secondary-text-on-brand};
       --tag-color-override: #{$secondary-text-on-brand};
       --typing-highlight: #{$primary-text-on-brand};
-      // --typing-highlight-inverse: var(--tags-foreground, #{$brand-color});
       --typing-highlight-inverse: var(--tags-gradient, #{$brand-color});
-      // --typing-highlight-inverse: #{$brand-color};
+
+      // Disable grainy pattern on Safari mobile
+      @supports (-webkit-text-size-adjust:none) and (not (-ms-ime-align:auto)) and (not (-moz-appearance:none)) {
+        background: var(--tags-gradient, linear-gradient($brand-color, $brand-color));
+      }
 
       .verse {
         font-weight: 250;
