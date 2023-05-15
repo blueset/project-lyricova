@@ -74,7 +74,10 @@ export function WebAuthnCredManager() {
           },
         ],
         attestation: "none",
-        authenticatorSelection: {},
+        authenticatorSelection: {
+          userVerification: "discouraged",
+          residentKey: "required",
+        },
       };
       const credential = (await navigator.credentials.create({
         publicKey,
