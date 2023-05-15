@@ -419,6 +419,28 @@ CREATE TABLE `Users` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `UserPublicKeyCredentials`
+--
+
+DROP TABLE IF EXISTS `UserPublicKeyCredentials`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `UserPublicKeyCredentials` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `userId` int DEFAULT NULL,
+  `externalId` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `publicKey` text COLLATE utf8mb4_general_ci,
+  `remarks` text COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `creationDate` datetime NOT NULL,
+  `updatedOn` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `externalId` (`externalId`),
+  KEY `userId` (`userId`),
+  CONSTRAINT `userpublickeycredentials_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `Users` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `Verses`
 --
 

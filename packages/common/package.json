@@ -29,13 +29,16 @@
     "@apollo/client": "^3.7.8",
     "@mui/icons-material": "^5.11.9",
     "@mui/material": "^5.11.9",
+    "base64url": "^3.0.1",
     "ffprobe-client": "^1.1.6",
     "graphql-ws": "^5.12.1",
     "mecab-async": "^0.1.2",
     "next": "^13.1.6",
+    "passport-fido2-webauthn": "^0.1.0",
     "sequelize-typescript": "^2.1.5",
     "stream-combiner": "^0.2.2",
-    "stream-filter": "^2.1.0"
+    "stream-filter": "^2.1.0",
+    "uuid": "^9.0.0"
   },
   "exports": {
     ".": "./dist/index.js",
@@ -58,7 +61,9 @@
     }
   },
   "devDependencies": {
+    "@types/passport-fido2-webauthn": "^0.1.0",
     "@types/react": "^18.0.28",
+    "@types/uuid": "^9.0.1",
     "typescript": "^4.9.5"
   }
 }

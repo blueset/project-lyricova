@@ -5,8 +5,11 @@ import type { GetServerSideProps } from "next";
 import { useApolloClient } from "@apollo/client";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const req = (context.req as unknown) as Express.Request;
-  req.logout();
+  const req = context.req as unknown as Express.Request;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  req.logout(() => {});
   return {
     props: {}, // will be passed to the page component as props
   };

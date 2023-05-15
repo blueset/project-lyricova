@@ -1,8 +1,6 @@
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { useEffect } from "react";
-import type {
-  Theme,
-  CSSObject} from "@mui/material";
+import type { Theme, CSSObject } from "@mui/material";
 import {
   Toolbar,
   IconButton,
@@ -44,7 +42,7 @@ import {
 import { useRouter } from "next/router";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import Head from "next/head";
-import type { SnackbarKey} from "notistack";
+import type { SnackbarKey } from "notistack";
 import { SnackbarProvider, useSnackbar } from "notistack";
 import {
   bindMenu,
@@ -200,6 +198,10 @@ export default function DashboardLayout({ title, children }: Props) {
     await router.push("/logout");
     popupState.close();
   };
+  const webAuthn = async () => {
+    await router.push("/dashboard/webauthn");
+    popupState.close();
+  };
 
   const drawer = (
     <>
@@ -344,6 +346,9 @@ export default function DashboardLayout({ title, children }: Props) {
                     }}
                     {...bindMenu(popupState)}
                   >
+                    <MenuItem>
+                      <ListItemText onClick={webAuthn} primary="WebAuthn" />
+                    </MenuItem>
                     <MenuItem onClick={logOut}>
                       <ListItemText
                         primary="Log out"
@@ -369,6 +374,5 @@ export default function DashboardLayout({ title, children }: Props) {
 }
 
 // eslint-disable-next-line react/display-name
-export const getLayout = (title?: string) => (page: ReactNode) => (
-  <DashboardLayout title={title}>{page}</DashboardLayout>
-);
+export const getLayout = (title?: string) => (page: ReactNode) =>
+  <DashboardLayout title={title}>{page}</DashboardLayout>;

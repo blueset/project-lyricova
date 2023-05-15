@@ -175,6 +175,9 @@ type MusicFile {
   """File ID in database."""
   id: Int!
 
+  """Date when the file was last played."""
+  lastPlayed: Timestamp
+
   """If this entry needs review."""
   needReview: Boolean!
 
@@ -197,6 +200,7 @@ type MusicFile {
 
 type Mutation {
   bumpEntry(id: Int!): Boolean!
+  deleteCredential(id: Int!): Boolean!
   deleteEntry(id: Int!): Boolean!
   deleteTag(slug: String!): Boolean!
 
@@ -253,6 +257,7 @@ input PulseInput {
 }
 
 type Query {
+  currentCredentials: [UserPublicKeyCredential!]!
   currentUser: User
   dashboardStats: DashboardStats!
   entries: [Entry!]!
@@ -384,6 +389,14 @@ type User {
   id: Int!
   role: String!
   username: String!
+}
+
+type UserPublicKeyCredential {
+  creationDate: Timestamp!
+  id: Float!
+  remarks: String
+  updatedOn: Timestamp!
+  userId: Float!
 }
 
 type Verse {

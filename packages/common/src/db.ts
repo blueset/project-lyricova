@@ -17,6 +17,7 @@ import { SongOfEntry } from "./models/SongOfEntry";
 import { Tag } from "./models/Tag";
 import { TagOfEntry } from "./models/TagOfEntry";
 import { User } from "./models/User";
+import { UserPublicKeyCredential } from "./models/UserPublicKeyCredential";
 import { Verse } from "./models/Verse";
 import { VideoFile } from "./models/VideoFile";
 
@@ -43,6 +44,7 @@ const sequelize = new Sequelize(DB_URI, {
     Tag,
     TagOfEntry,
     User,
+    UserPublicKeyCredential,
     Verse,
     VideoFile,
   ],

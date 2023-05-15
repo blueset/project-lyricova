@@ -7,6 +7,9 @@ import { applyApollo } from "./graphql/index";
 
 (async () => {
   const app = await App();
+
+  app.enable("trust proxy");
+
   const httpServer = await applyApollo(app);
   const nextApp = next({
     dev: app.get("env") === "development",

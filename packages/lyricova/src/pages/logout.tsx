@@ -7,7 +7,10 @@ import apolloClient from "lyricova-common/frontendUtils/apollo";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const req = context.req as unknown as Express.Request;
-  req.logout();
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  req.logout(() => {});
   return {
     props: {}, // will be passed to the page component as props
   };

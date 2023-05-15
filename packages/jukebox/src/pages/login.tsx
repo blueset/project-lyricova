@@ -7,10 +7,76 @@ import { makeValidate, TextField } from "mui-rff";
 import * as yup from "yup";
 import { Form } from "react-final-form";
 import { useApolloClient } from "@apollo/client";
+import { useCallback, useEffect, useState } from "react";
+import base64url from "base64url";
 
 export default function Login() {
   const router = useRouter();
   const apolloClient = useApolloClient();
+  const [webAuthnSupported, setWebAuthnSupported] = useState(true);
+  useEffect(() => {
+    if (!window.PublicKeyCredential) {
+      setWebAuthnSupported(false);
+    }
+  }, [setWebAuthnSupported]);
+
+  const webauthnLogin = useCallback(async () => {
+    const resp = await fetch("/api/login/public-key/challenge", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    const json = await resp.json();
+    const credential = (await navigator.credentials.get({
+      publicKey: {
+        challenge: base64url.toBuffer(json.challenge) as unknown as ArrayBuffer,
+      },
+    })) as PublicKeyCredential;
+    const body = {
+      id: credential.id,
+      response: {
+        clientDataJSON: base64url.encode(
+          (credential.response as AuthenticatorAssertionResponse)
+            .clientDataJSON as unknown as Buffer
+        ),
+        authenticatorData: base64url.encode(
+          (credential.response as AuthenticatorAssertionResponse)
+            .authenticatorData as unknown as Buffer
+        ),
+        signature: base64url.encode(
+          (credential.response as AuthenticatorAssertionResponse)
+            .signature as unknown as Buffer
+        ),
+        userHandle: (credential.response as AuthenticatorAssertionResponse)
+          .userHandle
+          ? base64url.encode(
+              (credential.response as AuthenticatorAssertionResponse)
+                .userHandle as unknown as Buffer
+            )
+          : "No user handle",
+      },
+      ...(credential.authenticatorAttachment
+        ? { authenticatorAttachment: credential.authenticatorAttachment }
+        : {}),
+    };
+
+    const loginReq = await fetch("/api/login/public-key", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    const loginResp = await loginReq.json();
+    console.log(loginResp);
+
+    const token: string = loginResp.token;
+    window.localStorage.setItem(LS_JWT_KEY, token);
+    await apolloClient.resetStore();
+    await router.push("/dashboard");
+  }, [apolloClient, router]);
 
   return (
     <AuthContext authRedirect="/dashboard">
@@ -94,6 +160,18 @@ export default function Login() {
                 >
                   Log in
                 </Button>
+                {webAuthnSupported && (
+                  <Button
+                    sx={{ marginTop: 2, marginLeft: 2 }}
+                    variant="outlined"
+                    color="primary"
+                    type="button"
+                    onClick={webauthnLogin}
+                    disabled={submitting || !webAuthnSupported}
+                  >
+                    WebAuthn
+                  </Button>
+                )}
               </form>
             )}
           </Form>

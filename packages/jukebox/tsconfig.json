@@ -32,7 +32,7 @@
     "incremental": true
   },
   "include": [
-    "src/**/*",
+    "src/**/*", "../common/src/components/WebAuthnCredManager.tsx",
   ],
   "exclude": [
     "node_modules"
