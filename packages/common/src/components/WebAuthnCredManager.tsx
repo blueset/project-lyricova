@@ -55,7 +55,7 @@ export function WebAuthnCredManager() {
           name: "Project Lyricova",
           ...(window.location.hostname.startsWith("127")
             ? {}
-            : { id: window.location.hostname.split(".").slice(-2).join(".") }),
+            : { id: window.location.hostname }),
         },
         user: {
           id: Uint8Array.from(respJson.user.id as string, (c) =>
