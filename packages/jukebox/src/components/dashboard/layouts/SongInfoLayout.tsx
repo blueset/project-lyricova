@@ -34,7 +34,7 @@ const SONG_INFO_LIST_QUERY = gql`
 `;
 
 const SONG_OVERWRITE_MUTATION = gql`
-  mutation($id: Int!) {
+  mutation ($id: Int!) {
     enrolSongFromVocaDB(songId: $id) {
       id
       name
@@ -123,7 +123,7 @@ export default function SongInfoLayout({ children }: Props) {
                 <GridActionsCellItem
                   icon={<OpenInNewIcon />}
                   label="View in VocaDB"
-                  disabled={(rowData?.id ?? -1) < 0}
+                  disabled={((rowData?.id as number) ?? -1) < 0}
                   onClick={async () => {
                     if (rowData?.id !== undefined) {
                       window.open(
@@ -138,7 +138,7 @@ export default function SongInfoLayout({ children }: Props) {
                 <GridActionsCellItem
                   icon={<GetAppIcon />}
                   label="Overwrite from VocaDB"
-                  disabled={(rowData?.id ?? -1) < 0}
+                  disabled={((rowData?.id as number) ?? -1) < 0}
                   onClick={async () => {
                     if (rowData?.id !== undefined) {
                       const result = await apolloClient.mutate<{

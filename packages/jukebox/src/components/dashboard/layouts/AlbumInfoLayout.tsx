@@ -102,7 +102,7 @@ export default function AlbumInfoLayout({ children }: Props) {
                 <GridActionsCellItem
                   icon={<OpenInNewIcon />}
                   label="View in VocaDB"
-                  disabled={(rowData?.id ?? -1) < 0}
+                  disabled={(rowData?.id as number ?? -1) < 0}
                   onClick={async () => {
                     if (rowData?.id !== undefined) {
                       await window.open(
