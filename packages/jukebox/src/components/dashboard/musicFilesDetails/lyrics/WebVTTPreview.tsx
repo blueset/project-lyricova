@@ -30,6 +30,7 @@ function convertLine(line: LyricsLine): string {
   let result = "";
   let ptr = 0;
   furigana.forEach(({ content, range: [start, end] }) => {
+    if (start >= base.length || end > base.length) return;
     if (start > ptr) {
       result += base.substring(ptr, start);
     }
@@ -59,19 +60,51 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
       'STYLE\n::cue {\n  font-family: Inter, "Source Han Sans", "Noto Sans CJK", sans-serif;\n}\n\n';
     webvtt +=
       'STYLE\n::cue(.tt) {\n  font-variant-numeric: "tabular-nums";\n}\n\n';
+    webvtt += "STYLE\n::cue(.pndg) {\n  opacity: 0.3;\n}\n\n";
+    let lineCounter = 0;
     webvtt += lyrics.lines
       .map((v, idx) => {
+        if (!v.timeTag) return "";
         const start = v.timeTag.substring(0, 10);
+        const startTime = v.position;
         const end =
           lyrics.lines[idx + 1]?.timeTag?.substring(0, 10) ?? "99:59.999";
-        let text = `${convertLine(v)}`;
-        if (v.attachments.translation()) {
-          text += `\n${v.attachments.translation()}`;
+        if (v.attachments.timeTag?.tags) {
+          const base = v.content;
+          const timeTags = v.attachments.timeTag?.tags;
+          let ptrTime = start;
+          let result = "";
+          timeTags.forEach(({ index, timeTag }) => {
+            const section = base.substring(0, index);
+            const formattedSection = `${convertLine({
+              ...v,
+              content: section,
+            } as LyricsLine)}`;
+            const endTimeTag = buildTimeTag(startTime + timeTag);
+            lineCounter++;
+            result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:50% align:start\n<c.tt>[${start}] (@ ${ptrTime})</c>\n${formattedSection}<c.pndg>${base.substring(
+              index
+            )}</c>`;
+            if (v.attachments.translation()) {
+              result += `\n${v.attachments.translation()}`;
+            }
+            result += "\n\n";
+            ptrTime = endTimeTag;
+          });
+          if (timeTags[timeTags.length - 1].index < base.length) {
+            const formattedSection = `${convertLine(v)}`;
+            lineCounter++;
+            result += `${lineCounter}\n${ptrTime} --> ${end} line:50% align:start\n<c.tt>[${start}] (@ ${ptrTime})</c>\n${formattedSection}`;
+          }
+          return result.trimEnd();
+        } else {
+          let text = `${convertLine(v)}`;
+          if (v.attachments.translation()) {
+            text += `\n${v.attachments.translation()}`;
+          }
+          lineCounter++;
+          return `${lineCounter}\n${start} --> ${end} line:50% align:start\n<c.tt>[${start}]</c>\n${text}`;
         }
-
-        return `${
-          idx + 1
-        }\n${start} --> ${end} line:50% align:start\n<c.tt>[${start}]</c>\n${text}`;
       })
       .join("\n\n");
     // console.log(webvtt);
