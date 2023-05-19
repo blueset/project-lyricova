@@ -5,7 +5,7 @@ export const entryListingCondition = {
   include: [
     {
       association: "verses",
-      attributes: ["text", "isMain", "language"],
+      attributes: ["text", "isMain", "isOriginal", "language"],
       where: {
         isMain: true,
       },
