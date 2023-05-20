@@ -14,7 +14,7 @@ For music manangement, this project relies on [VocaDB](https://vocadb.net) for
 its database of Vocaloid songs, and allow manual addition of entries that does
 not fall under VocaDB’s scope.
 
-For the current version of Project Lyricova released in 2015, see the `v1`
+For the previous version of Project Lyricova last released in 2015, see the `v1`
 branch.
 
 <small>\* The term “Vocaloid” here includes all voice synthesizers, as defined
