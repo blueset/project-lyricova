@@ -150,7 +150,7 @@ export default function NotFound() {
         <div className={classes.caption}>
           Oops! That’s awkward.
           <br />
-          Retrun to <Link href="/">{siteName}</Link>
+          Return to <Link href="/">{siteName}</Link>
         </div>
       </div>
       <style jsx global>
