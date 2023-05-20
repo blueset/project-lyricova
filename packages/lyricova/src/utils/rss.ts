@@ -30,7 +30,7 @@ export default async function generateRssFeed() {
           "<br />"
         ),
       date: entry.recentActionDate,
-      url: `${host}/entry/${entry.id}`,
+      url: `${host}/entries/${entry.id}`,
       categories: entry.tags?.map((t) => t.name) ?? [],
     });
   });
