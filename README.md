@@ -2,7 +2,7 @@
 
 ![Project Lyricova](./banner.svg)
 
-Project Lyricova is a free and open source suit of web apps for lyrics blogging
+Project Lyricova is a free and open source suite of web apps for lyrics blogging
 and music management focused on Vocaloid\* contents.
 
 Project Lyricova is currently under the progress of a complete rewrite. The
