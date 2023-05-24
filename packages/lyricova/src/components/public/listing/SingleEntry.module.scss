@@ -15,7 +15,7 @@
   background-blend-mode: soft-light;
 
   // Disable grainy pattern on Safari mobile
-  @supports (-webkit-text-size-adjust:none) and (not (-ms-ime-align:auto)) and (not (-moz-appearance:none)) {
+  body.safari-mobile & {
     background-image: linear-gradient($background-color, $background-color);
   }
 

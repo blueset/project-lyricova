@@ -17,6 +17,8 @@ not fall under VocaDB’s scope.
 For the previous version of Project Lyricova last released in 2015, see the `v1`
 branch.
 
+[Learn more](https://1a23.com/works/open-source/project-lyricova-gen-2/).
+
 <small>\* The term “Vocaloid” here includes all voice synthesizers, as defined
 in VocaDB.net.</small>
 

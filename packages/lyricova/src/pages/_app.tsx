@@ -2,7 +2,7 @@ import type { AppProps } from "next/app";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import PropTypes from "prop-types";
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import React, { useEffect } from "react";
 import theme from "lyricova-common/frontendUtils/theme";
 import Head from "next/head";
@@ -72,6 +72,10 @@ function MyApp({
       );
     }
     document.body.dataset.path = router.pathname;
+
+    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
+      document.body.classList.add("safari-mobile");
+    }
   }, [isDashboard, router.pathname]);
 
   const getLayout = Component.layout || getPlainLayout;
