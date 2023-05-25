@@ -117,7 +117,7 @@ export function SlantedLyrics({ lyrics }: Props) {
         sx={{
           whiteSpace: "nowrap",
           overflow: "hidden",
-          transform: "rotate(-5deg)",
+          transform: "skew(-5deg, -5deg)",
           fontSize: "2em",
         }}
         lang="ja"
@@ -140,7 +140,6 @@ export function SlantedLyrics({ lyrics }: Props) {
                 key={idx}
                 sx={{
                   fontWeight: 600,
-                  fontStyle: "italic",
                   opacity: 0.5,
                   paddingInlineEnd: "1em",
                   ...(idx === currentFrameId && { opacity: 1 }),
@@ -158,7 +157,7 @@ export function SlantedLyrics({ lyrics }: Props) {
           sx={{
             whiteSpace: "nowrap",
             overflow: "hidden",
-            transform: "rotate(-5deg)",
+            transform: "skew(-5deg, -5deg)",
             fontSize: "1.5em",
           }}
           lang="zh"
@@ -181,7 +180,6 @@ export function SlantedLyrics({ lyrics }: Props) {
                   key={idx}
                   sx={{
                     fontWeight: 600,
-                    fontStyle: "italic",
                     opacity: 0.5,
                     paddingInlineEnd: "1em",
                     ...(idx === currentFrameId && { opacity: 1 }),
