@@ -31,6 +31,11 @@ export interface PlaylistState {
   playNow: boolean | null;
 
   loopMode: "single" | "all" | "none";
+
+  /**
+   * Shuffle mapping is a list of indexes to tracks elements to use.
+   * e.g. [0, 2, 1] renders [tracks[0], tracks[2], tracks[1]].
+   */
   shuffleMapping: number[] | null;
 
   isCollapsed: boolean;
@@ -103,7 +108,7 @@ export const playlistSlice = createSlice({
         state.shuffleMapping.splice(index, 1);
         index = realIndex;
       }
-      state.tracks.splice(action.payload, 1);
+      state.tracks.splice(index, 1);
       if (
         state.nowPlaying !== null &&
         state.nowPlaying >= state.tracks.length
@@ -144,7 +149,6 @@ export const playlistSlice = createSlice({
         state.shuffleMapping = null;
       } else {
         const mapping = _.shuffle(_.range(state.tracks.length));
-        console.log("nowPlaying", state.nowPlaying);
         if (state.nowPlaying !== null) {
           const np = state.nowPlaying;
           const repIndex = mapping.indexOf(state.nowPlaying);
