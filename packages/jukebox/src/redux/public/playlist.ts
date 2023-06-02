@@ -106,6 +106,9 @@ export const playlistSlice = createSlice({
       if (state.shuffleMapping !== null) {
         const realIndex = state.shuffleMapping[index];
         state.shuffleMapping.splice(index, 1);
+        state.shuffleMapping = state.shuffleMapping.map((i) =>
+          i > realIndex ? i - 1 : i
+        );
         index = realIndex;
       }
       state.tracks.splice(index, 1);
