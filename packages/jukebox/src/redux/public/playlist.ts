@@ -117,6 +117,8 @@ export const playlistSlice = createSlice({
         state.nowPlaying >= state.tracks.length
       ) {
         state.nowPlaying = state.tracks.length - 1;
+      } else if (state.nowPlaying > action.payload) {
+        state.nowPlaying--;
       }
     },
     moveTrack: (state, action: PayloadAction<{ from: number; to: number }>) => {
