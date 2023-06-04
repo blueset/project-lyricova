@@ -1,7 +1,7 @@
 import { gql, useQuery } from "@apollo/client";
 import { Stack, styled } from "@mui/material";
 import _ from "lodash";
-import type { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 import { getLayout } from "../components/public/layouts/IndexLayout";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
 import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
@@ -97,6 +97,7 @@ export default function Index() {
   const moduleNode = MODULE_LIST[module] ?? MODULE_LIST[keys[0]];
   const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
   const currentSong = useAppSelector(currentSongSelector);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const isFullscreen = useAppSelector((s) => s.display.isFullscreen);
   const dispatch = useAppDispatch();
@@ -152,7 +153,28 @@ export default function Index() {
       <TooltipIconButton
         title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
         color="primary"
-        onClick={() => dispatch(toggleFullscreen())}
+        onClick={async () => {
+          dispatch(toggleFullscreen());
+          if (isFullscreen) {
+            document.exitFullscreen?.()?.catch(() => {
+              /* No-op */
+            });
+            if (wakeLockRef.current) {
+              wakeLockRef.current.release();
+            }
+          } else {
+            const wakeLock = await navigator.wakeLock?.request("screen");
+            if (wakeLock) {
+              wakeLockRef.current = wakeLock;
+              wakeLock.addEventListener("release", () => {
+                wakeLockRef.current = null;
+                dispatch(toggleFullscreen());
+              });
+            } else {
+              wakeLockRef.current = null;
+            }
+          }
+        }}
       >
         {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
       </TooltipIconButton>

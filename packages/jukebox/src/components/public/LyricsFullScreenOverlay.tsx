@@ -7,11 +7,19 @@ import {
 } from "react";
 import { useNamedState } from "../../frontendUtils/hooks";
 import { useAppContext } from "./AppContext";
-import { IconButton, styled } from "@mui/material";
+import {
+  Button,
+  ToggleButtonGroup,
+  IconButton,
+  Tooltip,
+  styled,
+  ToggleButton,
+} from "@mui/material";
 import Replay5Icon from "@mui/icons-material/Replay5";
 import Forward5Icon from "@mui/icons-material/Forward5";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
 
 const ShadeDiv = styled("div")`
   position: absolute;
@@ -22,6 +30,13 @@ const ShadeDiv = styled("div")`
   flex-direction: row;
   align-items: center;
   justify-content: space-evenly;
+`;
+
+const FullScreenControlDiv = styled("div")`
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.5rem;
 `;
 
 export function LyricsFullScreenOverlay({
@@ -35,6 +50,9 @@ export function LyricsFullScreenOverlay({
     "isPlaying"
   );
   const [isVisible, setIsVisible] = useNamedState(false, "isVisible");
+  const [fullscreenMode, setFullscreenMode] = useNamedState<
+    "web" | "0" | "90" | "180" | "270"
+  >("web", "fullscreenMode");
   const toggleVisibleTimeout = useRef<number | null>(null);
   const lastClickTime = useRef<number>(0);
   const onPlay = useCallback(() => {
@@ -122,6 +140,18 @@ export function LyricsFullScreenOverlay({
     };
   }, [onPause, onPlay, playerRef]);
 
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setFullscreenMode("web");
+      }
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+    };
+  }, [setFullscreenMode]);
+
   return (
     <ShadeDiv
       sx={{
@@ -137,6 +167,60 @@ export function LyricsFullScreenOverlay({
         }}
       >
         {children}
+        <FullScreenControlDiv>
+          <ToggleButtonGroup
+            aria-label="Fullscreen options"
+            exclusive
+            onChange={async (evt, value) => {
+              evt.stopPropagation();
+              if (value) {
+                if (value === "web") {
+                  await document?.exitFullscreen?.().catch(() => {
+                    /* No-op */
+                  });
+                  screen?.orientation?.unlock?.();
+                } else {
+                  await document.body?.requestFullscreen?.();
+                  if (value === "0") {
+                    screen?.orientation
+                      ?.lock?.("portrait-primary")
+                      .catch(() => {
+                        /* No-op */
+                      });
+                  } else if (value === "90") {
+                    screen?.orientation
+                      ?.lock?.("landscape-primary")
+                      .catch(() => {
+                        /* No-op */
+                      });
+                  } else if (value === "180") {
+                    screen?.orientation
+                      ?.lock?.("portrait-secondary")
+                      .catch(() => {
+                        /* No-op */
+                      });
+                  } else if (value === "270") {
+                    screen?.orientation
+                      ?.lock?.("landscape-secondary")
+                      .catch(() => {
+                        /* No-op */
+                      });
+                  }
+                }
+                setFullscreenMode(value);
+              }
+            }}
+            value={fullscreenMode}
+          >
+            <ToggleButton value="web">
+              <FullscreenIcon />
+            </ToggleButton>
+            <ToggleButton value="0">0°</ToggleButton>
+            <ToggleButton value="90">90°</ToggleButton>
+            <ToggleButton value="180">180°</ToggleButton>
+            <ToggleButton value="270">270°</ToggleButton>
+          </ToggleButtonGroup>
+        </FullScreenControlDiv>
       </div>
       <IconButton
         aria-label="Rewind 5 seconds"
