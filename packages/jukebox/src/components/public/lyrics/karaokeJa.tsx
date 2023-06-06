@@ -302,7 +302,7 @@ function LyricsLine({
         position: "relative",
         fontWeight: 800,
         fontFamily:
-          '"Source Han Serif", "Noto Serif CJK", "Noto Serif JP", serif',
+          'var(--font-source-han-serif), "Source Han Serif", "Noto Serif CJK", "Noto Serif JP", serif',
         whiteSpace: "nowrap",
         "& span.after": {
           color: "primary.dark",

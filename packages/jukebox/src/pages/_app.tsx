@@ -1,13 +1,39 @@
 import type { AppProps } from "next/app";
-import { ThemeProvider, CssBaseline } from "@mui/material";
+import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 import PropTypes from "prop-types";
-import React, { ReactNode } from "react";
+import React, { useEffect } from "react";
 import theme from "lyricova-common/frontendUtils/theme";
 import Head from "next/head";
 import { ApolloProvider } from "@apollo/client";
 import apolloClient from "lyricova-common/frontendUtils/apollo";
 import type { NextComponentType } from "next";
 import { getLayout as getPlainLayout } from "../components/public/layouts/PlainLayout";
+import {
+  Inter,
+  SourceHanSans,
+  SourceHanSansPunct,
+  SourceHanSerif,
+} from "../fonts";
+
+const themeMod = createTheme({
+  ...theme,
+  typography: {
+    fontFamily:
+      "var(--font-inter),var(--font-source-han-sans)," +
+      theme.typography.fontFamily,
+  },
+  components: {
+    ...theme.components,
+    MuiCssBaseline: {
+      ...theme.components?.MuiCssBaseline,
+      styleOverrides: `
+        body:lang(zh), body:lang(ja) {
+          font-family: var(--font-source-han-sans-punct),var(--font-inter),var(--font-source-han-sans),${theme.typography.fontFamily};
+        }
+      `,
+    },
+  },
+});
 
 type AppPropsExtension = AppProps & {
   Component: NextComponentType & {
@@ -23,6 +49,15 @@ function MyApp({ Component, pageProps }: AppPropsExtension) {
     if (jssStyles) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.add(
+      Inter.variable,
+      SourceHanSans.variable,
+      SourceHanSansPunct.variable,
+      SourceHanSerif.variable
+    );
   }, []);
 
   const getLayout = Component.layout || getPlainLayout;
@@ -59,7 +94,7 @@ function MyApp({ Component, pageProps }: AppPropsExtension) {
         <meta name="theme-color" content="#c56cf0" />
       </Head>
       <ApolloProvider client={apolloClient}>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={themeMod}>
           {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
           <CssBaseline />
           {getLayout(<Component {...pageProps} />)}
