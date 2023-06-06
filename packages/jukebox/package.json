@@ -62,6 +62,7 @@
     "bluebird": "^3.7.2",
     "cheerio": "^1.0.0-rc.3",
     "class-validator": "^0.14.0",
+    "colorthief": "^2.4.0",
     "compression": "^1.7.4",
     "concat-stream": "^2.0.0",
     "connect-session-sequelize": "^7.0.2",

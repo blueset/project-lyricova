@@ -32,7 +32,8 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
         position: "absolute",
         width: "100%",
         height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        // backdropFilter: "brightness(0.25)",
         zIndex: 0,
       }}
     />
@@ -72,8 +73,8 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
         display: "flex",
         flexDirection: "column",
         zIndex: isFullscreen ? 2 : 0,
-        backgroundColor: "#00171F",
-        backgroundImage: textureUrl ? `url(/textures/${textureUrl})` : null,
+        // backgroundColor: isFullscreen ? "#00171F" : null,
+        // backgroundImage: textureUrl ? `url(/textures/${textureUrl})` : null,
       }}
     >
       <GlobalStyles

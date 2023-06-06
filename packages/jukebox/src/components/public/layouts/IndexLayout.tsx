@@ -25,6 +25,7 @@ import {
   stop,
 } from "../../../redux/public/playlist";
 import { setTextureUrl } from "../../../redux/public/display";
+import { BackgroundGradient } from "../Background";
 
 interface Props {
   children: ReactNode;
@@ -80,6 +81,7 @@ export default function IndexLayout({ children }: Props) {
     (s) => s.playlist
   );
   const currentSong = useAppSelector(currentSongSelector);
+  const isFullscreen = useAppSelector((s) => s.display.isFullscreen);
 
   // Reflect nowPlaying change to player
   useEffect(() => {
@@ -321,38 +323,45 @@ export default function IndexLayout({ children }: Props) {
                     flexDirection: { xs: "column", md: "row" },
                   }),
             }}
-            style={generateBackgroundStyle(currentSong, textureURL)}
+            // style={generateBackgroundStyle(currentSong, textureURL)}
           >
-            <Box
-              sx={{
-                zIndex: 2,
-                ...(isCollapsed
-                  ? { order: 1 }
-                  : {
-                      width: { md: "clamp(25em, 33%, 45em)" },
-                      padding: { md: "24px" },
-                      height: { md: "100%" },
-                      position: { xs: "absolute", md: "unset" },
-                      left: { xs: 0, md: "unset" },
-                      right: { xs: 0, md: "unset" },
-                      top: { xs: 0, md: "unset" },
-                      bottom: { xs: 0, md: "unset" },
-                    }),
-              }}
-            >
-              <Paper
+            <BackgroundGradient
+              coverUrl={currentSong ? getTrackCoverURL(currentSong) : undefined}
+              textureUrl={textureURL}
+              playerRef={playerRef}
+            />
+            {!isFullscreen && (
+              <Box
                 sx={{
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
+                  zIndex: 2,
+                  ...(isCollapsed
+                    ? { order: 1 }
+                    : {
+                        width: { md: "clamp(25em, 33%, 45em)" },
+                        padding: { md: "24px" },
+                        height: { md: "100%" },
+                        position: { xs: "absolute", md: "unset" },
+                        left: { xs: 0, md: "unset" },
+                        right: { xs: 0, md: "unset" },
+                        top: { xs: 0, md: "unset" },
+                        bottom: { xs: 0, md: "unset" },
+                      }),
                 }}
-                lang="ja"
               >
-                <Player />
-                {!isCollapsed && <CurrentPlaylist />}
-              </Paper>
-            </Box>
+                <Paper
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                  lang="ja"
+                >
+                  <Player />
+                  {!isCollapsed && <CurrentPlaylist />}
+                </Paper>
+              </Box>
+            )}
             <Box
               sx={{
                 flexGrow: 1,
@@ -368,7 +377,8 @@ export default function IndexLayout({ children }: Props) {
               }}
             >
               <DetailsPanel
-                coverUrl={currentSong ? getTrackCoverURL(currentSong) : null}
+                coverUrl={null}
+                // coverUrl={currentSong ? getTrackCoverURL(currentSong) : null}
               >
                 {children}
               </DetailsPanel>
