@@ -315,7 +315,7 @@ export default function IndexLayout({ children }: Props) {
         <AuthContext noRedirect>
           <Box
             sx={{
-              height: "100vh",
+              height: "100lvh",
               display: "flex",
               ...(isCollapsed
                 ? { flexDirection: "column" }
@@ -339,12 +339,9 @@ export default function IndexLayout({ children }: Props) {
                     : {
                         width: { md: "clamp(25em, 33%, 45em)" },
                         padding: { md: "24px" },
-                        height: { md: "100%" },
+                        height: { xs: "100lvh", md: "100%" },
                         position: { xs: "absolute", md: "unset" },
-                        left: { xs: 0, md: "unset" },
-                        right: { xs: 0, md: "unset" },
-                        top: { xs: 0, md: "unset" },
-                        bottom: { xs: 0, md: "unset" },
+                        inset: { xs: 0, md: "unset" },
                       }),
                 }}
               >
