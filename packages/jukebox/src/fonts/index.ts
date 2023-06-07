@@ -21,7 +21,7 @@ export const SourceHanSans = localFont({
   adjustFontFallback: false,
 });
 export const SourceHanSerif = localFont({
-  src: "./SourceHanSerif-VF.otf.woff2",
+  src: "./SourceHanSerifJP-VF.ttf.woff2",
   variable: "--font-source-han-serif",
   adjustFontFallback: false,
 });
