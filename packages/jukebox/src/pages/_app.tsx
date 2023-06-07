@@ -26,11 +26,12 @@ const themeMod = createTheme({
     ...theme.components,
     MuiCssBaseline: {
       ...theme.components?.MuiCssBaseline,
-      styleOverrides: `
-        body:lang(zh), body:lang(ja) {
-          font-family: var(--font-source-han-sans-punct),var(--font-inter),var(--font-source-han-sans),${theme.typography.fontFamily};
-        }
-      `,
+      styleOverrides: {
+        ...(theme.components?.MuiCssBaseline?.styleOverrides as object),
+        "body:lang(zh), body:lang(ja)": {
+          fontFamily: `var(--font-source-han-sans-punct),var(--font-inter),var(--font-source-han-sans),${theme.typography.fontFamily}`,
+        },
+      },
     },
   },
 });
