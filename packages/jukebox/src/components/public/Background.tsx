@@ -466,14 +466,14 @@ export const getGradientFromPalette = (palette: [number, number, number][]) => {
   for (const i of ansSeq) {
     colors.push(palette[ansSeq[i]]);
   }
-  let ans = "linear-gradient(-45deg,";
+  let ans = ""; // "linear-gradient(-45deg,";
   for (let i = 0; i < colors.length; i++) {
     ans += `rgb(${colors[i][0]}, ${colors[i][1]}, ${colors[i][2]})`;
     if (i !== colors.length - 1) {
       ans += ",";
     }
   }
-  ans += ")";
+  // ans += ")";
   return ans;
 };
 
@@ -489,6 +489,14 @@ const RnpBackgroundGradient = styled("div")`
   width: 400%;
   animation: bg-gradient-animation 120s cubic-bezier(0.45, 0.05, 0.55, 0.95)
     infinite;
+  background-image: linear-gradient(-45deg, var(--backgroundImageGradient));
+
+  @supports (background: linear-gradient(in lch, black, white)) {
+    background-image: linear-gradient(
+      -45deg in lch,
+      var(--backgroundImageGradient)
+    );
+  }
 
   @keyframes bg-gradient-animation {
     0% {
@@ -538,7 +546,13 @@ export function BackgroundGradient({ coverUrl, textureUrl }: Props) {
       style={{ backgroundImage: hasGradient ? null : gradient }}
     >
       {hasGradient && (
-        <RnpBackgroundGradient style={{ backgroundImage: gradient }} />
+        <RnpBackgroundGradient
+          style={
+            {
+              "--backgroundImageGradient": gradient,
+            } as unknown as React.CSSProperties
+          }
+        />
       )}
     </RnpBackgroundGradientWrapper>
   );
