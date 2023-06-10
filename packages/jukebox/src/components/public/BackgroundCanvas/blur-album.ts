@@ -119,6 +119,8 @@ void main() {
     gl_FragColor = vec4(resultColor, 1.0);
 }  
 `,
-  afterDrawArray() {},
+  afterDrawArray() {
+    // no-op
+  },
   configurableUniforms: [""],
 };
