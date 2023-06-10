@@ -116,7 +116,7 @@ const LineDiv = styled("div")`
 `;
 
 interface LyricsLineElementProps {
-  className: string;
+  className?: string;
   line: LyricsKitLyricsLine | null;
   offsetIndex: number;
 }

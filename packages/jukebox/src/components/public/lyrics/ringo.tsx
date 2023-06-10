@@ -57,7 +57,7 @@ const TRANSITION: Transition = {
 };
 
 interface LyricsLineElementProps {
-  className: string;
+  className?: string;
   line: LyricsKitLyricsLine | null;
   offsetIndex: number;
   animate: boolean;
