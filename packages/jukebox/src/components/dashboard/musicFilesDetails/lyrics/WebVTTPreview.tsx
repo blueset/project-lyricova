@@ -55,6 +55,8 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
   }, [lyricsString]);
   const trackDataUrl = useMemo<string | null>(() => {
     if (!lyrics) return null;
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+    const divider = isFirefox ? "|" : "";
     let webvtt = "WEBVTT\n\n";
     webvtt +=
       'STYLE\n::cue {\n  font-family: Inter, "Source Han Sans", "Noto Sans CJK", sans-serif;\n}\n\n';
@@ -82,7 +84,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
             } as LyricsLine)}`;
             const endTimeTag = buildTimeTag(startTime + timeTag);
             lineCounter++;
-            result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:50% align:start\n<c.tt>[${start}] (@ ${ptrTime})</c>\n${formattedSection}<c.pndg>${base.substring(
+            result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:50% align:start\n<c.tt>[${start}] (@ ${ptrTime})</c>\n${formattedSection}<c.pndg>${divider}${base.substring(
               index
             )}</c>`;
             if (v.attachments.translation()) {
