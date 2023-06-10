@@ -61,7 +61,7 @@ const LYRICS_QUERY = gql`
 // prettier-ignore
 const MODULE_LIST = {
   "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} blur />,
-  "Focused Clear": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} />,
+  // "Focused Clear": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} />,
   "Focused Glow": (lyrics: LyricsKitLyrics) => <FocusedGlowLyrics lyrics={lyrics} />,
   "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
   "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
@@ -113,7 +113,7 @@ export default function Index() {
 
   const MessageBox = ({ children }: { children: ReactNode }) => (
     <Stack
-      className="coverMask"
+      // className="coverMask"
       alignItems="center"
       justifyContent="center"
       sx={{
@@ -122,7 +122,7 @@ export default function Index() {
         fontWeight: 600,
         fontSize: "2.5em",
         fontStyle: "italic",
-        filter: "var(--jukebox-cover-filter-brighter)",
+        // filter: "var(--jukebox-cover-filter-brighter)",
         padding: 4,
       }}
     >

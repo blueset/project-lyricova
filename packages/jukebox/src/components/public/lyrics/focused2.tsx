@@ -19,14 +19,14 @@ const MAIN_LINE_VARIANTS: Variants = {
     opacity: 1,
     scale: 1,
     color: "rgba(255, 255, 255, 0.7)",
-    filter: "var(--jukebox-cover-filter-brighter)",
+    // filter: "var(--jukebox-cover-filter-brighter)",
   },
   next: {
     opacity: 1,
     marginBottom: 0,
     scale: 0.625,
     color: "rgba(255, 255, 255, 0.4)",
-    filter: "var(--jukebox-cover-filter-bright)",
+    // filter: "var(--jukebox-cover-filter-bright)",
   },
   exit: {
     opacity: 0,
@@ -68,7 +68,7 @@ function LyricsLineElement({
   return (
     <SxMotionDiv
       lang="ja"
-      className={"coverMask"}
+      // className={"coverMask"}
       transition={transition}
       animate={isCurrent ? "current" : "next"}
       exit="exit"
@@ -77,20 +77,20 @@ function LyricsLineElement({
         fontWeight: 600,
         lineHeight: 1.2,
         fontSize: "3.5em",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
+        // backgroundSize: "cover",
+        // backgroundPosition: "center",
+        // backgroundAttachment: "fixed",
         width: "100%",
         color: "rgba(255, 255, 255, 0.4)",
         transformOrigin: "center left",
         transform: "scale(0.625)",
-        filter: "var(--jukebox-cover-filter-bright)",
+        // filter: "var(--jukebox-cover-filter-bright)",
         "& > div": {
           display: "block",
           fontSize: "0.8em",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
+          // backgroundSize: "cover",
+          // backgroundPosition: "center",
+          // backgroundAttachment: "fixed",
         },
       }}
     >

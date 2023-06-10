@@ -4,16 +4,10 @@ import type {
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../frontendUtils/hooks";
-import type { Theme} from "@mui/material";
+import type { Theme } from "@mui/material";
 import { styled, useTheme } from "@mui/material";
-import type {
-  Variants,
-  Transition,
-  TargetAndTransition} from "framer-motion";
-import {
-  motion,
-  AnimatePresence
-} from "framer-motion";
+import type { Variants, Transition, TargetAndTransition } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Balancer from "react-wrap-balancer";
 import type { CSSProperties } from "react";
 import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
@@ -26,18 +20,15 @@ const MotionDivLine = styled(motion.div)`
   line-height: 1.2;
   text-wrap: balance;
   font-size: 3em;
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+  // background-size: cover;
+  // background-position: center;
+  // background-attachment: fixed;
   display: flex;
   flex-direction: column-reverse;
   color: rgba(255, 255, 255, 0.4);
-  --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright)
-    blur(var(--jukebox-ringo-blur-radius));
-  filter: var(
-    --jukebox-cover-filter-bright-blur,
-    blur(var(--jukebox-ringo-blur-radius))
-  );
+  // --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright)
+  //   blur(var(--jukebox-ringo-blur-radius));
+  filter: blur(var(--jukebox-ringo-blur-radius));
   transform-origin: top left;
   & .translation {
     display: block;
@@ -92,8 +83,7 @@ function LyricsLineElement({
     fontSize: theme.typography.fontSize * 3,
     // trans
     transitionEnd: {
-      filter:
-        "var(--jukebox-cover-filter-brighter, blur(var(--jukebox-ringo-blur-radius)))",
+      filter: "blur(var(--jukebox-ringo-blur-radius))",
       mixBlendMode: "hard-light",
     },
   };
@@ -103,7 +93,7 @@ function LyricsLineElement({
     //   styles.scale = 1.3;
     // } else {
     // }
-    styles.transitionEnd.filter = "var(--jukebox-cover-filter-brighter)";
+    // styles.transitionEnd.filter = "var(--jukebox-cover-filter-brighter)";
     styles.transitionEnd.mixBlendMode = "hard-light";
     styles.color = "rgba(255, 255, 255, 0.7)";
   } else {
@@ -175,7 +165,7 @@ export function RingoLyrics({ lyrics, resize }: Props) {
   return (
     <SxMotionDiv
       sx={
-        ({
+        {
           paddingLeft: 4,
           width: "100%",
           height: "100%",
@@ -195,7 +185,7 @@ export function RingoLyrics({ lyrics, resize }: Props) {
             "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
           "-webkit-mask-box-image-slice": "49% 0 fill",
           "-webkit-mask-box-image-width": "35px 0 50%",
-        } as unknown) as CSSProperties
+        } as unknown as CSSProperties
       }
       transition={{ staggerChildren: 1 }}
     >
@@ -212,11 +202,11 @@ export function RingoLyrics({ lyrics, resize }: Props) {
           return (
             <LyricsLineElement
               sx={
-                ({
+                {
                   ...(resize && { width: "62.5%" }),
-                } as unknown) as CSSProperties
+                } as unknown as CSSProperties
               }
-              className="coverMask"
+              // className="coverMask"
               line={l}
               key={idx}
               animate={animate}

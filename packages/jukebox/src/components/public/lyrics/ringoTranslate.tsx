@@ -53,19 +53,14 @@ const LineDiv = styled("div")`
   line-height: 1.2;
   text-wrap: balance;
   font-size: 3em;
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+  // background-size: cover;
+  // background-position: center;
+  // background-attachment: fixed;
   position: absolute;
   width: 90%;
   left: 30px;
   color: rgba(255, 255, 255, 0.4);
-  --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright)
-    blur(var(--jukebox-ringo-blur-radius));
-  filter: var(
-    --jukebox-cover-filter-bright-blur,
-    blur(var(--jukebox-ringo-blur-radius))
-  );
+  filter: blur(var(--jukebox-ringo-blur-radius));
   transform-origin: top left;
   opacity: 0.2;
   color: white;
@@ -76,17 +71,17 @@ const LineDiv = styled("div")`
     translate 0.35s cubic-bezier(0.16, 1, 0.3, 1),
     scale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
-  &.hasCover {
-    mix-blend-mode: overlay;
-    opacity: 0.5;
-  }
+  // &.hasCover {
+  //   mix-blend-mode: overlay;
+  //   opacity: 0.5;
+  // }
 
   & .translation {
     display: block;
     font-size: 0.7em;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    // background-size: cover;
+    // background-position: center;
+    // background-attachment: fixed;
   }
 
   &[data-offset="20"] {
@@ -98,10 +93,7 @@ const LineDiv = styled("div")`
 
   &[data-offset="0"] {
     opacity: 0.7;
-    filter: var(
-      --jukebox-cover-filter-brighter,
-      blur(var(--jukebox-ringo-blur-radius))
-    );
+    filter: blur(var(--jukebox-ringo-blur-radius));
     mix-blend-mode: hard-light;
   }
 
@@ -163,9 +155,6 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
 
   const lineNumber = line || 0;
 
-  const useTop =
-    navigator.userAgent.includes("Chrome") && currentSong?.hasCover;
-
   useLayoutEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
@@ -175,24 +164,14 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
       offset = window.innerWidth > 560 ? 100 : 50;
     if (lines[0].dataset.offset === "-1") {
       start += 1;
-      if (useTop) {
-        lines[0].style.top = `${offset - gap - lines[0].clientHeight}px`;
-      } else {
-        lines[0].style.translate = `0 ${
-          offset - gap - lines[0].clientHeight
-        }px`;
-      }
+      lines[0].style.translate = `0 ${offset - gap - lines[0].clientHeight}px`;
     }
     for (let i = start; i < lines.length; i++) {
       const line = lines[i];
-      if (useTop) {
-        line.style.top = `${offset}px`;
-      } else {
-        line.style.translate = `0 ${offset}px`;
-      }
+      line.style.translate = `0 ${offset}px`;
       offset += line.clientHeight + gap;
     }
-  }, [line, useTop]);
+  }, [line]);
 
   return (
     <ContainerDiv ref={containerRef}>
@@ -201,10 +180,6 @@ export function RingoTranslateLyrics({ lyrics }: Props) {
           return null;
         return (
           <LyricsLineElement
-            className={clsx(
-              useTop && "coverMask",
-              currentSong?.hasCover && "hasCover"
-            )}
             line={l}
             key={idx}
             offsetIndex={line !== null ? idx - line : idx + 1}

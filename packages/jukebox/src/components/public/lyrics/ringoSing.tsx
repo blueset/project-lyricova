@@ -56,19 +56,16 @@ const LineDiv = styled("div")`
   line-height: 1.2;
   text-wrap: balance;
   font-size: 3em;
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+  // background-size: cover;
+  // background-position: center;
+  // background-attachment: fixed;
   position: absolute;
   width: calc((100% - 60px));
   left: 30px;
   color: rgba(255, 255, 255, 0.4);
-  --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright)
-    blur(var(--jukebox-ringo-blur-radius));
-  filter: var(
-    --jukebox-cover-filter-bright-blur,
-    blur(var(--jukebox-ringo-blur-radius))
-  );
+  // --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright)
+  //   blur(var(--jukebox-ringo-blur-radius));
+  filter: blur(var(--jukebox-ringo-blur-radius));
   transform-origin: top left;
   opacity: 0.2;
   color: white;
@@ -119,10 +116,7 @@ const LineDiv = styled("div")`
 
   &[data-offset="0"] {
     opacity: 0.7;
-    filter: var(
-      --jukebox-cover-filter-brighter,
-      blur(var(--jukebox-ringo-blur-radius))
-    );
+    filter: blur(var(--jukebox-ringo-blur-radius));
     mix-blend-mode: hard-light;
   }
 

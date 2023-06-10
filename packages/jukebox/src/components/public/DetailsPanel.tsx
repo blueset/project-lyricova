@@ -77,7 +77,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
         // backgroundImage: textureUrl ? `url(/textures/${textureUrl})` : null,
       }}
     >
-      <GlobalStyles
+      {/* <GlobalStyles
         styles={
           {
             ".coverMask": {
@@ -90,22 +90,22 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundAttachment: "fixed",
-              "--jukebox-cover-filter-blur": coverUrl
-                ? "url(#sharpBlur)"
-                : null,
-              "--jukebox-cover-filter-bright": coverUrl
-                ? "url(#sharpBlurBright)"
-                : null,
-              "--jukebox-cover-filter-brighter": coverUrl
-                ? "url(#sharpBlurBrighter)"
-                : null,
-              "--jukebox-cover-filter-brighter-blurless": coverUrl
-                ? "url(#brighter)"
-                : null,
+              // "--jukebox-cover-filter-blur": coverUrl
+              //   ? "url(#sharpBlur)"
+              //   : null,
+              // "--jukebox-cover-filter-bright": coverUrl
+              //   ? "url(#sharpBlurBright)"
+              //   : null,
+              // "--jukebox-cover-filter-brighter": coverUrl
+              //   ? "url(#sharpBlurBrighter)"
+              //   : null,
+              // "--jukebox-cover-filter-brighter-blurless": coverUrl
+              //   ? "url(#brighter)"
+              //   : null,
             },
           } as unknown as StyledGlobalStylesProps["styles"]
         }
-      />
+      /> */}
       {backgroundNode}
       {!isFullscreen && (
         <Box
@@ -152,7 +152,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
       >
         {children}
       </Box>
-      <svg
+      {/* <svg
         style={{
           border: 0,
           clip: "rect(0 0 0 0)",
@@ -332,7 +332,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-      </svg>
+      </svg> */}
     </div>
   );
 }

@@ -146,7 +146,7 @@ export const relayout: RelayoutFn = (wrapper, ratio = 1) => {
 };
 
 interface LyricsLineElementProps {
-  translationClassName: string;
+  translationClassName?: string;
   line: LyricsKitLyricsLine | null;
   duration: number;
   width: number;
@@ -266,13 +266,13 @@ function LyricsLineElement({
           sx={{
             display: "block",
             fontSize: "2.2em",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundAttachment: "fixed",
+            // backgroundSize: "cover",
+            // backgroundPosition: "center",
+            // backgroundAttachment: "fixed",
             lineHeight: 1.2,
             fontWeight: 600,
             color: "rgba(255, 255, 255, 0.6)",
-            filter: "var(--jukebox-cover-filter-bright)",
+            // filter: "var(--jukebox-cover-filter-bright)",
           }}
         >
           <Balancer>{line.attachments.translation}</Balancer>
@@ -321,7 +321,7 @@ export function StrokeLyrics({ lyrics }: Props) {
     const end = endTime;
     lineElement = (width) => (
       <LyricsLineElement
-        translationClassName={"coverMask"}
+        // translationClassName={"coverMask"}
         line={currentFrame.data}
         duration={end - start}
         width={width}

@@ -8,7 +8,7 @@ import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
 import { Box, Stack } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import gsap from "gsap";
-import type { CSSProperties, RefObject} from "react";
+import type { CSSProperties, RefObject } from "react";
 import { useEffect, useRef } from "react";
 import { measureTextWidths } from "../../../frontendUtils/measure";
 
@@ -59,11 +59,11 @@ function LyricsLineElement({
           fontSize: "4em",
           position: "relative",
           "& span.base": {
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundAttachment: "fixed",
+            // backgroundSize: "cover",
+            // backgroundPosition: "center",
+            // backgroundAttachment: "fixed",
             color: "rgba(255, 255, 255, 0.6)",
-            filter: "var(--jukebox-cover-filter-bright)",
+            // filter: "var(--jukebox-cover-filter-bright)",
             position: "absolute",
             width: "calc(100% - 32px)",
           },
@@ -92,7 +92,7 @@ function LyricsLineElement({
         }}
         lang="ja"
       >
-        <BalancedTextSpanWrap className="base coverMask">
+        <BalancedTextSpanWrap className="base">
           {line.content}
         </BalancedTextSpanWrap>
         <BalancedTextSpanWrap
@@ -108,13 +108,13 @@ function LyricsLineElement({
           sx={{
             display: "block",
             fontSize: "2.2em",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundAttachment: "fixed",
+            // backgroundSize: "cover",
+            // backgroundPosition: "center",
+            // backgroundAttachment: "fixed",
             lineHeight: 1.2,
             fontWeight: 600,
             color: "rgba(255, 255, 255, 0.6)",
-            filter: "var(--jukebox-cover-filter-bright)",
+            // filter: "var(--jukebox-cover-filter-bright)",
           }}
         >
           <Balancer>{line.attachments.translation}</Balancer>

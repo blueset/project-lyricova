@@ -19,7 +19,7 @@ const TRANSITION: Transition = {
 };
 
 interface LyricsLineElementProps {
-  className: string;
+  className?: string;
   line: LyricsKitLyricsLine | null;
   animate: boolean;
   sx?: SxProps<Theme>;
@@ -101,22 +101,22 @@ export function FocusedLyrics({ lyrics, blur }: Props) {
                 fontWeight: 600,
                 lineHeight: 1.2,
                 fontSize: "4em",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundAttachment: "fixed",
+                // backgroundSize: "cover",
+                // backgroundPosition: "center",
+                // backgroundAttachment: "fixed",
                 color: "rgba(255, 255, 255, 0.8)",
-                filter: blur
-                  ? "var(--jukebox-cover-filter-brighter)"
-                  : "var(--jukebox-cover-filter-brighter-blurless)",
+                // filter: blur
+                //   ? "var(--jukebox-cover-filter-brighter)"
+                //   : "var(--jukebox-cover-filter-brighter-blurless)",
                 "& > div": {
                   display: "block",
                   fontSize: "0.6em",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  backgroundAttachment: "fixed",
+                  // backgroundSize: "cover",
+                  // backgroundPosition: "center",
+                  // backgroundAttachment: "fixed",
                 },
               }}
-              className={"coverMask"}
+              // className={"coverMask"}
               line={l}
               key={idx}
               animate={animate}
