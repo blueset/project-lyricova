@@ -32,8 +32,8 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
         position: "absolute",
         width: "100%",
         height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-        // backdropFilter: "brightness(0.25)",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        // backdropFilter: "brightness(0.7)",
         zIndex: 0,
       }}
     />
