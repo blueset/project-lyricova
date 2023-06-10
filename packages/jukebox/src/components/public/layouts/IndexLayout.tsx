@@ -26,6 +26,7 @@ import {
 } from "../../../redux/public/playlist";
 import { setTextureUrl } from "../../../redux/public/display";
 import { BackgroundGradient } from "../Background";
+import { BackgroundCanvas } from "../BackgroundCanvas/BackgroundCanvas";
 
 interface Props {
   children: ReactNode;
@@ -325,7 +326,7 @@ export default function IndexLayout({ children }: Props) {
             }}
             // style={generateBackgroundStyle(currentSong, textureURL)}
           >
-            <BackgroundGradient
+            <BackgroundCanvas
               coverUrl={currentSong ? getTrackCoverURL(currentSong) : undefined}
               textureUrl={textureURL}
               playerRef={playerRef}
