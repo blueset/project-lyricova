@@ -287,7 +287,7 @@ function LyricsLine({
   const thisRef = useRef<HTMLSpanElement>();
   const elm = thisRef.current;
   if (elm && (activeRef === null || done)) {
-    elm.style.clipPath = "inset(-30% 102% -10% -2%)";
+    elm.style.clipPath = "inset(-50% 102% -10% -2%)";
   }
 
   const content =
@@ -306,7 +306,7 @@ function LyricsLine({
         whiteSpace: "nowrap",
         "& span.after": {
           color: "primary.dark",
-          clipPath: "inset(-30% 102% 0 -2%)",
+          clipPath: "inset(-50% 102% 0 -2%)",
           "& > span": {
             filter: "url(#nicokaraAfter)",
           },
@@ -315,10 +315,10 @@ function LyricsLine({
           clipPath: "none !important",
         },
         "&.pending span.after": {
-          clipPath: "inset(-30% 102% -10% -2%) !important",
+          clipPath: "inset(-50% 102% -10% -2%) !important",
         },
         "&.active span.after": {
-          clipPath: "inset(-30% 102% -10% -2%)",
+          clipPath: "inset(-50% 102% -10% -2%)",
         },
         "& span.before": {
           position: "absolute",
@@ -694,7 +694,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           tl.set(
             activeSpan,
             {
-              clipPath: "inset(-30% 102% -10% -2%)",
+              clipPath: "inset(-50% 102% -10% -2%)",
             },
             0
           );
@@ -707,7 +707,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             tl.to(
               activeSpan,
               {
-                clipPath: `inset(-30% ${percentage}% -10% -2%)`,
+                clipPath: `inset(-50% ${percentage}% -10% -2%)`,
                 ease: "none",
                 duration,
               },
@@ -719,10 +719,10 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             tl.fromTo(
               activeSpan,
               {
-                clipPath: "inset(-30% 102% -10% -2%)",
+                clipPath: "inset(-50% 102% -10% -2%)",
               },
               {
-                clipPath: "inset(-30% -2% -10% -2%)",
+                clipPath: "inset(-50% -2% -10% -2%)",
                 ease: "none",
                 duration,
               },
@@ -733,10 +733,10 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             tl.fromTo(
               activeSpan,
               {
-                clipPath: "inset(-30% -2% -10% 102%)",
+                clipPath: "inset(-50% -2% -10% 102%)",
               },
               {
-                clipPath: "inset(-30% -2% -10% -2%)",
+                clipPath: "inset(-50% -2% -10% -2%)",
                 ease: "none",
                 duration,
               },
@@ -803,13 +803,13 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             "& .countdown": {
               position: "relative",
               width: "0",
-              fontSize: "max(0.75em, 1.5rem)",
+              fontSize: "max(0.5em, 1.5rem)",
               letterSpacing: "0.1em",
-              transform: "translateY(-4.5em)",
+              transform: "translateY(-3.75em)",
             },
             "& .countdown > span.after": {
               color: "primary.dark",
-              clipPath: "inset(-30% 102% 0 -2%)",
+              clipPath: "inset(-50% 102% 0 -2%)",
               "& > span": {
                 filter: "url(#nicokaraAfter)",
               },
@@ -818,10 +818,10 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
               clipPath: "none !important",
             },
             "&.pending .countdown > span.after": {
-              clipPath: "inset(-30% 102% -10% -2%) !important",
+              clipPath: "inset(-50% 102% -10% -2%) !important",
             },
             "&.active .countdown > span.after": {
-              clipPath: "inset(-30% 102% -10% -2%)",
+              clipPath: "inset(-50% 102% -10% -2%)",
             },
             "& .countdown > span.before": {
               position: "absolute",
