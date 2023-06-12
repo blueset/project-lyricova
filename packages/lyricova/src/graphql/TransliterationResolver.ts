@@ -60,15 +60,17 @@ export class TransliterationResult {
   text: string;
   furigana: FuriganaLabel[][];
 
-  @Field()
-  plain(
+  @Field((type) => String)
+  async plain(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): string {
-    return segmentedTransliteration(this.text, {
-      language,
-      type: "plain",
-      furigana: this.furigana,
-    })
+  ): Promise<string> {
+    return (
+      await segmentedTransliteration(this.text, {
+        language,
+        type: "plain",
+        furigana: this.furigana,
+      })
+    )
       .map((v) =>
         v.reduce((prev, curr) => {
           return prev + curr[1];
@@ -80,7 +82,7 @@ export class TransliterationResult {
   @Field((type) => [[[String]]])
   plainSegmented(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): [string, string][][] {
+  ): Promise<[string, string][][]> {
     return segmentedTransliteration(this.text, {
       language,
       type: "plain",
@@ -91,7 +93,7 @@ export class TransliterationResult {
   @Field((type) => [[[String]]])
   karaoke(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): [string, string][][] {
+  ): Promise<[string, string][][]> {
     return segmentedTransliteration(this.text, {
       language,
       type: "karaoke",
@@ -102,7 +104,7 @@ export class TransliterationResult {
   @Field((type) => [[[String]]])
   typing(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): [string, string][][] {
+  ): Promise<[string, string][][]> {
     return segmentedTransliteration(this.text, {
       language,
       type: "typing",
@@ -111,11 +113,11 @@ export class TransliterationResult {
   }
 
   @Field((type) => [[AnimatedWord]])
-  typingSequence(
+  async typingSequence(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): AnimatedWord[][] {
+  ): Promise<AnimatedWord[][]> {
     language = language ?? getLanguage(this.text);
-    const lines = segmentedTransliteration(this.text, {
+    const lines = await segmentedTransliteration(this.text, {
       language,
       type: "typing",
       furigana: this.furigana,

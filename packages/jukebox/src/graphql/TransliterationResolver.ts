@@ -6,12 +6,15 @@ import {
   Arg,
   InputType,
   Int,
+  Authorized,
+  Mutation,
 } from "type-graphql";
 import {
   segmentedTransliteration,
   getLanguage,
 } from "lyricova-common/utils/transliterate";
 import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
+import { FuriganaMapping } from "lyricova-common/models/FuriganaMapping";
 
 @ObjectType({ description: "Describes the animation sequence for a word." })
 export class AnimatedWord {
@@ -60,15 +63,17 @@ export class TransliterationResult {
   text: string;
   furigana: FuriganaLabel[][];
 
-  @Field()
-  plain(
+  @Field((type) => String)
+  async plain(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): string {
-    return segmentedTransliteration(this.text, {
-      language,
-      type: "plain",
-      furigana: this.furigana,
-    })
+  ): Promise<string> {
+    return (
+      await segmentedTransliteration(this.text, {
+        language,
+        type: "plain",
+        furigana: this.furigana,
+      })
+    )
       .map((v) =>
         v.reduce((prev, curr) => {
           return prev + curr[1];
@@ -80,7 +85,7 @@ export class TransliterationResult {
   @Field((type) => [[[String]]])
   plainSegmented(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): [string, string][][] {
+  ): Promise<[string, string][][]> {
     return segmentedTransliteration(this.text, {
       language,
       type: "plain",
@@ -91,7 +96,7 @@ export class TransliterationResult {
   @Field((type) => [[[String]]])
   karaoke(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): [string, string][][] {
+  ): Promise<[string, string][][]> {
     return segmentedTransliteration(this.text, {
       language,
       type: "karaoke",
@@ -102,7 +107,7 @@ export class TransliterationResult {
   @Field((type) => [[[String]]])
   typing(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): [string, string][][] {
+  ): Promise<[string, string][][]> {
     return segmentedTransliteration(this.text, {
       language,
       type: "typing",
@@ -111,17 +116,32 @@ export class TransliterationResult {
   }
 
   @Field((type) => [[AnimatedWord]])
-  typingSequence(
+  async typingSequence(
     @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
-  ): AnimatedWord[][] {
+  ): Promise<AnimatedWord[][]> {
     language = language ?? getLanguage(this.text);
-    const lines = segmentedTransliteration(this.text, {
+    const lines = await segmentedTransliteration(this.text, {
       language,
       type: "typing",
       furigana: this.furigana,
     });
     return lines.map((line) => buildAnimationSequence(line, language));
   }
+}
+
+@InputType()
+class FuriganaMappingInput implements Partial<FuriganaMapping> {
+  @Field()
+  text: string;
+
+  @Field()
+  furigana: string;
+
+  @Field({ nullable: true })
+  segmentedText?: string;
+
+  @Field({ nullable: true })
+  segmentedFurigana?: string;
 }
 
 @Resolver()
@@ -146,5 +166,51 @@ export class TransliterationResolver {
     furigana: FuriganaLabel[][]
   ): TransliterationResult {
     return new TransliterationResult(text, furigana);
+  }
+
+  @Query((returns) => [FuriganaMapping])
+  furiganaMappings(): Promise<FuriganaMapping[]> {
+    return FuriganaMapping.findAll();
+  }
+
+  @Authorized("ADMIN")
+  @Mutation((returns) => Boolean)
+  async updateFuriganaMappings(
+    @Arg("mappings", (type) => [FuriganaMappingInput])
+    mappings: FuriganaMappingInput[]
+  ): Promise<boolean> {
+    let errors = "";
+    for (const mapping of mappings) {
+      if (!mapping.text) {
+        errors += `${mapping.text}, ${mapping.furigana}: Text is required.\n`;
+      }
+      if (!mapping.furigana) {
+        errors += `${mapping.text}, ${mapping.furigana}: Furigana is required.\n`;
+      }
+      if (
+        (mapping.segmentedText && !mapping.segmentedFurigana) ||
+        (!mapping.segmentedText && mapping.segmentedFurigana)
+      ) {
+        errors += `${mapping.text}, ${mapping.furigana}: Both segmentedText and segmentedFurigana are required.\n`;
+      }
+      if (
+        mapping.segmentedText?.split(",").length !==
+        mapping.segmentedFurigana?.split(",").length
+      ) {
+        errors += `${mapping.text}, ${mapping.furigana}: segmentedText and segmentedFurigana must have the same number of segments.\n`;
+      }
+    }
+    if (errors) {
+      throw new Error(errors);
+    }
+    for (const mapping of mappings) {
+      await FuriganaMapping.upsert({
+        text: mapping.text,
+        furigana: mapping.furigana,
+        segmentedText: mapping.segmentedText,
+        segmentedFurigana: mapping.segmentedFurigana,
+      });
+    }
+    return true;
   }
 }

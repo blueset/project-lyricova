@@ -7,6 +7,7 @@ import { ArtistOfAlbum } from "./models/ArtistOfAlbum";
 import { ArtistOfSong } from "./models/ArtistOfSong";
 import { Entry } from "./models/Entry";
 import { FileInPlaylist } from "./models/FileInPlaylist";
+import { FuriganaMapping } from "./models/FuriganaMapping";
 import { MusicFile } from "./models/MusicFile";
 import { Playlist } from "./models/Playlist";
 import { Pulse } from "./models/Pulse";
@@ -34,6 +35,7 @@ const sequelize = new Sequelize(DB_URI, {
     ArtistOfSong,
     Entry,
     FileInPlaylist,
+    FuriganaMapping,
     MusicFile,
     Playlist,
     Pulse,

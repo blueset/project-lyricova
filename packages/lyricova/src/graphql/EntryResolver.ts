@@ -107,9 +107,9 @@ export class EntryResolver {
     return await Entry.findByPk(id);
   }
 
-  populateVerseTypingSequence(verse: VerseInput) {
+  async populateVerseTypingSequence(verse: VerseInput) {
     if (verse.text && !verse.typingSequence?.length) {
-      verse.typingSequence = segmentedTransliteration(verse.text, {
+      verse.typingSequence = await segmentedTransliteration(verse.text, {
         language: verse.language.startsWith("ja")
           ? "ja"
           : verse.language.startsWith("zh")

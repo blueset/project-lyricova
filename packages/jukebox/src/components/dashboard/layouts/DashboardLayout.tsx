@@ -34,6 +34,7 @@ import CachedIcon from "@mui/icons-material/Cached";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import CloseIcon from "@mui/icons-material/Close";
+import RttIcon from "@mui/icons-material/Rtt";
 import { useNamedState } from "../../../frontendUtils/hooks";
 import {
   AuthContext,
@@ -257,6 +258,11 @@ export default function DashboardLayout({ title, children }: Props) {
           href="/dashboard/imports"
           prefixMatch
           icon={<SaveAltIcon />}
+        />
+        <NavMenuItem
+          text="Furigana"
+          href="/dashboard/furigana"
+          icon={<RttIcon />}
         />
       </List>
       <Divider />

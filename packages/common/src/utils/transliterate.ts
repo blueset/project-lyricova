@@ -3,6 +3,7 @@ import Segment from "novel-segment";
 import MeCab from "mecab-async";
 import _ from "lodash";
 import { kanaToHira } from "./kanaUtils";
+import { FuriganaMapping } from "../models/FuriganaMapping";
 
 interface FuriganaLabel {
   content: string;
@@ -185,16 +186,52 @@ function furiganaSeparator(
   });
 }
 
+type FuriganaDatabaseCache = Record<string, Record<string, [string, string][]>>;
+/** Apply per-char furigana based on database info. */
+async function applyFuriganaMapping(
+  v: string | [string, string],
+  cache?: FuriganaDatabaseCache
+): Promise<(string | [string, string])[]> {
+  if (typeof v === "string" || v[0].length < 2) {
+    return [v];
+  }
+  const [text, furigana] = v;
+  if (cache?.[text]?.[furigana]) {
+    return cache[text][furigana];
+  }
+  const [{ segmentedText, segmentedFurigana }, created] =
+    await FuriganaMapping.findOrCreate({
+      where: { text, furigana },
+    });
+  if (created || !segmentedText || !segmentedFurigana) {
+    return [v];
+  }
+  const segTexts = segmentedText.split(","),
+    segFurigana = segmentedFurigana.split(",");
+  if (segTexts.length !== segFurigana.length) {
+    return [v];
+  }
+  const result = segTexts.map<[string, string]>((text, idx) => [
+    text,
+    segFurigana[idx],
+  ]);
+  if (cache) {
+    cache[text] = cache[text] ?? {};
+    cache[text][furigana] = result;
+  }
+  return result;
+}
+
 /**
  * Transliterate text with fragmentations.
  * @param text Text to transliterate
  * @param options Options to adjust fragmentation strategy
  * @returns Array (lines) of arrays (words) of [original, transliterated]
  */
-export function segmentedTransliteration(
+export async function segmentedTransliteration(
   text: string,
   options?: SegmentedTransliterationOptions
-): [string, string][][] {
+): Promise<[string, string][][]> {
   const type = options?.type ?? "plain";
   if (
     options?.language === "ja" ||
@@ -293,168 +330,183 @@ export function segmentedTransliteration(
       [[]]
     );
 
-    return lines.map((words) => {
-      const result: [string, string][] = [];
-      let pending: [string, string] = ["", ""];
+    const furiganaMappingCache: FuriganaDatabaseCache = {};
 
-      switch (type) {
-        case "typing":
-          let lastScore = 0;
-          let currDiff = 0;
-          if (words.length < 1) return [];
-          words.forEach((x) => {
-            if (/[\uE000-\uF8FF]/.test(x.kanji)) {
-              // Expand inline furigana
-              if (pending[0] !== "" && pending[1] !== "") {
-                result.push(pending);
-                pending = ["", ""];
-              }
-              [...x.kanji].forEach((v) => {
-                if (v in tokenMapping) {
-                  const [kanji, kana, okuri] = tokenMapping[v];
-                  result.push([`${kanji}${okuri}`, `${kana}${okuri}`]);
-                } else {
-                  console.error(
-                    `key ${v.charCodeAt(0)} is not found in the mapping list.`
-                  );
-                }
-              });
-            } else {
-              if (pending[0] !== "" && pending[1] !== "") {
-                currDiff = lastScore - x.alphaForwardLogRate - 1000;
-                if (currDiff > 0 && notPunct(x.kanji)) {
+    return await Promise.all(
+      lines.map(async (words) => {
+        const result: [string, string][] = [];
+        let pending: [string, string] = ["", ""];
+
+        switch (type) {
+          case "typing":
+            let lastScore = 0;
+            let currDiff = 0;
+            if (words.length < 1) return [];
+            words.forEach((x) => {
+              if (/[\uE000-\uF8FF]/.test(x.kanji)) {
+                // Expand inline furigana
+                if (pending[0] !== "" && pending[1] !== "") {
                   result.push(pending);
                   pending = ["", ""];
                 }
-              }
-              lastScore = x.alphaForwardLogRate;
-              pending[0] += x.kanji;
-              pending[1] += kanaToHira(x.reading === "*" ? x.kanji : x.reading);
-            }
-          });
-
-          if (pending[0] !== "" || pending[1] !== "") {
-            result.push(pending);
-          }
-          return result;
-        case "karaoke":
-          return words
-            .map((x) => {
-              const result: (string | [string, string])[] = [];
-              if (/[\uE000-\uF8FF]/.test(x.kanji)) {
-                // Expand inline furigana
                 [...x.kanji].forEach((v) => {
                   if (v in tokenMapping) {
                     const [kanji, kana, okuri] = tokenMapping[v];
-                    result.push([kanji, kana]);
-                    result.push(okuri);
+                    result.push([`${kanji}${okuri}`, `${kana}${okuri}`]);
                   } else {
                     console.error(
-                      `key ${v.charCodeAt(0)} is not found in the mapping.`
+                      `key ${v.charCodeAt(0)} is not found in the mapping list.`
                     );
                   }
                 });
-              } else if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
-                const hira = kanaToHira(x.reading || x.kanji);
-                if (hira === x.kanji) {
-                  result.push(x.kanji);
-                } else {
-                  furiganaSeparator(x.kanji, hira).forEach((v) =>
-                    result.push(v)
-                  );
-                }
               } else {
-                result.push(x.kanji);
+                if (pending[0] !== "" && pending[1] !== "") {
+                  currDiff = lastScore - x.alphaForwardLogRate - 1000;
+                  if (currDiff > 0 && notPunct(x.kanji)) {
+                    result.push(pending);
+                    pending = ["", ""];
+                  }
+                }
+                lastScore = x.alphaForwardLogRate;
+                pending[0] += x.kanji;
+                pending[1] += kanaToHira(
+                  x.reading === "*" ? x.kanji : x.reading
+                );
               }
-              return result;
-              // For each word from MeCab, a list of str or str pair is built
-              // pair is for substitution, single string is for plain text
-            })
-            .reduce<[string, string][]>((prev, curr) => {
-              // join adjacent plain blocks together and convert to the
-              // substitution format.
-              curr.forEach((v) => {
-                if (typeof v === "string") {
+            });
+
+            if (pending[0] !== "" || pending[1] !== "") {
+              result.push(pending);
+            }
+            return result;
+          case "karaoke":
+            return (
+              await Promise.all(
+                words.map(async (x) => {
+                  const result: (string | [string, string])[] = [];
+                  if (/[\uE000-\uF8FF]/.test(x.kanji)) {
+                    // Expand inline furigana
+                    [...x.kanji].forEach((v) => {
+                      if (v in tokenMapping) {
+                        const [kanji, kana, okuri] = tokenMapping[v];
+                        result.push([kanji, kana]);
+                        result.push(okuri);
+                      } else {
+                        console.error(
+                          `key ${v.charCodeAt(0)} is not found in the mapping.`
+                        );
+                      }
+                    });
+                  } else if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
+                    const hira = kanaToHira(x.reading || x.kanji);
+                    if (hira === x.kanji) {
+                      result.push(x.kanji);
+                    } else {
+                      const separatedFuriganas = furiganaSeparator(
+                        x.kanji,
+                        hira
+                      );
+                      for (const frgn of separatedFuriganas) {
+                        (
+                          await applyFuriganaMapping(frgn, furiganaMappingCache)
+                        ).forEach((v) => result.push(v));
+                      }
+                    }
+                  } else {
+                    result.push(x.kanji);
+                  }
+                  return result;
+                  // For each word from MeCab, a list of str or str pair is built
+                  // pair is for substitution, single string is for plain text
+                })
+              )
+            )
+              .reduce<[string, string][]>((prev, curr) => {
+                // join adjacent plain blocks together and convert to the
+                // substitution format.
+                curr.forEach((v) => {
+                  if (typeof v === "string") {
+                    if (
+                      prev.length > 0 &&
+                      prev[prev.length - 1][0] === prev[prev.length - 1][1]
+                    ) {
+                      prev[prev.length - 1][0] += v;
+                      prev[prev.length - 1][1] += v;
+                    } else {
+                      prev.push([v, v]);
+                    }
+                  } else {
+                    prev.push(v);
+                  }
+                });
+                return prev;
+              }, [])
+              .reduce<[string, string][]>((prev, [text, ruby]) => {
+                // Normalize whitespaces around a ruby item.
+                const [_t, textL, textC, textR] =
+                  text.match(/^(\s*)(.*?)(\s*)$/u)!;
+                const [_r, rubyL, rubyC, rubyR] =
+                  ruby.match(/^(\s*)(.*?)(\s*)$/u)!;
+                if (textL.length > 0 || rubyL.length > 0) {
+                  const spaceL: [string, string] = [textL, rubyL];
+                  if (textL.length === 0) spaceL[0] = rubyL;
+                  else if (rubyL.length === 0) spaceL[1] = textL;
                   if (
                     prev.length > 0 &&
                     prev[prev.length - 1][0] === prev[prev.length - 1][1]
                   ) {
-                    prev[prev.length - 1][0] += v;
-                    prev[prev.length - 1][1] += v;
+                    prev[prev.length - 1][0] += spaceL[0];
+                    prev[prev.length - 1][1] += spaceL[1];
                   } else {
-                    prev.push([v, v]);
+                    prev.push(spaceL);
                   }
-                } else {
-                  prev.push(v);
                 }
-              });
-              return prev;
-            }, [])
-            .reduce<[string, string][]>((prev, [text, ruby]) => {
-              // Normalize whitespaces around a ruby item.
-              const [_t, textL, textC, textR] =
-                text.match(/^(\s*)(.*?)(\s*)$/u)!;
-              const [_r, rubyL, rubyC, rubyR] =
-                ruby.match(/^(\s*)(.*?)(\s*)$/u)!;
-              if (textL.length > 0 || rubyL.length > 0) {
-                const spaceL: [string, string] = [textL, rubyL];
-                if (textL.length === 0) spaceL[0] = rubyL;
-                else if (rubyL.length === 0) spaceL[1] = textL;
-                if (
-                  prev.length > 0 &&
-                  prev[prev.length - 1][0] === prev[prev.length - 1][1]
-                ) {
-                  prev[prev.length - 1][0] += spaceL[0];
-                  prev[prev.length - 1][1] += spaceL[1];
-                } else {
-                  prev.push(spaceL);
+                prev.push([textC, rubyC]);
+                if (textR.length > 0 || rubyR.length > 0) {
+                  if (textR.length === 0) prev.push([rubyR, rubyR]);
+                  else if (rubyR.length === 0) prev.push([textR, textR]);
+                  else prev.push([textR, rubyR]);
                 }
+                return prev;
+              }, []);
+          case "plain":
+          default:
+            return words.map((x) => {
+              if (/[\uE000-\uF8FF]/g.test(x.kanji)) {
+                // Expand inline furigana
+                return [...x.kanji]
+                  .map((v) => {
+                    if (v in tokenMapping) {
+                      const [kanji, kana, okuri] = tokenMapping[v];
+                      return [`${kanji}${okuri}`, `${kana}${okuri}`];
+                    } else {
+                      console.error(
+                        `key ${v.charCodeAt(0)} is not found in the mapping.`
+                      );
+                      return ["", ""];
+                    }
+                  })
+                  .reduce<[string, string]>(
+                    (prev, curr) => {
+                      prev[0] += curr[0];
+                      prev[1] += curr[1];
+                      return prev;
+                    },
+                    ["", ""]
+                  );
+              } else if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
+                // Solve problem where output maybe like [" 初音ミク", "はつねみく"]
+                const leadingSpaces = /^\s+/.exec(x.kanji);
+                if (leadingSpaces && !/^\s+/.exec(x.reading)) {
+                  x.reading = leadingSpaces[0] + x.reading;
+                }
+                return [x.kanji, kanaToHira(x.reading || x.kanji)];
               }
-              prev.push([textC, rubyC]);
-              if (textR.length > 0 || rubyR.length > 0) {
-                if (textR.length === 0) prev.push([rubyR, rubyR]);
-                else if (rubyR.length === 0) prev.push([textR, textR]);
-                else prev.push([textR, rubyR]);
-              }
-              return prev;
-            }, []);
-        case "plain":
-        default:
-          return words.map((x) => {
-            if (/[\uE000-\uF8FF]/g.test(x.kanji)) {
-              // Expand inline furigana
-              return [...x.kanji]
-                .map((v) => {
-                  if (v in tokenMapping) {
-                    const [kanji, kana, okuri] = tokenMapping[v];
-                    return [`${kanji}${okuri}`, `${kana}${okuri}`];
-                  } else {
-                    console.error(
-                      `key ${v.charCodeAt(0)} is not found in the mapping.`
-                    );
-                    return ["", ""];
-                  }
-                })
-                .reduce<[string, string]>(
-                  (prev, curr) => {
-                    prev[0] += curr[0];
-                    prev[1] += curr[1];
-                    return prev;
-                  },
-                  ["", ""]
-                );
-            } else if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
-              // Solve problem where output maybe like [" 初音ミク", "はつねみく"]
-              const leadingSpaces = /^\s+/.exec(x.kanji);
-              if (leadingSpaces && !/^\s+/.exec(x.reading)) {
-                x.reading = leadingSpaces[0] + x.reading;
-              }
-              return [x.kanji, kanaToHira(x.reading || x.kanji)];
-            }
-            return [x.kanji, x.kanji];
-          });
-      }
-    });
+              return [x.kanji, x.kanji];
+            });
+        }
+      })
+    );
   } else if (
     options?.language === "zh" ||
     (options?.language == null && isHan.test(text))
@@ -534,19 +586,23 @@ export function getLanguage(text: string): "ja" | "zh" | "en" {
   return "en";
 }
 
-export function transliterate(
+export async function transliterate(
   text: string,
   options?: TransliterateOptions
-): string {
+): Promise<string> {
   const language = options?.language ?? getLanguage(text);
   if (language === "ja") {
     // transliterate as ja
-    return segmentedTransliteration(text, { type: "plain", language: "ja" })
+    return (
+      await segmentedTransliteration(text, { type: "plain", language: "ja" })
+    )
       .map((line) => line.map((v) => v[1]).join(""))
       .join("\n");
   } else if (language === "zh") {
     // transliterate as zh
-    return segmentedTransliteration(text, { type: "plain", language: "zh" })
+    return (
+      await segmentedTransliteration(text, { type: "plain", language: "zh" })
+    )
       .map((line) => line.map((v) => v[1]).join(" "))
       .join("\n");
   } else {

@@ -53,16 +53,10 @@ export class Song extends Model<Song, Partial<Song>> {
   })
   public sortOrder!: string;
 
-  @BelongsToMany(
-    () => Artist,
-    () => ArtistOfSong
-  )
+  @BelongsToMany(() => Artist, () => ArtistOfSong)
   artists: Array<Artist & { ArtistOfSong: ArtistOfSong }>;
 
-  @BelongsToMany(
-    () => Album,
-    () => SongInAlbum
-  )
+  @BelongsToMany(() => Album, () => SongInAlbum)
   albums: Array<Album & { SongInAlbum: SongInAlbum }>;
 
   @Field(() => Int, { nullable: true })
@@ -93,10 +87,7 @@ export class Song extends Model<Song, Partial<Song>> {
   @HasMany(() => MusicFile)
   files: MusicFile[];
 
-  @BelongsToMany(
-    () => Entry,
-    () => SongOfEntry
-  )
+  @BelongsToMany(() => Entry, () => SongOfEntry)
   lyricovaEntries: Array<Entry & { SongOfEntry: SongOfEntry }>;
 
   @Field()
@@ -128,7 +119,7 @@ export class Song extends Model<Song, Partial<Song>> {
     await Song.upsert({
       id: entity.id,
       name: entity.name,
-      sortOrder: transliterate(entity.name), // prompt user to check this upon import
+      sortOrder: await transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
       coverUrl: entity.thumbUrl,
       incomplete: intermediate,

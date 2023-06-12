@@ -59,7 +59,7 @@ CREATE TABLE `ArtistOfAlbums` (
   KEY `artistId` (`artistId`),
   CONSTRAINT `artistofalbums_ibfk_1` FOREIGN KEY (`albumId`) REFERENCES `Albums` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `artistofalbums_ibfk_2` FOREIGN KEY (`artistId`) REFERENCES `Artists` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=589 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -86,7 +86,7 @@ CREATE TABLE `ArtistOfSongs` (
   KEY `artistId` (`artistId`),
   CONSTRAINT `artistofsongs_ibfk_1` FOREIGN KEY (`songId`) REFERENCES `Songs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `artistofsongs_ibfk_2` FOREIGN KEY (`artistId`) REFERENCES `Artists` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2482 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -137,7 +137,7 @@ CREATE TABLE `Entries` (
   KEY `authorId` (`authorId`),
   KEY `recentActionDateIndex` (`recentActionDate`),
   CONSTRAINT `entries_ibfk_1` FOREIGN KEY (`authorId`) REFERENCES `Users` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=466 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -159,7 +159,7 @@ CREATE TABLE `FileInPlaylists` (
   KEY `playlistId` (`playlistId`),
   CONSTRAINT `fileinplaylists_ibfk_1` FOREIGN KEY (`fileId`) REFERENCES `MusicFiles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fileinplaylists_ibfk_2` FOREIGN KEY (`playlistId`) REFERENCES `Playlists` (`slug`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=450 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -197,7 +197,7 @@ CREATE TABLE `MusicFiles` (
   FULLTEXT KEY `MusicFiles_SearchText` (`path`,`trackName`,`trackSortOrder`,`artistName`,`artistSortOrder`,`albumName`,`albumSortOrder`) /*!50100 WITH PARSER `ngram` */ ,
   CONSTRAINT `musicfiles_ibfk_1` FOREIGN KEY (`songId`) REFERENCES `Songs` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `musicfiles_ibfk_2` FOREIGN KEY (`albumId`) REFERENCES `Albums` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12664 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -230,7 +230,7 @@ CREATE TABLE `Pulses` (
   PRIMARY KEY (`id`),
   KEY `pulses_ibfk_1` (`entryId`),
   CONSTRAINT `pulses_ibfk_1` FOREIGN KEY (`entryId`) REFERENCES `Entries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -306,7 +306,7 @@ CREATE TABLE `SongInAlbums` (
   KEY `albumId` (`albumId`),
   CONSTRAINT `songinalbums_ibfk_1` FOREIGN KEY (`songId`) REFERENCES `Songs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `songinalbums_ibfk_2` FOREIGN KEY (`albumId`) REFERENCES `Albums` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2044 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -327,7 +327,7 @@ CREATE TABLE `SongOfEntries` (
   KEY `entryId` (`entryId`),
   CONSTRAINT `songofentries_ibfk_1` FOREIGN KEY (`songId`) REFERENCES `Songs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `songofentries_ibfk_2` FOREIGN KEY (`entryId`) REFERENCES `Entries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=459 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -373,7 +373,7 @@ CREATE TABLE `TagOfEntries` (
   KEY `entryId` (`entryId`),
   CONSTRAINT `tagofentries_ibfk_1` FOREIGN KEY (`tagId`) REFERENCES `Tags` (`slug`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `tagofentries_ibfk_2` FOREIGN KEY (`entryId`) REFERENCES `Entries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=531 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -415,7 +415,7 @@ CREATE TABLE `Users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -437,7 +437,7 @@ CREATE TABLE `UserPublicKeyCredentials` (
   UNIQUE KEY `externalId` (`externalId`),
   KEY `userId` (`userId`),
   CONSTRAINT `userpublickeycredentials_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `Users` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -464,7 +464,7 @@ CREATE TABLE `Verses` (
   PRIMARY KEY (`id`),
   KEY `entryId` (`entryId`),
   CONSTRAINT `verses_ibfk_1` FOREIGN KEY (`entryId`) REFERENCES `Entries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=996 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -489,6 +489,22 @@ CREATE TABLE `VideoFiles` (
   KEY `songId` (`songId`),
   CONSTRAINT `videofiles_ibfk_1` FOREIGN KEY (`songId`) REFERENCES `Songs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `FuriganaMappings`
+--
+
+DROP TABLE IF EXISTS `FuriganaMappings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `FuriganaMappings` (
+  `text` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
+  `furigana` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
+  `segmentedText` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `segmentedFurigana` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`text`, `furigana`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

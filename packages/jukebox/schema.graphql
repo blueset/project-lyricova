@@ -149,6 +149,20 @@ input FuriganaLabel {
   rightIndex: Int!
 }
 
+type FuriganaMapping {
+  furigana: String!
+  segmentedFurigana: String
+  segmentedText: String
+  text: String!
+}
+
+input FuriganaMappingInput {
+  furigana: String!
+  segmentedFurigana: String
+  segmentedText: String
+  text: String!
+}
+
 """A lyrics entry from 初音ミク@wiki."""
 type HmikuAtWikiEntry {
   """Furigana of the entry name."""
@@ -455,6 +469,7 @@ type Mutation {
   ): MusicFile!
   updateAlbum(data: AlbumInput!, id: Int!): Album!
   updateArtist(data: ArtistInput!, id: Int!): Artist!
+  updateFuriganaMappings(mappings: [FuriganaMappingInput!]!): Boolean!
   updateMusicFileStats(
     """Music file ID"""
     fileId: Int!
@@ -536,6 +551,7 @@ type Query {
   dashboardStats: DashboardStats!
   foo: Foo!
   foos: [Foo!]!
+  furiganaMappings: [FuriganaMapping!]!
   hash(plaintext: String!): String!
   hmikuLyrics(id: String!): HmikuAtWikiEntry
   hmikuLyricsSearch(keyword: String!): [HmikuAtWikiSearchResultEntry!]!

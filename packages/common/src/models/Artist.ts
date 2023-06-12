@@ -88,16 +88,10 @@ export class Artist extends Model<Artist, Partial<Artist>> {
   })
   type: VDBArtistType;
 
-  @BelongsToMany(
-    () => Song,
-    () => ArtistOfSong
-  )
+  @BelongsToMany(() => Song, () => ArtistOfSong)
   songs: Array<Song & { ArtistOfSong: ArtistOfSong }>;
 
-  @BelongsToMany(
-    () => Album,
-    () => ArtistOfAlbum
-  )
+  @BelongsToMany(() => Album, () => ArtistOfAlbum)
   albums: Array<Album & { ArtistOfAlbum: ArtistOfAlbum }>;
 
   @ForeignKey((type) => Artist)
@@ -151,7 +145,7 @@ export class Artist extends Model<Artist, Partial<Artist>> {
         where: { id: artist.id },
         defaults: {
           name: artist.name,
-          sortOrder: transliterate(artist.name),
+          sortOrder: await transliterate(artist.name),
           type: artist.artistType,
           incomplete: true,
         },
@@ -168,7 +162,7 @@ export class Artist extends Model<Artist, Partial<Artist>> {
     await Artist.upsert({
       id: entity.id,
       name: entity.name,
-      sortOrder: transliterate(entity.name), // prompt user to check this upon import
+      sortOrder: await transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
       mainPictureUrl: entity.mainPicture?.urlOriginal,
       type: entity.artistType as VDBArtistType,
