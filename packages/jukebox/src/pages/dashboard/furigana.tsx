@@ -7,6 +7,7 @@ import {
   GridColDef,
   GridColumns,
   GridEditInputCell,
+  GridFilterModel,
   GridRenderEditCellParams,
   GridRowId,
   GridRowModel,
@@ -22,6 +23,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   Stack,
   TextField,
   Tooltip,
@@ -32,8 +34,10 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSnackbar } from "notistack";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 const GET_FURIGANA_MAPPING_QUERY = gql`
   query FuriganaMappings {
@@ -94,10 +98,23 @@ export default function FuriganaManager() {
   const [isBulkUpdateDialogOpen, setIsBulkUpdateDialogOpen] = useState(false);
   const [bulkUpdateInput, setBulkUpdateInput] = useState("");
   const snackbar = useSnackbar();
+  const [showAll, setShowAll] = useState(false);
+
+  const toggleShowAll = useCallback(() => {
+    setShowAll(!showAll);
+  }, [showAll, setShowAll]);
 
   const { data, loading, error, refetch } = useQuery<{
     furiganaMappings: FuriganaMapping[];
   }>(GET_FURIGANA_MAPPING_QUERY);
+
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+    if (showAll) return data.furiganaMappings;
+    return data.furiganaMappings.filter(
+      (i) => !i.segmentedText || !i.segmentedFurigana
+    );
+  }, [data, showAll]);
 
   const prompt = useMemo(
     () =>
@@ -299,10 +316,15 @@ Output:
         >
           Batch update
         </Button>
+        <Tooltip title={showAll ? "Hide reviewed" : "Show all"}>
+          <IconButton onClick={toggleShowAll}>
+            {showAll ? <VisibilityOffIcon /> : <VisibilityIcon />}
+          </IconButton>
+        </Tooltip>
       </div>
       {data && (
         <DataGrid
-          rows={data.furiganaMappings ?? []}
+          rows={filteredData}
           columns={columns}
           pageSize={50}
           editMode="row"
