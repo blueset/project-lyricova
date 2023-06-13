@@ -1,8 +1,17 @@
 import { Button, Grid, styled, TextField, Typography } from "@mui/material";
-import type { ChangeEvent} from "react";
+import type { ChangeEvent } from "react";
 import { useCallback } from "react";
-import { Lyrics } from "lyrics-kit/core";
+import { FURIGANA, Lyrics } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
+import { gql, useApolloClient } from "@apollo/client";
+
+const KARAOKE_TRANSLITERATION_QUERY = gql`
+  query ($text: String!) {
+    transliterate(text: $text) {
+      karaoke(language: "ja")
+    }
+  }
+`;
 
 const SpacedButton = styled(Button)(({ theme }) => ({
   marginRight: theme.spacing(1),
@@ -24,6 +33,7 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
   );
 
   const snackbar = useSnackbar();
+  const apolloClient = useApolloClient();
 
   const copyFromLRCX = useCallback(
     (useFurigana: boolean) => () => {
@@ -38,6 +48,54 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
     },
     [lrcx, setLyrics, snackbar]
   );
+
+  const copyFromLRCXWithSmartFurigana = useCallback(async () => {
+    try {
+      const parsed = new Lyrics(lrcx);
+      const result = await apolloClient.query<{
+        transliterate: { karaoke: [string, string][][] };
+      }>({
+        query: KARAOKE_TRANSLITERATION_QUERY,
+        variables: { text: parsed.lines.map((v) => v.content).join("\n") },
+      });
+      if (result.data) {
+        result.data.transliterate.karaoke.forEach((v, idx) => {
+          const line = parsed.lines[idx];
+          if (!line || v.length < 1) return;
+          const { tags } = v.reduce<{
+            len: number;
+            tags: [string, [number, number]][];
+          }>(
+            ({ len, tags }, [base, furigana]) => {
+              if (base === furigana) return { len: len + base.length, tags };
+              else {
+                tags.push([furigana, [len, len + base.length]]);
+                return { len: len + base.length, tags };
+              }
+            },
+            { len: 0, tags: [] }
+          );
+          if (line.attachments?.content?.[FURIGANA]?.attachment?.length) {
+            line.attachments.content[FURIGANA].attachment =
+              line.attachments.content[FURIGANA].attachment.filter(
+                (label) =>
+                  tags.findIndex(
+                    (tag) =>
+                      tag[0] === label.content &&
+                      tag[1][0] === label.range[0] &&
+                      tag[1][1] === label.range[1]
+                  ) < 0
+              );
+          }
+        });
+        setLyrics(parsed.toPlainLRC({ lineOptions: { useFurigana: true } }));
+      }
+    } catch (e) {
+      snackbar.enqueueSnackbar(`Error while copying: ${e}`, {
+        variant: "error",
+      });
+    }
+  }, [apolloClient, lrcx, setLyrics, snackbar]);
 
   return (
     <>
@@ -59,6 +117,13 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
             onClick={copyFromLRCX(true)}
           >
             Copy from LRCX with Furigana
+          </SpacedButton>
+          <SpacedButton
+            variant="outlined"
+            disabled={!lrcx}
+            onClick={copyFromLRCXWithSmartFurigana}
+          >
+            Copy from LRCX with Smart Furigana
           </SpacedButton>
         </Grid>
       </Grid>

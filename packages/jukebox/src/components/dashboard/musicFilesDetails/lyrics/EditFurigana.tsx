@@ -73,7 +73,7 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
   }, [setLines, setLyrics]);
 
   // Generate furigana
-  const overrideFurigana = useCallback(async () => {
+  const overwriteFurigana = useCallback(async () => {
     try {
       const result = await apolloClient.query<{
         transliterate: { karaoke: [string, string][][] };
@@ -183,8 +183,8 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
         }}
       >
         <Box sx={{ marginTop: 2, marginBottom: 2 }}>
-          <Button variant="outlined" onClick={overrideFurigana}>
-            Override with generated furigana
+          <Button variant="outlined" onClick={overwriteFurigana}>
+            Overwrite with generated furigana
           </Button>
         </Box>
         <Box sx={{ marginTop: 2, marginBottom: 2 }}>
