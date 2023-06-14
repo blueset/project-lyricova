@@ -98,7 +98,11 @@ export const playlistSlice = createSlice({
       state.playNow = !!action.payload;
     },
     addTrackToNext: (state, action: PayloadAction<Track>) => {
-      const index = state.nowPlaying ?? 0;
+      let index = state.nowPlaying ?? 0;
+      if (state.shuffleMapping !== null) {
+        state.shuffleMapping.splice(index + 1, 0, state.track.length);
+        index = state.tracks.length - 1;
+      }
       state.tracks.splice(index + 1, 0, action.payload);
     },
     removeTrack: (state, action: PayloadAction<number>) => {
