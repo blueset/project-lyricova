@@ -152,7 +152,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
       >
         {children}
       </Box>
-      {/* <svg
+      <svg
         style={{
           border: 0,
           clip: "rect(0 0 0 0)",
@@ -164,7 +164,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
           width: "1px",
         }}
       >
-        <filter id="sharpBlur">
+        {/* <filter id="sharpBlur">
           <feGaussianBlur stdDeviation="15" result="blur" />
           <feColorMatrix
             in="blur"
@@ -253,7 +253,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
             result="furtherBlend"
           />
           <feComposite in="furtherBlend" in2="SourceGraphic" operator="in" />
-        </filter>
+        </filter> */}
         <filter id="nicokaraBefore">
           <feMorphology
             operator="dilate"
@@ -332,7 +332,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-      </svg> */}
+      </svg>
     </div>
   );
 }
