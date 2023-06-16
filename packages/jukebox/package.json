@@ -41,7 +41,7 @@
   "homepage": "https://github.com/blueset/project-lyricova#readme",
   "dependencies": {
     "@apollo/client": "^3.7.8",
-    "@apollo/server": "^4.7.0",
+    "@apollo/server": "^4.7.4",
     "@emotion/react": "^11.10.5",
     "@emotion/server": "^11.10.0",
     "@emotion/styled": "^11.10.5",
