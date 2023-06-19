@@ -2,7 +2,7 @@ import { LyricsLine } from "lyrics-kit/core";
 import { SetStateAction } from "react";
 
 /** Apply -50ms offset to all keypresses to compensate reflection time. */
-const KEY_PRESS_OFFSET_MS = -50;
+const KEY_PRESS_OFFSET_SEC = -0.05;
 
 export const MoveCursorUp =
   (lines: LyricsLine[]) =>
@@ -197,7 +197,7 @@ export function setMark(
   setTags: (dots: SetStateAction<number[][][]>) => void,
   setDotCursorPos: (pos: SetStateAction<[number, number, number]>) => void
 ) {
-  time += KEY_PRESS_OFFSET_MS;
+  time += KEY_PRESS_OFFSET_SEC;
   setDotCursorPos((dotCursorPos) => {
     setTags((prev) =>
       prev.map((i, idx) =>
