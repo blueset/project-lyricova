@@ -1,8 +1,8 @@
 import { LyricsLine } from "lyrics-kit/core";
 import { SetStateAction } from "react";
 
-/** Apply -50ms offset to all keypresses to compensate reflection time. */
-const KEY_PRESS_OFFSET_SEC = -0.05;
+/** Apply -200ms offset to all keypresses to compensate reflection time. */
+const KEY_PRESS_OFFSET_SEC = -0.2;
 
 export const MoveCursorUp =
   (lines: LyricsLine[]) =>
