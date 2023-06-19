@@ -830,6 +830,9 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
               color: "#fff",
               filter: "url(#nicokaraBefore)",
             },
+            "& rt": {
+              fontSize: "0.35em",
+            },
             "@supports (-moz-appearance: none)": {
               "& rt": {
                 marginBottom: "-0.5em",

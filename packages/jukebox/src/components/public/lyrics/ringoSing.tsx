@@ -162,9 +162,9 @@ function LineSpanner({ line }: { line: LyricsKitLyricsLine | null }) {
   if (!line?.content) return null;
   if (!line.attachments.timeTag?.tags) return <>{line.content}</>;
   const tags = line.attachments.timeTag.tags;
-  let ptr = 0;
+  let ptr = tags?.[0]?.index ?? 0;
   const result: string[] = [];
-  for (let i = tags[0].index === 0 ? 1 : 0; i < tags.length; i++) {
+  for (let i = 1; i < tags.length; i++) {
     const tag = tags[i];
     result.push(line.content.slice(ptr, tag.index));
     ptr = tag.index;
@@ -182,7 +182,6 @@ function LineSpanner({ line }: { line: LyricsKitLyricsLine | null }) {
             </span>
           ))
         : result[0]}
-      {line.content.slice(ptr)}
     </>
   );
 }
@@ -285,68 +284,75 @@ export function RingoSingLyrics({ lyrics }: Props) {
           tags.forEach((v: LyricsKitWordTimeTag, idx: number) => {
             const start = idx > 0 ? tags[idx].timeTag : 0;
             const duration =
-              idx + 1 < tags.length ? tags[idx + 1].timeTag - start : 0;
+              idx + 1 < tags.length ? tags[idx + 1].timeTag - start : -1;
             if (!spans[idx]) return;
-            tl.fromTo(
-              spans[idx],
-              { y: 1 },
-              {
-                y: 0,
-                duration: 0.2,
-                // onUpdate() {
-                //   const tgt = this.targets()[0];
-                //   tgt.style.verticalAlign = tgt._gsap.y;
-                // },
-              },
-              start + duration / 3
-            );
-            if (duration <= 1) {
-              tl.fromTo(
+            if (duration < 0) {
+              tl.set(
                 spans[idx],
                 {
                   backgroundImage:
-                    "linear-gradient(to right, white, white calc(0% + 0rem - 2rem), rgba(255,255,255,0.2) calc(0% - 2rem + 2rem), rgba(255,255,255,0.2) 100%)",
+                    "linear-gradient( rgba(255,255,255,0.2), rgba(255,255,255,0.2))",
                 },
-                {
-                  backgroundImage:
-                    "linear-gradient(to right, white, white calc(100% + 2rem - 2rem), rgba(255,255,255,0.2) calc(100% - 0rem + 2rem), rgba(255,255,255,0.2) 100%)",
-                  duration,
-                  ease: "none",
-                },
-                start
+                0
               );
             } else {
-              const halfTime = duration / 2;
-              // tl.set(spans[idx], { display: "inline-block" }, start);
               tl.fromTo(
                 spans[idx],
+                { y: 1 },
                 {
-                  scale: 1,
-                  backgroundImage:
-                    "linear-gradient(to right, white, white calc(0% + 0rem - 2rem), rgba(255,255,255,0.2) calc(0% - 2rem + 2rem), rgba(255,255,255,0.2) 100%)",
-                  textShadow: "0 0 0em rgba(255,255,255,0)",
+                  y: 0,
+                  duration: 0.2,
                 },
-                {
-                  duration: halfTime,
-                  backgroundImage:
-                    "linear-gradient(to right, white, white calc(100% + 2rem - 2rem), rgba(255,255,255,0.2) calc(100% - 0rem + 2rem), rgba(255,255,255,0.2) 100%)",
-                  scale: 1.1,
-                  textShadow: "0 0 0.5em rgba(255,255,255,0.75)",
-                  ease: "circ.out",
-                },
-                start
+                start + duration / 3
               );
-              tl.to(
-                spans[idx],
-                {
-                  duration: halfTime,
-                  scale: 1,
-                  textShadow: "0 0 0em rgba(255,255,255,0.75)",
-                  ease: "circ.in",
-                },
-                start + halfTime
-              );
-              // tl.set(spans[idx], { display: "inline" }, start + duration);
+              if (duration <= 1) {
+                tl.fromTo(
+                  spans[idx],
+                  {
+                    backgroundImage:
+                      "linear-gradient(to right, white, white calc(0% + 0rem - 2rem), rgba(255,255,255,0.2) calc(0% - 2rem + 2rem), rgba(255,255,255,0.2) 100%)",
+                  },
+                  {
+                    backgroundImage:
+                      "linear-gradient(to right, white, white calc(100% + 2rem - 2rem), rgba(255,255,255,0.2) calc(100% - 0rem + 2rem), rgba(255,255,255,0.2) 100%)",
+                    duration,
+                    ease: "none",
+                  },
+                  start
+                );
+              } else {
+                const halfTime = duration / 2;
+                // tl.set(spans[idx], { display: "inline-block" }, start);
+                tl.fromTo(
+                  spans[idx],
+                  {
+                    scale: 1,
+                    backgroundImage:
+                      "linear-gradient(to right, white, white calc(0% + 0rem - 2rem), rgba(255,255,255,0.2) calc(0% - 2rem + 2rem), rgba(255,255,255,0.2) 100%)",
+                    textShadow: "0 0 0em rgba(255,255,255,0)",
+                  },
+                  {
+                    duration: halfTime,
+                    backgroundImage:
+                      "linear-gradient(to right, white, white calc(100% + 2rem - 2rem), rgba(255,255,255,0.2) calc(100% - 0rem + 2rem), rgba(255,255,255,0.2) 100%)",
+                    scale: 1.1,
+                    textShadow: "0 0 0.5em rgba(255,255,255,0.75)",
+                    ease: "circ.out",
+                  },
+                  start
+                );
+                tl.to(
+                  spans[idx],
+                  {
+                    duration: halfTime,
+                    scale: 1,
+                    textShadow: "0 0 0em rgba(255,255,255,0.75)",
+                    ease: "circ.in",
+                  },
+                  start + halfTime
+                );
+                // tl.set(spans[idx], { display: "inline" }, start + duration);
+              }
             }
           });
         }
