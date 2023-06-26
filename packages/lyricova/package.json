@@ -19,7 +19,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blueset/project-lyricova.git"
+    "url": "https://github.com/blueset/project-lyricova",
+    "directory": "packages/lyricova"
   },
   "author": "Eana Hufwe",
   "license": "AGPL-3.0-or-later",

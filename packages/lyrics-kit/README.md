@@ -2,8 +2,9 @@
 
 Fetch and parse lyrics from various sources.
 
-This project is ported from [ddddxxx/LyricsKit](https://github.com/ddddxxx/LyricsKit),
-licenced under GPL v3.
+This project is ported from
+[ddddxxx/LyricsKit](https://github.com/ddddxxx/LyricsKit), licenced under GPL
+v3.
 
 ## Install
 
@@ -14,7 +15,7 @@ $ # This package is not yet on npm / yarn.
 ### Install locally
 
 ```shell
-yarn install
+npm install
 ```
 
 ## Usage
@@ -26,13 +27,13 @@ import {
   LyricsSearchRequest as Request,
   LyricsProviderManager as Manager,
   LyricsProviderSource as Source,
-  Lyrics
-} from 'lyrics-kit';
+  Lyrics,
+} from "lyrics-kit";
 
 async () => {
   const request = Request.fromInfo(
-    'Song title',
-    'Artist name',
+    "Song title",
+    "Artist name",
     /* duration in seconds */ 320.1
   );
   // Get lyrics from all sources.
@@ -49,9 +50,9 @@ async () => {
 
   // Get LRCX text
   for (const lyric of lyrics) {
-    console.log('========== BEGIN LRCX CONTENT ==========');
+    console.log("========== BEGIN LRCX CONTENT ==========");
     console.log(lyric.toString());
-    console.log('=========== END LRCX CONTENT ===========');
+    console.log("=========== END LRCX CONTENT ===========");
   }
 };
 ```
@@ -60,7 +61,8 @@ async () => {
 
 ## Appendix: LRCX specification
 
-Taken from [ddddxxx/LyricsKit](https://github.com/ddddxxx/LyricsKit/blob/master/README.md).
+Taken from
+[ddddxxx/LyricsKit](https://github.com/ddddxxx/LyricsKit/blob/master/README.md).
 
 ```
 <lrcx>              ::= <line> (NEWLINE <line>)*
@@ -150,21 +152,21 @@ non_negative_integer    ::= zero | positive_integer
 ## Known issue
 
 - LRCX specs uses indexes of [grapheme clusters] when processing inline tags
-  concerning text offset. The ported `lyrics-kit` has not yet implemented
-  this feature and counting by the default JavaScript string length
-  (UTF-16 encoded length) instead for now. This may result in a discrepancy
-  when rendering lyrics with LyricsX.
+  concerning text offset. The ported `lyrics-kit` has not yet implemented this
+  feature and counting by the default JavaScript string length (UTF-16 encoded
+  length) instead for now. This may result in a discrepancy when rendering
+  lyrics with LyricsX.
 
 [grapheme clusters]: http://unicode.org/reports/tr29/
 
 ---
 
     lyrics-kit: Fetch and parse lyrics from various sources.
-    Copyright (C) 2020  Eana Hufwe
+    Copyright (C) 2023  Eana Hufwe
     Copyright (C) 2020  ddddxxx
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of version 3 of the GNU General Public License as 
+    it under the terms of version 3 of the GNU General Public License as
     published by the Free Software Foundation.
 
     This program is distributed in the hope that it will be useful,

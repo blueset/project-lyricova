@@ -24,7 +24,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blueset/project-lyricova.git"
+    "url": "https://github.com/blueset/project-lyricova",
+    "directory": "packages/jukebox"
   },
   "keywords": [
     "Lyricova",

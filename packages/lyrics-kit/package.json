@@ -6,8 +6,20 @@
   "typings": "build/main/index.d.ts",
   "types": "build/main/index.d.ts",
   "module": "build/module/index.js",
-  "repository": "https://github.com/blueset/project-lyricova",
-  "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blueset/project-lyricova",
+    "directory": "packages/lyrics-kit"
+  },
+  "license": "AGPL-3.0-or-later",
+  "author": {
+    "name": "Eana Hufwe",
+    "url": "https://1a23.com"
+  },
+  "bugs": {
+    "url": "https://github.com/blueset/project-lyricova/issues"
+  },
+  "homepage": "https://github.com/blueset/project-lyricova#readme",
   "keywords": [],
   "files": [
     "./build"
