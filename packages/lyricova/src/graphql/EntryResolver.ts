@@ -153,8 +153,8 @@ export class EntryResolver {
         { transaction: t }
       );
       await Promise.all(
-        verses.map((verse) =>
-          entry.$create("verse", this.populateVerseTypingSequence(verse), {
+        verses.map(async (verse) =>
+          await entry.$create("verse", await this.populateVerseTypingSequence(verse), {
             transaction: t,
           })
         )
