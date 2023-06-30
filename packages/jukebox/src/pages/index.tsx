@@ -168,7 +168,6 @@ export default function Index() {
               wakeLockRef.current = wakeLock;
               wakeLock.addEventListener("release", () => {
                 wakeLockRef.current = null;
-                dispatch(toggleFullscreen());
               });
             } else {
               wakeLockRef.current = null;
