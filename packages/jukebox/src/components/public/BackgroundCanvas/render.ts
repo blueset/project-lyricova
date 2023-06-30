@@ -231,16 +231,16 @@ export class CanvasBackgroundRender {
       }
     }
 
-    console.log(
-      "已创建颜色数量为",
-      tmp.length,
-      "色图尺寸为",
-      size,
-      "像素数量为",
-      pixelsData.length / 4,
-      "的材质",
-      pixelsData
-    );
+    // console.log(
+    //   "已创建颜色数量为",
+    //   tmp.length,
+    //   "色图尺寸为",
+    //   size,
+    //   "像素数量为",
+    //   pixelsData.length / 4,
+    //   "的材质",
+    //   pixelsData
+    // );
 
     this.albumColorMapSize = size;
     this.albumColorMapTex = this.rebuildTextureFromPixels(
@@ -261,17 +261,17 @@ export class CanvasBackgroundRender {
       Math.pow(2, Math.round(Math.log2(Math.max(image.width, image.height))))
     );
     const resized = resizeImage(image, fitImageSize, fitImageSize);
-    console.log(
-      "设置了大小为",
-      image.width,
-      "x",
-      image.height,
-      "->",
-      resized.width,
-      "x",
-      resized.height,
-      "的专辑图片"
-    );
+    // console.log(
+    //   "设置了大小为",
+    //   image.width,
+    //   "x",
+    //   image.height,
+    //   "->",
+    //   resized.width,
+    //   "x",
+    //   resized.height,
+    //   "的专辑图片"
+    // );
     this.albumImageTex = this.rebuildTextureFromPixels(
       this.gl.TEXTURE2,
       fitImageSize,

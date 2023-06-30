@@ -107,7 +107,7 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
         (v) => v.value === backgroundRenderMethod
       );
       if (m) {
-        console.log("已切换背景渲染方式为", backgroundRenderMethod);
+        // console.log("已切换背景渲染方式为", backgroundRenderMethod);
         renderer.setRenderMethod(m);
         renderer.shouldRedraw();
       }
@@ -125,7 +125,7 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
           (v) => v.value === backgroundRenderMethod
         );
         if (m) {
-          console.log("已切换背景渲染方式为", backgroundRenderMethod);
+          // console.log("已切换背景渲染方式为", backgroundRenderMethod);
           renderer.setRenderMethod(m);
         }
         rendererRef.current = renderer;
@@ -135,7 +135,7 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
         };
       }
     } catch (err) {
-      console.warn("切换渲染方式发生错误", err);
+      // console.warn("切换渲染方式发生错误", err);
       setCanvasError(`切换渲染方式发生错误：${err}`);
     }
   }, [backgroundRenderMethod]);
@@ -173,10 +173,10 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
         renderer.setAlbumColorMap(colors);
         renderer.shouldRedraw();
       } else {
-        console.warn("错误：渲染器对象不存在");
+        // console.warn("错误：渲染器对象不存在");
       }
     } catch (err) {
-      console.warn("更新专辑图主要颜色表到渲染管线时发生错误", err);
+      // console.warn("更新专辑图主要颜色表到渲染管线时发生错误", err);
       setCanvasError(`更新专辑图主要颜色表到渲染管线时发生错误：${err}`);
     }
   }, [albumImageMainColors, backgroundLightness]);
@@ -211,7 +211,7 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
           renderer.shouldRedraw();
         }
       } catch (err) {
-        console.warn("更新专辑图片到渲染管线时发生错误", err);
+        // console.warn("更新专辑图片到渲染管线时发生错误", err);
         setCanvasError(`更新专辑图片到渲染管线时发生错误：${err}`);
       }
     })();

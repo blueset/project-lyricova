@@ -831,7 +831,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
               filter: "url(#nicokaraBefore)",
             },
             "& rt": {
-              fontSize: "0.35em",
+              fontSize: "max(0.35em, 1.125rem)",
             },
             "@supports (-moz-appearance: none)": {
               "& rt": {
