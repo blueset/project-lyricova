@@ -134,6 +134,9 @@ export default function ArtistDetails({ id, type }: Props) {
               height: "4em",
               width: "4em",
             }}
+            imgProps={{
+              style: { objectPosition: "top center" },
+            }}
           >
             <RecentActorsIcon fontSize="large" />
           </Avatar>
