@@ -8,6 +8,7 @@ const TYPES_TO_SHOW: VDBArtistType[] = [
   "Label",
   "Producer",
   "Lyricist",
+  "CoverArtist",
 ];
 
 export default function ProducersList() {

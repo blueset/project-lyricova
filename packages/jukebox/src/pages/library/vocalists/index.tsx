@@ -14,10 +14,16 @@ const TYPES_TO_SHOW: VDBArtistType[] = [
   "Band",
   "Vocalist",
   "Character",
+  "SynthesizerV",
+  "CoverArtist",
+  "NEUTRINO",
+  "VoiSona",
+  "NewType",
+  "Voiceroid",
 ];
 
-export default function ProducersList() {
+export default function VocalistsList() {
   return <ArtistsList types={TYPES_TO_SHOW} typeName="vocalists" />;
 }
 
-ProducersList.layout = getLayout;
+VocalistsList.layout = getLayout;

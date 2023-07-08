@@ -102,9 +102,13 @@ export type VDBArtistType =
   | "Utaite"
   | "Band"
   | "Vocalist"
-  | "CoverArtist"
+  | "Character"
   | "SynthesizerV"
-  | "Character";
+  | "CoverArtist"
+  | "NEUTRINO"
+  | "VoiSona"
+  | "NewType"
+  | "Voiceroid";
 export type VDBArtistForEventRoleType =
   | "Default"
   | "Dancer"

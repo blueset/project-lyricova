@@ -40,7 +40,7 @@ class ArtistInput implements Partial<Artist> {
 export class ArtistResolver {
   includes(info: GraphQLResolveInfo): string[] {
     const fields = getFields(info);
-    return fields.filter(f => f === "songs" || f === "albums");
+    return fields.filter((f) => f === "songs" || f === "albums");
   }
 
   @Query((returns) => Artist, { nullable: true })
@@ -82,6 +82,12 @@ export class ArtistResolver {
         "Band",
         "Vocalist",
         "Character",
+        "SynthesizerV",
+        "CoverArtist",
+        "NEUTRINO",
+        "VoiSona",
+        "NewType",
+        "Voiceroid",
       ],
     })
     types: VDBArtistType[],
@@ -202,6 +208,6 @@ export class ArtistResolver {
         ],
       },
     });
-    return artistsToEnroll.map(a => a.id);
+    return artistsToEnroll.map((a) => a.id);
   }
 }

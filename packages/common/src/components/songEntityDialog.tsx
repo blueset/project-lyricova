@@ -484,7 +484,11 @@ export default function SongEntityDialog({
                                 value.artist?.type === "Utaite" ||
                                 value.artist?.type === "Vocalist" ||
                                 value.artist?.type === "CoverArtist" ||
-                                value.artist?.type === "SynthesizerV" ? (
+                                value.artist?.type === "SynthesizerV" ||
+                                value.artist?.type === "NEUTRINO" ||
+                                value.artist?.type === "VoiSona" ||
+                                value.artist?.type === "NewType" ||
+                                value.artist?.type === "Voiceroid" ? (
                                 <SquareButton
                                   variant="outlined"
                                   size="large"

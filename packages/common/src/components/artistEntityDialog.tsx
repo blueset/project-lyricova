@@ -23,7 +23,7 @@ import { DocumentNode } from "graphql";
 import React from "react";
 
 const NEW_ARTIST_MUTATION = gql`
-  mutation($data: ArtistInput!) {
+  mutation ($data: ArtistInput!) {
     newArtist(data: $data) {
       ...SelectArtistEntry
     }
@@ -33,7 +33,7 @@ const NEW_ARTIST_MUTATION = gql`
 ` as DocumentNode;
 
 const UPDATE_ARTIST_MUTATION = gql`
-  mutation($id: Int!, $data: ArtistInput!) {
+  mutation ($id: Int!, $data: ArtistInput!) {
     updateArtist(id: $id, data: $data) {
       ...SelectArtistEntry
     }
@@ -268,6 +268,12 @@ export default function ArtistEntityDialog({
                     <MenuItem value="Band">Band</MenuItem>
                     <MenuItem value="Vocalist">Vocalist</MenuItem>
                     <MenuItem value="Character">Character</MenuItem>
+                    <MenuItem value="SynthesizerV">SynthesizerV</MenuItem>
+                    <MenuItem value="CoverArtist">CoverArtist</MenuItem>
+                    <MenuItem value="NEUTRINO">NEUTRINO</MenuItem>
+                    <MenuItem value="VoiSona">VoiSona</MenuItem>
+                    <MenuItem value="NewType">NewType</MenuItem>
+                    <MenuItem value="Voiceroid">Voiceroid</MenuItem>
                   </Select>
                 </Grid>
               </Grid>
