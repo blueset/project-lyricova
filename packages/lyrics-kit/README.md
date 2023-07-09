@@ -1,15 +1,17 @@
 # lyrics-kit
 
+![npm](https://img.shields.io/npm/v/lyrics-kit)
+
 Fetch and parse lyrics from various sources.
 
-This project is ported from
+This project is ported and expanded from
 [ddddxxx/LyricsKit](https://github.com/ddddxxx/LyricsKit), licenced under GPL
 v3.
 
 ## Install
 
 ```shell
-$ # This package is not yet on npm / yarn.
+$ npm install lyrics-kit
 ```
 
 ### Install locally
