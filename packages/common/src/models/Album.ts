@@ -119,7 +119,6 @@ export class Album extends Model<Album, Partial<Album>> {
     });
 
     const album = await Album.findByPk(entity.id);
-
     const artists = await Promise.all(
         (entity.artists ?? [])
           .filter((x) => x.artist)
@@ -127,7 +126,9 @@ export class Album extends Model<Album, Partial<Album>> {
       ),
       tracks = (
         await Promise.all(
-          (entity.tracks ?? []).map((x) => SongInAlbum.songFromVocaDB(x))
+          (entity.tracks ?? [])
+            .filter((x) => x.song)
+            .map((x) => SongInAlbum.songFromVocaDB(x))
         )
       ).filter((t): t is Song => t !== null);
     await album?.$set(
