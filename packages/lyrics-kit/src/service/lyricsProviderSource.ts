@@ -9,6 +9,7 @@ import { SyairProvider } from "./provider/syair";
 import { MarumaruProvider } from "./provider/marumaru";
 import { MusixMatchProvider } from "./provider/musixmatch";
 import { YouTubeProvider } from "./provider/youtube";
+import { SpotifyProvider } from "./provider/spotify";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class LyricsProviderSource<T extends LyricsProvider<any>> {
@@ -22,6 +23,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
   static marumaru = new LyricsProviderSource(MarumaruProvider);
   static musixmatch = new LyricsProviderSource(MusixMatchProvider);
   static youtube = new LyricsProviderSource(YouTubeProvider);
+  static spotify = new LyricsProviderSource(SpotifyProvider);
 
   static allCases = [
     LyricsProviderSource.netease,
@@ -34,6 +36,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     LyricsProviderSource.marumaru,
     LyricsProviderSource.musixmatch,
     LyricsProviderSource.youtube,
+    LyricsProviderSource.spotify,
   ];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

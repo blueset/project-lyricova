@@ -1,6 +1,6 @@
 {
   "name": "lyrics-kit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Fetch and parse lyrics from various sources.",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
