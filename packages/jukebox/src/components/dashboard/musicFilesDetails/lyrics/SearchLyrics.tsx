@@ -27,17 +27,15 @@ import {
   blue,
   purple,
   lightGreen,
+  green,
 } from "@mui/material/colors";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
-import type {
-  LyricsAnalysisResult} from "../../../../utils/lyricsCheck";
-import {
-  lyricsAnalysis
-} from "../../../../utils/lyricsCheck";
+import type { LyricsAnalysisResult } from "../../../../utils/lyricsCheck";
+import { lyricsAnalysis } from "../../../../utils/lyricsCheck";
 import { Lyrics } from "lyrics-kit/core";
 import { useCallback, useMemo } from "react";
 import TooltipIconButton from "../../TooltipIconButton";
@@ -45,7 +43,7 @@ import type { DocumentNode } from "graphql";
 import type { Subscription } from "zen-observable-ts";
 
 const SEARCH_LYRICS_QUERY = gql`
-  query(
+  query (
     $title: String!
     $artists: String!
     $duration: Float
@@ -71,7 +69,7 @@ const SEARCH_LYRICS_QUERY = gql`
 ` as DocumentNode;
 
 const SEARCH_LYRICS_PROGRESS_SUBSCRIPTION = gql`
-  subscription($sessionId: String!) {
+  subscription ($sessionId: String!) {
     lyricsKitSearchIncremental(sessionId: $sessionId) {
       lyrics
       quality
@@ -240,6 +238,8 @@ function getBackgroundColor(key: string): string {
       return orange[900];
     case "Yo":
       return red[900];
+    case "Sp":
+      return green[900];
     default:
       return "secondary.dark";
   }
@@ -293,10 +293,10 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
   const copyText = useCallback(
     (text: string) => async () => {
       navigator.clipboard.writeText(text).then(
-        function() {
+        function () {
           snackbar.enqueueSnackbar("Copied!", { variant: "success" });
         },
-        function(err) {
+        function (err) {
           console.error("Could not copy text: ", err);
           snackbar.enqueueSnackbar(`Failed to copy: ${err}`, {
             variant: "error",
