@@ -106,6 +106,11 @@ export default function LibrarySingleAlbum() {
     (v) => v.SongInAlbum.trackNumber
   );
 
+  // Load tracks into playlist in order
+  const sortedFiles = convertedTracks
+    .filter((v) => v.foundFile)
+    .map((v) => v.foundFile);
+
   const diskSeparatedTracked: (ConvertedTrack | number | null)[] = [];
 
   for (const i of convertedTracks) {
@@ -120,11 +125,11 @@ export default function LibrarySingleAlbum() {
   }
 
   const playAll = () => {
-    dispatch(loadTracks(album.files));
+    dispatch(loadTracks(sortedFiles));
     dispatch(playTrack({ track: 0, playNow: true }));
   };
   const shuffleAll = () => {
-    dispatch(loadTracks(album.files));
+    dispatch(loadTracks(sortedFiles));
     dispatch(toggleShuffle());
     dispatch(playTrack({ track: 0, playNow: true }));
   };
