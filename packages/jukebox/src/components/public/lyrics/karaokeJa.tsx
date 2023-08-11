@@ -701,7 +701,8 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           tags.forEach((v, idx) => {
             const duration =
               idx > 0 ? v.timeTag - tags[idx - 1].timeTag : v.timeTag;
-            const start = idx > 0 ? tags[idx - 1].timeTag : 0;
+            let start = idx > 0 ? tags[idx - 1].timeTag : 0;
+            if (start === 0 && v.index !== 0) start = 0.0001;
             let percentage = -2;
             if (v.index > 0) percentage = percentages[v.index - 1];
             tl.to(
