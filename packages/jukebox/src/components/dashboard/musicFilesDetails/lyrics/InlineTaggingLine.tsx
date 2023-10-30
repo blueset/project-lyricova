@@ -155,7 +155,7 @@ export function InlineTaggingLine({
     if ((hasCursor || hasDotCursor) && centerRowRef.current) {
       centerRowRef.current.parentElement.scrollIntoView({
         block: "center",
-        behavior: "smooth",
+        // behavior: "smooth",
       });
     }
   }, [hasDotCursor, hasCursor]);
