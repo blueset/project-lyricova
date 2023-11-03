@@ -29,12 +29,29 @@ interface PlainTextHangingPunctProps {
   children: string;
 }
 
+function shiftinPuncts(line: string, match: RegExpMatchArray | null, start: string, end: string ): RegExpMatchArray | null {
+  if (match && line.match(new RegExp(`${start}.*${end}`, "g"))) {
+    const front = match[1].split(start);
+    const back = match[3].split(end);
+    match[2] = `${start.repeat(front.length - 1)}${match[2]}${end.repeat(back.length - 1)}`;
+    match[1] = front.join("");
+    match[3] = back.join("");
+  }
+  return match;
+}
+
 export function PlainTextHangingPunct({
   children,
 }: PlainTextHangingPunctProps) {
   const lines = children
     .split("\n")
-    .map((line) => line.match(/^([\p{Ps}\p{Pi}"]*)(.*?)(\p{Po}*)$/u));
+    .map((line) => {
+      let match = line.match(/^([\p{Ps}\p{Pi}"]*)(.*?)(\p{Po}*)$/u);
+      match = shiftinPuncts(line, match, "「", "」");
+      match = shiftinPuncts(line, match, "『", "』");
+      match = shiftinPuncts(line, match, "｢", "｣");
+      return match;
+    });
   return (
     <>
       {lines.map((line, idx) => (
