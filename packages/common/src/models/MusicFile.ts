@@ -50,7 +50,7 @@ const SONG_ID_TAG = "LyricovaSongID",
 export const ID3_LYRICS_LANGUAGE = "eng";
 
 @ObjectType({ description: "A music file in the jukebox." })
-@Table
+@Table({ modelName: "MusicFile" })
 export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   @Field((type) => Int, { description: "File ID in database." })
   @AutoIncrement

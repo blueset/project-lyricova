@@ -1,6 +1,6 @@
 import type { Entry } from "lyricova-common/models/Entry";
 import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
-import type { CSSProperties} from "react";
+import type { CSSProperties } from "react";
 import { useCallback, useMemo, useRef } from "react";
 import { PlainTextHangingPunct } from "../PlainTextHangingPunct";
 import { TagRow } from "../TagRow";
@@ -101,7 +101,7 @@ export function TopEntry({ entry }: TopEntryProps) {
       style={
         {
           "--tags-gradient": tagsGradient,
-          "--tags-foreground": entry.tags?.[0].color,
+          "--tags-foreground": entry.tags?.[0]?.color,
         } as CSSProperties
       }
       onMouseEnter={(evt) => {

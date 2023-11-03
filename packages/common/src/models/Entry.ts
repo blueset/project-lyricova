@@ -25,7 +25,7 @@ import { Pulse } from "./Pulse";
 import { ObjectType, Field, ID } from "type-graphql";
 
 @ObjectType({ description: "A Lyricova entry." })
-@Table
+@Table({ modelName: "Entry" })
 export class Entry extends Model<Entry> {
   @Field()
   @AutoIncrement
@@ -45,10 +45,7 @@ export class Entry extends Model<Entry> {
   @Column({ type: new DataTypes.STRING(1024) })
   vocalistsName: string;
 
-  @BelongsToMany(
-    () => Song,
-    () => SongOfEntry
-  )
+  @BelongsToMany(() => Song, () => SongOfEntry)
   songs: Array<Song & { SongOfEntry: SongOfEntry }>;
 
   @Field()
@@ -65,10 +62,7 @@ export class Entry extends Model<Entry> {
   @Column({ type: "text" })
   comment: string;
 
-  @BelongsToMany(
-    () => Tag,
-    () => TagOfEntry
-  )
+  @BelongsToMany(() => Tag, () => TagOfEntry)
   tags: Array<Tag & { TagOfEntry: TagOfEntry }>;
 
   @HasMany((type) => Verse)

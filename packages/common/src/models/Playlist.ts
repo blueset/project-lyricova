@@ -1,13 +1,19 @@
 import { MusicFile } from "./MusicFile";
-import { Table, Model, PrimaryKey, Column, BelongsToMany } from "sequelize-typescript";
+import {
+  Table,
+  Model,
+  PrimaryKey,
+  Column,
+  BelongsToMany,
+} from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { FileInPlaylist } from "./FileInPlaylist";
 import { ObjectType, Field, ID } from "type-graphql";
 
 @ObjectType({ description: "A playlist of music files." })
-@Table
+@Table({ modelName: "Playlist" })
 export class Playlist extends Model<Playlist, Partial<Playlist>> {
-  @Field(type => ID, { description: "Slug of the playlist." })
+  @Field((type) => ID, { description: "Slug of the playlist." })
   @PrimaryKey
   @Column({ type: new DataTypes.STRING(512) })
   slug: string;
@@ -16,10 +22,7 @@ export class Playlist extends Model<Playlist, Partial<Playlist>> {
   @Column({ type: new DataTypes.STRING(1024) })
   name: string;
 
-  @BelongsToMany(
-    type => MusicFile,
-    intermediate => FileInPlaylist
-  )
+  @BelongsToMany((type) => MusicFile, (intermediate) => FileInPlaylist)
   files: MusicFile[];
 
   // virtual field in GraphQL

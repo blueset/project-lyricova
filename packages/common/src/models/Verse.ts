@@ -16,7 +16,7 @@ import { DataTypes } from "sequelize";
 import { Field, ObjectType } from "type-graphql";
 
 @ObjectType()
-@Table
+@Table({ modelName: "Verse" })
 export class Verse extends Model<Verse> {
   @Field()
   @AutoIncrement

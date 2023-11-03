@@ -8,7 +8,7 @@ import {
 import { Field, ObjectType } from "type-graphql";
 
 @ObjectType()
-@Table({ updatedAt: false, createdAt: false })
+@Table({ updatedAt: false, createdAt: false, modelName: "FuriganaMapping" })
 export class FuriganaMapping extends Model<FuriganaMapping> {
   @Field()
   @Column({ type: new DataType.STRING(128), primaryKey: true })

@@ -15,7 +15,7 @@ import crypto from "crypto";
 import { ObjectType, Field, Int } from "type-graphql";
 
 @ObjectType()
-@Table
+@Table({ modelName: "User" })
 export class User extends Model<User> {
   @Field((type) => Int)
   @AutoIncrement

@@ -17,7 +17,7 @@ import { DataTypes } from "sequelize";
 import { Field, Int, ObjectType } from "type-graphql";
 
 @ObjectType()
-@Table
+@Table({ modelName: "VideoFile" })
 export class VideoFile extends Model<VideoFile> {
   @Field(() => Int)
   @AutoIncrement

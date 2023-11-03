@@ -23,7 +23,7 @@ import { Artist } from "./Artist";
 import _ from "lodash";
 
 @ObjectType()
-@Table
+@Table({ modelName: "Album" })
 export class Album extends Model<Album, Partial<Album>> {
   @Field((type) => Int)
   @PrimaryKey

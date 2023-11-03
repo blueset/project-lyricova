@@ -11,7 +11,7 @@ import { TagOfEntry } from "./TagOfEntry";
 import { Field, ID, ObjectType } from "type-graphql";
 
 @ObjectType()
-@Table
+@Table({ modelName: "Tag" })
 export class Tag extends Model<Tag> {
   @Field((type) => ID)
   @PrimaryKey
@@ -26,9 +26,6 @@ export class Tag extends Model<Tag> {
   @Column({ type: new DataTypes.STRING(16) })
   color: string;
 
-  @BelongsToMany(
-    () => Entry,
-    () => TagOfEntry
-  )
+  @BelongsToMany(() => Entry, () => TagOfEntry)
   entries: Entry[];
 }

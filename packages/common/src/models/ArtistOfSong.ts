@@ -24,7 +24,7 @@ import { SIMPLE_ENUM_ARRAY_INVOCABLE } from "../utils/sequelizeAdditions";
 import { Field, Int, ObjectType } from "type-graphql";
 
 @ObjectType()
-@Table
+@Table({ modelName: "ArtistOfSong" })
 export class ArtistOfSong extends Model<ArtistOfSong> {
   @Field((type) => Int)
   @AutoIncrement

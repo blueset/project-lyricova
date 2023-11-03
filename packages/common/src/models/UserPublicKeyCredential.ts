@@ -15,7 +15,7 @@ import { User } from "./User";
 import { ObjectType, Field, Int } from "type-graphql";
 
 @ObjectType()
-@Table
+@Table({ modelName: "UserPublicKeyCredential" })
 export class UserPublicKeyCredential extends Model<UserPublicKeyCredential> {
   @Field()
   @AutoIncrement

@@ -1,13 +1,24 @@
-
 import type {
   VDBArtistRoleType,
   VDBArtistCategoryType,
   ArtistForSongContract,
-  ArtistForAlbumForApiContract
+  ArtistForAlbumForApiContract,
 } from "../types/vocadb";
 import { Artist } from "./Artist";
 import { Album } from "./Album";
-import { Table, Column, PrimaryKey, AutoIncrement, Default, ForeignKey, BelongsTo, CreatedAt, UpdatedAt, DeletedAt, Model } from "sequelize-typescript";
+import {
+  Table,
+  Column,
+  PrimaryKey,
+  AutoIncrement,
+  Default,
+  ForeignKey,
+  BelongsTo,
+  CreatedAt,
+  UpdatedAt,
+  DeletedAt,
+  Model,
+} from "sequelize-typescript";
 import { SIMPLE_ENUM_ARRAY } from "../utils/sequelizeAdditions";
 import { DataTypes } from "sequelize";
 import { Field, Int, ObjectType } from "type-graphql";
@@ -29,7 +40,7 @@ const ROLES = [
   "Mixer",
   "Chorus",
   "Encoder",
-  "VocalDataProvider"
+  "VocalDataProvider",
 ];
 const CATEGORIES = [
   "Nothing",
@@ -41,52 +52,52 @@ const CATEGORIES = [
   "Other",
   "Band",
   "Illustrator",
-  "Subject"
+  "Subject",
 ];
 
 @ObjectType()
-@Table
+@Table({ modelName: "ArtistOfAlbum" })
 export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
-  @Field(type => Int)
+  @Field((type) => Int)
   @AutoIncrement
   @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER })
+  @Column({ type: new DataTypes.INTEGER() })
   artistOfAlbumId: number;
 
-  @Field(type => [String])
+  @Field((type) => [String])
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @Column({
-    type: new SIMPLE_ENUM_ARRAY(ROLES)
+    type: new SIMPLE_ENUM_ARRAY(ROLES),
   })
   roles: VDBArtistRoleType[];
 
-  @Field(type => [String])
+  @Field((type) => [String])
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @Column({
-    type: new SIMPLE_ENUM_ARRAY(ROLES)
+    type: new SIMPLE_ENUM_ARRAY(ROLES),
   })
   effectiveRoles: VDBArtistRoleType[];
 
-  @Field(type => String)
+  @Field((type) => String)
   @Default("Nothing")
   @Column({
-    type: DataTypes.ENUM(...CATEGORIES)
+    type: DataTypes.ENUM(...CATEGORIES),
   })
   categories: VDBArtistCategoryType;
 
-  @BelongsTo(type => Album)
+  @BelongsTo((type) => Album)
   album: Album;
 
-  @ForeignKey(type => Album)
+  @ForeignKey((type) => Album)
   @Column
   albumId: number;
 
-  @BelongsTo(type => Artist)
+  @BelongsTo((type) => Artist)
   artist: Artist;
 
-  @ForeignKey(type => Artist)
+  @ForeignKey((type) => Artist)
   @Column
   artistId: number;
 
@@ -97,7 +108,9 @@ export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
   updatedOn: Date;
 
   /** Incomplete build. */
-  static async artistFromVocaDB(entity: ArtistForAlbumForApiContract): Promise<Artist> {
+  static async artistFromVocaDB(
+    entity: ArtistForAlbumForApiContract
+  ): Promise<Artist> {
     const artist = await Artist.fromVocaDBArtistContract(entity.artist);
     const artistOfAlbumAttrs = {
       effectiveRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],

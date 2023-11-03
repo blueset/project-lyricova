@@ -28,7 +28,7 @@ import { GraphQLJSONObject } from "graphql-type-json";
 import _ from "lodash";
 
 @ObjectType()
-@Table
+@Table({ modelName: "Song" })
 export class Song extends Model<Song, Partial<Song>> {
   @Field(() => Int)
   @PrimaryKey

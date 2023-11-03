@@ -1,8 +1,7 @@
 import { Table, Model, Column, PrimaryKey } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 
-
-@Table
+@Table({ modelName: "SiteMeta" })
 export class SiteMeta extends Model<SiteMeta> {
   @PrimaryKey
   @Column({ type: new DataTypes.STRING(768) })

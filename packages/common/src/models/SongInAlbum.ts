@@ -23,7 +23,7 @@ import { DataTypes } from "sequelize";
 import { Field, Int, ObjectType } from "type-graphql";
 
 @ObjectType()
-@Table
+@Table({ modelName: "SongInAlbum" })
 export class SongInAlbum extends Model<SongInAlbum> {
   @AutoIncrement
   @PrimaryKey

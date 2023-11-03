@@ -15,7 +15,7 @@ import { Tag } from "./Tag";
 import { Field, ID, ObjectType } from "type-graphql";
 
 @ObjectType()
-@Table
+@Table({ modelName: "TagOfEntry" })
 export class TagOfEntry extends Model<TagOfEntry> {
   @Field((type) => ID)
   @AutoIncrement

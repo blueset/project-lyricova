@@ -13,7 +13,7 @@ import { Entry } from "./Entry";
 import { Field, Int, ObjectType } from "type-graphql";
 
 @ObjectType()
-@Table({ updatedAt: false })
+@Table({ updatedAt: false, modelName: "Pulse" })
 export class Pulse extends Model<Pulse> {
   @Field((type) => Int)
   @AutoIncrement

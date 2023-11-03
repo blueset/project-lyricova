@@ -30,7 +30,7 @@ import { GraphQLJSONObject } from "graphql-type-json";
 import { SongInAlbum } from "./SongInAlbum";
 
 @ObjectType()
-@Table
+@Table({ modelName: "Artist" })
 export class Artist extends Model<Artist, Partial<Artist>> {
   @Field(() => Int)
   @PrimaryKey
