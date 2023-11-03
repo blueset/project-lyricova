@@ -85,40 +85,6 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
     [line, renderableFurigana, setLine]
   );
 
-  const removeRange = useCallback(
-    (idx: number) => () => {
-      const self = renderableFurigana[idx];
-      if (typeof self !== "object") return;
-      const before = renderableFurigana[idx - 1],
-        after = renderableFurigana[idx + 1];
-      let result: RenderableFuriganaElement[];
-      if (typeof before === "string" && typeof after === "string") {
-        result = renderableFurigana
-          .slice(0, idx - 1)
-          .concat([before + self.base + after])
-          .concat(renderableFurigana.slice(idx + 2, renderableFurigana.length));
-      } else if (typeof before === "string") {
-        result = renderableFurigana
-          .slice(0, idx - 1)
-          .concat([before + self.base])
-          .concat(renderableFurigana.slice(idx + 1, renderableFurigana.length));
-      } else if (typeof after === "string") {
-        result = renderableFurigana
-          .slice(0, idx)
-          .concat([self.base + after])
-          .concat(renderableFurigana.slice(idx + 2, renderableFurigana.length));
-      } else {
-        result = renderableFurigana
-          .slice(0, idx)
-          .concat([self.base])
-          .concat(renderableFurigana.slice(idx + 1, renderableFurigana.length));
-      }
-      setRenderableFurigana(result);
-      updateLine(result);
-    },
-    [renderableFurigana, setRenderableFurigana, updateLine]
-  );
-
   const addFurigana = useCallback(
     (nodeIdx: number, start: number, end: number, value: string) => {
       const node = renderableFurigana[nodeIdx];
@@ -166,11 +132,54 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
         top: rect.top + rect.height,
         left: rect.left,
       });
+      console.log({
+        nodeIdx: id,
+        start,
+        end,
+        top: rect.top + rect.height,
+        left: rect.left,
+      });
     } else {
       setFloatingWindow(null);
+      console.log(null);
       setFloatingWindowInput("");
     }
   }, [setFloatingWindow, setFloatingWindowInput]);
+
+  const removeRange = useCallback(
+    (idx: number) => () => {
+      const self = renderableFurigana[idx];
+      if (typeof self !== "object") return;
+      const before = renderableFurigana[idx - 1],
+        after = renderableFurigana[idx + 1];
+      let result: RenderableFuriganaElement[];
+      if (typeof before === "string" && typeof after === "string") {
+        result = renderableFurigana
+          .slice(0, idx - 1)
+          .concat([before + self.base + after])
+          .concat(renderableFurigana.slice(idx + 2, renderableFurigana.length));
+      } else if (typeof before === "string") {
+        result = renderableFurigana
+          .slice(0, idx - 1)
+          .concat([before + self.base])
+          .concat(renderableFurigana.slice(idx + 1, renderableFurigana.length));
+      } else if (typeof after === "string") {
+        result = renderableFurigana
+          .slice(0, idx)
+          .concat([self.base + after])
+          .concat(renderableFurigana.slice(idx + 2, renderableFurigana.length));
+      } else {
+        result = renderableFurigana
+          .slice(0, idx)
+          .concat([self.base])
+          .concat(renderableFurigana.slice(idx + 1, renderableFurigana.length));
+      }
+      setRenderableFurigana(result);
+      updateLine(result);
+      onSelect();
+    },
+    [onSelect, renderableFurigana, setRenderableFurigana, updateLine]
+  );
 
   useEffect(() => {
     const debounced = _.debounce(onSelect, 250);
@@ -273,9 +282,12 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
           >
             <TextField
               id="outlined-multiline-flexible"
-              label={(
-                renderableFurigana[floatingWindow.nodeIdx] as string
-              ).slice(floatingWindow.start, floatingWindow.end)}
+              label={
+                (renderableFurigana[floatingWindow.nodeIdx] as string)?.slice?.(
+                  floatingWindow.start,
+                  floatingWindow.end
+                ) ?? "❓"
+              }
               value={floatingWindowInput}
               onChange={handleFloatingInputChange}
               margin="dense"
