@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useNamedState } from "../../../../frontendUtils/hooks";
 import VocaDBLyricsDialog from "./VocaDBLyricsDialog";
 import HMikuWikiSearchDialog from "./HMikuWikiSearchDialog";
+import DiffEditorDialog from "./DiffEditorDialog";
 
 function replaceWithPattern(
   lines: [string, string][],
@@ -90,6 +91,10 @@ export default function EditLyrics({
     false,
     "showHMikuWikiDialog"
   );
+  const [showDiffDialog, toggleDiffDialog] = useNamedState(
+    false,
+    "showDiffDialog"
+  );
 
   return (
     <>
@@ -125,6 +130,12 @@ export default function EditLyrics({
           <SpacedButton variant="outlined" onClick={() => setLyrics("")}>
             Clear
           </SpacedButton>
+          <SpacedButton
+            variant="outlined"
+            onClick={() => toggleDiffDialog(true)}
+          >
+            Diff editor
+          </SpacedButton>
         </Grid>
       </Grid>
       <TextField
@@ -147,6 +158,7 @@ export default function EditLyrics({
         toggleOpen={toggleHMikuWikiDialog}
         keyword={title}
       />
+      <DiffEditorDialog isOpen={showDiffDialog} toggleOpen={toggleDiffDialog} />
     </>
   );
 }

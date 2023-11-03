@@ -207,13 +207,6 @@ export function InlineTaggingLine({
       });
       tl.timeScale(playerStatusRef.current.rate);
       const progress = getProgress();
-      // console.log(
-      //   "startingTags",
-      //   startingTags,
-      //   playerStatusRef.current,
-      //   progress,
-      //   tl
-      // );
       if (playerStatusRef.current.state === "playing") {
         tl.play(progress);
       } else {
