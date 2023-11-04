@@ -80,7 +80,7 @@ function applyDiff(source: string, edited: string): string {
       let relativeTimeOffset = 0; // relative time offset for when line break happens
       const finalizeLine = () => {
         if (resultTimeTags.length > 0) {
-          if (timeTagQueue.length > 0) {
+          if ((timeTagQueue?.length ?? 0) > 0) {
             const eolTimeTag = new WordTimeTagLabel(
               timeTagQueue[0].timeTag,
               timeTagQueue[0].index + resultLine.content.length - ptr
@@ -118,14 +118,14 @@ function applyDiff(source: string, edited: string): string {
           const baseOffset = resultLine.content.length - ptr;
           if (text !== "\0") resultLine.content += text;
           ptr += text.length;
-          while (timeTagQueue.length > 0 && timeTagQueue[0]?.index < ptr) {
+          while ((timeTagQueue?.length ?? 0) > 0 && timeTagQueue[0]?.index < ptr) {
             const tag = timeTagQueue.shift();
             tag.index += baseOffset;
             tag.timeTag += relativeTimeOffset;
             resultTimeTags.push(tag);
           }
           while (
-            furiganaQueue.length > 0 &&
+            (furiganaQueue?.length ?? 0) > 0 &&
             furiganaQueue[0]?.range[1] <= ptr
           ) {
             const tag = furiganaQueue.shift();
@@ -133,10 +133,10 @@ function applyDiff(source: string, edited: string): string {
             tag.range[1] += baseOffset;
             resultFurigana.push(tag);
           }
-          while (dotsQueue.length > 0 && dotsQueue[0][1] <= ptr) {
+          while ((dotsQueue?.length ?? 0) > 0 && dotsQueue[0][1] <= ptr) {
             resultDots.push(dotsQueue.shift()[0]);
           }
-          while (tagsQueue.length > 0 && tagsQueue[0][1] <= ptr) {
+          while ((tagsQueue?.length ?? 0) > 0 && tagsQueue[0][1] <= ptr) {
             resultTags.push(tagsQueue.shift()[0]);
           }
         } else if (op === 1 && text !== "\n") {
