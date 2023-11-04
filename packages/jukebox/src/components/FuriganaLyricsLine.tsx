@@ -1,17 +1,24 @@
-import type { LyricsLine} from "lyrics-kit/core";
+import type { LyricsLine } from "lyrics-kit/core";
 import { FURIGANA } from "lyrics-kit/core";
 import type { LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
+import { CSSProperties } from "react";
 
 interface Props {
   lyricsKitLine?: LyricsLine;
   graphQLSourceLine?: LyricsKitLyricsLine;
   transliterationLine?: [string, string][];
+  rubyStyles?: (
+    base: string,
+    ruby: string,
+    groupings: (string | [string, string])[]
+  ) => CSSProperties | undefined;
 }
 
 export default function FuriganaLyricsLine({
   lyricsKitLine,
   graphQLSourceLine,
   transliterationLine,
+  rubyStyles,
 }: Props) {
   if (lyricsKitLine || graphQLSourceLine) {
     const groupings: (string | [string, string])[] = [];
@@ -47,7 +54,7 @@ export default function FuriganaLyricsLine({
             return <span key={k}>{v}</span>;
           } else {
             return (
-              <ruby key={k}>
+              <ruby key={k} style={rubyStyles?.(v[0], v[1], groupings)}>
                 {v[0]}
                 <rp>(</rp>
                 <rt>{v[1]}</rt>

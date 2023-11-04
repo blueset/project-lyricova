@@ -7,9 +7,11 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Theme,
   Tooltip,
+  useTheme,
 } from "@mui/material";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { CSSProperties, useCallback, useEffect, useMemo, useRef } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 import { Lyrics, RangeAttribute, FURIGANA } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
@@ -28,6 +30,45 @@ const KARAOKE_TRANSLITERATION_QUERY = gql`
   }
 ` as DocumentNode;
 
+function furiganaHighlight(
+  theme: Theme
+): (
+  base: string,
+  ruby: string,
+  groupings: (string | [string, string])[]
+) => CSSProperties | undefined {
+  const primaryText = { color: theme.palette.primary.light };
+  const secondaryText = { color: theme.palette.secondary.light };
+  return (base, ruby, groupings) => {
+    if (base === "明日" && (ruby === "あした" || ruby === "あす"))
+      return secondaryText;
+    if (base === "抱" && (ruby === "だ" || ruby === "いだ"))
+      return secondaryText;
+    if (base === "行" && (ruby === "い" || ruby === "ゆ")) return secondaryText;
+    if (base === "今" && ruby === "こん") return primaryText;
+    if (base === "君" && ruby === "くん") return primaryText;
+
+    // contextual
+    if (
+      (base === "身" && ruby === "しん") ||
+      (base === "体" && ruby === "たい")
+    ) {
+      const shintaiIndex = groupings.findIndex(
+        (v) => typeof v !== "string" && v[0] === "身" && v[1] === "しん"
+      );
+      if (
+        shintaiIndex >= 0 &&
+        shintaiIndex < groupings.length - 1 &&
+        typeof groupings[shintaiIndex + 1] !== "string" &&
+        groupings[shintaiIndex + 1][0] === "体" &&
+        groupings[shintaiIndex + 1][1] === "たい"
+      )
+        return primaryText;
+    }
+    return undefined;
+  };
+}
+
 interface Props {
   lyrics: string;
   setLyrics: (lyrics: string) => void;
@@ -37,6 +78,7 @@ interface Props {
 export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
+  const theme = useTheme();
 
   const [selectedLine, setSelectedLine] = useNamedState(null, "selectedLine");
 
@@ -236,7 +278,10 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
                     },
                   }}
                 >
-                  <FuriganaLyricsLine lyricsKitLine={v} />
+                  <FuriganaLyricsLine
+                    lyricsKitLine={v}
+                    rubyStyles={furiganaHighlight(theme)}
+                  />
                 </ListItemText>
               </ListItemButton>
             </ListItem>
