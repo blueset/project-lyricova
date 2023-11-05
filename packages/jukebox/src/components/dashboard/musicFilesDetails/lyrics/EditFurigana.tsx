@@ -40,13 +40,19 @@ function furiganaHighlight(
   const primaryText = { color: theme.palette.primary.light };
   const secondaryText = { color: theme.palette.secondary.light };
   return (base, ruby, groupings) => {
-    if (base === "明日" && (ruby === "あした" || ruby === "あす"))
+    if (
+      (base === "明日" && (ruby === "あした" || ruby === "あす")) ||
+      (base === "抱" && (ruby === "だ" || ruby === "いだ")) ||
+      (base === "行" && (ruby === "い" || ruby === "ゆ")) ||
+      (base === "金" && ruby === "きん")
+    )
       return secondaryText;
-    if (base === "抱" && (ruby === "だ" || ruby === "いだ"))
-      return secondaryText;
-    if (base === "行" && (ruby === "い" || ruby === "ゆ")) return secondaryText;
-    if (base === "今" && ruby === "こん") return primaryText;
-    if (base === "君" && ruby === "くん") return primaryText;
+    if (
+      (base === "今" && ruby === "こん") ||
+      (base === "君" && ruby === "くん") ||
+      (base === "歪" && ruby === "いが")
+    )
+      return primaryText;
 
     // contextual
     if (
@@ -122,6 +128,7 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
       }>({
         query: KARAOKE_TRANSLITERATION_QUERY,
         variables: { text: lines.map((v) => v.content).join("\n") },
+        fetchPolicy: "network-only",
       });
       if (result.data) {
         // Copy `lines` for React to recognize it as a new state
