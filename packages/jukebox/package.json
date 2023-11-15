@@ -58,7 +58,7 @@
     "@typescript-eslint/parser": "^5.4.0",
     "async": "^3.1.0",
     "autosuggest-highlight": "^3.1.1",
-    "axios": "^0.24.0",
+    "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.7.2",
     "cheerio": "^1.0.0-rc.3",
