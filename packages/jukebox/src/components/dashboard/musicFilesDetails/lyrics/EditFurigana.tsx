@@ -30,6 +30,40 @@ const KARAOKE_TRANSLITERATION_QUERY = gql`
   }
 ` as DocumentNode;
 
+function matchContexualFurigana(
+  base: string,
+  ruby: string,
+  groupings: (string | [string, string])[],
+  matchGroups: [string, string][]
+) {
+  if (matchGroups.length < 1) return false;
+  const currentMatchingIndex = matchGroups.findIndex(
+    (v) => base === v[0] && ruby === v[1]
+  );
+  if (currentMatchingIndex >= 0) {
+    const matchingGroupIndex = groupings.findIndex(
+      (v) =>
+        typeof v !== "string" &&
+        v[0] === matchGroups[0][0] &&
+        v[1] === matchGroups[0][1]
+    );
+    if (
+      matchingGroupIndex >= 0 &&
+      matchingGroupIndex < groupings.length - matchGroups.length + 1 &&
+      groupings.every(
+        (v, i) =>
+          i < matchingGroupIndex ||
+          i >= matchingGroupIndex + matchGroups.length ||
+          (typeof v !== "string" &&
+            v[0] === matchGroups[i - matchingGroupIndex][0] &&
+            v[1] === matchGroups[i - matchingGroupIndex][1])
+      )
+    )
+      return true;
+  }
+  return false;
+}
+
 function furiganaHighlight(
   theme: Theme
 ): (
@@ -44,32 +78,37 @@ function furiganaHighlight(
       (base === "明日" && (ruby === "あした" || ruby === "あす")) ||
       (base === "抱" && (ruby === "だ" || ruby === "いだ")) ||
       (base === "行" && (ruby === "い" || ruby === "ゆ")) ||
-      (base === "金" && ruby === "きん")
+      (base === "寂" && (ruby === "さび" || ruby === "さみ")) ||
+      (base === "描" && (ruby === "か" || ruby === "えが")) ||
+      (base === "詩" && (ruby === "し" || ruby === "うた")) ||
+      (base === "何" && (ruby === "なに" || ruby === "なん")) ||
+      (base === "触" && (ruby === "ふ" || ruby === "さわ")) ||
+      (base === "金" && ruby === "きん") ||
+      (base === "後" && ruby === "ご") ||
+      (base === "誘" && ruby === "さそ")
     )
       return secondaryText;
     if (
       (base === "今" && ruby === "こん") ||
       (base === "君" && ruby === "くん") ||
-      (base === "歪" && ruby === "いが")
+      (base === "歪" && ruby === "いが") ||
+      (base === "良" && ruby === "よ") ||
+      (base === "側" && ruby === "がわ")
     )
       return primaryText;
 
     // contextual
     if (
-      (base === "身" && ruby === "しん") ||
-      (base === "体" && ruby === "たい")
+      matchContexualFurigana(base, ruby, groupings, [
+        ["身", "しん"],
+        ["体", "たい"],
+      ]) ||
+      matchContexualFurigana(base, ruby, groupings, [
+        ["一", "かず"],
+        ["人", "と"],
+      ])
     ) {
-      const shintaiIndex = groupings.findIndex(
-        (v) => typeof v !== "string" && v[0] === "身" && v[1] === "しん"
-      );
-      if (
-        shintaiIndex >= 0 &&
-        shintaiIndex < groupings.length - 1 &&
-        typeof groupings[shintaiIndex + 1] !== "string" &&
-        groupings[shintaiIndex + 1][0] === "体" &&
-        groupings[shintaiIndex + 1][1] === "たい"
-      )
-        return primaryText;
+      return primaryText;
     }
     return undefined;
   };
