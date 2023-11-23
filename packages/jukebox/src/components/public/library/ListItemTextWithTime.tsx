@@ -41,7 +41,7 @@ export default function ListItemTextWithTime({
         <Typography
           variant="body2"
           color="textSecondary"
-          sx={{ marginRight: 1 }}
+          sx={{ marginRight: 1, fontVariantNumeric: "tabular-nums" }}
         >
           {timeStr}
         </Typography>

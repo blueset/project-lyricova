@@ -59,7 +59,7 @@ export default createTheme({
           colorScheme: "dark",
         },
         html: {
-          fontFeatureSettings: "'palt' 1",
+          fontFeatureSettings: "'palt' 1, 'ss01' 1, 'ss03' 1, 'cv01' 1",
         },
         "*::-webkit-scrollbar": {
           width: "8px",
