@@ -12,6 +12,14 @@ import { rgb } from "color-convert";
 import ColorThief from "colorthief";
 import { styled } from "@mui/material";
 import { FBMWaveMethod } from "./fbm-wave";
+import dynamic from "next/dynamic";
+
+const BackgroundRenderNoSSR = dynamic(
+  () => import("@applemusic-like-lyrics/react").then((m) => m.BackgroundRender),
+  {
+    ssr: false,
+  }
+);
 
 interface Props {
   coverUrl?: string;
@@ -41,7 +49,18 @@ export function BackgroundCanvas({ coverUrl, textureUrl }: Props) {
       />
     );
   } else {
-    return <BackgroundCanvasRender coverUrl={coverUrl} />;
+    // return <BackgroundCanvasRender coverUrl={coverUrl} />;
+    return (
+      <BackgroundRenderNoSSR
+        albumImageUrl={coverUrl}
+        style={{
+          position: "fixed",
+          inset: 0,
+          height: "100%",
+          width: "100%",
+        }}
+      />
+    );
   }
 }
 

@@ -9,7 +9,7 @@ import { LyricsProvider } from ".";
 import { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
-import axiosCookieJarSupport from "axios-cookiejar-support";
+import { wrapper } from "axios-cookiejar-support";
 import tough from "tough-cookie";
 import cheerio, { Node } from "cheerio";
 import { URL, URLSearchParams } from "url";
@@ -28,8 +28,6 @@ import {
 import { LyricsLine } from "../../core/lyricsLine";
 import { MarumaruResponseSingleLyrics } from "../types/marumaru/singleLyrics";
 import { MarumaruEntry } from "../types/marumaru/searchResult";
-
-axiosCookieJarSupport(axios);
 
 const SEARCH_URL = "https://www.jpmarumaru.com/tw/JPSongList.asp";
 const LYRICS_URL = "https://www.jpmarumaru.com/tw/api/json_JPSongTrack.asp";
@@ -138,14 +136,16 @@ class MarumaruLyrics extends Lyrics {
 export class MarumaruProvider extends LyricsProvider<MarumaruEntry> {
   // static source = LyricsProviderSource.marumaru;
 
-  private axios = axios.create({
-    jar: new tough.CookieJar(),
-    withCredentials: true,
-    maxRedirects: 10,
-    validateStatus: function(status) {
-      return status >= 200 && status < 303;
-    },
-  });
+  private axios = wrapper(
+    axios.create({
+      jar: new tough.CookieJar(),
+      withCredentials: true,
+      maxRedirects: 10,
+      validateStatus: function(status) {
+        return status >= 200 && status < 303;
+      },
+    })
+  );
 
   constructor() {
     super();

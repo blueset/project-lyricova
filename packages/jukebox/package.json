@@ -43,6 +43,7 @@
   "dependencies": {
     "@apollo/client": "^3.7.8",
     "@apollo/server": "^4.9.3",
+    "@applemusic-like-lyrics/react": "^0.0.15",
     "@emotion/react": "^11.10.5",
     "@emotion/server": "^11.10.0",
     "@emotion/styled": "^11.10.5",
@@ -58,7 +59,7 @@
     "@typescript-eslint/parser": "^5.4.0",
     "async": "^3.1.0",
     "autosuggest-highlight": "^3.1.1",
-    "axios": "^1.6.0",
+    "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.7.2",
     "cheerio": "^1.0.0-rc.3",

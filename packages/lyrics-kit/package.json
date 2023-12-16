@@ -66,7 +66,7 @@
   },
   "dependencies": {
     "axios": "^1.6.0",
-    "axios-cookiejar-support": "^0.5.1",
+    "axios-cookiejar-support": "~4.0.7",
     "cheerio": "^1.0.0-rc.3",
     "lodash": "^4.17.19",
     "sha.js": "^2.4.11",
