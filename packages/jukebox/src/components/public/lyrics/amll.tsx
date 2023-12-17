@@ -1,12 +1,5 @@
 import { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   LyricLine as AAMLyricLine,
   LyricWord as AMLLyricWord,
@@ -15,10 +8,9 @@ import { useAppContext } from "../AppContext";
 import { usePlayerState } from "../../../frontendUtils/hooks";
 import styled from "@emotion/styled";
 import dynamic from "next/dynamic";
-import type { LyricPlayerRef } from "@applemusic-like-lyrics/react";
 
 const LyricPlayer = dynamic(
-  () => import("@applemusic-like-lyrics/react").then((m) => m.LyricPlayer),
+  () => import("../compat/amllLyricsPlayer").then((m) => m.LyricPlayer),
   {
     ssr: false,
   }

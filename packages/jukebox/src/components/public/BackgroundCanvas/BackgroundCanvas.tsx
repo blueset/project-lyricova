@@ -15,7 +15,7 @@ import { FBMWaveMethod } from "./fbm-wave";
 import dynamic from "next/dynamic";
 
 const BackgroundRenderNoSSR = dynamic(
-  () => import("@applemusic-like-lyrics/react").then((m) => m.BackgroundRender),
+  () => import("../compat/amllBackground").then((m) => m.BackgroundRender),
   {
     ssr: false,
   }
