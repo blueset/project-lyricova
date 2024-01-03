@@ -93,6 +93,9 @@ function furiganaHighlight(
       (base === "君" && ruby === "くん") ||
       (base === "歪" && ruby === "いが") ||
       (base === "良" && ruby === "よ") ||
+      (base === "罰" && ruby === "ばち") ||
+      (base === "後" && ruby === "のち") ||
+      (base === "終" && ruby === "おわり") ||
       (base === "側" && ruby === "がわ")
     )
       return primaryText;
@@ -102,6 +105,10 @@ function furiganaHighlight(
       matchContexualFurigana(base, ruby, groupings, [
         ["身", "しん"],
         ["体", "たい"],
+      ]) ||
+      matchContexualFurigana(base, ruby, groupings, [
+        ["千", "ち"],
+        ["年", "とせ"],
       ]) ||
       matchContexualFurigana(base, ruby, groupings, [
         ["一", "かず"],
