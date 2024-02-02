@@ -82,7 +82,13 @@ export class Artist extends Model<Artist, Partial<Artist>> {
       "Vocalist",
       "CoverArtist",
       "SynthesizerV",
-      "Character"
+      "Character",
+      "NEUTRINO",
+      "VoiSona",
+      "NewType",
+      "Voiceroid",
+      "Instrumentalist",
+      "Designer"
     ),
     defaultValue: "Unknown",
   })
