@@ -101,7 +101,7 @@ CREATE TABLE `Artists` (
   `name` varchar(4096) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sortOrder` varchar(4096) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `mainPictureUrl` varchar(4096) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` enum('Unknown','Circle','Label','Producer','Animator','Illustrator','Lyricist','Vocaloid','UTAU','CeVIO','OtherVoiceSynthesizer','OtherVocalist','OtherGroup','OtherIndividual','Utaite','Band','Vocalist','Character','SynthesizerV','CoverArtist','NEUTRINO','VoiSona','NewType','Voiceroid') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `type` enum('Unknown','Circle','Label','Producer','Animator','Illustrator','Lyricist','Vocaloid','UTAU','CeVIO','OtherVoiceSynthesizer','OtherVocalist','OtherGroup','OtherIndividual','Utaite','Band','Vocalist','Character','SynthesizerV','CoverArtist','NEUTRINO','VoiSona','NewType','Voiceroid','Instrumentalist','Designer') COLLATE utf8mb4_general_ci DEFAULT NULL,
   `baseVoiceBankId` int DEFAULT NULL,
   `vocaDbJson` json DEFAULT NULL,
   `incomplete` tinyint(1) DEFAULT '1',
