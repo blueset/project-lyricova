@@ -183,7 +183,9 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
               ? prevEndTime
               : !prevEndTime
               ? l.position
-              : Math.max(isNaN(l.position) ? 0 : l.position, prevEndTime ?? 0);
+              : l.content
+              ? Math.max(isNaN(l.position) ? 0 : l.position, prevEndTime ?? 0)
+              : prevEndTime;
           const firstTag = tagsRef.current[idx]?.find((t) => t?.[0])?.[0];
           const startTime = firstTag || fallbackStartTime;
           l.position = startTime;
