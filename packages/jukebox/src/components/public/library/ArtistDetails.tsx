@@ -206,7 +206,10 @@ export default function ArtistDetails({ id, type }: Props) {
           </ButtonRow>
         </Stack>
         <List>
-          {_.sortBy(artist.songs, "sortOrder").map((v) => (
+          {_.sortBy(
+            artist.songs.filter((v) => v.files.length),
+            "sortOrder"
+          ).map((v) => (
             <TrackListRow
               song={v}
               file={v.files.length > 0 ? v.files[0] : null}
