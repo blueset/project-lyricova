@@ -17,6 +17,7 @@ import type { DocumentNode } from "graphql";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import LocalPlayIcon from "@mui/icons-material/LocalPlay";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
+import RateReviewIcon from "@mui/icons-material/RateReview";
 
 const PLAYLISTS_LIST_QUERY = gql`
   query {
@@ -173,6 +174,39 @@ export default function PlaylistsList() {
               <Typography variant="body1">Most played</Typography>
               <Typography variant="body2" color="textSecondary">
                 Most played tracks
+              </Typography>
+            </div>
+          </ButtonBase>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <ButtonBase
+            component={NextComposedLink}
+            href="/library/playlists/recently-reviewed"
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Avatar
+              variant="rounded"
+              sx={{
+                height: "4rem",
+                width: "4rem",
+                marginRight: 1,
+                fontSize: "2.25em",
+                color: "white",
+                backgroundImage: `linear-gradient(225deg, ${gradients[4].colors.join(
+                  ", "
+                )})`,
+              }}
+            >
+              <RateReviewIcon fontSize="inherit" />
+            </Avatar>
+            <div style={{ flexGrow: 1, width: 0 }}>
+              <Typography variant="body1">Recently reviewed</Typography>
+              <Typography variant="body2" color="textSecondary">
+                Tracks reviewed in 30 days
               </Typography>
             </div>
           </ButtonBase>

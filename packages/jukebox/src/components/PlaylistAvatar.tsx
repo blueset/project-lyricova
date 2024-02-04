@@ -19,6 +19,10 @@ export const gradients = [
     name: "From Ice To Fire",
     colors: ["#72C6EF", "#004E8F"],
   },
+  {
+    name: "Meridian",
+    colors: ["#283c86", "#45a247"],
+  },
   { name: "Purple Dream", colors: ["#bf5ae0", "#a811da"] },
   {
     name: "Blu",
@@ -485,10 +489,6 @@ export const gradients = [
     colors: ["#159957", "#155799"],
   },
   { name: "Mello", colors: ["#c0392b", "#8e44ad"] },
-  {
-    name: "Meridian",
-    colors: ["#283c86", "#45a247"],
-  },
   { name: "Relay", colors: ["#3A1C71", "#D76D77", "#FFAF7B"] },
   {
     name: "Alive",
@@ -713,7 +713,7 @@ function initials(source: string): string {
  * @by Dark Sky app (https://github.com/darkskyapp/string-hash)
  * @license CC-0
  */
-function hash(str: string): number {
+export function hash(str: string): number {
   let hash = 5381,
     i = str.length;
   while (i) {

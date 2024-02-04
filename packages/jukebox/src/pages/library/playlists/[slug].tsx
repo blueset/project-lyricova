@@ -31,19 +31,18 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
 import { MusicFileFragments } from "lyricova-common/utils/fragments";
 import type { Playlist } from "lyricova-common/models/Playlist";
-import PlaylistAvatar, { gradients } from "../../../components/PlaylistAvatar";
+import PlaylistAvatar, {
+  gradients,
+  hash,
+} from "../../../components/PlaylistAvatar";
 import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "../../../redux/public/store";
-import {
-  addTrackToNext,
-  loadTracks,
-  playTrack,
-  toggleShuffle,
-} from "../../../redux/public/playlist";
+import { loadTracks, toggleShuffle } from "../../../redux/public/playlist";
 import type { MusicFile } from "lyricova-common/models/MusicFile";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import LocalPlayIcon from "@mui/icons-material/LocalPlay";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
+import RateReviewIcon from "@mui/icons-material/RateReview";
 
 const PLAYLIST_DETAILS_QUERY = gql`
   query ($slug: String!) {
@@ -93,6 +92,16 @@ const POPULAR_QUERY = gql`
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
 ` as DocumentNode;
 
+const RECENTLY_REVIEWED_QUERY = gql`
+  query {
+    recentlyReviewedMusicFiles {
+      ...MusicFileForPlaylistAttributes
+    }
+  }
+
+  ${MusicFileFragments.MusicFileForPlaylistAttributes}
+` as DocumentNode;
+
 export default function PlaylistDetails() {
   const router = useRouter();
   const slug = router.query.slug as string;
@@ -104,13 +113,17 @@ export default function PlaylistDetails() {
   const dispatch = useAppDispatch();
 
   const isPredefined =
-    slug === "new" || slug === "recent" || slug === "popular";
+    slug === "new" ||
+    slug === "recent" ||
+    slug === "popular" ||
+    slug === "recently-reviewed";
 
   const query = useQuery<{
     playlist?: Playlist;
     newMusicFiles?: MusicFile[];
     recentMusicFiles?: MusicFile[];
     popularMusicFiles?: MusicFile[];
+    recentlyReviewedMusicFiles?: MusicFile[];
   }>(
     slug === "new"
       ? NEW_QUERY
@@ -118,6 +131,8 @@ export default function PlaylistDetails() {
       ? RECENT_QUERY
       : slug === "popular"
       ? POPULAR_QUERY
+      : slug === "recently-reviewed"
+      ? RECENTLY_REVIEWED_QUERY
       : PLAYLIST_DETAILS_QUERY,
     {
       variables: !isPredefined ? { slug } : undefined,
@@ -139,7 +154,8 @@ export default function PlaylistDetails() {
       playlistData?.files ??
       query.data.newMusicFiles ??
       query.data.recentMusicFiles ??
-      query.data.popularMusicFiles;
+      query.data.popularMusicFiles ??
+      query.data.recentlyReviewedMusicFiles;
     const trackCount = files.length;
     const totalMinutes = Math.round(_.sumBy(files, "duration") / 60);
     const totalSize = _.sumBy(files, "fileSize");
@@ -151,6 +167,8 @@ export default function PlaylistDetails() {
         ? "Recently Played"
         : slug === "popular"
         ? "Most Played"
+        : slug === "recently-reviewed"
+        ? "Recently Reviewed"
         : playlistData?.name;
     const displaySlug =
       slug === "new"
@@ -159,6 +177,8 @@ export default function PlaylistDetails() {
         ? "Track played in 30 days"
         : slug === "popular"
         ? "Most played tracks"
+        : slug === "recently-reviewed"
+        ? "Tracks reviewed in 30 days"
         : playlistData?.slug;
 
     const playAll = () => dispatch(loadTracks(files));
@@ -197,7 +217,9 @@ export default function PlaylistDetails() {
                     ? 2
                     : slug === "popular"
                     ? 3
-                    : 4
+                    : slug === "recently-reviewed"
+                    ? 4
+                    : hash(slug) % gradients.length
                 ].colors.join(", ")})`,
               }}
             >
@@ -207,6 +229,8 @@ export default function PlaylistDetails() {
                 <LocalPlayIcon fontSize="inherit" />
               ) : slug === "popular" ? (
                 <WhatshotIcon fontSize="inherit" />
+              ) : slug === "recently-reviewed" ? (
+                <RateReviewIcon fontSize="inherit" />
               ) : null}
             </Avatar>
           )}

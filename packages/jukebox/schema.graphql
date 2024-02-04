@@ -582,6 +582,9 @@ type Query {
 
   """Get music files played in 30 days"""
   recentMusicFiles: [MusicFile!]!
+
+  """Get music files reviewed in 30 days"""
+  recentlyReviewedMusicFiles: [MusicFile!]!
   searchAlbums(keywords: String!): [Album!]!
   searchArtists(keywords: String!): [Artist!]!
   searchMusicFiles(keywords: String!): [MusicFile!]!

@@ -671,6 +671,22 @@ export class MusicFileResolver {
   }
 
   @Query((returns) => [MusicFile], {
+    description: "Get music files reviewed in 30 days",
+  })
+  public async recentlyReviewedMusicFiles(): Promise<MusicFile[]> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return await MusicFile.findAll({
+      where: {
+        updatedOn: {
+          [Op.gte]: thirtyDaysAgo,
+        },
+      },
+      order: [["updatedOn", "DESC"]],
+    });
+  }
+
+  @Query((returns) => [MusicFile], {
     description: "Get music files played in 30 days",
   })
   public async recentMusicFiles(): Promise<MusicFile[]> {
