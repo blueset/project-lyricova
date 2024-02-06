@@ -619,28 +619,35 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   const pageIdx = currentFrame?.data.pageIdx ?? null;
   const lineIdx = currentFrame?.data.lineIdx ?? null;
   const showNext = currentFrame?.data.showNext ?? null;
-  const [currentLine, currentLineStart, currentLineEnd] = useMemo(():
-    | [LyricsKitLyricsLine | null, number, number]
-    | [null, null, null] => {
-    if (pageIdx === null) return [null, null, null] as [null, null, null];
-    const page = pages[pageIdx];
-    if (lineIdx > page.lines.length)
-      return [null, null, null] as [null, null, null];
-    if (currentFrame !== null && lineIdx === null) {
-      return [null, currentFrame?.start, lyrics.lines[page.lines[0]].position];
-    }
+  const [currentLine, currentLineStart, currentLineEnd, nextLineStart] =
+    useMemo(():
+      | [LyricsKitLyricsLine | null, number, number, number]
+      | [null, null, null, null] => {
+      if (pageIdx === null) return [null, null, null, null] as const;
+      const page = pages[pageIdx];
+      if (lineIdx > page.lines.length) return [null, null, null, null] as const;
+      if (currentFrame !== null && lineIdx === null) {
+        return [
+          null,
+          currentFrame?.start,
+          lyrics.lines[page.lines[0]].position,
+          lyrics.lines[page.lines[0]].position,
+        ];
+      }
 
-    // Countdown pages starts COUNTDOWN_DURATION seconds earlier than first line.
-    if (lineIdx < 0) return [null, currentFrame.start, page.start];
-    const line = lyrics.lines[page.lines[lineIdx]];
-    if (!line) return [null, null, null];
-    const start = line.position;
-    const end =
-      lineIdx + 1 === page.lines.length
-        ? page.end
-        : lyrics.lines[page.lines[lineIdx + 1]].position;
-    return [line, start, end] as [LyricsKitLyricsLine, number, number];
-  }, [pageIdx, pages, lineIdx, currentFrame, lyrics.lines]);
+      // Countdown pages starts COUNTDOWN_DURATION seconds earlier than first line.
+      if (lineIdx < 0)
+        return [null, currentFrame.start, page.start, page.start];
+      const line = lyrics.lines[page.lines[lineIdx]];
+      if (!line) return [null, null, null, null];
+      const start = line.position;
+      const end =
+        lineIdx + 1 === page.lines.length
+          ? page.end
+          : lyrics.lines[page.lines[lineIdx + 1]].position;
+      const nextStart = lyrics.lines[page.lines[lineIdx + 1]].position;
+      return [line, start, end, nextStart] as const;
+    }, [pageIdx, pages, lineIdx, currentFrame, lyrics.lines]);
   const currentLineStartRef = useRef<number | null>();
   currentLineStartRef.current = currentLineStart;
 
@@ -662,7 +669,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
 
   const timelineRef = useRef<Timeline>();
   // Line object or -1 for countdown.
-  const timelineForRef = useRef<LyricsKitLyricsLine | -1 | null>();
+  const timelineForRef = useRef<LyricsKitLyricsLine | -1 | null>(null);
 
   useEffect(() => {
     const activeSpan = activeRef.current;
@@ -680,7 +687,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
         timelineForRef.current = -1;
       if (activeSpan && currentLineEnd !== null && currentLineStart !== null) {
         const duration = currentLineEnd - currentLineStart;
-        if (currentLine?.attachments?.timeTag) {
+        if (currentLine?.attachments?.timeTag?.tags?.length) {
           const lengths = measureTextWidths(activeSpan);
           const length = lengths[lengths.length - 1];
           const percentages = lengths.map((v) => {
@@ -715,6 +722,20 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
               start
             );
           });
+          if (
+            currentLineEnd !== nextLineStart &&
+            tags[tags.length - 1].index !== currentLine.content.length + 1
+          ) {
+            tl.to(
+              activeSpan,
+              {
+                clipPath: "inset(-50% 102% -10% -2%)",
+                ease: "none",
+                duration: nextLineStart - currentLineEnd,
+              },
+              currentLineEnd
+            );
+          }
         } else {
           if (currentLine !== null) {
             tl.fromTo(
