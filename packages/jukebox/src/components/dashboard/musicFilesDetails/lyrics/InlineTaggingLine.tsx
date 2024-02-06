@@ -328,6 +328,7 @@ export const InlineTaggingLineMemo = memo(InlineTaggingLine, (prev, next) => {
     prev.line.content === next.line.content &&
     prev.cursorIdx === next.cursorIdx &&
     prev.relativeProgress === next.relativeProgress &&
+    prev.onUpdateCursor === next.onUpdateCursor &&
     prev.dotCursorIdx?.[0] === next.dotCursorIdx?.[0] &&
     prev.dotCursorIdx?.[1] === next.dotCursorIdx?.[1]
   );
