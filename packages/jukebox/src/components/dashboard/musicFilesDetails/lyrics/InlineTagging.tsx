@@ -187,6 +187,10 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         const lines = linesRef.current.map((l, idx) => {
           const prevTags = tagsRef.current?.[idx - 1]?.flat();
           const prevEndTime = prevTags?.length ? Math.max(...prevTags) : null;
+          const nextTags = tagsRef.current?.[idx + 1]?.flat();
+          const nextStartTime = nextTags?.length
+            ? Math.min(...nextTags) - 0.001
+            : null;
           const fallbackStartTime =
             isNaN(l.position) && !prevEndTime
               ? NaN
@@ -196,7 +200,12 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
               ? l.position
               : l.content
               ? Math.max(isNaN(l.position) ? 0 : l.position, prevEndTime ?? 0)
-              : prevEndTime;
+              : // Force empty line to use prevEndTime or nextStartTime whichever is earlier
+                (prevEndTime &&
+                  nextStartTime &&
+                  Math.min(prevEndTime, nextStartTime)) ??
+                nextStartTime ??
+                prevEndTime;
           const firstTag = tagsRef.current[idx]?.find((t) => t?.[0])?.[0];
           const startTime = firstTag || fallbackStartTime;
           l.position = startTime;
