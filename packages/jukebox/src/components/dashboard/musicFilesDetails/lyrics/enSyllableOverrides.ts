@@ -15096,7 +15096,6 @@ export const enSyllableOverrides: {[word: string]: number[]} = {
 "heraea":[0,2,5],
 "herakleion":[0,2,4,8],
 "heraklion":[0,2,4,7],
-"here":[0,2],
 "heredia":[0,2,4],
 "heresiographer":[0,2,4,6,8,10],
 "heresiography":[0,2,4,6,8,10],
