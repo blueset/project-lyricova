@@ -47,12 +47,13 @@ import {
 import { populateDots } from "./InlineTaggingDots";
 import { WebAudioControls } from "./WebAudioControls";
 import { isNaN } from "lodash";
+import { populateDotsEn } from "./InlineTaggingEnSyllables";
 
 function Instructions() {
   return (
     <DismissibleAlert
       severity="warning"
-      collapseProps={{ sx: { flexGrow: 1 } }}
+      collapseProps={{ sx: { flexGrow: 1, width: 0 } }}
     >
       Switch to another tab to save changes. Arrow keys: Navigate; Space: Tag;
       Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter: play/pause,
@@ -585,7 +586,13 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
             variant="outlined"
             onClick={() => setDots(populateDots(lines))}
           >
-            Populate&nbsp;marks
+            Marks&nbsp;(ja)
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => populateDotsEn(lines).then(dots => setDots(dots))}
+          >
+            Marks&nbsp;(en)
           </Button>
           <InstructionsMemo />
         </ControlRow>

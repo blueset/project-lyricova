@@ -623,9 +623,9 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     useMemo(():
       | [LyricsKitLyricsLine | null, number, number, number]
       | [null, null, null, null] => {
-      if (pageIdx === null) return [null, null, null, null] as const;
+      if (pageIdx === null) return [null, null, null, null];
       const page = pages[pageIdx];
-      if (lineIdx > page.lines.length) return [null, null, null, null] as const;
+      if (lineIdx > page.lines.length) return [null, null, null, null];
       if (currentFrame !== null && lineIdx === null) {
         return [
           null,
@@ -646,7 +646,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           ? page.end
           : lyrics.lines[page.lines[lineIdx + 1]].position;
       const nextStart = lyrics.lines[page.lines[lineIdx + 1]].position;
-      return [line, start, end, nextStart] as const;
+      return [line, start, end, nextStart];
     }, [pageIdx, pages, lineIdx, currentFrame, lyrics.lines]);
   const currentLineStartRef = useRef<number | null>();
   currentLineStartRef.current = currentLineStart;
