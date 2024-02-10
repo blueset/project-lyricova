@@ -645,8 +645,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
         lineIdx + 1 === page.lines.length
           ? page.end
           : lyrics.lines[page.lines[lineIdx + 1]].position;
-      const nextStart = lyrics.lines[page.lines[lineIdx + 1]].position;
-      return [line, start, end, nextStart];
+      return [line, start, end, end];
     }, [pageIdx, pages, lineIdx, currentFrame, lyrics.lines]);
   const currentLineStartRef = useRef<number | null>();
   currentLineStartRef.current = currentLineStart;
