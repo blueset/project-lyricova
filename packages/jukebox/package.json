@@ -131,7 +131,7 @@
     "sass": "^1.26.10",
     "seamless-scroll-polyfill": "^2.1.5",
     "sequelize": "^6.29.0",
-    "sequelize-typescript": "^2.1.1",
+    "sequelize-typescript": "^2.1.6",
     "simple-statistics": "^7.3.0",
     "slugify": "^1.4.5",
     "split": "^1.0.1",
