@@ -45,7 +45,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
 export const getStaticPaths: GetStaticPaths = async () => {
   const totalEntries = await sequelize.models.Entry.count();
   const totalPages = Math.ceil(totalEntries / entriesPerPage);
-  const paths = [...Array(totalPages - 1)].map((_, idx) => ({
+  const paths = [...Array(Math.max(totalPages - 1, 0))].map((_, idx) => ({
     params: { page: (idx + 2).toString() },
   }));
   return {
