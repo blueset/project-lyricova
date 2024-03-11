@@ -43,7 +43,7 @@
   "dependencies": {
     "@apollo/client": "^3.7.8",
     "@apollo/server": "^4.9.3",
-    "@applemusic-like-lyrics/react": "^0.0.15",
+    "@applemusic-like-lyrics/react": "^0.1.5",
     "@emotion/react": "^11.10.5",
     "@emotion/server": "^11.10.0",
     "@emotion/styled": "^11.10.5",

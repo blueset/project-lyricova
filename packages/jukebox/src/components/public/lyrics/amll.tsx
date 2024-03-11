@@ -41,7 +41,7 @@ export function AMLLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const playerState = usePlayerState(playerRef);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+   const containerRef = useRef<HTMLDivElement>(null);
 
   const amlLyricsArray: AAMLyricLine[] = useMemo(() => {
     const amlLyricsArray = lyrics.lines.map((line, index, array) => {
@@ -137,6 +137,8 @@ export function AMLLyrics({ lyrics }: Props) {
       <LyricPlayer
         lyricLines={amlLyricsArray}
         currentTime={playbackProgressMs}
+        playing={playerState.state === "playing"}
+        alignAnchor="top"
         alignPosition={0.1}
         onLyricLineClick={(evt) => {
           playerRef.current.currentTime = evt.line.getLine().startTime / 1000;
