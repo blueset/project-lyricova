@@ -21,6 +21,7 @@ const ContainerDiv = styled("div")`
   height: 100%;
   overflow: hidden;
   position: relative;
+  --amll-lyric-player-font-size: 3em;
   > div {
     width: 100%;
     height: 100%;
