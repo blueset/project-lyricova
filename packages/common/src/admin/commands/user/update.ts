@@ -3,8 +3,8 @@ import sequelize from "../../../db";
 import { User } from "../../../models/User";
 import bcrypt from "bcryptjs";
 
-export const command = "add [options]";
-export const desc = "Add a user.";
+export const command = "update [options]";
+export const desc = "Update an user.";
 export const builder = (yargs: yargs.Argv) => {
   return yargs.demandCommand(0, 0, "demand command")
   .options({
@@ -18,54 +18,62 @@ export const builder = (yargs: yargs.Argv) => {
       alias: "p",
       describe: "Password",
       type: "string",
-      demandOption: true,
+      demandOption: false,
     },
     email: {
       alias: "e",
       describe: "Email",
       type: "string",
-      demandOption: true,
+      demandOption: false,
     },
     role: {
       alias: "r",
       describe: "Role",
       type: "string",
       choices: ["admin", "guest"],
-      demandOption: true,
+      demandOption: false,
     },
     "display-name": {
       alias: "d",
       describe: "Display name",
       type: "string",
-      demandOption: true,
+      demandOption: false,
     },
   });
 };
 
 export const handler = async (argv: yargs.Arguments<{
   username: string;
-  password: string;
-  email: string;
-  role: "admin" | "guest";
-  displayName: string;
+  password?: string;
+  email?: string;
+  role?: "admin" | "guest";
+  displayName?: string;
 }>) => {
   const t = await sequelize.transaction();
-  const hashedPassword = bcrypt.hashSync(argv.password, 10);
   try {
-    const user = await User.create(
-      {
-        username: argv.username,
-        password: hashedPassword,
-        email: argv.email,
-        role: argv.role,
-        displayName: argv.displayName,
-      } as User,
-      { transaction: t }
-    );
+    const user = await User.findOne({ where: { username: argv.username } });
+    if (!user) {
+      throw new Error(`User ${argv.username} not found`);
+    }
+    const updates: Partial<User> = {};
+    if (argv.password) {
+      updates.password = bcrypt.hashSync(argv.password, 10);
+    }
+    if (argv.email) {
+      updates.email = argv.email;
+    }
+    if (argv.role) {
+      updates.role = argv.role;
+    }
+    if (argv.displayName) {
+      updates.displayName = argv.displayName;
+    }
+    await user.update(updates, { transaction: t });
     await t.commit();
-    console.log("User created with ID:", user.id);
+    console.log("User updated with ID:", user.id);
   } catch (e) {
     await t.rollback();
+    console.error(e);
     throw e;
   }
 };
