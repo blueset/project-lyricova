@@ -17,7 +17,7 @@ import { ObjectType, Field, Int } from "type-graphql";
 @ObjectType()
 @Table({ modelName: "User" })
 export class User extends Model<User> {
-  @Field((type) => Int)
+  @Field()
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
