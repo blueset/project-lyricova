@@ -106,7 +106,7 @@ const Row = React.memo(
     data: MusicFile[];
     isScrolling: boolean;
   }) => {
-    const item = index == 0 ? null : data[index + 1];
+    const item = index == 0 ? null : data[index - 1];
     const dispatch = useAppDispatch();
     const { user } = useAuthContext();
     const router = useRouter();
@@ -181,13 +181,13 @@ const Row = React.memo(
           primary={
             (isScrolling && item?.trackSortOrder
               ? item?.trackSortOrder
-              : item?.trackName) ?? <em>No title</em>
+              : item?.trackName) || <em>No title</em>
           }
           secondary={
             <>
-              {item?.artistName ?? <em>Various artists</em>}
+              {item?.artistName || <em>Various artists</em>}
               {" / "}
-              {item?.albumName ?? <em>Unknown album</em>}
+              {item?.albumName || <em>Unknown album</em>}
             </>
           }
           primaryTypographyProps={{ noWrap: true }}
