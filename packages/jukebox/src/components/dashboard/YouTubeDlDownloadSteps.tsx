@@ -91,8 +91,8 @@ interface YouTubeDlInfo {
   _filename: string;
   uploader: string;
   thumbnail: string;
-  _duration_raw: number;
-  _duration_hms: string;
+  duration: number;
+  duration_string: string;
   formats: {
     format: string;
     filesize: number;
@@ -338,7 +338,7 @@ export default function YouTubeDlDownloadSteps({
                 <div>
                   <Typography variant="body1">
                     {fetchInfoQueryData.fulltitle} (
-                    {fetchInfoQueryData._duration_hms})
+                    {fetchInfoQueryData.duration_string})
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     {fetchInfoQueryData.uploader}
