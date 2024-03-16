@@ -1,6 +1,9 @@
+import { useRef } from "react";
 import { usePlayerState } from "../../../../frontendUtils/hooks";
 import { LyricsKitLyrics } from "../../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../../AppContext";
+import { LyricsVirtualizer } from "./LyricsVirtualizer";
+import { RowRenderer } from "./RowRenderer";
 
 interface Props {
   lyrics: LyricsKitLyrics;
@@ -9,6 +12,11 @@ interface Props {
 /** Lyricova’s own implementation of scrollable lyrics based on the architecture of AMLL. */
 export function RingollLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
+  const containerRef = useRef<HTMLDivElement>(null);
   const playerState = usePlayerState(playerRef);
-  return <div>RingollLyrics</div>;
+  return (
+    <LyricsVirtualizer rows={lyrics.lines}>
+      {(props) => <RowRenderer key={props.row.position} {...props} />}
+    </LyricsVirtualizer>
+  );
 }

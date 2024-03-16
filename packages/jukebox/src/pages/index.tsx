@@ -30,6 +30,7 @@ import { toggleFullscreen } from "../redux/public/display";
 import { LyricsFullScreenOverlay } from "../components/public/LyricsFullScreenOverlay";
 import { PictureInPictureLyrics } from "../components/public/lyrics/pip";
 import { AMLLyrics } from "../components/public/lyrics/amll";
+import { RingollLyrics } from "../components/public/lyrics/ringoll/ringoll";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
@@ -68,6 +69,7 @@ const MODULE_LIST = {
   "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
   "Ringo": (lyrics: LyricsKitLyrics) => <RingoTranslateLyrics lyrics={lyrics} />,
   "Ringo Sing": (lyrics: LyricsKitLyrics) => <RingoSingLyrics lyrics={lyrics} />,
+  "Ringoll": (lyrics: LyricsKitLyrics) => <RingollLyrics lyrics={lyrics} />,
   "AMLL": (lyrics: LyricsKitLyrics) => <AMLLyrics lyrics={lyrics} />,
   "Karaoke/1/Underline": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} />,
   "Karaoke/1/Cover": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} cover />,
