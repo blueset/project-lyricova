@@ -330,6 +330,7 @@ export default function IndexLayout({ children }: Props) {
               coverUrl={currentSong ? getTrackCoverURL(currentSong) : undefined}
               textureUrl={textureURL}
               playerRef={playerRef}
+              hasLyrics={currentSong?.hasLyrics || false}
             />
             {!isFullscreen && (
               <Box

@@ -13,6 +13,7 @@ import ColorThief from "colorthief";
 import { styled } from "@mui/material";
 import { FBMWaveMethod } from "./fbm-wave";
 import dynamic from "next/dynamic";
+import { usePlayerState } from "../../../frontendUtils/hooks";
 
 const BackgroundRenderNoSSR = dynamic(
   () => import("../compat/amllBackground").then((m) => m.BackgroundRender),
@@ -25,6 +26,7 @@ interface Props {
   coverUrl?: string;
   textureUrl?: string;
   playerRef?: MutableRefObject<HTMLAudioElement>;
+  hasLyrics?: boolean;
 }
 
 const AmLyricsBackgroundCanvas = styled("canvas")`
@@ -41,7 +43,8 @@ const PatternBackground = styled("div")`
   width: 100%;
 `;
 
-export function BackgroundCanvas({ coverUrl, textureUrl }: Props) {
+export function BackgroundCanvas({ coverUrl, textureUrl, playerRef, hasLyrics }: Props) {
+  const playerState = usePlayerState(playerRef);
   if (textureUrl) {
     return (
       <PatternBackground
@@ -52,7 +55,9 @@ export function BackgroundCanvas({ coverUrl, textureUrl }: Props) {
     // return <BackgroundCanvasRender coverUrl={coverUrl} />;
     return (
       <BackgroundRenderNoSSR
-        albumImageUrl={coverUrl}
+        album={coverUrl}
+        playing={playerState?.state === "playing"}
+        hasLyric={hasLyrics}
         style={{
           position: "fixed",
           inset: 0,
