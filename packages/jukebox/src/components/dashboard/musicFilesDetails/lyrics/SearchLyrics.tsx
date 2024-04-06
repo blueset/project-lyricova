@@ -240,6 +240,8 @@ function getBackgroundColor(key: string): string {
       return red[900];
     case "Sp":
       return green[900];
+    case "So":
+      return pink[900];
     default:
       return "secondary.dark";
   }
