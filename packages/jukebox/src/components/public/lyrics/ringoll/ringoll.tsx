@@ -15,7 +15,7 @@ export function RingollLyrics({ lyrics }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerState = usePlayerState(playerRef);
   return (
-    <LyricsVirtualizer rows={lyrics.lines}>
+    <LyricsVirtualizer rows={lyrics.lines} estimatedRowHeight={20}>
       {(props) => <RowRenderer key={props.row.position} {...props} />}
     </LyricsVirtualizer>
   );

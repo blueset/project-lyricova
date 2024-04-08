@@ -294,6 +294,7 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
   return playerState;
 }
 
+/** Use player lyrics state backed by `requireAnimationFrame` */
 export function usePlayerLyricsStateRAF<T>(
   keyframes: PlayerLyricsKeyframe<T>[],
   playerRef: RefObject<HTMLAudioElement>
