@@ -71,7 +71,7 @@ export function LyricsVirtualizer({
 
   const { playerRef } = useAppContext();
   const activeRange = useActiveLyrcsRange(rows, playerRef);
-  const end = activeRange.currentFrame?.data?.lastActiveSegment + 1 ?? 0;
+  const end = (activeRange.currentFrame?.data?.lastActiveSegment ?? -1) + 1;
   const start = activeRange.currentFrame?.data?.activeSegments[0] ?? end;
 
   return (

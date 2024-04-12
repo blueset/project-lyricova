@@ -1,19 +1,16 @@
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
-import type { FuriganaMapping } from "lyricova-common/models/FuriganaMapping";
+import { FuriganaMapping } from "lyricova-common/models/FuriganaMapping";
 import {
   DataGrid,
   GridActionsCellItem,
-  GridColDef,
   GridColumns,
   GridEditInputCell,
-  GridFilterModel,
   GridRenderEditCellParams,
   GridRowId,
   GridRowModel,
   GridRowModes,
   GridRowModesModel,
-  GridValidRowModel,
 } from "@mui/x-data-grid";
 import {
   Box,
@@ -46,6 +43,15 @@ const GET_FURIGANA_MAPPING_QUERY = gql`
       furigana
       segmentedText
       segmentedFurigana
+    }
+  }
+`;
+
+const COMPUTE_FURIGANA_MAPPINGS_QUERY = gql`
+  query ComputeFuriganaMappings($mapping: [FuriganaMappingInput!]!) {
+    computeFuriganaMappings(mapping: $mapping) {
+      segmentedFurigana
+      segmentedText
     }
   }
 `;
@@ -365,7 +371,7 @@ Output:
                     furigana: segmentedFurigana.replaceAll(",", ""),
                   };
                 });
-              const result = await apolloClient.mutate<{
+              await apolloClient.mutate<{
                 updateFuriganaMappings: boolean;
               }>({
                 mutation: UPDATE_FURIGANA_MAPPINGS_MUTATION,
@@ -384,19 +390,35 @@ Output:
           }}
         >
           <DialogTitle id="alert-dialog-title">
-            Bulk update with GPT4
+            Batch update
           </DialogTitle>
           <DialogContent dividers>
             <Stack spacing={2}>
-              <DialogContentText id="alert-dialog-description">
-                Batch update with GPT4 prompt.
+              <Button variant="outlined" onClick={async () => {
+                const result = await apolloClient.query<{computeFuriganaMappings: FuriganaMapping[]}>({
+                  query: COMPUTE_FURIGANA_MAPPINGS_QUERY,
+                  variables: {
+                    mapping: data.furiganaMappings.filter((i) => !i.segmentedText || !i.segmentedFurigana).map(i => ({text: i.text, furigana: i.furigana}))
+                  }
+                });
+                if (result.data) {
+                  setBulkUpdateInput(result.data.computeFuriganaMappings.map(i => `${i.segmentedText};${i.segmentedFurigana}`).join("\n"));
+                }
+              }}>Predict mapping with dictionary</Button>
+              <DialogContentText>
+                <details>
+                  <summary>
+                      Batch update with GPT4 prompt.
+                  </summary>
+                  <TextField
+                    label="Prompt"
+                    variant="standard"
+                    multiline
+                    value={prompt}
+                    sx={{width: "100%"}}
+                    />
+                </details>
               </DialogContentText>
-              <TextField
-                label="Prompt"
-                variant="standard"
-                multiline
-                value={prompt}
-              />
               <TextField
                 label="Outcome"
                 multiline

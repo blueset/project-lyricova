@@ -15,6 +15,7 @@ import {
 } from "lyricova-common/utils/transliterate";
 import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
 import { FuriganaMapping } from "lyricova-common/models/FuriganaMapping";
+import { convertMonoruby } from "../utils/monoruby";
 
 @ObjectType({ description: "Describes the animation sequence for a word." })
 export class AnimatedWord {
@@ -171,6 +172,21 @@ export class TransliterationResolver {
   @Query((returns) => [FuriganaMapping])
   furiganaMappings(): Promise<FuriganaMapping[]> {
     return FuriganaMapping.findAll();
+  }
+
+  @Query((returns) => [FuriganaMapping])
+  computeFuriganaMappings(
+    @Arg("mapping", (type) => [FuriganaMappingInput]) input: [FuriganaMappingInput]
+  ): Partial<FuriganaMapping>[] {
+    return input.map(({text, furigana}) => {
+      const [textGroups, furiganaGroups] = convertMonoruby(text, furigana);
+      return {
+        text,
+        furigana,
+        segmentedText: textGroups.join(","),
+        segmentedFurigana: furiganaGroups.join(","),
+      };
+    });
   }
 
   @Authorized("ADMIN")

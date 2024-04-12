@@ -546,6 +546,7 @@ type Query {
   artists: [Artist!]!
   artistsHasFiles(types: [String!]! = ["Unknown", "Circle", "Label", "Producer", "Animator", "Illustrator", "Lyricist", "Vocaloid", "UTAU", "CeVIO", "OtherVoiceSynthesizer", "OtherVocalist", "OtherGroup", "OtherIndividual", "Utaite", "Band", "Vocalist", "Character", "SynthesizerV", "CoverArtist", "NEUTRINO", "VoiSona", "NewType", "Voiceroid"]): [Artist!]!
   artistsWithFilesNeedEnrol: [Int!]!
+  computeFuriganaMappings(mapping: [FuriganaMappingInput!]!): [FuriganaMapping!]!
   currentCredentials: [UserPublicKeyCredential!]!
   currentUser: User
   dashboardStats: DashboardStats!

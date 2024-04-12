@@ -26,7 +26,7 @@ function patchReading(readings: string[], base: string): string[] {
         if (hira.match(/[つくち]$/)) {
             result.push(hira.replace(/[つくち]$/, "っ"));
         }
-        if (hira.match(/^[かきくけこさしすせそたちつてと]/)) {
+        if (hira.match(/^[かきくけこさしすせそたちつてとはひふへほ]/)) {
             result.push(hira.replace(/^([かきくけこさしすせそたちつてとはひふへほ])/, (m: keyof typeof dakuon) => dakuon[m]));
         }
         if (hira.match(/^[はひふへほ]/)) {
