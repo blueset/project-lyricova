@@ -102,7 +102,7 @@ function furiganaSeparator(
   });
 }
 
-type FuriganaDatabaseCache = Record<string, Record<string, [string, string][]>>;
+type FuriganaDatabaseCache = Record<string, Record<string, ([string, string] | string)[]>>;
 /** Apply per-char furigana based on database info. */
 async function applyFuriganaMapping(
   v: string | [string, string],
@@ -127,10 +127,13 @@ async function applyFuriganaMapping(
   if (segTexts.length !== segFurigana.length) {
     return [v];
   }
-  const result = segTexts.map<[string, string]>((text, idx) => [
-    text,
-    segFurigana[idx],
-  ]);
+  const result = segTexts.map<[string, string] | string>((text, idx) => 
+    (kanaToHira(text) === segFurigana[idx] || !segFurigana[idx]) ? 
+    text : [
+      text,
+      segFurigana[idx],
+    ]
+  );
   if (cache) {
     cache[text] = cache[text] ?? {};
     cache[text][furigana] = result;
