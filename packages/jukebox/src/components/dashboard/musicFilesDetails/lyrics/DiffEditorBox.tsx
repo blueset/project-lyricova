@@ -106,12 +106,13 @@ export default function DiffEditorTextarea({
   }, [value]);
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2} sx={{height: "100%"}}>
       <Stack
         direction="row"
         spacing={2}
         alignItems="center"
         justifyContent="space-between"
+        sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "background.paper", backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))" }}
       >
         <Typography variant="overline" display="inline">
           {title}
