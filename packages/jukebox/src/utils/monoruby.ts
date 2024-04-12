@@ -1,6 +1,10 @@
 import data from "./kanjidic2.mod.min.json";
 import { kanaToHira } from "lyricova-common/utils/kanaUtils";
 
+// kanjidic2.mod.min.json extracted from KANJIDIC project
+// http://www.edrdg.org/wiki/index.php/KANJIDIC_Project
+// Licensed CC BY-SA 4.0
+
 const mapping: { [key: string]: string[] } = data;
 
 const dakuon = {
