@@ -1,17 +1,16 @@
 import React, {
-  useCallback,
-  useLayoutEffect,
   useRef,
-  useState,
 } from "react";
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
 import { useActiveLyrcsRange } from "./useActiveLyricsRange";
 import { useAppContext } from "../../AppContext";
+import { useLyricsVirtualizer } from "./useLyricsVirtualizer";
 
 export interface RowRendererProps<T> {
   row: T;
   isActive?: boolean;
   ref?: React.Ref<HTMLDivElement>;
+  top: number;
 }
 
 export interface LyricsVirtualizerProps<T> {
@@ -31,55 +30,33 @@ export function LyricsVirtualizer({
   alignAnchor = 0.5,
 }: LyricsVirtualizerProps<LyricsKitLyricsLine>) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const rowHeightCache = useRef<number[]>([]);
-  const elArrayRef = useRef<HTMLElement[]>([]);
-  const sizeUpdateCount = useRef(0);
-  const [siteUpdaateCountState, setSiteUpdateCountState] = useState(0);
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-
-  const rowRefHandler = useCallback(
-    (index: number) => (el: HTMLElement) => {
-      if (el) {
-        elArrayRef.current[index] = el;
-        const rect = el.getBoundingClientRect();
-        if (rowHeightCache.current[index] !== rect.height) {
-          sizeUpdateCount.current++;
-        }
-        rowHeightCache.current[index] = rect.height;
-      }
-    },
-    []
-  );
-
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    setContainerSize({ width: rect.width, height: rect.height });
-
-    const observer = new ResizeObserver((entries) => {
-      const rect = entries[0].contentRect;
-      setContainerSize({ width: rect.width, height: rect.height });
-    });
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, []);
-
-  if (sizeUpdateCount.current !== siteUpdaateCountState) {
-    setSiteUpdateCountState(sizeUpdateCount.current);
-  }
 
   const { playerRef } = useAppContext();
   const activeRange = useActiveLyrcsRange(rows, playerRef);
-  const end = (activeRange.currentFrame?.data?.lastActiveSegment ?? -1) + 1;
-  const start = activeRange.currentFrame?.data?.activeSegments[0] ?? end;
+  const endRow = (activeRange.currentFrame?.data?.lastActiveSegment ?? -1) + 1;
+  const startRow = activeRange.currentFrame?.data?.activeSegments[0] ?? (endRow - 1);
+  const renderedRows = useLyricsVirtualizer({
+    containerRef,
+    startRow,
+    endRow,
+    align,
+    alignAnchor,
+    rowRenderer: ({index, top, rowRefHandler}) => rowRenderer({
+      row: rows[index],
+      ref: rowRefHandler,
+      top: top,
+      isActive: activeRange.currentFrame?.data?.activeSegments.includes(index),
+    }),
+    estimatedRowHeight,
+    rowCount: rows.length,
+  });
 
   return (
     <div
-      style={{ width: "100%", height: "100%", position: "relative" }}
+      style={{ width: "100%", height: "100%", position: "relative", overflow: "clip" }}
       ref={containerRef}
     >
-      {activeRange.currentFrame?.data?.activeSegments.join(", ")} {"->"} ({end})
+      {activeRange.currentFrame?.data?.activeSegments.join(", ")} {"->"} ({endRow})
       <div
         style={{
           position: "absolute",
@@ -91,15 +68,7 @@ export function LyricsVirtualizer({
       >
         <div>a</div>
       </div>
-      {rows.slice(start, end).map((r, idx) =>
-        rowRenderer({
-          row: r,
-          ref: rowRefHandler(idx + start),
-          isActive: activeRange.currentFrame?.data?.activeSegments.includes(
-            idx + start
-          ),
-        })
-      )}
+      {renderedRows}
     </div>
   );
 }
