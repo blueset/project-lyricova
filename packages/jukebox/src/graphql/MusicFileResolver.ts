@@ -196,7 +196,7 @@ export class MusicFileResolver {
 
     // Remove records from database for removed files
     if (toDelete.size && !dryRun) {
-      await MusicFile.destroy({ where: { path: { [Op.in]: [...toDelete] } } });
+      await MusicFile.destroy({ where: { path: { [Op.in]: [...toDelete].map(p => p.replace(MUSIC_FILES_PATH, "")) } } });
     }
 
     console.log("entries deleted.");
