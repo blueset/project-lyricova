@@ -117,11 +117,11 @@ const Row = React.memo(
 
     if (item === null) {
       const playAll = () => {
-        dispatch(loadTracks(data.slice(1)));
+        dispatch(loadTracks(data.slice()));
         dispatch(playTrack({ track: 0, playNow: true }));
       };
       const shuffleAll = () => {
-        dispatch(loadTracks(data.slice(1)));
+        dispatch(loadTracks(data.slice()));
         dispatch(toggleShuffle());
         dispatch(playTrack({ track: 0, playNow: true }));
       };
@@ -150,7 +150,7 @@ const Row = React.memo(
       popupState.close();
     };
     const handlePlayInList = () => {
-      dispatch(loadTracks(data.slice(1)));
+      dispatch(loadTracks(data.slice()));
       dispatch(playTrack({ track: index, playNow: true }));
       popupState.close();
     };
