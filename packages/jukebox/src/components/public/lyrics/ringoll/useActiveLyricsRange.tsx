@@ -17,7 +17,8 @@ interface LyricsSegments {
 
 interface LyricsKeyframeInfo {
   activeSegments: number[];
-  lastActiveSegment: number;
+  rangeStart: number;
+  rangeEnd: number;
 }
 
 /** Convert lyrics to time segments, and sort by start the end time. */
@@ -62,29 +63,37 @@ export function segmentsToKeyframes(
       const lastKeyFrame = keyframes.at(-1);
       if (action === START) {
         lastKeyFrame.data.activeSegments.push(lineIndex);
-        lastKeyFrame.data.lastActiveSegment = lineIndex;
+        lastKeyFrame.data.rangeEnd = lineIndex + 1;
       } else {
         lastKeyFrame.data.activeSegments =
           lastKeyFrame.data.activeSegments.filter(
             (index) => index !== lineIndex
           );
+        lastKeyFrame.data.rangeStart = Math.max(lastKeyFrame.data.rangeStart, lastKeyFrame.data.activeSegments?.[0] ?? (lineIndex + 1));
       }
     } else {
       let lastKeyframeIndexes = keyframes.length
         ? [...keyframes.at(-1).data.activeSegments]
         : [];
+      let rangeStart = keyframes.at(-1)?.data.rangeStart ?? 0;
+      let rangeEnd = keyframes.at(-1)?.data.rangeEnd ?? 1;
       if (action === START) {
         lastKeyframeIndexes.push(lineIndex);
+        rangeStart = Math.max(rangeStart, lastKeyframeIndexes[0]);
+        rangeEnd = Math.max(rangeEnd, lineIndex + 1);
       } else {
         lastKeyframeIndexes = lastKeyframeIndexes.filter(
           (index) => index !== lineIndex
         );
+        rangeStart = Math.max(rangeStart, (lastKeyframeIndexes[0] ?? lineIndex + 1));
+        rangeEnd = Math.max(rangeEnd, (lastKeyframeIndexes.at(-1) ?? 0) + 1);
       }
       keyframes.push({
         start: time,
         data: {
           activeSegments: lastKeyframeIndexes,
-          lastActiveSegment: lineIndex,
+          rangeStart,
+          rangeEnd,
         },
       });
     }

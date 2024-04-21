@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { RefObject, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useContainerSize } from "./useContainerSize";
 import { useRowMeasurement } from "./useRowMeasurement";
 import { useScrollOffset } from "./useScrollOffset";
@@ -29,7 +29,9 @@ export function useLyricsVirtualizer({
   rowCount: number;
   rowRenderer: (props: VirtualizerRowRenderProps) => React.ReactNode;
 }) {
-  const renderedRowsRef = useRef<React.ReactNode[]>([]);
+  // const renderedRowsRef = useRef<React.ReactNode[]>([]);
+  startRow = Math.max(0, startRow);
+  endRow = Math.min(rowCount + 1, endRow);
 
   const containerSize = useContainerSize({ containerRef });
   const { rowRefHandler, rowAccumulateHeight } = useRowMeasurement({
@@ -50,10 +52,10 @@ export function useLyricsVirtualizer({
     containerSize,
   });
 
-  useEffect(() => {
-    renderedRowsRef.current = [];
+  return useMemo(() => {
+    const renderedRows = [];
     for (let i = renderStartRow; i < renderEndRow; i++) {
-      renderedRowsRef.current.push(
+      renderedRows.push(
         rowRenderer({
           index: i,
           top: rowAccumulateHeight[i] - scrollOffset,
@@ -61,7 +63,8 @@ export function useLyricsVirtualizer({
         })
       );
     }
+    return renderedRows;
   }, [renderStartRow, renderEndRow, rowAccumulateHeight, scrollOffset, rowRenderer, rowRefHandler]);
 
-  return renderedRowsRef.current;
+  // return renderedRowsRef.current;
 }

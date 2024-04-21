@@ -41,7 +41,6 @@ export function useRenderRange({
   const endRow = binarySearch(rowAccumulateHeight, scrollOffset + containerSize.height, /* isEnd */ true);
   const renderStartRow = Math.max(0, startRow - BUFFER_ROWS);
   const renderEndRow = Math.min(rowAccumulateHeight.length - 1, endRow + BUFFER_ROWS);
-
   return {
     renderStartRow,
     renderEndRow,

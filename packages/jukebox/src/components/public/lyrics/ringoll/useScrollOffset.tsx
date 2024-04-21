@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function useScrollOffset({
   containerSize,
@@ -15,9 +15,8 @@ export function useScrollOffset({
   align: "start" | "center" | "end";
   alignAnchor: number;
 }) {
-  const [scrollOffset, setScrollOffset] = useState(0);
 
-  useEffect(() => {
+  const scrollOffset = useMemo(() => {
     const startOffset = rowAccumulateHeight[startRow];
     const endOffset = rowAccumulateHeight[endRow];
     const containerHeight = containerSize.height;
@@ -32,7 +31,7 @@ export function useScrollOffset({
       newScrollOffset = endOffset - anchorOffset;
     }
 
-    setScrollOffset(newScrollOffset);
+    return Math.round(newScrollOffset);
   }, [rowAccumulateHeight, align, alignAnchor, containerSize.height, endRow, startRow]);
 
   return scrollOffset;

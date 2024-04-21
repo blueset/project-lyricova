@@ -33,8 +33,9 @@ export function LyricsVirtualizer({
 
   const { playerRef } = useAppContext();
   const activeRange = useActiveLyrcsRange(rows, playerRef);
-  const endRow = (activeRange.currentFrame?.data?.lastActiveSegment ?? -1) + 1;
-  const startRow = activeRange.currentFrame?.data?.activeSegments[0] ?? (endRow - 1);
+  const endRow = activeRange.currentFrame?.data?.rangeEnd ?? 1;
+  const startRow = activeRange.currentFrame?.data?.rangeStart ?? 0;
+  // console.log("LyricsVirtualizer", startRow, endRow, activeRange.currentFrame?.data?.activeSegments.join(", "));
   const renderedRows = useLyricsVirtualizer({
     containerRef,
     startRow,

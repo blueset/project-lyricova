@@ -1,4 +1,5 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useReducer } from "react";
+import _ from "lodash";
 
 export function useRowMeasurement({
   estimatedRowHeight,
@@ -13,6 +14,9 @@ export function useRowMeasurement({
   const sizeUpdateCount = useRef(0);
   const [siteUpdaateCountState, setSiteUpdateCountState] = useState(0);
 
+  const forceUpdate = useReducer(() => ({}), {})[1];
+  const debouncedForceUpdate = useCallback(_.debounce(forceUpdate, 100), [forceUpdate]);
+
   const rowRefHandler = useCallback(
     (index: number) => (el: HTMLElement) => {
       if (el) {
@@ -20,19 +24,20 @@ export function useRowMeasurement({
         const rect = el.getBoundingClientRect();
         if (rowHeightCache.current[index] !== rect.height) {
           sizeUpdateCount.current++;
+          rowHeightCache.current[index] = rect.height;
+          debouncedForceUpdate();
         }
-        rowHeightCache.current[index] = rect.height;
       }
     },
-    []
+    [debouncedForceUpdate]
   );
 
   if (sizeUpdateCount.current !== siteUpdaateCountState) {
-    setSiteUpdateCountState(sizeUpdateCount.current);
     rowAccumulateHeightCache.current = rowHeightCache.current.reduce((acc, height) => {
       acc.push(acc[acc.length - 1] + height);
       return acc;
     }, [0]);
+    setSiteUpdateCountState(sizeUpdateCount.current);
   }
 
   return {
