@@ -85,7 +85,7 @@ export function segmentsToKeyframes(
         lastKeyframeIndexes = lastKeyframeIndexes.filter(
           (index) => index !== lineIndex
         );
-        rangeStart = Math.max(rangeStart, (lastKeyframeIndexes[0] ?? lineIndex + 1));
+        // rangeStart = Math.max(rangeStart, (lastKeyframeIndexes[0] ?? lineIndex + 1));
         rangeEnd = Math.max(rangeEnd, (lastKeyframeIndexes.at(-1) ?? 0) + 1, rangeStart + 1);
       }
       keyframes.push({

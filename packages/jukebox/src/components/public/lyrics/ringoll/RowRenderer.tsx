@@ -1,4 +1,5 @@
 import { forwardRef, memo, useEffect, useRef } from "react";
+import { useSpring, useSpringRef, animated, config } from "@react-spring/web";
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
 import { RowRendererProps } from "./LyricsVirtualizer";
 import { styled } from "@mui/material/styles";
@@ -32,27 +33,39 @@ function calcIfInBetween(
   return `${outside}${unit} - ${baseExpression} * ${outside - inside}${unit}`;
 }
 
-const RowContainer = styled("div")((props: { start: number; end: number }) => ({
-  // opacity: `calc(${calcIfInBetween(
-  //   "lyrics-time",
-  //   props.start - 0.5,
-  //   props.end + 0.5,
-  //   1,
-  //   0.5
-  // )})`,
-  opacity: `calc(1 - sign(var(--lyrics-time) - ${props.end}) * 0.5)`,
-  position: "absolute",
-  fontSize: "2em",
-  willChange: "translate, opacity",
-  transition: "opacity 0.2s, translate 0.5s ease-out",
-  minHeight: "0.5em",
-  paddingBlockEnd: "1rem",
-}));
+const RowContainer = styled(animated.div)(
+  (props: { start: number; end: number }) => ({
+    // const RowContainer = styled("div")((props: { start: number; end: number }) => ({
+    // opacity: `calc(${calcIfInBetween(
+    //   "lyrics-time",
+    //   props.start - 0.5,
+    //   props.end + 0.5,
+    //   1,
+    //   0.5
+    // )})`,
+    opacity: `calc(1 - sign(var(--lyrics-time) - ${props.end}) * 0.5)`,
+    position: "absolute",
+    fontSize: "2em",
+    willChange: "translate, opacity",
+    transition: "opacity 0.2s, translate 0.5s ease-out",
+    minHeight: "0.5em",
+    paddingBlockEnd: "1rem",
+  })
+);
 
 const InnerRowRenderer = forwardRef<
   HTMLDivElement,
   RowRendererProps<LyricsKitLyricsLine>
 >(({ row, top, absoluteIndex }, ref) => {
+  const [springs, api] = useSpring(() => ({
+    from: { y: top },
+    config: {mass: 0.85, friction: 15, tension: 100},
+  }));
+
+  useEffect(() => {
+    api.start({ to: { y: top }, delay: Math.max(0, absoluteIndex) * 30 });
+  }, [absoluteIndex, api, top]);
+
   return (
     <RowContainer
       ref={ref}
@@ -63,8 +76,9 @@ const InnerRowRenderer = forwardRef<
           : row.position + 9999) * 1000
       }
       style={{
-         translate: `0 ${top}px`, 
-        // transitionDelay: `${Math.max(0, absoluteIndex) * 0.02}s` 
+        // translate: `0 ${top}px`,
+        // transitionDelay: `${Math.max(0, absoluteIndex) * 0.02}s`,
+        ...springs,
       }}
     >
       {/* {row.content} */}
