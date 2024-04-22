@@ -6,6 +6,7 @@ import { useRenderRange } from "./useRenderRange";
 
 export interface VirtualizerRowRenderProps {
   index: number;
+  absoluteIndex: number;
   top: number;
   rowRefHandler: (el: HTMLElement) => void;
 }
@@ -58,6 +59,7 @@ export function useLyricsVirtualizer({
       renderedRows.push(
         rowRenderer({
           index: i,
+          absoluteIndex: i - startRow,
           top: rowAccumulateHeight[i] - scrollOffset,
           rowRefHandler: rowRefHandler(i),
         })

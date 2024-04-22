@@ -86,7 +86,7 @@ export function segmentsToKeyframes(
           (index) => index !== lineIndex
         );
         rangeStart = Math.max(rangeStart, (lastKeyframeIndexes[0] ?? lineIndex + 1));
-        rangeEnd = Math.max(rangeEnd, (lastKeyframeIndexes.at(-1) ?? 0) + 1);
+        rangeEnd = Math.max(rangeEnd, (lastKeyframeIndexes.at(-1) ?? 0) + 1, rangeStart + 1);
       }
       keyframes.push({
         start: time,
@@ -112,5 +112,7 @@ export function useActiveLyrcsRange(
     console.log("segments:", segments, ", keyframes:", keyframes);
     return keyframes;
   }, [lines]);
-  return usePlayerLyricsState(keyframes, playerRef);
+  const result = usePlayerLyricsState(keyframes, playerRef);
+  // console.log("useActiveLyrcsRange result:", result.currentFrame?.data?.activeSegments, ", rangeStart:", result.currentFrame?.data?.rangeStart, ", rangeEnd:", result.currentFrame?.data?.rangeEnd);
+  return result;
 }

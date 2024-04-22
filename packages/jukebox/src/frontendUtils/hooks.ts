@@ -294,19 +294,75 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
   return playerState;
 }
 
+export function usePlayerStateRAF(
+  playerRef: RefObject<HTMLAudioElement>,
+  callback: (time: number, state: "playing" | "paused") => void
+) {
+  const playerState = usePlayerState(playerRef);
+  const playerStateRef = useRef<PlayerState>();
+  playerStateRef.current = playerState;
+
+  const frameCallbackRef = useRef<number>();
+  
+  // Added to prevent operation on unmounted components
+  const thisLifespan = useRef<boolean>();
+
+  // Advance a frame when the current frame ends
+  const onFrame = useCallback(
+    (timestamp: number) => {
+      // Out of current lifespan, stop.
+      if (!thisLifespan.current) return;
+
+      const playerState = playerStateRef.current;
+
+      let time;
+      if (playerState.state === "paused") {
+        time = playerState.progress;
+      } else {
+        time = (timestamp - playerState.startingAt) / 1000;
+      }
+
+      callback(time, playerState.state);
+
+      if (playerState.state === "playing") {
+        frameCallbackRef.current = requestAnimationFrame(onFrame);
+      }
+    },
+    [callback]
+  );
+
+  // Search for the frame for current time
+  const restartFrameCallback = useCallback(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    // Clear existing loop.
+    if (frameCallbackRef.current !== null) {
+      cancelAnimationFrame(frameCallbackRef.current);
+    }
+
+    // Start a new loop.
+    frameCallbackRef.current = requestAnimationFrame(onFrame);
+  }, [onFrame, playerRef]);
+
+  useEffect(() => restartFrameCallback(), [playerState, restartFrameCallback]);
+
+  // Update this lifespan
+  useEffect(() => {
+    thisLifespan.current = true;
+
+    return () => {
+      thisLifespan.current = false;
+    };
+  }, [playerRef]);
+}
+
 /** Use player lyrics state backed by `requireAnimationFrame` */
 export function usePlayerLyricsStateRAF<T>(
   keyframes: PlayerLyricsKeyframe<T>[],
   playerRef: RefObject<HTMLAudioElement>
 ): PlayerLyricsState<T> {
   const playerState = usePlayerState(playerRef);
-  const playerStateRef = useRef<PlayerState>();
-  playerStateRef.current = playerState;
-
-  const frameCallbackRef = useRef<number>();
-
-  // Added to prevent operation on unmounted components
-  const thisLifespan = useRef<boolean>();
 
   /**
    * Current frame can be anything in [-1, keyframe.length - 1].
@@ -342,58 +398,29 @@ export function usePlayerLyricsStateRAF<T>(
 
   // Advance a frame when the current frame ends
   const onFrame = useCallback(
-    (timestamp: number) => {
-      // Out of current lifespan, stop.
-      if (!thisLifespan.current) return;
-
-      const playerState = playerStateRef.current;
+    (time: number) => {
       const currentFrameId = currentFrameIdRef.current;
       const end = endTimes[currentFrameId + 1];
-
-      let time;
-      if (playerState.state === "paused") {
-        time = playerState.progress;
-      } else {
-        time = (timestamp - playerState.startingAt) / 1000;
-      }
 
       if (time > end) {
         setCurrentFrameId(currentFrameId + 1);
       }
-
-      if (playerState.state === "playing") {
-        frameCallbackRef.current = requestAnimationFrame(onFrame);
-      }
     },
     [endTimes, setCurrentFrameId]
   );
+
+  usePlayerStateRAF(playerRef, onFrame);
 
   // Search for the frame for current time
   const restartFrameCallback = useCallback(() => {
     const player = playerRef.current;
     if (!player) return;
 
-    // Clear existing loop.
-    if (frameCallbackRef.current !== null) {
-      cancelAnimationFrame(frameCallbackRef.current);
-    }
     // Find current frame
     setCurrentFrameId(_.sortedLastIndex(startTimes, player.currentTime) - 1);
-
-    // Start a new loop.
-    frameCallbackRef.current = requestAnimationFrame(onFrame);
-  }, [onFrame, playerRef, setCurrentFrameId, startTimes]);
+  }, [playerRef, setCurrentFrameId, startTimes]);
 
   useEffect(() => restartFrameCallback(), [playerState, restartFrameCallback]);
-
-  // Update this lifespan
-  useEffect(() => {
-    thisLifespan.current = true;
-
-    return () => {
-      thisLifespan.current = false;
-    };
-  }, [playerRef]);
 
   return {
     playerState,
@@ -404,6 +431,115 @@ export function usePlayerLyricsStateRAF<T>(
     endTimes,
   };
 }
+// export function usePlayerLyricsStateRAF<T>(
+//   keyframes: PlayerLyricsKeyframe<T>[],
+//   playerRef: RefObject<HTMLAudioElement>
+// ): PlayerLyricsState<T> {
+//   const playerState = usePlayerState(playerRef);
+//   const playerStateRef = useRef<PlayerState>();
+//   playerStateRef.current = playerState;
+
+//   const frameCallbackRef = useRef<number>();
+
+//   // Added to prevent operation on unmounted components
+//   const thisLifespan = useRef<boolean>();
+
+//   /**
+//    * Current frame can be anything in [-1, keyframe.length - 1].
+//    * -1 means before the first frame starts. Final frame lasts forever.
+//    */
+//   const [currentFrameId, setCurrentFrameId] = useNamedState(
+//     -1,
+//     "currentFrameId"
+//   );
+//   const currentFrameIdRef = useRef<number>();
+//   currentFrameIdRef.current = currentFrameId;
+
+//   /**
+//    * `endTimes[i + 1]` is when frame `i` ends, in seconds.
+//    * Last value is the end of the track.
+//    */
+//   const endTimes = useMemo(() => {
+//     const endTimes = [];
+//     keyframes.forEach((v, idx) => {
+//       endTimes[idx] = v.start;
+//     });
+
+//     if (playerRef.current)
+//       endTimes[keyframes.length] = playerRef.current.duration;
+//     else if (keyframes.length > 0)
+//       endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
+//     else endTimes[keyframes.length] = 0;
+
+//     return endTimes;
+//   }, [keyframes, playerRef]);
+
+//   const startTimes = useMemo(() => keyframes.map((v) => v.start), [keyframes]);
+
+//   // Advance a frame when the current frame ends
+//   const onFrame = useCallback(
+//     (timestamp: number) => {
+//       // Out of current lifespan, stop.
+//       if (!thisLifespan.current) return;
+
+//       const playerState = playerStateRef.current;
+//       const currentFrameId = currentFrameIdRef.current;
+//       const end = endTimes[currentFrameId + 1];
+
+//       let time;
+//       if (playerState.state === "paused") {
+//         time = playerState.progress;
+//       } else {
+//         time = (timestamp - playerState.startingAt) / 1000;
+//       }
+
+//       if (time > end) {
+//         setCurrentFrameId(currentFrameId + 1);
+//       }
+
+//       if (playerState.state === "playing") {
+//         frameCallbackRef.current = requestAnimationFrame(onFrame);
+//       }
+//     },
+//     [endTimes, setCurrentFrameId]
+//   );
+
+//   // Search for the frame for current time
+//   const restartFrameCallback = useCallback(() => {
+//     const player = playerRef.current;
+//     if (!player) return;
+
+//     // Clear existing loop.
+//     if (frameCallbackRef.current !== null) {
+//       cancelAnimationFrame(frameCallbackRef.current);
+//     }
+//     // Find current frame
+//     setCurrentFrameId(_.sortedLastIndex(startTimes, player.currentTime) - 1);
+
+//     // Start a new loop.
+//     frameCallbackRef.current = requestAnimationFrame(onFrame);
+//   }, [onFrame, playerRef, setCurrentFrameId, startTimes]);
+
+//   useEffect(() => restartFrameCallback(), [playerState, restartFrameCallback]);
+
+//   // Update this lifespan
+//   useEffect(() => {
+//     thisLifespan.current = true;
+
+//     return () => {
+//       thisLifespan.current = false;
+//     };
+//   }, [playerRef]);
+
+//   return {
+//     playerState,
+//     currentFrameId,
+//     currentFrame: currentFrameId >= 0 ? keyframes[currentFrameId] : null,
+//     endTime: endTimes[currentFrameId + 1],
+//     startTimes,
+//     endTimes,
+//   };
+// }
 
 /** Refactor usePlayerLyricsState using WebVTT Cue callbacks. */
 export function usePlayerLyricsState<T>(

@@ -1,16 +1,19 @@
 import React, {
+  useCallback,
   useRef,
 } from "react";
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
 import { useActiveLyrcsRange } from "./useActiveLyricsRange";
 import { useAppContext } from "../../AppContext";
-import { useLyricsVirtualizer } from "./useLyricsVirtualizer";
+import { VirtualizerRowRenderProps, useLyricsVirtualizer } from "./useLyricsVirtualizer";
+import { usePlayerStateRAF } from "../../../../frontendUtils/hooks";
 
 export interface RowRendererProps<T> {
   row: T;
   isActive?: boolean;
   ref?: React.Ref<HTMLDivElement>;
   top: number;
+  absoluteIndex: number;
 }
 
 export interface LyricsVirtualizerProps<T> {
@@ -20,6 +23,7 @@ export interface LyricsVirtualizerProps<T> {
   align?: "start" | "center" | "end";
   /** Align anchor, between 0 and 1 inclusive. */
   alignAnchor?: number;
+  containerAs?: React.ElementType;
 }
 
 export function LyricsVirtualizer({
@@ -28,6 +32,7 @@ export function LyricsVirtualizer({
   estimatedRowHeight = 20,
   align = "center",
   alignAnchor = 0.5,
+  containerAs: ContainerAs = "div",
 }: LyricsVirtualizerProps<LyricsKitLyricsLine>) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -35,41 +40,40 @@ export function LyricsVirtualizer({
   const activeRange = useActiveLyrcsRange(rows, playerRef);
   const endRow = activeRange.currentFrame?.data?.rangeEnd ?? 1;
   const startRow = activeRange.currentFrame?.data?.rangeStart ?? 0;
-  // console.log("LyricsVirtualizer", startRow, endRow, activeRange.currentFrame?.data?.activeSegments.join(", "));
+  const activeSegmentsRef = useRef<number[]>([]);
+  activeSegmentsRef.current = activeRange.currentFrame?.data?.activeSegments ?? [];
+
+  const virtualizerRowRender = useCallback(({index, absoluteIndex, top, rowRefHandler}: VirtualizerRowRenderProps) => rowRenderer({
+    row: rows[index],
+    ref: rowRefHandler,
+    top,
+    absoluteIndex,
+  }), [rowRenderer, rows]);
+
   const renderedRows = useLyricsVirtualizer({
     containerRef,
     startRow,
     endRow,
     align,
     alignAnchor,
-    rowRenderer: ({index, top, rowRefHandler}) => rowRenderer({
-      row: rows[index],
-      ref: rowRefHandler,
-      top: top,
-      isActive: activeRange.currentFrame?.data?.activeSegments.includes(index),
-    }),
+    rowRenderer: virtualizerRowRender,
     estimatedRowHeight,
     rowCount: rows.length,
   });
 
+  const frameCallback = useCallback((time: number) => {
+    if (containerRef.current) {
+      containerRef.current.style.setProperty("--lyrics-time", `${Math.round(time * 1000)}`);
+    }
+  }, []);
+
+  usePlayerStateRAF(playerRef, frameCallback);
+
   return (
-    <div
-      style={{ width: "100%", height: "100%", position: "relative", overflow: "clip" }}
+    <ContainerAs
       ref={containerRef}
     >
-      {activeRange.currentFrame?.data?.activeSegments.join(", ")} {"->"} ({endRow})
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          right: 0,
-          visibility: "hidden",
-          pointerEvents: "none",
-        }}
-      >
-        <div>a</div>
-      </div>
       {renderedRows}
-    </div>
+    </ContainerAs>
   );
 }

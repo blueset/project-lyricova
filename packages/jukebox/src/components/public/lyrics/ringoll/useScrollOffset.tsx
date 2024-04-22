@@ -15,8 +15,9 @@ export function useScrollOffset({
   align: "start" | "center" | "end";
   alignAnchor: number;
 }) {
-
+  
   const scrollOffset = useMemo(() => {
+    // console.log("useScrollOffset, containerSize:", containerSize);
     const startOffset = rowAccumulateHeight[startRow];
     const endOffset = rowAccumulateHeight[endRow];
     const containerHeight = containerSize.height;
