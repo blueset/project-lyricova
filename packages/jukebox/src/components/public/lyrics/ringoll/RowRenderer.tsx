@@ -1,10 +1,9 @@
-import { forwardRef, memo, useEffect, useRef } from "react";
-import { useSpring, useSpringRef, animated, config } from "@react-spring/web";
+import { forwardRef, memo, useEffect } from "react";
+import { useSpring, animated } from "@react-spring/web";
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
 import { RowRendererProps } from "./LyricsVirtualizer";
 import { styled } from "@mui/material/styles";
 import { LineRenderer } from "./LineRenderer";
-import { filter } from "lodash";
 
 const RowContainer = styled(animated.div)(({
   position: "absolute",
@@ -12,10 +11,10 @@ const RowContainer = styled(animated.div)(({
   willChange: "translate, opacity, filter",
   minHeight: "0.5em",
   maxWidth: "calc(100% - 4rem)",
-  padding: "1rem 2rem",
+  padding: "1rem 3rem 1rem 2rem",
   transition: "filter 0.5s",
   margin: "0 -2rem",
-  borderRadius: "0 0.5rem 0.5rem 0",
+  borderRadius: "0 0.75rem 0.75rem 0",
   "&:hover": {
     filter: "blur(0) !important",
     backgroundColor: "color-mix(in srgb, currentcolor 20%, transparent)",
