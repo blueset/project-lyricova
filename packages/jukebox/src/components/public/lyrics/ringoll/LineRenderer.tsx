@@ -85,7 +85,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, PropsWithChildren<{ startTime: 
     const webAnimationRefs = useRef<Animation[]>([]);
     const refCallback = useCallback((node?: HTMLSpanElement) => {
       webAnimationRefs.current.forEach(anim => anim.cancel());
-      if (node) {
+      if (node && node.style.maskRepeat !== "no-repeat") {
         const { maskImage, maskScale, maskProgressSize } = generateMaskStyle(node.offsetWidth);
         node.style.maskImage = maskImage;
         node.style.maskSize = maskScale;
@@ -133,7 +133,6 @@ const TimedSpan = forwardRef<LyricsAnimationRef, PropsWithChildren<{ startTime: 
 
 function buildTimeSpans(
   content: string,
-  lineAnchorMs: number,
   timeSegments: { index: number; start: number, end: number }[],
   setRef: (idx: number) => (ref: LyricsAnimationRef) => void,
   tillIdx: number = Infinity,
@@ -143,11 +142,14 @@ function buildTimeSpans(
   while (timeSegments.length && timeSegments[0].index < tillIdx) {
     const segment = timeSegments.shift();
     // console.log("buildTimeSpans, segment: %o, slicing from %o to %o", segment, segment.index, timeSegments[0]?.index);
-    spans.push(
-      <TimedSpan key={segment.index} startTime={segment.start} endTime={segment.end} ref={setRef(segment.index + 1)}>
-        {content.slice(segment.index, timeSegments[0]?.index)}
-      </TimedSpan>
-    );
+    const child = content.slice(segment.index, timeSegments[0]?.index);
+    if (child) {
+      spans.push(
+        <TimedSpan key={segment.index} startTime={segment.start} endTime={segment.end} ref={setRef(segment.index + 1)}>
+          {child}
+        </TimedSpan>
+      );
+    }
   }
   return spans;
 }
@@ -192,20 +194,11 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(func
   const spans: JSX.Element[] = [];
   const timeSegments = lineToTimeSegments(line, start, end);
   const rubyBoundaries = line.attachments?.furigana ?? [];
-  const lineAnchorMs = line.position * 1000;
-  // if (timeSegments[0].index > 0) {
-  //   spans.push(
-  //     <TimedSpan startTimeMs={startMs} ref={setRef(1)}>
-  //       {line.content.slice(0, timeSegments[0].index)}
-  //     </TimedSpan>
-  //   );
-  // }
   rubyBoundaries.forEach((ruby) => {
     const tillIdx = ruby.rightIndex;
     spans.push(
       ...buildTimeSpans(
         line.content,
-        lineAnchorMs,
         timeSegments,
         setRef,
         ruby.leftIndex
@@ -214,7 +207,6 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(func
     const rubyStartTime = timeSegments[0].start;
     const inRubySpans = buildTimeSpans(
       line.content,
-      lineAnchorMs,
       timeSegments,
       setRef,
       tillIdx
@@ -229,7 +221,7 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(func
       </ruby>
     );
   });
-  spans.push(...buildTimeSpans(line.content, lineAnchorMs, timeSegments, setRef));
+  spans.push(...buildTimeSpans(line.content, timeSegments, setRef));
 
   return <InnerLineDiv>{spans}</InnerLineDiv>;
 });
