@@ -65,6 +65,11 @@ function buildTimeSpans(
   return spans;
 }
 
+const InnerLineDiv = styled("div")({
+  fontWeight: 600,
+  lineHeight: 1,
+});
+
 interface LineRendererProps {
   line: LyricsKitLyricsLine;
 }
@@ -118,7 +123,7 @@ function InnerLineRenderer({ line }: LineRendererProps) {
   });
   spans.push(...buildTimeSpans(line.content, lineAnchorMs, timeSegments));
 
-  return <>{spans}</>;
+  return <InnerLineDiv>{spans}</InnerLineDiv>;
 }
 
 export const LineRenderer = memo<LineRendererProps>(

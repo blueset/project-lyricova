@@ -34,16 +34,16 @@ function calcIfInBetween(
 }
 
 const RowContainer = styled(animated.div)(
-  (props: { start: number; end: number }) => ({
-    // const RowContainer = styled("div")((props: { start: number; end: number }) => ({
+  (props: { startMs: number; endMs: number }) => ({
+    // const RowContainer = styled("div")((props: { startMs: number; endMs: number }) => ({
     // opacity: `calc(${calcIfInBetween(
     //   "lyrics-time",
-    //   props.start - 0.5,
-    //   props.end + 0.5,
+    //   props.startMs - 0.5,
+    //   props.endMs + 0.5,
     //   1,
     //   0.5
     // )})`,
-    opacity: `calc(1 - sign(var(--lyrics-time) - ${props.end}) * 0.5)`,
+    opacity: `calc(1 - sign(var(--lyrics-time) - ${props.endMs}) * 0.5)`,
     position: "absolute",
     fontSize: "2em",
     willChange: "translate, opacity",
@@ -52,6 +52,11 @@ const RowContainer = styled(animated.div)(
     paddingBlockEnd: "1rem",
   })
 );
+
+const TranslationContainer = styled("div")((props: { startMs: number; }) => ({
+  opacity: `calc(1 + sign(var(--lyrics-time) - ${props.startMs}) * 0.5)`,
+  fontSize: "0.625em"
+}));
 
 const InnerRowRenderer = forwardRef<
   HTMLDivElement,
@@ -63,27 +68,27 @@ const InnerRowRenderer = forwardRef<
   }));
 
   useEffect(() => {
-    api.start({ to: { y: top }, delay: Math.max(0, absoluteIndex) * 30 });
+    const old = api.current[0]?.get().y;
+    const direction = old > top ? 1 : -1;
+    const delay = Math.max(0, absoluteIndex * direction) * 30;
+    api.start({ to: { y: top }, delay });
   }, [absoluteIndex, api, top]);
 
   return (
     <RowContainer
       ref={ref}
-      start={row.position * 1000}
-      end={
+      startMs={row.position * 1000}
+      endMs={
         (row.attachments?.timeTag?.tags?.length
           ? row.position + row.attachments.timeTag.tags.at(-1).timeTag
           : row.position + 9999) * 1000
       }
       style={{
-        // translate: `0 ${top}px`,
-        // transitionDelay: `${Math.max(0, absoluteIndex) * 0.02}s`,
         ...springs,
       }}
     >
-      {/* {row.content} */}
       <LineRenderer line={row} />
-      <div style={{ fontSize: "0.625em" }}>{row.attachments.translation}</div>
+      <TranslationContainer startMs={row.position * 1000}>{row.attachments.translation}</TranslationContainer>
     </RowContainer>
   );
 });
