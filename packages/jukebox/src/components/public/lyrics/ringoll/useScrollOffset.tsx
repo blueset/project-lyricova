@@ -31,7 +31,6 @@ export function useScrollOffset({
     } else if (align === "end") {
       newScrollOffset = endOffset - anchorOffset;
     }
-
     return Math.round(newScrollOffset);
   }, [rowAccumulateHeight, align, alignAnchor, containerSize.height, endRow, startRow]);
 

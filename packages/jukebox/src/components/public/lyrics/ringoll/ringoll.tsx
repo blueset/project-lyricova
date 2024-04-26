@@ -46,7 +46,7 @@ interface Props {
 export function RingollLyrics({ lyrics }: Props) {
   return (
     <LyricsVirtualizer rows={lyrics.lines} estimatedRowHeight={20} containerAs={RingollContainer}>
-      {(props) => <RowRenderer key={props.row.position} {...props} />}
+      {(props) => props.row && <RowRenderer key={props.row.position} {...props} />}
     </LyricsVirtualizer>
   );
 }

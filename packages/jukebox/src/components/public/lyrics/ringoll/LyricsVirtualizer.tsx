@@ -1,19 +1,23 @@
 import React, {
   useCallback,
+  useEffect,
   useRef,
 } from "react";
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
-import { useActiveLyrcsRange } from "./useActiveLyricsRange";
+import { type LyricsSegment, useActiveLyrcsRange } from "./useActiveLyricsRange";
 import { useAppContext } from "../../AppContext";
 import { VirtualizerRowRenderProps, useLyricsVirtualizer } from "./useLyricsVirtualizer";
-import { usePlayerStateRAF } from "../../../../frontendUtils/hooks";
+import { usePlayerState } from "../../../../frontendUtils/hooks";
+import { LyricsAnimationRef } from "./AnimationRef.type";
 
 export interface RowRendererProps<T> {
   row: T;
+  segment: LyricsSegment;
   isActive?: boolean;
   ref?: React.Ref<HTMLDivElement>;
   top: number;
   absoluteIndex: number;
+  animationRef?: React.Ref<LyricsAnimationRef>;
 }
 
 export interface LyricsVirtualizerProps<T> {
@@ -37,18 +41,56 @@ export function LyricsVirtualizer({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { playerRef } = useAppContext();
-  const activeRange = useActiveLyrcsRange(rows, playerRef);
-  const endRow = activeRange.currentFrame?.data?.rangeEnd ?? 1;
+  const playerState = usePlayerState(playerRef);
+  const playerStateRef = useRef(playerState);
+  playerStateRef.current = playerState;
+
+  useEffect(() => {
+    if (playerState.state === "playing") {
+      const currentTime = (performance.now() - playerState.startingAt) / playerState.rate / 1000;
+      // console.log("Resume via state change", animationRefs.current);
+      animationRefs.current.forEach((ref) => {
+        if (ref) {
+          ref.resume(currentTime);
+        }
+      });
+    } else {
+      animationRefs.current.forEach((ref) => {
+        if (ref) {
+          ref.pause(playerState.progress);
+        }
+      });
+    }
+  }, [playerState]);
+
+  const { activeRange, segments } = useActiveLyrcsRange(rows, playerRef);
+  const endRow = activeRange.currentFrame?.data?.rangeEnd ?? 0;
   const startRow = activeRange.currentFrame?.data?.rangeStart ?? 0;
   const activeSegmentsRef = useRef<number[]>([]);
   activeSegmentsRef.current = activeRange.currentFrame?.data?.activeSegments ?? [];
+  const animationRefs = useRef<LyricsAnimationRef[]>([]);
+  const setRef = useCallback((index: number) => (ref?: LyricsAnimationRef) => {
+    if (animationRefs.current[index] === ref) return;
+    animationRefs.current[index] = ref;
+    if (ref) {
+      if (playerStateRef.current.state === "playing") {
+        const currentTime = (performance.now() - playerStateRef.current.startingAt) / playerStateRef.current.rate / 1000;
+        ref.resume(currentTime);
+      } else {
+        ref.pause(playerStateRef.current.progress);
+      }
+    }
+  }, []);
 
   const virtualizerRowRender = useCallback(({index, absoluteIndex, top, rowRefHandler}: VirtualizerRowRenderProps) => rowRenderer({
     row: rows[index],
+    segment: segments[index],
     ref: rowRefHandler,
     top,
     absoluteIndex,
-  }), [rowRenderer, rows]);
+    isActive: activeSegmentsRef.current.includes(index),
+    animationRef: setRef(index),
+  }), [rowRenderer, rows, segments, setRef]);
 
   const renderedRows = useLyricsVirtualizer({
     containerRef,
@@ -60,14 +102,6 @@ export function LyricsVirtualizer({
     estimatedRowHeight,
     rowCount: rows.length,
   });
-
-  const frameCallback = useCallback((time: number) => {
-    if (containerRef.current) {
-      containerRef.current.style.setProperty("--lyrics-time", `${Math.round(time * 1000)}`);
-    }
-  }, []);
-
-  usePlayerStateRAF(playerRef, frameCallback);
 
   return (
     <ContainerAs

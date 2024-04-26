@@ -5,65 +5,26 @@ import { RowRendererProps } from "./LyricsVirtualizer";
 import { styled } from "@mui/material/styles";
 import { LineRenderer } from "./LineRenderer";
 
-/**
- * Construct a CSS `calc()` expression such that:
- * if (start < x && x < end) { retrun inside; } else if (x < start || end < x) { return outside; }
- */
-function calcIfInBetween(
-  xName: string,
-  start: number,
-  end: number,
-  inside: number,
-  outside: number,
-  unit = ""
-) {
-  // Base expression gives 1 if start < x < end, 0 otherwise.
-  const baseExpression =
-    "(" +
-    `max(var(--${xName}) - ${start}${unit}, 0${unit}) / ` +
-    `(var(--${xName}) - ${start}${unit})` +
-    ") * (" +
-    `max(${end}${unit} - var(--${xName}), 0${unit}) / ` +
-    `(${end}${unit} - var(--${xName}))` +
-    ")";
+const RowContainer = styled(animated.div)(({
+  position: "absolute",
+  fontSize: "2em",
+  willChange: "translate, opacity",
+  minHeight: "0.5em",
+  maxWidth: "calc(100% - 4rem)",
+  paddingBlockEnd: "1rem",
+}));
 
-  if (inside < outside) {
-    return `${inside}${unit} + ${baseExpression} * ${outside - inside}${unit}`;
-  }
-  return `${outside}${unit} - ${baseExpression} * ${outside - inside}${unit}`;
-}
-
-const RowContainer = styled(animated.div)(
-  (props: { startMs: number; endMs: number }) => ({
-    // const RowContainer = styled("div")((props: { startMs: number; endMs: number }) => ({
-    // opacity: `calc(${calcIfInBetween(
-    //   "lyrics-time",
-    //   props.startMs - 0.5,
-    //   props.endMs + 0.5,
-    //   1,
-    //   0.5
-    // )})`,
-    opacity: `calc(1 - sign(var(--lyrics-time) - ${props.endMs}) * 0.5)`,
-    position: "absolute",
-    fontSize: "2em",
-    willChange: "translate, opacity",
-    transition: "opacity 0.2s, translate 0.5s ease-out",
-    minHeight: "0.5em",
-    paddingBlockEnd: "1rem",
-  })
-);
-
-const TranslationContainer = styled("div")((props: { startMs: number; }) => ({
-  opacity: `calc(1 + sign(var(--lyrics-time) - ${props.startMs}) * 0.5)`,
+const TranslationContainer = styled("div")((props: { dim: boolean }) => ({
+  opacity: props.dim ? 0.5 : 1,
   fontSize: "0.625em"
 }));
 
 const InnerRowRenderer = forwardRef<
   HTMLDivElement,
   RowRendererProps<LyricsKitLyricsLine>
->(({ row, top, absoluteIndex }, ref) => {
+>(({ row, segment, top, absoluteIndex, isActive, animationRef }, ref) => {
   const [springs, api] = useSpring(() => ({
-    from: { y: top },
+    from: { y: top, opacity: 1, filter: "blur(0)" },
     config: {mass: 0.85, friction: 15, tension: 100},
   }));
 
@@ -71,24 +32,22 @@ const InnerRowRenderer = forwardRef<
     const old = api.current[0]?.get().y;
     const direction = old > top ? 1 : -1;
     const delay = Math.max(0, absoluteIndex * direction) * 30;
-    api.start({ to: { y: top }, delay });
-  }, [absoluteIndex, api, top]);
+    api.start({ to: {
+      y: top,
+      opacity: absoluteIndex <= 0 && !isActive ? 0.5 : 1,
+      filter: `blur(${Math.abs(absoluteIndex) * 0.3}px)`
+    }, delay });
+  }, [absoluteIndex, api, isActive, top]);
 
   return (
     <RowContainer
       ref={ref}
-      startMs={row.position * 1000}
-      endMs={
-        (row.attachments?.timeTag?.tags?.length
-          ? row.position + row.attachments.timeTag.tags.at(-1).timeTag
-          : row.position + 9999) * 1000
-      }
       style={{
         ...springs,
       }}
     >
-      <LineRenderer line={row} />
-      <TranslationContainer startMs={row.position * 1000}>{row.attachments.translation}</TranslationContainer>
+      <LineRenderer line={row} start={segment.start} end={segment.end} ref={animationRef} />
+      <TranslationContainer dim={absoluteIndex > 0 && !isActive}>{row.attachments.translation}</TranslationContainer>
     </RowContainer>
   );
 });
@@ -97,5 +56,5 @@ InnerRowRenderer.displayName = "RowRenderer";
 
 export const RowRenderer = memo(
   InnerRowRenderer,
-  (prev, next) => prev.row === next.row && prev.top === next.top
+  (prev, next) => prev.top === next.top && prev.isActive === next.isActive
 );

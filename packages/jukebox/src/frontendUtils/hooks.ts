@@ -262,11 +262,21 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
     const player = playerRef.current;
     if (!player) return;
     if (player.paused) {
-      setPlayerState({ state: "paused", progress: player.currentTime });
+      setPlayerState((v) => {
+        if (v.state === "paused" && Math.abs(v.progress - player.currentTime) < 0.01) {
+          return v;
+        }
+        return { state: "paused", progress: player.currentTime };
+      });
     } else {
       const rate = player.playbackRate;
       const startingAt = performance.now() - (player.currentTime * 1000) / rate;
-      setPlayerState({ state: "playing", startingAt, rate });
+      setPlayerState((v) => {
+        if (v.state === "playing" && Math.abs(v.startingAt - startingAt) < 100 && v.rate === rate) {
+          return v;
+        }
+        return { state: "playing", startingAt, rate };
+      });
     }
   }, [playerRef, setPlayerState]);
 

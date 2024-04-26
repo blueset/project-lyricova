@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useReducer } from "react";
+import { useRef, useState, useCallback, useReducer, useEffect } from "react";
 import _ from "lodash";
 
 export function useRowMeasurement({
@@ -10,6 +10,12 @@ export function useRowMeasurement({
 }) {
   const rowHeightCache = useRef<number[]>(new Array(rowCount).fill(estimatedRowHeight));
   const rowAccumulateHeightCache = useRef<number[]>(new Array(rowCount + 1).fill(0).map((_, i) => i * estimatedRowHeight));
+
+  useEffect(() => {
+    rowHeightCache.current = new Array(rowCount).fill(estimatedRowHeight);
+    rowAccumulateHeightCache.current = new Array(rowCount + 1).fill(0).map((_, i) => i * estimatedRowHeight);
+  }, [estimatedRowHeight, rowCount]);
+
   const elArrayRef = useRef<HTMLElement[]>([]);
   const sizeUpdateCount = useRef(0);
   const [siteUpdaateCountState, setSiteUpdateCountState] = useState(0);

@@ -59,14 +59,14 @@ export function useLyricsVirtualizer({
       renderedRows.push(
         rowRenderer({
           index: i,
-          absoluteIndex: i - startRow,
+          absoluteIndex: i < startRow ? i - startRow : i >= endRow ? i - endRow + 1 : 0,
           top: rowAccumulateHeight[i] - scrollOffset,
           rowRefHandler: rowRefHandler(i),
         })
       );
     }
     return renderedRows;
-  }, [renderStartRow, renderEndRow, rowAccumulateHeight, scrollOffset, rowRenderer, rowRefHandler]);
+  }, [renderStartRow, renderEndRow, rowRenderer, startRow, endRow, rowAccumulateHeight, scrollOffset, rowRefHandler]);
 
   // return renderedRowsRef.current;
 }
