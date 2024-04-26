@@ -1,4 +1,4 @@
-import { RefObject, useRef, useEffect, useLayoutEffect, useState } from "react";
+import { RefObject, useLayoutEffect, useState } from "react";
 
 export function useContainerSize({
   containerRef,
@@ -10,11 +10,15 @@ export function useContainerSize({
     const container = containerRef.current;
     if (!container) return;
     const rect = container.getBoundingClientRect();
+    // console.log("containerResize 1", rect);
     setContainerSize({ width: rect.width, height: rect.height });
 
     const observer = new ResizeObserver((entries) => {
       const rect = entries[0].contentRect;
-      setContainerSize({ width: rect.width, height: rect.height });
+      // console.log("containerResize 2", rect, entries);
+      if (rect.width !== 0 && rect.height !== 0) {
+        setContainerSize({ width: rect.width, height: rect.height });
+      }
     });
     observer.observe(container);
     return () => observer.disconnect();

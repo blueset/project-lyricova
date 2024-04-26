@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { RefObject, useMemo } from "react";
 import { useContainerSize } from "./useContainerSize";
 import { useRowMeasurement } from "./useRowMeasurement";
 import { useScrollOffset } from "./useScrollOffset";
@@ -8,6 +8,7 @@ export interface VirtualizerRowRenderProps {
   index: number;
   absoluteIndex: number;
   top: number;
+  isActiveScroll: boolean;
   rowRefHandler: (el: HTMLElement) => void;
 }
 
@@ -39,7 +40,8 @@ export function useLyricsVirtualizer({
     estimatedRowHeight,
     rowCount,
   });
-  const scrollOffset = useScrollOffset({
+  const { scrollOffset, isActiveScroll } = useScrollOffset({
+    containerRef,
     containerSize,
     rowAccumulateHeight,
     startRow,
@@ -53,7 +55,7 @@ export function useLyricsVirtualizer({
     containerSize,
   });
 
-  return useMemo(() => {
+  const renderedRows = useMemo(() => {
     const renderedRows = [];
     for (let i = renderStartRow; i < renderEndRow; i++) {
       renderedRows.push(
@@ -61,6 +63,7 @@ export function useLyricsVirtualizer({
           index: i,
           absoluteIndex: i < startRow ? i - startRow : i >= endRow ? i - endRow + 1 : 0,
           top: rowAccumulateHeight[i] - scrollOffset,
+          isActiveScroll,
           rowRefHandler: rowRefHandler(i),
         })
       );
@@ -68,5 +71,5 @@ export function useLyricsVirtualizer({
     return renderedRows;
   }, [renderStartRow, renderEndRow, rowRenderer, startRow, endRow, rowAccumulateHeight, scrollOffset, rowRefHandler]);
 
-  // return renderedRowsRef.current;
+  return { renderedRows, isActiveScroll };
 }

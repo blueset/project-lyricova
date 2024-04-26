@@ -4,14 +4,22 @@ import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
 import { RowRendererProps } from "./LyricsVirtualizer";
 import { styled } from "@mui/material/styles";
 import { LineRenderer } from "./LineRenderer";
+import { filter } from "lodash";
 
 const RowContainer = styled(animated.div)(({
   position: "absolute",
   fontSize: "2em",
-  willChange: "translate, opacity",
+  willChange: "translate, opacity, filter",
   minHeight: "0.5em",
   maxWidth: "calc(100% - 4rem)",
-  paddingBlockEnd: "1rem",
+  padding: "1rem 2rem",
+  transition: "filter 0.5s",
+  margin: "0 -2rem",
+  borderRadius: "0 0.5rem 0.5rem 0",
+  "&:hover": {
+    filter: "blur(0) !important",
+    backgroundColor: "color-mix(in srgb, currentcolor 20%, transparent)",
+  }
 }));
 
 const TranslationContainer = styled("div")((props: { dim: boolean }) => ({
@@ -22,7 +30,7 @@ const TranslationContainer = styled("div")((props: { dim: boolean }) => ({
 const InnerRowRenderer = forwardRef<
   HTMLDivElement,
   RowRendererProps<LyricsKitLyricsLine>
->(({ row, segment, top, absoluteIndex, isActive, animationRef }, ref) => {
+>(({ row, segment, top, absoluteIndex, isActive, isActiveScroll, animationRef, onClick }, ref) => {
   const [springs, api] = useSpring(() => ({
     from: { y: top, opacity: 1, filter: "blur(0)" },
     config: {mass: 0.85, friction: 15, tension: 100},
@@ -31,13 +39,13 @@ const InnerRowRenderer = forwardRef<
   useEffect(() => {
     const old = api.current[0]?.get().y;
     const direction = old > top ? 1 : -1;
-    const delay = Math.max(0, absoluteIndex * direction) * 30;
+    const delay = isActiveScroll ? 0 : Math.max(0, absoluteIndex * direction) * 30;
     api.start({ to: {
       y: top,
       opacity: absoluteIndex <= 0 && !isActive ? 0.5 : 1,
-      filter: `blur(${Math.abs(absoluteIndex) * 0.3}px)`
+      filter: isActiveScroll ? "blur(0)" : `blur(${Math.abs(absoluteIndex) * 0.3}px)`,
     }, delay });
-  }, [absoluteIndex, api, isActive, top]);
+  }, [absoluteIndex, api, isActive, isActiveScroll, top]);
 
   return (
     <RowContainer
@@ -45,6 +53,7 @@ const InnerRowRenderer = forwardRef<
       style={{
         ...springs,
       }}
+      onClick={onClick}
     >
       <LineRenderer line={row} start={segment.start} end={segment.end} ref={animationRef} />
       <TranslationContainer dim={absoluteIndex > 0 && !isActive}>{row.attachments.translation}</TranslationContainer>
@@ -56,5 +65,5 @@ InnerRowRenderer.displayName = "RowRenderer";
 
 export const RowRenderer = memo(
   InnerRowRenderer,
-  (prev, next) => prev.top === next.top && prev.isActive === next.isActive
+  (prev, next) => prev.top === next.top && prev.isActive === next.isActive && prev.isActiveScroll === next.isActiveScroll
 );

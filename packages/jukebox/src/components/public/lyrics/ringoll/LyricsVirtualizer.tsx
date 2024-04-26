@@ -14,10 +14,12 @@ export interface RowRendererProps<T> {
   row: T;
   segment: LyricsSegment;
   isActive?: boolean;
+  isActiveScroll?: boolean;
   ref?: React.Ref<HTMLDivElement>;
   top: number;
   absoluteIndex: number;
   animationRef?: React.Ref<LyricsAnimationRef>;
+  onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
 export interface LyricsVirtualizerProps<T> {
@@ -48,7 +50,6 @@ export function LyricsVirtualizer({
   useEffect(() => {
     if (playerState.state === "playing") {
       const currentTime = (performance.now() - playerState.startingAt) / playerState.rate / 1000;
-      // console.log("Resume via state change", animationRefs.current);
       animationRefs.current.forEach((ref) => {
         if (ref) {
           ref.resume(currentTime);
@@ -82,17 +83,23 @@ export function LyricsVirtualizer({
     }
   }, []);
 
-  const virtualizerRowRender = useCallback(({index, absoluteIndex, top, rowRefHandler}: VirtualizerRowRenderProps) => rowRenderer({
+  const virtualizerRowRender = useCallback(({index, absoluteIndex, top, rowRefHandler, isActiveScroll}: VirtualizerRowRenderProps) => rowRenderer({
     row: rows[index],
     segment: segments[index],
     ref: rowRefHandler,
     top,
     absoluteIndex,
+    isActiveScroll,
     isActive: activeSegmentsRef.current.includes(index),
     animationRef: setRef(index),
-  }), [rowRenderer, rows, segments, setRef]);
+    onClick: () => {
+      if (playerRef.current && segments[index]?.start) {
+        playerRef.current.currentTime = segments[index].start;
+      }
+    },
+  }), [playerRef, rowRenderer, rows, segments, setRef]);
 
-  const renderedRows = useLyricsVirtualizer({
+  const { renderedRows, isActiveScroll } = useLyricsVirtualizer({
     containerRef,
     startRow,
     endRow,
@@ -106,6 +113,7 @@ export function LyricsVirtualizer({
   return (
     <ContainerAs
       ref={containerRef}
+      isActiveScroll={isActiveScroll}
     >
       {renderedRows}
     </ContainerAs>
