@@ -262,7 +262,7 @@ export function InlineTaggingLine({
         <span
           onClick={() => onUpdateCursor?.(line.content.length)}
           data-is-valid={isValid}
-        />
+        ></span>
       </InlineMainContainer>
       <InlineLabelContainer>
         {dots?.map((x, idx) =>

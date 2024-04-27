@@ -457,9 +457,9 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
             if (c.start <= time) p.start = Math.max(p.start, c.start);
             if (c.end <= time) {
               p.start = Math.max(p.start, c.end);
+              p.borderIndex = Math.max(p.borderIndex, i);
             }
             if (time < c.start) {
-              p.borderIndex = Math.min(p.borderIndex, i - 1);
               p.end = Math.min(p.end, c.start);
             }
             if (time < c.end) {
@@ -468,7 +468,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           }
           return p;
         },
-        { indices: [], start: -Infinity, end: Infinity, borderIndex: Infinity }
+        { indices: [], start: -Infinity, end: Infinity, borderIndex: -Infinity }
       );
       // console.log("set current line", record);
       setCurrentLine(record);
