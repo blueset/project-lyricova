@@ -148,6 +148,10 @@ function applyDiff(source: string, edited: string): string {
           relativeTimeOffset -= timeTagQueue?.[0]?.timeTag ?? 0.001;
         } else if (op === -1) {
           ptr += text.length;
+          while ((timeTagQueue?.[0]?.index ?? Infinity) < ptr) timeTagQueue.shift();
+          while ((furiganaQueue?.[0]?.range[1] ?? Infinity) <= ptr) furiganaQueue.shift();
+          while ((dotsQueue?.[0]?.[1] ?? Infinity) <= ptr) dotsQueue.shift();
+          while ((tagsQueue?.[0]?.[1] ?? Infinity) <= ptr) tagsQueue.shift();
         }
       }
 
