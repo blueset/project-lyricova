@@ -180,9 +180,8 @@ function Seekbar({
     (evt: Event, newValue: number | number[]) => {
       seek(newValue as number);
       setIsDragging(false);
-      setSeekBarTime(newValue as number);
     },
-    [seek, setIsDragging, setSeekBarTime]
+    [seek, setIsDragging]
   );
 
   return (
