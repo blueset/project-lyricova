@@ -126,7 +126,7 @@ export function useScrollOffset({
         container?.removeEventListener("touchend", touchEndListener);
       };
     }
-  }, [containerRef, debounceReset, rowAccumulateHeight, setActiveScrollOffset]);
+  }, [containerRef, debounceReset, rowAccumulateHeight, scorllOffsetMin, scrollOffsetMax, setActiveScrollOffset]);
 
   return {
     scrollOffset:

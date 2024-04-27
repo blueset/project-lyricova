@@ -5,7 +5,7 @@
  * http://suwa.pupu.jp/RhythmicaLyrics.html
  */
 
-import {
+import React, {
   SetStateAction,
   useCallback,
   useEffect,
@@ -64,12 +64,13 @@ function Instructions() {
 const InstructionsMemo = memo(Instructions);
 
 interface CurrentLineState {
-  index: number;
+  indices: number[];
   start: number;
   end: number;
+  borderIndex: number;
 }
 
-const BLANK_LINE = { index: -Infinity, start: Infinity, end: -Infinity };
+const BLANK_LINE: CurrentLineState = { indices: [], start: Infinity, end: -Infinity, borderIndex: -Infinity };
 
 const ControlRow = styled(Stack)(({ theme }) => ({
   marginBottom: theme.spacing(1),
@@ -108,6 +109,8 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
   const [tags, setTags] = useNamedState<number[][][]>([], "tags");
   const tagsRef = useRef<number[][][]>();
   tagsRef.current = tags;
+
+  const taggingAreaRef = useRef<HTMLDivElement>();
 
   // Parse lyrics
   const parsedLyrics = useMemo<Lyrics | null>(() => {
@@ -420,7 +423,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
   const currentLineRef = useRef<CurrentLineState>();
   currentLineRef.current = currentLine;
 
-  const timelineRef = useRef<gsap.core.Timeline>();
+  const timelinesRef = useRef<gsap.core.Timeline[]>([]);
 
   // Update time tags
   const onFrame = useCallback(() => {
@@ -431,7 +434,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     const startPerLine = tags.map((t) => {
       const tf = t.flat();
       if (tf.length) {
-        return Math.min(...tf);
+        return {start: Math.min(...tf), end: Math.max(...tf)};
       }
       return null;
     });
@@ -445,22 +448,29 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
       playerStatus.state === "paused"
     ) {
       // console.log("set current line", startPerLine, time);
-      const record = startPerLine.reduce(
+      const record = startPerLine.reduce<CurrentLineState>(
         (p, c, i) => {
           if (c) {
-            if (c < p.end && c > time) {
-              p.end = c;
+            if (c.start <= time && time < c.end) {
+              p.indices.push(i);
             }
-            if (c > p.start && c <= time) {
-              p.start = c;
-              p.index = i;
+            if (c.start <= time) p.start = Math.max(p.start, c.start);
+            if (c.end <= time) {
+              p.start = Math.max(p.start, c.end);
+            }
+            if (time < c.start) {
+              p.borderIndex = Math.min(p.borderIndex, i - 1);
+              p.end = Math.min(p.end, c.start);
+            }
+            if (time < c.end) {
+              p.end = Math.min(p.end, c.end);
             }
           }
           return p;
         },
-        { index: -Infinity, start: -Infinity, end: Infinity }
+        { indices: [], start: -Infinity, end: Infinity, borderIndex: Infinity }
       );
-      // console.log("set current line", record);
+      console.log("set current line", record);
       setCurrentLine(record);
     }
 
@@ -478,14 +488,14 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
   useEffect(() => {
     // console.log("useEffect playPauseTimeline");
     requestAnimationFrame(onFrame);
-    if (timelineRef.current) {
+    if (timelinesRef.current) {
       const progress = getProgress();
       if (playerStatus.state === "playing") {
         // console.log("play", progress);
-        timelineRef.current.play(progress);
+        timelinesRef.current.map(t => t?.play(progress));
       } else if (playerStatus.state === "paused") {
         // console.log("pause", progress);
-        timelineRef.current.pause(progress);
+        timelinesRef.current.map(t => t?.pause(progress));
       }
     }
   }, [getProgress, onFrame, playerStatus]);
@@ -517,7 +527,10 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           ev.preventDefault();
           ev.stopPropagation();
           if (!audioBuffer) return;
-          if (playerStatusRef.current.state === "paused") play();
+          if (playerStatusRef.current.state === "paused") {
+            play();
+            taggingAreaRef.current?.focus();
+          }
           else pause();
         } else if (code === "KeyR" || key === "R" || key === "r") {
           ev.preventDefault();
@@ -568,8 +581,14 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     [setLines, setDots]
   );
 
+  const preventSpaceScrollerCallback = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === " ") {
+      event.preventDefault();
+    }
+  }, []);
+
   return (
-    <Stack gap={1} sx={{ height: "100%" }}>
+    <Stack gap={1} sx={{ height: "100%" }} ref={taggingAreaRef}>
       <Box
         sx={{
           position: "sticky",
@@ -609,19 +628,20 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           />
         </ControlRow>
       </Box>
-      <Box sx={{ flexGrow: 1, height: 0, overflow: "auto", mx: -1, px: 1 }}>
+      <Box sx={{ flexGrow: 1, height: 0, overflow: "auto", mx: -1, px: 1 }} onKeyDown={preventSpaceScrollerCallback}>
         {lines.map((l, idx) => (
           <InlineTaggingLineMemo
             key={idx}
+            index={idx}
             line={l}
             tags={tags[idx]}
             dots={dots[idx]}
-            timelineRef={timelineRef}
+            timelinesRef={timelinesRef}
             playerStatusRef={playerStatusRef}
             getProgress={getProgress}
             applyMarksToAll={applyMarksToAll(idx)}
             relativeProgress={
-              currentLine.index === idx ? 0 : currentLine.index > idx ? -1 : 1
+              currentLine.indices.includes(idx) ? 0 : currentLine.borderIndex >= idx ? -1 : 1
             }
             cursorIdx={
               section === "mark" && cursorPos[0] === idx

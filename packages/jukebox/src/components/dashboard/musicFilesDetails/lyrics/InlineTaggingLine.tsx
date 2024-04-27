@@ -110,6 +110,7 @@ const ApplyMarksToAllButtonMemo = memo(
 );
 
 interface InlineTaggingLineProps {
+  index: number;
   line: LyricsLine;
   dots: number[];
   tags: number[][];
@@ -117,13 +118,14 @@ interface InlineTaggingLineProps {
   cursorIdx?: number;
   dotCursorIdx?: [number, number];
   onUpdateCursor?: (cursorIdx: number) => void;
-  timelineRef: MutableRefObject<gsap.core.Timeline>;
+  timelinesRef: MutableRefObject<gsap.core.Timeline[]>;
   playerStatusRef: MutableRefObject<WebAudioPlayerState>;
   getProgress: () => number;
   applyMarksToAll: () => void;
 }
 
 export function InlineTaggingLine({
+  index,
   line,
   dots,
   tags,
@@ -131,7 +133,7 @@ export function InlineTaggingLine({
   dotCursorIdx,
   relativeProgress,
   onUpdateCursor,
-  timelineRef,
+  timelinesRef,
   playerStatusRef,
   getProgress,
   applyMarksToAll,
@@ -165,12 +167,12 @@ export function InlineTaggingLine({
     const centerRow = centerRowRef.current;
     if (relativeProgress === 0) {
       setIsValid(true);
-      if (timelineRef.current) {
-        timelineRef.current.kill();
+      if (timelinesRef.current[index]) {
+        timelinesRef.current[index].kill();
       }
       const startingTags = tags.map((x) => x?.[0] ?? null);
       if (startingTags.every((x) => !x)) {
-        timelineRef.current = null;
+        timelinesRef.current = null;
         return;
       }
       const tl = gsap.timeline();
@@ -212,9 +214,14 @@ export function InlineTaggingLine({
       } else {
         tl.pause(progress);
       }
-      timelineRef.current = tl;
+      timelinesRef.current[index] = tl;
+      // console.log("built timeline", index, timelinesRef.current);
     } else if (relativeProgress === 1) {
       centerRow.style.backgroundSize = "0px 100%";
+      if (timelinesRef.current[index]) { 
+        timelinesRef.current[index].kill();
+        timelinesRef.current[index] = undefined;
+      }
     } else if (relativeProgress === -1) {
       centerRow.style.backgroundSize = `${coords[coords.length - 1]}px 100%`;
       const flatternTags = tags.flat().filter(Boolean);
@@ -222,7 +229,12 @@ export function InlineTaggingLine({
         idx === 0 ? true : x > arr[idx - 1]
       );
       setIsValid(areTagsIncreasing);
+      if (timelinesRef.current[index]) { 
+        timelinesRef.current[index].kill();
+        timelinesRef.current[index] = undefined;
+      }
     }
+    // return () => {timelinesRef.current[index] = undefined; };
     // Explicitly only depends on relativeProgress to prevent excessive re-renders
   }, [relativeProgress]);
 

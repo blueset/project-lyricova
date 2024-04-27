@@ -232,6 +232,7 @@ export function setDropMark(
       const result = prev.map((i, idx) =>
         idx !== pos[0] ? i : i.map((j, jdx) => (jdx !== pos[1] ? j : []))
       );
+      setDotCursorPos([pos[0], pos[1], 0]);
       return result;
     });
     return pos;
