@@ -1,4 +1,4 @@
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Button, ButtonGroup, Grid, Stack, Typography } from "@mui/material";
 import { useCallback, useMemo } from "react";
 import LyricsPreview from "./LyricsPreview";
 import { lyricsAnalysis } from "../../../utils/lyricsCheck";
@@ -10,9 +10,10 @@ import { useNamedState } from "../../../frontendUtils/hooks";
 import LyricsEditDialog from "./LyricsEditDialog";
 import { gql, useApolloClient } from "@apollo/client";
 import type { DocumentNode } from "graphql";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const REMOVE_LYRICS_MUTATION = gql`
-  mutation($fileId: Int!) {
+  mutation ($fileId: Int!) {
     removeLyrics(fileId: $fileId)
   }
 ` as DocumentNode;
@@ -51,6 +52,8 @@ export default function LyricsPanel({
   const handleOpenLyricsEditDialog = useCallback(() => {
     toggleLyricsEditDialogOpen(true);
   }, [toggleLyricsEditDialogOpen]);
+
+  const [warnRemove, setWarnRemove] = useNamedState(false, "warnRemove");
 
   const handleRemoveLyrics = useCallback(async () => {
     try {
@@ -187,21 +190,35 @@ export default function LyricsPanel({
           <Typography variant="h6" component="h3">
             What to do?
           </Typography>
-          <Button
-            sx={{ marginRight: 1, marginBottom: 1 }}
-            variant="outlined"
-            onClick={handleOpenLyricsEditDialog}
-          >
-            Adjust
-          </Button>
-          <Button
-            sx={{ marginRight: 1, marginBottom: 1 }}
-            variant="outlined"
-            color="primary"
-            onClick={handleRemoveLyrics}
-          >
-            Remove
-          </Button>
+          <Stack direction="row">
+            <Button
+              sx={{ marginRight: 1, marginBottom: 1 }}
+              variant="outlined"
+              onClick={handleOpenLyricsEditDialog}
+            >
+              Adjust
+            </Button>
+            {!warnRemove ? (
+              <Button
+                sx={{ marginRight: 1, marginBottom: 1 }}
+                variant="outlined"
+                color="error"
+                onClick={() => setWarnRemove(true)}
+              >
+                Remove
+              </Button>
+            ) : (
+              <ButtonGroup
+                variant="outlined"
+                sx={{ marginRight: 1, marginBottom: 1 }}
+              >
+                <Button onClick={() => setWarnRemove(false)}>Cancel</Button>
+                <Button size="small" color="error" onClick={handleRemoveLyrics}>
+                  <DeleteIcon />
+                </Button>
+              </ButtonGroup>
+            )}
+          </Stack>
         </Grid>
       </Grid>
       <LyricsEditDialog
