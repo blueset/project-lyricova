@@ -3,9 +3,11 @@ import _ from "lodash";
 
 export function useRowMeasurement({
   estimatedRowHeight,
+  containerSize,
   rowCount
 }: {
   estimatedRowHeight: number;
+  containerSize: { width: number; height: number };
   rowCount: number;
 }) {
   const rowHeightCache = useRef<number[]>(new Array(rowCount).fill(estimatedRowHeight));
@@ -25,8 +27,8 @@ export function useRowMeasurement({
 
   const rowRefHandler = useCallback(
     (index: number) => (el: HTMLElement) => {
+      elArrayRef.current[index] = el;
       if (el) {
-        elArrayRef.current[index] = el;
         const rect = el.getBoundingClientRect();
         if (rowHeightCache.current[index] !== rect.height) {
           sizeUpdateCount.current++;
@@ -37,6 +39,24 @@ export function useRowMeasurement({
     },
     [debouncedForceUpdate]
   );
+
+  useEffect(() => {
+    const elArrray = elArrayRef.current;
+    let isChanged = false;
+    for (const el of elArrray) {
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        if (rowHeightCache.current[elArrray.indexOf(el)] !== rect.height) {
+          rowHeightCache.current[elArrray.indexOf(el)] = rect.height;
+          isChanged = true;
+        }
+      }
+    }
+    if (isChanged) {
+      sizeUpdateCount.current++;
+      debouncedForceUpdate();
+    }
+  }, [containerSize, debouncedForceUpdate]);
 
   if (sizeUpdateCount.current !== siteUpdaateCountState) {
     rowAccumulateHeightCache.current = rowHeightCache.current.reduce((acc, height) => {

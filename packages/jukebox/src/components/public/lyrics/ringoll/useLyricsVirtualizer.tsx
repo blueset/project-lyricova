@@ -38,6 +38,7 @@ export function useLyricsVirtualizer({
   const containerSize = useContainerSize({ containerRef });
   const { rowRefHandler, rowAccumulateHeight } = useRowMeasurement({
     estimatedRowHeight,
+    containerSize,
     rowCount,
   });
   const { scrollOffset, isActiveScroll } = useScrollOffset({
