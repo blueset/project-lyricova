@@ -1,5 +1,12 @@
 import _ from "lodash";
-import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 export function useScrollOffset({
   containerRef,
@@ -24,7 +31,7 @@ export function useScrollOffset({
 
   const containerHeight = containerSize.height;
   const anchorOffset = containerHeight * alignAnchor;
-  const scorllOffsetMin = - anchorOffset;
+  const scorllOffsetMin = -anchorOffset;
   const scrollOffsetMax = (rowAccumulateHeight.at(-2) ?? 0) + scorllOffsetMin;
 
   const scrollOffset = useMemo(() => {
@@ -44,13 +51,16 @@ export function useScrollOffset({
   const scrollOffsetRef = useRef(scrollOffset);
   scrollOffsetRef.current = scrollOffset;
 
-  const debounceReset = useCallback(_.debounce(() => setActiveScrollOffset(undefined), 5000), [setActiveScrollOffset]);
+  const debounceReset = useCallback(
+    _.debounce(() => setActiveScrollOffset(undefined), 5000),
+    [setActiveScrollOffset]
+  );
 
   useEffect(() => {
     const bottom = rowAccumulateHeight.at(-1) ?? 0;
-		let direction: "up" | "down" | "none" = "none";
-		let startTouchPosY = 0;
-		let lastMoveY = 0;
+    let direction: "up" | "down" | "none" = "none";
+    let startTouchPosY = 0;
+    let lastMoveY = 0;
     function wheelListener(event: WheelEvent) {
       setActiveScrollOffset((v) => {
         const base = v !== undefined ? v : scrollOffsetRef.current;
@@ -66,10 +76,10 @@ export function useScrollOffset({
       debounceReset();
     }
     function touchStartListener(event: TouchEvent) {
-				// event.preventDefault();
-				// startScrollY = this.scrollOffset;
-				startTouchPosY = event.touches[0].screenY;
-				lastMoveY = startTouchPosY;
+      // event.preventDefault();
+      // startScrollY = this.scrollOffset;
+      startTouchPosY = event.touches[0].screenY;
+      lastMoveY = startTouchPosY;
     }
 
     function touchMoveListener(event: TouchEvent) {
@@ -84,7 +94,9 @@ export function useScrollOffset({
         startTouchPosY = touchScreenY;
       } else {
         // TODO: fix scroll bound
-        setActiveScrollOffset(v => Math.max(0, Math.min(bottom, (v ?? scrollOffsetRef.current) - delta)));
+        setActiveScrollOffset((v) =>
+          Math.max(0, Math.min(bottom, (v ?? scrollOffsetRef.current) - delta))
+        );
       }
       debounceReset();
       lastMoveY = touchScreenY;
@@ -97,10 +109,16 @@ export function useScrollOffset({
 
     const container = containerRef.current;
     if (container) {
-      container.addEventListener("wheel", wheelListener, {passive: true});
-      container.addEventListener("touchstart", touchStartListener, {passive: false});
-      container.addEventListener("touchmove", touchMoveListener, {passive: false});
-      container.addEventListener("touchend", touchEndListener, {passive: false});
+      container.addEventListener("wheel", wheelListener, { passive: true });
+      container.addEventListener("touchstart", touchStartListener, {
+        passive: false,
+      });
+      container.addEventListener("touchmove", touchMoveListener, {
+        passive: false,
+      });
+      container.addEventListener("touchend", touchEndListener, {
+        passive: false,
+      });
       return () => {
         container?.removeEventListener("wheel", wheelListener);
         container?.removeEventListener("touchstart", touchStartListener);
