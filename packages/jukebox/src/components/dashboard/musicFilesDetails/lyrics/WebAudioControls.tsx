@@ -37,7 +37,7 @@ export function Rewind5({
   return (
     <Tooltip title="Rewind 5 seconds">
       <IconButton
-        disabled={audioBuffer === null}
+        disabled={!audioBuffer}
         onClick={() => seek(Math.max(0, getProgress() - 5))}
       >
         <Replay5Icon />
@@ -66,7 +66,7 @@ export function PlayPause({
     <Tooltip title={playerStatus.state === "paused" ? "Play" : "Pause"}>
       <Fab
         color="primary"
-        disabled={audioBuffer === null}
+        disabled={!audioBuffer}
         size="small"
         onClick={() => {
           playerStatus.state === "playing" ? pause() : play();
@@ -94,7 +94,7 @@ function Forward5({
   return (
     <Tooltip title="Forward 5 seconds">
       <IconButton
-        disabled={audioBuffer === null}
+        disabled={!audioBuffer}
         onClick={() => seek(Math.min(audioBuffer.duration, getProgress() + 5))}
       >
         <Forward5Icon />
@@ -118,7 +118,7 @@ function SpeedDown({
   return (
     <Tooltip title="Speed down 0.05x">
       <IconButton
-        disabled={audioBuffer === null}
+        disabled={!audioBuffer}
         onClick={() => setRate(Math.min(2, playerStatus.rate - 0.05))}
       >
         <SpeedIcon sx={{ transform: "scaleX(-1)" }} />
@@ -142,7 +142,7 @@ function SpeedUp({
   return (
     <Tooltip title="Speed up 0.05x">
       <IconButton
-        disabled={audioBuffer === null}
+        disabled={!audioBuffer}
         onClick={() => setRate(Math.max(0.5, playerStatus.rate + 0.05))}
       >
         <SpeedIcon />
@@ -197,7 +197,7 @@ function Seekbar({
         getAriaValueText={formatTime}
         min={0}
         max={audioBuffer?.duration ?? 0}
-        disabled={audioBuffer === null}
+        disabled={!audioBuffer}
         onChange={handleOnChange}
         onChangeCommitted={handleOnChangeCommitted}
       />

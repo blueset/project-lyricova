@@ -441,115 +441,6 @@ export function usePlayerLyricsStateRAF<T>(
     endTimes,
   };
 }
-// export function usePlayerLyricsStateRAF<T>(
-//   keyframes: PlayerLyricsKeyframe<T>[],
-//   playerRef: RefObject<HTMLAudioElement>
-// ): PlayerLyricsState<T> {
-//   const playerState = usePlayerState(playerRef);
-//   const playerStateRef = useRef<PlayerState>();
-//   playerStateRef.current = playerState;
-
-//   const frameCallbackRef = useRef<number>();
-
-//   // Added to prevent operation on unmounted components
-//   const thisLifespan = useRef<boolean>();
-
-//   /**
-//    * Current frame can be anything in [-1, keyframe.length - 1].
-//    * -1 means before the first frame starts. Final frame lasts forever.
-//    */
-//   const [currentFrameId, setCurrentFrameId] = useNamedState(
-//     -1,
-//     "currentFrameId"
-//   );
-//   const currentFrameIdRef = useRef<number>();
-//   currentFrameIdRef.current = currentFrameId;
-
-//   /**
-//    * `endTimes[i + 1]` is when frame `i` ends, in seconds.
-//    * Last value is the end of the track.
-//    */
-//   const endTimes = useMemo(() => {
-//     const endTimes = [];
-//     keyframes.forEach((v, idx) => {
-//       endTimes[idx] = v.start;
-//     });
-
-//     if (playerRef.current)
-//       endTimes[keyframes.length] = playerRef.current.duration;
-//     else if (keyframes.length > 0)
-//       endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
-//     else endTimes[keyframes.length] = 0;
-
-//     return endTimes;
-//   }, [keyframes, playerRef]);
-
-//   const startTimes = useMemo(() => keyframes.map((v) => v.start), [keyframes]);
-
-//   // Advance a frame when the current frame ends
-//   const onFrame = useCallback(
-//     (timestamp: number) => {
-//       // Out of current lifespan, stop.
-//       if (!thisLifespan.current) return;
-
-//       const playerState = playerStateRef.current;
-//       const currentFrameId = currentFrameIdRef.current;
-//       const end = endTimes[currentFrameId + 1];
-
-//       let time;
-//       if (playerState.state === "paused") {
-//         time = playerState.progress;
-//       } else {
-//         time = (timestamp - playerState.startingAt) / 1000;
-//       }
-
-//       if (time > end) {
-//         setCurrentFrameId(currentFrameId + 1);
-//       }
-
-//       if (playerState.state === "playing") {
-//         frameCallbackRef.current = requestAnimationFrame(onFrame);
-//       }
-//     },
-//     [endTimes, setCurrentFrameId]
-//   );
-
-//   // Search for the frame for current time
-//   const restartFrameCallback = useCallback(() => {
-//     const player = playerRef.current;
-//     if (!player) return;
-
-//     // Clear existing loop.
-//     if (frameCallbackRef.current !== null) {
-//       cancelAnimationFrame(frameCallbackRef.current);
-//     }
-//     // Find current frame
-//     setCurrentFrameId(_.sortedLastIndex(startTimes, player.currentTime) - 1);
-
-//     // Start a new loop.
-//     frameCallbackRef.current = requestAnimationFrame(onFrame);
-//   }, [onFrame, playerRef, setCurrentFrameId, startTimes]);
-
-//   useEffect(() => restartFrameCallback(), [playerState, restartFrameCallback]);
-
-//   // Update this lifespan
-//   useEffect(() => {
-//     thisLifespan.current = true;
-
-//     return () => {
-//       thisLifespan.current = false;
-//     };
-//   }, [playerRef]);
-
-//   return {
-//     playerState,
-//     currentFrameId,
-//     currentFrame: currentFrameId >= 0 ? keyframes[currentFrameId] : null,
-//     endTime: endTimes[currentFrameId + 1],
-//     startTimes,
-//     endTimes,
-//   };
-// }
 
 /** Refactor usePlayerLyricsState using WebVTT Cue callbacks. */
 export function usePlayerLyricsState<T>(
@@ -849,6 +740,13 @@ export type WebAudioPlayerState = {
   | { state: "paused"; progress: number }
 );
 
+let globalAudioContext: AudioContext | undefined = undefined;
+let globalAudioGain: GainNode | undefined = undefined;
+
+let cachedWebAudioBuffer: {
+  [mediaUrl: string]: AudioBuffer;
+} = {};
+
 /**
  * Manage audio playback with Web Audio API.
  *
@@ -860,22 +758,24 @@ export type WebAudioPlayerState = {
 export function useWebAudio(mediaUrl: string) {
   // Mount-scope variables
   const [audioContext, audioGain] = useMemo(() => {
-    const audioContext = new AudioContext();
-    const audioGain = audioContext.createGain();
-    audioGain.connect(audioContext.destination);
-    return [audioContext, audioGain];
+    if (!globalAudioContext || !globalAudioGain) {
+      const audioContext = new AudioContext();
+      const audioGain = audioContext.createGain();
+      audioGain.connect(audioContext.destination);
+      globalAudioContext = audioContext;
+      globalAudioGain = audioGain;
+      cachedWebAudioBuffer = {};
+      // console.log("update globalAudioContext: %o, globalAudioGain: %o, cachedWebAudioBuffer: %o", globalAudioContext, globalAudioGain, cachedWebAudioBuffer);
+    }
+    // console.log("globalAudioContext: %o, globalAudioGain: %o, cachedWebAudioBuffer: %o", globalAudioContext, globalAudioGain, cachedWebAudioBuffer);
+    return [globalAudioContext, globalAudioGain];
   }, []);
-  useEffect(() => {
-    return () => {
-      audioContext?.close();
-    };
-  }, [audioContext]);
 
   // File-scope variables
-  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | undefined>(cachedWebAudioBuffer[mediaUrl]);
   useEffect(() => {
     let active = true;
-    setTimeout(load, 0);
+    requestIdleCallback(load);
     return () => {
       active = false;
     };
@@ -889,13 +789,18 @@ export function useWebAudio(mediaUrl: string) {
         }
         return ps;
       });
+      // console.log(cachedWebAudioBuffer);
+      if (!cachedWebAudioBuffer[mediaUrl]) {
+        if (!active) return;
+        const response = await fetch(mediaUrl);
+        if (!active) return;
+        const arrayBuffer = await response.arrayBuffer();
+        if (!active) return;
+        cachedWebAudioBuffer[mediaUrl] = await audioContext.decodeAudioData(arrayBuffer);
+        // console.log("update buffer", cachedWebAudioBuffer[mediaUrl]);
+      }
       if (!active) return;
-      const response = await fetch(mediaUrl);
-      const arrayBuffer = await response.arrayBuffer();
-      if (!active) return;
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      if (!active) return;
-      setAudioBuffer(audioBuffer);
+      setAudioBuffer(cachedWebAudioBuffer[mediaUrl]);
     }
   }, [mediaUrl, audioContext, setAudioBuffer, audioGain]);
 

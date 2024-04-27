@@ -470,7 +470,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         },
         { indices: [], start: -Infinity, end: Infinity, borderIndex: Infinity }
       );
-      console.log("set current line", record);
+      // console.log("set current line", record);
       setCurrentLine(record);
     }
 
