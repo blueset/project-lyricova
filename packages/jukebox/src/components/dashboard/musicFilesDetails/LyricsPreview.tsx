@@ -59,8 +59,8 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow({
         {
           color: "text.secondary",
           marginBottom: 2,
-          textAlign: "center",
-          fontSize: "1rem",
+          textAlign: "start",
+          fontSize: "1.2rem",
           minHeight: "1.5em",
         },
         isActive && {
@@ -74,6 +74,9 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow({
             backgroundSize: "0% 100%",
           },
         },
+        line.attachments.role % 3 === 1 && { textAlign: "end" },
+        line.attachments.role % 3 === 2 && { textAlign: "center" },
+        line.attachments.minor && { fontSize: "1rem", opacity: 0.75 },
       ]}
       ref={(elm: HTMLDivElement) => {
         if (!elm || boxRef.current === elm) return;
@@ -124,7 +127,7 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
   const containerRef = useRef<HTMLDivElement>();
   
   const { playerState, currentFrame, segments } = useActiveLyrcsRanges(
-    lyrics.lines,
+    lyrics?.lines ?? [],
     playerRef
   );
   const currentFrameRef = useRef(currentFrame);
@@ -171,6 +174,7 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
         sx={{
           height: "calc(100vh - 15rem)",
           overflow: "scroll",
+          paddingInline: "calc(50% - 30ch)",
           "&:before, &:after": {
             content: '""',
             height: "50%",

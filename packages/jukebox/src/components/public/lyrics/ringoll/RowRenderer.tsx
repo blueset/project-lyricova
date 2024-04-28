@@ -5,21 +5,39 @@ import { RowRendererProps } from "./LyricsVirtualizer";
 import { styled } from "@mui/material/styles";
 import { LineRenderer } from "./LineRenderer";
 
-const RowContainer = styled(animated.div)({
-  position: "absolute",
-  fontSize: "2em",
-  willChange: "translate, opacity, filter",
-  minHeight: "0.5em",
-  maxWidth: "calc(100% - 4rem)",
-  padding: "1rem 3rem 1rem 2rem",
-  transition: "filter 0.5s",
-  margin: "0 -2rem",
-  borderRadius: "0 0.75rem 0.75rem 0",
-  "&:hover": {
-    filter: "blur(0) !important",
-    backgroundColor: "color-mix(in srgb, currentcolor 20%, transparent)",
+const RowContainer = styled(animated.div)(({"data-role": role, "data-minor": minor}: {"data-role": number, "data-minor": boolean}) => [
+  {
+    position: "absolute",
+    fontSize: "2em",
+    willChange: "translate, opacity, filter",
+    minHeight: "0.5em",
+    maxWidth: "calc(100% - 4rem)",
+    transition: "filter 0.5s",
+    "&:hover": {
+      filter: "blur(0) !important",
+      backgroundColor: "color-mix(in srgb, currentcolor 20%, transparent)",
+    },
   },
-});
+  role % 3 === 0 && { 
+    textAlign: "start",
+    padding: "1rem 3rem 1rem 2rem",
+    left: 0,
+    borderRadius: "0 0.75rem 0.75rem 0",
+  },
+  role % 3 === 1 && { 
+    textAlign: "end",
+    padding: "1rem 2rem 1rem 3rem",
+    right: 0,
+    borderRadius: "0.75rem 0 0 0.75rem ",
+  },
+  role % 3 === 2 && { 
+    textAlign: "center",
+    padding: "1rem 0",
+    width: "100%",
+    borderRadius: "0.75rem",
+  },
+  minor && { fontSize: "1.25em" },
+]);
 
 const TranslationContainer = styled("div")((props: { dim: boolean }) => ({
   opacity: props.dim ? 0.5 : 1,
@@ -73,6 +91,8 @@ const InnerRowRenderer = forwardRef<
           ...springs,
         }}
         onClick={onClick}
+        data-role={row.attachments.role}
+        data-minor={row.attachments.minor}
       >
         <LineRenderer
           line={row}

@@ -64,6 +64,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
     webvtt +=
       'STYLE\n::cue(.tt) {\n  font-variant-numeric: "tabular-nums";\n}\n\n';
     webvtt += "STYLE\n::cue(.pndg) {\n  opacity: 0.3;\n}\n\n";
+    webvtt += "STYLE\n::cue(.min) {\n  font-size: 0.75em;\n  color: #00ffff;\n}\n\n";
 
     const trackNumbers = lyrics.lines
       .flatMap((line, idx, arr) => [
@@ -85,7 +86,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
         trackToIdx: { [track: number]: number };
         idxToTrack: { [idx: number]: number };
       }>(
-        (acc, { idx, offset, time }) => {
+        (acc, { idx, offset }) => {
           if (offset === 1) {
             let firstAvailableLayer = 0;
             while (acc.trackToIdx[firstAvailableLayer] !== undefined) {
@@ -113,6 +114,10 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
         const end =
           lyrics.lines[idx + 1]?.timeTag?.substring(0, 10) ?? "99:59.999";
         const vttOffsiteLine = (trackNumbers[idx] ?? 0) * 4;
+        const role = (v.attachments.role ?? 0) % 3;
+        const align = role === 0 ? "start" : role === 1 ? "end" : "middle";
+        const minor = v.attachments.minor ? ".min" : "";
+        const metadata = `#${idx}${vttOffsiteLine !== 0 ? "&" + vttOffsiteLine : ""}${role !== 0 ? "R" + role : ""}${v.attachments.minor ? "Min" : ""}`;
         if (v.attachments.timeTag?.tags) {
           const base = v.content;
           const timeTags = v.attachments.timeTag?.tags;
@@ -126,7 +131,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
             } as LyricsLine)}`;
             const endTimeTag = buildTimeTag(startTime + timeTag);
             lineCounter++;
-            result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:${vttOffsiteLine} align:start\n<c.tt>[${start}] (@ ${ptrTime} #${idx}&${vttOffsiteLine})</c>\n${formattedSection}<c.pndg>${divider}${base.substring(
+            result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:${vttOffsiteLine} align:${align}\n<c.tt${minor}>[${start}] (@ ${ptrTime} ${metadata})</c>\n${formattedSection}<c.pndg>${divider}${base.substring(
               index
             )}</c>`;
             if (v.attachments.translation()) {
@@ -138,7 +143,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
           if (timeTags[timeTags.length - 1].index < base.length) {
             const formattedSection = `${convertLine(v)}`;
             lineCounter++;
-            result += `${lineCounter}\n${ptrTime} --> ${end} line:${vttOffsiteLine} align:start\n<c.tt>[${start}] (@ ${ptrTime} #${idx}&${vttOffsiteLine})</c>\n${formattedSection}`;
+            result += `${lineCounter}\n${ptrTime} --> ${end} line:${vttOffsiteLine} align:${align}\n<c.tt${minor}>[${start}] (@ ${ptrTime} ${metadata})</c>\n${formattedSection}`;
           }
           return result.trimEnd();
         } else {
@@ -147,7 +152,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
             text += `\n${v.attachments.translation()}`;
           }
           lineCounter++;
-          return `${lineCounter}\n${start} --> ${end} line:${vttOffsiteLine} align:start\n<c.tt>[${start}] (#${idx}&${vttOffsiteLine})</c>\n${text}`;
+          return `${lineCounter}\n${start} --> ${end} line:${vttOffsiteLine} align:${align}\n<c.tt${minor}>[${start}] (${metadata})</c>\n${text}`;
         }
       })
       .join("\n\n");

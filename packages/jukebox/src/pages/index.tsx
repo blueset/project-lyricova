@@ -53,6 +53,8 @@ const LYRICS_QUERY = gql`
               leftIndex
               rightIndex
             }
+            role
+            minor
           }
         }
       }

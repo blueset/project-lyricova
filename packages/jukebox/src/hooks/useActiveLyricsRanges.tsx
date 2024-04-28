@@ -54,6 +54,7 @@ export function segmentsToKeyframes(
     { time: segment.end, action: END, lineIndex: segment.lineIndex },
   ]);
   actions.sort((a, b) => a.time - b.time);
+  // console.log("actions:", actions);
 
   const keyframes: PlayerLyricsKeyframe<LyricsKeyframeInfo>[] = [];
   actions.forEach(({ time, lineIndex, action }) => {
@@ -63,6 +64,9 @@ export function segmentsToKeyframes(
       if (action === START) {
         lastKeyFrame.data.activeSegments.push(lineIndex);
         lastKeyFrame.data.rangeEnd = lineIndex + 1;
+        if (lastKeyFrame.data.activeSegments.length === 1) {
+          lastKeyFrame.data.rangeStart = lineIndex;
+        }
       } else {
         lastKeyFrame.data.activeSegments =
           lastKeyFrame.data.activeSegments.filter(

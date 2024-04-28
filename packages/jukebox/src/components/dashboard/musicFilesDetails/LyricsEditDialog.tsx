@@ -207,12 +207,12 @@ export default function LyricsEditDialog({
                 value="translation"
               />
               <Tab disabled={needsCommit} label="Furigana" value="furigana" />
-              <Tab disabled={needsCommit} label="Roles" value="roles" />
               <Tab
                 disabled={needsCommit}
-                label="* Inline Tagging"
+                label="Inline Tagging"
                 value="inline"
               />
+              <Tab disabled={needsCommit} label="Roles" value="roles" />
               <Tab disabled={needsCommit} label="* Tagging" value="tagging" />
             </Tabs>
             <IconButton

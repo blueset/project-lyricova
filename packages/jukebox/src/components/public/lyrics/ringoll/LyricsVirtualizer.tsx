@@ -7,7 +7,6 @@ import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
 import { type LyricsSegment, useActiveLyrcsRanges } from "../../../../hooks/useActiveLyricsRanges";
 import { useAppContext } from "../../AppContext";
 import { VirtualizerRowRenderProps, useLyricsVirtualizer } from "./useLyricsVirtualizer";
-import { usePlayerState } from "../../../../hooks/usePlayerState";
 import { LyricsAnimationRef } from "./AnimationRef.type";
 
 export interface RowRendererProps<T> {
