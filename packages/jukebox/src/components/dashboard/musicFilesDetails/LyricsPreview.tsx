@@ -1,7 +1,5 @@
 import {
-  PropsWithRef,
   Ref,
-  StrictMode,
   forwardRef,
   memo,
   useCallback,
@@ -14,10 +12,8 @@ import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import { measureTextWidths } from "../../../frontendUtils/measure";
 import { Box, styled } from "@mui/material";
 import { useActiveLyrcsRanges } from "../../../hooks/useActiveLyricsRanges";
+import { FullWidthAudio } from "./FullWIdthAudio";
 
-const FullWidthAudio = styled("audio")({
-  width: "100%",
-});
 const TranslationRow = styled("div")({
   fontSize: "0.8em",
 });
@@ -29,7 +25,6 @@ interface LyricsRowRefs {
 }
 
 type LyricsRowProps = { line: LyricsLine; isActive?: boolean, start?: number, end?: number };
-type LyricsRowPropsWithRef = LyricsRowProps & {ref: Ref<LyricsRowRefs>};
 
 const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow({ line, isActive, start = 0, end = 1e100 }, ref) {
   const boxRef = useRef<HTMLDivElement>();

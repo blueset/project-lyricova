@@ -12,6 +12,8 @@ export const TRANSLATION = "tr";
 export const TIME_TAG = "tt";
 export const FURIGANA = "fu";
 export const ROMAJI = "ro";
+export const METADATA_ROLE = "meta:role";
+export const METADATA_MINOR = "meta:minor";
 
 function makeTranslationTag(languageCode: string | null): string {
   if (languageCode) return `${TRANSLATION}:${languageCode}`;
@@ -181,6 +183,8 @@ export type AttachmentsContent = {
   [TRANSLATION]?: PlainText;
   [FURIGANA]?: RangeAttribute;
   [ROMAJI]?: RangeAttribute;
+  [METADATA_ROLE]?: PlainText;
+  [METADATA_MINOR]?: PlainText;
   [key: string]: LyricsLineAttachment;
 };
 
@@ -199,6 +203,37 @@ export class Attachments {
 
   set timeTag(value: WordTimeTag | null) {
     this.content[TIME_TAG] = value;
+  }
+
+  /** 
+   * Specifies the singer of the line, where the default value 0 is usually the main singer.
+   * Up to 3 roles (0, 1, 2) are supported in Lyricova Jukebox.
+   */
+  get role(): number {
+    return this.content[METADATA_ROLE] && parseInt(this.content[METADATA_ROLE].toString()) || 0;
+  }
+
+  set role(value: number) {
+    if (value === 0) {
+      delete this.content[METADATA_ROLE];
+    } else {
+      this.content[METADATA_ROLE] = Attachments.createAttachment(METADATA_ROLE, value.toString());
+    }
+  }
+
+  /**
+   * Specifies if the line should be rendered in a smaller size. Default is 0.
+   */
+  get minor(): boolean {
+    return this.content[METADATA_MINOR]?.toString() === "1";
+  }
+
+  set minor(value: boolean) {
+    if (value) {
+      this.content[METADATA_MINOR] = Attachments.createAttachment(METADATA_MINOR, "1");
+    } else {
+      delete this.content[METADATA_MINOR];
+    }
   }
 
   public translation(
@@ -224,13 +259,15 @@ export class Attachments {
     this.content[tag] = Attachments.createAttachment(tag, value);
   }
 
-  static createAttachment(tag: string, str: string): LyricsLineAttachment {
+  static createAttachment<T extends string>(tag: T, str: string): AttachmentsContent[T] {
     switch (tag) {
       case TIME_TAG:
         return new WordTimeTag(str);
       case FURIGANA:
       case ROMAJI:
         return new RangeAttribute(str);
+      case METADATA_ROLE:
+      case METADATA_MINOR:
       default:
         return new PlainText(str);
     }

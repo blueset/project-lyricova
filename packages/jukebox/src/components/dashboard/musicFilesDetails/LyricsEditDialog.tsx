@@ -27,6 +27,7 @@ import type { DocumentNode } from "graphql";
 import LyricsPreviewPanel from "./lyrics/WebVTTPreview";
 import WebAudioTaggingLyrics from "./lyrics/WebAudioTaggingLyrics";
 import InlineTagging from "./lyrics/InlineTagging";
+import Roles from "./lyrics/Roles";
 
 const WRITE_LYRICS_MUTATION = gql`
   mutation ($fileId: Int!, $lyrics: String!, $ext: String!) {
@@ -97,7 +98,7 @@ export default function LyricsEditDialog({
   }, [isOpen, initialLrc, initialLrcx, setLrc, setLrcx]);
 
   // Tab status
-  const [tabIndex, setTabIndex] = useNamedState("preview", "tabIndex");
+  const [tabIndex, setTabIndex] = useNamedState("webvttPreview", "tabIndex");
   const onTabSwitch = useCallback(
     (event: unknown, newValue: string) => {
       setTabIndex(newValue);
@@ -110,7 +111,8 @@ export default function LyricsEditDialog({
     tabIndex === "tagging" ||
     tabIndex === "translation" ||
     tabIndex === "furigana" ||
-    tabIndex === "inline";
+    tabIndex === "inline" ||
+    tabIndex === "roles";
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
@@ -189,12 +191,11 @@ export default function LyricsEditDialog({
               variant="scrollable"
               scrollButtons="auto"
             >
-              <Tab label="Preview" value="preview" />
               <Tab label="WebVTT Preview" value="webvttPreview" />
+              <Tab label="Preview" value="preview" />
               <Tab label="Download" value="download" />
               <Tab label="Edit" value="edit" />
               <Tab label="Edit Plain" value="editLrc" />
-              <Tab disabled={needsCommit} label="Tagging" value="tagging" />
               <Tab
                 disabled={needsCommit}
                 label="WebAudioAPI Tagging"
@@ -206,11 +207,13 @@ export default function LyricsEditDialog({
                 value="translation"
               />
               <Tab disabled={needsCommit} label="Furigana" value="furigana" />
+              <Tab disabled={needsCommit} label="Roles" value="roles" />
               <Tab
                 disabled={needsCommit}
-                label="Inline Tagging"
+                label="* Inline Tagging"
                 value="inline"
               />
+              <Tab disabled={needsCommit} label="* Tagging" value="tagging" />
             </Tabs>
             <IconButton
               color="inherit"
@@ -263,6 +266,9 @@ export default function LyricsEditDialog({
           </TabPanel>
           <TabPanel value="inline" sx={{ height: "100%" }}>
             <InlineTagging lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
+          </TabPanel>
+          <TabPanel value="roles">
+            <Roles lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
           </TabPanel>
         </DialogContent>
       </TabContext>

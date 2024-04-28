@@ -58,6 +58,7 @@ export class LyricsLine {
       .map((v) => `${timeLabel}${v}`)
       .join("\n");
   }
+
   public toLegacyString(options: ToLegacyStringOptions = {}): string {
     const { before, after, useFurigana } = Object.assign(
       {},

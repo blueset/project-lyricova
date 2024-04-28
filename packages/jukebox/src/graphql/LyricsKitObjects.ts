@@ -93,6 +93,8 @@ export class LyricsKitAttachment {
         (v) => new LyricsKitRangeAttachment(v)
       );
     }
+    this.role = attachment.role;
+    this.minor = attachment.minor;
   }
 
   @Field((type) => LyricsKitWordTimeAttachment, { nullable: true })
@@ -106,6 +108,12 @@ export class LyricsKitAttachment {
 
   @Field((type) => [LyricsKitRangeAttachment], { nullable: true })
   romaji?: LyricsKitRangeAttachment[];
+
+  @Field((type) => Int)
+  role = 0;
+
+  @Field((type) => Boolean)
+  minor = false;
 }
 
 @ObjectType({ description: "A line of parsed lyrics." })

@@ -91,7 +91,7 @@
     "standard-version": "^9.5.0",
     "trash-cli": "^3.0.0",
     "typedoc": "^0.23.19",
-    "typescript": "^5.0.4"
+    "typescript": "^5.4.5"
   },
   "ava": {
     "failFast": true,

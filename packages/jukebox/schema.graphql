@@ -198,6 +198,8 @@ scalar JSONObject
 """Attachments to a lyrics line."""
 type LyricsKitAttachment {
   furigana: [LyricsKitRangeAttachment!]
+  minor: Boolean!
+  role: Int!
   romaji: [LyricsKitRangeAttachment!]
   timeTag: LyricsKitWordTimeAttachment
   translation: String

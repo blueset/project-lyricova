@@ -86,7 +86,6 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
         idxToTrack: { [idx: number]: number };
       }>(
         (acc, { idx, offset, time }) => {
-          console.log(idx, offset, time);
           if (offset === 1) {
             let firstAvailableLayer = 0;
             while (acc.trackToIdx[firstAvailableLayer] !== undefined) {

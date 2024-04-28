@@ -2,6 +2,7 @@
   "compilerOptions": {
     "jsx": "preserve",
     "lib": [
+      "ESNext.Array",
       "es5",
       "es6",
       "DOM"

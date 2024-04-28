@@ -21,6 +21,7 @@ import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";
 import type { DocumentNode } from "graphql";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
+import { FullWidthAudio } from "../FullWIdthAudio";
 
 const KARAOKE_TRANSLITERATION_QUERY = gql`
   query ($text: String!) {
@@ -262,10 +263,9 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
           zIndex: 2,
         }}
       >
-        <audio
+        <FullWidthAudio
           src={`/api/files/${fileId}/file`}
           controls
-          style={{ width: "100%" }}
         />
       </Grid>
       <Grid

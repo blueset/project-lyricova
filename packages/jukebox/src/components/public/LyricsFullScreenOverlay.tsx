@@ -8,10 +8,8 @@ import {
 import { useNamedState } from "../../hooks/useNamedState";
 import { useAppContext } from "./AppContext";
 import {
-  Button,
   ToggleButtonGroup,
   IconButton,
-  Tooltip,
   styled,
   ToggleButton,
 } from "@mui/material";
@@ -38,6 +36,10 @@ const FullScreenControlDiv = styled("div")`
   left: 0;
   padding: 0.5rem;
 `;
+
+interface SO extends ScreenOrientation {
+  lock(orientation: string): Promise<void>;
+}
 
 export function LyricsFullScreenOverlay({
   children,
@@ -182,25 +184,25 @@ export function LyricsFullScreenOverlay({
                 } else {
                   await document.body?.requestFullscreen?.();
                   if (value === "0") {
-                    screen?.orientation
+                    (screen?.orientation as SO)
                       ?.lock?.("portrait-primary")
                       .catch(() => {
                         /* No-op */
                       });
                   } else if (value === "90") {
-                    screen?.orientation
+                    (screen?.orientation as SO)
                       ?.lock?.("landscape-primary")
                       .catch(() => {
                         /* No-op */
                       });
                   } else if (value === "180") {
-                    screen?.orientation
+                    (screen?.orientation as SO)
                       ?.lock?.("portrait-secondary")
                       .catch(() => {
                         /* No-op */
                       });
                   } else if (value === "270") {
-                    screen?.orientation
+                    (screen?.orientation as SO)
                       ?.lock?.("landscape-secondary")
                       .catch(() => {
                         /* No-op */

@@ -72,6 +72,6 @@
     "@types/react": "^18.0.28",
     "@types/uuid": "^9.0.1",
     "@types/yargs": "^17.0.32",
-    "typescript": "^5.0.4"
+    "typescript": "^5.4.5"
   }
 }

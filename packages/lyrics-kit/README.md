@@ -99,6 +99,21 @@ Taken from
 <segment range>             ::= <lowerBound> "," <upperBound>
 ```
 
+Predefind attachment tags:
+
+| Tag | Key | Value Type | Attachment type | Description |
+| --- | --- | --- | --- | --- |
+| Translation | `tr` | [RFC 4646](https://www.ietf.org/rfc/rfc4646.txt) | plain text | |
+| Word time tag | `tt` | - | index based | Timestamp in millisecond |
+| Furigana / Ruby | `fu` | - | range based | |
+| Romaji | `ro` | - | range based | (Not used in Lyricova.) |
+
+Lyricova’s extension:
+
+| Tag | Key | Value Type | Attachment type | Description |
+| --- | --- | --- | --- | --- |
+| Metadata | `meta` | `role`, `minor` | plain text | `role` (int ≥ 0): specifies the singer of the line, where the default value 0 is usually the main singer. Up to 3 roles (0, 1, 2) are supported in Lyricova Jukebox. <br/> `minor` (`0`, `1`): specifies if the line should be rendered in a smaller size. Default is `0`. |
+
 <details>
 <summary>My previous intepretation</summary>
 
@@ -164,7 +179,7 @@ non_negative_integer    ::= zero | positive_integer
 ---
 
     lyrics-kit: Fetch and parse lyrics from various sources.
-    Copyright (C) 2023  Eana Hufwe
+    Copyright (C) 2024  Eana Hufwe
     Copyright (C) 2020  ddddxxx
 
     This program is free software: you can redistribute it and/or modify
