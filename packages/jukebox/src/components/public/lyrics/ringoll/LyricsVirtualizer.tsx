@@ -4,7 +4,7 @@ import React, {
   useRef,
 } from "react";
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
-import { type LyricsSegment, useActiveLyrcsRange } from "./useActiveLyricsRange";
+import { type LyricsSegment, useActiveLyrcsRanges } from "../../../../hooks/useActiveLyricsRanges";
 import { useAppContext } from "../../AppContext";
 import { VirtualizerRowRenderProps, useLyricsVirtualizer } from "./useLyricsVirtualizer";
 import { usePlayerState } from "../../../../hooks/usePlayerState";
@@ -43,7 +43,7 @@ export function LyricsVirtualizer({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { playerRef } = useAppContext();
-  const playerState = usePlayerState(playerRef);
+  const { currentFrame, segments, playerState } = useActiveLyrcsRanges(rows, playerRef);
   const playerStateRef = useRef(playerState);
   playerStateRef.current = playerState;
 
@@ -64,11 +64,10 @@ export function LyricsVirtualizer({
     }
   }, [playerState]);
 
-  const { activeRange, segments } = useActiveLyrcsRange(rows, playerRef);
-  const endRow = activeRange.currentFrame?.data?.rangeEnd ?? 0;
-  const startRow = activeRange.currentFrame?.data?.rangeStart ?? 0;
+  const endRow = currentFrame?.data?.rangeEnd ?? 0;
+  const startRow = currentFrame?.data?.rangeStart ?? 0;
   const activeSegmentsRef = useRef<number[]>([]);
-  activeSegmentsRef.current = activeRange.currentFrame?.data?.activeSegments ?? [];
+  activeSegmentsRef.current = currentFrame?.data?.activeSegments ?? [];
   const animationRefs = useRef<LyricsAnimationRef[]>([]);
   const setRef = useCallback((index: number) => (ref?: LyricsAnimationRef) => {
     if (animationRefs.current[index] === ref) return;

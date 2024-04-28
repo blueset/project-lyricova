@@ -1,9 +1,10 @@
-import { usePlayerLyricsState } from "../../../../hooks/usePlayerLyricsState";
-import type { PlayerLyricsKeyframe } from "../../../../hooks/types";
+import { usePlayerLyricsState } from "./usePlayerLyricsState";
+import type { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
 import type {
   LyricsKitLyricsLine,
-} from "../../../../graphql/LyricsKitObjects";
+} from "../graphql/LyricsKitObjects";
 import { RefObject, useMemo } from "react";
+import type { LyricsLine } from "lyrics-kit/core";
 
 export interface LyricsSegment {
   lineIndex: number;
@@ -21,7 +22,7 @@ interface LyricsKeyframeInfo {
 
 /** Convert lyrics to time segments, and sort by start the end time. */
 export function lyricsToSegments(
-  lines: LyricsKitLyricsLine[]
+  lines: (LyricsKitLyricsLine[] | LyricsLine[])
 ): LyricsSegment[] {
   const segments: LyricsSegment[] = lines.map((line, index, lines) => {
     const start = line.position;
@@ -100,10 +101,10 @@ export function segmentsToKeyframes(
   return keyframes;
 }
 
-export function useActiveLyrcsRange(
-  lines: LyricsKitLyricsLine[],
+export function useActiveLyrcsRanges(
+  lines: (LyricsKitLyricsLine[] | LyricsLine[]),
   playerRef: RefObject<HTMLAudioElement>
-) {
+): PlayerLyricsState<LyricsKeyframeInfo> & { segments: LyricsSegment[] } {
   const {segments, keyframes} = useMemo(() => {
     const segments = lyricsToSegments(lines);
     const keyframes = segmentsToKeyframes(segments);
@@ -112,5 +113,5 @@ export function useActiveLyrcsRange(
   }, [lines]);
   const result = usePlayerLyricsState(keyframes, playerRef);
   // console.log("useActiveLyrcsRange result:", result.currentFrame?.data?.activeSegments, ", rangeStart:", result.currentFrame?.data?.rangeStart, ", rangeEnd:", result.currentFrame?.data?.rangeEnd);
-  return {segments, activeRange: result};
+  return {segments, ...result};
 }

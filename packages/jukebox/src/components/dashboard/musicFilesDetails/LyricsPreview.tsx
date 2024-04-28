@@ -1,13 +1,123 @@
-import { useEffect, useMemo, useRef } from "react";
+import {
+  PropsWithRef,
+  Ref,
+  StrictMode,
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import type { Lyrics, LyricsLine } from "lyrics-kit/core";
-import type { PlayerLyricsKeyframe } from "../../../hooks/types";
-import { usePlayerLyricsState } from "../../../hooks/usePlayerLyricsState";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
-import gsap from "gsap";
 import { measureTextWidths } from "../../../frontendUtils/measure";
-import { Box } from "@mui/material";
+import { Box, styled } from "@mui/material";
+import { useActiveLyrcsRanges } from "../../../hooks/useActiveLyricsRanges";
 
-type Timeline = gsap.core.Timeline;
+const FullWidthAudio = styled("audio")({
+  width: "100%",
+});
+const TranslationRow = styled("div")({
+  fontSize: "0.8em",
+});
+
+interface LyricsRowRefs {
+  resume(time: number): void;
+  pause(time: number): void;
+  scrollToCenter(): void;
+}
+
+type LyricsRowProps = { line: LyricsLine; isActive?: boolean, start?: number, end?: number };
+type LyricsRowPropsWithRef = LyricsRowProps & {ref: Ref<LyricsRowRefs>};
+
+const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow({ line, isActive, start = 0, end = 1e100 }, ref) {
+  const boxRef = useRef<HTMLDivElement>();
+  const webAnimationRef = useRef<Animation>(null);
+
+  useImperativeHandle(ref, () => ({
+    resume(time: number) {
+      if (webAnimationRef.current && start <= time && time <= end) {
+        webAnimationRef.current.currentTime = (time - start) * 1000;
+        webAnimationRef.current.play();
+      }
+    },
+    pause(time: number) {
+      if (webAnimationRef.current) {
+        if (start <= time && time <= end) {
+          webAnimationRef.current.currentTime = (time - start) * 1000;
+        }
+        webAnimationRef.current.pause();
+      }
+    },
+    scrollToCenter() {
+      requestAnimationFrame(() => boxRef.current.scrollIntoView({
+        block: "center",
+        behavior: "smooth",
+      }));
+    },
+  }));
+
+  return (
+    <Box
+      sx={[
+        {
+          color: "text.secondary",
+          marginBottom: 2,
+          textAlign: "center",
+          fontSize: "1rem",
+          minHeight: "1.5em",
+        },
+        isActive && {
+          color: "secondary.main",
+          fontWeight: "bold",
+          "& > .furigana": {
+            display: "inline",
+            backgroundImage: "linear-gradient(0deg, #923cbd, #923cbd)",
+            backgroundBlendMode: "difference",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "0% 100%",
+          },
+        },
+      ]}
+      ref={(elm: HTMLDivElement) => {
+        if (!elm || boxRef.current === elm) return;
+        console.log("called row ref", elm);
+        boxRef.current = elm;
+        const tags = line?.attachments?.timeTag?.tags;
+        if (elm && tags?.length) {
+          const target = elm.querySelector(".furigana") as HTMLDivElement;
+          target.style.backgroundSize = "0% 100%";
+          const lengths = measureTextWidths(target);
+          const length = lengths.at(-1);
+          const percentages = lengths.map((v) => (v / length) * 100);
+          const duration = end - start;
+          const keyframes = tags.map((v) => ({
+            offset: Math.min(1, Math.max(v.timeTag / duration, 0)),
+            backgroundSize: `${percentages[v.index - 1] ?? 0}% 100%`,
+          }));
+
+          webAnimationRef.current = target.animate(keyframes, {
+            duration: duration * 1000,
+            fill: "forwards",
+            id: `background-size-${line.position}`
+          });
+          webAnimationRef.current.pause();
+        }
+      }}
+    >
+      <div className="furigana">
+        <FuriganaLyricsLine lyricsKitLine={line} />
+      </div>
+      <TranslationRow>{line.attachments.translation()}</TranslationRow>
+    </Box>
+  );
+})
+const LyricsRowMemo = memo(LyricsRow, (prev, next) => {
+  return prev.line === next.line && !!prev.isActive === !!next.isActive && prev.start === next.start && prev.end === next.end;
+});
+
+LyricsRowMemo.displayName = "LyricsRowMemo";
 
 interface Props {
   lyrics: Lyrics;
@@ -17,92 +127,50 @@ interface Props {
 export default function LyricsPreview({ lyrics, fileId }: Props) {
   const playerRef = useRef<HTMLAudioElement>();
   const containerRef = useRef<HTMLDivElement>();
-  const currentLineRef = useRef<HTMLDivElement>();
-
-  const keyFrames: PlayerLyricsKeyframe<LyricsLine>[] = useMemo(
-    () =>
-      (lyrics?.lines ?? []).map((v) => ({
-        start: v.position,
-        data: v,
-      })),
-    [lyrics]
+  
+  const { playerState, currentFrame, segments } = useActiveLyrcsRanges(
+    lyrics.lines,
+    playerRef
   );
-  const { playerState, currentFrame, currentFrameId } =
-    usePlayerLyricsState(keyFrames, playerRef);
+  const currentFrameRef = useRef(currentFrame);
+  currentFrameRef.current = currentFrame;
 
-  const timelineRef = useRef<Timeline>();
-  useEffect(() => {
-    if (timelineRef.current) timelineRef.current.kill();
-    const tl = gsap.timeline({ paused: playerState.state === "paused" });
-    if (currentLineRef.current) {
-      const target = currentLineRef.current.querySelector(
-        ".furigana"
-      ) as HTMLDivElement;
-      if (currentFrame.data.attachments?.timeTag) {
-        target.style.backgroundSize = "0% 100%";
-        const lengths = measureTextWidths(target);
-        const length = lengths[lengths.length - 1];
-        const percentages = lengths.map((v) => (v / length) * 100);
-        const tags = currentFrame.data.attachments.timeTag.tags;
-        tags.forEach((v, idx) => {
-          const duration =
-            idx > 0 ? v.timeTag - tags[idx - 1].timeTag : v.timeTag;
-          const start = idx > 0 ? tags[idx - 1].timeTag : 0;
-          let percentage = 0;
-          if (v.index > 0) percentage = percentages[v.index - 1];
-          tl.to(
-            target,
-            {
-              backgroundSize: `${percentage}% 100%`,
-              ease: "none",
-              duration,
-            },
-            start
-          );
-        });
-      }
-    }
-    timelineRef.current = tl;
-  }, [currentFrame, playerState.state]);
-
-  useEffect(() => {
-    if (currentLineRef.current) {
-      currentLineRef.current.scrollIntoView({
-        block: "center",
-        behavior: "smooth",
-      });
-    }
-  }, [currentFrame]);
+  const rowRefs = useRef<LyricsRowRefs[]>([]);
 
   // Controls the progress of timeline
   useEffect(() => {
-    const timeline = timelineRef.current;
-    const now = performance.now();
-    const startTime = currentFrame?.start ?? 0;
-
-    if (timeline) {
+    const activeSegments = currentFrameRef.current?.data.activeSegments ?? [];
+    activeSegments.forEach((idx) => {
       if (playerState.state === "playing") {
-        const inlineProgress =
-          (now - playerState.startingAt) / 1000 - startTime;
-        timeline.seek(inlineProgress);
-        timeline.play();
+        const now = performance.now();
+        const progress = (now - playerState.startingAt) / 1000;
+        rowRefs.current[idx]?.resume(progress);
       } else {
-        const inlineProgress = playerState.progress - startTime;
-        timeline.pause();
-        timeline.seek(inlineProgress);
+        rowRefs.current[idx]?.pause(playerState.progress);
       }
+    });
+    if (activeSegments.length) {
+      rowRefs.current[activeSegments.at(-1)]?.scrollToCenter();
     }
-    // Removing currentFrame?.start as we don’t want it to trigger for every line update.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerState]);
+  }, [playerState, currentFrame]);
+
+  // Row ref cache to prevent row rerender.
+  const rowRefUpdaterCache = useRef<((r: LyricsRowRefs) => void)[]>([]);
+  const rowRefUpdater = useCallback((idx: number) => {
+    if (!rowRefUpdaterCache.current[idx]) {
+      rowRefUpdaterCache.current[idx] = (r: LyricsRowRefs) => {
+        rowRefs.current[idx] = r;
+      };
+    }
+    return rowRefUpdaterCache.current[idx];
+   }, []);
 
   return (
     <div>
-      <audio
+      <FullWidthAudio
         ref={playerRef}
         src={`/api/files/${fileId}/file`}
         controls
-        style={{ width: "100%" }}
       />
       <Box
         sx={{
@@ -117,37 +185,14 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
         ref={containerRef}
       >
         {(lyrics?.lines ?? []).map((v, idx) => (
-          <Box
+          <LyricsRowMemo
             key={idx}
-            sx={[
-              {
-                color: "text.secondary",
-                marginBottom: 2,
-                textAlign: "center",
-                fontSize: "1rem",
-                minHeight: "1.5em",
-              },
-              idx == currentFrameId && {
-                color: "secondary.main",
-                fontWeight: "bold",
-                "& > .furigana": {
-                  display: "inline",
-                  backgroundImage: "linear-gradient(0deg, #923cbd, #923cbd)",
-                  backgroundBlendMode: "difference",
-                  backgroundRepeat: "no-repeat",
-                  backgroundSize: "0% 100%",
-                },
-              },
-            ]}
-            ref={idx === currentFrameId ? currentLineRef : null}
-          >
-            <div className="furigana">
-              <FuriganaLyricsLine lyricsKitLine={v} />
-            </div>
-            <div style={{ fontSize: "0.8em" }}>
-              {v.attachments.translation()}
-            </div>
-          </Box>
+            line={v}
+            start={segments[idx]?.start}
+            end={segments[idx]?.end}
+            isActive={currentFrame?.data.activeSegments.includes(idx)}
+            ref={rowRefUpdater(idx)}
+          />
         ))}
       </Box>
     </div>
