@@ -4,8 +4,9 @@
  * LRC Maker (https://github.com/magic-akari/lrc-maker)
  * Copyright (c) 阿卡琳 licensed under MIT License
  */
-import type { PlayerState } from "../../../../frontendUtils/hooks";
-import { useNamedState, usePlayerState } from "../../../../frontendUtils/hooks";
+import type { PlayerState } from "../../../../hooks/types";
+import { useNamedState } from "../../../../hooks/useNamedState";
+import { usePlayerState } from "../../../../hooks/usePlayerState";
 import type { MouseEvent, ChangeEvent, MouseEventHandler } from "react";
 import { useCallback, useEffect, useRef, useMemo, memo } from "react";
 import {

@@ -27,7 +27,7 @@ import {
   useCallback,
 } from "react";
 import ButtonRow from "../ButtonRow";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import { gql, useLazyQuery } from "@apollo/client";
 import type { MusicDlSearchResult } from "../../graphql/DownloadResolver";
 import Alert from "@mui/material/Alert";

@@ -1,6 +1,6 @@
 import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState } from "../../../frontendUtils/hooks";
+import { useLyricsState } from "../../../hooks/useLyricsState";
 import { Box } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
 import type { DocumentNode } from "graphql";

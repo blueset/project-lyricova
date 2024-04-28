@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import ImageNotSupportedIcon from "@mui/icons-material/ImageNotSupported";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { useNamedState } from "../../../hooks/useNamedState";
 import type { ChangeEvent} from "react";
 import { useCallback, useEffect } from "react";
 import axios from "axios";

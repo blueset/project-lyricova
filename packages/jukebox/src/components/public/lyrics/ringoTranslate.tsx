@@ -3,7 +3,7 @@ import type {
   LyricsKitLyricsLine,
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState } from "../../../frontendUtils/hooks";
+import { useLyricsState } from "../../../hooks/useLyricsState";
 import { styled } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import _ from "lodash";

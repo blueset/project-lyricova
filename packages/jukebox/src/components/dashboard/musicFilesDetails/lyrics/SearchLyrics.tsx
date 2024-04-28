@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { TextField } from "mui-rff";
 import { gql, useApolloClient } from "@apollo/client";
-import { useNamedState } from "../../../../frontendUtils/hooks";
+import { useNamedState } from "../../../../hooks/useNamedState";
 import type { LyricsKitLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
 import { useSnackbar } from "notistack";
 import {

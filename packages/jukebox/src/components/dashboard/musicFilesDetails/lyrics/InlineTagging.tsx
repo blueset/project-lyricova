@@ -14,11 +14,9 @@ import React, {
   useState,
   memo,
 } from "react";
-import {
-  WebAudioPlayerState,
-  useNamedState,
-  useWebAudio,
-} from "../../../../frontendUtils/hooks";
+import type { WebAudioPlayerState } from "../../../../hooks/types";
+import { useNamedState } from "../../../../hooks/useNamedState";
+import { useWebAudio } from "../../../../hooks/useWebAudio";
 import { Box, Button, Stack, styled } from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
 import { InlineTaggingLineMemo } from "./InlineTaggingLine";

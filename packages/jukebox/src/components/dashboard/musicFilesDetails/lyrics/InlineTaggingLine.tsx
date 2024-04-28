@@ -2,7 +2,7 @@ import { IconButton, Tooltip, styled } from "@mui/material";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
 import { MutableRefObject, memo, useEffect, useRef, useState } from "react";
 import { measureTextWidths } from "../../../../frontendUtils/measure";
-import { WebAudioPlayerState } from "../../../../frontendUtils/hooks";
+import type { WebAudioPlayerState } from "../../../../hooks/types";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import gsap from "gsap";
 

@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useSnackbar } from "notistack";
 import { Lyrics } from "lyrics-kit/core";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { useNamedState } from "../../../hooks/useNamedState";
 import LyricsEditDialog from "./LyricsEditDialog";
 import { gql, useApolloClient } from "@apollo/client";
 import type { DocumentNode } from "graphql";

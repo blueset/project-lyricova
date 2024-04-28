@@ -45,7 +45,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import _ from "lodash";
 import SelectMusicFileBox from "../../../components/dashboard/selectMusicFileBox";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { useNamedState } from "../../../hooks/useNamedState";
 import { useCallback } from "react";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import type { DocumentNode } from "graphql";

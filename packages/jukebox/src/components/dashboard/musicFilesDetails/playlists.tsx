@@ -17,7 +17,7 @@ import _ from "lodash";
 import type { ReactNode} from "react";
 import { useCallback, useEffect } from "react";
 import PlaylistAvatar from "../../PlaylistAvatar";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { useNamedState } from "../../../hooks/useNamedState";
 import AddIcon from "@mui/icons-material/Add";
 import { useSnackbar } from "notistack";
 import {

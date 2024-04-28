@@ -1,4 +1,4 @@
-import type { LyricsKitLyrics } from "../../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
 
 export type LyricsFrameCallback = (
   thisLine: number,

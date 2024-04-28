@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { Lyrics, LyricsLine } from "lyrics-kit/core";
-import type { PlayerLyricsKeyframe } from "../../../frontendUtils/hooks";
-import { usePlayerLyricsState } from "../../../frontendUtils/hooks";
+import type { PlayerLyricsKeyframe } from "../../../hooks/types";
+import { usePlayerLyricsState } from "../../../hooks/usePlayerLyricsState";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
 import { measureTextWidths } from "../../../frontendUtils/measure";
@@ -27,7 +27,7 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
       })),
     [lyrics]
   );
-  const { playerState, currentFrame, currentFrameId, endTime } =
+  const { playerState, currentFrame, currentFrameId } =
     usePlayerLyricsState(keyFrames, playerRef);
 
   const timelineRef = useRef<Timeline>();
@@ -63,7 +63,7 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
       }
     }
     timelineRef.current = tl;
-  }, [currentFrame, endTime, playerState.state]);
+  }, [currentFrame, playerState.state]);
 
   useEffect(() => {
     if (currentLineRef.current) {

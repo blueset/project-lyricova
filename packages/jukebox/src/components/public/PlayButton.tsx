@@ -5,7 +5,7 @@ import type { Theme } from "@mui/material";
 import { Fab, CircularProgress, useMediaQuery } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import { useAppDispatch, useAppSelector } from "../../redux/public/store";
 import { playTrack } from "../../redux/public/playlist";
 

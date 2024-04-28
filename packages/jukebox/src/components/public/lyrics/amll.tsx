@@ -5,7 +5,7 @@ import type {
   LyricWord as AMLLyricWord,
 } from "@applemusic-like-lyrics/core";
 import { useAppContext } from "../AppContext";
-import { usePlayerState } from "../../../frontendUtils/hooks";
+import { usePlayerState } from "../../../hooks/usePlayerState";
 import styled from "@emotion/styled";
 import dynamic from "next/dynamic";
 

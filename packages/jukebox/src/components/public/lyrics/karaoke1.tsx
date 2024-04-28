@@ -4,7 +4,7 @@ import type {
   LyricsKitWordTimeTag,
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
+import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import { Box, Stack } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import gsap from "gsap";

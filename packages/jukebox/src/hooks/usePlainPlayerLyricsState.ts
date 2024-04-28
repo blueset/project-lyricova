@@ -1,5 +1,5 @@
 import { RefObject, useMemo } from "react";
-import { LyricsKitLyrics, LyricsKitLyricsLine } from "../../graphql/LyricsKitObjects";
+import { LyricsKitLyrics, LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
 import { PlayerLyricsState, PlayerLyricsKeyframe } from "./types";
 import { usePlayerLyricsState } from "./usePlayerLyricsState";
 

@@ -1,7 +1,5 @@
-import {
-  PlayerLyricsKeyframe,
-  usePlayerLyricsState,
-} from "../../../../frontendUtils/hooks";
+import { usePlayerLyricsState } from "../../../../hooks/usePlayerLyricsState";
+import type { PlayerLyricsKeyframe } from "../../../../hooks/types";
 import type {
   LyricsKitLyricsLine,
 } from "../../../../graphql/LyricsKitObjects";

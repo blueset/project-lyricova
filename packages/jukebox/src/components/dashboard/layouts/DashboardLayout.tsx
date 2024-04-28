@@ -35,7 +35,7 @@ import GetAppIcon from "@mui/icons-material/GetApp";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import CloseIcon from "@mui/icons-material/Close";
 import RttIcon from "@mui/icons-material/Rtt";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { useNamedState } from "../../../hooks/useNamedState";
 import {
   AuthContext,
   AuthContextConsumer,

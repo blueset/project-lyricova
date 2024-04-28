@@ -10,7 +10,7 @@ import {
   Tabs,
 } from "@mui/material";
 import { useCallback, useEffect } from "react";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import { TabContext, TabPanel } from "@mui/lab";
 import InfoPanel from "./musicFilesDetails/info";
 import { SongFragments } from "lyricova-common/utils/fragments";

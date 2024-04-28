@@ -6,7 +6,7 @@ import {
   Stepper,
   Typography,
 } from "@mui/material";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
 import { makeStyles } from "@mui/material/styles";
 import type { ReactNode } from "react";

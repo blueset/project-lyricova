@@ -10,7 +10,7 @@ import {
 import { gql, useApolloClient, useMutation } from "@apollo/client";
 import { useCallback } from "react";
 import { MusicFilesScanOutcome } from "../../graphql/MusicFileResolver";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import { LyricsKitLyricsEntry } from "../../graphql/LyricsProvidersResolver";
 import { useSnackbar } from "notistack";
 import type { Artist } from "lyricova-common/models/Artist";

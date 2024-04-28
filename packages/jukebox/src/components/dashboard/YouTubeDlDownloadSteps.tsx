@@ -21,7 +21,7 @@ import type {
 } from "react";
 import { useCallback } from "react";
 import ButtonRow from "../ButtonRow";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import filesize from "filesize";

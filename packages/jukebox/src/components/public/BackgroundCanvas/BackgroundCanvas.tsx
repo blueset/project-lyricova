@@ -13,7 +13,7 @@ import ColorThief from "colorthief";
 import { styled } from "@mui/material";
 import { FBMWaveMethod } from "./fbm-wave";
 import dynamic from "next/dynamic";
-import { usePlayerState } from "../../../frontendUtils/hooks";
+import { usePlayerState } from "../../../hooks/usePlayerState";
 
 const BackgroundRenderNoSSR = dynamic(
   () => import("../compat/amllBackground").then((m) => m.BackgroundRender),

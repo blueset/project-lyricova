@@ -4,7 +4,8 @@ import type {
   LyricsKitWordTimeTag,
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState, usePlayerState } from "../../../frontendUtils/hooks";
+import { useLyricsState } from "../../../hooks/useLyricsState";
+import { usePlayerState } from "../../../hooks/usePlayerState";
 import { styled } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import _ from "lodash";

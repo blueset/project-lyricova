@@ -6,8 +6,8 @@ import { useAppContext } from "../AppContext";
 import type {
   PlayerLyricsKeyframe,
   PlayerLyricsState,
-} from "../../../frontendUtils/hooks";
-import { usePlayerLyricsState } from "../../../frontendUtils/hooks";
+} from "../../../hooks/types";
+import { usePlayerLyricsState } from "../../../hooks/usePlayerLyricsState";
 import { Box, styled } from "@mui/material";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";

@@ -1,9 +1,7 @@
 import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import {
-  usePlainPlayerLyricsState,
-  useTrackwiseTimelineControl,
-} from "../../../frontendUtils/hooks";
+import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
+import { useTrackwiseTimelineControl } from "../../../hooks/useTrackwiseTimelineControl";
 import { Box } from "@mui/material";
 import type { CSSProperties } from "react";
 import { useMemo, useRef } from "react";

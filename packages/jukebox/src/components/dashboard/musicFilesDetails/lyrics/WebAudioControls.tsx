@@ -12,10 +12,8 @@ import PauseIcon from "@mui/icons-material/Pause";
 import Forward5Icon from "@mui/icons-material/Forward5";
 import Replay5Icon from "@mui/icons-material/Replay5";
 import SpeedIcon from "@mui/icons-material/Speed";
-import {
-  WebAudioPlayerState,
-  useNamedState,
-} from "../../../../frontendUtils/hooks";
+import { useNamedState } from "../../../../hooks/useNamedState";
+import type { WebAudioPlayerState } from "../../../../hooks/types";
 import { memo, useCallback } from "react";
 
 export interface WebAudioControlsProps {

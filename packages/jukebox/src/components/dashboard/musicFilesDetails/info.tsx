@@ -25,7 +25,7 @@ import { useSnackbar } from "notistack";
 import type { DocumentNode } from "graphql";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import { AlbumFragments } from "lyricova-common/utils/fragments";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { useNamedState } from "../../../hooks/useNamedState";
 
 const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
   mutation ($id: Int!, $data: MusicFileInput!) {

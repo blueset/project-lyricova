@@ -6,7 +6,7 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { useField, useForm } from "react-final-form";
 import { Autocomplete } from "mui-rff";
 import type { MusicFile } from "lyricova-common/models/MusicFile";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import type { DocumentNode } from "graphql";
 
 const LOCAL_ARTIST_ENTITY_QUERY = gql`

@@ -24,7 +24,7 @@ import type { MusicFilesPagination } from "../../graphql/MusicFileResolver";
 import React, { useCallback, useMemo, useRef } from "react";
 import type { MusicFile } from "lyricova-common/models/MusicFile";
 import _ from "lodash";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import {
   bindMenu,
   bindTrigger,

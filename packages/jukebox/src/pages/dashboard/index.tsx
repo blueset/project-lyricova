@@ -2,7 +2,7 @@ import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
 import { Grid, Typography, Box, Button } from "@mui/material";
 import type { DashboardStats } from "../../graphql/StatsResolver";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import dayjs from "dayjs";
 import { useEffect } from "react";
 import RateReviewIcon from "@mui/icons-material/RateReview";

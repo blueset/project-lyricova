@@ -1,6 +1,6 @@
 import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { useLyricsState } from "../../../frontendUtils/hooks";
+import { useLyricsState } from "../../../hooks/useLyricsState";
 import { Box, styled } from "@mui/material";
 import type { CSSProperties } from "react";
 import { useRef, useEffect } from "react";

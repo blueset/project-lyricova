@@ -5,7 +5,7 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import { useAppContext } from "./AppContext";
 import {
   Button,

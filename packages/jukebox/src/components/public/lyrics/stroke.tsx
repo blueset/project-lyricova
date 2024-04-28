@@ -3,7 +3,7 @@ import type {
   LyricsKitLyricsLine,
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
+import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import { Box } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import type { RefObject } from "react";

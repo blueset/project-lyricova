@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction} from "react";
 import { useCallback, useEffect } from "react";
-import { useNamedState } from "./hooks";
+import { useNamedState } from "../hooks/useNamedState";
 
 export function useClientPersistentState<T>(
   defaultValue: T,

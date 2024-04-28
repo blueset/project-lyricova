@@ -4,7 +4,7 @@ import { Box, IconButton, Tooltip } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
 import type { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
 import React, { useCallback } from "react";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { useNamedState } from "../../../hooks/useNamedState";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";

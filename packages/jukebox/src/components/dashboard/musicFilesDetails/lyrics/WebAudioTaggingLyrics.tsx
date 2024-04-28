@@ -7,11 +7,9 @@
  * PaletteWorks Editor (https://github.com/mkpoli/paletteworks-editor)
  * Copyright (c) mkpoli licensed under MIT License
  */
-import {
-  WebAudioPlayerState,
-  useNamedState,
-  useWebAudio,
-} from "../../../../frontendUtils/hooks";
+import { useNamedState } from "../../../../hooks/useNamedState";
+import { useWebAudio } from "../../../../hooks/useWebAudio";
+import type { WebAudioPlayerState } from "../../../../hooks/types";
 import type { MouseEvent, ChangeEvent, MouseEventHandler } from "react";
 import { useCallback, useEffect, useRef, useMemo, memo } from "react";
 import {

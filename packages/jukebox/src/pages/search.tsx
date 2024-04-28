@@ -6,7 +6,7 @@ import {
   List,
   TextField,
 } from "@mui/material";
-import { useNamedState } from "../frontendUtils/hooks";
+import { useNamedState } from "../hooks/useNamedState";
 import type { ChangeEvent, FormEvent, ReactNode} from "react";
 import React, { useCallback } from "react";
 import { gql, useLazyQuery } from "@apollo/client";

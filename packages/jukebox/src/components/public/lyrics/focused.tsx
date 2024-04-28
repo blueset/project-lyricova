@@ -3,7 +3,7 @@ import type {
   LyricsKitLyricsLine,
 } from "../../../graphql/LyricsKitObjects";
 import { useAppContext } from "../AppContext";
-import { usePlainPlayerLyricsState } from "../../../frontendUtils/hooks";
+import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import type { Theme } from "@mui/material";
 import { styled } from "@mui/material";
 import type { Transition } from "framer-motion";

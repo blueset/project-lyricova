@@ -4,7 +4,7 @@ import type { ChangeEvent} from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Lyrics, TRANSLATION } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
-import { useNamedState } from "../../../../frontendUtils/hooks";
+import { useNamedState } from "../../../../hooks/useNamedState";
 
 interface Props {
   lyrics: string;

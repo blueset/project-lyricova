@@ -15,7 +15,7 @@ import { CSSProperties, useCallback, useEffect, useMemo, useRef } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 import { Lyrics, RangeAttribute, FURIGANA } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
-import { useNamedState } from "../../../../frontendUtils/hooks";
+import { useNamedState } from "../../../../hooks/useNamedState";
 import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
 import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";

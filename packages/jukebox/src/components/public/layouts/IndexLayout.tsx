@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useCallback } from "react";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import type { Track } from "../AppContext";
 import { AppContext } from "../AppContext";
-import { useNamedState } from "../../../frontendUtils/hooks";
+import { useNamedState } from "../../../hooks/useNamedState";
 import CurrentPlaylist from "../CurrentPlaylist";
 import type { Texture } from "../../../graphql/TextureResolver";
 import { AuthContext } from "lyricova-common/components/AuthContext";

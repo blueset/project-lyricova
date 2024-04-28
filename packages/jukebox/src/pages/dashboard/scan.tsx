@@ -4,7 +4,7 @@ import { Box, Button, CircularProgress, LinearProgress, Typography } from "@mui/
 import { gql, useApolloClient, useMutation } from "@apollo/client";
 import { useCallback } from "react";
 import type { MusicFilesScanOutcome } from "../../graphql/MusicFileResolver";
-import { useNamedState } from "../../frontendUtils/hooks";
+import { useNamedState } from "../../hooks/useNamedState";
 import { LyricsKitLyricsEntry } from "../../graphql/LyricsProvidersResolver";
 
 const SCAN_MUTATION = gql`
