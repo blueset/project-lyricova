@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 import { Lyrics, FURIGANA, buildTimeTag } from "lyrics-kit/core";
+import _ from "lodash";
 
 interface Props {
   lyricsString: string;
@@ -55,7 +56,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
   }, [lyricsString]);
   const trackDataUrl = useMemo<string | null>(() => {
     if (!lyrics) return null;
-    const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+    const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
     const divider = isFirefox ? "|" : "";
     let webvtt = "WEBVTT\n\n";
     webvtt +=
@@ -63,6 +64,47 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
     webvtt +=
       'STYLE\n::cue(.tt) {\n  font-variant-numeric: "tabular-nums";\n}\n\n';
     webvtt += "STYLE\n::cue(.pndg) {\n  opacity: 0.3;\n}\n\n";
+
+    const trackNumbers = lyrics.lines
+      .flatMap((line, idx, arr) => [
+        { idx, time: _.round(line.position, 3), offset: 1 },
+        {
+          idx,
+          time: _.round(
+            line.attachments?.timeTag?.tags?.at(-1)?.timeTag
+            ? line.attachments.timeTag.tags.at(-1)?.timeTag + line.position
+            : arr[idx + 1]?.position ?? line.position + 10, 
+            3
+          ),
+          offset: -1,
+        },
+      ])
+      .toSorted((a, b) => a.time - b.time)
+      .reduce<{
+        layers: number[];
+        trackToIdx: { [track: number]: number };
+        idxToTrack: { [idx: number]: number };
+      }>(
+        (acc, { idx, offset, time }) => {
+          console.log(idx, offset, time);
+          if (offset === 1) {
+            let firstAvailableLayer = 0;
+            while (acc.trackToIdx[firstAvailableLayer] !== undefined) {
+              firstAvailableLayer++;
+            }
+            acc.layers[idx] = firstAvailableLayer;
+            acc.trackToIdx[firstAvailableLayer] = idx;
+            acc.idxToTrack[idx] = firstAvailableLayer;
+          } else {
+            const layer = acc.idxToTrack[idx];
+            acc.idxToTrack[idx] = undefined;
+            acc.trackToIdx[layer] = undefined;
+          }
+          return acc;
+        },
+        { layers: [], idxToTrack: {}, trackToIdx: {} }
+      ).layers;
+
     let lineCounter = 0;
     webvtt += lyrics.lines
       .map((v, idx) => {
@@ -71,6 +113,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
         const startTime = v.position;
         const end =
           lyrics.lines[idx + 1]?.timeTag?.substring(0, 10) ?? "99:59.999";
+        const vttOffsiteLine = (trackNumbers[idx] ?? 0) * 4;
         if (v.attachments.timeTag?.tags) {
           const base = v.content;
           const timeTags = v.attachments.timeTag?.tags;
@@ -84,7 +127,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
             } as LyricsLine)}`;
             const endTimeTag = buildTimeTag(startTime + timeTag);
             lineCounter++;
-            result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:50% align:start\n<c.tt>[${start}] (@ ${ptrTime})</c>\n${formattedSection}<c.pndg>${divider}${base.substring(
+            result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:${vttOffsiteLine} align:start\n<c.tt>[${start}] (@ ${ptrTime} #${idx}&${vttOffsiteLine})</c>\n${formattedSection}<c.pndg>${divider}${base.substring(
               index
             )}</c>`;
             if (v.attachments.translation()) {
@@ -96,7 +139,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
           if (timeTags[timeTags.length - 1].index < base.length) {
             const formattedSection = `${convertLine(v)}`;
             lineCounter++;
-            result += `${lineCounter}\n${ptrTime} --> ${end} line:50% align:start\n<c.tt>[${start}] (@ ${ptrTime})</c>\n${formattedSection}`;
+            result += `${lineCounter}\n${ptrTime} --> ${end} line:${vttOffsiteLine} align:start\n<c.tt>[${start}] (@ ${ptrTime} #${idx}&${vttOffsiteLine})</c>\n${formattedSection}`;
           }
           return result.trimEnd();
         } else {
@@ -105,7 +148,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
             text += `\n${v.attachments.translation()}`;
           }
           lineCounter++;
-          return `${lineCounter}\n${start} --> ${end} line:50% align:start\n<c.tt>[${start}]</c>\n${text}`;
+          return `${lineCounter}\n${start} --> ${end} line:${vttOffsiteLine} align:start\n<c.tt>[${start}] (#${idx}&${vttOffsiteLine})</c>\n${text}`;
         }
       })
       .join("\n\n");
