@@ -41,7 +41,7 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
   );
 
   const languages = useMemo(() => {
-    return new Lyrics(lrcx).translationLanguages;
+    return lrcx ? new Lyrics(lrcx).translationLanguages : [];
   }, [lrcx]);
   const [selectedLanguageIdx, setSelectedLanguageIdx] = useState(0);
 
