@@ -122,7 +122,7 @@ export default function Index() {
 
   const languages = useMemo(() => {
     const languages = lyricsQuery.data?.musicFile?.lyrics.translationLanguages ?? [];
-    setTranslationLanguageIdx((idx) => Math.min(idx, languages.length - 1));
+    setTranslationLanguageIdx((idx) => Math.max(0, Math.min(idx, languages.length - 1)));
     return languages;
   }, [lyricsQuery.data?.musicFile?.lyrics.translationLanguages]);
 
