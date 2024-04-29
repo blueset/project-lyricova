@@ -42,6 +42,10 @@ const RowContainer = styled(animated.div)(({"data-role": role, "data-minor": min
 const TranslationContainer = styled("div")((props: { dim: boolean }) => ({
   opacity: props.dim ? 0.5 : 1,
   fontSize: "0.625em",
+  "&:not(:empty)": {
+    textWrap: "balance",
+    wordBreak: "auto-phrase",
+  }
 }));
 
 const InnerRowRenderer = forwardRef<

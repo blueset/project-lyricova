@@ -108,7 +108,8 @@ const TimedSpan = forwardRef<LyricsAnimationRef, PropsWithChildren<{ startTime: 
         }
       } else {
         if (node && node.style.maskRepeat !== "no-repeat") {
-          const { maskImage, maskScale, maskProgressSize } = generateMaskStyle(node.offsetWidth);
+          const rect = node.getBoundingClientRect();
+          const { maskImage, maskScale, maskProgressSize } = generateMaskStyle(rect.width);
           node.style.maskImage = maskImage;
           node.style.maskSize = maskScale;
           node.style.maskRepeat = "no-repeat";
@@ -177,11 +178,12 @@ function buildTimeSpans(
   return spans;
 }
 
-const InnerLineDiv = styled("div")({
-  fontWeight: 600,
-  lineHeight: 1,
-  textWrap: "balance",
-});
+const InnerLineDiv = styled("div")`
+  font-weight: 600;
+  line-height: 1.4;
+  text-wrap: balance;
+  word-break: auto-phrase;
+`;
 
 interface LineRendererProps {
   line: LyricsKitLyricsLine;
