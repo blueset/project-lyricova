@@ -1,7 +1,7 @@
 import { gql, useQuery } from "@apollo/client";
 import { Stack, styled } from "@mui/material";
 import _ from "lodash";
-import { ReactNode, useRef } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import { getLayout } from "../components/public/layouts/IndexLayout";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
 import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
@@ -31,16 +31,19 @@ import { LyricsFullScreenOverlay } from "../components/public/LyricsFullScreenOv
 import { PictureInPictureLyrics } from "../components/public/lyrics/pip";
 import { AMLLyrics } from "../components/public/lyrics/amll";
 import { RingollLyrics } from "../components/public/lyrics/ringoll/ringoll";
+import { LyricsTranslationLanguageSwitchButton } from "../components/public/LyricsTranslationLanguageSwitchButton";
 
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
     musicFile(id: $id) {
       lyrics {
+        translationLanguages
         lines {
           content
           position
           attachments {
             translation
+            translations
             timeTag {
               duration
               tags {
@@ -64,25 +67,24 @@ const LYRICS_QUERY = gql`
 
 // prettier-ignore
 const MODULE_LIST = {
-  "Focused": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} blur />,
-  // "Focused Clear": (lyrics: LyricsKitLyrics) => <FocusedLyrics lyrics={lyrics} />,
-  "Focused Glow": (lyrics: LyricsKitLyrics) => <FocusedGlowLyrics lyrics={lyrics} />,
-  "Focused/2": (lyrics: LyricsKitLyrics) => <FocusedLyrics2 lyrics={lyrics} />,
-  "Plain": (lyrics: LyricsKitLyrics) => <PlainLyrics lyrics={lyrics} />,
-  "Ringo": (lyrics: LyricsKitLyrics) => <RingoTranslateLyrics lyrics={lyrics} />,
-  "Ringo Sing": (lyrics: LyricsKitLyrics) => <RingoSingLyrics lyrics={lyrics} />,
-  "Ringoll": (lyrics: LyricsKitLyrics) => <RingollLyrics lyrics={lyrics} />,
-  "AMLL": (lyrics: LyricsKitLyrics) => <AMLLyrics lyrics={lyrics} />,
-  "Karaoke/1/Underline": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} />,
-  "Karaoke/1/Cover": (lyrics: LyricsKitLyrics) => <Karaoke1Lyrics lyrics={lyrics} cover />,
-  "Nicokara": (lyrics: LyricsKitLyrics) => <KaraokeJaLyrics lyrics={lyrics} />,
-  "Slanted": (lyrics: LyricsKitLyrics) => <SlantedLyrics lyrics={lyrics} />,
-  "Paragraph": (lyrics: LyricsKitLyrics) => <ParagraphLyrics lyrics={lyrics} />,
-  "Typing/Focused": (lyrics: LyricsKitLyrics) => <TypingFocusedLyrics lyrics={lyrics} />,
-  "Typing/Stacked": (lyrics: LyricsKitLyrics) => <TypingStackedLyrics lyrics={lyrics} />,
-  "Furigana/Plain": (lyrics: LyricsKitLyrics) => <PlainFuriganaLyrics lyrics={lyrics} />,
-  "Stroke": (lyrics: LyricsKitLyrics) => <StrokeLyrics lyrics={lyrics} />,
-  "PIP (Alpha)": (lyrics: LyricsKitLyrics) => <PictureInPictureLyrics lyrics={lyrics} />,
+  "Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
+  "Focused Glow": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedGlowLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
+  "Focused/2": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics2 lyrics={lyrics} transLangIdx={transLangIdx} />,
+  "Plain": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PlainLyrics lyrics={lyrics} />,
+  "Ringo": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <RingoTranslateLyrics lyrics={lyrics} />,
+  "Ringo Sing": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <RingoSingLyrics lyrics={lyrics} />,
+  "Ringoll": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <RingollLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
+  "AMLL": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <AMLLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
+  "Karaoke/1/Underline": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <Karaoke1Lyrics lyrics={lyrics} />,
+  "Karaoke/1/Cover": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <Karaoke1Lyrics lyrics={lyrics} cover />,
+  "Nicokara": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <KaraokeJaLyrics lyrics={lyrics} />,
+  "Slanted": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <SlantedLyrics lyrics={lyrics} />,
+  "Paragraph": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <ParagraphLyrics lyrics={lyrics} />,
+  "Typing/Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <TypingFocusedLyrics lyrics={lyrics} />,
+  "Typing/Stacked": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <TypingStackedLyrics lyrics={lyrics} />,
+  "Furigana/Plain": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PlainFuriganaLyrics lyrics={lyrics} />,
+  "Stroke": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <StrokeLyrics lyrics={lyrics} />,
+  "PIP (Alpha)": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PictureInPictureLyrics lyrics={lyrics} />,
 } as const;
 
 const LyricsControlsDiv = styled("div")`
@@ -98,6 +100,7 @@ export default function Index() {
   const [module, setModule] = useClientPersistentState<
     keyof typeof MODULE_LIST
   >("Focused", "module", "lyricovaPlayer");
+  const [translationLanguageIdx, setTranslationLanguageIdx] = useState(0);
 
   const keys = Object.keys(MODULE_LIST) as (keyof typeof MODULE_LIST)[];
   const moduleNode = MODULE_LIST[module] ?? MODULE_LIST[keys[0]];
@@ -116,6 +119,12 @@ export default function Index() {
       },
     }
   );
+
+  const languages = useMemo(() => {
+    const languages = lyricsQuery.data?.musicFile?.lyrics.translationLanguages ?? [];
+    setTranslationLanguageIdx((idx) => Math.min(idx, languages.length - 1));
+    return languages;
+  }, [lyricsQuery.data?.musicFile?.lyrics.translationLanguages]);
 
   const MessageBox = ({ children }: { children: ReactNode }) => (
     <Stack
@@ -146,7 +155,7 @@ export default function Index() {
       node = <MessageBox>No track.</MessageBox>;
     }
   } else if (lyricsQuery?.data?.musicFile?.lyrics) {
-    node = moduleNode(lyricsQuery.data.musicFile.lyrics);
+    node = moduleNode(lyricsQuery.data.musicFile.lyrics, translationLanguageIdx);
   } else {
     node = <MessageBox>No lyrics</MessageBox>;
   }
@@ -183,6 +192,11 @@ export default function Index() {
       >
         {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
       </TooltipIconButton>
+      <LyricsTranslationLanguageSwitchButton
+        languages={languages}
+        selectedLanguageIdx={translationLanguageIdx}
+        setSelectedLanguageIdx={setTranslationLanguageIdx}
+      />
       <LyricsSwitchButton<keyof typeof MODULE_LIST>
         module={module}
         setModule={setModule}

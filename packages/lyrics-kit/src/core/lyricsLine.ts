@@ -6,12 +6,14 @@ export interface ToLegacyStringOptions {
   before?: string;
   after?: string;
   useFurigana?: boolean;
+  translationLanguage?: string;
 }
 
 const DefaultToLegacyStringOptions = {
   before: " / ",
   after: "",
   useFurigana: true,
+  translationLanguage: undefined,
 };
 
 export class LyricsLine {
@@ -60,12 +62,12 @@ export class LyricsLine {
   }
 
   public toLegacyString(options: ToLegacyStringOptions = {}): string {
-    const { before, after, useFurigana } = Object.assign(
+    const { before, after, useFurigana, translationLanguage } = Object.assign(
       {},
       DefaultToLegacyStringOptions,
       options
     );
-    let translation = this.attachments.translation();
+    let translation = this.attachments.translation(translationLanguage);
     if (translation) {
       translation = `${before}${translation}${after}`;
     } else {

@@ -10,6 +10,7 @@ import {
   FURIGANA,
   ROMAJI
 } from "lyrics-kit/core";
+import { GraphQLJSONObject } from "graphql-type-json";
 
 @ObjectType({ description: "Furigana/romaji to words in a lyrics line." })
 export class LyricsKitRangeAttachment {
@@ -79,6 +80,7 @@ export class LyricsKitWordTimeAttachment {
 export class LyricsKitAttachment {
   constructor(attachment: Attachments) {
     this.translation = attachment.translation() || null;
+    this.translations = attachment.translations;
     const timeTag = attachment.timeTag;
     this.timeTag = timeTag && new LyricsKitWordTimeAttachment(timeTag);
     this.furigana = null;
@@ -102,6 +104,9 @@ export class LyricsKitAttachment {
 
   @Field({ nullable: true })
   translation?: string;
+
+  @Field((type) => GraphQLJSONObject)
+  translations: { [key: string]: string };
 
   @Field((type) => [LyricsKitRangeAttachment], { nullable: true })
   furigana?: LyricsKitRangeAttachment[];
@@ -142,6 +147,7 @@ export class LyricsKitLyrics {
     this.lines = lyrics.lines.map(
       (v) => new LyricsKitLyricsLine(v, lyrics.timeDelay)
     );
+    this.translationLanguages = lyrics.translationLanguages;
   }
 
   @Field((type) => Float, { nullable: true })
@@ -155,4 +161,7 @@ export class LyricsKitLyrics {
     nullable: true,
   })
   length?: number;
+
+  @Field((type) => [String])
+  translationLanguages: string[];
 }

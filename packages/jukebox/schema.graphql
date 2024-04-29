@@ -203,6 +203,7 @@ type LyricsKitAttachment {
   romaji: [LyricsKitRangeAttachment!]
   timeTag: LyricsKitWordTimeAttachment
   translation: String
+  translations: JSONObject!
 }
 
 """Parsed lyrics."""
@@ -211,6 +212,7 @@ type LyricsKitLyrics {
   length: Float
   lines: [LyricsKitLyricsLine!]!
   quality: Float
+  translationLanguages: [String!]!
 }
 
 """A lyrics entry from lyrics-kit search engine."""

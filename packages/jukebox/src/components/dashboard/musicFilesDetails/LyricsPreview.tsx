@@ -17,6 +17,19 @@ import { FullWidthAudio } from "./FullWIdthAudio";
 const TranslationRow = styled("div")({
   fontSize: "0.8em",
 });
+const LanguageTag = styled("span")(({ theme }) => ({
+  display: "inline-block",
+  borderWidth: "1px",
+  borderInlineStyle: "solid",
+  borderColor: theme.palette.secondary.main,
+  color: theme.palette.secondary.main,
+  fontFamily: "monospace",
+  padding: "0.05em 0.3em",
+  textTransform: "uppercase",
+  fontSize: "0.75em",
+  borderRadius: "0.5em",
+  marginInlineEnd: "0.5em",
+}));
 
 interface LyricsRowRefs {
   resume(time: number): void;
@@ -24,9 +37,17 @@ interface LyricsRowRefs {
   scrollToCenter(): void;
 }
 
-type LyricsRowProps = { line: LyricsLine; isActive?: boolean, start?: number, end?: number };
+type LyricsRowProps = {
+  line: LyricsLine;
+  isActive?: boolean;
+  start?: number;
+  end?: number;
+};
 
-const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow({ line, isActive, start = 0, end = 1e100 }, ref) {
+const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
+  { line, isActive, start = 0, end = 1e100 },
+  ref
+) {
   const boxRef = useRef<HTMLDivElement>();
   const webAnimationRef = useRef<Animation>(null);
 
@@ -46,10 +67,12 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow({
       }
     },
     scrollToCenter() {
-      requestAnimationFrame(() => boxRef.current.scrollIntoView({
-        block: "center",
-        behavior: "smooth",
-      }));
+      requestAnimationFrame(() =>
+        boxRef.current.scrollIntoView({
+          block: "center",
+          behavior: "smooth",
+        })
+      );
     },
   }));
 
@@ -98,7 +121,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow({
           webAnimationRef.current = target.animate(keyframes, {
             duration: duration * 1000,
             fill: "forwards",
-            id: `background-size-${line.position}`
+            id: `background-size-${line.position}`,
           });
           webAnimationRef.current.pause();
         }
@@ -107,12 +130,22 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow({
       <div className="furigana">
         <FuriganaLyricsLine lyricsKitLine={line} />
       </div>
-      <TranslationRow>{line.attachments.translation()}</TranslationRow>
+      {Object.entries(line.attachments.translations).map(([lang, content]) => (
+        <TranslationRow key={lang} lang={lang}>
+          <LanguageTag lang="en">{lang || "-"}</LanguageTag>
+          {content}
+        </TranslationRow>
+      ))}
     </Box>
   );
-})
+});
 const LyricsRowMemo = memo(LyricsRow, (prev, next) => {
-  return prev.line === next.line && !!prev.isActive === !!next.isActive && prev.start === next.start && prev.end === next.end;
+  return (
+    prev.line === next.line &&
+    !!prev.isActive === !!next.isActive &&
+    prev.start === next.start &&
+    prev.end === next.end
+  );
 });
 
 LyricsRowMemo.displayName = "LyricsRowMemo";
@@ -125,7 +158,7 @@ interface Props {
 export default function LyricsPreview({ lyrics, fileId }: Props) {
   const playerRef = useRef<HTMLAudioElement>();
   const containerRef = useRef<HTMLDivElement>();
-  
+
   const { playerState, currentFrame, segments } = useActiveLyrcsRanges(
     lyrics?.lines ?? [],
     playerRef
@@ -161,7 +194,7 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
       };
     }
     return rowRefUpdaterCache.current[idx];
-   }, []);
+  }, []);
 
   return (
     <div>

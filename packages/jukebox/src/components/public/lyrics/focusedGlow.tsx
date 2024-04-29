@@ -20,18 +20,19 @@ const TRANSITION: Transition = {
 
 interface LyricsLineElementProps {
   line: LyricsKitLyricsLine | null;
+  transLang?: string;
   animate: boolean;
 }
 
-function LyricsLineElement({ line, animate }: LyricsLineElementProps) {
+function LyricsLineElement({ line, animate, transLang }: LyricsLineElementProps) {
   if (!line) return null;
   const transition = animate ? TRANSITION : { duration: 0 };
   const content = (
     <>
       <Balancer>{line.content}</Balancer>
-      {line.attachments?.translation && (
+      {line.attachments?.translations[transLang] && (
         <div className="translate" lang="zh">
-          <Balancer>{line.attachments.translation}</Balancer>
+          <Balancer>{line.attachments.translations[transLang]}</Balancer>
         </div>
       )}
     </>
@@ -94,14 +95,15 @@ function LyricsLineElement({ line, animate }: LyricsLineElementProps) {
 
 interface Props {
   lyrics: LyricsKitLyrics;
-  blur?: boolean;
+  transLangIdx?: number;
 }
 
-export function FocusedGlowLyrics({ lyrics }: Props) {
+export function FocusedGlowLyrics({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
 
   const lines = lyrics.lines;
+  const lang = lyrics.translationLanguages[transLangIdx ?? 0];
 
   return (
     <motion.div
@@ -121,7 +123,7 @@ export function FocusedGlowLyrics({ lyrics }: Props) {
             idx + 1 > lines.length ||
             !lines[idx + 1] ||
             lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD;
-          return <LyricsLineElement line={l} key={idx} animate={animate} />;
+          return <LyricsLineElement line={l} key={idx} transLang={lang} animate={animate} />;
         })}
     </motion.div>
   );

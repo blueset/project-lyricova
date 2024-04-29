@@ -21,6 +21,7 @@ const TRANSITION: Transition = {
 interface LyricsLineElementProps {
   className?: string;
   line: LyricsKitLyricsLine | null;
+  transLang?: string;
   animate: boolean;
   sx?: SxProps<Theme>;
 }
@@ -30,6 +31,7 @@ const SxMotionDiv = styled(motion.div)``;
 function LyricsLineElement({
   className,
   line,
+  transLang,
   animate,
   sx,
 }: LyricsLineElementProps) {
@@ -53,12 +55,12 @@ function LyricsLineElement({
       sx={sx}
     >
       {animate ? <Balancer>{line.content}</Balancer> : line.content}
-      {line.attachments?.translation && (
-        <div lang="zh">
+      {line.attachments.translations[transLang] && (
+        <div lang={transLang || "zh"}>
           {animate ? (
-            <Balancer>{line.attachments.translation}</Balancer>
+            <Balancer>{line.attachments.translations[transLang]}</Balancer>
           ) : (
-            line.attachments.translation
+            line.attachments.translations[transLang]
           )}
         </div>
       )}
@@ -68,10 +70,11 @@ function LyricsLineElement({
 
 interface Props {
   lyrics: LyricsKitLyrics;
+  transLangIdx?: number;
   blur?: boolean;
 }
 
-export function FocusedLyrics({ lyrics, blur }: Props) {
+export function FocusedLyrics({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
   const { currentFrame, currentFrameId, endTime } = usePlainPlayerLyricsState(
     lyrics,
@@ -79,6 +82,7 @@ export function FocusedLyrics({ lyrics, blur }: Props) {
   );
 
   const lines = lyrics.lines;
+  const lang = lyrics.translationLanguages[transLangIdx ?? 0];
 
   return (
     <motion.div
@@ -101,23 +105,14 @@ export function FocusedLyrics({ lyrics, blur }: Props) {
                 fontWeight: 600,
                 lineHeight: 1.2,
                 fontSize: "4em",
-                // backgroundSize: "cover",
-                // backgroundPosition: "center",
-                // backgroundAttachment: "fixed",
                 color: "rgba(255, 255, 255, 0.8)",
-                // filter: blur
-                //   ? "var(--jukebox-cover-filter-brighter)"
-                //   : "var(--jukebox-cover-filter-brighter-blurless)",
                 "& > div": {
                   display: "block",
                   fontSize: "0.6em",
-                  // backgroundSize: "cover",
-                  // backgroundPosition: "center",
-                  // backgroundAttachment: "fixed",
                 },
               }}
-              // className={"coverMask"}
               line={l}
+              transLang={lang}
               key={idx}
               animate={animate}
             />

@@ -36,13 +36,15 @@ const ContainerDiv = styled("div")`
 
 interface Props {
   lyrics: LyricsKitLyrics;
+  transLangIdx?: number;
 }
 
-export function AMLLyrics({ lyrics }: Props) {
+export function AMLLyrics({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
   const playerState = usePlayerState(playerRef);
+  const lang = lyrics.translationLanguages[transLangIdx ?? 0];
 
-   const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const amlLyricsArray: AAMLyricLine[] = useMemo(() => {
     const amlLyricsArray = lyrics.lines.map((line, index, array) => {
@@ -94,17 +96,17 @@ export function AMLLyrics({ lyrics }: Props) {
       }
       const amllLine: AAMLyricLine = {
         words: amllWords,
-        translatedLyric: line.attachments.translation,
+        translatedLyric: line.attachments.translations[lang],
         romanLyric: "",
         startTime: startTime * 1000,
         endTime: endTime * 1000,
-        isBG: false, // TODO: implement
-        isDuet: !!line.content.match(/^[\(（].+[\)）]$/), // TODO: implement
+        isBG: line.attachments.minor,
+        isDuet: line.attachments.role > 0,
       };
       return amllLine;
     });
     return amlLyricsArray;
-  }, [lyrics, playerRef]);
+  }, [lang, lyrics.lines, playerRef]);
 
   const [playbackProgressMs, setPlaybackProgressMs] = useState(
     Math.floor(playerRef.current.currentTime * 1000)

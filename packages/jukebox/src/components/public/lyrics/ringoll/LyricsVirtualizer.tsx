@@ -16,6 +16,7 @@ export interface RowRendererProps<T> {
   isActiveScroll?: boolean;
   ref?: React.Ref<HTMLDivElement>;
   top: number;
+  transLang?: string;
   absoluteIndex: number;
   animationRef?: React.Ref<LyricsAnimationRef>;
   onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;

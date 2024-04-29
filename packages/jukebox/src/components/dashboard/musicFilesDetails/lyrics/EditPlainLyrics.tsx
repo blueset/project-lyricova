@@ -1,6 +1,14 @@
-import { Button, Grid, styled, TextField, Typography } from "@mui/material";
+import {
+  Button,
+  Grid,
+  styled,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
 import type { ChangeEvent } from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FURIGANA, Lyrics } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
@@ -32,6 +40,11 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
     [setLyrics]
   );
 
+  const languages = useMemo(() => {
+    return new Lyrics(lrcx).translationLanguages;
+  }, [lrcx]);
+  const [selectedLanguageIdx, setSelectedLanguageIdx] = useState(0);
+
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
 
@@ -39,14 +52,14 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
     (useFurigana: boolean) => () => {
       try {
         const parsed = new Lyrics(lrcx);
-        setLyrics(parsed.toPlainLRC({ lineOptions: { useFurigana } }));
+        setLyrics(parsed.toPlainLRC({ lineOptions: { useFurigana, translationLanguage: languages[selectedLanguageIdx] } }));
       } catch (e) {
         snackbar.enqueueSnackbar(`Error while copying: ${e}`, {
           variant: "error",
         });
       }
     },
-    [lrcx, setLyrics, snackbar]
+    [lrcx, setLyrics, snackbar, languages, selectedLanguageIdx]
   );
 
   const copyFromLRCXWithSmartFurigana = useCallback(async () => {
@@ -88,19 +101,19 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
               );
           }
         });
-        setLyrics(parsed.toPlainLRC({ lineOptions: { useFurigana: true } }));
+        setLyrics(parsed.toPlainLRC({ lineOptions: { useFurigana: true, translationLanguage: languages[selectedLanguageIdx] } }));
       }
     } catch (e) {
       snackbar.enqueueSnackbar(`Error while copying: ${e}`, {
         variant: "error",
       });
     }
-  }, [apolloClient, lrcx, setLyrics, snackbar]);
+  }, [apolloClient, languages, lrcx, selectedLanguageIdx, setLyrics, snackbar]);
 
   return (
     <>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={6}>
           <Typography variant="overline" display="block">
             Common operations
           </Typography>
@@ -126,6 +139,25 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
             Copy from LRCX with Smart Furigana
           </SpacedButton>
         </Grid>
+        {languages.length ? (
+          <Grid item xs={12} sm={6}>
+            <Typography variant="overline" display="block">
+              Translation Language
+            </Typography>
+            <ToggleButtonGroup
+              size="small"
+              value={selectedLanguageIdx}
+              onChange={(_, value) => setSelectedLanguageIdx(value)}
+              exclusive
+            >
+              {languages.map((v, idx) => (
+                <ToggleButton key={idx} value={idx}>
+                  {v || "Unknown"}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Grid>
+        ) : null}
       </Grid>
       <TextField
         id="lyrics-source"

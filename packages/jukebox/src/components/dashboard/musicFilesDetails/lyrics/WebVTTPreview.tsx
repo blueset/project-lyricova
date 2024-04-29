@@ -65,6 +65,7 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
       'STYLE\n::cue(.tt) {\n  font-variant-numeric: "tabular-nums";\n}\n\n';
     webvtt += "STYLE\n::cue(.pndg) {\n  opacity: 0.3;\n}\n\n";
     webvtt += "STYLE\n::cue(.min) {\n  font-size: 0.75em;\n  color: #00ffff;\n}\n\n";
+    webvtt += "STYLE\n::cue(.lang) {\n  font-size: 0.7em;\n  color: #ffff00;\n}\n\n";
 
     const trackNumbers = lyrics.lines
       .flatMap((line, idx, arr) => [
@@ -134,8 +135,9 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
             result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:${vttOffsiteLine} align:${align}\n<c.tt${minor}>[${start}] (@ ${ptrTime} ${metadata})</c>\n${formattedSection}<c.pndg>${divider}${base.substring(
               index
             )}</c>`;
-            if (v.attachments.translation()) {
-              result += `\n${v.attachments.translation()}`;
+            const translations = v.attachments.translations;
+            for (const lang in translations) {
+              result += `\n<c.lang>${lang || "-"}:</c> ${translations[lang]}`;
             }
             result += "\n\n";
             ptrTime = endTimeTag;

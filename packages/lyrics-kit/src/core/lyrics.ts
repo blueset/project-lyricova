@@ -444,4 +444,10 @@ export class Lyrics {
     }
     this.metadata.attachmentTags.add(TRANSLATION);
   }
+
+  public get translationLanguages(): (string | undefined)[] {
+    const result = [...new Set(this.lines.flatMap((v) => Object.keys(v.attachments.translations)))];
+    result.sort();
+    return result;
+  }
 }

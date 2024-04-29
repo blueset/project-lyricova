@@ -243,12 +243,25 @@ export class Attachments {
     return this.content[tag] && (this.content[tag] as PlainText).text;
   }
 
+  public get translations(): Record<string, string> {
+     const tags = Object.keys(this.content).filter(isTranslationTag);
+     const mapping: Record<string, string> = {};
+      for (const tag of tags) {
+        mapping[tag.substring(3)] = (this.content[tag] as PlainText).text;
+      }
+      return mapping;
+  }
+
   public setTranslation(
     str: string,
     languageCode: string | undefined = undefined
   ): void {
     const tag = makeTranslationTag(languageCode) || TRANSLATION;
-    this.content[tag] = Attachments.createAttachment(tag, str);
+    if (str) {
+      this.content[tag] = Attachments.createAttachment(tag, str);
+    } else {
+      delete this.content[tag];
+    }
   }
 
   public getTag(tag: string): string | undefined {

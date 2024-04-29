@@ -54,12 +54,14 @@ const TRANSITION: Transition = {
 
 interface LyricsLineElementProps {
   line: LyricsKitLyricsLine | null;
+  transLang?: string;
   isCurrent: boolean;
   animate: boolean;
 }
 
 function LyricsLineElement({
   line,
+  transLang,
   isCurrent,
   animate,
 }: LyricsLineElementProps) {
@@ -95,7 +97,7 @@ function LyricsLineElement({
       }}
     >
       <Balancer>{line.content}</Balancer>
-      {line.attachments?.translation && (
+      {line.attachments?.translations[transLang] && (
         <motion.div
           variants={TRANSLATION_LINE_VARIANTS}
           transition={transition}
@@ -103,7 +105,7 @@ function LyricsLineElement({
           exit="exit"
           lang="zh"
         >
-          <Balancer>{line.attachments.translation}</Balancer>
+          <Balancer>{line.attachments.translations[transLang]}</Balancer>
         </motion.div>
       )}
     </SxMotionDiv>
@@ -112,13 +114,15 @@ function LyricsLineElement({
 
 interface Props {
   lyrics: LyricsKitLyrics;
+  transLangIdx?: number;
 }
 
-export function FocusedLyrics2({ lyrics }: Props) {
+export function FocusedLyrics2({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
   const line = useLyricsState(playerRef, lyrics);
 
   const lines = lyrics.lines;
+  const lang = lyrics.translationLanguages[transLangIdx ?? 0];
 
   return (
     <motion.div
@@ -144,6 +148,7 @@ export function FocusedLyrics2({ lyrics }: Props) {
                 line={l}
                 key={idx}
                 animate={animate}
+                transLang={lang}
                 isCurrent={idx === line}
               />
             );

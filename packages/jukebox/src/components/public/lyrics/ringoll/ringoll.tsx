@@ -51,13 +51,15 @@ const RingollContainer = styled("div")`
 
 interface Props {
   lyrics: LyricsKitLyrics;
+  transLangIdx: number;
 }
 
 /** Lyricova’s own implementation of scrollable lyrics based on the architecture of AMLL. */
-export function RingollLyrics({ lyrics }: Props) {
+export function RingollLyrics({ lyrics, transLangIdx }: Props) {
+  const lang = lyrics.translationLanguages[transLangIdx];
   return (
     <LyricsVirtualizer rows={lyrics.lines} estimatedRowHeight={20} containerAs={RingollContainer} align="start" alignAnchor={0.1}>
-      {(props) => props.row && <RowRenderer key={props.row.position} {...props} />}
+      {(props) => props.row && <RowRenderer key={props.row.position} transLang={lang} {...props} />}
     </LyricsVirtualizer>
   );
 }

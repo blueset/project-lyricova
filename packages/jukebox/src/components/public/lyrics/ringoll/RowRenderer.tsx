@@ -58,6 +58,7 @@ const InnerRowRenderer = forwardRef<
       isActiveScroll,
       animationRef,
       onClick,
+      transLang,
     },
     ref
   ) => {
@@ -100,8 +101,8 @@ const InnerRowRenderer = forwardRef<
           end={segment.end}
           ref={animationRef}
         />
-        <TranslationContainer dim={absoluteIndex > 0 && !isActive}>
-          {row.attachments.translation}
+        <TranslationContainer dim={absoluteIndex > 0 && !isActive} lang={transLang}>
+          {row.attachments.translations[transLang]}
         </TranslationContainer>
       </RowContainer>
     );
@@ -114,6 +115,7 @@ export const RowRenderer = memo(
   InnerRowRenderer,
   (prev, next) =>
     prev.top === next.top &&
+    prev.transLang === next.transLang &&
     prev.isActive === next.isActive &&
     prev.isActiveScroll === next.isActiveScroll
 );
