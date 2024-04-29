@@ -6,8 +6,11 @@ import { LyricsAnimationRef } from "./AnimationRef.type";
 function lineToTimeSegments(line: LyricsKitLyricsLine, lineStart: number, lineEnd: number) {
   const timeTags = line.attachments?.timeTag?.tags ?? [];
   const rubyBoundaries =
-    line.attachments?.furigana?.flatMap((f) => [f.leftIndex, f.rightIndex]) ??
-    [];
+    (line.attachments?.furigana?.flatMap((f) => [f.leftIndex, f.rightIndex]) ??
+    []).reduce((acc, cur) => {
+      if (acc.at(-1) !== cur) acc.push(cur);
+      return acc;
+    }, [] as number[]);
   const segments: { index: number; start: number, end: number }[] = [];
   if (timeTags.length === 0) {
     return [{ index: 0, start: lineStart, end: lineEnd }];
@@ -24,7 +27,7 @@ function lineToTimeSegments(line: LyricsKitLyricsLine, lineStart: number, lineEn
       rubyBoundaries.shift();
     }
 
-    if (
+    while (
       timeTags[idx + 1] &&
       rubyBoundaries.length &&
       timeTags[idx + 1].index > rubyBoundaries[0]
@@ -36,12 +39,12 @@ function lineToTimeSegments(line: LyricsKitLyricsLine, lineStart: number, lineEn
         segmentStart +
         percentage * (segmentEnd - segmentStart);
       segments.push({ index: segmentIndex, start: segmentStart, end: start });
-      // console.log("lineToTimeSegments, line: %o, lineStart: %o, lineEnd: %o, percentage: %o, rubyBoundaries: %o, segmentIndex: %o", line.content[segmentIndex], segmentStart, start, percentage, rubyBoundaries, segmentIndex);
+      // console.log("lineToTimeSegments, #%o, line: %o, lineStart: %o, lineEnd: %o, percentage: %o, rubyBoundaries: %o, segmentIndex: %o", segmentIndex, line.content[segmentIndex], segmentStart, start, percentage, rubyBoundaries, segmentIndex);
       segmentIndex = rubyBoundaries[0];
       segmentStart = start;
       rubyBoundaries.shift();
     }
-    // console.log("lineToTimeSegments, line: %o, lineStart: %o, lineEnd: %o", line.content[segmentIndex], segmentStart, segmentEnd);
+    // console.log("lineToTimeSegments, #%o, line: %o, lineStart: %o, lineEnd: %o", segmentIndex, line.content[segmentIndex], segmentStart, segmentEnd);
     segments.push({ index: segmentIndex, start: segmentStart, end: segmentEnd });
   });
 
@@ -79,36 +82,55 @@ function generateMaskStyle(width: number) {
   return { maskImage, maskScale, maskProgressSize };
 }
 
-const TimedSpan = forwardRef<LyricsAnimationRef, PropsWithChildren<{ startTime: number; endTime: number }>>(
-  function TimedSpan({ startTime, endTime, children }, ref) {
+const TimedSpan = forwardRef<LyricsAnimationRef, PropsWithChildren<{ startTime: number; endTime: number, static?: boolean }>>(
+  function TimedSpan({ startTime, endTime, "static": isStatic, children }, ref) {
     // const spanRef = useRef<HTMLSpanElement>(null);
     const webAnimationRefs = useRef<Animation[]>([]);
     const refCallback = useCallback((node?: HTMLSpanElement) => {
-      webAnimationRefs.current.forEach(anim => anim.cancel());
-      if (node && node.style.maskRepeat !== "no-repeat") {
-        const { maskImage, maskScale, maskProgressSize } = generateMaskStyle(node.offsetWidth);
-        node.style.maskImage = maskImage;
-        node.style.maskSize = maskScale;
-        node.style.maskRepeat = "no-repeat";
-        node.style.maskOrigin = "left";
-        const duration = Math.max(0.1, endTime - startTime);
-        // console.log("duration: %o, startTime: %o, endTime: %o", duration, startTime, endTime);
-        webAnimationRefs.current = [
-          node.animate([
-            {maskPosition: `${maskProgressSize}px 0`},
-            {maskPosition: `${-GRADIENT_PADDING}px 0`}
-          ], {
-            delay: startTime * 1000,
-            duration: duration * 1000,
-            fill: "both",
-            id: `mask-${startTime}-${endTime}-${children}`
-          })
-        ];
+      // webAnimationRefs.current.forEach(anim => anim.cancel());
+      if (isStatic) {
+        if (node && node.style.opacity !== "1") {
+          node.style.opacity = "1";
+          const duration = Math.max(0.1, endTime - startTime);
+          webAnimationRefs.current = [
+            node.animate([
+              {opacity: "0.5"},
+              {opacity: "1", offset: 0.1},
+              {opacity: "1", offset: 0.9},
+              {opacity: "0.5", offset: 1},
+            ], {
+              delay: startTime * 1000,
+              duration: duration * 1000,
+              fill: "both",
+              id: `static-mask-${startTime}-${endTime}-${children}`
+            })
+          ];
+        }
+      } else {
+        if (node && node.style.maskRepeat !== "no-repeat") {
+          const { maskImage, maskScale, maskProgressSize } = generateMaskStyle(node.offsetWidth);
+          node.style.maskImage = maskImage;
+          node.style.maskSize = maskScale;
+          node.style.maskRepeat = "no-repeat";
+          node.style.maskOrigin = "left";
+          const duration = Math.max(0.1, endTime - startTime);
+          // console.log("duration: %o, startTime: %o, endTime: %o", duration, startTime, endTime);
+          webAnimationRefs.current = [
+            node.animate([
+              {maskPosition: `${maskProgressSize}px 0`},
+              {maskPosition: `${-GRADIENT_PADDING}px 0`}
+            ], {
+              delay: startTime * 1000,
+              duration: duration * 1000,
+              fill: "both",
+              id: `mask-${startTime}-${endTime}-${children}`
+            })
+          ];
+        }
       }
-    }, [children, endTime, startTime]);
+    }, [children, endTime, isStatic, startTime]);
     useImperativeHandle(ref, () => ({
       resume(time?: number) {
-        // if (children === "(") console.log("resume at %o, %o, start: %o, end: %o, children: %o", time, webAnimationRefs.current, startTime, endTime, children);
         // console.log("Resume at %o, %o", time ?? "current time", webAnimationRefs.current);
         webAnimationRefs.current.forEach((anim) => {
           anim.currentTime = time ? time * 1000 : 0;
@@ -131,6 +153,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, PropsWithChildren<{ startTime: 
   }
 );
 
+
 function buildTimeSpans(
   content: string,
   timeSegments: { index: number; start: number, end: number }[],
@@ -141,8 +164,8 @@ function buildTimeSpans(
   const spans: JSX.Element[] = [];
   while (timeSegments.length && timeSegments[0].index < tillIdx) {
     const segment = timeSegments.shift();
-    // console.log("buildTimeSpans, segment: %o, slicing from %o to %o", segment, segment.index, timeSegments[0]?.index);
     const child = content.slice(segment.index, timeSegments[0]?.index);
+    // console.log("buildTimeSpans, segment: %o, slicing from %o to %o", segment, segment.index, timeSegments[0]?.index, child);
     if (child) {
       spans.push(
         <TimedSpan key={segment.index} startTime={segment.start} endTime={segment.end} ref={setRef(segment.index + 1)}>
@@ -173,21 +196,21 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(func
   useImperativeHandle(ref, () => ({
     resume(time?: number) {
       if (start <= time && time <= end) {
-        Object.values(animationRefs.current).forEach((ref) => ref.resume(time - start));
+        Object.values(animationRefs.current).forEach((ref) => ref?.resume(time - start));
       } else {
-        Object.values(animationRefs.current).forEach((ref) => ref.pause(time - start));
+        Object.values(animationRefs.current).forEach((ref) => ref?.pause(time - start));
       }
     },
     pause(time?: number) {
-      Object.values(animationRefs.current).forEach((ref) => ref.pause(time - start));
+      Object.values(animationRefs.current).forEach((ref) => ref?.pause(time - start));
     }
   }));
 
   if (!line.attachments?.timeTag?.tags?.length) {
     return (
-      <div>
-        <TimedSpan startTime={start} endTime={end} ref={setRef(1)}>{line.content}</TimedSpan>
-      </div>
+      <InnerLineDiv>
+        <TimedSpan startTime={0} endTime={end - start} ref={setRef(1)} static>{line.content}</TimedSpan>
+      </InnerLineDiv>
     );
   }
 
@@ -196,6 +219,7 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(func
   const rubyBoundaries = line.attachments?.furigana ?? [];
   rubyBoundaries.forEach((ruby) => {
     const tillIdx = ruby.rightIndex;
+    // console.log("rubyBoundaries", ruby, timeSegments[0]);
     spans.push(
       ...buildTimeSpans(
         line.content,
@@ -204,6 +228,7 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(func
         ruby.leftIndex
       )
     );
+    // console.log("rubyBoundaries, before ruby", ruby, timeSegments[0]);
     const rubyStartTime = timeSegments[0].start;
     const inRubySpans = buildTimeSpans(
       line.content,
@@ -211,6 +236,7 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(func
       setRef,
       tillIdx
     );
+    // console.log("rubyBoundaries, in ruby", ruby, tillIdx, inRubySpans, timeSegments[0]);
     const rubyEndTime = timeSegments[0]?.start ?? end;
     spans.push(
       <ruby key={-ruby.leftIndex}>

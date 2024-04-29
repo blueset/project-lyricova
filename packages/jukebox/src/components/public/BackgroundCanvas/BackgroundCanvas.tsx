@@ -56,8 +56,9 @@ export function BackgroundCanvas({ coverUrl, textureUrl, playerRef, hasLyrics }:
     return (
       <BackgroundRenderNoSSR
         album={coverUrl}
-        playing={playerState?.state === "playing"}
-        hasLyric={hasLyrics}
+        // playing={playerState?.state === "playing"}
+        // hasLyric={hasLyrics}
+        staticMode
         style={{
           position: "fixed",
           inset: 0,

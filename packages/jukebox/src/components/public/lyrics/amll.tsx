@@ -96,7 +96,7 @@ export function AMLLyrics({ lyrics, transLangIdx }: Props) {
       }
       const amllLine: AAMLyricLine = {
         words: amllWords,
-        translatedLyric: line.attachments.translations[lang],
+        translatedLyric: line.attachments.translations[lang] ?? "",
         romanLyric: "",
         startTime: startTime * 1000,
         endTime: endTime * 1000,
