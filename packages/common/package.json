@@ -39,7 +39,7 @@
     "ffprobe-client": "^1.1.6",
     "graphql-ws": "^5.12.1",
     "mecab-async": "^0.1.2",
-    "mysql2": "^3.9.4",
+    "mysql2": "^3.9.7",
     "next": "^13.1.6",
     "passport-fido2-webauthn": "^0.1.0",
     "sequelize-typescript": "^2.1.6",
