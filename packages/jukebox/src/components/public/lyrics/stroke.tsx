@@ -226,8 +226,7 @@ function LyricsLineElement({
         >
           <span style={{ display: "inline-block" }} />
         </Box>
-        {/* // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          @ts-ignore */}
+        {/* @ts-expect-error Scene is an JSX element. */}
         <Scene
           keyframes={animate ? keyframes : null}
           ref={animate ? progressorRef : null}
