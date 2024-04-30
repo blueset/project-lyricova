@@ -44,7 +44,6 @@ export function useWebAudio(mediaUrl: string) {
       if (ps.state === "playing" && ps.bufferSource) {
         ps.bufferSource?.stop();
         ps.bufferSource?.disconnect();
-        return { state: "paused", rate: 1, progress: 0 };
       }
     };
 
