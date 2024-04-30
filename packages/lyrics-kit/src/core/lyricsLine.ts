@@ -93,7 +93,9 @@ export class LyricsLine {
 
     const timeTag = this.timeTag;
     const timeLabel = timeTag ? `[${timeTag}]` : "";
+    const linePrefix = this.attachments.minor ? "(" : "";
+    const lineSuffix = this.attachments.minor ? ")" : "";
 
-    return `${timeLabel}${content}` + translation;
+    return `${timeLabel}${linePrefix}${content}${translation}${lineSuffix}`;
   }
 }
