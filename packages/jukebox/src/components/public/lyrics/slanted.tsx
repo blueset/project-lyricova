@@ -10,9 +10,10 @@ import _ from "lodash";
 
 interface Props {
   lyrics: LyricsKitLyrics;
+  transLangIdx?: number;
 }
 
-export function SlantedLyrics({ lyrics }: Props) {
+export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
   const container = useRef<HTMLDivElement>();
   const wrapper = useRef<HTMLDivElement>();
@@ -20,16 +21,9 @@ export function SlantedLyrics({ lyrics }: Props) {
   const translationContainer = useRef<HTMLDivElement>();
   const translationWrapper = useRef<HTMLDivElement>();
   const currentTranslation = useRef<HTMLSpanElement>();
+  const lang = lyrics.translationLanguages[transLangIdx ?? 0];
 
-  const hasTranslation = useMemo(
-    () =>
-      _.reduce(
-        lyrics.lines,
-        (res, val) => res || Boolean(val?.attachments?.translation),
-        false
-      ),
-    [lyrics.lines]
-  );
+  const hasTranslation = lyrics.translationLanguages.length > 0;
 
   const { playerState, currentFrameId, startTimes, endTimes } =
     usePlainPlayerLyricsState(lyrics, playerRef);
@@ -38,51 +32,66 @@ export function SlantedLyrics({ lyrics }: Props) {
     const tl = gsap.timeline({
       paused: true,
     });
-    if (wrapper.current && container.current) {
-      const lines = wrapper.current.children;
-      tl.set(wrapper.current, { x: 0 }, 0);
-      for (let i = 0; i < lines.length; i++) {
-        const el = lines[i] as HTMLDivElement;
-        tl.to(
-          wrapper.current,
-          {
-            x: -(
-              el.offsetLeft -
-              container.current.offsetWidth / 2 +
-              el.offsetWidth
-            ),
-            duration: endTimes[i + 1] - startTimes[i],
-            ease: "none",
-          },
-          startTimes[i]
-        );
+    requestAnimationFrame(() => {
+      if (wrapper.current && container.current) {
+        const lines = wrapper.current.children;
+        tl.set(wrapper.current, { x: 0 }, 0);
+        for (let i = 0; i < lines.length; i++) {
+          const el = lines[i] as HTMLDivElement;
+          tl.to(
+            wrapper.current,
+            {
+              x: -(
+                el.offsetLeft -
+                container.current.offsetWidth / 2 +
+                el.offsetWidth
+              ),
+              duration: endTimes[i + 1] - startTimes[i],
+              ease: "none",
+            },
+            startTimes[i]
+          );
+        }
       }
-    }
-    if (translationWrapper.current && translationContainer.current) {
-      const lines = translationWrapper.current.children;
-      tl.set(translationWrapper.current, { x: 0 }, 0);
-      for (let i = 0; i < lines.length; i++) {
-        const el = lines[i] as HTMLDivElement;
-        tl.to(
-          translationWrapper.current,
-          {
-            x: -(
-              el.offsetLeft -
-              translationContainer.current.offsetWidth / 2 +
-              el.offsetWidth
-            ),
-            duration: endTimes[i + 1] - startTimes[i],
-            ease: "none",
-          },
-          startTimes[i]
-        );
+      if (translationWrapper.current && translationContainer.current) {
+        const lines = translationWrapper.current.children;
+        tl.set(translationWrapper.current, { x: 0 }, 0);
+        for (let i = 0; i < lines.length; i++) {
+          const el = lines[i] as HTMLDivElement;
+          tl.to(
+            translationWrapper.current,
+            {
+              x: -(
+                el.offsetLeft -
+                translationContainer.current.offsetWidth / 2 +
+                el.offsetWidth
+              ),
+              duration: endTimes[i + 1] - startTimes[i],
+              ease: "none",
+            },
+            startTimes[i]
+          );
+        }
       }
-    }
+      const now = performance.now();
+      if (playerState.state === "playing") {
+        const progress = (now - playerState.startingAt) / 1000;
+        timeline.play(progress, false);
+      } else {
+        timeline.pause(playerState.progress, false);
+      }
+    });
     return tl;
 
     // Adding wrapper.current, translationWrapper.current for the timeline to change along with the lyrics.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wrapper.current, translationWrapper.current, startTimes, endTimes]);
+  }, [
+    wrapper.current,
+    translationWrapper.current,
+    startTimes,
+    endTimes,
+    transLangIdx,
+  ]);
 
   useTrackwiseTimelineControl(playerState, timeline);
 
@@ -184,7 +193,7 @@ export function SlantedLyrics({ lyrics }: Props) {
                   }}
                   ref={idx === currentFrameId ? currentTranslation : null}
                 >
-                  {v.attachments.translation}
+                  {v.attachments.translations[lang]}
                 </Box>
               );
             })}

@@ -9,7 +9,6 @@ import { Karaoke1Lyrics } from "../components/public/lyrics/karaoke1";
 import { PlainLyrics } from "../components/public/lyrics/plain";
 import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
 import type { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
-import { FocusedGlowLyrics } from "../components/public/lyrics/focusedGlow";
 import { SlantedLyrics } from "../components/public/lyrics/slanted";
 import { ParagraphLyrics } from "../components/public/lyrics/paragraph";
 import { TypingFocusedLyrics } from "../components/public/lyrics/typingFocused";
@@ -67,8 +66,8 @@ const LYRICS_QUERY = gql`
 
 // prettier-ignore
 const MODULE_LIST = {
-  "Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
-  "Focused Glow": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedGlowLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
+  "Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="plain" />,
+  "Focused Glow": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="glow" />,
   "Focused/2": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics2 lyrics={lyrics} transLangIdx={transLangIdx} />,
   "Plain": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PlainLyrics lyrics={lyrics} />,
   "Ringo": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <RingoTranslateLyrics lyrics={lyrics} />,
@@ -78,7 +77,7 @@ const MODULE_LIST = {
   "Karaoke/1/Underline": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <Karaoke1Lyrics lyrics={lyrics} />,
   "Karaoke/1/Cover": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <Karaoke1Lyrics lyrics={lyrics} cover />,
   "Nicokara": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <KaraokeJaLyrics lyrics={lyrics} />,
-  "Slanted": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <SlantedLyrics lyrics={lyrics} />,
+  "Slanted": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <SlantedLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
   "Paragraph": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <ParagraphLyrics lyrics={lyrics} />,
   "Typing/Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <TypingFocusedLyrics lyrics={lyrics} />,
   "Typing/Stacked": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <TypingStackedLyrics lyrics={lyrics} />,
