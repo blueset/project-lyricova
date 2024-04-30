@@ -18,6 +18,7 @@ const TRANSITION: Transition = {
 interface LyricsLineElementProps {
   className?: string;
   line: LyricsKitLyricsLine | null;
+  idx: number;
   transLang?: string;
   animate: boolean;
   sx?: SxProps<Theme>;
@@ -55,12 +56,14 @@ function PlainLineElement({
   line,
   transLang,
   sx,
+  idx,
 }: LyricsLineElementProps) {
   if (!line) return null;
 
   return (
     <PlainDiv
       lang="ja"
+      layout
       className={className}
       transition={TRANSITION}
       initial={{
@@ -75,6 +78,7 @@ function PlainLineElement({
       sx={sx}
       data-role={line.attachments.role}
       data-minor={line.attachments.minor}
+      layoutId={`${idx}`}
     >
       <div>{line.content}</div>
       {line.attachments.translations[transLang] && (
@@ -132,7 +136,7 @@ const GlowDiv = styled(motion.div)({
   },
 });
 
-function GlowLineElement({ line, transLang }: LyricsLineElementProps) {
+function GlowLineElement({ line, transLang, idx }: LyricsLineElementProps) {
   if (!line) return null;
   const content = (
     <>
@@ -160,6 +164,8 @@ function GlowLineElement({ line, transLang }: LyricsLineElementProps) {
       }}
       data-role={line.attachments.role}
       data-minor={line.attachments.minor}
+      layout
+      layoutId={`${idx}`}
     >
       <div className="overlay">{content}</div>
       <div className="text">{content}</div>
@@ -195,11 +201,13 @@ export function FocusedLyrics({ lyrics, transLangIdx, variant = "plain" }: Props
         inset: "20px",
         gap: "20px",
       }}
+      layout
     >
         {currentFrame?.data?.activeSegments.map((segment) => (
           <LineElement
             line={lines[segment]}
             transLang={lang}
+            idx={segment}
             key={segment}
             animate={true}
           />

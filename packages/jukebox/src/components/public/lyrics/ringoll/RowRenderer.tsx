@@ -3,7 +3,7 @@ import { useSpring, animated } from "@react-spring/web";
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
 import { RowRendererProps } from "./LyricsVirtualizer";
 import { styled } from "@mui/material/styles";
-import { LineRenderer } from "./LineRenderer";
+import { RingollLineRenderer } from "./LineRenderer";
 
 const RowContainer = styled(animated.div)(({"data-role": role, "data-minor": minor}: {"data-role": number, "data-minor": boolean}) => [
   {
@@ -99,7 +99,7 @@ const InnerRowRenderer = forwardRef<
         data-role={row.attachments.role}
         data-minor={row.attachments.minor}
       >
-        <LineRenderer
+        <RingollLineRenderer
           line={row}
           start={segment.start}
           end={segment.end}
