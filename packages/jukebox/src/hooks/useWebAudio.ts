@@ -40,14 +40,12 @@ export function useWebAudio(mediaUrl: string) {
     requestIdleCallback(load);
     return () => {
       active = false;
-      setPlayerStatus((ps) => {
-        if (ps.state === "playing" && ps.bufferSource) {
-          ps.bufferSource?.stop();
-          ps.bufferSource?.disconnect();
-          return { state: "paused", rate: 1, progress: 0 };
-        }
-        return ps;
-      });
+      const ps = playerStatusRef.current;
+      if (ps.state === "playing" && ps.bufferSource) {
+        ps.bufferSource?.stop();
+        ps.bufferSource?.disconnect();
+        return { state: "paused", rate: 1, progress: 0 };
+      }
     };
 
     async function load() {
