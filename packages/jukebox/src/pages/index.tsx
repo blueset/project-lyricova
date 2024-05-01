@@ -4,8 +4,6 @@ import _ from "lodash";
 import { ReactNode, useMemo, useRef, useState } from "react";
 import { getLayout } from "../components/public/layouts/IndexLayout";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
-import { FocusedLyrics2 } from "../components/public/lyrics/focused2";
-import { Karaoke1Lyrics } from "../components/public/lyrics/karaoke1";
 import { PlainLyrics } from "../components/public/lyrics/plain";
 import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
 import type { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
@@ -13,15 +11,12 @@ import { SlantedLyrics } from "../components/public/lyrics/slanted";
 import { ParagraphLyrics } from "../components/public/lyrics/paragraph";
 import { TypingFocusedLyrics } from "../components/public/lyrics/typingFocused";
 import { TypingStackedLyrics } from "../components/public/lyrics/typingStack";
-import { PlainFuriganaLyrics } from "../components/public/lyrics/plainFurigana";
 import { KaraokeJaLyrics } from "../components/public/lyrics/karaokeJa";
 import { StrokeLyrics } from "../components/public/lyrics/stroke";
 import { useClientPersistentState } from "../frontendUtils/clientPersistantState";
 import type { DocumentNode } from "graphql";
-import { RingoTranslateLyrics } from "../components/public/lyrics/ringoTranslate";
 import { useAppDispatch, useAppSelector } from "../redux/public/store";
 import { currentSongSelector } from "../redux/public/playlist";
-import { RingoSingLyrics } from "../components/public/lyrics/ringoSing";
 import TooltipIconButton from "../components/dashboard/TooltipIconButton";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
@@ -68,20 +63,14 @@ const LYRICS_QUERY = gql`
 const MODULE_LIST = {
   "Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="plain" />,
   "Focused Glow": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="glow" />,
-  "Focused/2": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics2 lyrics={lyrics} transLangIdx={transLangIdx} />,
   "Plain": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PlainLyrics lyrics={lyrics} />,
-  "Ringo": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <RingoTranslateLyrics lyrics={lyrics} />,
-  "Ringo Sing": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <RingoSingLyrics lyrics={lyrics} />,
   "Ringoll": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <RingollLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
   "AMLL": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <AMLLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
-  "Karaoke/1/Underline": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <Karaoke1Lyrics lyrics={lyrics} />,
-  "Karaoke/1/Cover": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <Karaoke1Lyrics lyrics={lyrics} cover />,
   "Nicokara": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <KaraokeJaLyrics lyrics={lyrics} />,
   "Slanted": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <SlantedLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
   "Paragraph": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <ParagraphLyrics lyrics={lyrics} />,
   "Typing/Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <TypingFocusedLyrics lyrics={lyrics} />,
   "Typing/Stacked": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <TypingStackedLyrics lyrics={lyrics} />,
-  "Furigana/Plain": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PlainFuriganaLyrics lyrics={lyrics} />,
   "Stroke": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <StrokeLyrics lyrics={lyrics} />,
   "PIP (Alpha)": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PictureInPictureLyrics lyrics={lyrics} />,
 } as const;
