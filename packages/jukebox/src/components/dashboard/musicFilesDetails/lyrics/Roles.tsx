@@ -42,8 +42,8 @@ const RowItem = memo(function RowItem({
       <Stack direction="row" spacing={1} alignItems="center">
         <ToggleButtonGroup value={line.attachments.role} size="small" onChange={onRoleChange} exclusive>
           <SmallButton value={0}>0</SmallButton>
-          <SmallButton value={1}>1</SmallButton>
           <SmallButton value={2}>2</SmallButton>
+          <SmallButton value={1}>1</SmallButton>
         </ToggleButtonGroup>
         <MajMinButton
           size="small"

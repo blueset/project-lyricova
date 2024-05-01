@@ -1,5 +1,5 @@
 import { LyricsKitLyrics } from "../../../../graphql/LyricsKitObjects";
-import { LyricsVirtualizer } from "./LyricsVirtualizer";
+import { LyricsVirtualizer } from "../components/LyricsVirtualizer";
 import { RowRenderer } from "./RowRenderer";
 import { styled } from "@mui/material";
 

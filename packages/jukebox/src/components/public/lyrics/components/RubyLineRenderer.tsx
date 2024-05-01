@@ -8,7 +8,7 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import { LyricsAnimationRef } from "../ringoll/AnimationRef.type";
+import { LyricsAnimationRef } from "./AnimationRef.type";
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
 
 function lineToTimeSegments(line: LyricsKitLyricsLine, lineStart: number, lineEnd: number) {

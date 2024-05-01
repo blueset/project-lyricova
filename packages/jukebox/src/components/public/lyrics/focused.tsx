@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
 import { useActiveLyrcsRanges } from "../../../hooks/useActiveLyricsRanges";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
-import { LyricsAnimationRef } from "./ringoll/AnimationRef.type";
+import { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { LineRenderer, TimedSpanProps } from "./components/RubyLineRenderer";
 
 const TRANSITION: Transition = {
