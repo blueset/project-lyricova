@@ -1,5 +1,4 @@
 import {
-  PropsWithChildren,
   forwardRef,
   memo,
   useCallback,
@@ -9,7 +8,7 @@ import {
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
 import { styled } from "@mui/material/styles";
 import { LyricsAnimationRef } from "./AnimationRef.type";
-import { LineRenderer } from "../components/RubyLineRenderer";
+import { LineRenderer, TimedSpanProps } from "../components/RubyLineRenderer";
 
 const GRADIENT_WIDTH_PX = 10;
 const GRADIENT_PADDING = 20;
@@ -33,7 +32,7 @@ function generateMaskStyle(width: number) {
 
 const TimedSpan = forwardRef<
   LyricsAnimationRef,
-  PropsWithChildren<{ startTime: number; endTime: number; static?: boolean }>
+  TimedSpanProps
 >(function TimedSpan({ startTime, endTime, static: isStatic, children }, ref) {
   // const spanRef = useRef<HTMLSpanElement>(null);
   const webAnimationRefs = useRef<Animation[]>([]);

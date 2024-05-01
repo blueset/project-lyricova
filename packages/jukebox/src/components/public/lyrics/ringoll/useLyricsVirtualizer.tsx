@@ -70,7 +70,7 @@ export function useLyricsVirtualizer({
       );
     }
     return renderedRows;
-  }, [renderStartRow, renderEndRow, rowRenderer, startRow, endRow, rowAccumulateHeight, scrollOffset, rowRefHandler]);
+  }, [renderStartRow, renderEndRow, rowRenderer, startRow, endRow, rowAccumulateHeight, scrollOffset, isActiveScroll, rowRefHandler]);
 
   return { renderedRows, isActiveScroll };
 }

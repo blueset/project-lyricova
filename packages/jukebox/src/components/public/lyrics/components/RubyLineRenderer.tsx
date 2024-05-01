@@ -1,6 +1,5 @@
 import {
-  Component,
-  ComponentType,
+  ElementType,
   FC,
   PropsWithChildren,
   Ref,
@@ -115,7 +114,7 @@ interface LineRendererProps {
   line: LyricsKitLyricsLine;
   start: number;
   end: number;
-  lineContainer: ComponentType<PropsWithChildren<Record<string, unknown>>>;
+  lineContainer: ElementType;
   timedSpan: TimedSpanComponent;
 }
 
