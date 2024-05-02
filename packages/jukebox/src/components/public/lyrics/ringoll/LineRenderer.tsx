@@ -10,25 +10,8 @@ import { styled } from "@mui/material/styles";
 import { LyricsAnimationRef } from "../components/AnimationRef.type";
 import { LineRenderer, TimedSpanProps } from "../components/RubyLineRenderer";
 
-const GRADIENT_WIDTH_PX = 10;
-const GRADIENT_PADDING = 20;
 const FILLED_OPACITY = 100;
 const BLANK_OPACITY = 50;
-
-function generateMaskStyle(width: number) {
-  const maskSize = width * 2 + GRADIENT_WIDTH_PX + GRADIENT_PADDING * 2;
-  const gradientStartPercent = ((width + GRADIENT_PADDING) / maskSize) * 100;
-  const gradientEndPercent =
-    ((width + GRADIENT_WIDTH_PX + GRADIENT_PADDING) / maskSize) * 100;
-  const maskImage = `linear-gradient(
-    to right, 
-    color-mix(in srgb, currentcolor ${FILLED_OPACITY}%, transparent) ${gradientStartPercent}%, 
-    color-mix(in srgb, currentcolor ${BLANK_OPACITY}%, transparent) ${gradientEndPercent}%
-  )`;
-  const maskProgressSize = -width - GRADIENT_WIDTH_PX - GRADIENT_PADDING;
-  const maskScale = `${(maskSize / width) * 100}% 100%`;
-  return { maskImage, maskScale, maskProgressSize };
-}
 
 const TimedSpan = forwardRef<
   LyricsAnimationRef,
@@ -62,12 +45,12 @@ const TimedSpan = forwardRef<
         }
       } else {
         if (node && node.style.maskRepeat !== "no-repeat") {
-          const rect = node.getBoundingClientRect();
-          const { maskImage, maskScale, maskProgressSize } = generateMaskStyle(
-            rect.width
-          );
-          node.style.maskImage = maskImage;
-          node.style.maskSize = maskScale;
+          node.style.maskImage = `linear-gradient(
+            to right, 
+            color-mix(in srgb, currentcolor ${FILLED_OPACITY}%, transparent) 50%, 
+            color-mix(in srgb, currentcolor ${BLANK_OPACITY}%, transparent) 50%
+          )`;
+          node.style.maskSize = "200% 100%";
           node.style.maskRepeat = "no-repeat";
           node.style.maskOrigin = "left";
           const duration = Math.max(0.1, endTime - startTime);
@@ -75,8 +58,8 @@ const TimedSpan = forwardRef<
           webAnimationRefs.current = [
             node.animate(
               [
-                { maskPosition: `${maskProgressSize}px 0` },
-                { maskPosition: `${-GRADIENT_PADDING}px 0` },
+                { maskPosition: "100% 0" },
+                { maskPosition: "0 0" },
               ],
               {
                 delay: startTime * 1000,
