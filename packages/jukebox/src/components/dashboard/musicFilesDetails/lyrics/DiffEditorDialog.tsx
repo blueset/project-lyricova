@@ -57,9 +57,9 @@ function applyDiff(source: string, edited: string): string {
       let resultDots: string[] = [];
       let resultTags: string[] = [];
 
-      if (sourceLine.attachments.content[TRANSLATION]) {
-        resultLine.attachments.content[TRANSLATION] =
-          sourceLine.attachments.content[TRANSLATION];
+      if (sourceLine.attachments.content) {
+        resultLine.attachments.content =
+          {...sourceLine.attachments.content};
       }
       const timeTagQueue =
         sourceLine.attachments.content[TIME_TAG]?.tags || null;
