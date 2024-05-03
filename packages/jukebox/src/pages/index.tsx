@@ -27,6 +27,17 @@ import { AMLLyrics } from "../components/public/lyrics/amll";
 import { RingollLyrics } from "../components/public/lyrics/ringoll/ringoll";
 import { LyricsTranslationLanguageSwitchButton } from "../components/public/LyricsTranslationLanguageSwitchButton";
 
+const args = new URLSearchParams(
+  typeof window === "object" ? window?.location?.search ?? "" : ""
+);
+const useYuuruka =
+  args.get("yuuruka") === "true" ||
+  args.get("yuuruka") === "1" ||
+  args.get("uwu") === "true" ||
+  args.get("uwu") === "1" ||
+  args.get("kawaii") === "true" ||
+  args.get("kawaii") === "1";
+
 const LYRICS_QUERY = gql`
   query Lyrics($id: Int!) {
     musicFile(id: $id) {
@@ -109,8 +120,11 @@ export default function Index() {
   );
 
   const languages = useMemo(() => {
-    const languages = lyricsQuery.data?.musicFile?.lyrics?.translationLanguages ?? [];
-    setTranslationLanguageIdx((idx) => Math.max(0, Math.min(idx, languages.length - 1)));
+    const languages =
+      lyricsQuery.data?.musicFile?.lyrics?.translationLanguages ?? [];
+    setTranslationLanguageIdx((idx) =>
+      Math.max(0, Math.min(idx, languages.length - 1))
+    );
     return languages;
   }, [lyricsQuery.data?.musicFile?.lyrics?.translationLanguages]);
 
@@ -123,12 +137,18 @@ export default function Index() {
         width: "100%",
         height: "100%",
         fontWeight: 600,
-        fontSize: "2.5em",
+        fontSize: useYuuruka ? "1.5em" : "2.5em",
         fontStyle: "italic",
-        // filter: "var(--jukebox-cover-filter-brighter)",
         padding: 4,
       }}
     >
+      {useYuuruka && (
+        <img
+          src="/images/yuuruka.svg"
+          alt="Project Lyricova"
+          style={{ height: "6rem", opacity: 0.6, marginBlockEnd: "1rem" }}
+        />
+      )}
       {children}
     </Stack>
   );
@@ -143,9 +163,12 @@ export default function Index() {
       node = <MessageBox>No track.</MessageBox>;
     }
   } else if (lyricsQuery?.data?.musicFile?.lyrics) {
-    node = moduleNode(lyricsQuery.data.musicFile.lyrics, translationLanguageIdx);
+    node = moduleNode(
+      lyricsQuery.data.musicFile.lyrics,
+      translationLanguageIdx
+    );
   } else {
-    node = <MessageBox>No lyrics</MessageBox>;
+    node = <MessageBox>No lyrics.</MessageBox>;
   }
 
   const controls = (

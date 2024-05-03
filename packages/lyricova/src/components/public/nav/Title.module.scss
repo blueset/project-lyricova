@@ -38,3 +38,19 @@
     }
   }
 }
+
+.yuurukaTitle {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: center;
+
+  img {
+    height: 4rem;
+  }
+  @include media-breakpoint-down(desktop) {
+    .subtitle {
+      display: none;
+    }
+  }
+}
