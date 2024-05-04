@@ -6,6 +6,8 @@ import { LyricsKitLyricsLine, LyricsKitLyrics } from "../graphql/LyricsKitObject
 import { AnimatedWord } from "../graphql/TransliterationResolver";
 import { PlayerLyricsState } from "./types";
 import { usePlainPlayerLyricsState } from "./usePlainPlayerLyricsState";
+import gsap from "gsap";
+import { TextPlugin } from "gsap/dist/TextPlugin";
 
 type Timeline = gsap.core.Timeline;
 
