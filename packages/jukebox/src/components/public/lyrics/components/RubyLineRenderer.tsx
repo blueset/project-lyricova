@@ -10,6 +10,7 @@ import {
 } from "react";
 import { LyricsAnimationRef } from "./AnimationRef.type";
 import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
+import FuriganaLyricsLine from "src/components/FuriganaLyricsLine";
 
 function lineToTimeSegments(line: LyricsKitLyricsLine, lineStart: number, lineEnd: number) {
   const timeTags = line.attachments?.timeTag?.tags ?? [];
@@ -148,7 +149,7 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
       return (
         <LineContainer>
           <TimedSpan startTime={0} endTime={end - start} ref={setRef(1)} static>
-            {line.content}
+            <FuriganaLyricsLine lyricsKitLine={line.content} />
           </TimedSpan>
         </LineContainer>
       );
