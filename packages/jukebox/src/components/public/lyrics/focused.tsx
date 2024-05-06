@@ -18,7 +18,7 @@ const TRANSITION: Transition = {
   ease: "easeOut",
 };
 
-const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
+const TimedSpanGenerator = (full: boolean) => forwardRef<LyricsAnimationRef, TimedSpanProps>(
   function TimedSpan({startTime, endTime, children}, ref) {
     const webAnimationRef = useRef<Animation | null>(null);
     const refCallback = useCallback((node?: HTMLSpanElement) => {
@@ -26,12 +26,15 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
         node.style.opacity = "1";
         const duration = Math.max(0.1, endTime - startTime);
         webAnimationRef.current = node.animate(
-          [
+          full ? [
             { opacity: "0.3" },
             { opacity: "1", offset: 0.1 },
-            // { opacity: "1", offset: 0.9 },
             { opacity: "1" },
-            // { opacity: "0.5", offset: 1 },
+          ] : [
+            { opacity: "0.3" },
+            { opacity: "1", offset: 0.1 },
+            { opacity: "1", offset: 0.9 },
+            { opacity: "0.6", offset: 1 },
           ],
           {
             delay: startTime * 1000,
@@ -62,6 +65,9 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
     return <span ref={refCallback}>{children}</span>;
   }
 );
+
+const TimedSpan = TimedSpanGenerator(true);
+const TimedSpanPerSyllable = TimedSpanGenerator(false);
 
 interface LyricsLineElementProps {
   className?: string;
@@ -191,11 +197,11 @@ const GlowDiv = styled(motion.div)({
   },
 });
 
-const GlowLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(function GlowLineElement({ line, start, end, transLang, idx }, ref) {
+const GlowLineElementGenerator = (full: boolean) => forwardRef<LyricsAnimationRef, LyricsLineElementProps>(function GlowLineElement({ line, start, end, transLang, idx }, ref) {
   if (!line) return null;
   const content = (
     <>
-      <LineRenderer line={line} start={start} end={end} lineContainer="div" timedSpan={TimedSpan} ref={ref} />
+      <LineRenderer line={line} start={start} end={end} lineContainer="div" timedSpan={full ? TimedSpan : TimedSpanPerSyllable} ref={ref} />
       {line.attachments?.translations[transLang] && (
         <div className="translate" lang={transLang || "zh"}>
           {line.attachments.translations[transLang]}
@@ -227,12 +233,16 @@ const GlowLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(f
     </GlowDiv>
   );
 });
+
+const GlowLineElement = GlowLineElementGenerator(true);
+const GlowPerSyllableLineElement = GlowLineElementGenerator(false);
+
 // #endregion
 
 interface Props {
   lyrics: LyricsKitLyrics;
   transLangIdx?: number;
-  variant?: "plain" | "glow";
+  variant?: "plain" | "glow" | "glowPerSyllable";
 }
 
 export function FocusedLyrics({ lyrics, transLangIdx, variant = "plain" }: Props) {
@@ -264,7 +274,7 @@ export function FocusedLyrics({ lyrics, transLangIdx, variant = "plain" }: Props
 
   const lines = lyrics.lines;
   const lang = lyrics.translationLanguages[transLangIdx ?? 0];
-  const LineElement = variant === "plain" ? PlainLineElement : GlowLineElement;
+  const LineElement = variant === "plain" ? PlainLineElement : variant === "glow" ? GlowLineElement : GlowPerSyllableLineElement;
 
   const setRef = useCallback((index: number) => (ref?: LyricsAnimationRef) => {
     if (animationRefs.current[index] === ref) return;

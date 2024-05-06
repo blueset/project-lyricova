@@ -128,19 +128,23 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
 
     useImperativeHandle(ref, () => ({
       resume(time?: number) {
+        if (!Object.keys(animationRefs.current).length) {console.log("no refs found in array"); return;}
+
         if (start <= time && time <= end) {
           Object.values(animationRefs.current).forEach((ref) =>
-            ref?.resume(time - start)
+            ref ? ref?.resume(time - start) : console.log("ref is not found", ref)
           );
         } else {
           Object.values(animationRefs.current).forEach((ref) =>
-            ref?.pause(time - start)
+            ref ? ref?.pause(time - start) : console.log("ref is not found", ref)
           );
         }
       },
       pause(time?: number) {
+        if (!Object.keys(animationRefs.current).length) {console.log("no refs found in array"); return;}
+
         Object.values(animationRefs.current).forEach((ref) =>
-          ref?.pause(time - start)
+          ref ? ref?.pause(time - start) : console.log("ref is not found", ref)
         );
       },
     }));
