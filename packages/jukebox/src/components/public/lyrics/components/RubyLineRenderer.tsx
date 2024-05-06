@@ -153,7 +153,7 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
       return (
         <LineContainer>
           <TimedSpan startTime={0} endTime={end - start} ref={setRef(1)} static>
-            <FuriganaLyricsLine lyricsKitLine={line.content} />
+            <FuriganaLyricsLine graphQLSourceLine={line} />
           </TimedSpan>
         </LineContainer>
       );
