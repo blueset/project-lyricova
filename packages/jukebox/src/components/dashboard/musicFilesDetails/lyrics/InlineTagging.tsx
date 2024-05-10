@@ -560,7 +560,8 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
 
   // Apply marks to all identical lines
   const applyMarksToAll = useCallback(
-    (lineIdx: number) => () => {
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const lineIdx = parseInt(event.currentTarget.dataset.rowIndex);
       setLines((lines) => {
         const line = lines[lineIdx];
         if (!line?.content) return lines;
@@ -584,6 +585,13 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
       event.preventDefault();
     }
   }, []);
+
+  const onUpdateCursorHandler = useCallback((event: React.MouseEvent<HTMLElement>, cursorIdx: number) => {
+    const idx = parseInt(event.currentTarget.dataset.rowIndex);
+    section === "mark"
+      ? setCursorPos([idx, cursorIdx])
+      : setDotCursorPos([idx, cursorIdx, 0])
+  }, [section, setCursorPos, setDotCursorPos]);
 
   return (
     <Stack gap={1} sx={{ height: "100%" }} ref={taggingAreaRef}>
@@ -637,9 +645,9 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
             timelinesRef={timelinesRef}
             playerStatusRef={playerStatusRef}
             getProgress={getProgress}
-            applyMarksToAll={applyMarksToAll(idx)}
+            applyMarksToAll={applyMarksToAll}
             relativeProgress={
-              currentLine.indices.includes(idx) ? 0 : currentLine.borderIndex >= idx ? -1 : 1
+              currentLine.indices.includes(idx) || currentLine.borderIndex == idx ? 0 : currentLine.borderIndex >= idx ? -1 : 1
             }
             cursorIdx={
               section === "mark" && cursorPos[0] === idx
@@ -651,11 +659,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
                 ? [dotCursorPos[1], dotCursorPos[2]]
                 : undefined
             }
-            onUpdateCursor={(cursorIdx) =>
-              section === "mark"
-                ? setCursorPos([idx, cursorIdx])
-                : setDotCursorPos([idx, cursorIdx, 0])
-            }
+            onUpdateCursor={onUpdateCursorHandler}
           />
         ))}
       </Box>

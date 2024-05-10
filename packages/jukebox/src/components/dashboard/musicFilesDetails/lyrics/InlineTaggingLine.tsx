@@ -1,6 +1,6 @@
 import { IconButton, Tooltip, styled } from "@mui/material";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
-import { MutableRefObject, memo, useEffect, useRef, useState } from "react";
+import { MouseEventHandler, MutableRefObject, memo, useEffect, useRef, useState } from "react";
 import { measureTextWidths } from "../../../../frontendUtils/measure";
 import type { WebAudioPlayerState } from "../../../../hooks/types";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
@@ -83,9 +83,11 @@ const InlineMainContainer = styled("div")`
 function ApplyMarksToAllButton({
   applyMarksToAll,
   lineContent,
+  index,
 }: {
-  applyMarksToAll: () => void;
+  applyMarksToAll: MouseEventHandler<HTMLButtonElement>;
   lineContent: string;
+  index: number;
 }) {
   return (
     <Tooltip
@@ -98,7 +100,7 @@ function ApplyMarksToAllButton({
       }
       placement="bottom-end"
     >
-      <IconButton onClick={applyMarksToAll}>
+      <IconButton onClick={applyMarksToAll} data-row-index={index}>
         <PlaylistAddCheckIcon />
       </IconButton>
     </Tooltip>
@@ -117,11 +119,11 @@ interface InlineTaggingLineProps {
   relativeProgress: -1 | 0 | 1;
   cursorIdx?: number;
   dotCursorIdx?: [number, number];
-  onUpdateCursor?: (cursorIdx: number) => void;
+  onUpdateCursor?: (event: React.MouseEvent<HTMLElement>, cursorIdx: number) => void;
   timelinesRef: MutableRefObject<gsap.core.Timeline[]>;
   playerStatusRef: MutableRefObject<WebAudioPlayerState>;
   getProgress: () => number;
-  applyMarksToAll: () => void;
+  applyMarksToAll: MouseEventHandler<HTMLButtonElement>;
 }
 
 export function InlineTaggingLine({
@@ -255,12 +257,13 @@ export function InlineTaggingLine({
       </InlineTagContainer>
       <InlineMainContainer ref={centerRowRef}>
         {[...line.content].map((i, idx) => (
-          <span key={idx} onClick={() => onUpdateCursor?.(idx)}>
+          <span key={idx} onClick={(event) => onUpdateCursor?.(event, idx)} data-row-index={index}>
             {i}
           </span>
         ))}
         <span
-          onClick={() => onUpdateCursor?.(line.content.length)}
+          onClick={(event) => onUpdateCursor?.(event, line.content.length)}
+          data-row-index={index}
           data-is-valid={isValid}
         ></span>
       </InlineMainContainer>
@@ -322,6 +325,7 @@ export function InlineTaggingLine({
       <ApplyMarksToAllButtonMemo
         applyMarksToAll={applyMarksToAll}
         lineContent={line.content}
+        index={index}
       />
     </InlineTagRowContainer>
   );
