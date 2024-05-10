@@ -588,9 +588,11 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
 
   const onUpdateCursorHandler = useCallback((event: React.MouseEvent<HTMLElement>, cursorIdx: number) => {
     const idx = parseInt(event.currentTarget.dataset.rowIndex);
-    section === "mark"
-      ? setCursorPos([idx, cursorIdx])
-      : setDotCursorPos([idx, cursorIdx, 0])
+    if (section === "mark") {
+      setCursorPos([idx, cursorIdx]);
+    } else {
+      setDotCursorPos([idx, cursorIdx, 0]);
+    }
   }, [section, setCursorPos, setDotCursorPos]);
 
   return (
