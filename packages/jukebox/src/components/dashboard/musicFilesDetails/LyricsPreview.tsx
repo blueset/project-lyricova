@@ -117,6 +117,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
             offset: Math.min(1, Math.max(v.timeTag / duration, 0)),
             backgroundSize: `${percentages[v.index - 1] ?? 0}% 100%`,
           }));
+          keyframes.sort((a, b) => a.offset - b.offset);
 
           webAnimationRef.current = target.animate(keyframes, {
             duration: duration * 1000,

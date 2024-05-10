@@ -76,7 +76,7 @@ export default function PlaylistsList() {
           </Grid>
         ))}
         <Grid item xs={12}>
-          <Typography variant="overline">3 generated playlists</Typography>
+          <Typography variant="overline">4 generated playlists</Typography>
           <Divider />
         </Grid>
         <Grid item xs={12} md={6}>
