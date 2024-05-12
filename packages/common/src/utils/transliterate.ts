@@ -4,6 +4,8 @@ import MeCab from "mecab-async";
 import _ from "lodash";
 import { kanaToHira } from "./kanaUtils";
 import { FuriganaMapping } from "../models/FuriganaMapping";
+import { loadDefaultJapaneseParser, type HTMLProcessingParser } from 'budoux';
+import { JSDOM } from "jsdom";
 
 interface FuriganaLabel {
   content: string;
@@ -40,6 +42,53 @@ mecab.parser = function (data): MecabParsedResult {
 
 const segment = new Segment();
 segment.useDefault();
+
+const dom = new JSDOM();
+const budouxJa = loadDefaultJapaneseParser();
+
+function budouSegmenterWithRuby(input: [string, string][], budoux: HTMLProcessingParser): [string, string][] {
+  // convert input into HTML via JSDOM
+  const container = dom.window.document.createElement("span");
+  input.forEach(([text, ruby]) => {
+    if (text === ruby) {
+      container.appendChild(dom.window.document.createTextNode(text));
+    } else {
+      const wrapper = dom.window.document.createElement("span");
+      wrapper.textContent = text;
+      wrapper.dataset.ruby = ruby;
+      container.appendChild(wrapper);
+    }
+  });
+  const segmentedHTML = budoux.translateHTMLString(container.innerHTML);
+  container.outerHTML = segmentedHTML;
+  // convert back to text
+  const result: [string, string][] = [];
+  for (const node of container.childNodes) {
+    if (node instanceof dom.window.Text) {
+      node.textContent?.split("\u200B").forEach((v, idx) => {
+        if (!v) return;
+        if (idx === 0 && result.length > 0) {
+          result[result.length - 1][0] += v;
+          result[result.length - 1][1] += v;
+        } else {
+          result.push([v, v]);
+        }
+      });
+    } else if (node instanceof dom.window.HTMLElement) {
+      if (node.textContent?.startsWith("\u200B")) {
+        if (result.length === 0) {
+          result.push([node.textContent, node.dataset.ruby ?? ""]);
+        } else {
+          result[result.length - 1][0] += node.textContent;
+          result[result.length - 1][1] += node.dataset.ruby ?? "";
+        }
+      } else {
+        result.push([node.textContent ?? "", node.dataset.ruby ?? ""]);
+      }
+    }
+  }
+
+}
 
 interface TransliterateOptions {
   language?: "zh" | "ja" | "en";
@@ -258,8 +307,6 @@ export async function segmentedTransliteration(
 
         switch (type) {
           case "typing":
-            let lastScore = 0;
-            let currDiff = 0;
             if (words.length < 1) return [];
             words.forEach((x) => {
               if (/[\uE000-\uF8FF]/.test(x.kanji)) {
@@ -271,7 +318,8 @@ export async function segmentedTransliteration(
                 [...x.kanji].forEach((v) => {
                   if (v in tokenMapping) {
                     const [kanji, kana, okuri] = tokenMapping[v];
-                    result.push([`${kanji}${okuri}`, `${kana}${okuri}`]);
+                    result.push([kanji, kana]);
+                    result.push([okuri, okuri]);
                   } else {
                     console.error(
                       `key ${v.charCodeAt(0)} is not found in the mapping list.`
@@ -280,13 +328,8 @@ export async function segmentedTransliteration(
                 });
               } else {
                 if (pending[0] !== "" && pending[1] !== "") {
-                  currDiff = lastScore - x.alphaForwardLogRate - 1000;
-                  if (currDiff > 0 && notPunct(x.kanji)) {
-                    result.push(pending);
-                    pending = ["", ""];
-                  }
+                  result.push(pending);
                 }
-                lastScore = x.alphaForwardLogRate;
                 pending[0] += x.kanji;
                 pending[1] += kanaToHira(
                   x.reading === "*" ? x.kanji : x.reading
@@ -297,7 +340,7 @@ export async function segmentedTransliteration(
             if (pending[0] !== "" || pending[1] !== "") {
               result.push(pending);
             }
-            return result;
+            return budouSegmenterWithRuby(result, budouxJa);
           case "karaoke":
             return (
               await Promise.all(
