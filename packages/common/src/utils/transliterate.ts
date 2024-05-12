@@ -48,9 +48,9 @@ const budouxJa = loadDefaultJapaneseParser();
 
 function budouSegmenterWithRuby(input: [string, string][], budoux: HTMLProcessingParser): [string, string][] {
   // convert input into HTML via JSDOM
-  const container = dom.window.document.createElement("span");
+  let container = dom.window.document.createElement("span");
   input.forEach(([text, ruby]) => {
-    if (text === ruby) {
+    if (text.trim() === ruby.trim()) {
       container.appendChild(dom.window.document.createTextNode(text));
     } else {
       const wrapper = dom.window.document.createElement("span");
@@ -60,7 +60,8 @@ function budouSegmenterWithRuby(input: [string, string][], budoux: HTMLProcessin
     }
   });
   const segmentedHTML = budoux.translateHTMLString(container.innerHTML);
-  container.outerHTML = segmentedHTML;
+  container.innerHTML = segmentedHTML;
+  container = container.firstElementChild as HTMLElement;
   // convert back to text
   const result: [string, string][] = [];
   for (const node of container.childNodes) {
@@ -75,19 +76,19 @@ function budouSegmenterWithRuby(input: [string, string][], budoux: HTMLProcessin
         }
       });
     } else if (node instanceof dom.window.HTMLElement) {
-      if (node.textContent?.startsWith("\u200B")) {
+      if (!node.textContent?.startsWith("\u200B")) {
         if (result.length === 0) {
-          result.push([node.textContent, node.dataset.ruby ?? ""]);
+          result.push([(node.textContent ?? "").replaceAll("\u200B", ""), node.dataset.ruby ?? ""]);
         } else {
           result[result.length - 1][0] += node.textContent;
           result[result.length - 1][1] += node.dataset.ruby ?? "";
         }
       } else {
-        result.push([node.textContent ?? "", node.dataset.ruby ?? ""]);
+        result.push([(node.textContent ?? "").replaceAll("\u200B", ""), node.dataset.ruby ?? ""]);
       }
     }
   }
-
+  return result;
 }
 
 interface TransliterateOptions {
@@ -329,6 +330,7 @@ export async function segmentedTransliteration(
               } else {
                 if (pending[0] !== "" && pending[1] !== "") {
                   result.push(pending);
+                  pending = ["", ""];
                 }
                 pending[0] += x.kanji;
                 pending[1] += kanaToHira(

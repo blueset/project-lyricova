@@ -36,8 +36,10 @@
     "@mui/icons-material": "^5.11.9",
     "@mui/material": "^5.11.9",
     "base64url": "^3.0.1",
+    "budoux": "^0.6.2",
     "ffprobe-client": "^1.1.6",
     "graphql-ws": "^5.12.1",
+    "jsdom": "^24.0.0",
     "mecab-async": "^0.1.2",
     "mysql2": "^3.9.7",
     "next": "^14.1.1",
@@ -69,6 +71,7 @@
     }
   },
   "devDependencies": {
+    "@types/jsdom": "^21.1.6",
     "@types/passport-fido2-webauthn": "^0.1.0",
     "@types/react": "^18.0.28",
     "@types/uuid": "^9.0.1",
