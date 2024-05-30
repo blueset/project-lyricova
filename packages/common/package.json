@@ -41,7 +41,7 @@
     "graphql-ws": "^5.12.1",
     "jsdom": "^24.0.0",
     "mecab-async": "^0.1.2",
-    "mysql2": "^3.9.7",
+    "mysql2": "^3.9.8",
     "next": "^13.1.6",
     "passport-fido2-webauthn": "^0.1.0",
     "sequelize-typescript": "^2.1.6",
