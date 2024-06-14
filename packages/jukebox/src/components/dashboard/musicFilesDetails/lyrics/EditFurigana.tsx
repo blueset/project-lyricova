@@ -116,6 +116,10 @@ function furiganaHighlight(
         ["年", "とせ"],
       ]) ||
       matchContexualFurigana(base, ruby, groupings, [
+        ["宝", "ほう"],
+        ["物", "もつ"],
+      ]) ||
+      matchContexualFurigana(base, ruby, groupings, [
         ["一", "かず"],
         ["人", "と"],
       ])
