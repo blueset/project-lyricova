@@ -37,7 +37,7 @@ export function useWebAudio(mediaUrl: string) {
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | undefined>(cachedWebAudioBuffer[mediaUrl]);
   useEffect(() => {
     let active = true;
-    requestIdleCallback(load);
+    (window.requestIdleCallback ?? window.setTimeout)(load);
     return () => {
       active = false;
       const ps = playerStatusRef.current;
