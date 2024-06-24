@@ -47,7 +47,7 @@ export class SpotifyProvider extends LyricsProvider<SpotifySearchResult> {
       },
     });
 
-    return res.data.data.searchV2.tracksV2.items;
+    return res.data.data.searchV2?.tracksV2.items ?? [];
   }
   public async fetchLyrics(
     token: SpotifySearchResult

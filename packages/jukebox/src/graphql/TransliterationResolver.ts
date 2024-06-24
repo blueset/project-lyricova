@@ -180,13 +180,14 @@ export class TransliterationResolver {
   ): Partial<FuriganaMapping>[] {
     return input.map(({text, furigana}) => {
       const [textGroups, furiganaGroups] = convertMonoruby(text, furigana);
+      if (textGroups.length === 1 && furiganaGroups.length === 1) return null;
       return {
         text,
         furigana,
         segmentedText: textGroups.join(","),
         segmentedFurigana: furiganaGroups.join(","),
       };
-    });
+    }).filter(a => !!a);
   }
 
   @Authorized("ADMIN")
