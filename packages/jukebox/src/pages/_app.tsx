@@ -59,6 +59,18 @@ function MyApp({ Component, pageProps }: AppPropsExtension) {
       SourceHanSansPunct.variable,
       SourceHanSerif.variable
     );
+
+    if (/eruda=true/.test(window.location.toString()) || localStorage.getItem('active-eruda') == 'true') {
+      const src = '//cdn.jsdelivr.net/npm/eruda';
+      const importScript = document.createElement("script");
+      importScript.src = src;
+      importScript.onload = () => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        eruda.init();
+      };
+      document.head.appendChild(importScript);
+    }
   }, []);
 
   const getLayout = Component.layout || getPlainLayout;
