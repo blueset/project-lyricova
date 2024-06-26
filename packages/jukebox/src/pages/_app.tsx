@@ -60,8 +60,8 @@ function MyApp({ Component, pageProps }: AppPropsExtension) {
       SourceHanSerif.variable
     );
 
-    if (/eruda=true/.test(window.location.toString()) || localStorage.getItem('active-eruda') == 'true') {
-      const src = '//cdn.jsdelivr.net/npm/eruda';
+    if (/eruda=true/.test(window.location.toString()) || localStorage.getItem("active-eruda") == "true") {
+      const src = "//cdn.jsdelivr.net/npm/eruda";
       const importScript = document.createElement("script");
       importScript.src = src;
       importScript.onload = () => {
