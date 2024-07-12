@@ -86,6 +86,9 @@ function furiganaHighlight(
       (base === "触" && (ruby === "ふ" || ruby === "さわ")) ||
       (base === "風" && (ruby === "かぜ" || ruby === "ふう")) ||
       (base === "傍" && (ruby === "はた" || ruby === "そば")) ||
+      (base === "方" && (ruby === "ほう" || ruby === "かた")) ||
+      (base === "止" && (ruby === "と" || ruby === "や")) ||
+      (base === "間" && (ruby === "あいだ" || ruby === "ま")) ||
       (base === "後" &&
         (ruby === "あと" || ruby === "のち" || ruby === "ご")) ||
       (base === "金" && ruby === "きん") ||
