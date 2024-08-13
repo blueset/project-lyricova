@@ -379,13 +379,13 @@ export class DownloadResolver {
     publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>
   ): Promise<string> {
     const ytdlpWrap = new YTDlpWrap(YTDLP_PATH);
+    const format = url.includes("nicovideo") ? "best" : "bestaudio";
     if (!filename) {
-      const info = await ytdlpWrap.getVideoInfo(url);
+      const info = await ytdlpWrap.getVideoInfo(["-f", format, url]);
       filename = info.filename;
     }
     filename = swapExt(filename, "mp3");
     const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
-    const format = url.includes("nicovideo") ? "best" : "bestaudio";
     const params = [
       url,
       "--extract-audio",
