@@ -385,7 +385,7 @@ export class DownloadResolver {
     }
     filename = swapExt(filename, "mp3");
     const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
-    const format = url.includes("nicovideo") ? "best" : "bestaudio";
+    // const format = url.includes("nicovideo") ? "best" : "bestaudio";
     const params = [
       url,
       "--extract-audio",
@@ -393,8 +393,8 @@ export class DownloadResolver {
       "mp3",
       "--audio-quality",
       "128K",
-      "-f",
-      format,
+      // "-f",
+      // format,
       "--embed-thumbnail",
       "--add-metadata",
       "-o",
