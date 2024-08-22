@@ -112,7 +112,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
           const lengths = measureTextWidths(target);
           const length = lengths.at(-1);
           const percentages = lengths.map((v) => (v / length) * 100);
-          const duration = end - start;
+          const duration = Math.max(end - start, 1);
           const keyframes = tags.map((v) => ({
             offset: Math.min(1, Math.max(v.timeTag / duration, 0)),
             backgroundSize: `${percentages[v.index - 1] ?? 0}% 100%`,

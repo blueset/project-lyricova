@@ -379,13 +379,13 @@ export class DownloadResolver {
     publish: Publisher<PubSubSessionPayload<YouTubeDlProgressType>>
   ): Promise<string> {
     const ytdlpWrap = new YTDlpWrap(YTDLP_PATH);
+    const format = url.includes("nicovideo") ? "best" : "bestaudio";
     if (!filename) {
-      const info = await ytdlpWrap.getVideoInfo(url);
+      const info = await ytdlpWrap.getVideoInfo(["-f", format, url]);
       filename = info.filename;
     }
     filename = swapExt(filename, "mp3");
     const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
-    const format = url.includes("nicovideo") ? "best" : "bestaudio";
     const params = [
       url,
       "--extract-audio",
@@ -444,7 +444,8 @@ export class DownloadResolver {
   @Query((returns) => GraphQLJSONObject)
   public async youtubeDlGetInfo(@Arg("url") url: string): Promise<object> {
     const ytdlpWrap = new YTDlpWrap(YTDLP_PATH);
-    const info = await ytdlpWrap.getVideoInfo(url);
+    const format = url.includes("nicovideo") ? "best" : "bestaudio";
+    const info = await ytdlpWrap.getVideoInfo(["-f", format, url]);
     // console.log("yt-dlp info", info);
     if (Array.isArray(info))
       throw new Error("Playlist download is not supported yet");
