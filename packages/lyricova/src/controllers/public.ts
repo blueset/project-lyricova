@@ -10,6 +10,7 @@ import { Resvg } from "@resvg/resvg-js";
 import { Readable } from "stream";
 import React from "react";
 import satori from "satori";
+import { shiftinPuncts } from "src/utils/typography";
 
 const sourceHanExtraLight = readFile(
   resolve(__dirname, "../../src/fonts/SourceHanSans-ExtraLight-Subset-hhea.otf")
@@ -192,7 +193,12 @@ export class PublicApiController {
     const lines = mainVerse.text
       .replace(/——/g, "⸺")
       .split("\n")
-      .map((line) => line.match(/^([\p{Ps}\p{Pi}"]*)(.*)$/u));
+      .map((line) => {
+        let match = line.match(/^([\p{Ps}\p{Pi}"]*)(.*)$/u);
+        match = shiftinPuncts(line, match, "「", "」");
+        match = shiftinPuncts(line, match, "『", "』");
+        match = shiftinPuncts(line, match, "｢", "｣");
+      });
 
     const [
       sourceHanExtraLightData,
