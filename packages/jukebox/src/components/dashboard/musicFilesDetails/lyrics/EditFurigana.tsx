@@ -124,11 +124,11 @@ function furiganaHighlight(
         ["物", "もつ"],
       ]) ||
       matchContexualFurigana(base, ruby, groupings, [
-        ["一", "ほう"],
+        ["一", "いち"],
         ["歩", "ほ"],
       ]) ||
       matchContexualFurigana(base, ruby, groupings, [
-        ["一", "いち"],
+        ["一", "かず"],
         ["人", "と"],
       ])
     ) {
