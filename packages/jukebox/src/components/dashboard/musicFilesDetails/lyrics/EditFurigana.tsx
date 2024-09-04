@@ -89,6 +89,7 @@ function furiganaHighlight(
       (base === "方" && (ruby === "ほう" || ruby === "かた")) ||
       (base === "止" && (ruby === "と" || ruby === "や")) ||
       (base === "間" && (ruby === "あいだ" || ruby === "ま")) ||
+      (base === "被" && (ruby === "かぶ" || ruby === "こうむ")) ||
       (base === "後" &&
         (ruby === "あと" || ruby === "のち" || ruby === "ご")) ||
       (base === "金" && ruby === "きん") ||
@@ -123,7 +124,11 @@ function furiganaHighlight(
         ["物", "もつ"],
       ]) ||
       matchContexualFurigana(base, ruby, groupings, [
-        ["一", "かず"],
+        ["一", "ほう"],
+        ["歩", "ほ"],
+      ]) ||
+      matchContexualFurigana(base, ruby, groupings, [
+        ["一", "いち"],
         ["人", "と"],
       ])
     ) {
