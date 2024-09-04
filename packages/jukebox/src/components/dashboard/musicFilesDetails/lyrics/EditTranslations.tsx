@@ -1,4 +1,4 @@
-import { Grid, IconButton, Input, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { Button, Grid, IconButton, Input, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
 import type { ChangeEvent} from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
@@ -7,6 +7,7 @@ import { useSnackbar } from "notistack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { useNamedState } from "../../../../hooks/useNamedState";
+import { smartypantsu } from "smartypants";
 
 interface Props {
   lyrics: string;
@@ -143,6 +144,14 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     });
   }, [setCurrentLanguageIdx, setLanguages]);
 
+  const handleFixQuotes = useCallback(() => {
+    setTranslatedLines((lines) => {
+      return lines.map((line) => {
+        return smartypantsu(line);
+      });
+    });
+  }, [setTranslatedLines]);
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
@@ -164,6 +173,7 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
             <IconButton onClick={handleAddLanguage}>
               <AddIcon />
             </IconButton>
+            <Button variant="outlined" onClick={handleFixQuotes}>Fix quotes</Button>
           </Stack>
         </Stack>
       </Grid>

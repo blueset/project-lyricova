@@ -135,6 +135,7 @@
     "sequelize-typescript": "^2.1.6",
     "simple-statistics": "^7.3.0",
     "slugify": "^1.4.5",
+    "smartypants": "^0.2.2",
     "split": "^1.0.1",
     "stream-combiner": "^0.2.2",
     "stream-filter": "^2.1.0",
