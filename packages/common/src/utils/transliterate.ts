@@ -165,10 +165,19 @@ async function applyFuriganaMapping(
   if (cache?.[text]?.[furigana]) {
     return cache[text][furigana];
   }
-  const [{ segmentedText, segmentedFurigana }, created] =
+  let [{ segmentedText, segmentedFurigana }, created] =
     await FuriganaMapping.findOrCreate({
       where: { text, furigana },
     });
+  if (created) {
+    const [textGroups, furiganaGroups] = convertMonoruby(text, furigana);
+    if (textGroups.length > 1 && furiganaGroups.length > 1) {
+      segmentedText = textGroups.join(",");
+      segmentedFurigana = furiganaGroups.join(",");
+      await FuriganaMapping.update({ segmentedText, segmentedFurigana }, { where: { text, furigana } });
+      created = false;
+    }
+  }
   if (created || !segmentedText || !segmentedFurigana) {
     return [v];
   }
@@ -574,3 +583,7 @@ export async function transliterate(
     return text;
   }
 }
+function convertMonoruby(text: string, furigana: string): [any, any] {
+  throw new Error("Function not implemented.");
+}
+
