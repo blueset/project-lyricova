@@ -57,8 +57,8 @@ export class VocaDBLyricsEntry implements LyricsForSongContract {
   @Field((type) => Int, { description: "Lyrics entry ID." })
   id: number;
 
-  @Field({ description: "Language/culture code.", nullable: true })
-  cultureCode: string;
+  @Field((type) => [String], { description: "Language/culture codes.", nullable: true })
+  cultureCodes: string[];
 
   @Field({ description: "Source of lyrics.", nullable: true })
   source: string;

@@ -203,7 +203,7 @@ export interface ArtistForSongContract {
   roles: string;
 }
 export interface LyricsForSongContract {
-  cultureCode: string;
+  cultureCodes: string[];
   id: number;
   source: string;
   translationType: VDBTranslationType;

@@ -24,7 +24,7 @@ const VOCADB_LYRICS_QUERY = gql`
     vocaDBLyrics(id: $id) {
       id
       translationType
-      cultureCode
+      cultureCodes
       source
       url
       value
@@ -95,7 +95,7 @@ export default function VocaDBLyricsDialog({
             <ListItem key={v.id}>
               <ListItemText disableTypography>
                 <Typography variant="body1" component="span" display="block">
-                  {v.translationType} (<code>{v.cultureCode}</code>
+                  {v.translationType} ({v.cultureCodes?.join(", ") || "Unknown"}
                   {v.source && (
                     <>
                       , <Link href={v.url}>{v.source}</Link>

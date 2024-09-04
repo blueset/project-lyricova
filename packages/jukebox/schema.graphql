@@ -770,8 +770,8 @@ type VideoFile {
 
 """A lyrics entry from VocaDB."""
 type VocaDBLyricsEntry {
-  """Language/culture code."""
-  cultureCode: String
+  """Language/culture codes."""
+  cultureCodes: [String!]
 
   """Lyrics entry ID."""
   id: Int!
