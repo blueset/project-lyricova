@@ -1,13 +1,31 @@
-import { Button, Grid, IconButton, Input, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import {
+  Button,
+  CircularProgress,
+  Grid,
+  IconButton,
+  Input,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
-import type { ChangeEvent} from "react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import type { ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Lyrics, TRANSLATION } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import { smartypantsu } from "smartypants";
+import { gql, useApolloClient } from "@apollo/client";
+
+const TRANSLATION_ALIGNMENT_QUERY = gql`
+  query ($translation: String!, $original: String!) {
+    translationAlignment(translation: $translation, original: $original)
+  }
+`;
 
 interface Props {
   lyrics: string;
@@ -16,6 +34,9 @@ interface Props {
 
 export default function EditTranslations({ lyrics, setLyrics }: Props) {
   const snackbar = useSnackbar();
+
+  const apolloClient = useApolloClient();
+  const [isAlignmentLoading, setIsAlignmentLoading] = useState(false);
 
   const parsedLyrics = useMemo<Lyrics | null>(() => {
     if (!lyrics) return null;
@@ -30,8 +51,14 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     }
   }, [lyrics, snackbar]);
 
-  const [languages, setLanguages] = useNamedState<(string | undefined)[]>([], "languages");
-  const [currentLanguageIdx, setCurrentLanguageIdx] = useNamedState<number>(0, "currentLanguageIdx");
+  const [languages, setLanguages] = useNamedState<(string | undefined)[]>(
+    [],
+    "languages"
+  );
+  const [currentLanguageIdx, setCurrentLanguageIdx] = useNamedState<number>(
+    0,
+    "currentLanguageIdx"
+  );
   const currentLanguage = languages[currentLanguageIdx];
   const currentLanguageRef = useRef<string | undefined>();
   currentLanguageRef.current = currentLanguage;
@@ -62,7 +89,10 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
       if (parsedLyrics) {
         const translatedLines = translatedLinesRef.current;
         parsedLyrics.lines.forEach((v, idx) => {
-          v.attachments.setTranslation(translatedLines[idx], currentLanguageRef.current);
+          v.attachments.setTranslation(
+            translatedLines[idx],
+            currentLanguageRef.current
+          );
         });
         setLyrics(parsedLyrics.toString());
       }
@@ -152,6 +182,30 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     });
   }, [setTranslatedLines]);
 
+  const handleAlignment = useCallback(async () => {
+    const translation = translatedLines.join("\n");
+    const original = parsedLyrics?.lines.map((v) => v.content).join("\n") || "";
+    setIsAlignmentLoading(true);
+    try {
+      const { data } = await apolloClient.query<{
+        translationAlignment: string;
+      }>({
+        query: TRANSLATION_ALIGNMENT_QUERY,
+        variables: { translation, original },
+      });
+      setTranslatedLines(data.translationAlignment.split("\n"));
+      snackbar.enqueueSnackbar("Alignment completed", {
+        variant: "success",
+      });
+    } catch (e) {
+      snackbar.enqueueSnackbar(`Error while aligning: ${e}`, {
+        variant: "error",
+      });
+    } finally {
+      setIsAlignmentLoading(false);
+    }
+  }, [apolloClient, parsedLyrics, snackbar, translatedLines]);
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
@@ -160,20 +214,45 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
             Switch to another tab to save changes.
           </DismissibleAlert>
           <Stack direction="row" spacing={2} alignItems="center">
-            <TextField label="Language" size="small" value={currentLanguage || ""} placeholder="Unknown" onChange={handleLanguageChange}/>
+            <TextField
+              label="Language"
+              size="small"
+              value={currentLanguage || ""}
+              placeholder="Unknown"
+              onChange={handleLanguageChange}
+            />
             <span>Translations:</span>
-            <ToggleButtonGroup value={currentLanguageIdx} size="small" onChange={handleLanguageSwitch} exclusive>
+            <ToggleButtonGroup
+              value={currentLanguageIdx}
+              size="small"
+              onChange={handleLanguageSwitch}
+              exclusive
+            >
               {languages.map((v, idx) => (
                 <ToggleButton key={idx} value={idx}>
                   #{idx} ({v || "Unknown"})
-                  <IconButton size="small" onClick={handleDeleteLanguage(idx)}><DeleteIcon /></IconButton>
+                  <IconButton size="small" onClick={handleDeleteLanguage(idx)}>
+                    <DeleteIcon />
+                  </IconButton>
                 </ToggleButton>
               ))}
             </ToggleButtonGroup>
             <IconButton onClick={handleAddLanguage}>
               <AddIcon />
             </IconButton>
-            <Button variant="outlined" onClick={handleFixQuotes}>Fix quotes</Button>
+            <Button variant="outlined" onClick={handleFixQuotes}>
+              Fix quotes
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleAlignment}
+              disabled={isAlignmentLoading}
+            >
+              GPT Alignment
+              {isAlignmentLoading && (
+                <CircularProgress size={16} sx={{ ml: 1 }} />
+              )}
+            </Button>
           </Stack>
         </Stack>
       </Grid>
@@ -189,7 +268,11 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
             >
               {v.content} ✲
             </Typography>{" "}
-            <Typography variant="body2" display="inline" lang={currentLanguage || "zh"}>
+            <Typography
+              variant="body2"
+              display="inline"
+              lang={currentLanguage || "zh"}
+            >
               {translatedLines[idx]}
             </Typography>
           </div>

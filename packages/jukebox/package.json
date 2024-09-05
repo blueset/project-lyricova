@@ -44,6 +44,7 @@
     "@apollo/client": "^3.7.8",
     "@apollo/server": "^4.9.3",
     "@applemusic-like-lyrics/react": "^0.1.5",
+    "@azure/openai": "^2.0.0-beta.1",
     "@emotion/react": "^11.10.5",
     "@emotion/server": "^11.10.0",
     "@emotion/styled": "^11.10.5",
@@ -109,6 +110,7 @@
     "nodejieba": "^2.6.0",
     "notistack": "^3.0.1",
     "novel-segment": "^2.7.53",
+    "openai": "^4.57.3",
     "p-limit": "^3.1.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
@@ -147,7 +149,8 @@
     "ws": "^8.17.1",
     "youtube-dl-wrap": "^2.1.1",
     "yt-dlp-wrap": "^2.3.11",
-    "yup": "^0.32.11"
+    "yup": "^0.32.11",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",

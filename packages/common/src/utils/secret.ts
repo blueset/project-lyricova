@@ -39,3 +39,7 @@ if (!DB_URI) {
 export const MUSIC_FILES_PATH = process.env["MUSIC_FILES_PATH"]?.endsWith("/")
   ? process.env["MUSIC_FILES_PATH"]
   : process.env["MUSIC_FILES_PATH"] + "/";
+
+export const AZURE_OPENAI_ENDPOINT = process.env["AZURE_OPENAI_ENDPOINT"]!;
+export const AZURE_OPENAI_API_KEY = process.env["AZURE_OPENAI_API_KEY"]!;
+export const AZURE_OPENAI_DEPLOYMENT_ID = process.env["AZURE_OPENAI_DEPLOYMENT_ID"]!;

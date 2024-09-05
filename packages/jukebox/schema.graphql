@@ -597,6 +597,7 @@ type Query {
   song(id: Int!): Song
   songs: [Song!]!
   startALengthyTask(sessionId: String!): [String!]!
+  translationAlignment(original: String!, translation: String!): String!
   transliterate(furigana: [[FuriganaLabel!]!]! = [], text: String!): TransliterationResult!
   vocaDBLyrics(id: Int!): [VocaDBLyricsEntry!]!
   youtubeDlGetInfo(url: String!): JSONObject!
