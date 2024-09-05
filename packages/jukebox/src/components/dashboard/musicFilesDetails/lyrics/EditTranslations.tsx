@@ -176,9 +176,15 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
 
   const handleFixQuotes = useCallback(() => {
     setTranslatedLines((lines) => {
-      return lines.map((line) => {
-        return smartypantsu(line);
-      });
+      try {
+        return lines.map((line) => {
+          return typeof line === "string" ? smartypantsu(line) : line;
+        });
+      } catch (e) {
+        snackbar.enqueueSnackbar(`Error while applying rules: ${e}`, { variant: "error" });
+        console.error(e);
+        return lines;
+      }
     });
   }, [setTranslatedLines]);
 
