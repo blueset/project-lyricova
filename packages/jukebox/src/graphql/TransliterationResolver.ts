@@ -73,6 +73,7 @@ export class TransliterationResult {
         language,
         type: "plain",
         furigana: this.furigana,
+        convertMonoruby,
       })
     )
       .map((v) =>
@@ -91,6 +92,7 @@ export class TransliterationResult {
       language,
       type: "plain",
       furigana: this.furigana,
+      convertMonoruby,
     });
   }
 
@@ -102,6 +104,7 @@ export class TransliterationResult {
       language,
       type: "karaoke",
       furigana: this.furigana,
+      convertMonoruby,
     });
   }
 
@@ -113,6 +116,7 @@ export class TransliterationResult {
       language,
       type: "typing",
       furigana: this.furigana,
+      convertMonoruby,
     });
   }
 
@@ -125,6 +129,7 @@ export class TransliterationResult {
       language,
       type: "typing",
       furigana: this.furigana,
+      convertMonoruby,
     });
     return lines.map((line) => buildAnimationSequence(line, language));
   }
@@ -179,7 +184,7 @@ export class TransliterationResolver {
     @Arg("mapping", (type) => [FuriganaMappingInput]) input: [FuriganaMappingInput]
   ): Partial<FuriganaMapping>[] {
     return input.map(({text, furigana}) => {
-      const [textGroups, furiganaGroups] = convertMonoruby(text, furigana);
+      const [textGroups, furiganaGroups] = convertMonoruby(text, furigana, {convertMonoruby});
       if (textGroups.length === 1 && furiganaGroups.length === 1) return null;
       return {
         text,

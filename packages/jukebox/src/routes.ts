@@ -8,9 +8,9 @@ import {
   segmentedTransliteration,
 } from "lyricova-common/utils/transliterate";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController";
-import { DownloadController } from "./controller/DownloadController";
 import { AuthController } from "lyricova-common/utils/AuthController";
 import { PlaylistController } from "./controller/PlaylistController";
+import { convertMonoruby } from "./utils/monoruby";
 
 export default (app: express.Express) => {
   const apiRouter = express.Router();
@@ -45,6 +45,7 @@ export default (app: express.Express) => {
       const result = await segmentedTransliteration(req.query.text as string, {
         language: req.query.lang as SegmentedTransliterationOptions["language"],
         type: req.query.type as SegmentedTransliterationOptions["type"],
+        convertMonoruby,
       });
       res.json(result);
     } catch (e) {

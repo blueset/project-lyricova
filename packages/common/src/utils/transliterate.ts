@@ -102,6 +102,10 @@ export interface SegmentedTransliterationOptions extends TransliterateOptions {
    * Only honored in Japanese language mode.
    */
   furigana?: FuriganaLabel[][];
+  /**
+   * Monoruby lookup function from dictionary.
+   */
+  convertMonoruby?: (text: string, furigana: string) => [string[], string[]];
 }
 
 function notPunct(text: string): boolean {
@@ -156,7 +160,8 @@ type FuriganaDatabaseCache = Record<string, Record<string, ([string, string] | s
 /** Apply per-char furigana based on database info. */
 async function applyFuriganaMapping(
   v: string | [string, string],
-  cache?: FuriganaDatabaseCache
+  cache?: FuriganaDatabaseCache,
+  convertMonoruby?: (text: string, furigana: string) => [string[], string[]]
 ): Promise<(string | [string, string])[]> {
   if (typeof v === "string" || v[0].length < 2) {
     return [v];
@@ -169,7 +174,7 @@ async function applyFuriganaMapping(
     await FuriganaMapping.findOrCreate({
       where: { text, furigana },
     });
-  if (created) {
+  if (convertMonoruby && (created || !segmentedText || !segmentedFurigana)) {
     const [textGroups, furiganaGroups] = convertMonoruby(text, furigana);
     if (textGroups.length > 1 && furiganaGroups.length > 1) {
       segmentedText = textGroups.join(",");
@@ -381,7 +386,7 @@ export async function segmentedTransliteration(
                       );
                       for (const frgn of separatedFuriganas) {
                         (
-                          await applyFuriganaMapping(frgn, furiganaMappingCache)
+                          await applyFuriganaMapping(frgn, furiganaMappingCache, options?.convertMonoruby)
                         ).forEach((v) => result.push(v));
                       }
                     }
@@ -583,7 +588,3 @@ export async function transliterate(
     return text;
   }
 }
-function convertMonoruby(text: string, furigana: string): [any, any] {
-  throw new Error("Function not implemented.");
-}
-
