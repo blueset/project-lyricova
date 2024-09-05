@@ -111,6 +111,15 @@ export class LyricsKitLyricsEntry {
   tags: Record<string, unknown>;
 }
 
+function timeoutPromise<T>(promise: Promise<T>, name: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Timeout in ${name}`)), 10000)
+    ),
+  ]);
+}
+
 @Resolver()
 export class LyricsProvidersResolver {
   private lyricsProvider: LyricsProviderManager;
@@ -269,28 +278,38 @@ export class LyricsProvidersResolver {
     publish: Publisher<PubSubSessionPayload<LyricsKitLyricsEntry>>
   ): Promise<LyricsKitLyricsEntry[]> {
     const request = LyricsSearchRequest.fromInfo(title, artists, duration);
+    const failed: string[] = [];
 
     const results = await Promise.all(
       this.lyricsProvider.providers.map(async (v) => {
-        const result = await v.getLyrics(request);
-        const converted = result.map((lrc: Lyrics) => {
-          return {
-            lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
-            quality: lrc.quality,
-            isMatched: lrc.isMatched(),
-            metadata: lrc.metadata,
-            tags: lrc.idTags,
-          };
-        });
-        if (sessionId) {
-          for (const data of converted) await publish({ sessionId, data });
+        try {
+          const result = await timeoutPromise(v.getLyrics(request), v.constructor.name);
+          
+          const converted = result.map((lrc: Lyrics) => {
+            return {
+              lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
+              quality: lrc.quality,
+              isMatched: lrc.isMatched(),
+              metadata: lrc.metadata,
+              tags: lrc.idTags,
+            };
+          });
+          if (sessionId) {
+            for (const data of converted) await publish({ sessionId, data });
+          }
+          return converted;
+        } catch (e) {
+          failed.push(e);
+          return [];
         }
-        return converted;
       })
     );
 
     await publish({ sessionId, data: null });
 
+    if (failed.length) {
+      throw new GraphQLError(failed.join("\n"));
+    }
     return _.flatten(results);
   }
 

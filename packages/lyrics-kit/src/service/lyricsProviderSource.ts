@@ -35,7 +35,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     // LyricsProviderSource.gecimi,
     LyricsProviderSource.viewLyrics,
     LyricsProviderSource.syair,
-    LyricsProviderSource.marumaru,
+    // LyricsProviderSource.marumaru,
     LyricsProviderSource.musixmatch,
     LyricsProviderSource.youtube,
     LyricsProviderSource.spotify,
