@@ -10,7 +10,7 @@ import { Resvg } from "@resvg/resvg-js";
 import { Readable } from "stream";
 import React from "react";
 import satori from "satori";
-import { shiftinPuncts } from "src/utils/typography";
+import { shiftinPuncts } from "../utils/typography";
 
 const sourceHanExtraLight = readFile(
   resolve(__dirname, "../../src/fonts/SourceHanSans-ExtraLight-Subset-hhea.otf")

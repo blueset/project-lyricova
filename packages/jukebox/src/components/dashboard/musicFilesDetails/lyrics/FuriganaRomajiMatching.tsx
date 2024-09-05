@@ -103,9 +103,9 @@ export async function furiganaRomajiMatching({
       lastLine.push([type, text]);
       // Diff merger rules
       if (lastLine.length > 1 && lastLine[lastLine.length - 2][0] === -1) {
-        let beforeDiff = lastLine[lastLine.length - 3]?.[1] ?? "";
-        let lastMinusOne = lastLine[lastLine.length - 2][1];
-        let lastPlusOne = lastLine[lastLine.length - 1][1];
+        const beforeDiff = lastLine[lastLine.length - 3]?.[1] ?? "";
+        const lastMinusOne = lastLine[lastLine.length - 2][1];
+        const lastPlusOne = lastLine[lastLine.length - 1][1];
         const merged = mergeDiff(beforeDiff, lastMinusOne, lastPlusOne);
         lastLine.splice(lastLine.length - 2, 2, ...merged);
       }
