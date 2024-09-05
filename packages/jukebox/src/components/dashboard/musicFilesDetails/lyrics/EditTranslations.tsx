@@ -263,15 +263,27 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
             <Typography
               variant="body2"
               display="inline"
-              color="textSecondary"
+              color={
+                v.content.trim() && !translatedLines[idx]
+                  ? "secondary.light"
+                  : "textSecondary"
+              }
               lang="ja"
             >
-              {v.content} ✲
-            </Typography>{" "}
+              {v.content}
+            </Typography>
+            <Typography variant="body2" display="inline" color="textSecondary">
+              {" ✲ "}
+            </Typography>
             <Typography
               variant="body2"
               display="inline"
               lang={currentLanguage || "zh"}
+              color={
+                translatedLines[idx] && !v.content.trim()
+                  ? "secondary.light"
+                  : "textSecondary"
+              }
             >
               {translatedLines[idx]}
             </Typography>
