@@ -262,7 +262,12 @@ export default function LyricsEditDialog({
             <EditTranslations lyrics={lrcx} setLyrics={setLrcx} />
           </TabPanel>
           <TabPanel value="furigana">
-            <EditFurigana lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
+            <EditFurigana
+              lyrics={lrcx}
+              setLyrics={setLrcx}
+              fileId={fileId}
+              songId={songId}
+            />
           </TabPanel>
           <TabPanel value="inline" sx={{ height: "100%" }}>
             <InlineTagging lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />

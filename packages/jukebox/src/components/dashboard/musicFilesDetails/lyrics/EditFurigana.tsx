@@ -7,8 +7,10 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Stack,
   Theme,
   Tooltip,
+  Typography,
   useTheme,
 } from "@mui/material";
 import { CSSProperties, useCallback, useEffect, useMemo, useRef } from "react";
@@ -22,6 +24,7 @@ import EditFuriganaLine from "./EditFuriganaLine";
 import type { DocumentNode } from "graphql";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import { FullWidthAudio } from "../FullWIdthAudio";
+import { furiganaRomajiMatching } from "./FuriganaRomajiMatching";
 
 const KARAOKE_TRANSLITERATION_QUERY = gql`
   query ($text: String!) {
@@ -142,9 +145,15 @@ interface Props {
   lyrics: string;
   setLyrics: (lyrics: string) => void;
   fileId: number;
+  songId: number;
 }
 
-export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
+export default function EditFurigana({
+  lyrics,
+  setLyrics,
+  fileId,
+  songId,
+}: Props) {
   const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
   const theme = useTheme();
@@ -182,6 +191,11 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
     }
     // dropping dependency [parsedLyrics] to prevent loop with parsedLyrics.
   }, [setLines, setLyrics]);
+
+  // Romaji matching from VocaDB
+  const [romajiMatching, setRomajiMatching] = useNamedState<
+    [number, string][][]
+  >([], "romajiMatching");
 
   // Generate furigana
   const overwriteFurigana = useCallback(async () => {
@@ -276,10 +290,7 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
           zIndex: 2,
         }}
       >
-        <FullWidthAudio
-          src={`/api/files/${fileId}/file`}
-          controls
-        />
+        <FullWidthAudio src={`/api/files/${fileId}/file`} controls />
       </Grid>
       <Grid
         item
@@ -293,11 +304,29 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
           zIndex: 2,
         }}
       >
-        <Box sx={{ marginTop: 2, marginBottom: 2 }}>
+        <Stack
+          gap={2}
+          direction="row"
+          flexWrap="wrap"
+          sx={{ marginTop: 2, marginBottom: 2 }}
+        >
           <Button variant="outlined" onClick={overwriteFurigana}>
-            Overwrite with generated furigana
+            Overwrite with generated
           </Button>
-        </Box>
+          <Button
+            variant="outlined"
+            onClick={() =>
+              furiganaRomajiMatching({ apolloClient, lines, songId }).then(
+                (result) => {
+                  console.log(result);
+                  setRomajiMatching(result);
+                }
+              )
+            }
+          >
+            VocaDB Romaji Matching
+          </Button>
+        </Stack>
         <Box sx={{ marginTop: 2, marginBottom: 2 }}>
           {selectedLine != null && selectedLine < lines.length && (
             <EditFuriganaLine
@@ -351,6 +380,30 @@ export default function EditFurigana({ lyrics, setLyrics, fileId }: Props) {
                     lyricsKitLine={v}
                     rubyStyles={furiganaHighlight(theme)}
                   />
+                  {romajiMatching[idx] && (
+                    <Box sx={{ lineHeight: 1 }}>
+                      {romajiMatching[idx].map(([i, text], idx) => (
+                        <Typography
+                          key={idx}
+                          lang="ja"
+                          component="span"
+                          variant="body2"
+                          color={
+                            i === 0
+                              ? "text.primary"
+                              : i === -1
+                              ? "primary.main"
+                              : "secondary.main"
+                          }
+                          sx={{
+                            textDecoration: i === -1 ? "line-through" : "none",
+                          }}
+                        >
+                          {text}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
                 </ListItemText>
               </ListItemButton>
             </ListItem>

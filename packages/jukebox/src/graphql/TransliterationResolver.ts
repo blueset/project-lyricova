@@ -184,7 +184,7 @@ export class TransliterationResolver {
     @Arg("mapping", (type) => [FuriganaMappingInput]) input: [FuriganaMappingInput]
   ): Partial<FuriganaMapping>[] {
     return input.map(({text, furigana}) => {
-      const [textGroups, furiganaGroups] = convertMonoruby(text, furigana, {convertMonoruby});
+      const [textGroups, furiganaGroups] = convertMonoruby(text, furigana);
       if (textGroups.length === 1 && furiganaGroups.length === 1) return null;
       return {
         text,
