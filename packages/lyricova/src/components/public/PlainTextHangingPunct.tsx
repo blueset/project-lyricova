@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef } from "react";
 import classes from "./PlainTextHangingPunct.module.scss";
-import { shiftinPuncts } from "src/utils/typography";
+import { shiftinPuncts } from "../../utils/typography";
 
 function CollapsedSpan({ children }: { children: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -33,15 +33,13 @@ interface PlainTextHangingPunctProps {
 export function PlainTextHangingPunct({
   children,
 }: PlainTextHangingPunctProps) {
-  const lines = children
-    .split("\n")
-    .map((line) => {
-      let match = line.match(/^([\p{Ps}\p{Pi}"]*)(.*?)(\p{Po}*)$/u);
-      match = shiftinPuncts(line, match, "「", "」");
-      match = shiftinPuncts(line, match, "『", "』");
-      match = shiftinPuncts(line, match, "｢", "｣");
-      return match;
-    });
+  const lines = children.split("\n").map((line) => {
+    let match = line.match(/^([\p{Ps}\p{Pi}"]*)(.*?)(\p{Po}*)$/u);
+    match = shiftinPuncts(line, match, "「", "」");
+    match = shiftinPuncts(line, match, "『", "』");
+    match = shiftinPuncts(line, match, "｢", "｣");
+    return match;
+  });
   return (
     <>
       {lines.map((line, idx) => (

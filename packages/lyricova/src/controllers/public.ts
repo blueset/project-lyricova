@@ -198,6 +198,7 @@ export class PublicApiController {
         match = shiftinPuncts(line, match, "「", "」");
         match = shiftinPuncts(line, match, "『", "』");
         match = shiftinPuncts(line, match, "｢", "｣");
+        return match;
       });
 
     const [
