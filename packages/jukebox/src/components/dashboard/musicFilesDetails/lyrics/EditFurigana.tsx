@@ -131,6 +131,10 @@ function furiganaHighlight(
         ["歩", "ほ"],
       ]) ||
       matchContexualFurigana(base, ruby, groupings, [
+        ["正", "まさ"],
+        ["義", "よし"],
+      ]) ||
+      matchContexualFurigana(base, ruby, groupings, [
         ["一", "かず"],
         ["人", "と"],
       ])
