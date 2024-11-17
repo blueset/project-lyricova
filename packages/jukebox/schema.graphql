@@ -107,20 +107,6 @@ type DashboardStats {
   songCount: Int!
 }
 
-"""A Lyricova entry."""
-type Entry {
-  author: User!
-  authorId: Float!
-  comment: String
-  creationDate: Timestamp!
-  id: Float!
-  producersName: String!
-  recentActionDate: Timestamp!
-  title: String!
-  updatedOn: Timestamp!
-  vocalistsName: String!
-}
-
 type FileInPlaylist {
   creationDate: Timestamp!
   id: Int!
@@ -272,19 +258,6 @@ type LyricsKitWordTimeTag {
 
   """Time when the time tag happens, in seconds."""
   timeTag: Float!
-}
-
-type MusicDlSearchResult {
-  album: String
-  artists: String
-  coverURL: String
-  duration: Float
-  lyricsURL: String
-  pickle: String!
-  size: Int
-  songURL: String
-  source: String!
-  title: String
 }
 
 """A music file in the jukebox."""
@@ -537,11 +510,6 @@ type Playlist {
   slug: ID!
 }
 
-type Pulse {
-  creationDate: Timestamp!
-  id: Int!
-}
-
 type Query {
   album(id: Int!): Album
   albums: [Album!]!
@@ -671,16 +639,6 @@ type Subscription {
   youTubeDlDownloadProgress(sessionId: String!): YouTubeDlProgress
 }
 
-type Tag {
-  color: String!
-  name: String!
-  slug: ID!
-}
-
-type TagOfEntry {
-  id: ID!
-}
-
 type Texture {
   author: String!
   authorUrl: String
@@ -753,18 +711,6 @@ type UserPublicKeyCredential {
   userId: Float!
 }
 
-type Verse {
-  html: String
-  id: Float!
-  isMain: Boolean!
-  isOriginal: Boolean!
-  language: String!
-  stylizedText: String
-  text: String!
-  translator: String
-  typingSequence: [[[String!]!]!]!
-}
-
 type VideoFile {
   id: Int!
 }
@@ -790,24 +736,12 @@ type VocaDBLyricsEntry {
   value: String
 }
 
-type YouTubeDlDownloadMessage {
-  message: String!
-}
-
 input YouTubeDlDownloadOptions {
   """Name of file to save as."""
   filename: String
 
   """Whether to overwrite if a file already exists."""
   overwrite: Boolean! = false
-}
-
-type YouTubeDlInfo {
-  filename: String!
-  metadata: JSONObject!
-
-  """Size of file in bytes, precision to every 10486 bytes."""
-  size: Int!
 }
 
 union YouTubeDlProgress = YouTubeDlProgressDone | YouTubeDlProgressError | YouTubeDlProgressMessage | YouTubeDlProgressValue

@@ -26,6 +26,20 @@ import { useServer } from "graphql-ws/lib/use/ws";
 import cors from "cors";
 import bodyParser from "body-parser";
 import passport from "passport";
+import { DownloadResolver } from "./DownloadResolver";
+import { AlbumResolver } from "./AlbumResolver";
+import { ArtistResolver } from "./ArtistResolver";
+import { LLMResolver } from "./LLMResolver";
+import { LyricsProvidersResolver } from "./LyricsProvidersResolver";
+import { MusicFileResolver } from "./MusicFileResolver";
+import { PlaylistResolver } from "./PlaylistResolver";
+import { SongResolver } from "./SongResolver";
+import { StatsResolver } from "./StatsResolver";
+import { TextureResolver } from "./TextureResolver";
+import { TransliterationResolver } from "./TransliterationResolver";
+import { UserPublicKeyCredentialResolver } from "./UserPublicKeyCredentialResolver";
+import { UserResolver } from "./UserResolver";
+import { VocaDBImportResolver } from "./VocaDBImportResolver";
 
 export interface PubSubSessionPayload<T> {
   sessionId: string;
@@ -123,11 +137,22 @@ class FooResolver {
 
 export async function applyApollo(app: Application): Promise<Server> {
   const schema = await buildSchema({
-    // `FooResolver as unknown as string` is a workaround to mitigate the
-    // strict type check of type-graphql.buildSchema({resolvers})
     resolvers: [
-      FooResolver as unknown as string,
-      `${__dirname}/**/*Resolver.{ts,js}`,
+      FooResolver,
+      AlbumResolver,
+      ArtistResolver,
+      DownloadResolver,
+      LLMResolver,
+      LyricsProvidersResolver,
+      MusicFileResolver,
+      PlaylistResolver,
+      SongResolver,
+      StatsResolver,
+      TextureResolver,
+      TransliterationResolver,
+      UserPublicKeyCredentialResolver,
+      UserResolver,
+      VocaDBImportResolver,
     ],
     dateScalarMode: "timestamp",
     emitSchemaFile: {
