@@ -76,11 +76,11 @@ function CurrentPlaylistItem({
         opacity: index < nowPlaying ? 0.375 : 1,
         ...style,
       }}
-      disablePadding
-      ContainerComponent={isDragging ? "div" : (<li />).type}
-      selected={nowPlaying === index || isDragging}
+      // disablePadding
+      // ContainerComponent={isDragging ? "div" : (<li />).type}
+      component={isDragging ? "div" : "li"}
       secondaryAction={
-        <ListItemSecondaryAction>
+        <>
           <IconButton
             edge="end"
             aria-label="More actions"
@@ -110,18 +110,18 @@ function CurrentPlaylistItem({
               />
             </MenuItem>
           </Menu>
-        </ListItemSecondaryAction>
+        </>
       }
     >
       <ListItemButton
+        selected={nowPlaying === index || isDragging}
         onClick={
           isDragging
             ? null
             : () => {
                 dispatch(playTrack({ track: index, playNow: true }));
               }
-        }
-      >
+        }>
         <ListItemIcon style={{ zIndex: 10 }} {...provided.dragHandleProps}>
           <DragHandleIcon />
         </ListItemIcon>
@@ -131,7 +131,7 @@ function CurrentPlaylistItem({
           primaryTypographyProps={{ noWrap: true }}
           secondary={track?.artistName || "Unknown artist"}
           secondaryTypographyProps={{ noWrap: true }}
-        />
+          />
       </ListItemButton>
     </ListItem>
   );

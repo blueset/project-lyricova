@@ -106,7 +106,7 @@ export default function DiffEditorTextarea({
   }, [value]);
 
   return (
-    <Stack spacing={2} sx={{height: "100%"}}>
+    (<Stack spacing={2} sx={{height: "100%"}}>
       <Stack
         direction="row"
         spacing={2}
@@ -153,10 +153,12 @@ export default function DiffEditorTextarea({
           fullWidth
           inputRef={textfieldRef}
           value={value || ""}
-          inputProps={{ sx: { fontFamily: "monospace" }, lang: "ja" }}
           onChange={(evt) => onChange(evt.target.value)}
           multiline
           variant="outlined"
+          slotProps={{
+            htmlInput: { sx: { fontFamily: "monospace" }, lang: "ja" }
+          }}
         />
       ) : (
         <div>
@@ -165,6 +167,6 @@ export default function DiffEditorTextarea({
           ))}
         </div>
       )}
-    </Stack>
+    </Stack>)
   );
 }

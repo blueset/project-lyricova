@@ -1,9 +1,8 @@
 import {
   Button,
   CircularProgress,
-  Grid,
+  Grid2 as Grid,
   IconButton,
-  Input,
   Stack,
   TextField,
   ToggleButton,
@@ -181,7 +180,9 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
           return typeof line === "string" ? smartypantsu(line) : line;
         });
       } catch (e) {
-        snackbar.enqueueSnackbar(`Error while applying rules: ${e}`, { variant: "error" });
+        snackbar.enqueueSnackbar(`Error while applying rules: ${e}`, {
+          variant: "error",
+        });
         console.error(e);
         return lines;
       }
@@ -214,7 +215,7 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Stack direction="column" spacing={1}>
           <DismissibleAlert severity="warning">
             Switch to another tab to save changes.
@@ -262,18 +263,19 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
           </Stack>
         </Stack>
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid size={{ xs: 12, sm: 6 }}>
         <Typography variant="overline">Preview</Typography>
         {parsedLyrics?.lines.map((v, idx) => (
           <div key={idx}>
             <Typography
               variant="body2"
               display="inline"
-              color={
-                v.content.trim() && !translatedLines[idx]
-                  ? "secondary.light"
-                  : "textSecondary"
-              }
+              sx={{
+                color:
+                  v.content.trim() && !translatedLines[idx]
+                    ? "secondary.light"
+                    : "textSecondary",
+              }}
               lang="ja"
             >
               {v.content}
@@ -285,27 +287,30 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
               variant="body2"
               display="inline"
               lang={currentLanguage || "zh"}
-              color={
-                translatedLines[idx] && !v.content.trim()
-                  ? "secondary.light"
-                  : "textSecondary"
-              }
+              sx={{
+                color:
+                  translatedLines[idx] && !v.content.trim()
+                    ? "secondary.light"
+                    : "textSecondary",
+              }}
             >
               {translatedLines[idx]}
             </Typography>
           </div>
         ))}
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid size={{ xs: 12, sm: 6 }}>
         <TextField
           id="translations"
           label="Translations"
           fullWidth
           value={translatedLines.join("\n")}
-          inputProps={{ lang: currentLanguage || "zh" }}
           onChange={handleChange}
           multiline
           variant="outlined"
+          slotProps={{
+            htmlInput: { lang: currentLanguage || "zh" },
+          }}
         />
       </Grid>
     </Grid>

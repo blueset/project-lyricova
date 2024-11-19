@@ -1,5 +1,5 @@
 import style from "./PlayButton.module.scss";
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useEffect, useCallback } from "react";
 import type { Theme } from "@mui/material";
 import { Fab, CircularProgress, useMediaQuery } from "@mui/material";
@@ -22,7 +22,7 @@ export function PlayButton({ playerRef }: Props) {
   const [isLoading, setIsLoading] = useNamedState(false, "isLoading");
   const [loadProgress, setLoadProgress] = useNamedState(0, "loadProgress");
   const useSmallSize =
-    useMediaQuery<Theme>((theme) => theme.breakpoints.up("md")) && isCollapsed;
+    useMediaQuery((theme) => theme.breakpoints.up("md")) && isCollapsed;
 
   const updateProgress = useCallback(() => {
     if (!playerRef.current) {

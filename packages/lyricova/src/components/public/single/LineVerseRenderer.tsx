@@ -107,7 +107,7 @@ export function LineVerseRenderer({
       onMouseLeave={() => {
         timelineRef.current?.pause(timelineRef.current?.endTime());
       }}
-      ref={async (elm) => elm && buildTimeline(elm)}
+      ref={(elm) => elm && buildTimeline(elm)}
     >
       {lines.map((line, lineIdx) => (
         <div

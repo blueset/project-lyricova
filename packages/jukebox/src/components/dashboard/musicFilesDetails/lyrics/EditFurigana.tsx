@@ -1,7 +1,7 @@
 import {
   Box,
   Button,
-  Grid,
+  Grid2 as Grid,
   IconButton,
   List,
   ListItem,
@@ -285,8 +285,7 @@ export default function EditFurigana({
   return (
     <Grid container spacing={2}>
       <Grid
-        item
-        xs={12}
+        size={12}
         sx={{
           position: "sticky",
           top: 2,
@@ -297,9 +296,7 @@ export default function EditFurigana({
         <FullWidthAudio src={`/api/files/${fileId}/file`} controls />
       </Grid>
       <Grid
-        item
-        xs={12}
-        sm={5}
+        size={{ xs: 12, sm: 5 }}
         sx={{
           position: "sticky",
           top: 60,
@@ -340,7 +337,7 @@ export default function EditFurigana({
           )}
         </Box>
       </Grid>
-      <Grid item xs={12} sm={7}>
+      <Grid size={{ xs: 12, sm: 7 }}>
         <List dense>
           {lines.map((v, idx) => (
             <ListItem
@@ -392,15 +389,14 @@ export default function EditFurigana({
                           lang="ja"
                           component="span"
                           variant="body2"
-                          color={
-                            i === 0
-                              ? "text.primary"
-                              : i === -1
-                              ? "primary.main"
-                              : "secondary.main"
-                          }
                           sx={{
                             textDecoration: i === -1 ? "line-through" : "none",
+                            color:
+                              i === 0
+                                ? "text.primary"
+                                : i === -1
+                                ? "primary.main"
+                                : "secondary.main",
                           }}
                         >
                           {text}

@@ -44,7 +44,7 @@ export default function Tags() {
   const rows = tagsQuery.data?.tags ?? [];
 
   return (
-    <Box sx={{ minHeight: "calc(100vh - 7em)", height: 0 }}>
+    (<Box sx={{ minHeight: "calc(100vh - 7em)", height: 0 }}>
       {tagsQuery.error && (
         <Alert severity="error">
           <AlertTitle>Error occurred while retrieving data.</AlertTitle>
@@ -160,8 +160,8 @@ export default function Tags() {
         ]}
         rows={rows}
         getRowId={(r) => r.slug}
-        components={{ Toolbar: DataGridToolbar }}
-        componentsProps={{
+        slots={{ toolbar: DataGridToolbar }}
+        slotProps={{
           toolbar: {
             title: `${rows.length} tags.`,
             children: (
@@ -174,7 +174,7 @@ export default function Tags() {
           },
         }}
       />
-    </Box>
+    </Box>)
   );
 }
 

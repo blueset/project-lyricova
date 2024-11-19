@@ -6,9 +6,9 @@ const withBundleAnalyzer = analyzer({
 });
 
 export default withBundleAnalyzer({
-  webpack: (config, options) => {
-    // config.resolve.alias.react = path.resolve(__dirname, "node_modules/react");
-    return config;
-  },
+  // webpack: (config, options) => {
+  //   // config.resolve.alias.react = path.resolve(__dirname, "node_modules/react");
+  //   return config;
+  // },
 });
 

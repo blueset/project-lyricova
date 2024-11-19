@@ -7,7 +7,7 @@ import {
   DialogTitle,
   Divider,
   FormHelperText,
-  Grid,
+  Grid2 as Grid,
   IconButton,
   InputAdornment,
   MenuItem,
@@ -45,7 +45,6 @@ import finalFormMutators from "../frontendUtils/finalFormMutators";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import AvatarField from "./AvatarField";
-import StringSchema from "yup/lib/string";
 import { DocumentNode } from "graphql";
 import React from "react";
 
@@ -87,19 +86,19 @@ const NumberField = styled(TextField)({
 interface FormValues {
   name: string;
   sortOrder: string;
-  coverUrl: string;
+  coverUrl?: string | null;
   originalSong?: Partial<Song>;
   artists: {
     artist: Partial<Artist>;
     artistRoles: VDBArtistRoleType[];
     categories: VDBArtistCategoryType[];
-    customName?: string;
+    customName?: string | null;
     isSupport: boolean;
   }[];
   albums: {
     album: Partial<Album>;
-    trackNumber: number | null;
-    diskNumber: number | null;
+    trackNumber?: number | null;
+    diskNumber?: number | null;
     name?: string;
   }[];
 }
@@ -172,28 +171,37 @@ export default function SongEntityDialog({
       name: yup.string().required(),
       sortOrder: yup.string().required(),
       coverUrl: yup.string().nullable().url(),
-      originalSong: yup.object().nullable(),
-      artists: yup.array(
-        yup.object({
-          artist: yup.object().typeError("Artist entity must be selected."),
-          artistRoles: yup
-            .array(yup.string() as StringSchema<VDBArtistRoleType>)
-            .required(),
-          categories: yup
-            .array(yup.string() as StringSchema<VDBArtistCategoryType>)
-            .required(),
-          customName: yup.string().nullable(),
-          isSupport: yup.boolean().required(),
-        })
-      ),
-      albums: yup.array(
-        yup.object({
-          album: yup.object().typeError("Album entity must be selected."),
-          diskNumber: yup.number().optional().nullable().positive().integer(),
-          trackNumber: yup.number().optional().nullable().positive().integer(),
-          name: yup.string().required(),
-        })
-      ),
+      originalSong: yup.object().optional(),
+      artists: yup
+        .array(
+          yup.object({
+            artist: yup.object().typeError("Artist entity must be selected."),
+            artistRoles: yup
+              .array(yup.string() as yup.StringSchema<VDBArtistRoleType>)
+              .required(),
+            categories: yup
+              .array(yup.string() as yup.StringSchema<VDBArtistCategoryType>)
+              .required(),
+            customName: yup.string().nullable(),
+            isSupport: yup.boolean().required(),
+          })
+        )
+        .required(),
+      albums: yup
+        .array(
+          yup.object({
+            album: yup.object().typeError("Album entity must be selected."),
+            diskNumber: yup.number().optional().nullable().positive().integer(),
+            trackNumber: yup
+              .number()
+              .optional()
+              .nullable()
+              .positive()
+              .integer(),
+            name: yup.string().required(),
+          })
+        )
+        .required(),
     })
     .required();
 
@@ -308,7 +316,7 @@ export default function SongEntityDialog({
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     variant="outlined"
                     margin="dense"
@@ -319,7 +327,7 @@ export default function SongEntityDialog({
                     label="Track name"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     variant="outlined"
                     margin="dense"
@@ -338,7 +346,7 @@ export default function SongEntityDialog({
                     label="Sort order"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Stack flexDirection="row" alignItems="center">
                     <AvatarField
                       name="coverUrl"

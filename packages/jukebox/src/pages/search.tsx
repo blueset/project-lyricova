@@ -67,18 +67,18 @@ export default function Search() {
       //     secondary={<>{v.artistName || <em>Various Artists</em>} / {v.albumName || <em>Unknown Album</em>}</>}
       //     time={v.duration} />
       // </ListItem>
-      <TrackListRow
+      (<TrackListRow
         song={null}
         file={v}
         files={searchFilesQuery.data.searchMusicFiles}
         key={v.id}
         showAlbum
-      />
+      />)
     ));
   }
 
   return (
-    <Box p={4} pt={0}>
+    (<Box p={4} pt={0}>
       <form
         onSubmit={handleSearch}
         style={{
@@ -94,29 +94,32 @@ export default function Search() {
           fullWidth
           margin="none"
           size="medium"
-          inputProps={{ sx: { fontSize: "2em" } }}
-          InputLabelProps={{
-            sx: {
-              "&[data-shrink=false]": {
-                transform: "translate(14px, 20px) scale(2)",
-              },
-            },
-          }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton type="submit" aria-label="search" edge="end">
-                  <SearchIcon fontSize="large" />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
           sx={{ backdropFilter: "blur(10px)" }}
           onChange={handleChange}
-        />
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton type="submit" aria-label="search" edge="end">
+                    <SearchIcon fontSize="large" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+
+            htmlInput: { sx: { fontSize: "2em" } },
+
+            inputLabel: {
+              sx: {
+                "&[data-shrink=false]": {
+                  transform: "translate(14px, 20px) scale(2)",
+                },
+              },
+            }
+          }} />
       </form>
       <List>{content}</List>
-    </Box>
+    </Box>)
   );
 }
 

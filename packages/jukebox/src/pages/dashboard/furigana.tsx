@@ -4,13 +4,14 @@ import { FuriganaMapping } from "lyricova-common/models/FuriganaMapping";
 import {
   DataGrid,
   GridActionsCellItem,
-  GridColumns,
+  GridColDef,
   GridEditInputCell,
   GridRenderEditCellParams,
   GridRowId,
   GridRowModel,
   GridRowModes,
   GridRowModesModel,
+  GridValidRowModel,
 } from "@mui/x-data-grid";
 import {
   Box,
@@ -218,7 +219,7 @@ Output:
     snackbar.enqueueSnackbar(error.message, { variant: "error" });
   };
 
-  const columns: GridColumns = [
+  const columns: GridColDef<GridValidRowModel>[] = [
     { field: "text", headerName: "Text", width: 200 },
     { field: "furigana", headerName: "Furigana", width: 200 },
     {
@@ -308,7 +309,7 @@ Output:
   ];
 
   return (
-    <StyledBox>
+    (<StyledBox>
       <div>
         {loading && "Loading..."}
         {error && `Error occurred while loading credentials: ${error}`}
@@ -332,19 +333,16 @@ Output:
         <DataGrid
           rows={filteredData}
           columns={columns}
-          pageSize={50}
+          pageSizeOptions={[50, 100]}
           editMode="row"
-          disableIgnoreModificationsIfProcessingProps
           rowModesModel={rowModesModel}
           onRowModesModelChange={(newModel) => setRowModesModel(newModel)}
           processRowUpdate={processRowUpdate}
           onProcessRowUpdateError={handleProcessRowUpdateError}
-          experimentalFeatures={{ newEditingApi: true }}
-          getRowId={(row) => `${row.text},${row.furigana}`}
+          getRowId={(row: FuriganaMapping) => `${row.text},${row.furigana}`}
           style={{
             flexGrow: 1,
-          }}
-        />
+          }} />
       )}
       <Dialog
         open={isBulkUpdateDialogOpen}
@@ -435,7 +433,7 @@ Output:
           </DialogActions>
         </form>
       </Dialog>
-    </StyledBox>
+    </StyledBox>)
   );
 }
 

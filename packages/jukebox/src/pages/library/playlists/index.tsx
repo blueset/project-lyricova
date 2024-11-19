@@ -6,7 +6,7 @@ import {
   Box,
   ButtonBase,
   Divider,
-  Grid,
+  Grid2 as Grid,
   Typography,
 } from "@mui/material";
 import { NextComposedLink } from "lyricova-common/components/Link";
@@ -39,14 +39,14 @@ export default function PlaylistsList() {
   return (
     <Box p={4}>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Typography variant="overline">
             {query.data.playlists.length} curated playlists
           </Typography>
           <Divider />
         </Grid>
         {query.data.playlists.map((v) => (
-          <Grid item xs={12} md={6} key={`playlist-${v.slug}`}>
+          <Grid size={{ xs: 12, md: 6 }} key={`playlist-${v.slug}`}>
             <ButtonBase
               component={NextComposedLink}
               href={`/library/playlists/${v.slug}`}
@@ -75,11 +75,11 @@ export default function PlaylistsList() {
             </ButtonBase>
           </Grid>
         ))}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Typography variant="overline">4 generated playlists</Typography>
           <Divider />
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <ButtonBase
             component={NextComposedLink}
             href="/library/playlists/new"
@@ -112,7 +112,7 @@ export default function PlaylistsList() {
             </div>
           </ButtonBase>
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <ButtonBase
             component={NextComposedLink}
             href="/library/playlists/recent"
@@ -145,7 +145,7 @@ export default function PlaylistsList() {
             </div>
           </ButtonBase>
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <ButtonBase
             component={NextComposedLink}
             href="/library/playlists/popular"
@@ -178,7 +178,7 @@ export default function PlaylistsList() {
             </div>
           </ButtonBase>
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <ButtonBase
             component={NextComposedLink}
             href="/library/playlists/recently-reviewed"

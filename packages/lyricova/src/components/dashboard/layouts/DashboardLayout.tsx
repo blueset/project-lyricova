@@ -171,7 +171,7 @@ export default function DashboardLayout({ title, children }: Props) {
 
   const container = () => window.document.body || undefined;
 
-  const defaultDrawerOpen = useMediaQuery<Theme>((theme) =>
+  const defaultDrawerOpen = useMediaQuery((theme) =>
     theme.breakpoints.up("sm")
   );
   const [isDrawerOpen, setDrawerOpen] = useState(defaultDrawerOpen);
@@ -357,7 +357,7 @@ export default function DashboardLayout({ title, children }: Props) {
                 <Drawer variant="permanent" open={isDrawerOpen}>
                   {drawer}
                 </Drawer>
-                <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                <Box component="main" sx={{ flexGrow: 1, p: 3, width: 0 }}>
                   <DrawerHeader />
                   {children}
                 </Box>

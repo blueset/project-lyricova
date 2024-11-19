@@ -1,7 +1,7 @@
 import {
   Avatar,
   FilterOptionsState,
-  Grid,
+  Grid2 as Grid,
   IconButton,
   Stack,
   Typography,
@@ -148,7 +148,7 @@ export default function SelectAlbumEntityBox<T extends string>({
         </Typography>
       )}
       <Grid container spacing={1}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Autocomplete
             name={fieldName}
             options={vocaDBAutoCompleteOptions}
@@ -243,7 +243,7 @@ export default function SelectAlbumEntityBox<T extends string>({
           />
         </Grid>
         {value && (
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Stack direction="row" alignItems="center" sx={{ marginBottom: 2 }}>
               <div>
                 <Avatar

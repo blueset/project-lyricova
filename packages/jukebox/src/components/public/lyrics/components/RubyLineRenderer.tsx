@@ -3,6 +3,7 @@ import {
   FC,
   PropsWithChildren,
   Ref,
+  RefAttributes,
   forwardRef,
   memo,
   useImperativeHandle,
@@ -77,9 +78,7 @@ export type TimedSpanProps = PropsWithChildren<{
   endTime: number;
   static?: boolean;
 }>;
-export type TimedSpanPropsWithRef = TimedSpanProps & {
-  ref: Ref<LyricsAnimationRef>;
-};
+export type TimedSpanPropsWithRef = TimedSpanProps & RefAttributes<LyricsAnimationRef>;
 export type TimedSpanComponent = FC<TimedSpanPropsWithRef>;
 
 function buildTimeSpans(

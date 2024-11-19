@@ -124,11 +124,12 @@ export function TopEntry({ entry }: TopEntryProps) {
       <Link
         href={`/entries/${entry.id}`}
         className={classes.verse}
-        ref={async (elm) => {
+        ref={(elm) => {
           if (elm) {
-            await document.fonts.ready;
-            resizeVerse(elm);
-            buildTimeline(elm);
+            document.fonts.ready.then(() => {
+              resizeVerse(elm);
+              buildTimeline(elm);
+            });
           }
         }}
         lang={mainVerse.language}

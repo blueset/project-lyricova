@@ -1,4 +1,4 @@
-import type { ReactElement} from "react";
+import type { ReactElement } from "react";
 import { cloneElement, useId, useState } from "react";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import type { Dayjs } from "dayjs";
@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { StaticDateTimePicker } from "@mui/x-date-pickers";
-import { Popover, TextField } from "@mui/material";
+import { Popover, TextField, TextFieldProps } from "@mui/material";
 
 export interface DateTimePickerPopupProps {
   value?: number | null;
@@ -51,7 +51,9 @@ export function DateTimePickerPopup({
           >
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <StaticDateTimePicker<Dayjs | null>
-                renderInput={(props) => <TextField size="small" {...props} />}
+                renderInput={(props: TextFieldProps) => (
+                  <TextField size="small" {...props} />
+                )}
                 label="Pulse date"
                 value={date}
                 onChange={(newValue) => {
@@ -62,7 +64,7 @@ export function DateTimePickerPopup({
                   popupState.close();
                 }}
                 ampm={false}
-                inputFormat="YYYY-MM-DD HH:mm:ss"
+                format="YYYY-MM-DD HH:mm:ss"
                 {...({
                   onClose: () => {
                     popupState.close();

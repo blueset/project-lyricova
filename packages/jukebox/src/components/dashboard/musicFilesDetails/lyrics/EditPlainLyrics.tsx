@@ -1,6 +1,6 @@
 import {
   Button,
-  Grid,
+  Grid2 as Grid,
   styled,
   TextField,
   ToggleButton,
@@ -52,7 +52,14 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
     (useFurigana: boolean) => () => {
       try {
         const parsed = new Lyrics(lrcx);
-        setLyrics(parsed.toPlainLRC({ lineOptions: { useFurigana, translationLanguage: languages[selectedLanguageIdx] } }));
+        setLyrics(
+          parsed.toPlainLRC({
+            lineOptions: {
+              useFurigana,
+              translationLanguage: languages[selectedLanguageIdx],
+            },
+          })
+        );
       } catch (e) {
         snackbar.enqueueSnackbar(`Error while copying: ${e}`, {
           variant: "error",
@@ -101,7 +108,14 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
               );
           }
         });
-        setLyrics(parsed.toPlainLRC({ lineOptions: { useFurigana: true, translationLanguage: languages[selectedLanguageIdx] } }));
+        setLyrics(
+          parsed.toPlainLRC({
+            lineOptions: {
+              useFurigana: true,
+              translationLanguage: languages[selectedLanguageIdx],
+            },
+          })
+        );
       }
     } catch (e) {
       snackbar.enqueueSnackbar(`Error while copying: ${e}`, {
@@ -113,7 +127,7 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
   return (
     <>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Typography variant="overline" display="block">
             Common operations
           </Typography>
@@ -140,7 +154,7 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
           </SpacedButton>
         </Grid>
         {languages.length ? (
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Typography variant="overline" display="block">
               Translation Language
             </Typography>
@@ -164,10 +178,12 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
         label="Lyrics source"
         fullWidth
         value={lyrics || ""}
-        inputProps={{ sx: { fontFamily: "monospace" }, lang: "ja" }}
         onChange={handleChange}
         multiline
         variant="outlined"
+        slotProps={{
+          htmlInput: { sx: { fontFamily: "monospace" }, lang: "ja" },
+        }}
       />
     </>
   );

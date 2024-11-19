@@ -134,7 +134,7 @@ export function BlockVerseRenderer({
       onMouseLeave={() => {
         timelineRef.current?.pause(timelineRef.current?.endTime());
       }}
-      ref={async (elm) => elm && buildTimeline(elm)}
+      ref={(elm) => elm && buildTimeline(elm)}
     >
       <div className={`base ${classes.base}`}>
         <BaseVerseRenderer renderMode={renderMode}>

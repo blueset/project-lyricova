@@ -6,7 +6,7 @@ import { Link } from "../../components/public/Link";
 import type { GetStaticProps } from "next";
 import type { Tag } from "lyricova-common/models/Tag";
 import sequelize from "lyricova-common/db";
-import { Recursive } from "@next/font/google";
+import { Recursive } from "next/font/google";
 import { Fragment } from "react";
 
 const recursive = Recursive({
@@ -101,6 +101,7 @@ export default function ScreensaverDocs({ tags }: ScreensaverDocsProps) {
         </p>
       </article>
       <Footer />
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx global>{`
         code {
           font-family: ${recursive.style.fontFamily};

@@ -17,6 +17,8 @@ const useIsomorphicLayoutEffect = IS_SERVER ? useEffect : useLayoutEffect;
 
 const { Engine, World, Bodies, Runner } = Matter;
 
+// not a react hook
+// eslint-disable-next-line react-hooks/rules-of-hooks
 Matter.use(MatterAttractors);
 MatterAttractors.Attractors.gravityConstant = 0.5;
 

@@ -8,7 +8,7 @@ import {
   Box,
   ButtonBase,
   Divider,
-  Grid,
+  Grid2 as Grid,
   Typography,
 } from "@mui/material";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
@@ -65,14 +65,14 @@ export default function ArtistsList({ types, typeName }: Props) {
         {convertedList.map((v) => {
           if (typeof v === "string") {
             return (
-              <Grid item xs={12} key={`header-${v}`}>
+              <Grid size={12} key={`header-${v}`}>
                 <Typography variant="h6">{v}</Typography>
                 <Divider />
               </Grid>
             );
           } else {
             return (
-              <Grid item xs={12} md={6} key={`artist-${v.id}`}>
+              <Grid size={{ xs: 12, md: 6 }} key={`artist-${v.id}`}>
                 <ButtonBase
                   component={NextComposedLink}
                   href={`/library/${typeName}/${v.id}`}

@@ -153,6 +153,7 @@ export default function NotFound() {
           Return to <Link href="/">{siteName}</Link>
         </div>
       </div>
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx global>
         {":root, body, #__next { height: 100%; }"}
       </style>

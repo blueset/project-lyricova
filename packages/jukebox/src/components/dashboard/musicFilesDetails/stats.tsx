@@ -1,7 +1,7 @@
 import { DocumentNode, gql, useApolloClient } from "@apollo/client";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Grid, Button } from "@mui/material";
+import { Grid2 as Grid, Button } from "@mui/material";
 import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import { DateTimePicker, TextField, makeValidate } from "mui-rff";
 import { useSnackbar } from "notistack";
@@ -81,7 +81,7 @@ export default function StatsPanel({
       {({ handleSubmit, submitting }) => (
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 name="playCount"
                 label="Play Count"
@@ -92,17 +92,17 @@ export default function StatsPanel({
               />
             </Grid>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <DateTimePicker
                   name="lastPlayed"
                   label="Last Played"
                   disabled={submitting}
                   ampm={false}
-                  inputFormat="YYYY-MM-DD HH:mm:ss"
+                  format="YYYY-MM-DD HH:mm:ss"
                 />
               </Grid>
             </LocalizationProvider>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Button
                 type="submit"
                 variant="outlined"

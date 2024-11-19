@@ -19,7 +19,7 @@ import {
   Button,
   ButtonGroup,
   FormHelperText,
-  Grid,
+  Grid2 as Grid,
   IconButton,
   MenuItem,
   Stack,
@@ -185,41 +185,45 @@ export function EntryForm({ id }: EntityFormProps) {
       }
     : initialFormValues(data);
 
-  const schema = yup.object({
-    title: yup.string().required(),
-    producersName: yup.string(),
-    vocalistsName: yup.string(),
-    comment: yup.string().nullable(),
-    songs: yup.array(yup.object().typeError("Song entity must be selected")),
-    verses: yup
-      .array(
-        yup.object({
-          text: yup.string().required(),
-          translator: yup.string().nullable(),
-          language: yup.string().required(),
-          isMain: yup.boolean(),
-          isOriginal: yup.boolean(),
-          stylizedText: yup.string().nullable(),
-          html: yup.string().nullable(),
-          typingSequence: yup.string(),
-        })
-      )
-      .test(
-        "onlyOneMain",
-        { isMain: "Only one main verse is allowed." },
-        (list) => list.filter((item) => item["isMain"]).length === 1
-      )
-      .test(
-        "onlyOneOriginal",
-        { isOriginal: "Only one original verse is allowed." },
-        (list) => list.filter((item) => item["isOriginal"]).length === 1
+  const schema = yup
+    .object({
+      title: yup.string().required(),
+      producersName: yup.string(),
+      vocalistsName: yup.string(),
+      comment: yup.string().nullable(),
+      songs: yup.array(yup.object().typeError("Song entity must be selected")),
+      verses: yup
+        .array(
+          yup.object({
+            text: yup.string().required(),
+            translator: yup.string().nullable(),
+            language: yup.string().required(),
+            isMain: yup.boolean(),
+            isOriginal: yup.boolean(),
+            stylizedText: yup.string().nullable(),
+            html: yup.string().nullable(),
+            typingSequence: yup.string(),
+          })
+        )
+        .test(
+          "onlyOneMain",
+          { isMain: "Only one main verse is allowed." },
+          (list) => list.filter((item) => item["isMain"]).length === 1
+        )
+        .test(
+          "onlyOneOriginal",
+          { isOriginal: "Only one original verse is allowed." },
+          (list) => list.filter((item) => item["isOriginal"]).length === 1
+        ),
+      tags: yup.array(yup.string()),
+      pulses: yup.array(
+        yup.object().typeError("Pulse entity must be selected")
       ),
-    tags: yup.array(yup.string()),
-    pulses: yup.array(yup.object().typeError("Pulse entity must be selected")),
-    creationDate: yup.number().required(),
-  });
+      creationDate: yup.number().required(),
+    })
+    .required();
 
-  const validate = makeValidate<FormValues>(schema);
+  const validate = makeValidate(schema);
 
   return (
     <>
@@ -342,7 +346,7 @@ export function EntryForm({ id }: EntityFormProps) {
                 />
               </Stack>
               <Grid container spacing={2} my={1}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   {data?.tags && (
                     <Select
                       variant="outlined"
@@ -350,12 +354,10 @@ export function EntryForm({ id }: EntityFormProps) {
                       name="tags"
                       label="Tags"
                       multiple
-                      renderValue={(selected) => (
+                      renderValue={(selected: string[]) => (
                         <Stack direction="row" spacing={1}>
                           {data.tags
-                            .filter((tag) =>
-                              (selected as string[]).includes(tag.slug)
-                            )
+                            .filter((tag) => selected.includes(tag.slug))
                             .map((tag) => (
                               <span
                                 key={tag.slug}
@@ -384,27 +386,24 @@ export function EntryForm({ id }: EntityFormProps) {
                     </Select>
                   )}
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Field name="creationDate">
                     {({ input: { onChange, ...input }, meta }) => {
                       return (
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <DateTimePicker
-                            renderInput={({ error, helperText, ...props }) => (
-                              <MuiTextField
-                                fullWidth
-                                {...props}
-                                error={error || showErrorOnChange({ meta })}
-                                helperText={
-                                  showErrorOnChange({ meta })
-                                    ? meta.error[0] || meta.submitError
-                                    : helperText
-                                }
-                              />
-                            )}
+                            slotProps={{
+                              textField: {
+                                fullWidth: true,
+                                error: showErrorOnChange({ meta }),
+                                helperText: showErrorOnChange({ meta })
+                                  ? meta.error[0] || meta.submitError
+                                  : undefined,
+                              },
+                            }}
                             label="Created at"
                             ampm={false}
-                            inputFormat="YYYY-MM-DD HH:mm:ss"
+                            format="YYYY-MM-DD HH:mm:ss"
                             {...input}
                             onChange={(newValue) => {
                               onChange(newValue?.valueOf() ?? null);
@@ -420,7 +419,6 @@ export function EntryForm({ id }: EntityFormProps) {
                   </Field>
                 </Grid>
               </Grid>
-
               <Typography
                 variant="subtitle1"
                 fontWeight={600}
@@ -515,7 +513,6 @@ export function EntryForm({ id }: EntityFormProps) {
                   </Stack>
                 )}
               </FieldArray>
-
               <Typography
                 variant="subtitle1"
                 fontWeight={600}
@@ -546,7 +543,7 @@ export function EntryForm({ id }: EntityFormProps) {
                       <Grid container spacing={2}>
                         {fields.map((name, index) => {
                           return (
-                            <Grid item key={name} md={columns} xs={12}>
+                            <Grid size={{ md: columns, xs: 12 }} key={name}>
                               <Stack
                                 direction="row"
                                 spacing={2}
@@ -803,7 +800,6 @@ export function EntryForm({ id }: EntityFormProps) {
                   );
                 }}
               </FieldArray>
-
               <Typography
                 variant="subtitle1"
                 fontWeight={600}
@@ -889,7 +885,6 @@ export function EntryForm({ id }: EntityFormProps) {
                 label="Comment"
                 type="text"
               />
-
               <FormSpy
                 subscription={{
                   errors: true,

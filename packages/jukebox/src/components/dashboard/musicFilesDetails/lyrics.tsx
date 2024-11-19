@@ -1,4 +1,11 @@
-import { Box, Button, ButtonGroup, Grid, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Grid2 as Grid,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useCallback, useMemo } from "react";
 import LyricsPreview from "./LyricsPreview";
 import { lyricsAnalysis } from "../../../utils/lyricsCheck";
@@ -108,10 +115,8 @@ export default function LyricsPanel({
   return (
     <>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={9}>
-          {lyricsNode}
-        </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid size={{ xs: 12, sm: 9 }}>{lyricsNode}</Grid>
+        <Grid size={{ xs: 12, sm: 3 }}>
           <Typography variant="h6" component="h3">
             Lyric state
           </Typography>

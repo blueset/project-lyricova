@@ -16,7 +16,6 @@ import {
   DialogContentText,
   IconButton,
   List,
-  ListItem,
   ListItemAvatar,
   ListItemIcon,
   ListItemSecondaryAction,
@@ -49,6 +48,8 @@ import { useNamedState } from "../../../hooks/useNamedState";
 import { useCallback } from "react";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import type { DocumentNode } from "graphql";
+
+import ListItemButton from "@mui/material/ListItemButton";
 
 const PLAYLIST_QUERY = gql`
   query($slug: String!) {
@@ -147,299 +148,295 @@ export default function PlaylistDetails() {
 
   const { name, files } = playlistQuery.data.playlist;
 
-  return (
-    <>
-      <Form<FormValues>
-        initialValues={{ name, slug, files }}
-        mutators={{ ...finalFormMutators }}
-        onSubmit={async (values) => {
-          try {
-            await apolloClient.mutate({
-              mutation: UPDATE_PLAYLIST_QUERY,
-              variables: {
-                slug,
-                data: { name: values.name, slug: values.slug },
-                files: values.files?.map((v) => v.id) ?? [],
-              },
-            });
-            if (values.slug === slug) {
-              await playlistQuery.refetch();
-            } else {
-              await router.push(`/dashboard/playlists/${values.slug}`);
-            }
-          } catch (e) {
-            console.error("Error occurred while creating playlist:", e);
-            snackbar.enqueueSnackbar(
-              `Error occurred while creating playlist: ${e}`,
-              { variant: "error" }
-            );
+  return (<>
+    <Form<FormValues>
+      initialValues={{ name, slug, files }}
+      mutators={{ ...finalFormMutators }}
+      onSubmit={async (values) => {
+        try {
+          await apolloClient.mutate({
+            mutation: UPDATE_PLAYLIST_QUERY,
+            variables: {
+              slug,
+              data: { name: values.name, slug: values.slug },
+              files: values.files?.map((v) => v.id) ?? [],
+            },
+          });
+          if (values.slug === slug) {
+            await playlistQuery.refetch();
+          } else {
+            await router.push(`/dashboard/playlists/${values.slug}`);
           }
-        }}
-      >
-        {({ submitting, values, handleSubmit }) => (
-          <form onSubmit={handleSubmit} style={{ padding: 8 }}>
-            <Stack alignItems="center" sx={{ marginBottom: 1 }}>
-              <PlaylistAvatar
-                name={values.name || ""}
-                slug={values.slug || ""}
-                sx={{
-                  marginRight: 1,
-                  fontSize: "3rem",
-                  height: "6rem",
-                  width: "6rem",
+        } catch (e) {
+          console.error("Error occurred while creating playlist:", e);
+          snackbar.enqueueSnackbar(
+            `Error occurred while creating playlist: ${e}`,
+            { variant: "error" }
+          );
+        }
+      }}
+    >
+      {({ submitting, values, handleSubmit }) => (
+        <form onSubmit={handleSubmit} style={{ padding: 8 }}>
+          <Stack alignItems="center" sx={{ marginBottom: 1 }}>
+            <PlaylistAvatar
+              name={values.name || ""}
+              slug={values.slug || ""}
+              sx={{
+                marginRight: 1,
+                fontSize: "3rem",
+                height: "6rem",
+                width: "6rem",
+              }}
+            />
+            <div>
+              <TextField
+                name="name"
+                label="Name"
+                variant="outlined"
+                margin="dense"
+                size="small"
+                required
+                fullWidth
+              />
+              <TextField
+                name="slug"
+                label="Slug"
+                variant="outlined"
+                margin="dense"
+                size="small"
+                required
+                fullWidth
+                InputProps={{
+                  endAdornment: (
+                    <SlugifyAdornment
+                      sourceName="name"
+                      destinationName="slug"
+                    />
+                  ),
                 }}
               />
-              <div>
-                <TextField
-                  name="name"
-                  label="Name"
-                  variant="outlined"
-                  margin="dense"
-                  size="small"
-                  required
-                  fullWidth
-                />
-                <TextField
-                  name="slug"
-                  label="Slug"
-                  variant="outlined"
-                  margin="dense"
-                  size="small"
-                  required
-                  fullWidth
-                  InputProps={{
-                    endAdornment: (
-                      <SlugifyAdornment
-                        sourceName="name"
-                        destinationName="slug"
-                      />
-                    ),
-                  }}
-                />
-              </div>
-              <Box flexGrow={1} textAlign="end" ml={1}>
-                <Button
-                  variant="outlined"
-                  sx={{ marginLeft: 1 }}
-                  startIcon={<GetAppIcon />}
-                  component={NextComposedLink}
-                  href={`/api/playlists/${slug}.m3u8`}
-                >
-                  Export M3U8
-                </Button>
-                <Button
-                  variant="outlined"
-                  sx={{ marginLeft: 1 }}
-                  startIcon={<DeleteIcon color="error" />}
-                  onClick={handleDeleteConfirm}
-                >
-                  Remove playlist
-                </Button>
-              </Box>
-              {/**
-               * Slugify name while slug field is untouched.
-               * @link https://codesandbox.io/s/52q597j2p?file=/src/index.js:579-587
-               */}
-              <Field name="slug">
-                {({ input: { onChange }, meta: { touched } }) => (
-                  <FormSpy subscription={{ values: true, touched: true }}>
-                    {() => (
-                      <OnChange name="name">
-                        {(value) => {
-                          if (!touched) {
-                            onChange(slugify(value, { lower: true }));
-                          }
-                        }}
-                      </OnChange>
-                    )}
-                  </FormSpy>
-                )}
-              </Field>
-            </Stack>
-            <Field<MusicFile[]> name="files">
-              {(props) => {
-                const sortBy = (key: keyof MusicFile) => () => {
-                  props.input.onChange(_.sortBy(props.input.value, key));
-                };
-                return (
-                  <DragDropContext
-                    onDragEnd={(result: DropResult) => {
-                      if (!result.destination) return;
-                      if (result.source.index === result.destination.index)
-                        return;
-                      const src = result.source.index,
-                        dest = result.destination.index;
-                      props.input.onChange(move(props.input.value, src, dest));
-                    }}
-                  >
-                    <LeftStackButton
-                      variant="outlined"
-                      onClick={sortBy("trackSortOrder")}
-                    >
-                      Sort by track name
-                    </LeftStackButton>
-                    <LeftStackButton
-                      variant="outlined"
-                      onClick={sortBy("artistSortOrder")}
-                    >
-                      Sort by artists name
-                    </LeftStackButton>
-                    <LeftStackButton
-                      variant="outlined"
-                      onClick={sortBy("albumSortOrder")}
-                    >
-                      Sort by album name
-                    </LeftStackButton>
-                    <Droppable droppableId="playlist-tracks-droppable">
-                      {(provided) => (
-                        <List
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
-                        >
-                          {props.input.value.map((v, idx) => (
-                            <Draggable
-                              key={v.id}
-                              draggableId={`${v.id}`}
-                              index={idx}
-                            >
-                              {(provided) => (
-                                <ListItem
-                                  button
-                                  ref={provided.innerRef}
-                                  ContainerProps={provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                >
-                                  <ListItemIcon>
-                                    <DragHandleIcon />
-                                  </ListItemIcon>
-                                  <ListItemAvatar>
-                                    <Avatar
-                                      src={
-                                        v.hasCover
-                                          ? `/api/files/${v.id}/cover`
-                                          : null
-                                      }
-                                      variant="rounded"
-                                    >
-                                      <MusicNoteIcon />
-                                    </Avatar>
-                                  </ListItemAvatar>
-                                  <ListItemText
-                                    primary={
-                                      <Tooltip
-                                        title={v.trackSortOrder || ""}
-                                        placement="top"
-                                      >
-                                        <span>{v.trackName}</span>
-                                      </Tooltip>
-                                    }
-                                    secondary={
-                                      <>
-                                        <Tooltip
-                                          title={v.artistSortOrder || ""}
-                                        >
-                                          <span>
-                                            {v.artistName || (
-                                              <i>Unknown artist</i>
-                                            )}
-                                          </span>
-                                        </Tooltip>{" "}
-                                        /{" "}
-                                        <Tooltip title={v.albumSortOrder || ""}>
-                                          <span>
-                                            {v.albumName || (
-                                              <i>Unknown album</i>
-                                            )}
-                                          </span>
-                                        </Tooltip>
-                                      </>
-                                    }
-                                  />
-                                  <ListItemSecondaryAction>
-                                    <IconButton
-                                      onClick={() => {
-                                        props.input.onChange(
-                                          props.input.value.filter(
-                                            (i) => i.id !== v.id
-                                          )
-                                        );
-                                      }}
-                                    >
-                                      <DeleteIcon color="error" />
-                                    </IconButton>
-                                  </ListItemSecondaryAction>
-                                </ListItem>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </List>
-                      )}
-                    </Droppable>
-
-                    <Box display="flex">
-                      <SelectMusicFileBox
-                        fieldName="selectedTrack"
-                        labelName="Add track to playlist"
-                      />
-                      <Field<MusicFile | null> name="selectedTrack">
-                        {({ input: { value, onChange } }) => (
-                          <RightStackButton
-                            variant="outlined"
-                            disabled={
-                              !value ||
-                              props.input.value.findIndex(
-                                (v) => value.id === v.id
-                              ) >= 0
-                            }
-                            onClick={() => {
-                              props.input.onChange([
-                                ...props.input.value,
-                                value,
-                              ]);
-                              onChange(null);
-                            }}
-                          >
-                            Add
-                          </RightStackButton>
-                        )}
-                      </Field>
-                    </Box>
-                  </DragDropContext>
-                );
-              }}
+            </div>
+            <Box flexGrow={1} textAlign="end" ml={1}>
+              <Button
+                variant="outlined"
+                sx={{ marginLeft: 1 }}
+                startIcon={<GetAppIcon />}
+                component={NextComposedLink}
+                href={`/api/playlists/${slug}.m3u8`}
+              >
+                Export M3U8
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{ marginLeft: 1 }}
+                startIcon={<DeleteIcon color="error" />}
+                onClick={handleDeleteConfirm}
+              >
+                Remove playlist
+              </Button>
+            </Box>
+            {/**
+             * Slugify name while slug field is untouched.
+             * @link https://codesandbox.io/s/52q597j2p?file=/src/index.js:579-587
+             */}
+            <Field name="slug">
+              {({ input: { onChange }, meta: { touched } }) => (
+                <FormSpy subscription={{ values: true, touched: true }}>
+                  {() => (
+                    <OnChange name="name">
+                      {(value) => {
+                        if (!touched) {
+                          onChange(slugify(value, { lower: true }));
+                        }
+                      }}
+                    </OnChange>
+                  )}
+                </FormSpy>
+              )}
             </Field>
-            <Button
-              variant="outlined"
-              color="secondary"
-              type="submit"
-              disabled={submitting}
-              sx={{ marginTop: 1 }}
-            >
-              Save
-            </Button>
-          </form>
-        )}
-      </Form>
-      <Dialog
-        open={isDeleteAlertOpen}
-        onClose={handleClose}
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure to delete playlist “{name}”?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleDelete} color="primary" autoFocus>
-            Delete
+          </Stack>
+          <Field<MusicFile[]> name="files">
+            {(props) => {
+              const sortBy = (key: keyof MusicFile) => () => {
+                props.input.onChange(_.sortBy(props.input.value, key));
+              };
+              return (
+                (<DragDropContext
+                  onDragEnd={(result: DropResult) => {
+                    if (!result.destination) return;
+                    if (result.source.index === result.destination.index)
+                      return;
+                    const src = result.source.index,
+                      dest = result.destination.index;
+                    props.input.onChange(move(props.input.value, src, dest));
+                  }}
+                >
+                  <LeftStackButton
+                    variant="outlined"
+                    onClick={sortBy("trackSortOrder")}
+                  >
+                    Sort by track name
+                  </LeftStackButton>
+                  <LeftStackButton
+                    variant="outlined"
+                    onClick={sortBy("artistSortOrder")}
+                  >
+                    Sort by artists name
+                  </LeftStackButton>
+                  <LeftStackButton
+                    variant="outlined"
+                    onClick={sortBy("albumSortOrder")}
+                  >
+                    Sort by album name
+                  </LeftStackButton>
+                  <Droppable droppableId="playlist-tracks-droppable">
+                    {(provided) => (
+                      <List
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                      >
+                        {props.input.value.map((v, idx) => (
+                          <Draggable
+                            key={v.id}
+                            draggableId={`${v.id}`}
+                            index={idx}
+                          >
+                            {(provided) => (
+                              <ListItemButton
+                                ref={provided.innerRef}
+                                // slotProps={{root: provided.draggableProps}}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}>
+                                <ListItemIcon>
+                                  <DragHandleIcon />
+                                </ListItemIcon>
+                                <ListItemAvatar>
+                                  <Avatar
+                                    src={
+                                      v.hasCover
+                                        ? `/api/files/${v.id}/cover`
+                                        : null
+                                    }
+                                    variant="rounded"
+                                  >
+                                    <MusicNoteIcon />
+                                  </Avatar>
+                                </ListItemAvatar>
+                                <ListItemText
+                                  primary={
+                                    <Tooltip
+                                      title={v.trackSortOrder || ""}
+                                      placement="top"
+                                    >
+                                      <span>{v.trackName}</span>
+                                    </Tooltip>
+                                  }
+                                  secondary={
+                                    <>
+                                      <Tooltip
+                                        title={v.artistSortOrder || ""}
+                                      >
+                                        <span>
+                                          {v.artistName || (
+                                            <i>Unknown artist</i>
+                                          )}
+                                        </span>
+                                      </Tooltip>{" "}
+                                      /{" "}
+                                      <Tooltip title={v.albumSortOrder || ""}>
+                                        <span>
+                                          {v.albumName || (
+                                            <i>Unknown album</i>
+                                          )}
+                                        </span>
+                                      </Tooltip>
+                                    </>
+                                  }
+                                />
+                                <ListItemSecondaryAction>
+                                  <IconButton
+                                    onClick={() => {
+                                      props.input.onChange(
+                                        props.input.value.filter(
+                                          (i) => i.id !== v.id
+                                        )
+                                      );
+                                    }}
+                                  >
+                                    <DeleteIcon color="error" />
+                                  </IconButton>
+                                </ListItemSecondaryAction>
+                              </ListItemButton>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </List>
+                    )}
+                  </Droppable>
+                  <Box display="flex">
+                    <SelectMusicFileBox
+                      fieldName="selectedTrack"
+                      labelName="Add track to playlist"
+                    />
+                    <Field<MusicFile | null> name="selectedTrack">
+                      {({ input: { value, onChange } }) => (
+                        <RightStackButton
+                          variant="outlined"
+                          disabled={
+                            !value ||
+                            props.input.value.findIndex(
+                              (v) => value.id === v.id
+                            ) >= 0
+                          }
+                          onClick={() => {
+                            props.input.onChange([
+                              ...props.input.value,
+                              value,
+                            ]);
+                            onChange(null);
+                          }}
+                        >
+                          Add
+                        </RightStackButton>
+                      )}
+                    </Field>
+                  </Box>
+                </DragDropContext>)
+              );
+            }}
+          </Field>
+          <Button
+            variant="outlined"
+            color="secondary"
+            type="submit"
+            disabled={submitting}
+            sx={{ marginTop: 1 }}
+          >
+            Save
           </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  );
+        </form>
+      )}
+    </Form>
+    <Dialog
+      open={isDeleteAlertOpen}
+      onClose={handleClose}
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          Are you sure to delete playlist “{name}”?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={handleDelete} color="primary" autoFocus>
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  </>);
 }
 
 PlaylistDetails.layout = getLayout("Playlist details");

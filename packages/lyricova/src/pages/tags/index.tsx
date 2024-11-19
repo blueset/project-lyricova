@@ -69,35 +69,38 @@ function TagNode({ tag }: { tag: TagWithCount }) {
     >
       <span
         className={classes.text}
-        ref={async (elm) => {
+        ref={(elm) => {
           if (elm) {
-            await document.fonts.ready;
-            const promises: Promise<any>[] = [];
-            document.fonts.forEach(
-              (f) => f.family.match(/Hubot/gi) && promises.push(f.loaded)
-            );
-            await Promise.all(promises);
-            console.log(promises);
-            const fontSize = parseFloat(
-              window.getComputedStyle(elm).getPropertyValue("font-size")
-            );
-            const spans = Array.from(elm.querySelectorAll("span"));
-            spans.forEach((span) => {
-              span.style.display = "inline";
-              span.style.marginLeft = "0";
-            });
-            const offsetLeft = elm.offsetLeft;
-            const range = document.createRange();
-            range.setStartBefore(spans[0]);
-            const lefts = spans.map((span) => {
-              range.setEndBefore(span);
-              return range.getBoundingClientRect().width + offsetLeft;
-            });
-            spans.forEach((span, idx) => {
-              span.style.display = "inline-block";
-              const diff = (lefts[idx] - span.offsetLeft) / fontSize;
-              span.style.marginLeft = `${diff}em`;
-            });
+            document.fonts.ready
+              .then(() => {
+                const promises: Promise<any>[] = [];
+                document.fonts.forEach(
+                  (f) => f.family.match(/Hubot/gi) && promises.push(f.loaded)
+                );
+                return Promise.all(promises);
+              })
+              .then(() => {
+                const fontSize = parseFloat(
+                  window.getComputedStyle(elm).getPropertyValue("font-size")
+                );
+                const spans = Array.from(elm.querySelectorAll("span"));
+                spans.forEach((span) => {
+                  span.style.display = "inline";
+                  span.style.marginLeft = "0";
+                });
+                const offsetLeft = elm.offsetLeft;
+                const range = document.createRange();
+                range.setStartBefore(spans[0]);
+                const lefts = spans.map((span) => {
+                  range.setEndBefore(span);
+                  return range.getBoundingClientRect().width + offsetLeft;
+                });
+                spans.forEach((span, idx) => {
+                  span.style.display = "inline-block";
+                  const diff = (lefts[idx] - span.offsetLeft) / fontSize;
+                  span.style.marginLeft = `${diff}em`;
+                });
+              });
           }
         }}
       >
@@ -128,6 +131,7 @@ export default function Tags({ tags }: IndexProps) {
         />
         <meta name="og:image" content={`${host}/images/og-cover.png`} />
       </Head>
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx global>{`
         html,
         body {

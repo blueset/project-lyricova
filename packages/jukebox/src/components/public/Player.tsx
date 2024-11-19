@@ -60,7 +60,7 @@ export default function Player() {
   const { playerRef } = useAppContext();
 
   const isFlatPlayer =
-    useMediaQuery<Theme>((theme) => theme.breakpoints.up("sm")) && isCollapsed;
+    useMediaQuery((theme) => theme.breakpoints.up("sm")) && isCollapsed;
 
   const nextTrack = () => dispatch(playNext(!playerRef?.current.paused));
   const previousTrack = () =>

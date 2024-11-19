@@ -6,7 +6,7 @@ import {
   Button,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";
 import DiffEditorTextarea from "./DiffEditorBox";
 import diff from "fast-diff";
 import {
@@ -17,7 +17,6 @@ import {
   RangeAttribute,
   RangeAttributeLabel,
   TIME_TAG,
-  TRANSLATION,
   WordTimeTag,
   WordTimeTagLabel,
 } from "lyrics-kit/core";
@@ -58,8 +57,7 @@ function applyDiff(source: string, edited: string): string {
       let resultTags: string[] = [];
 
       if (sourceLine.attachments.content) {
-        resultLine.attachments.content =
-          {...sourceLine.attachments.content};
+        resultLine.attachments.content = { ...sourceLine.attachments.content };
       }
       const timeTagQueue =
         sourceLine.attachments.content[TIME_TAG]?.tags || null;
@@ -118,7 +116,10 @@ function applyDiff(source: string, edited: string): string {
           const baseOffset = resultLine.content.length - ptr;
           if (text !== "\0") resultLine.content += text;
           ptr += text.length;
-          while ((timeTagQueue?.length ?? 0) > 0 && timeTagQueue[0]?.index < ptr) {
+          while (
+            (timeTagQueue?.length ?? 0) > 0 &&
+            timeTagQueue[0]?.index < ptr
+          ) {
             const tag = timeTagQueue.shift();
             tag.index += baseOffset;
             tag.timeTag += relativeTimeOffset;
@@ -148,8 +149,10 @@ function applyDiff(source: string, edited: string): string {
           relativeTimeOffset -= timeTagQueue?.[0]?.timeTag ?? 0.001;
         } else if (op === -1) {
           ptr += text.length;
-          while ((timeTagQueue?.[0]?.index ?? Infinity) < ptr) timeTagQueue.shift();
-          while ((furiganaQueue?.[0]?.range[1] ?? Infinity) <= ptr) furiganaQueue.shift();
+          while ((timeTagQueue?.[0]?.index ?? Infinity) < ptr)
+            timeTagQueue.shift();
+          while ((furiganaQueue?.[0]?.range[1] ?? Infinity) <= ptr)
+            furiganaQueue.shift();
           while ((dotsQueue?.[0]?.[1] ?? Infinity) <= ptr) dotsQueue.shift();
           while ((tagsQueue?.[0]?.[1] ?? Infinity) <= ptr) tagsQueue.shift();
         }
@@ -202,14 +205,14 @@ export default function DiffEditorDialog({ isOpen, toggleOpen }: Props) {
       <DialogTitle>Diff editor</DialogTitle>
       <DialogContent>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <DiffEditorTextarea
               title="Source"
               value={sourceValue}
               onChange={setSourceValue}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <DiffEditorTextarea
               title="Edited"
               value={editedValue}

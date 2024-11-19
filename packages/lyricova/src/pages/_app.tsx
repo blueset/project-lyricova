@@ -6,9 +6,6 @@ import type { ReactNode } from "react";
 import React, { useEffect } from "react";
 import theme from "lyricova-common/frontendUtils/theme";
 import Head from "next/head";
-import type { EmotionCache } from "@emotion/react";
-import { CacheProvider } from "@emotion/react";
-import createEmotionCache from "../frontendUtils/createEmotionCache";
 import {
   MonaSans,
   HubotSans,
@@ -20,31 +17,17 @@ import { useRouter } from "next/router";
 import { TransitionCover } from "../components/public/TransitionCover";
 import GlobalStyles from "@mui/material/GlobalStyles";
 import { siteName } from "../utils/consts";
+import { AppCacheProvider } from "lyricova-common/utils/mui/pagesRouterApp";
 
 export const getPlainLayout = (page: ReactNode) => <>{page}</>;
 
-// Client-side cache, shared for the whole session of the user in the browser.
-const clientSideEmotionCache = createEmotionCache();
-
 type AppPropsExtension = AppProps & {
-  emotionCache?: EmotionCache;
   Component: AppProps["Component"] & {
     layout?: (children: React.ReactNode) => React.ReactNode;
   };
 };
 
-function MyApp({
-  Component,
-  pageProps,
-  emotionCache = clientSideEmotionCache,
-}: AppPropsExtension) {
-  React.useEffect(() => {
-    // Remove the server-side injected CSS.
-    const jssStyles = document.querySelector("#jss-server-side");
-    if (jssStyles) {
-      jssStyles.parentElement.removeChild(jssStyles);
-    }
-  }, []);
+function MyApp({ Component, pageProps, ...props }: AppPropsExtension) {
   const router = useRouter();
   const isDashboard =
     router.pathname.startsWith("/dashboard") ||
@@ -81,7 +64,7 @@ function MyApp({
   const getLayout = Component.layout || getPlainLayout;
 
   return (
-    <CacheProvider value={emotionCache}>
+    <AppCacheProvider {...props}>
       <Head>
         <title>{siteName}</title>
         <meta
@@ -129,7 +112,7 @@ function MyApp({
         <CssBaseline />
       </ThemeProvider>
       {!isDashboard && <TransitionCover />}
-    </CacheProvider>
+    </AppCacheProvider>
   );
 }
 

@@ -68,7 +68,12 @@ interface CurrentLineState {
   borderIndex: number;
 }
 
-const BLANK_LINE: CurrentLineState = { indices: [], start: Infinity, end: -Infinity, borderIndex: -Infinity };
+const BLANK_LINE: CurrentLineState = {
+  indices: [],
+  start: Infinity,
+  end: -Infinity,
+  borderIndex: -Infinity,
+};
 
 const ControlRow = styled(Stack)(({ theme }) => ({
   marginBottom: theme.spacing(1),
@@ -90,11 +95,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     useWebAudio(`/api/files/${fileId}/file`);
   const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
   playerStatusRef.current = playerStatus;
-  // console.log(
-  //   "playerStatus",
-  //   playerStatus.state,
-  //   playerStatusRef.current.state
-  // );
+
   const [playbackProgress, setPlaybackProgress] = useNamedState(
     0,
     "playbackProgress"
@@ -432,7 +433,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     const startPerLine = tags.map((t) => {
       const tf = t.flat();
       if (tf.length) {
-        return {start: Math.min(...tf), end: Math.max(...tf)};
+        return { start: Math.min(...tf), end: Math.max(...tf) };
       }
       return null;
     });
@@ -490,10 +491,10 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
       const progress = getProgress();
       if (playerStatus.state === "playing") {
         // console.log("play", progress);
-        timelinesRef.current.map(t => t?.play(progress));
+        timelinesRef.current.map((t) => t?.play(progress));
       } else if (playerStatus.state === "paused") {
         // console.log("pause", progress);
-        timelinesRef.current.map(t => t?.pause(progress));
+        timelinesRef.current.map((t) => t?.pause(progress));
       }
     }
   }, [getProgress, onFrame, playerStatus]);
@@ -528,8 +529,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           if (playerStatusRef.current.state === "paused") {
             play();
             taggingAreaRef.current?.focus();
-          }
-          else pause();
+          } else pause();
         } else if (code === "KeyR" || key === "R" || key === "r") {
           ev.preventDefault();
           ev.stopPropagation();
@@ -580,20 +580,26 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     [setLines, setDots]
   );
 
-  const preventSpaceScrollerCallback = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === " ") {
-      event.preventDefault();
-    }
-  }, []);
+  const preventSpaceScrollerCallback = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === " ") {
+        event.preventDefault();
+      }
+    },
+    []
+  );
 
-  const onUpdateCursorHandler = useCallback((event: React.MouseEvent<HTMLElement>, cursorIdx: number) => {
-    const idx = parseInt(event.currentTarget.dataset.rowIndex);
-    if (section === "mark") {
-      setCursorPos([idx, cursorIdx]);
-    } else {
-      setDotCursorPos([idx, cursorIdx, 0]);
-    }
-  }, [section, setCursorPos, setDotCursorPos]);
+  const onUpdateCursorHandler = useCallback(
+    (event: React.MouseEvent<HTMLElement>, cursorIdx: number) => {
+      const idx = parseInt(event.currentTarget.dataset.rowIndex);
+      if (section === "mark") {
+        setCursorPos([idx, cursorIdx]);
+      } else {
+        setDotCursorPos([idx, cursorIdx, 0]);
+      }
+    },
+    [section, setCursorPos, setDotCursorPos]
+  );
 
   return (
     <Stack gap={1} sx={{ height: "100%" }} ref={taggingAreaRef}>
@@ -617,7 +623,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           </Button>
           <Button
             variant="outlined"
-            onClick={() => populateDotsEn(lines).then(dots => setDots(dots))}
+            onClick={() => populateDotsEn(lines).then((dots) => setDots(dots))}
           >
             Marks&nbsp;(en)
           </Button>
@@ -636,7 +642,10 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           />
         </ControlRow>
       </Box>
-      <Box sx={{ flexGrow: 1, height: 0, overflow: "auto", mx: -1, px: 1 }} onKeyDown={preventSpaceScrollerCallback}>
+      <Box
+        sx={{ flexGrow: 1, height: 0, overflow: "auto", mx: -1, px: 1 }}
+        onKeyDown={preventSpaceScrollerCallback}
+      >
         {lines.map((l, idx) => (
           <InlineTaggingLineMemo
             key={idx}
@@ -649,7 +658,12 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
             getProgress={getProgress}
             applyMarksToAll={applyMarksToAll}
             relativeProgress={
-              currentLine.indices.includes(idx) || currentLine.borderIndex == idx ? 0 : currentLine.borderIndex >= idx ? -1 : 1
+              currentLine.indices.includes(idx) ||
+              currentLine.borderIndex == idx
+                ? 0
+                : currentLine.borderIndex >= idx
+                ? -1
+                : 1
             }
             cursorIdx={
               section === "mark" && cursorPos[0] === idx

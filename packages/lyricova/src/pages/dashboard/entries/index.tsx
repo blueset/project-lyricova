@@ -87,6 +87,15 @@ export default function Entries() {
         </Alert>
       )}
       <DataGrid
+        initialState={{
+          columns: {
+            columnVisibilityModel: {
+              // Hide columns status and traderName, the other columns will remain visible
+              producers: false,
+              vocalists: false,
+            },
+          },
+        }}
         columns={[
           { headerName: "ID", field: "id", width: 75 },
           { headerName: "Title", field: "title", flex: 2 },
@@ -129,13 +138,11 @@ export default function Entries() {
             headerName: "Producers",
             field: "producersName",
             flex: 1,
-            hide: true,
           },
           {
             headerName: "Vocalists",
             field: "vocalistsName",
             flex: 1,
-            hide: true,
           },
           {
             headerName: "Tags",
@@ -143,8 +150,8 @@ export default function Entries() {
             flex: 1,
             getApplyQuickFilterFn(value) {
               const pattern = new RegExp(_.escapeRegExp(value), "i");
-              return (params: GridCellParams): boolean => {
-                return params.value
+              return (params: GridCellParams<any, Tag[]>): boolean => {
+                return !!params.value
                   .map((t: Tag) => t.name)
                   .join(",")
                   .match(pattern);
@@ -180,8 +187,8 @@ export default function Entries() {
             flex: 1,
             getApplyQuickFilterFn(value) {
               const pattern = new RegExp(_.escapeRegExp(value), "i");
-              return (params: GridCellParams): boolean => {
-                return params.value
+              return (params: GridCellParams<any, Song[]>): boolean => {
+                return !!params.value
                   .map((t: Song) => t.name)
                   .join(",")
                   .match(pattern);
@@ -300,8 +307,8 @@ export default function Entries() {
           },
         ]}
         rows={rows}
-        components={{ Toolbar: DataGridToolbar }}
-        componentsProps={{
+        slots={{ toolbar: DataGridToolbar }}
+        slotProps={{
           toolbar: {
             title: `${rows.length} entries.`,
             children: (

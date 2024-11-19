@@ -5,7 +5,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
+  Grid2 as Grid,
   MenuItem,
   Stack,
 } from "@mui/material";
@@ -184,7 +184,7 @@ export default function ArtistEntityDialog({
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     variant="outlined"
                     margin="dense"
@@ -195,7 +195,7 @@ export default function ArtistEntityDialog({
                     label="Name"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     variant="outlined"
                     margin="dense"
@@ -214,7 +214,7 @@ export default function ArtistEntityDialog({
                     label="Sort order"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Stack direction="row" alignItems="center">
                     <AvatarField
                       name="mainPictureUrl"
@@ -234,7 +234,7 @@ export default function ArtistEntityDialog({
                     />
                   </Stack>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Select
                     type="text"
                     label="Type"

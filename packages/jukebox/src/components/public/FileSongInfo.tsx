@@ -8,7 +8,7 @@ import {
   Box,
   Chip,
   Divider,
-  Grid,
+  Grid2 as Grid,
   Typography,
   Alert,
 } from "@mui/material";
@@ -159,7 +159,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
       {banner}
       <Grid container spacing={2}>
         {file.hasCover && (
-          <Grid item md={4} xs={12}>
+          <Grid size={{ md: 4, xs: 12 }}>
             <Box
               sx={{
                 position: { md: "sticky" },
@@ -191,7 +191,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
             </Box>
           </Grid>
         )}
-        <Grid item md={file.hasCover ? 8 : 12} xs={12}>
+        <Grid size={{ md: file.hasCover ? 8 : 12, xs: 12 }}>
           <Typography variant="overline" color="textSecondary">
             {fileId == null ? "Now playing" : "File details"}
           </Typography>

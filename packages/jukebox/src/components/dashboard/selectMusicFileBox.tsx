@@ -1,4 +1,4 @@
-import { Avatar, Grid, Stack, Typography } from "@mui/material";
+import { Avatar, Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { useEffect } from "react";
 import _ from "lodash";
 import { gql, useApolloClient } from "@apollo/client";
@@ -10,7 +10,7 @@ import { useNamedState } from "../../hooks/useNamedState";
 import type { DocumentNode } from "graphql";
 
 const LOCAL_ARTIST_ENTITY_QUERY = gql`
-  query($text: String!) {
+  query ($text: String!) {
     searchMusicFiles(keywords: $text) {
       id
       trackName
@@ -91,7 +91,7 @@ export default function SelectMusicFileBox<T extends string>({
         </Typography>
       )}
       <Grid container spacing={1}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Autocomplete
             name={fieldName}
             options={autoCompleteOptions}

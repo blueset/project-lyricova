@@ -14,6 +14,7 @@ import {
   SourceHanSansPunct,
   SourceHanSerif,
 } from "../fonts";
+import { AppCacheProvider } from "lyricova-common/utils/mui/pagesRouterApp";
 
 const themeMod = createTheme({
   ...theme,
@@ -42,16 +43,7 @@ type AppPropsExtension = AppProps & {
   };
 };
 
-function MyApp({ Component, pageProps }: AppPropsExtension) {
-  React.useEffect(() => {
-    // polyfill();
-    // Remove the server-side injected CSS.
-    const jssStyles = document.querySelector("#jss-server-side");
-    if (jssStyles) {
-      jssStyles.parentElement.removeChild(jssStyles);
-    }
-  }, []);
-
+function MyApp({ Component, pageProps, ...props }: AppPropsExtension) {
   useEffect(() => {
     document.body.classList.add(
       Inter.variable,
@@ -60,7 +52,10 @@ function MyApp({ Component, pageProps }: AppPropsExtension) {
       SourceHanSerif.variable
     );
 
-    if (/eruda=true/.test(window.location.toString()) || localStorage.getItem("active-eruda") == "true") {
+    if (
+      /eruda=true/.test(window.location.toString()) ||
+      localStorage.getItem("active-eruda") == "true"
+    ) {
       const src = "//cdn.jsdelivr.net/npm/eruda";
       const importScript = document.createElement("script");
       importScript.src = src;
@@ -76,7 +71,7 @@ function MyApp({ Component, pageProps }: AppPropsExtension) {
   const getLayout = Component.layout || getPlainLayout;
 
   return (
-    <>
+    <AppCacheProvider {...props}>
       <Head>
         <title>Lyricova Jukebox</title>
         <meta
@@ -113,7 +108,7 @@ function MyApp({ Component, pageProps }: AppPropsExtension) {
           {getLayout(<Component {...pageProps} />)}
         </ThemeProvider>
       </ApolloProvider>
-    </>
+    </AppCacheProvider>
   );
 }
 

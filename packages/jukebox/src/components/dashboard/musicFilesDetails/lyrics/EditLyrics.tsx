@@ -1,4 +1,10 @@
-import { Button, Grid, styled, TextField, Typography } from "@mui/material";
+import {
+  Button,
+  Grid2 as Grid,
+  styled,
+  TextField,
+  Typography,
+} from "@mui/material";
 import type { ChangeEvent } from "react";
 import { useCallback } from "react";
 import { useNamedState } from "../../../../hooks/useNamedState";
@@ -99,7 +105,7 @@ export default function EditLyrics({
   return (
     <>
       <Grid container spacing={2}>
-        <Grid item xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Typography variant="overline" display="block">
             Load plain text
           </Typography>
@@ -117,7 +123,7 @@ export default function EditLyrics({
             Search from 初音ミク@wiki
           </SpacedButton>
         </Grid>
-        <Grid item xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Typography variant="overline" display="block">
             Common operations
           </Typography>
@@ -143,10 +149,12 @@ export default function EditLyrics({
         label="Lyrics source"
         fullWidth
         value={lyrics || ""}
-        inputProps={{ sx: { fontFamily: "monospace" }, lang: "ja" }}
         onChange={handleChange}
         multiline
         variant="outlined"
+        slotProps={{
+          htmlInput: { sx: { fontFamily: "monospace" }, lang: "ja" },
+        }}
       />
       <VocaDBLyricsDialog
         isOpen={showVocaDBDialog}

@@ -309,177 +309,175 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
     [snackbar]
   );
 
-  return (
-    <>
-      <Form<FormValues>
-        initialValues={{ title, artists, duration }}
-        onSubmit={async (values) => {
-          try {
-            const sessionId = `${Math.random()}`;
-            setSearchResults([]);
+  return (<>
+    <Form<FormValues>
+      initialValues={{ title, artists, duration }}
+      onSubmit={async (values) => {
+        try {
+          const sessionId = `${Math.random()}`;
+          setSearchResults([]);
 
-            const query = apolloClient.query<{
-              lyricsKitSearch: LyricsKitLyricsEntry[];
-            }>({
-              query: SEARCH_LYRICS_QUERY,
-              variables: {
-                ...values,
-                sessionId,
-              },
-            });
+          const query = apolloClient.query<{
+            lyricsKitSearch: LyricsKitLyricsEntry[];
+          }>({
+            query: SEARCH_LYRICS_QUERY,
+            variables: {
+              ...values,
+              sessionId,
+            },
+          });
 
-            const subscription = apolloClient.subscribe<{
-              lyricsKitSearchIncremental: LyricsKitLyricsEntry;
-            }>({
-              query: SEARCH_LYRICS_PROGRESS_SUBSCRIPTION,
-              variables: { sessionId },
-            });
-            const zenSubscription = subscription.subscribe({
-              start(subscription: Subscription) {
-                console.log("subscription started", subscription);
-              },
-              next(x) {
-                console.log("subscription event", x);
-                if (x.data.lyricsKitSearchIncremental !== null) {
-                  setSearchResults((results) => {
-                    const arr = [...results, x.data.lyricsKitSearchIncremental];
-                    arr.sort((a, b) => b.quality - a.quality);
-                    return arr;
-                  });
-                }
-              },
-              error(err) {
-                console.log(`Finished with error: ${err}`);
-              },
-              complete() {
-                console.log("Finished");
-              },
-            });
+          const subscription = apolloClient.subscribe<{
+            lyricsKitSearchIncremental: LyricsKitLyricsEntry;
+          }>({
+            query: SEARCH_LYRICS_PROGRESS_SUBSCRIPTION,
+            variables: { sessionId },
+          });
+          const zenSubscription = subscription.subscribe({
+            start(subscription: Subscription) {
+              console.log("subscription started", subscription);
+            },
+            next(x) {
+              console.log("subscription event", x);
+              if (x.data.lyricsKitSearchIncremental !== null) {
+                setSearchResults((results) => {
+                  const arr = [...results, x.data.lyricsKitSearchIncremental];
+                  arr.sort((a, b) => b.quality - a.quality);
+                  return arr;
+                });
+              }
+            },
+            error(err) {
+              console.log(`Finished with error: ${err}`);
+            },
+            complete() {
+              console.log("Finished");
+            },
+          });
 
-            const result = await query;
-            if (result.data) {
-              const results = [...result.data.lyricsKitSearch];
-              results.sort((a, b) => b.quality - a.quality);
-              setSearchResults(results);
-            }
-            zenSubscription.unsubscribe();
-          } catch (e) {
-            console.error(`Error while loading search result; ${e}`);
-            snackbar.enqueueSnackbar(`Failed to load search results: ${e}`, {
-              variant: "error",
-            });
+          const result = await query;
+          if (result.data) {
+            const results = [...result.data.lyricsKitSearch];
+            results.sort((a, b) => b.quality - a.quality);
+            setSearchResults(results);
           }
-        }}
-      >
-        {({ submitting, handleSubmit }) => (
-          <form
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
+          zenSubscription.unsubscribe();
+        } catch (e) {
+          console.error(`Error while loading search result; ${e}`);
+          snackbar.enqueueSnackbar(`Failed to load search results: ${e}`, {
+            variant: "error",
+          });
+        }
+      }}
+    >
+      {({ submitting, handleSubmit }) => (
+        <form
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+          onSubmit={handleSubmit}
+        >
+          <TextField
+            sx={{ marginRight: 1 }}
+            variant="outlined"
+            required
+            fullWidth
+            margin="dense"
+            name="title"
+            type="text"
+            label="Title"
+          />
+          <TextField
+            sx={{ marginRight: 1 }}
+            variant="outlined"
+            fullWidth
+            margin="dense"
+            name="artists"
+            type="text"
+            label="Artists"
+          />
+          <TextField
+            sx={{ marginRight: 1, flexBasis: "25em" }}
+            variant="outlined"
+            margin="dense"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">sec</InputAdornment>
+              ),
+              readOnly: true,
             }}
-            onSubmit={handleSubmit}
+            name="duration"
+            type="number"
+            label="Duration"
+          />
+          <Button
+            variant="contained"
+            color="secondary"
+            type="submit"
+            disabled={submitting}
           >
-            <TextField
-              sx={{ marginRight: 1 }}
-              variant="outlined"
-              required
-              fullWidth
-              margin="dense"
-              name="title"
-              type="text"
-              label="Title"
-            />
-            <TextField
-              sx={{ marginRight: 1 }}
-              variant="outlined"
-              fullWidth
-              margin="dense"
-              name="artists"
-              type="text"
-              label="Artists"
-            />
-            <TextField
-              sx={{ marginRight: 1, flexBasis: "25em" }}
-              variant="outlined"
-              margin="dense"
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">sec</InputAdornment>
-                ),
-                readOnly: true,
-              }}
-              name="duration"
-              type="number"
-              label="Duration"
-            />
-            <Button
-              variant="contained"
-              color="secondary"
-              type="submit"
-              disabled={submitting}
+            Search
+          </Button>
+        </form>
+      )}
+    </Form>
+    <List>
+      {searchResults.map((v, idx) => (
+        <ListItem key={idx} alignItems="flex-start" sx={{ pr: 12 }}>
+          <ListItemAvatar>
+            <Badge
+              overlap="rectangular"
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              badgeContent={<BadgeAvatar>{v.metadata?.source}</BadgeAvatar>}
             >
-              Search
-            </Button>
-          </form>
-        )}
-      </Form>
-      <List>
-        {searchResults.map((v, idx) => (
-          <ListItem key={idx} alignItems="flex-start" sx={{ pr: 12 }}>
-            <ListItemAvatar>
-              <Badge
-                overlap="rectangular"
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                badgeContent={<BadgeAvatar>{v.metadata?.source}</BadgeAvatar>}
-              >
-                <Avatar src={v.metadata?.artworkURL} variant="rounded">
-                  <MusicNoteIcon />
-                </Avatar>
-              </Badge>
-            </ListItemAvatar>
-            <ListItemText disableTypography>
-              <Typography variant="body1" display="block">
-                {`${v.tags?.ti}` || <em>No title</em>}
-              </Typography>
-              <Typography variant="body2" display="block" color="textSecondary">
-                {`${v.tags?.ar}` || <em>Various artists</em>} /{" "}
-                {`${v.tags?.al}` || <em>Unknown album</em>}
-              </Typography>
-              <Typography
-                variant="body2"
-                display="block"
-                color="textSecondary"
-                noWrap
-              >
-                {v.lyrics.replace(/\n?\[[^\]]*?]/g, "¶").replace(/^¶+/g, "")}
-              </Typography>
-              <Typography variant="body2" display="block" color="textSecondary">
-                <InlineAnalysisResult
-                  result={parsedResults[idx]?.analysis}
-                  duration={duration}
-                  length={v.tags?.length as number | undefined}
-                />
-              </Typography>
-            </ListItemText>
-            <ListItemSecondaryAction>
-              <TooltipIconButton
-                title="Copy lyrics"
-                onClick={copyText(v.lyrics)}
-              >
-                <ContentCopyIcon />
-              </TooltipIconButton>
-              <TooltipIconButton
-                title="Copy cover URL"
-                disabled={!v.metadata?.artworkURL}
-                onClick={copyText(v.metadata?.artworkURL)}
-              >
-                <FileCopyIcon />
-              </TooltipIconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
-      </List>
-    </>
-  );
+              <Avatar src={v.metadata?.artworkURL} variant="rounded">
+                <MusicNoteIcon />
+              </Avatar>
+            </Badge>
+          </ListItemAvatar>
+          <ListItemText disableTypography>
+            <Typography variant="body1" display="block">
+              {`${v.tags?.ti}` || <em>No title</em>}
+            </Typography>
+            <Typography variant="body2" display="block" color="textSecondary">
+              {`${v.tags?.ar}` || <em>Various artists</em>} /{" "}
+              {`${v.tags?.al}` || <em>Unknown album</em>}
+            </Typography>
+            <Typography
+              variant="body2"
+              display="block"
+              color="textSecondary"
+              noWrap
+            >
+              {v.lyrics.replace(/\n?\[[^\]]*?]/g, "¶").replace(/^¶+/g, "")}
+            </Typography>
+            <Typography variant="body2" display="block" color="textSecondary">
+              <InlineAnalysisResult
+                result={parsedResults[idx]?.analysis}
+                duration={duration}
+                length={v.tags?.length as number | undefined}
+              />
+            </Typography>
+          </ListItemText>
+          <ListItemSecondaryAction>
+            <TooltipIconButton
+              title="Copy lyrics"
+              onClick={copyText(v.lyrics)}
+            >
+              <ContentCopyIcon />
+            </TooltipIconButton>
+            <TooltipIconButton
+              title="Copy cover URL"
+              disabled={!v.metadata?.artworkURL}
+              onClick={copyText(v.metadata?.artworkURL)}
+            >
+              <FileCopyIcon />
+            </TooltipIconButton>
+          </ListItemSecondaryAction>
+        </ListItem>
+      ))}
+    </List>
+  </>);
 }

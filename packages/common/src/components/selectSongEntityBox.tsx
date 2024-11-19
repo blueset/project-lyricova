@@ -2,7 +2,7 @@ import {
   Avatar,
   Chip,
   FilterOptionsState,
-  Grid,
+  Grid2 as Grid,
   IconButton,
   Stack,
   Typography,
@@ -154,7 +154,7 @@ export default function SelectSongEntityBox<T extends string>({
         </Typography>
       )}
       <Grid container spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Autocomplete
             options={vocaDBAutoCompleteOptions}
             label={labelName}
@@ -266,7 +266,7 @@ export default function SelectSongEntityBox<T extends string>({
           />
         </Grid>
         {value && value.id && (
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Stack
               direction="row"
               alignItems="center"

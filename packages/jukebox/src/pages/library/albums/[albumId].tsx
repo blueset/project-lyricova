@@ -4,7 +4,7 @@ import {
   Avatar,
   Box,
   Chip,
-  Grid,
+  Grid2 as Grid,
   IconButton,
   List,
   ListItemText,
@@ -145,9 +145,13 @@ export default function LibrarySingleAlbum() {
         onClick={() => router.push("/library/albums")}
       />
       <Grid container sx={{ marginTop: 2 }}>
-        <Grid item md={4} xs={12}>
+        <Grid size={{ md: 4, xs: 12 }}>
           <Box
-            sx={{ position: { md: "sticky" }, top: { md: 2 }, marginBottom: 4 }}
+            sx={{
+              position: { md: "sticky" },
+              top: { md: 2 },
+              marginBottom: 4,
+            }}
           >
             {album.coverUrl && (
               <Avatar
@@ -176,7 +180,7 @@ export default function LibrarySingleAlbum() {
             </Typography>
           </Box>
         </Grid>
-        <Grid item md={8} xs={12}>
+        <Grid size={{ md: 8, xs: 12 }}>
           <Box ml={2}>
             <Typography variant="h5" lang="ja">
               {album.name}

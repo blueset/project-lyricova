@@ -1,6 +1,6 @@
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
-import { Grid, Typography, Box, Button } from "@mui/material";
+import { Grid2 as Grid, Typography, Box, Button } from "@mui/material";
 import type { DashboardStats } from "../../graphql/StatsResolver";
 import { useNamedState } from "../../hooks/useNamedState";
 import dayjs from "dayjs";
@@ -34,7 +34,7 @@ type ConvertedDashboardStats = Record<keyof DashboardStats, number>;
 
 const ActionButtonSx = {
   fontSize: "1.5em",
-  "& .MuiButton-iconSizeLarge > *:first-child": {
+  "&.MuiButton-sizeLarge > .MuiButton-icon > *:first-child": {
     fontSize: "2em",
   },
 };
@@ -58,59 +58,59 @@ export default function DashboardIndex() {
     <Box sx={{ padding: 2 }}>
       {error && `Error occurred while loading stats: ${error}`}
       <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <CountUpCard
             title="Revamp dev time"
             now={now}
             time={data?.dashboardStats.revampStartedOn}
           />
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <CountUpCard
             title="Project uptime"
             now={now}
             time={data?.dashboardStats.aliveStartedOn}
           />
         </Grid>
-        <Grid item xs={6} sm={3}>
+        <Grid size={{ xs: 6, sm: 3 }}>
           <CountCard
             title="# of Music files"
             value={data?.dashboardStats.musicFilesCount}
           />
         </Grid>
-        <Grid item xs={6} sm={3}>
+        <Grid size={{ xs: 6, sm: 3 }}>
           <CountCard
             title="# of Music entities"
             value={data?.dashboardStats.songCount}
           />
         </Grid>
-        <Grid item xs={6} sm={3}>
+        <Grid size={{ xs: 6, sm: 3 }}>
           <CountCard
             title="# of Artist entities"
             value={data?.dashboardStats.artistCount}
           />
         </Grid>
-        <Grid item xs={6} sm={3}>
+        <Grid size={{ xs: 6, sm: 3 }}>
           <CountCard
             title="# of Album entities"
             value={data?.dashboardStats.albumCount}
           />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <PercentageCard
             title="Reviewed files"
             value={data?.dashboardStats.reviewedFilesCount}
             total={data?.dashboardStats.musicFilesCount}
           />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <PercentageCard
             title="Files with lyrics"
             value={data?.dashboardStats.filesHasLyricsCount}
             total={data?.dashboardStats.musicFilesCount}
           />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <PercentageCard
             title="Files with cover"
             value={data?.dashboardStats.filesHasCoverCount}
@@ -122,7 +122,7 @@ export default function DashboardIndex() {
         Actions
       </Typography>
       <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Button
             fullWidth
             size="large"
@@ -146,7 +146,7 @@ export default function DashboardIndex() {
             </Box>
           </Button>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Button
             fullWidth
             size="large"
@@ -169,7 +169,7 @@ export default function DashboardIndex() {
             </Box>
           </Button>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Button
             fullWidth
             size="large"

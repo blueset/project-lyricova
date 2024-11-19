@@ -3,7 +3,7 @@ import {
   Box,
   Button,
   Divider,
-  Grid,
+  Grid2 as Grid,
   IconButton,
   MenuItem,
   Stack,
@@ -104,20 +104,20 @@ export default function InfoPanel({
           trackName: yup.string(),
           trackSortOrder: yup.string().when("trackName", {
             is: (v: string) => !!v,
-            then: yup.string().required(),
-            otherwise: yup.string().optional(),
+            then: (schema) => schema.required(),
+            otherwise: (schema) => schema.optional(),
           }),
           artistName: yup.string(),
           artistSortOrder: yup.string().when("artistName", {
             is: (v: string) => !!v,
-            then: yup.string().required(),
-            otherwise: yup.string().optional(),
+            then: (schema) => schema.required(),
+            otherwise: (schema) => schema.optional(),
           }),
           albumName: yup.string(),
           albumSortOrder: yup.string().when("albumName", {
             is: (v: string) => !!v,
-            then: yup.string().required(),
-            otherwise: yup.string().optional(),
+            then: (schema) => schema.required(),
+            otherwise: (schema) => schema.optional(),
           }),
           song: yup.object().nullable(),
           album: yup.number().nullable().integer(),
@@ -217,18 +217,20 @@ export default function InfoPanel({
         return (
           <>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <MuiTextField
                   variant="outlined"
                   margin="dense"
                   fullWidth
                   label="File path"
                   disabled
-                  inputProps={{ readOnly: true }}
                   value={path}
+                  slotProps={{
+                    htmlInput: { readOnly: true },
+                  }}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   variant="outlined"
                   margin="dense"
@@ -238,7 +240,7 @@ export default function InfoPanel({
                   label="Track name"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   variant="outlined"
                   margin="dense"
@@ -256,7 +258,7 @@ export default function InfoPanel({
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   variant="outlined"
                   margin="dense"
@@ -266,7 +268,7 @@ export default function InfoPanel({
                   label="Artist name"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   variant="outlined"
                   margin="dense"
@@ -284,7 +286,7 @@ export default function InfoPanel({
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   variant="outlined"
                   margin="dense"
@@ -294,7 +296,7 @@ export default function InfoPanel({
                   label="Album name"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   variant="outlined"
                   margin="dense"
@@ -324,7 +326,7 @@ export default function InfoPanel({
                 value &&
                 value.id && (
                   <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                       <Stack
                         direction="row"
                         spacing={2}
@@ -387,7 +389,7 @@ export default function InfoPanel({
                         </Tooltip>
                       </Stack>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                       <UpdateButton
                         variant="outlined"
                         onClick={() => {

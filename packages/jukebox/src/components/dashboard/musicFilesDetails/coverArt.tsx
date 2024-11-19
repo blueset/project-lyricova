@@ -2,7 +2,7 @@ import {
   Avatar,
   Box,
   Button,
-  Grid,
+  Grid2 as Grid,
   styled,
   TextField,
   Typography,
@@ -10,7 +10,7 @@ import {
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import ImageNotSupportedIcon from "@mui/icons-material/ImageNotSupported";
 import { useNamedState } from "../../../hooks/useNamedState";
-import type { ChangeEvent} from "react";
+import type { ChangeEvent } from "react";
 import { useCallback, useEffect } from "react";
 import axios from "axios";
 import { useDropzone } from "react-dropzone";
@@ -215,7 +215,7 @@ export default function CoverArtPanel({
       >
         Drag here to set cover.
       </Box>
-      <Grid item xs={12} md={3}>
+      <Grid size={{ xs: 12, md: 3 }}>
         <Typography variant="h5" gutterBottom>
           Current cover
         </Typography>
@@ -240,7 +240,7 @@ export default function CoverArtPanel({
           Search on Google
         </Button>
       </Grid>
-      <Grid item xs={12} md={3}>
+      <Grid size={{ xs: 12, md: 3 }}>
         <Typography variant="h5" gutterBottom>
           Cover from song entity
         </Typography>
@@ -255,7 +255,7 @@ export default function CoverArtPanel({
           Use this
         </Button>
       </Grid>
-      <Grid item xs={12} md={3}>
+      <Grid size={{ xs: 12, md: 3 }}>
         <Typography variant="h5" gutterBottom>
           Cover from album entity
         </Typography>
@@ -270,7 +270,7 @@ export default function CoverArtPanel({
           Use this
         </Button>
       </Grid>
-      <Grid item xs={12} md={3}>
+      <Grid size={{ xs: 12, md: 3 }}>
         <Typography variant="h5" gutterBottom>
           Cover to upload
         </Typography>
@@ -294,7 +294,7 @@ export default function CoverArtPanel({
           Apply
         </Button>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Box display="flex" alignItems="center">
           <TextField
             variant="outlined"

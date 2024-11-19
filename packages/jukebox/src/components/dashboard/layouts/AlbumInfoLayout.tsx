@@ -117,8 +117,8 @@ export default function AlbumInfoLayout({ children }: Props) {
           },
         ]}
         rows={rows}
-        components={{ Toolbar: DataGridToolbar }}
-        componentsProps={{
+        slots={{ toolbar: DataGridToolbar }}
+        slotProps={{
           toolbar: {
             title: `${rows.length} album entities.`,
           },

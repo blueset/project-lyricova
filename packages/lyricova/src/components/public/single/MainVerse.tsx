@@ -26,10 +26,11 @@ export function MainVerse({ entry }: MainVerseProps) {
       </div>
       <div
         className={classes.verse}
-        ref={async (elm) => {
+        ref={(elm) => {
           if (elm) {
-            await document.fonts.ready;
-            resizeVerse(elm);
+            document.fonts.ready.then(() => {
+              resizeVerse(elm);
+            });
           }
         }}
       >

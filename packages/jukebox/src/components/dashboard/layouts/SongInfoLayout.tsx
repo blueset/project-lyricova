@@ -163,8 +163,8 @@ export default function SongInfoLayout({ children }: Props) {
           },
         ]}
         rows={rows}
-        components={{ Toolbar: DataGridToolbar }}
-        componentsProps={{
+        slots={{ toolbar: DataGridToolbar }}
+        slotProps={{
           toolbar: {
             title: `${rows.length} song entities.`,
           },

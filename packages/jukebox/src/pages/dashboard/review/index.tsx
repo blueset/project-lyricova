@@ -57,7 +57,7 @@ export default function Review() {
       .map((v) => ({ ...v.node })) ?? [];
 
   return (
-    <Box sx={{ minHeight: "calc(100vh - 7em)", height: 0 }}>
+    (<Box sx={{ minHeight: "calc(100vh - 7em)", height: 0 }}>
       {needReviewQuery.error && (
         <Alert severity="error">
           <AlertTitle>Error occurred while retrieving data.</AlertTitle>
@@ -109,8 +109,8 @@ export default function Review() {
             },
           },
         }}
-        components={{ Toolbar: DataGridToolbar }}
-        componentsProps={{
+        slots={{ toolbar: DataGridToolbar }}
+        slotProps={{
           toolbar: {
             title: `${needReviewCount ?? "..."} / ${
               totalCount ?? "..."
@@ -127,7 +127,7 @@ export default function Review() {
           },
         }}
       />
-    </Box>
+    </Box>)
   );
 }
 

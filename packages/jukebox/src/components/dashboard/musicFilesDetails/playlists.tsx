@@ -27,6 +27,8 @@ import {
 } from "material-ui-popup-state/hooks";
 import AddPlaylistPopoverContent from "../AddPlaylistPopoverContent";
 
+import ListItemButton from "@mui/material/ListItemButton";
+
 function SkeletonItem() {
   return (
     <ListItem>
@@ -137,7 +139,7 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
     );
   } else if (playlistsQuery.data) {
     items = playlistsQuery.data.playlists.map((v) => (
-      <ListItem key={v.slug} button onClick={handleToggle(v.slug)}>
+      <ListItemButton key={v.slug} onClick={handleToggle(v.slug)}>
         <ListItemAvatar>
           <PlaylistAvatar name={v.name} slug={v.slug} />
         </ListItemAvatar>
@@ -149,20 +151,20 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
             checked={checkedPlaylists.indexOf(v.slug) !== -1}
           />
         </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemButton>
     ));
   }
 
   return (
-    <div>
+    (<div>
       <List>
         {items}
-        <ListItem button {...bindTrigger(popupState)}>
+        <ListItemButton {...bindTrigger(popupState)}>
           <ListItemIcon>
             <AddIcon />
           </ListItemIcon>
           <ListItemText>Add new playlist</ListItemText>
-        </ListItem>
+        </ListItemButton>
       </List>
       <Button variant="outlined" color="secondary" onClick={handleSubmit}>
         Save
@@ -183,6 +185,6 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
           dismiss={popupState.close}
         />
       </Popover>
-    </div>
+    </div>)
   );
 }

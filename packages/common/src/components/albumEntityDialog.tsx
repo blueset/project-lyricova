@@ -12,7 +12,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Unstable_Grid2";
+import Grid from "@mui/material/Grid2";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import TransliterationAdornment from "./TransliterationAdornment";
@@ -38,8 +38,6 @@ import AvatarField from "./AvatarField";
 import { Song } from "../models/Song";
 import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
 import { DocumentNode } from "graphql";
-import StringSchema from "yup/lib/string";
-import ArraySchema from "yup/lib/array";
 import React from "react";
 
 const NEW_ALBUM_MUTATION = gql`
@@ -116,7 +114,7 @@ function RoleField<T extends string>({ name, label }: RoleFieldProps) {
 interface FormValues {
   name: string;
   sortOrder: string;
-  coverUrl: string;
+  coverUrl?: string;
   originalSong?: Song;
   artists: {
     artist: Partial<Artist>;
@@ -248,6 +246,23 @@ export default function AlbumEntityDialog({
       );
     }
   }, [albumId, apolloClient, setInitialValues, snackbar]);
+
+  const songSchema = yup
+    .object({
+      song: yup.object().typeError("Song entity must be selected."),
+      diskNumber: yup.number().required().nullable().positive().integer(),
+      trackNumber: yup.number().required().nullable().positive().integer(),
+      name: yup.string().optional(),
+    })
+    .required();
+  const artistSchema = yup.object().shape({
+    artist: yup.object().typeError("Artist entity must be selected."),
+    categories: yup.string<VDBArtistCategoryType>().required(),
+    roles: yup.array(yup.string<VDBArtistRoleType>().required()).required(), // as yup.ArraySchema<yup.StringSchema<VDBArtistRoleType>>,
+    effectiveRoles: yup
+      .array(yup.string<VDBArtistRoleType>().required())
+      .required(),
+  });
   return (
     <Dialog
       open={isOpen}
@@ -268,31 +283,9 @@ export default function AlbumEntityDialog({
             .shape({
               name: yup.string().required(),
               sortOrder: yup.string().required(),
-              coverUrl: yup.string().optional().url(),
-              songs: yup.array(
-                yup.object({
-                  song: yup.object().typeError("Song entity must be selected."),
-                  diskNumber: yup.number().optional().positive().integer(),
-                  trackNumber: yup.number().optional().positive().integer(),
-                  name: yup.string().optional(),
-                })
-              ),
-              artists: yup.array(
-                yup.object({}).shape({
-                  artist: yup
-                    .object()
-                    .typeError("Artist entity must be selected."),
-                  categories: yup
-                    .string()
-                    .required() as StringSchema<VDBArtistCategoryType>,
-                  roles: yup
-                    .array(yup.string() as StringSchema<VDBArtistRoleType>)
-                    .required() as ArraySchema<StringSchema<VDBArtistRoleType>>,
-                  effectiveRoles: yup
-                    .array(yup.string() as StringSchema<VDBArtistRoleType>)
-                    .required() as ArraySchema<StringSchema<VDBArtistRoleType>>,
-                })
-              ),
+              coverUrl: yup.string().url().optional(),
+              songs: yup.array(songSchema).required(),
+              artists: yup.array(artistSchema).required(),
             })
             .required()
         )}
@@ -391,7 +384,7 @@ export default function AlbumEntityDialog({
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
-                <Grid xs={12}>
+                <Grid size={12}>
                   <TextField
                     variant="outlined"
                     margin="dense"
@@ -402,7 +395,7 @@ export default function AlbumEntityDialog({
                     label="Album name"
                   />
                 </Grid>
-                <Grid xs={12}>
+                <Grid size={12}>
                   <TextField
                     variant="outlined"
                     margin="dense"
@@ -421,7 +414,7 @@ export default function AlbumEntityDialog({
                     label="Sort order"
                   />
                 </Grid>
-                <Grid xs={12}>
+                <Grid size={12}>
                   <Box
                     sx={{
                       display: "flex",

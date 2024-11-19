@@ -135,8 +135,8 @@ export default function ArtistInfoLayout({ children }: Props) {
           },
         ]}
         rows={rows}
-        components={{ Toolbar: DataGridToolbar }}
-        componentsProps={{
+        slots={{ toolbar: DataGridToolbar }}
+        slotProps={{
           toolbar: {
             title: `${rows.length} artist entities.`,
           },
