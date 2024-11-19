@@ -39,6 +39,7 @@ const SINGLE_FILE_SONG_QUERY = gql`
 
       song {
         id
+        name
         artists {
           id
           name
@@ -257,6 +258,17 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                   label={file.album.name}
                   component={NextComposedLink}
                   href={`/library/albums/${file.album.id}`}
+                  clickable
+                  variant="outlined"
+                />
+              </TableRow>
+            )}
+            {file.song && (
+              <TableRow heading="Song">
+                <Chip
+                  label={file.song.name}
+                  component={NextComposedLink}
+                  href={`/library/songs/${file.song.id}`}
                   clickable
                   variant="outlined"
                 />

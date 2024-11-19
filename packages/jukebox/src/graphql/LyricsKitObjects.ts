@@ -84,7 +84,6 @@ export class LyricsKitAttachment {
     const timeTag = attachment.timeTag;
     this.timeTag = timeTag && new LyricsKitWordTimeAttachment(timeTag);
     this.furigana = null;
-    this.romaji = null;
     if (attachment.content[FURIGANA]) {
       this.furigana = attachment.content[FURIGANA].attachment.map(
         (v) => new LyricsKitRangeAttachment(v)

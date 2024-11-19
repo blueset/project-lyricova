@@ -12,7 +12,6 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemSecondaryAction,
   ListItemText,
   Menu,
   MenuItem,
@@ -72,6 +71,7 @@ export default function TrackListRow({ song, file, files, showAlbum }: Props) {
   return (
     <Fragment key={id}>
       <ListItem
+        disablePadding
         secondaryAction={
           <>
             <IconButton

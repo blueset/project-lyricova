@@ -33,7 +33,7 @@
     "incremental": true
   },
   "include": [
-    "src/**/*", "../common/src/utils/mui",
+    "src/**/*"
   ],
   "exclude": [
     "node_modules"

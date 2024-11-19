@@ -11,6 +11,7 @@ import { LyricsProvidersController } from "./controller/LyricsProvidersControlle
 import { AuthController } from "lyricova-common/utils/AuthController";
 import { PlaylistController } from "./controller/PlaylistController";
 import { convertMonoruby } from "./utils/monoruby";
+import { SongController } from "./controller/SongController";
 
 export default (app: express.Express) => {
   const apiRouter = express.Router();
@@ -19,6 +20,9 @@ export default (app: express.Express) => {
   // API Routes
   const musicFileController = new MusicFileController();
   apiRouter.use("/files", musicFileController.router);
+  
+  const songController = new SongController();
+  apiRouter.use("/songs", songController.router);
 
   const vocaDBImportController = new VocaDBImportController();
   apiRouter.use("/vocadb", vocaDBImportController.router);
