@@ -15,15 +15,6 @@
     --body-font: var(--font-source-han-sans-punct), var(--font-mona-sans), var(--fallback-fonts);
     font-family: var(--body-font);
   }
-  
-  font-size: 20px;
-
-  @include media-breakpoint-down(tablet) {
-    font-size: 19px;
-  }
-  @include media-breakpoint-down(mobile) {
-    font-size: 17px;
-  }
 
   /* Sizes */
   --horizontal-gutter: 5rem;
@@ -51,6 +42,17 @@
   --panel-background-color: #{rgba(#c56cf0, 0.8)};
   --primary-text-on-brand: #00171F;
   --secondary-text-on-brand: #{rgba(#00171F, 0.6)};
+}
+
+:root:has(body.wrapper) {
+  font-size: 20px;
+
+  @include media-breakpoint-down(tablet) {
+    font-size: 19px;
+  }
+  @include media-breakpoint-down(mobile) {
+    font-size: 17px;
+  }
 }
 
 ::selection {

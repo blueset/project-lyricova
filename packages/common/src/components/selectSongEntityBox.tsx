@@ -153,7 +153,7 @@ export default function SelectSongEntityBox<T extends string>({
           {title}
         </Typography>
       )}
-      <Grid container spacing={3}>
+      <Grid container spacing={3} flexGrow={1}>
         <Grid size={12}>
           <Autocomplete
             options={vocaDBAutoCompleteOptions}
