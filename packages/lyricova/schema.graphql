@@ -132,13 +132,6 @@ input FuriganaLabel {
   rightIndex: Int!
 }
 
-type FuriganaMapping {
-  furigana: String!
-  segmentedFurigana: String
-  segmentedText: String
-  text: String!
-}
-
 """
 The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -244,15 +237,6 @@ input NewTagInput {
   slug: String!
 }
 
-"""A playlist of music files."""
-type Playlist {
-  """Name of the playlist."""
-  name: String!
-
-  """Slug of the playlist."""
-  slug: ID!
-}
-
 type Pulse {
   creationDate: Timestamp!
   id: Int!
@@ -336,10 +320,6 @@ type Tag {
   slug: ID!
 }
 
-type TagOfEntry {
-  id: ID!
-}
-
 """
 The javascript `Date` as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
 """
@@ -393,7 +373,7 @@ type User {
   displayName: String!
   email: String!
   emailMD5: String!
-  id: Int!
+  id: Float!
   role: String!
   username: String!
 }

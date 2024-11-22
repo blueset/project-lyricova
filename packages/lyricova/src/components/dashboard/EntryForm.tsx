@@ -138,12 +138,12 @@ interface FormValues {
   >[];
   tags: string[];
   pulses: Partial<Pulse>[];
-  creationDate: number;
+  creationDate: dayjs.Dayjs;
 }
 
 const initialFormValues = (data: { entry?: Entry }): FormValues => ({
   ...data.entry,
-  creationDate: data.entry.creationDate as unknown as number,
+  creationDate: dayjs(data.entry.creationDate),
   tags: data.entry.tags.map((tag) => tag.slug),
   verses: data.entry.verses.map((verse) => ({
     ...verse,
@@ -181,7 +181,7 @@ export function EntryForm({ id }: EntityFormProps) {
         verses: [],
         tags: [],
         pulses: [],
-        creationDate: Date.now().valueOf(),
+        creationDate: dayjs(),
       }
     : initialFormValues(data);
 
@@ -219,7 +219,7 @@ export function EntryForm({ id }: EntityFormProps) {
       pulses: yup.array(
         yup.object().typeError("Pulse entity must be selected")
       ),
-      creationDate: yup.number().required(),
+      creationDate: yup.object().required(),
     })
     .required();
 
@@ -241,7 +241,8 @@ export function EntryForm({ id }: EntityFormProps) {
               title: values.title,
               producersName: values.producersName,
               vocalistsName: values.vocalistsName,
-              creationDate: values.creationDate || Date.now().valueOf(),
+              creationDate:
+                values.creationDate.valueOf() || Date.now().valueOf(),
               comment: values.comment || null,
               tagSlugs: values.tags,
               verses: values.verses.map((verse) => ({
@@ -258,7 +259,8 @@ export function EntryForm({ id }: EntityFormProps) {
               songIds: values.songs.map((song) => song.id),
               pulses: values.pulses.map((pulse) => ({
                 id: pulse.id || undefined,
-                creationDate: pulse.creationDate || Date.now().valueOf(),
+                creationDate:
+                  pulse.creationDate.valueOf() || Date.now().valueOf(),
               })),
             };
 
@@ -409,7 +411,7 @@ export function EntryForm({ id }: EntityFormProps) {
                               onChange(newValue?.valueOf() ?? null);
                               form.mutators.setValue(
                                 "creationDate",
-                                newValue?.valueOf() ?? null
+                                newValue ?? null
                               );
                             }}
                           />

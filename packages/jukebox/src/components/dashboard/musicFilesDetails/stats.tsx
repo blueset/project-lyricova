@@ -42,10 +42,10 @@ export default function StatsPanel({
   return (
     <Form<FormProps>
       mutators={{ ...finalFormMutators }}
-      initialValues={{ playCount, lastPlayed }}
+      initialValues={{ playCount, lastPlayed: dayjs(lastPlayed) }}
       validate={makeValidate(
         yup.object({
-          playCount: yup.number().min(0).optional(),
+          playCount: yup.object().optional(),
         })
       )}
       onSubmit={async (values) => {
@@ -57,7 +57,7 @@ export default function StatsPanel({
             variables: {
               fileId,
               playCount: values.playCount,
-              lastPlayed: values.lastPlayed ?? null,
+              lastPlayed: values.lastPlayed?.valueOf() ?? null,
             },
           });
           if (result.data?.updateMusicFileStats?.trackName) {
