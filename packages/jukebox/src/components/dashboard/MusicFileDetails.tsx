@@ -20,6 +20,7 @@ import PlaylistsPanel from "./musicFilesDetails/playlists";
 import { useSnackbar } from "notistack";
 import type { DocumentNode } from "graphql";
 import StatsPanel from "./musicFilesDetails/stats";
+import dayjs from "dayjs";
 
 const SINGLE_FILE_DATA = gql`
   query ($id: Int!) {
@@ -216,7 +217,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
             <StatsPanel
               fileId={fileId}
               playCount={fileData.data?.musicFile.playCount}
-              lastPlayed={fileData.data?.musicFile.lastPlayed}
+              lastPlayed={dayjs(fileData.data?.musicFile.lastPlayed)}
               refresh={fileData.refetch}
             />
           </TabPanel>
