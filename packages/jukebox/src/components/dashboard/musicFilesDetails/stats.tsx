@@ -23,7 +23,7 @@ const UPDATE_MUSIC_FILE_STATS_MUTATION = gql`
 
 interface FormProps {
   playCount?: number;
-  lastPlayed?: Date;
+  lastPlayed?: dayjs.Dayjs;
 }
 
 interface Props extends FormProps {
