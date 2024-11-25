@@ -1,7 +1,7 @@
 import type { Lyrics } from "lyrics-kit/core";
 import { FURIGANA } from "lyrics-kit/core";
 
-const simplifiedJapanesePattern = /(言叶|缲|纷失|顷|顽张|时世|纳得|一绪|冗谈|踬|运命|马鹿|绝対|([梦飞闻谁鸣话赈见试远动仆终踴溫聲數攜积头无])(\p{sc=Hiragana}|\p{sc=Katakana}))/ug;
+const simplifiedJapanesePattern = /(言叶|缲|纷失|顷|顽张|时世|纳得|一绪|冗谈|踬|运命|马鹿|([梦飞闻谁鸣话赈见试远动仆终踴溫聲數攜积头无])(\p{sc=Hiragana}|\p{sc=Katakana}))/ug;
 
 /**
  * Check if the provided string is “Simplified Japanese” (i.e. Japanese Text through Simplified Chinese filters)
