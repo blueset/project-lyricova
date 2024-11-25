@@ -1,8 +1,6 @@
 import { usePlayerLyricsState } from "./usePlayerLyricsState";
 import type { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
-import type {
-  LyricsKitLyricsLine,
-} from "../graphql/LyricsKitObjects";
+import type { LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
 import { RefObject, useMemo } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 
@@ -22,21 +20,26 @@ interface LyricsKeyframeInfo {
 
 /** Convert lyrics to time segments, and sort by start the end time. */
 export function lyricsToSegments(
-  lines: (LyricsKitLyricsLine[] | LyricsLine[])
+  lines: LyricsKitLyricsLine[] | LyricsLine[]
 ): LyricsSegment[] {
-  const segments: LyricsSegment[] = lines.map((line, index, lines) => {
-    const start = line.position;
-    const end = line.attachments?.timeTag?.tags?.length
-      ? start + line.attachments.timeTag.tags.at(-1).timeTag
-      : index + 1 < lines.length
-      ? lines[index + 1].position
-      : start + 1;
-    return {
-      lineIndex: index,
-      start,
-      end,
-    };
-  });
+  const segments: LyricsSegment[] = lines
+    .toSorted((a, b) => a.position - b.position)
+    .map((line, index, lines) => {
+      const start = line.position;
+      const end = Math.max(
+        line.attachments?.timeTag?.tags?.length
+          ? start + line.attachments.timeTag.tags.at(-1).timeTag
+          : index + 1 < lines.length
+          ? lines[index + 1].position
+          : start + 1,
+        start
+      );
+      return {
+        lineIndex: index,
+        start,
+        end,
+      };
+    });
   segments.sort((a, b) =>
     a.start !== b.start ? a.start - b.start : a.end - b.end
   );
@@ -54,7 +57,6 @@ export function segmentsToKeyframes(
     { time: segment.end, action: END, lineIndex: segment.lineIndex },
   ]);
   actions.sort((a, b) => a.time - b.time);
-  // console.log("actions:", actions);
 
   const keyframes: PlayerLyricsKeyframe<LyricsKeyframeInfo>[] = [];
   actions.forEach(({ time, lineIndex, action }) => {
@@ -72,9 +74,13 @@ export function segmentsToKeyframes(
           lastKeyFrame.data.activeSegments.filter(
             (index) => index !== lineIndex
           );
-        lastKeyFrame.data.rangeStart = Math.max(lastKeyFrame.data.rangeStart, lastKeyFrame.data.activeSegments?.[0] ?? (lineIndex + 1));
+        lastKeyFrame.data.rangeStart = Math.max(
+          lastKeyFrame.data.rangeStart,
+          lastKeyFrame.data.activeSegments?.[0] ?? lineIndex + 1
+        );
       }
     } else {
+      // If the keyframe does not exist at the same time, create a new keyframe.
       let lastKeyframeIndexes = keyframes.length
         ? [...keyframes.at(-1).data.activeSegments]
         : [];
@@ -89,7 +95,11 @@ export function segmentsToKeyframes(
           (index) => index !== lineIndex
         );
         // rangeStart = Math.max(rangeStart, (lastKeyframeIndexes[0] ?? lineIndex + 1));
-        rangeEnd = Math.max(rangeEnd, (lastKeyframeIndexes.at(-1) ?? 0) + 1, rangeStart + 1);
+        rangeEnd = Math.max(
+          rangeEnd,
+          (lastKeyframeIndexes.at(-1) ?? 0) + 1,
+          rangeStart + 1
+        );
       }
       keyframes.push({
         start: time,
@@ -106,16 +116,16 @@ export function segmentsToKeyframes(
 }
 
 export function useActiveLyrcsRanges(
-  lines: (LyricsKitLyricsLine[] | LyricsLine[]),
+  lines: LyricsKitLyricsLine[] | LyricsLine[],
   playerRef: RefObject<HTMLAudioElement>
 ): PlayerLyricsState<LyricsKeyframeInfo> & { segments: LyricsSegment[] } {
-  const {segments, keyframes} = useMemo(() => {
+  const { segments, keyframes } = useMemo(() => {
     const segments = lyricsToSegments(lines);
     const keyframes = segmentsToKeyframes(segments);
     // console.log("segments:", segments, ", keyframes:", keyframes);
-    return {segments, keyframes};
+    return { segments, keyframes };
   }, [lines]);
   const result = usePlayerLyricsState(keyframes, playerRef);
   // console.log("useActiveLyrcsRange result:", result.currentFrame?.data?.activeSegments, ", rangeStart:", result.currentFrame?.data?.rangeStart, ", rangeEnd:", result.currentFrame?.data?.rangeEnd);
-  return {segments, ...result};
+  return { segments, ...result };
 }
