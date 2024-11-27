@@ -401,7 +401,7 @@ export class Lyrics {
     return 0.7;
   }
 
-  public merge(other: Lyrics): void {
+  public merge(other: Lyrics, languageCode?: string): void {
     let index = 0,
       otherIndex = 0;
     while (index < this.lines.length && otherIndex < other.lines.length) {
@@ -418,7 +418,7 @@ export class Lyrics {
       ) {
         const transStr = other.lines[otherIndex].content;
         if (transStr !== "") {
-          this.lines[index].attachments.setTranslation(transStr);
+          this.lines[index].attachments.setTranslation(transStr, languageCode);
         }
         index++;
         otherIndex++;
@@ -434,12 +434,12 @@ export class Lyrics {
   }
 
   /** Merge without matching timetag */
-  public forceMerge(other: Lyrics): void {
+  public forceMerge(other: Lyrics, languageCode?: string): void {
     if (this.lines.length !== other.lines.length) return;
     for (let i = 0; i < this.lines.length; i++) {
       const otherStr = other.lines[i].content;
       if (otherStr !== "") {
-        this.lines[i].attachments.setTranslation(otherStr);
+        this.lines[i].attachments.setTranslation(otherStr, languageCode);
       }
     }
     this.metadata.attachmentTags.add(TRANSLATION);

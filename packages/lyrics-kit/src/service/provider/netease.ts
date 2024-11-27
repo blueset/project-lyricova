@@ -154,14 +154,14 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
         : null;
       if (kLrc) {
         if (transLrc) {
-          kLrc.forceMerge(transLrc);
+          kLrc.forceMerge(transLrc, "zh");
         }
         lyrics = kLrc;
       } else {
         const lrc = data?.lrc?.lyric ? new Lyrics(data.lrc.lyric) : null;
         if (lrc) {
           if (transLrc) {
-            lrc.merge(transLrc);
+            lrc.merge(transLrc, "zh");
           }
           lyrics = lrc;
         } else {

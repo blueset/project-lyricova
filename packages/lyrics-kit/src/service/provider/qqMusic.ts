@@ -188,7 +188,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       const transLrcContent = data.trans ? decodeLyrics(data.trans) : null;
       if (transLrcContent) {
         const transLrc = new Lyrics(transLrcContent);
-        lrc.merge(transLrc);
+        lrc.merge(transLrc, "zh");
       }
 
       lrc.idTags[TITLE] = token.title;
@@ -274,7 +274,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         if (contentHexTs) {
           const transLrcContent = decodeQrc(contentHexTs);
           const transLrc = new Lyrics(transLrcContent);
-          lrc.merge(transLrc);
+          lrc.merge(transLrc, "zh");
 
           if (transLrc.idTags.kana) {
             this.applyFurigana(lrc, transLrc.idTags.kana);
