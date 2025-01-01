@@ -47,7 +47,7 @@ export class SongController {
       console.error(e);
       next(e);
     }
-  }
+  };
 
   public getSongLyrics = async (req: Request, res: Response, next: NextFunction) => {
     try {

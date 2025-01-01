@@ -1,13 +1,13 @@
 import {
-  AZURE_OPENAI_API_KEY,
-  AZURE_OPENAI_DEPLOYMENT_ID,
-  AZURE_OPENAI_ENDPOINT,
+  OPENAI_BASE_URL,
+  OPENAI_API_KEY,
+  OPENAI_MODEL,
 } from "lyricova-common/utils/secret";
 import { Arg, Authorized, Query, Resolver } from "type-graphql";
-import { AzureOpenAI } from "openai";
-import { zodResponseFormat } from "openai/helpers/zod";
-import { z } from "zod";
+import { OpenAI } from "openai";
 import { ChatCompletionMessageParam } from "openai/resources";
+// import { zodResponseFormat } from "openai/helpers/zod";
+// import { z } from "zod";
 
 // const AlignmentSchema = z.array(
 //   z.object({
@@ -25,17 +25,17 @@ export class LLMResolver {
     @Arg("translation") translation: string
   ): Promise<string> {
     if (
-      !AZURE_OPENAI_ENDPOINT ||
-      !AZURE_OPENAI_API_KEY ||
-      !AZURE_OPENAI_DEPLOYMENT_ID
+      !OPENAI_BASE_URL ||
+      !OPENAI_API_KEY ||
+      !OPENAI_MODEL
     ) {
-      throw new Error("Azure OpenAI credentials are not set");
+      throw new Error("OpenAI credentials are not set");
     }
-    const client = new AzureOpenAI({
-      endpoint: AZURE_OPENAI_ENDPOINT,
-      deployment: AZURE_OPENAI_DEPLOYMENT_ID,
-      apiKey: AZURE_OPENAI_API_KEY,
-      apiVersion: "2024-07-01-preview",
+    const client = new OpenAI({
+      // endpoint: AZURE_OPENAI_ENDPOINT,
+      // deployment: AZURE_OPENAI_DEPLOYMENT_ID,
+      baseURL: OPENAI_BASE_URL,
+      apiKey: OPENAI_API_KEY,
     });
 
     const messages = [
@@ -45,10 +45,15 @@ export class LLMResolver {
 
 # Content guidelines
 * Neither the order of text in the original or translated text should be changed. 
-* You can only remove white spaces, join or break lines in the translated text. 
+* You can only perform the following operations to the translated text:
+  * 1. remove white spaces (ASCII space U+0020 ' ', Ideographic space U+3000 '　', etc.) anywhere in the text,
+  * 2. join two or more lines in the translated text into one line,
+  * 3. break one line in the translated lines into two or more lines,
+  * 4. iinsert one or more empty lines into the translated text.
 * As a rule of thumb, the translated text should be placed as close as possible to the original text, and as close as how you would translate it in this context.
-* When the original text is a blank line, the corresponding translated text should be a blank line. 
-* When the original text is not blank, the translated text should also be filled with text, unless there is no corresponding content close by. 
+* You should exercise your decision to break or join lines in the translated text to make sure that (1) the translated text express the same meaning as the original text it is attached to, and (2) that no original line is left blank when feasable.
+* When the original text is an empty string, the corresponding translated text MUST also be a blank line. 
+* When the original text is not blank, the translated text should also be filled with text, unless there is strictly no any content close by that even remotely resembles the content.
 * Do not repeat any translated line unless it is repeated in the input.
 
 # Input output format
@@ -200,14 +205,22 @@ export class LLMResolver {
         ),
       },
     ] as ChatCompletionMessageParam[];
-    // console.log("messages", JSON.stringify(messages));
+    console.log("messages", JSON.stringify(messages, undefined, 2));
 
     const response = await client.beta.chat.completions.parse({
       messages,
-      model: "gpt-4o",
+      model: OPENAI_MODEL || "gpt-4o",
       max_tokens: 4096,
-    });
-    // console.log("response", JSON.stringify(response));
+    }, OPENAI_BASE_URL.includes("openai.azure.com") ? {
+      headers: {
+        "Api-Key": OPENAI_API_KEY,
+        "Authorization": "",
+      },
+      query: {
+        "api-version": "2024-10-01-preview",
+      }
+    } : undefined);
+    console.log("response", response.choices[0].message.content);
     const parsedResponse = JSON.parse(response.choices[0].message.content);
     if (!Array.isArray(parsedResponse)) {
       throw new Error(`Invalid response format: ${JSON.stringify(response)}`);

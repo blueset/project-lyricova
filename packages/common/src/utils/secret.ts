@@ -40,6 +40,9 @@ export const MUSIC_FILES_PATH = process.env["MUSIC_FILES_PATH"]?.endsWith("/")
   ? process.env["MUSIC_FILES_PATH"]
   : process.env["MUSIC_FILES_PATH"] + "/";
 
-export const AZURE_OPENAI_ENDPOINT = process.env["AZURE_OPENAI_ENDPOINT"]!;
-export const AZURE_OPENAI_API_KEY = process.env["AZURE_OPENAI_API_KEY"]!;
-export const AZURE_OPENAI_DEPLOYMENT_ID = process.env["AZURE_OPENAI_DEPLOYMENT_ID"]!;
+export const OPENAI_BASE_URL = process.env["OPENAI_BASE_URL"] ?? "";
+export const OPENAI_API_KEY = process.env["OPENAI_API_KEY"] ?? "";
+export const OPENAI_MODEL = process.env["OPENAI_MODEL"] ?? "";
+// export const AZURE_OPENAI_ENDPOINT = process.env["AZURE_OPENAI_ENDPOINT"]!;
+// export const AZURE_OPENAI_API_KEY = process.env["AZURE_OPENAI_API_KEY"]!;
+// export const AZURE_OPENAI_DEPLOYMENT_ID = process.env["AZURE_OPENAI_DEPLOYMENT_ID"]!;
