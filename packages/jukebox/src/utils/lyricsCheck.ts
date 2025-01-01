@@ -30,6 +30,7 @@ export function lyricsAnalysis(lyrics: Lyrics): LyricsAnalysisResult {
     lastTimestamp: null,
   };
   const lastTimestamp = lyrics.lines[lyrics.lines.length - 1].position;
+  hasTranslation = hasTranslation || lyrics.metadata.hasTranslation;
 
   lyrics.lines.forEach(v => {
     hasTranslation = hasTranslation || v?.attachments?.translation() != null;

@@ -125,7 +125,6 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
         parsedLyrics?.lines.forEach((v, idx) => {
           v.attachments.setTranslation(translatedLines[idx], newLang);
           v.attachments.setTranslation(null, oldLang);
-          console.log(oldLang, newLang, v.attachments.content);
         });
         return newLanguages;
       });
