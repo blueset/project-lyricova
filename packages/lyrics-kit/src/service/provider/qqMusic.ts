@@ -188,6 +188,11 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       const transLrcContent = data.trans ? decodeLyrics(data.trans) : null;
       if (transLrcContent) {
         const transLrc = new Lyrics(transLrcContent);
+        transLrc.lines.forEach((line) => {
+          if (line.content === "//") {
+            line.content = "";
+          }
+        });
         lrc.merge(transLrc, "zh");
       }
 

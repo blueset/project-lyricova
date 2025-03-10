@@ -51,6 +51,8 @@ export const krcLineRegex = /^\[(\d+),(\d+)\](.*)/gm;
 
 export const netEaseInlineTagRegex = /\(0,(\d+)\)([^(]+)(\(0,1\) )?/g;
 
+export const netEaseYrcInlineTagRegex = /\((\d+),(\d+),(\d+)\)([^\)]+)?/g;
+
 export const kugouInlineTagRegex = /<(\d+),(\d+),0>([^<]*)/g;
 
 export const ttpodXtrcLineRegex = /^((?:\[[+-]?\d+:\d+(?:\.\d+)?\])+)(?:((?:<\d+>[^<\r\n]+)+)|(.*))$(?:[\r\n]+\[x\-trans\](.*))?/gm;

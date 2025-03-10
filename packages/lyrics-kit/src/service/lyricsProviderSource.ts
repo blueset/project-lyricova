@@ -11,10 +11,13 @@ import { MusixMatchProvider } from "./provider/musixmatch";
 import { YouTubeProvider } from "./provider/youtube";
 import { SpotifyProvider } from "./provider/spotify";
 import { SongleProvider } from "./provider/songle";
+import { LrcLibLyricsProvider as LrcLibProvider } from "./provider/lrclib";
+import { NetEaseVercelProvider } from "./provider/neteaseVercel";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class LyricsProviderSource<T extends LyricsProvider<any>> {
   static netease = new LyricsProviderSource(NetEaseProvider);
+  static neteaseVercel = new LyricsProviderSource(NetEaseVercelProvider);
   static qq = new LyricsProviderSource(QQMusicProvider);
   static kugou = new LyricsProviderSource(KugouProvider);
   static xiami = new LyricsProviderSource(XiamiProvider);
@@ -26,9 +29,11 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
   static youtube = new LyricsProviderSource(YouTubeProvider);
   static spotify = new LyricsProviderSource(SpotifyProvider);
   static songle = new LyricsProviderSource(SongleProvider);
+  static LrcLib = new LyricsProviderSource(LrcLibProvider);
 
   static allCases = [
     LyricsProviderSource.netease,
+    LyricsProviderSource.neteaseVercel,
     LyricsProviderSource.qq,
     LyricsProviderSource.kugou,
     // LyricsProviderSource.xiami,
@@ -38,8 +43,9 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     // LyricsProviderSource.marumaru,
     LyricsProviderSource.musixmatch,
     LyricsProviderSource.youtube,
-    LyricsProviderSource.spotify,
+    // LyricsProviderSource.spotify,
     LyricsProviderSource.songle,
+    LyricsProviderSource.LrcLib,
   ];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

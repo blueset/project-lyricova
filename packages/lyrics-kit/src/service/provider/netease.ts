@@ -8,6 +8,7 @@ import {
   id3TagRegex,
   krcLineRegex,
   netEaseInlineTagRegex,
+  netEaseYrcInlineTagRegex,
 } from "../../utils/regexPattern";
 import {
   WordTimeTag,
@@ -31,7 +32,7 @@ const headers = {
   Cookie: "NMTID=",
 };
 
-class NeteaseKLyrics extends Lyrics {
+export class NeteaseKLyrics extends Lyrics {
   constructor(content: string) {
     super();
     const matches = content.matchAll(id3TagRegex);
@@ -86,6 +87,55 @@ class NeteaseKLyrics extends Lyrics {
   }
 }
 
+export class NeteaseYLyrics extends Lyrics {
+  constructor(content: string) {
+    super();
+    const matches = content.matchAll(id3TagRegex);
+    for (const match of matches) {
+      const key = match[1].trim(),
+        value = match[2].trim();
+      if (key && value) {
+        this.idTags[key] = value;
+      }
+    }
+    const krcLineMatches = content.matchAll(krcLineRegex);
+    const lines = [];
+    for (const match of krcLineMatches) {
+      const timeTagStr = match[1],
+        timeTag = parseFloat(timeTagStr) / 1000,
+        durationStr = match[2],
+        duration = parseFloat(durationStr) / 1000;
+
+      let lineContent = "";
+      const attachment = new WordTimeTag(
+        [new WordTimeTagLabel(0, 0)],
+        duration
+      );
+      const inlineTagMatches = match[3].matchAll(netEaseYrcInlineTagRegex);
+      for (const m of inlineTagMatches) {
+        const [_full, startStr, _durationStr, _unknown, fragment] = m;
+        const wordStart = parseFloat(startStr) / 1000;
+        lineContent += fragment;
+        attachment.tags.push(new WordTimeTagLabel(wordStart - timeTag, lineContent.length));
+      }
+      attachment.tags.push(new WordTimeTagLabel(duration, lineContent.length));
+
+      const att = new Attachments({ [TIME_TAG]: attachment });
+      const line = new LyricsLine(lineContent, timeTag, att);
+      line.lyrics = this;
+      lines.push(line);
+    }
+
+    this.metadata.attachmentTags.add(TIME_TAG);
+
+    if (lines.length === 0) {
+      throw new Error("Lyrics are empty");
+    }
+
+    this.lines = lines;
+  }
+}
+
 export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
   // static source = LyricsProviderSource.netease;
 
@@ -115,7 +165,6 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
         console.error(outcome.data);
         return [];
       }
-      console.log(outcome);
       return outcome.data.result.songs || [];
     } catch (e) {
       console.error(e);
@@ -152,7 +201,15 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
       const kLrc = data?.klyric?.lyric
         ? new NeteaseKLyrics(data.klyric.lyric)
         : null;
-      if (kLrc) {
+      const yLrc = data?.yrc?.lyric
+        ? new NeteaseYLyrics(data.yrc.lyric)
+        : null;
+      if (yLrc) {
+        if (transLrc) {
+          yLrc.forceMerge(transLrc, "zh");
+        }
+        lyrics = yLrc;
+      } else if (kLrc) {
         if (transLrc) {
           kLrc.forceMerge(transLrc, "zh");
         }

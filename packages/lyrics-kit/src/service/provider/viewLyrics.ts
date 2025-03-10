@@ -100,6 +100,7 @@ export class ViewLyricsProvider extends LyricsProvider<
       return [];
     }
   }
+
   public async fetchLyrics(
     token: ViewLyricsResponseSearchResult
   ): Promise<Lyrics | undefined> {
