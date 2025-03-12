@@ -408,10 +408,10 @@ export function romaToHira(roma: string): string {
   let tmp = "";
   let index = 0;
   let node = tree;
-  const len = roma.length;
   roma = roma.toLowerCase().replace(/[āīūēō]/g, (match) => {
     return match.replace(/ā/g, "a-").replace(/ī/g, "i-").replace(/ū/g, "u-").replace(/ē/g, "e-").replace(/ō/g, "o-");
   });
+  const len = roma.length;
 
   const push = (char: string, toRoot = true) => {
     result += char;
