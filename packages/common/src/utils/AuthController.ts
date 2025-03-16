@@ -15,6 +15,14 @@ import { UserPublicKeyCredential } from "../models/UserPublicKeyCredential";
 import base64url from "base64url";
 import { v4 as uuid } from "uuid";
 
+declare global {
+    namespace Express {
+        interface User {
+          id: number;
+        }
+    }
+}
+
 const JWT_ISSUER = "lyricova";
 const store = new SessionChallengeStore();
 
@@ -130,7 +138,7 @@ export class AuthController {
           password: string,
           done: (
             error: any,
-            user?: User | boolean,
+            user?: User | false,
             options?: IVerifyOptions
           ) => void
         ) => {
@@ -150,13 +158,13 @@ export class AuthController {
     );
 
     passport.serializeUser(
-      (user: User, done: (err: any, id: string) => void) => {
+      (user: Express.User, done: (err: any, id: string) => void) => {
         done(null, `${user.id}`);
       }
     );
 
     passport.deserializeUser(
-      async (id: string, done: (err: any, user?: User) => void) => {
+      async (id: string, done: (err: any, user?: Express.User) => void) => {
         const user = await User.findByPk(parseInt(id));
         if (user === null) {
           return done("User not found");

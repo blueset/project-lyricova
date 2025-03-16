@@ -263,7 +263,7 @@ const buildContext =
     const sketchRemove = sketch.remove;
     sketch.remove = () => {
       sketchRemove();
-      clearTimeout(timeout);
+      clearTimeout(timeout as unknown as number);
     };
 
     class Letter {

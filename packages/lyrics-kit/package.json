@@ -25,40 +25,18 @@
     "./build"
   ],
   "scripts": {
-    "describe": "npm-scripts-info",
-    "build": "run-p build:main build:module",
+    "clean": "rimraf build",
+    "build": "npm run clean && run-p build:main build:module",
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
-    "fix": "run-s fix:*",
-    "fix:prettier": "prettier \"src/**/*.ts\" --write",
-    "fix:tslint": "tslint --fix --project .",
-    "test": "run-s build test:*",
-    "test:lint": "tslint --project . && prettier \"src/**/*.ts\" --list-different",
-    "test:unit": "nyc --silent ava",
-    "watch": "run-s build:main && run-p \"build:main -- -w\" \"test:unit -- --watch\"",
-    "cov": "run-s build test:unit cov:html && open-cli coverage/index.html",
-    "cov:html": "nyc report --reporter=html",
-    "cov:send": "nyc report --reporter=lcov && codecov",
-    "cov:check": "nyc report && nyc check-coverage --lines 100 --functions 100 --branches 100",
-    "doc": "run-s doc:html && open-cli build/docs/index.html",
-    "doc:html": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --out build/docs",
-    "doc:json": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --json build/docs/typedoc.json",
-    "version": "standard-version",
-    "reset": "git clean -dfx && git reset --hard && npm i",
-    "prepare-release": "run-s reset test cov:check doc:html version doc:publish"
-  },
-  "scripts-info": {
-    "info": "Display information about the package scripts",
-    "build": "Clean and rebuild the project",
-    "fix": "Try to automatically fix any linting problems",
-    "test": "Lint and unit test the project",
-    "watch": "Watch and rebuild the project on save, then rerun relevant tests",
-    "cov": "Rebuild, run tests, then create and open the coverage report",
-    "doc": "Generate HTML API documentation and open it in a browser",
-    "doc:json": "Generate API documentation in typedoc JSON format",
-    "version": "Bump package.json version, update CHANGELOG.md, tag release",
-    "reset": "Delete all untracked files and reset the repo to the last commit",
-    "prepare-release": "One-step: clean, build, test, publish docs, and prep a release"
+    "watch": "run-p watch:main watch:module",
+    "watch:main": "tsc -p tsconfig.json --watch",
+    "watch:module": "tsc -p tsconfig.module.json --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "engines": {
     "node": ">=8.9"
@@ -72,36 +50,24 @@
     "tough-cookie": "^4.1.3"
   },
   "devDependencies": {
-    "@bitjson/npm-scripts-info": "^1.0.0",
-    "@istanbuljs/nyc-config-typescript": "^0.1.3",
+    "@swc/core": "^1.11.9",
+    "@swc/jest": "^0.2.37",
     "@types/cheerio": "^0.22.16",
+    "@types/jest": "^29.5.14",
     "@types/lodash": "^4.14.149",
-    "@types/node": "^22.13.10",
     "@types/request-promise-native": "^1.0.17",
-    "@typescript-eslint/eslint-plugin": "^7.7.1",
-    "@typescript-eslint/parser": "^7.7.1",
-    "ava": "^5.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
     "codecov": "^3.7.1",
-    "cz-conventional-changelog": "^2.1.0",
-    "eslint": "^8.57.0",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "jest": "^29.7.0",
     "npm-run-all": "^4.1.5",
-    "nyc": "^14.1.1",
-    "open-cli": "^7.1.0",
-    "prettier": "^1.18.2",
+    "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
     "standard-version": "^9.5.0",
-    "trash-cli": "^6.0.0",
-    "typescript": "^5.4.5"
-  },
-  "ava": {
-    "failFast": true,
-    "files": [
-      "build/main/**/*.spec.js"
-    ]
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
+    "typescript": "^5.8.2"
   },
   "exports": {
     ".": {
@@ -137,11 +103,5 @@
         "./build/main/service/index.d.ts"
       ]
     }
-  },
-  "nyc": {
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "exclude": [
-      "**/*.spec.js"
-    ]
   }
 }
