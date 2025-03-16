@@ -144,7 +144,7 @@ export function TopEntry({ entry }: TopEntryProps) {
               <span className={classes.typing}>
                 <span
                   className="typing"
-                  style={{ "-webkit-background-clip": "text" } as CSSProperties}
+                  style={{ WebkitBackgroundClip: "text" }}
                 ></span>
               </span>
             </span>

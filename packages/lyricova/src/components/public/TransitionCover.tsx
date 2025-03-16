@@ -193,7 +193,8 @@ export function TransitionCover() {
     timelineRef.current[0].play("revealLogo");
     disableBodyScroll(document.body);
 
-    // await document.fonts.ready;
+    await document.fonts.ready;
+    /*
     const promises: Promise<any>[] = [];
     document.fonts.forEach((f) => promises.push(f.loaded));
     await Promise.race(promises);
@@ -202,7 +203,7 @@ export function TransitionCover() {
       (f) => f.status === "loading" && promises.push(f.loaded)
     );
     if (promises.length) await Promise.all(promises);
-
+    */
     // console.log("stopTimeline", timelineRef.current);
     timelineRef.current[0].pause();
     timelineRef.current[1].play();

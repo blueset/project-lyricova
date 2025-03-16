@@ -259,7 +259,7 @@ export class AuthController {
       },
       JWT_SECRET,
       {
-        expiresIn: "7d",
+        expiresIn: "180d",
         issuer: JWT_ISSUER,
       }
     );

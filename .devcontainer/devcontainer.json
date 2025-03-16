@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-docker-compose
 {
-	"name": "Existing Docker Compose (Extend)",
+	"name": "Lyricova Development Container",
 
 	// Update the 'dockerComposeFile' list if you have more compose files or use different names.
 	// The .devcontainer/docker-compose.yml file contains any overrides you need/want to make.
@@ -38,7 +38,8 @@
 			"desiredLocale": "en_US.UTF-8 UTF-8"
 		},
 		"ghcr.io/devcontainers-extra/features/ffmpeg-apt-get:1": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-php-mysql:0": {},
+		"ghcr.io/meaningful-ooo/devcontainer-features/homebrew:2": {},
+		"ghcr.io/devcontainers-extra/features/homebrew-package:1": {},
 		"ghcr.io/devcontainers-extra/features/yt-dlp:2": {
 			"version": "latest"
 		}
@@ -73,7 +74,7 @@
 	// "shutdownAction": "none",
 
 	// Uncomment the next line to run commands after the container is created.
-	"postCreateCommand": "mysql -u root -e \"CREATE DATABASE IF NOT EXISTS lyricova; CREATE USER IF NOT EXISTS 'lyricova'@'%' IDENTIFIED BY 'lyricova'; GRANT ALL PRIVILEGES ON lyricova.* TO 'lyricova'@'%'; FLUSH PRIVILEGES;\" && mysql -u root lyricova < /workspaces/lyricova-schema.sql",
+	"postCreateCommand": "cp /home/linuxbrew/.linuxbrew/Cellar/mysql/9.2.0_1/support-files/mysql.server /etc/init.d/mysql && chmod +x /etc/init.d/mysql && service mysql start && mysql -u root -e \"CREATE DATABASE IF NOT EXISTS lyricova; CREATE USER IF NOT EXISTS 'lyricova'@'%' IDENTIFIED BY 'lyricova'; GRANT ALL PRIVILEGES ON lyricova.* TO 'lyricova'@'%'; FLUSH PRIVILEGES;\" && mysql -u root lyricova < /workspaces/lyricova-schema.sql && npm install && npm run build --workspace lyricova-common --workspace lyrics-kit --workspace lyricova-jukebox --workspace lyricova-blog",
 
 	// Configure tool-specific properties.
 	// "customizations": {},

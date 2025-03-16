@@ -256,8 +256,8 @@ export function EntryForm({ id }: EntityFormProps) {
                 typingSequence: JSON.parse(verse.typingSequence || "[]"),
                 translator: verse.translator || null,
               })),
-              songIds: values.songs.map((song) => song.id),
-              pulses: values.pulses.map((pulse) => ({
+              songIds: (values.songs ?? []).map((song) => song.id),
+              pulses: (values.pulses ?? []).map((pulse) => ({
                 id: pulse.id || undefined,
                 creationDate:
                   pulse.creationDate.valueOf() || Date.now().valueOf(),
