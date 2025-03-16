@@ -97,7 +97,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
       style={
         {
           "--tags-gradient": tagsGradient,
-          "--tags-foreground": entry.tags?.[0].color,
+          "--tags-foreground": entry.tags?.[0]?.color,
         } as CSSProperties
       }
     >
