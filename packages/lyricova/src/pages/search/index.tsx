@@ -5,7 +5,7 @@ import classes from "./index.module.scss";
 import SearchIcon from "@mui/icons-material/Search";
 import { CircularProgress } from "@mui/material";
 import type { ChangeEvent} from "react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import _ from "lodash";
 import type { Entry } from "lyricova-common/models/Entry";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
@@ -38,6 +38,14 @@ const variants = {
 export default function Search() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<Entry[] | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const handleOnChange = _.debounce(
     async (evt: ChangeEvent<HTMLInputElement>) => {
@@ -48,10 +56,26 @@ export default function Search() {
         return;
       }
 
-      const response = await fetch(`/api/search?query=${keyword}`);
-      const data: Entry[] = await response.json();
-      setResults(data);
-      setIsLoading(false);
+      // Abort previous request if exists
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        const response = await fetch(`/api/search?query=${keyword}`, {
+          signal: controller.signal,
+        });
+        const data: Entry[] = await response.json();
+        setResults(data);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          // Ignore abort errors
+          return;
+        }
+        console.error("Search error:", err);
+      } finally {
+        setIsLoading(false);
+      }
     },
     500,
     { leading: false, trailing: true }
