@@ -117,15 +117,18 @@ export function TransitionCover() {
   currentRouteRef.current = router.asPath;
 
   useIsomorphicLayoutEffect(() => {
-    const handleRouteChange = (path: string) => {
+    const handleRouteChange = (
+      path: string,
+      { shallow }: { shallow: boolean }
+    ) => {
       // console.log("handleRouteChange", window.lastClickTop);
       if (coverRef.current) {
         if (timelineRef.current) {
           timelineRef.current[0].kill();
           timelineRef.current[1].kill();
         }
-        // console.log(path, currentRouteRef.current);
-        if (path === currentRouteRef.current) {
+        console.log(path, currentRouteRef.current, shallow);
+        if (path === currentRouteRef.current || shallow) {
           timelineRef.current = null;
           return;
         }
@@ -137,8 +140,10 @@ export function TransitionCover() {
         disableBodyScroll(document.body);
       }
     };
-    const handleRouteChangeComplete = () => {
-      // console.log("handleRouteChangeComplete", window.lastClickTop);
+    const handleRouteChangeComplete = (
+      path: string,
+      { shallow }: { shallow: boolean }
+    ) => {
       if (timelineRef.current) {
         const timeout =
           Math.max(0, 0.75 - timelineRef.current[0].progress()) * 1000;
@@ -151,22 +156,15 @@ export function TransitionCover() {
       }
       window.lastClickTop = undefined;
     };
-    // const onKeyPress = (evt: KeyboardEvent) => {
-    //   if (evt.key === "1") {
-    //     handleRouteChange();
-    //   } else if (evt.key === "2") {
-    //     handleRouteChangeComplete();
-    //   }
-    // };
+
     router.events.on("routeChangeStart", handleRouteChange);
     router.events.on("routeChangeComplete", handleRouteChangeComplete);
     router.events.on("routeChangeError", handleRouteChangeComplete);
-    // window.addEventListener("keypress", onKeyPress);
+
     return () => {
       router.events.off("routeChangeStart", handleRouteChange);
       router.events.off("routeChangeComplete", handleRouteChangeComplete);
       router.events.off("routeChangeError", handleRouteChangeComplete);
-      // window.removeEventListener("keypress", onKeyPress);
       clearAllBodyScrollLocks();
     };
   }, [router]);
@@ -210,30 +208,27 @@ export function TransitionCover() {
     enableBodyScroll(document.body);
   }
 
-  // console.log(
-  //   typeof document === "undefined" ? typeof document : document?.fonts.status
-  // );
-  // typeof document !== "undefined" &&
-  // document?.fonts.forEach((f) => console.log(f, f.status));
-  const coverElm =
-    coverRef.current ||
-    ((typeof document !== "undefined"
-      ? document.getElementById("transitionCover")
-      : undefined) as HTMLDivElement);
-  // console.log("coverElm", coverElm);
-  if (coverElm) {
-    let isLoaded = false;
-    if (typeof document !== "undefined") {
-      isLoaded = true;
-      document.fonts.forEach(
-        (f) => (isLoaded = isLoaded && f.status === "loaded")
-      );
+  useEffect(() => {
+    const coverElm =
+      coverRef.current ||
+      ((typeof document !== "undefined"
+        ? document.getElementById("transitionCover")
+        : undefined) as HTMLDivElement);
+
+    if (coverElm) {
+      let isLoaded = false;
+      if (typeof document !== "undefined") {
+        isLoaded = true;
+        document.fonts.forEach(
+          (f) => (isLoaded = isLoaded && f.status === "loaded")
+        );
+      }
+      // console.log("isLoaded", isLoaded);
+      if (!isLoaded) {
+        onFontLoading(coverElm);
+      }
     }
-    // console.log("isLoaded", isLoaded);
-    if (!isLoaded) {
-      onFontLoading(coverElm);
-    }
-  }
+  }, []);
 
   return (
     <div ref={coverRef} className={classes.cover} id="transitionCover">

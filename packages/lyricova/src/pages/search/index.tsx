@@ -4,14 +4,15 @@ import { IndexHeader } from "../../components/public/IndexHeader";
 import classes from "./index.module.scss";
 import SearchIcon from "@mui/icons-material/Search";
 import { CircularProgress } from "@mui/material";
-import type { ChangeEvent} from "react";
-import { useState, useRef, useEffect } from "react";
+import type { ChangeEvent } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import _ from "lodash";
 import type { Entry } from "lyricova-common/models/Entry";
 import { SingleEntry } from "../../components/public/listing/SingleEntry";
 import { motion } from "framer-motion";
 import Head from "next/head";
 import { host, siteName, tagLine1, tagLine2 } from "../../utils/consts";
+import { useRouter } from "next/router";
 
 const containerVariants = {
   visible: {
@@ -36,6 +37,8 @@ const variants = {
 };
 
 export default function Search() {
+  const router = useRouter();
+  const [searchValue, setSearchValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<Entry[] | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -47,39 +50,64 @@ export default function Search() {
     };
   }, []);
 
-  const handleOnChange = _.debounce(
-    async (evt: ChangeEvent<HTMLInputElement>) => {
-      const keyword = evt.target.value;
-      if (keyword.length === 0) {
-        setIsLoading(false);
-        setResults(null);
-        return;
-      }
-
-      // Abort previous request if exists
-      abortControllerRef.current?.abort();
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
-      try {
-        const response = await fetch(`/api/search?query=${keyword}`, {
-          signal: controller.signal,
-        });
-        const data: Entry[] = await response.json();
-        setResults(data);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") {
-          // Ignore abort errors
+  const performSearch = useCallback(
+    _.debounce(
+      async (keyword: string) => {
+        if (keyword.length === 0) {
+          setIsLoading(false);
+          setResults(null);
           return;
         }
-        console.error("Search error:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    500,
-    { leading: false, trailing: true }
+
+        // Abort previous request if exists
+        abortControllerRef.current?.abort();
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
+        try {
+          const response = await fetch(`/api/search?query=${keyword}`, {
+            signal: controller.signal,
+          });
+          const data: Entry[] = await response.json();
+          setResults(data);
+        } catch (err) {
+          if (err instanceof DOMException && err.name === "AbortError") {
+            // Ignore abort errors
+            return;
+          }
+          console.error("Search error:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      500,
+      { leading: false, trailing: true }
+    ),
+    []
   );
+
+  useEffect(() => {
+    // Initialize search from URL
+    const query = router.query.q as string;
+    if (query) {
+      setSearchValue(query);
+      performSearch(query);
+    }
+  }, [performSearch, router.query.q]);
+
+  const handleOnChange = async (evt: ChangeEvent<HTMLInputElement>) => {
+    const keyword = evt.target.value;
+    setSearchValue(keyword);
+    router.replace(
+      {
+        pathname: router.pathname,
+        query: keyword ? { q: keyword } : {},
+      },
+      undefined,
+      { shallow: true }
+    );
+    performSearch(keyword);
+  };
 
   return (
     <>
@@ -104,6 +132,7 @@ export default function Search() {
             type="text"
             placeholder="Search..."
             className={classes.input}
+            value={searchValue}
             onChange={(evt) => {
               setIsLoading(true);
               handleOnChange(evt);
