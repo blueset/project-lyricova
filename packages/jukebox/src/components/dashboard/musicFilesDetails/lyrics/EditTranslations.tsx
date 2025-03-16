@@ -4,6 +4,7 @@ import {
   Grid2 as Grid,
   IconButton,
   Stack,
+  styled,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -19,6 +20,10 @@ import AddIcon from "@mui/icons-material/Add";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import { smartypantsu } from "smartypants";
 import { gql, useApolloClient } from "@apollo/client";
+import { useAuthContext } from "lyricova-common/components/AuthContext";
+import { fetchEventData } from "fetch-sse";
+import HoverPopover from "material-ui-popup-state/HoverPopover";
+import PopupState, { bindHover, bindPopover } from "material-ui-popup-state";
 
 const TRANSLATION_ALIGNMENT_QUERY = gql`
   query ($translation: String!, $original: String!) {
@@ -31,8 +36,17 @@ interface Props {
   setLyrics: (lyrics: string) => void;
 }
 
+const StyledHoverPopover = styled(HoverPopover)(({ theme }) => ({
+  "& .MuiPaper-root": {
+    padding: theme.spacing(0, 2),
+    maxHeight: "80vh",
+    overflowY: "auto",
+  },
+}));
+
 export default function EditTranslations({ lyrics, setLyrics }: Props) {
   const snackbar = useSnackbar();
+  const authContext = useAuthContext();
 
   const apolloClient = useApolloClient();
   const [isAlignmentLoading, setIsAlignmentLoading] = useState(false);
@@ -188,10 +202,14 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     });
   }, [setTranslatedLines]);
 
+  const [chunkBuffer, setChunkBuffer] = useState<string>("");
+
   const handleAlignment = useCallback(async () => {
     const translation = translatedLines.join("\n");
     const original = parsedLyrics?.lines.map((v) => v.content).join("\n") || "";
     setIsAlignmentLoading(true);
+    /* 
+    GraphQL Alignment
     try {
       const { data } = await apolloClient.query<{
         translationAlignment: string;
@@ -210,7 +228,63 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     } finally {
       setIsAlignmentLoading(false);
     }
-  }, [apolloClient, parsedLyrics, snackbar, translatedLines]);
+    */
+    setChunkBuffer("");
+    try {
+      const token = authContext.jwt();
+      await fetchEventData("/api/llm/translation-alignment", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        data: { translation, original },
+        onMessage: (event) => {
+          const data = JSON.parse(event.data);
+          if (data.error) {
+            console.error(data.error);
+            snackbar.enqueueSnackbar(`Error while aligning: ${data.error}`, {
+              variant: "error",
+            });
+            setIsAlignmentLoading(false);
+          } else if (data.aligned) {
+            setTranslatedLines(data.aligned.split("\n"));
+          } else if (data.chunk) {
+            setChunkBuffer((prev) => prev + data.chunk);
+          }
+        },
+        onClose: () => {
+          snackbar.enqueueSnackbar("Alignment completed", {
+            variant: "success",
+          });
+          setIsAlignmentLoading(false);
+        },
+        onError: (error) => {
+          console.error(error);
+          snackbar.enqueueSnackbar(`Error while aligning: ${error}`, {
+            variant: "error",
+          });
+          setIsAlignmentLoading(false);
+        },
+      });
+      snackbar.enqueueSnackbar("Alignment completed", {
+        variant: "success",
+      });
+    } catch (e) {
+      snackbar.enqueueSnackbar(`Error while aligning: ${e}`, {
+        variant: "error",
+      });
+      return;
+    } finally {
+      setIsAlignmentLoading(false);
+    }
+  }, [
+    authContext,
+    parsedLyrics?.lines,
+    setTranslatedLines,
+    snackbar,
+    translatedLines,
+  ]);
 
   return (
     <Grid container spacing={2}>
@@ -249,16 +323,39 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
             <Button variant="outlined" onClick={handleFixQuotes}>
               Fix quotes
             </Button>
-            <Button
-              variant="outlined"
-              onClick={handleAlignment}
-              disabled={isAlignmentLoading}
-            >
-              GPT Alignment
-              {isAlignmentLoading && (
-                <CircularProgress size={16} sx={{ ml: 1 }} />
+            <PopupState variant="popover" popupId="llm-alignment">
+              {(popupState) => (
+                <>
+                  <div {...bindHover(popupState)}>
+                    <Button
+                      variant="outlined"
+                      onClick={handleAlignment}
+                      disabled={isAlignmentLoading}
+                    >
+                      LLM Alignment
+                      {isAlignmentLoading && (
+                        <CircularProgress size={16} sx={{ ml: 1 }} />
+                      )}
+                    </Button>
+                  </div>
+                  {chunkBuffer && (
+                    <StyledHoverPopover
+                      {...bindPopover(popupState)}
+                      anchorOrigin={{
+                        vertical: "bottom",
+                        horizontal: "center",
+                      }}
+                      transformOrigin={{
+                        vertical: "top",
+                        horizontal: "center",
+                      }}
+                    >
+                      <pre>{chunkBuffer || "…"}</pre>
+                    </StyledHoverPopover>
+                  )}
+                </>
               )}
-            </Button>
+            </PopupState>
           </Stack>
         </Stack>
       </Grid>

@@ -12,6 +12,7 @@ import { AuthController } from "lyricova-common/utils/AuthController";
 import { PlaylistController } from "./controller/PlaylistController";
 import { convertMonoruby } from "./utils/monoruby";
 import { SongController } from "./controller/SongController";
+import { LLMController } from "./controller/LLMController";
 
 export default (app: express.Express) => {
   const apiRouter = express.Router();
@@ -29,6 +30,9 @@ export default (app: express.Express) => {
 
   const lyricsProvidersController = new LyricsProvidersController();
   apiRouter.use("/lyrics", lyricsProvidersController.router);
+
+  const llmController = new LLMController();
+  apiRouter.use("/llm", llmController.router);
 
   // const downloadController = new DownloadController();
   // apiRouter.use("/download", downloadController.router);
