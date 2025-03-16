@@ -86,13 +86,15 @@ export class SongResolver {
 
   @Query((returns) => [Song])
   public async searchSongs(@Arg("keywords") keywords: string): Promise<Song[]> {
+    const whereClause = isNaN(Number(keywords))
+      ? literal("match (Song.name, Song.sortOrder) against (:keywords in boolean mode)")
+      : literal("match (Song.name, Song.sortOrder) against (:keywords in boolean mode) OR Song.id = :numericKeywords");
     return Song.findAll({
-      where: literal(
-        "match (Song.name, Song.sortOrder) against (:keywords in boolean mode)"
-      ),
+      where: whereClause,
       attributes: { exclude: ["vocaDbJson"] },
       replacements: {
         keywords,
+        numericKeywords: Number(keywords)
       },
     });
   }

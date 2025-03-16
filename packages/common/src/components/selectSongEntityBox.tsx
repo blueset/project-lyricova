@@ -239,7 +239,7 @@ export default function SelectSongEntityBox<T extends string>({
                 >
                   {icon}{" "}
                   <Stack flexDirection="column">
-                    <Typography>{option?.name}</Typography>
+                    <Typography>{option?.name} {option?.id ? ` (#${option.id})` : ''}</Typography>
                     {option?.artists?.length && (
                       <Typography
                         variant="caption"
