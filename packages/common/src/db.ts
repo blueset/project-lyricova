@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize-typescript";
-import { DB_URI } from "./utils/secret";
+import { DB_URI, ENVIRONMENT } from "./utils/secret";
 import { sequelizeAdditions } from "./utils/sequelizeAdditions";
 import { Album } from "./models/Album";
 import { Artist } from "./models/Artist";
@@ -21,6 +21,7 @@ import { User } from "./models/User";
 import { UserPublicKeyCredential } from "./models/UserPublicKeyCredential";
 import { Verse } from "./models/Verse";
 import { VideoFile } from "./models/VideoFile";
+import logger from "./utils/logger";
 
 sequelizeAdditions(Sequelize);
 
@@ -50,7 +51,8 @@ const sequelize = new Sequelize(DB_URI, {
     Verse,
     VideoFile,
   ],
-  // logging: (sql) => logger.debug(sql)
+  logging: (sql, timing) => logger.debug(sql, timing),
+  benchmark: ENVIRONMENT !== "production",
 });
 
 (async () => {

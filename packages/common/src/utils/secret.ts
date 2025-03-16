@@ -1,17 +1,23 @@
 import dotenv from "dotenv";
+import logger from "./logger";
 import fs from "fs";
 
-if (fs.existsSync(".env")) {
-  console.debug("Using .env file to supply config environment variables");
-  dotenv.config({ path: ".env" });
-} else {
-  console.debug(
-    "Using .env.example file to supply config environment variables"
-  );
-  dotenv.config({ path: ".env.example" }); // you can delete this after you create your own .env file!
-}
 export const ENVIRONMENT = process.env.NODE_ENV;
 const prod = ENVIRONMENT === "production"; // Anything else is treated as 'dev'
+
+if (fs.existsSync(".env")) {
+  dotenv.config({ path: ".env" });
+  if (!prod) {
+    logger.debug("Using .env file to supply config environment variables");
+  }
+} else {
+  dotenv.config({ path: ".env.example" }); // you can delete this after you create your own .env file!
+  if (!prod) {
+    logger.warn(
+      "No .env file found. Using .env.example file to supply config environment variables"
+    );
+  };
+}
 
 export const SESSION_SECRET = process.env["SESSION_SECRET"]!;
 

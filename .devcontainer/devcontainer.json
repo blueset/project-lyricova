@@ -46,12 +46,22 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
-		3000
+		3000,
+		8001,
+		8002
 	],
 
 	"portsAttributes": {
 		"3000": {
 			"label": "Application",
+			"onAutoForward": "notify"
+		},
+		"8001": {
+			"label": "Lyricova",
+			"onAutoForward": "notify"
+		},
+		"8002": {
+			"label": "Jukebox",
 			"onAutoForward": "notify"
 		}
 	},
