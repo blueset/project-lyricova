@@ -86,11 +86,11 @@ export function WebAuthnCredManager() {
       const body = {
         response: {
           clientDataJSON: base64url.encode(
-            credential.response.clientDataJSON as Buffer
+            Buffer.from(credential.response.clientDataJSON)
           ),
           attestationObject: base64url.encode(
-            (credential.response as AuthenticatorAttestationResponse)
-              .attestationObject as Buffer
+            Buffer.from((credential.response as AuthenticatorAttestationResponse)
+              .attestationObject)
           ),
           transports: undefined as string[] | undefined,
         },

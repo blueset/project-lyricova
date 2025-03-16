@@ -48,7 +48,7 @@ export function LyricsFullScreenOverlay({
 }) {
   const { playerRef } = useAppContext();
   const [isPlaying, setIsPlaying] = useNamedState(
-    !playerRef.current?.paused ?? false,
+    !playerRef.current?.paused,
     "isPlaying"
   );
   const [isVisible, setIsVisible] = useNamedState(false, "isVisible");

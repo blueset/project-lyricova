@@ -1,7 +1,6 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "target": "es2017",
     "outDir": "build/module",
     "module": "esnext"
   },

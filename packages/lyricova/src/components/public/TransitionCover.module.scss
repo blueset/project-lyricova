@@ -17,12 +17,12 @@
 }
 
 .cover1 {
-  background-color: color.adjust(#00171F, $lightness: 10);
+  background-color: color.adjust(#00171F, $lightness: 10%);
   transform:  translateY(-50%) scaleY(0);
 }
 
 .cover2 {
-  background-color: color.adjust(#00171F, $lightness: 5);
+  background-color: color.adjust(#00171F, $lightness: 5%);
   transform:  translateY(-50%) scaleY(0);
 }
 

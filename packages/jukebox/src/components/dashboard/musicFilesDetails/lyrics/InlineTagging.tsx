@@ -175,13 +175,13 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
             timeTagLines[idx]?.map((v) => (v ? [v] : [])) ??
             Array(l.content.length + 1)
               .fill(null)
-              .map(() => []);
+              .map((): number[] => []);
           // force array to have size l.content.length + 1
           return [
             ...out.slice(0, l.content.length + 1),
             ...Array(Math.max(0, l.content.length - out.length + 1))
               .fill(null)
-              .map(() => []),
+              .map((): number[] => []),
           ];
         })
       );

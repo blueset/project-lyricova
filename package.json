@@ -12,7 +12,6 @@
   "devDependencies": {
     "prettier": "^2.8.7",
     "ts-jest": "^29.1.2",
-    "typedoc": "^0.25.13",
     "typescript": "^5.4.5"
   }
 }
