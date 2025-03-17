@@ -34,7 +34,7 @@ const TRANSLATION_ALIGNMENT_QUERY = gql`
 `;
 
 const VOCADB_LYRICS_QUERY = gql`
-  query($id: Int!) {
+  query ($id: Int!) {
     vocaDBLyrics(id: $id) {
       id
       translationType
@@ -98,14 +98,15 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
   const translatedLinesRef = useRef<(string | null)[]>();
   translatedLinesRef.current = translatedLines;
 
-  const { data: vocaDBTranslationsData } = useQuery<{ vocaDBLyrics: VocaDBLyricsEntry[] }>(
-    VOCADB_LYRICS_QUERY,
-    {
-      variables: { id: songId },
-    }
-  );
+  const { data: vocaDBTranslationsData } = useQuery<{
+    vocaDBLyrics: VocaDBLyricsEntry[];
+  }>(VOCADB_LYRICS_QUERY, {
+    variables: { id: songId },
+  });
 
-  const vocaDBTranslations = vocaDBTranslationsData?.vocaDBLyrics || [];
+  const vocaDBTranslations = (
+    vocaDBTranslationsData?.vocaDBLyrics || []
+  ).filter((translation) => translation.translationType === "Translation");
 
   // Build `translatedLines`.
   useEffect(() => {
@@ -314,18 +315,29 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
   const handleImportTranslation = useCallback(
     (translation: VocaDBLyricsEntry) => {
       const lines = translation.value.split("\n");
-      parsedLyrics?.lines.forEach((v, idx) => {
-        v.attachments.setTranslation(lines[idx], translation.cultureCodes[0]);
-      });
       setLanguages((languages) => {
-        const newLanguages = [...languages, translation.cultureCodes[0]];
+        let newLanguage = translation.cultureCodes[0];
+        let idx = 0;
+        while (languages.includes(newLanguage)) {
+          newLanguage = `${newLanguage}-${++idx}`;
+        }
+        const newLanguages = [...languages, newLanguage];
         setCurrentLanguageIdx(newLanguages.length - 1);
+        parsedLyrics?.lines.forEach((v, idx) => {
+          v.attachments.setTranslation(lines[idx], newLanguage);
+        });
+        setLyrics(parsedLyrics.toString());
         return newLanguages;
       });
-      setLyrics(parsedLyrics.toString());
       setTranslatedLines(lines);
     },
-    [parsedLyrics, setLanguages, setCurrentLanguageIdx, setLyrics, setTranslatedLines]
+    [
+      parsedLyrics,
+      setLanguages,
+      setCurrentLanguageIdx,
+      setLyrics,
+      setTranslatedLines,
+    ]
   );
 
   return (
@@ -398,15 +410,22 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
                 </>
               )}
             </PopupState>
-          </Stack>
-          <Stack direction="row" spacing={2} alignItems="center">
+            <span>VocaDB:</span>
             {vocaDBTranslations.map((translation) => (
               <Tooltip
                 key={translation.id}
-                title={`${translation.cultureCodes.join(", ")} - ${translation.source} - ${translation.value.substring(0, 20)}`}
+                title={
+                  <>
+                    {translation.cultureCodes.join(", ")} –{" "}
+                    {translation.source}
+                    <br />
+                    {translation.value.substring(0, 100)}…
+                  </>
+                }
               >
                 <Button
                   variant="outlined"
+                  sx={{minWidth: 0}}
                   onClick={() => handleImportTranslation(translation)}
                 >
                   {translation.cultureCodes.join(", ")}
