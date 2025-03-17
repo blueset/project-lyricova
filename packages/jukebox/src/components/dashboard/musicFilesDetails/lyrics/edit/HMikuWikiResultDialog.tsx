@@ -9,7 +9,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
-import type { HmikuAtWikiEntry } from "../../../../graphql/LyricsProvidersResolver";
+import type { HmikuAtWikiEntry } from "../../../../../graphql/LyricsProvidersResolver";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useSnackbar } from "notistack";
 import Link from "lyricova-common/components/Link";

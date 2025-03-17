@@ -13,10 +13,10 @@ import {
   Typography,
 } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
-import type { VocaDBLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
+import type { VocaDBLyricsEntry } from "../../../../../graphql/LyricsProvidersResolver";
 import Link from "lyricova-common/components/Link";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import TooltipIconButton from "../../TooltipIconButton";
+import TooltipIconButton from "../../../TooltipIconButton";
 import { useSnackbar } from "notistack";
 
 const VOCADB_LYRICS_QUERY = gql`

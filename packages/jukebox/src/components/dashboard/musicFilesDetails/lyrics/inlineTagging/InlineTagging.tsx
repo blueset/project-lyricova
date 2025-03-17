@@ -14,11 +14,11 @@ import React, {
   useState,
   memo,
 } from "react";
-import type { WebAudioPlayerState } from "../../../../hooks/types";
-import { useNamedState } from "../../../../hooks/useNamedState";
-import { useWebAudio } from "../../../../hooks/useWebAudio";
+import type { WebAudioPlayerState } from "../../../../../hooks/types";
+import { useNamedState } from "../../../../../hooks/useNamedState";
+import { useWebAudio } from "../../../../../hooks/useWebAudio";
 import { Box, Button, Stack, styled } from "@mui/material";
-import DismissibleAlert from "../../DismissibleAlert";
+import DismissibleAlert from "../../../DismissibleAlert";
 import { InlineTaggingLineMemo } from "./InlineTaggingLine";
 import { useSnackbar } from "notistack";
 import {
@@ -43,7 +43,7 @@ import {
   setDropMark,
 } from "./InlineTaggingKeyPresses";
 import { populateDots } from "./InlineTaggingDots";
-import { WebAudioControls } from "./WebAudioControls";
+import { WebAudioControls } from "../WebAudioControls";
 import { isNaN } from "lodash";
 import { populateDotsEn } from "./InlineTaggingEnSyllables";
 

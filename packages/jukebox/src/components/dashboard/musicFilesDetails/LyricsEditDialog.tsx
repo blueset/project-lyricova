@@ -15,18 +15,18 @@ import { TabContext, TabPanel } from "@mui/lab";
 import LyricsPreview from "./LyricsPreview";
 import { Lyrics } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
-import EditLyrics from "./lyrics/EditLyrics";
+import EditLyrics from "./lyrics/edit/EditLyrics";
 import SearchLyrics from "./lyrics/SearchLyrics";
 import CloseIcon from "@mui/icons-material/Close";
 import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
 import EditTranslations from "./lyrics/EditTranslations";
-import EditFurigana from "./lyrics/EditFurigana";
+import EditFurigana from "./lyrics/furigana/EditFurigana";
 import { gql, useApolloClient } from "@apollo/client";
 import type { DocumentNode } from "graphql";
 import LyricsPreviewPanel from "./lyrics/WebVTTPreview";
 import WebAudioTaggingLyrics from "./lyrics/WebAudioTaggingLyrics";
-import InlineTagging from "./lyrics/InlineTagging";
+import InlineTagging from "./lyrics/inlineTagging/InlineTagging";
 import Roles from "./lyrics/Roles";
 
 const WRITE_LYRICS_MUTATION = gql`

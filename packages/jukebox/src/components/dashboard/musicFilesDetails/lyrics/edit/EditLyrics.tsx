@@ -7,10 +7,10 @@ import {
 } from "@mui/material";
 import type { ChangeEvent } from "react";
 import { useCallback } from "react";
-import { useNamedState } from "../../../../hooks/useNamedState";
+import { useNamedState } from "../../../../../hooks/useNamedState";
 import VocaDBLyricsDialog from "./VocaDBLyricsDialog";
 import HMikuWikiSearchDialog from "./HMikuWikiSearchDialog";
-import DiffEditorDialog from "./DiffEditorDialog";
+import DiffEditorDialog from "./diffEditor/DiffEditorDialog";
 
 function replaceWithPattern(
   lines: [string, string][],

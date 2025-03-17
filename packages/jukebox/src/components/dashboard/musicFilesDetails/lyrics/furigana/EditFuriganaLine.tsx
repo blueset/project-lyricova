@@ -2,7 +2,7 @@ import type { LyricsLine } from "lyrics-kit/core";
 import { RangeAttribute, FURIGANA } from "lyrics-kit/core";
 import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useRef } from "react";
-import { useNamedState } from "../../../../hooks/useNamedState";
+import { useNamedState } from "../../../../../hooks/useNamedState";
 import { Box, IconButton, Paper, TextField, Typography } from "@mui/material";
 import _ from "lodash";
 import CloseIcon from "@mui/icons-material/Close";

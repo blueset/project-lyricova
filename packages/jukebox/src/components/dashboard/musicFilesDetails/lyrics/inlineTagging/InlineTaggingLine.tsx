@@ -1,8 +1,8 @@
 import { IconButton, Tooltip, styled } from "@mui/material";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
 import { MouseEventHandler, MutableRefObject, memo, useEffect, useRef, useState } from "react";
-import { measureTextWidths } from "../../../../frontendUtils/measure";
-import type { WebAudioPlayerState } from "../../../../hooks/types";
+import { measureTextWidths } from "../../../../../frontendUtils/measure";
+import type { WebAudioPlayerState } from "../../../../../hooks/types";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import gsap from "gsap";
 

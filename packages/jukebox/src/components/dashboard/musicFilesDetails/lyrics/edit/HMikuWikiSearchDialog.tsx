@@ -12,9 +12,9 @@ import {
 import { gql, useApolloClient } from "@apollo/client";
 import type {
   HmikuAtWikiSearchResultEntry,
-} from "../../../../graphql/LyricsProvidersResolver";
+} from "../../../../../graphql/LyricsProvidersResolver";
 import { useSnackbar } from "notistack";
-import { useNamedState } from "../../../../hooks/useNamedState";
+import { useNamedState } from "../../../../../hooks/useNamedState";
 import { TextField } from "mui-rff";
 import { Form } from "react-final-form";
 import HMikuWikiResultDialog from "./HMikuWikiResultDialog";

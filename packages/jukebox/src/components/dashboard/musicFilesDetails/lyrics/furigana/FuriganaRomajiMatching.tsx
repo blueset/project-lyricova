@@ -1,7 +1,7 @@
 import { ApolloClient, gql } from "@apollo/client";
 import { kanaToHira, romaToHira } from "lyricova-common/utils/kanaUtils";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
-import { VocaDBLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
+import { VocaDBLyricsEntry } from "../../../../../graphql/LyricsProvidersResolver";
 import diff from "fast-diff";
 
 const VOCADB_LYRICS_QUERY = gql`
@@ -43,7 +43,7 @@ export async function furiganaRomajiMatching({
     return kanaToHira(kanaLine.join("").trimEnd());
   });
 
-  console.log("kanaLines", kanaLines);
+  // console.log("kanaLines", kanaLines);
 
   const vocaDBLyrics = await apolloClient.query<{
     vocaDBLyrics: VocaDBLyricsEntry[];
@@ -61,7 +61,7 @@ export async function furiganaRomajiMatching({
   }
   const romajiHiraLines = romajiLines.map((line) => romaToHira(line));
 
-  console.log("kanaLines.join", kanaLines.join("\n"));
+  // console.log("kanaLines.join", kanaLines.join("\n"));
   const diffs: [number, string][] = diff(
     kanaLines.join("\n"),
     romajiHiraLines.join("").replaceAll(" ", "")
@@ -85,7 +85,7 @@ export async function furiganaRomajiMatching({
     return acc;
   }, []);
 
-  console.log("diffs", diffs);
+  // console.log("diffs", diffs);
 
   let diffLines: [number, string][][] = [[]];
   diffs.forEach(([type, text], idx) => {
@@ -111,7 +111,7 @@ export async function furiganaRomajiMatching({
       }
     }
   });
-  console.log(diffLines);
+  // console.log(diffLines);
   diffLines = diffLines.map((line) =>
     line.reduce<[number, string][]>((acc, [type, text]) => {
       if (acc.length === 0 || acc[acc.length - 1][0] !== type) {
