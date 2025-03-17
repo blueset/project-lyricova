@@ -109,6 +109,17 @@ export class Song extends Model<Song, Partial<Song>> {
   @Field((type) => SongInAlbum, { nullable: true })
   SongInAlbum?: Partial<SongInAlbum>;
 
+  private static selectPreferredThumbUrl(
+    vocaDbJson: SongForApiContract | undefined,
+  ): string | undefined {
+    if (vocaDbJson === undefined) return undefined;
+    if (vocaDbJson.pvs?.length) {
+      const candidate = vocaDbJson.pvs.find((p) => p.service === "Youtube" && p.pvType === "Original" && p.thumbUrl)?.thumbUrl;
+      if (candidate) return candidate;
+    }
+    return vocaDbJson.thumbUrl;
+  }
+
   static async saveFromVocaDBEntity(
     entity: SongForApiContract,
     original: Song | null,
@@ -121,7 +132,7 @@ export class Song extends Model<Song, Partial<Song>> {
       name: entity.name,
       sortOrder: await transliterate(entity.name), // prompt user to check this upon import
       vocaDbJson: entity,
-      coverUrl: entity.thumbUrl,
+      coverUrl: Song.selectPreferredThumbUrl(entity),
       incomplete: intermediate,
     });
 
