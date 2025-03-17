@@ -1,6 +1,7 @@
-import { Box, TextField } from "@mui/material";
+import { Box, IconButton, TextField, Tooltip } from "@mui/material";
 import Button from "@mui/material/Button";
 import Popover from "@mui/material/Popover";
+import BatchPredictionIcon from "@mui/icons-material/BatchPrediction";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import { useNamedState } from "../../../../../hooks/useNamedState";
 import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
@@ -274,9 +275,11 @@ export function ApplyAllFurigana({
     <PopupState variant="popover" popupId="apply-furigana-pattern-to-all">
       {(popupState) => (
         <>
-          <Button variant="outlined" {...bindTrigger(popupState)}>
-            Apply pattern to all
-          </Button>
+        <Tooltip title="Apply pattern to all lines">
+          <IconButton {...bindTrigger(popupState)}>
+            <BatchPredictionIcon />
+          </IconButton>
+          </Tooltip>
           <Popover
             {...bindPopover(popupState)}
             anchorOrigin={{

@@ -8,6 +8,9 @@ import {
   ListItemButton,
   ListItemText,
   Stack,
+  Switch,
+  ToggleButton,
+  Toolbar,
   Tooltip,
   Typography,
   useTheme,
@@ -22,6 +25,8 @@ import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";
 import type { DocumentNode } from "graphql";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
+import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import DifferenceIcon from "@mui/icons-material/Difference";
 import { FullWidthAudio } from "../../FullWIdthAudio";
 import { furiganaRomajiMatching } from "./FuriganaRomajiMatching";
 import { furiganaHighlight } from "./furiganaHighlights";
@@ -34,7 +39,6 @@ const KARAOKE_TRANSLITERATION_QUERY = gql`
     }
   }
 ` as DocumentNode;
-
 
 interface Props {
   lyrics: string;
@@ -54,6 +58,10 @@ export default function EditFurigana({
   const theme = useTheme();
 
   const [selectedLine, setSelectedLine] = useNamedState(null, "selectedLine");
+  const [autoApplyIdentical, setAutoApplyIdentical] = useNamedState(
+    true,
+    "autoApplyIdentical"
+  );
 
   // Parse lyrics
   const parsedLyrics = useMemo<Lyrics | null>(() => {
@@ -85,6 +93,7 @@ export default function EditFurigana({
       };
     }
     // dropping dependency [parsedLyrics] to prevent loop with parsedLyrics.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setLines, setLyrics]);
 
   // Romaji matching from VocaDB
@@ -117,10 +126,19 @@ export default function EditFurigana({
               tags: [string, [number, number]][];
             }>(
               ({ len, tags, content }, [base, furigana]) => {
-                if (base === furigana) return { len: len + base.length, tags, content: content + base };
+                if (base === furigana)
+                  return {
+                    len: len + base.length,
+                    tags,
+                    content: content + base,
+                  };
                 else {
                   tags.push([furigana, [len, len + base.length]]);
-                  return { len: len + base.length, tags, content: content + base };
+                  return {
+                    len: len + base.length,
+                    tags,
+                    content: content + base,
+                  };
                 }
               },
               { len: 0, tags: [], content: "" }
@@ -144,19 +162,6 @@ export default function EditFurigana({
     }
   }, [apolloClient, lines, setLines, snackbar]);
 
-  // Save current line furigana
-  const saveCurrentLine = useCallback(
-    (idx: number) => (line: LyricsLine) => {
-      // Copy `lines` for React to recognize it as a new state
-      setLines((l) => {
-        const newLines = [...l];
-        newLines[idx] = line;
-        return newLines;
-      });
-    },
-    [setLines]
-  );
-
   // Apply furigana to all identical lines
   const applyFuriganaToAll = useCallback(
     (idx: number) => () => {
@@ -176,6 +181,24 @@ export default function EditFurigana({
       });
     },
     [lines, setLines]
+  );
+
+  // Save current line furigana
+  const saveCurrentLine = useCallback(
+    (idx: number) => (line: LyricsLine) => {
+      // Copy `lines` for React to recognize it as a new state
+      setLines((l) => {
+        const newLines = [...l];
+        newLines[idx] = line;
+        return newLines;
+      });
+
+      // Auto apply furigana to identical lines if enabled
+      if (autoApplyIdentical) {
+        setTimeout(() => applyFuriganaToAll(idx)(), 0);
+      }
+    },
+    [setLines, autoApplyIdentical, applyFuriganaToAll]
   );
 
   return (
@@ -201,30 +224,39 @@ export default function EditFurigana({
           zIndex: 2,
         }}
       >
-        <Stack
-          gap={2}
-          direction="row"
-          flexWrap="wrap"
-          sx={{ marginTop: 2, marginBottom: 2 }}
-        >
-          <Button variant="outlined" onClick={overwriteFurigana}>
-            Overwrite with generated
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() =>
-              furiganaRomajiMatching({ apolloClient, lines, songId }).then(
-                (result) => {
-                  // console.log(result);
-                  setRomajiMatching(result);
-                }
-              )
-            }
-          >
-            VocaDB Romaji Matching
-          </Button>
+        <Toolbar disableGutters sx={{ p: 0 }}>
+          <Tooltip title="Overwrite with generated furigana">
+            <IconButton onClick={overwriteFurigana}>
+              <AutoFixHighIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Match with VocaDB Romanization">
+            <IconButton
+              onClick={() =>
+                furiganaRomajiMatching({ apolloClient, lines, songId }).then(
+                  (result) => {
+                    // console.log(result);
+                    setRomajiMatching(result);
+                  }
+                )
+              }
+            >
+              <DifferenceIcon />
+            </IconButton>
+          </Tooltip>
           <ApplyAllFurigana setLines={setLines} />
-        </Stack>
+          <Tooltip title="Auto-apply furigana to identical lines">
+            <ToggleButton
+              value="check"
+              selected={autoApplyIdentical}
+              size="small"
+              color="secondary"
+              onChange={() => setAutoApplyIdentical((v) => !v)}
+            >
+              <PlaylistAddCheckIcon />
+            </ToggleButton>
+          </Tooltip>
+        </Toolbar>
         <Box sx={{ marginTop: 2, marginBottom: 2 }}>
           {selectedLine != null && selectedLine < lines.length && (
             <EditFuriganaLine
