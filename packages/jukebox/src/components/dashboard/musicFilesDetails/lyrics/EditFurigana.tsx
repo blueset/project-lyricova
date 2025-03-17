@@ -221,21 +221,26 @@ export default function EditFurigana({
           if (v.length < 1) {
             delete line.attachments.content[FURIGANA];
           } else {
-            const { tags } = v.reduce<{
+            const { tags, content } = v.reduce<{
               len: number;
+              content: string;
               tags: [string, [number, number]][];
             }>(
-              ({ len, tags }, [base, furigana]) => {
-                if (base === furigana) return { len: len + base.length, tags };
+              ({ len, tags, content }, [base, furigana]) => {
+                if (base === furigana) return { len: len + base.length, tags, content: content + base };
                 else {
                   tags.push([furigana, [len, len + base.length]]);
-                  return { len: len + base.length, tags };
+                  return { len: len + base.length, tags, content: content + base };
                 }
               },
-              { len: 0, tags: [] }
+              { len: 0, tags: [], content: "" }
             );
+
             if (tags.length < 1) delete line.attachments.content[FURIGANA];
-            else line.attachments.content[FURIGANA] = new RangeAttribute(tags);
+            else {
+              line.attachments.content[FURIGANA] = new RangeAttribute(tags);
+              line.content = content;
+            }
           }
         });
         setLines(newLines);
