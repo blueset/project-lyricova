@@ -259,7 +259,7 @@ export default function LyricsEditDialog({
             <TaggingLyrics lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
           </TabPanel>
           <TabPanel value="translation">
-            <EditTranslations lyrics={lrcx} setLyrics={setLrcx} />
+            <EditTranslations lyrics={lrcx} setLyrics={setLrcx} songId={songId} />
           </TabPanel>
           <TabPanel value="furigana">
             <EditFurigana

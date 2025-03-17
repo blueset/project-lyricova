@@ -9,6 +9,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
 import type { ChangeEvent } from "react";
@@ -19,11 +20,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import { smartypantsu } from "smartypants";
-import { gql, useApolloClient } from "@apollo/client";
+import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { useAuthContext } from "lyricova-common/components/AuthContext";
 import { fetchEventData } from "fetch-sse";
 import HoverPopover from "material-ui-popup-state/HoverPopover";
 import PopupState, { bindHover, bindPopover } from "material-ui-popup-state";
+import type { VocaDBLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
 
 const TRANSLATION_ALIGNMENT_QUERY = gql`
   query ($translation: String!, $original: String!) {
@@ -31,9 +33,23 @@ const TRANSLATION_ALIGNMENT_QUERY = gql`
   }
 `;
 
+const VOCADB_LYRICS_QUERY = gql`
+  query($id: Int!) {
+    vocaDBLyrics(id: $id) {
+      id
+      translationType
+      cultureCodes
+      source
+      url
+      value
+    }
+  }
+`;
+
 interface Props {
   lyrics: string;
   setLyrics: (lyrics: string) => void;
+  songId: number;
 }
 
 const StyledHoverPopover = styled(HoverPopover)(({ theme }) => ({
@@ -44,7 +60,7 @@ const StyledHoverPopover = styled(HoverPopover)(({ theme }) => ({
   },
 }));
 
-export default function EditTranslations({ lyrics, setLyrics }: Props) {
+export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
   const snackbar = useSnackbar();
   const authContext = useAuthContext();
 
@@ -81,6 +97,15 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
   >([], "translatedLines");
   const translatedLinesRef = useRef<(string | null)[]>();
   translatedLinesRef.current = translatedLines;
+
+  const { data: vocaDBTranslationsData } = useQuery<{ vocaDBLyrics: VocaDBLyricsEntry[] }>(
+    VOCADB_LYRICS_QUERY,
+    {
+      variables: { id: songId },
+    }
+  );
+
+  const vocaDBTranslations = vocaDBTranslationsData?.vocaDBLyrics || [];
 
   // Build `translatedLines`.
   useEffect(() => {
@@ -286,6 +311,23 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
     translatedLines,
   ]);
 
+  const handleImportTranslation = useCallback(
+    (translation: VocaDBLyricsEntry) => {
+      const lines = translation.value.split("\n");
+      parsedLyrics?.lines.forEach((v, idx) => {
+        v.attachments.setTranslation(lines[idx], translation.cultureCodes[0]);
+      });
+      setLanguages((languages) => {
+        const newLanguages = [...languages, translation.cultureCodes[0]];
+        setCurrentLanguageIdx(newLanguages.length - 1);
+        return newLanguages;
+      });
+      setLyrics(parsedLyrics.toString());
+      setTranslatedLines(lines);
+    },
+    [parsedLyrics, setLanguages, setCurrentLanguageIdx, setLyrics, setTranslatedLines]
+  );
+
   return (
     <Grid container spacing={2}>
       <Grid size={12}>
@@ -356,6 +398,21 @@ export default function EditTranslations({ lyrics, setLyrics }: Props) {
                 </>
               )}
             </PopupState>
+          </Stack>
+          <Stack direction="row" spacing={2} alignItems="center">
+            {vocaDBTranslations.map((translation) => (
+              <Tooltip
+                key={translation.id}
+                title={`${translation.cultureCodes.join(", ")} - ${translation.source} - ${translation.value.substring(0, 20)}`}
+              >
+                <Button
+                  variant="outlined"
+                  onClick={() => handleImportTranslation(translation)}
+                >
+                  {translation.cultureCodes.join(", ")}
+                </Button>
+              </Tooltip>
+            ))}
           </Stack>
         </Stack>
       </Grid>
