@@ -31,6 +31,9 @@ export default function VideoThumbnailAdornment({ name }: Props) {
       )!;
       setValue(name, `https://img.youtube.com/vi/${id[2]}/maxresdefault.jpg`);
       return;
+    } else if (value.match(/(i\.ytimg\.com|img\.youtube\.com).+\/default.jpg$/g)) {
+      setValue(name, value.replace(/\/default\.jpg$/, '/maxresdefault.jpg'));
+      return;
     }
 
     snackbar.enqueueSnackbar(
