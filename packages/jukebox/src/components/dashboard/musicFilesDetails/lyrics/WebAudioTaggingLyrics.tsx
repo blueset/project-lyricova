@@ -367,7 +367,21 @@ export default function WebAudioTaggingLyrics({
       if (v == null) return [v, l] as [number, string[]];
       return [
         Math.max(0, linearRegressionResult.m * v + linearRegressionResult.b),
-        l,
+        l.map((line) => {
+          if (line.match(/^\[tt\](<\d+,\d+>)+$/)) {
+            return line.replace(/(?<=<)\d+(?=,)/g, (v) => {
+              const time = parseInt(v, 10);
+              return Math.max(0, Math.round(time * linearRegressionResult.m)).toString();
+            });
+          } else if (line.match(/^\[tags\](\d*)([,/]\d*)+$/)) {
+            return line.replace(/\d+/g, (v) => {
+              const time = parseInt(v, 10);
+              return Math.max(0, Math.round(time * linearRegressionResult.m + linearRegressionResult.b)).toString();
+            });
+          } else {
+            return line;
+          }
+        }),
       ] as [number, string[]];
     });
     setLinesPerTag(extrapolated);
