@@ -279,7 +279,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         if (contentHexTs) {
           const transLrcContent = decodeQrc(contentHexTs);
           const transLrc = new Lyrics(transLrcContent);
-          lrc.merge(transLrc, "zh");
+          lrc.forceMerge(transLrc, "zh");
 
           if (transLrc.idTags.kana) {
             this.applyFurigana(lrc, transLrc.idTags.kana);
