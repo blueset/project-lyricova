@@ -43,17 +43,25 @@ in VocaDB.net.</small>
     for examples.
 - Node.js
   - Install Node.js and npm.
-  - Install dependencies: `npm install
-  - Build: `npm run build --workspace=packages/common --workspace=packages/lyrics-kit --workspace=packages/jukebox --workspace=packages/lyricova`
+  - Install dependencies: 
+    ```bash
+    npm install
+    ```
+  - Build: 
+    ```bash
+    npm run build --workspace=packages/common --workspace=packages/lyrics-kit --workspace=packages/jukebox --workspace=packages/lyricova`
+    ```
     - Note, env var `DB_URI` is required for building.
   - Create a Lyricova user in the database as admin. 
-    `npx lyricova-admin user add --username <username> --password <password> --email <email> --role admin --display-name <display-name>`
+    ```bash
+    npx lyricova-admin user add --username <username> --password <password> --email <email> --role admin --display-name <display-name>
+    ```
 - Runtime
   - Runtime is supported by Docker.
   - Build the image: `docker-compose build`
   - Run the container: `docker-compose up -d`
-  - Lyricova blog is listening at port 59742
-  - Jukebox is listening at port 58532
+  - Lyricova blog is listening at port 59742 (`lyric`)
+  - Jukebox is listening at port 58532 (`jukeb`)
 
 ## Etymology
 
