@@ -32,18 +32,8 @@ in VocaDB.net.</small>
 ## Install
 
 - Database
-
   - Setup a MySQL database and import the schema from `lyricova-schema.sql`.
   - Create a MySQL user and grant it access to the database.
-  - Create a Lyricova user in the database as admin. Put password in the format
-    of a [bcrypt hash](https://en.wikipedia.org/wiki/Bcrypt).
-
-    ```sql
-    INSERT INTO Users
-      (id, username, displayName, password, email, role, provider, provider_id, creationDate, updatedOn, deletionDate)
-    VALUES
-      (1, 'admin', 'Administrator', '$2a$10$anT02XU53WKpNV3p30nA2.EZ19ucaWys0MRhMjsCGcIYhdeKyJnfe', 'admin@example.com', 'admin', NULL, NULL, '1970-01-01 00:00:00', '1970-01-01 00:00:00', NULL);
-    ```
 
 - Music file storage
   - Create a directory for storing music files (defaulted to
@@ -53,9 +43,11 @@ in VocaDB.net.</small>
     for examples.
 - Node.js
   - Install Node.js and npm.
-  - Install dependencies: `npm install`
-  - Build: `npm run build --workspace=packages`
+  - Install dependencies: `npm install
+  - Build: `npm run build --workspace=packages/common --workspace=packages/lyrics-kit --workspace=packages/jukebox --workspace=packages/lyricova`
     - Note, env var `DB_URI` is required for building.
+  - Create a Lyricova user in the database as admin. 
+    `npx lyricova-admin user add --username <username> --password <password> --email <email> --role admin --display-name <display-name>`
 - Runtime
   - Runtime is supported by Docker.
   - Build the image: `docker-compose build`
