@@ -441,7 +441,7 @@ export function romaToHira(roma: string): string {
       }
       // const next = roma.charAt(index + 1);
       // console.log("prev", prev, "char", char, "roma", roma, "index", index);
-      if (prev && (prev === "n" || prev === char)) {
+      if (prev && (prev === "n" || prev === char || (prev === "t" && char === "c"))) {
         // console.log("push", prev === "n" ? "ん" : "っ", false);
         push(prev === "n" ? "ん" : "っ", false);
       }
