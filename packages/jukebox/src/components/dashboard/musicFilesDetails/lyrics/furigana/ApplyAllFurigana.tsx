@@ -5,8 +5,6 @@ import BatchPredictionIcon from "@mui/icons-material/BatchPrediction";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import { useNamedState } from "../../../../../hooks/useNamedState";
 import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
-import { current } from "@reduxjs/toolkit";
-import { last } from "lodash";
 import {
   FURIGANA,
   LyricsLine,
@@ -212,7 +210,7 @@ export function ApplyAllFurigana({
 
           // Check against all match ranges
           for (const matchStart of matches) {
-            const matchEnd = matchStart + baseText.length;
+            const matchEnd = matchStart + [...baseText].length;
             // Full overlap - remove the label
             if (matchStart <= labelStart && matchEnd >= labelEnd) {
               return false;
@@ -247,16 +245,21 @@ export function ApplyAllFurigana({
           groups.forEach((group) => {
             if (Array.isArray(group)) {
               furiganaAttribute.push(
-                new RangeAttributeLabel(group[1], [pos, pos + group[0].length])
+                new RangeAttributeLabel(group[1], [pos, pos + [...group[0]].length])
               );
-              pos += group[0].length;
+              pos += [...group[0]].length;
             } else {
-              pos += group.length;
+              pos += [...group].length;
             }
           });
         });
 
         if (furiganaAttribute.length > 0) {
+          furiganaAttribute.sort((a, b) => {
+            const [aStart] = a.range;
+            const [bStart] = b.range;
+            return aStart - bStart;
+          });
           line.attachments.content[FURIGANA] = new RangeAttribute(
             furiganaAttribute.map((l): [string, [number, number]] => [
               l.content,
