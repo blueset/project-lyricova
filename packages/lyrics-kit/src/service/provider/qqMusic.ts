@@ -193,7 +193,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
             line.content = "";
           }
         });
-        lrc.merge(transLrc, "zh");
+        lrc.mergeByProximity(transLrc, "zh");
       }
 
       lrc.idTags[TITLE] = token.title;
@@ -279,7 +279,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         if (contentHexTs) {
           const transLrcContent = decodeQrc(contentHexTs);
           const transLrc = new Lyrics(transLrcContent);
-          lrc.forceMerge(transLrc, "zh");
+          lrc.mergeByProximity(transLrc, "zh");
 
           if (transLrc.idTags.kana) {
             this.applyFurigana(lrc, transLrc.idTags.kana);

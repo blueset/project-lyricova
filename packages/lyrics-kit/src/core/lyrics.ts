@@ -433,6 +433,26 @@ export class Lyrics {
     this.metadata.attachmentTags.add(TRANSLATION);
   }
 
+  public mergeByProximity(other: Lyrics, languageCode?: string): void {
+    const lines = this.lines.filter((l) => !isNaN(l.position));
+    const otherLines = other.lines.filter((l) => !isNaN(l.position) && l.content);
+
+    if (lines.length === 0 || otherLines.length === 0) return;
+
+    for (const otherLine of otherLines) {
+      const closestLine = lines.reduce((prev, curr) => {
+        const prevDiff = Math.abs(prev.position - otherLine.position);
+        const currDiff = Math.abs(curr.position - otherLine.position);
+        return currDiff < prevDiff ? curr : prev;
+      });
+
+      if (otherLine.content !== "") {
+        closestLine.attachments.setTranslation(otherLine.content, languageCode);
+      }
+    }
+    this.metadata.attachmentTags.add(TRANSLATION);
+  }
+
   /** Merge without matching timetag */
   public forceMerge(other: Lyrics, languageCode?: string): void {
     if (this.lines.length !== other.lines.length) return;
