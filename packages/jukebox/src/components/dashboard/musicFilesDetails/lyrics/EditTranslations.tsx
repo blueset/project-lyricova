@@ -388,7 +388,22 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
                     >
                       LLM Alignment
                       {isAlignmentLoading && (
-                        <CircularProgress size={16} sx={{ ml: 1 }} />
+                        <CircularProgress
+                          size={16}
+                          value={
+                            chunkBuffer
+                              ? Math.min(
+                                  100,
+                                  Math.max(
+                                    0,
+                                    (chunkBuffer.split("\n").length * 100) /
+                                      (parsedLyrics.lines.length * 4 + 2)
+                                  )
+                                )
+                              : undefined
+                          }
+                          sx={{ ml: 1 }}
+                        />
                       )}
                     </Button>
                   </div>
@@ -416,8 +431,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
                 key={translation.id}
                 title={
                   <>
-                    {translation.cultureCodes.join(", ")} –{" "}
-                    {translation.source}
+                    {translation.cultureCodes.join(", ")} – {translation.source}
                     <br />
                     {translation.value.substring(0, 100)}…
                   </>
@@ -425,7 +439,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
               >
                 <Button
                   variant="outlined"
-                  sx={{minWidth: 0}}
+                  sx={{ minWidth: 0 }}
                   onClick={() => handleImportTranslation(translation)}
                 >
                   {translation.cultureCodes.join(", ")}

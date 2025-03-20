@@ -66,6 +66,7 @@ export function furiganaHighlight(
         (ruby === "あと" || ruby === "のち" || ruby === "ご")) ||
       (base === "金" && ruby === "きん") ||
       (base === "後" && ruby === "ご") ||
+      (base === "隙" && ruby === "ひま") ||
       (base === "誘" && ruby === "さそ")
     )
       return secondaryText;
