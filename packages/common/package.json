@@ -43,7 +43,7 @@
     "@emotion/react": "^11.13.1",
     "@emotion/server": "^11.11.0",
     "@mui/icons-material": "^6.1.7",
-    "@mui/material": "^6.1.7",
+    "@mui/material": "^6.4.8",
     "@mui/x-data-grid": "^7.27.2",
     "axios": "^1.8.2",
     "base64url": "^3.0.1",

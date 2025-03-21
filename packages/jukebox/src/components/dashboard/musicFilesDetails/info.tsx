@@ -380,8 +380,9 @@ export default function InfoPanel({
                         <Tooltip title="Import album info">
                           <IconButton
                             disabled={
-                              !form.getState().values.albumId || isImporting
+                              !form.getState().values.albumId
                             }
+                            loading={isImporting}
                             onClick={handleRefreshAlbum}
                           >
                             <FileDownloadDoneIcon />
@@ -474,9 +475,10 @@ export default function InfoPanel({
             </Field>
             <Box sx={{ marginTop: 2 }}>
               <Button
-                disabled={submitting}
                 variant="outlined"
                 color="secondary"
+                loading={submitting}
+                loadingPosition="start"
                 onClick={handleSubmit}
               >
                 Save

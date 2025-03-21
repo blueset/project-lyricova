@@ -215,8 +215,8 @@ export default function CoverArtPanel({
       >
         Drag here to set cover.
       </Box>
-      <Grid size={{ xs: 12, md: 3 }}>
-        <Typography variant="h5" gutterBottom>
+      <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Typography variant="h6" gutterBottom>
           Current cover
         </Typography>
         <CoverAvatar
@@ -240,9 +240,9 @@ export default function CoverArtPanel({
           Search on Google
         </Button>
       </Grid>
-      <Grid size={{ xs: 12, md: 3 }}>
-        <Typography variant="h5" gutterBottom>
-          Cover from song entity
+      <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          From song entity
         </Typography>
         <CoverAvatar src={songCoverUrl} variant="rounded">
           {hasSong ? <MusicNoteIcon /> : <ImageNotSupportedIcon />}
@@ -255,9 +255,9 @@ export default function CoverArtPanel({
           Use this
         </Button>
       </Grid>
-      <Grid size={{ xs: 12, md: 3 }}>
-        <Typography variant="h5" gutterBottom>
-          Cover from album entity
+      <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          From album entity
         </Typography>
         <CoverAvatar src={albumCoverUrl} variant="rounded">
           {hasAlbum ? <MusicNoteIcon /> : <ImageNotSupportedIcon />}
@@ -270,8 +270,8 @@ export default function CoverArtPanel({
           Use this
         </Button>
       </Grid>
-      <Grid size={{ xs: 12, md: 3 }}>
-        <Typography variant="h5" gutterBottom>
+      <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Typography variant="h6" gutterBottom>
           Cover to upload
         </Typography>
         <CoverAvatar
@@ -288,31 +288,37 @@ export default function CoverArtPanel({
         <Button
           variant="outlined"
           color="secondary"
-          disabled={selectedImage === null || isSubmitting}
+          disabled={selectedImage === null}
+          loading={isSubmitting}
+          loadingPosition="start"
           onClick={applyCover}
         >
           Apply
         </Button>
       </Grid>
       <Grid size={12}>
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" gap={2}>
           <TextField
             variant="outlined"
             label="Import from URL"
+            size="small"
             margin="dense"
-            fullWidth
             value={urlField}
             onChange={handleUrlFieldOnChange}
+            sx={{
+              flexGrow: 1,
+              flexBasis: 0,
+            }}
           />
           <Button
-            sx={{ marginLeft: 2 }}
             variant="outlined"
+            disabled={!urlField}
             onClick={setImageUrl(urlField)}
           >
             Import
           </Button>
-          <Button sx={{ marginLeft: 2 }} variant="outlined" component="label">
-            Upload
+          <Button variant="outlined" component="label">
+            Select file
             <input
               type="file"
               hidden

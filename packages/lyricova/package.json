@@ -35,7 +35,7 @@
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.10.6",
     "@mui/icons-material": "^6.1.7",
-    "@mui/material": "^6.1.7",
+    "@mui/material": "^6.4.8",
     "@mui/material-nextjs": "^6.1.7",
     "@mui/x-data-grid": "^7.22.2",
     "@resvg/resvg-js": "^2.4.1",
