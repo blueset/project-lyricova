@@ -402,6 +402,9 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
                                 )
                               : undefined
                           }
+                          variant={
+                            chunkBuffer ? "determinate" : "indeterminate"
+                          }
                           sx={{ ml: 1 }}
                         />
                       )}
