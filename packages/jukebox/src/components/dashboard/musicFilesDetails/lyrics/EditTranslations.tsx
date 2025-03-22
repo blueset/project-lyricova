@@ -316,7 +316,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
     (translation: VocaDBLyricsEntry) => {
       const lines = translation.value.split("\n");
       setLanguages((languages) => {
-        let newLanguage = translation.cultureCodes[0];
+        let newLanguage = translation.cultureCodes?.[0] || "lang";
         let idx = 0;
         while (languages.includes(newLanguage)) {
           newLanguage = `${newLanguage}-${++idx}`;
@@ -431,7 +431,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
                 key={translation.id}
                 title={
                   <>
-                    {translation.cultureCodes.join(", ")} – {translation.source}
+                    {translation.cultureCodes?.join(", ")} – {translation.source}
                     <br />
                     {translation.value.substring(0, 100)}…
                   </>
@@ -442,7 +442,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
                   sx={{ minWidth: 0 }}
                   onClick={() => handleImportTranslation(translation)}
                 >
-                  {translation.cultureCodes.join(", ")}
+                  {translation.cultureCodes?.join(", ")}
                 </Button>
               </Tooltip>
             ))}
