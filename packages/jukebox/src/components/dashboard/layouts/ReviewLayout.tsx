@@ -1,6 +1,6 @@
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { useCallback } from "react";
-import { Box, Typography } from "@mui/material";
+import { Badge, Box, Chip, Stack, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { getLayout as getDashboardLayout } from "./DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
@@ -18,6 +18,7 @@ const PENDING_REVIEW_FILES_QUERY = gql`
       edges {
         node {
           id
+          path
           needReview
         }
       }
@@ -80,57 +81,95 @@ export default function ReviewLayout({ children }: Props) {
 
       content = (
         <>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: 1,
-            }}
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            sx={{ justifyContent: "space-between", margin: 1 }}
           >
-            <TooltipIconButton
-              title="Previous file"
-              disabled={!hasPrev}
-              aria-label="Go to previous file"
-              onClick={goToFile(index - 1)}
-              sx={{ mr: 1 }}
+            <Stack
+              direction="row"
+              gap={1}
+              sx={{ alignItems: "center", flexGrow: 1, width: 0 }}
             >
-              <ChevronLeftIcon />
-            </TooltipIconButton>
-            <TooltipIconButton
-              title="Previous unreviewed file"
-              disabled={!hasPrevUnreviewed}
-              aria-label="Go to previous unreviewed file"
-              color="secondary"
-              onClick={goToFile(prevUnreviewed)}
-              sx={{ mr: 1 }}
+              <Chip
+                label={
+                  edges[index].node.needReview ? "Needs Review" : "Reviewed"
+                }
+                variant="outlined"
+                size="small"
+                color={edges[index].node.needReview ? "default" : "secondary"}
+                icon={
+                  <Box
+                    component="svg"
+                    sx={{
+                      width: "1em",
+                      height: "1em",
+                      display: "inline-block",
+                    }}
+                  >
+                    <circle
+                      cx="0.5em"
+                      cy="0.5em"
+                      r="0.125em"
+                      fill="currentColor"
+                      opacity={edges[index].node.needReview ? 0.75 : 1}
+                      style={!edges[index].node.needReview ? { filter: "drop-shadow(currentcolor 0px 0px 1px) drop-shadow(currentColor 0 0 4px)" } : {}}
+                    />
+                  </Box>
+                }
+              />
+              <Typography noWrap>{edges[index].node.path}</Typography>
+            </Stack>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: "center",
+                flexShrink: 0,
+              }}
             >
-              <ChevronLeftIcon />
-            </TooltipIconButton>
-            <Typography sx={{ mr: 1 }}>
-              #{fileId}: {index + 1} / {edges.length}
-            </Typography>
-            <TooltipIconButton
-              title="Next unreviewed file"
-              disabled={!hasNextUnreviewed}
-              aria-label="Go to next unreviewed file"
-              color="secondary"
-              onClick={goToFile(nextUnreviewed)}
-              sx={{ mr: 1 }}
-            >
-              <ChevronRightIcon />
-            </TooltipIconButton>
-            <TooltipIconButton
-              title="Next file"
-              disabled={!hasNext}
-              aria-label="Go to next file"
-              onClick={goToFile(index + 1)}
-              sx={{ mr: 1 }}
-            >
-              <ChevronRightIcon />
-            </TooltipIconButton>
-          </Box>
+              <TooltipIconButton
+                title="Previous file"
+                disabled={!hasPrev}
+                aria-label="Go to previous file"
+                onClick={goToFile(index - 1)}
+                sx={{ mr: 1 }}
+              >
+                <ChevronLeftIcon />
+              </TooltipIconButton>
+              <TooltipIconButton
+                title="Previous unreviewed file"
+                disabled={!hasPrevUnreviewed}
+                aria-label="Go to previous unreviewed file"
+                color="secondary"
+                onClick={goToFile(prevUnreviewed)}
+                sx={{ mr: 1 }}
+              >
+                <ChevronLeftIcon />
+              </TooltipIconButton>
+              <Typography sx={{ mr: 1 }}>
+                #{fileId}: {index + 1} / {edges.length}
+              </Typography>
+              <TooltipIconButton
+                title="Next unreviewed file"
+                disabled={!hasNextUnreviewed}
+                aria-label="Go to next unreviewed file"
+                color="secondary"
+                onClick={goToFile(nextUnreviewed)}
+                sx={{ mr: 1 }}
+              >
+                <ChevronRightIcon />
+              </TooltipIconButton>
+              <TooltipIconButton
+                title="Next file"
+                disabled={!hasNext}
+                aria-label="Go to next file"
+                onClick={goToFile(index + 1)}
+                sx={{ mr: 1 }}
+              >
+                <ChevronRightIcon />
+              </TooltipIconButton>
+            </Stack>
+          </Stack>
           {children}
         </>
       );
