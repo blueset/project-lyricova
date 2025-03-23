@@ -10,6 +10,9 @@ import {
   ToggleButtonGroup,
   Typography,
   Tooltip,
+  ButtonGroup,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import DismissibleAlert from "../../DismissibleAlert";
 import type { ChangeEvent } from "react";
@@ -24,8 +27,14 @@ import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { useAuthContext } from "lyricova-common/components/AuthContext";
 import { fetchEventData } from "fetch-sse";
 import HoverPopover from "material-ui-popup-state/HoverPopover";
-import PopupState, { bindHover, bindPopover } from "material-ui-popup-state";
+import PopupState, {
+  bindHover,
+  bindMenu,
+  bindPopover,
+  bindTrigger,
+} from "material-ui-popup-state";
 import type { VocaDBLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 const TRANSLATION_ALIGNMENT_QUERY = gql`
   query ($translation: String!, $original: String!) {
@@ -58,6 +67,17 @@ const StyledHoverPopover = styled(HoverPopover)(({ theme }) => ({
     maxHeight: "80vh",
     overflowY: "auto",
   },
+}));
+
+const ReasoningContainer = styled("div")(({ theme }) => ({
+  maxHeight: "4.5em", // Approximately 3 lines
+  overflowY: "auto",
+  padding: theme.spacing(1),
+  marginTop: theme.spacing(1),
+  fontStyle: "italic",
+  color: theme.palette.text.secondary,
+  whiteSpace: "pre-wrap",
+  maxWidth: "80ch",
 }));
 
 export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
@@ -228,89 +248,113 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
     });
   }, [setTranslatedLines]);
 
-  const [chunkBuffer, setChunkBuffer] = useState<string>("");
+  const [chunkBuffer, setChunkBuffer] = useState<string>(
+    Array(100)
+      .fill(null)
+      .map((_, idx) => `${idx + 1}………………………………………………`)
+      .join("\n")
+  );
+  // const [chunkBuffer, setChunkBuffer] = useState<string>("");
+  const [reasoningBuffer, setReasoningBuffer] = useState<string>("");
+  const reasoningContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleAlignment = useCallback(async () => {
-    const translation = translatedLines.join("\n");
-    const original = parsedLyrics?.lines.map((v) => v.content).join("\n") || "";
-    setIsAlignmentLoading(true);
-    /* 
-    GraphQL Alignment
-    try {
-      const { data } = await apolloClient.query<{
-        translationAlignment: string;
-      }>({
-        query: TRANSLATION_ALIGNMENT_QUERY,
-        variables: { translation, original },
-      });
-      setTranslatedLines(data.translationAlignment.split("\n"));
-      snackbar.enqueueSnackbar("Alignment completed", {
-        variant: "success",
-      });
-    } catch (e) {
-      snackbar.enqueueSnackbar(`Error while aligning: ${e}`, {
-        variant: "error",
-      });
-    } finally {
-      setIsAlignmentLoading(false);
+  const isScrolledToBottom = useCallback(() => {
+    const container = reasoningContainerRef.current;
+    if (!container) return false;
+    return (
+      Math.abs(
+        container.scrollHeight - container.clientHeight - container.scrollTop
+      ) < 1
+    );
+  }, []);
+
+  useEffect(() => {
+    if (reasoningContainerRef.current && isScrolledToBottom()) {
+      reasoningContainerRef.current.scrollTop =
+        reasoningContainerRef.current.scrollHeight;
     }
-    */
-    setChunkBuffer("");
-    try {
-      const token = authContext.jwt();
-      await fetchEventData("/api/llm/translation-alignment", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        data: { translation, original },
-        onMessage: (event) => {
-          const data = JSON.parse(event.data);
-          if (data.error) {
-            console.error(data.error);
-            snackbar.enqueueSnackbar(`Error while aligning: ${data.error}`, {
+  }, [reasoningBuffer, isScrolledToBottom]);
+
+  const handleAlignment = useCallback(
+    (model?: string) => async () => {
+      const translation = translatedLines.join("\n");
+      const original =
+        parsedLyrics?.lines.map((v) => v.content).join("\n") || "";
+      setIsAlignmentLoading(true);
+      setChunkBuffer("");
+      setReasoningBuffer("");
+      try {
+        const token = authContext.jwt();
+        await fetchEventData("/api/llm/translation-alignment", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          data: { translation, original, model },
+          onMessage: (event) => {
+            const data = JSON.parse(event.data);
+            if (data.error) {
+              console.error(data.error);
+              snackbar.enqueueSnackbar(`Error while aligning: ${data.error}`, {
+                variant: "error",
+              });
+              setIsAlignmentLoading(false);
+            } else if (data.aligned) {
+              setTranslatedLines(data.aligned.split("\n"));
+            } else if (data.chunk) {
+              setChunkBuffer((prev) => prev + data.chunk);
+            } else if (data.reasoning) {
+              const wasScrolledToBottom = isScrolledToBottom();
+              setReasoningBuffer((prev) => {
+                const newValue = prev + data.reasoning;
+                if (wasScrolledToBottom && reasoningContainerRef.current) {
+                  setTimeout(() => {
+                    reasoningContainerRef.current?.scrollTo(
+                      0,
+                      reasoningContainerRef.current.scrollHeight
+                    );
+                  }, 0);
+                }
+                return newValue;
+              });
+            }
+          },
+          onClose: () => {
+            snackbar.enqueueSnackbar("Alignment completed", {
+              variant: "success",
+            });
+            setIsAlignmentLoading(false);
+          },
+          onError: (error) => {
+            console.error(error);
+            snackbar.enqueueSnackbar(`Error while aligning: ${error}`, {
               variant: "error",
             });
             setIsAlignmentLoading(false);
-          } else if (data.aligned) {
-            setTranslatedLines(data.aligned.split("\n"));
-          } else if (data.chunk) {
-            setChunkBuffer((prev) => prev + data.chunk);
-          }
-        },
-        onClose: () => {
-          snackbar.enqueueSnackbar("Alignment completed", {
-            variant: "success",
-          });
-          setIsAlignmentLoading(false);
-        },
-        onError: (error) => {
-          console.error(error);
-          snackbar.enqueueSnackbar(`Error while aligning: ${error}`, {
-            variant: "error",
-          });
-          setIsAlignmentLoading(false);
-        },
-      });
-      snackbar.enqueueSnackbar("Alignment completed", {
-        variant: "success",
-      });
-    } catch (e) {
-      snackbar.enqueueSnackbar(`Error while aligning: ${e}`, {
-        variant: "error",
-      });
-      return;
-    } finally {
-      setIsAlignmentLoading(false);
-    }
-  }, [
-    authContext,
-    parsedLyrics?.lines,
-    setTranslatedLines,
-    snackbar,
-    translatedLines,
-  ]);
+          },
+        });
+        snackbar.enqueueSnackbar("Alignment completed", {
+          variant: "success",
+        });
+      } catch (e) {
+        snackbar.enqueueSnackbar(`Error while aligning: ${e}`, {
+          variant: "error",
+        });
+        return;
+      } finally {
+        setIsAlignmentLoading(false);
+      }
+    },
+    [
+      authContext,
+      parsedLyrics?.lines,
+      setTranslatedLines,
+      snackbar,
+      translatedLines,
+      isScrolledToBottom,
+    ]
+  );
 
   const handleImportTranslation = useCallback(
     (translation: VocaDBLyricsEntry) => {
@@ -327,9 +371,9 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
           v.attachments.setTranslation(lines[idx], newLanguage);
         });
         setLyrics(parsedLyrics.toString());
+        setTranslatedLines(lines);
         return newLanguages;
       });
-      setTranslatedLines(lines);
     },
     [
       parsedLyrics,
@@ -377,42 +421,79 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
             <Button variant="outlined" onClick={handleFixQuotes}>
               Fix quotes
             </Button>
-            <PopupState variant="popover" popupId="llm-alignment">
-              {(popupState) => (
-                <>
-                  <div {...bindHover(popupState)}>
+            <ButtonGroup>
+              <PopupState variant="popover" popupId="llm-alignment">
+                {(popupState) => (
+                  <>
+                    <div {...bindHover(popupState)}>
+                      <Button
+                        variant="outlined"
+                        onClick={handleAlignment()}
+                        disabled={isAlignmentLoading}
+                      >
+                        LLM Alignment
+                        {isAlignmentLoading && (
+                          <CircularProgress
+                            size={16}
+                            value={
+                              chunkBuffer
+                                ? Math.min(
+                                    100,
+                                    Math.max(
+                                      0,
+                                      (chunkBuffer.split("\n").length * 100) /
+                                        (parsedLyrics.lines.length * 4 + 2)
+                                    )
+                                  )
+                                : undefined
+                            }
+                            variant={
+                              chunkBuffer ? "determinate" : "indeterminate"
+                            }
+                            sx={{ ml: 1 }}
+                          />
+                        )}
+                      </Button>
+                    </div>
+                    {chunkBuffer || reasoningBuffer ? (
+                      <StyledHoverPopover
+                        {...bindPopover(popupState)}
+                        anchorOrigin={{
+                          vertical: "bottom",
+                          horizontal: "center",
+                        }}
+                        transformOrigin={{
+                          vertical: "top",
+                          horizontal: "center",
+                        }}
+                      >
+                        {reasoningBuffer && (
+                          <ReasoningContainer ref={reasoningContainerRef}>
+                            {reasoningBuffer}
+                          </ReasoningContainer>
+                        )}
+                        <pre>{chunkBuffer || "…"}</pre>
+                      </StyledHoverPopover>
+                    ) : null}
+                  </>
+                )}
+              </PopupState>
+              <PopupState
+                variant="popover"
+                popupId="llm-alignment-select-model"
+              >
+                {(popupState) => (
+                  <>
                     <Button
                       variant="outlined"
-                      onClick={handleAlignment}
+                      {...bindTrigger(popupState)}
                       disabled={isAlignmentLoading}
+                      sx={{ px: 0}}
                     >
-                      LLM Alignment
-                      {isAlignmentLoading && (
-                        <CircularProgress
-                          size={16}
-                          value={
-                            chunkBuffer
-                              ? Math.min(
-                                  100,
-                                  Math.max(
-                                    0,
-                                    (chunkBuffer.split("\n").length * 100) /
-                                      (parsedLyrics.lines.length * 4 + 2)
-                                  )
-                                )
-                              : undefined
-                          }
-                          variant={
-                            chunkBuffer ? "determinate" : "indeterminate"
-                          }
-                          sx={{ ml: 1 }}
-                        />
-                      )}
+                      <ArrowDropDownIcon />
                     </Button>
-                  </div>
-                  {chunkBuffer && (
-                    <StyledHoverPopover
-                      {...bindPopover(popupState)}
+                    <Menu
+                      {...bindMenu(popupState)}
                       anchorOrigin={{
                         vertical: "bottom",
                         horizontal: "center",
@@ -422,19 +503,42 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
                         horizontal: "center",
                       }}
                     >
-                      <pre>{chunkBuffer || "…"}</pre>
-                    </StyledHoverPopover>
-                  )}
-                </>
-              )}
-            </PopupState>
+                      {[
+                        "openai/o1-mini",
+                        "deepseek/deepseek-chat:free",
+                        "openai/o1",
+                        "openai/gpt-4o",
+                        "openai/o3",
+                        "google/gemma-3-27b-it:free",
+                        "meta-llama/llama-3.1-70b-instruct:free",
+                        "qwen/qwq-32b:free",
+                        "qwen/qwen-2.5-72b-instruct:free",
+                        "meta-llama/llama-3.3-70b-instruct:free",
+                      ].map((model) => (
+                        <MenuItem
+                          key={model}
+                          disabled={isAlignmentLoading}
+                          onClick={() => {
+                            popupState.close();
+                            handleAlignment(model)();
+                          }}
+                        >
+                          {model}
+                        </MenuItem>
+                      ))}
+                    </Menu>
+                  </>
+                )}
+              </PopupState>
+            </ButtonGroup>
             <span>VocaDB:</span>
             {vocaDBTranslations.map((translation) => (
               <Tooltip
                 key={translation.id}
                 title={
                   <>
-                    {translation.cultureCodes?.join(", ")} – {translation.source}
+                    {translation.cultureCodes?.join(", ")} –{" "}
+                    {translation.source}
                     <br />
                     {translation.value.substring(0, 100)}…
                   </>

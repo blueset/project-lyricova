@@ -22,7 +22,7 @@ export class LLMController {
   }
 
   private async translationAlignment(req: Request, res: Response) {
-    const { original, translation } = req.body;
+    const { original, translation, model } = req.body;
     if (!original || !translation) {
       return res
         .status(400)
@@ -46,8 +46,8 @@ export class LLMController {
     const stream = await client.beta.chat.completions.stream(
       {
         messages,
-        model: OPENAI_MODEL || "gpt-4o",
-        max_tokens: 4096,
+        model: model || OPENAI_MODEL || "gpt-4o",
+        // max_tokens: 65536,
       },
       OPENAI_BASE_URL.includes("openai.azure.com")
         ? {
@@ -72,6 +72,11 @@ export class LLMController {
       const chunkContent = chunk.choices[0].delta.content;
       if (chunkContent) {
         res.write(`data: ${JSON.stringify({chunk: chunkContent})}\n\n`);
+        res.flush();
+      }
+      const reasoningContent = (chunk.choices[0].delta as { reasoning?: string }).reasoning;
+      if (reasoningContent) {
+        res.write(`data: ${JSON.stringify({reasoning: reasoningContent})}\n\n`);
         res.flush();
       }
     }
