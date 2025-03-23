@@ -33,7 +33,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
 
   static allCases = [
     LyricsProviderSource.netease,
-    LyricsProviderSource.neteaseVercel,
+    // LyricsProviderSource.neteaseVercel,
     LyricsProviderSource.qq,
     LyricsProviderSource.kugou,
     // LyricsProviderSource.xiami,

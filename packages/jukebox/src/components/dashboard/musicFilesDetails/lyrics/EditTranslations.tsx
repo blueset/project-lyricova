@@ -248,13 +248,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
     });
   }, [setTranslatedLines]);
 
-  const [chunkBuffer, setChunkBuffer] = useState<string>(
-    Array(100)
-      .fill(null)
-      .map((_, idx) => `${idx + 1}………………………………………………`)
-      .join("\n")
-  );
-  // const [chunkBuffer, setChunkBuffer] = useState<string>("");
+  const [chunkBuffer, setChunkBuffer] = useState<string>("");
   const [reasoningBuffer, setReasoningBuffer] = useState<string>("");
   const reasoningContainerRef = useRef<HTMLDivElement>(null);
 
