@@ -67,6 +67,7 @@ export function furiganaHighlight(
       (base === "金" && ruby === "きん") ||
       (base === "後" && ruby === "ご") ||
       (base === "隙" && ruby === "ひま") ||
+      (base === "泡沫" && ruby === "うたかた") ||
       (base === "誘" && ruby === "さそ")
     )
       return secondaryText;
@@ -110,6 +111,14 @@ export function furiganaHighlight(
       ])
     ) {
       return primaryText;
+    }
+    if (
+      matchContexualFurigana(base, ruby, groupings, [
+        ["泡", "ほう"],
+        ["沫", "まつ"],
+      ]) 
+    ) {
+      return secondaryText
     }
     return undefined;
   };
