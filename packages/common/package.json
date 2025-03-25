@@ -67,7 +67,7 @@
     "mecab-async": "^0.1.2",
     "mui-rff": "^8.0.1",
     "mysql2": "^3.9.8",
-    "next": "^15.1.2",
+    "next": "^15.2.3",
     "nodejieba": "^3.4.4",
     "notistack": "^3.0.2",
     "novel-segment": "^2.7.53",
