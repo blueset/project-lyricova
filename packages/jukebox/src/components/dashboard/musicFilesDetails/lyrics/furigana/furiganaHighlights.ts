@@ -62,6 +62,7 @@ export function furiganaHighlight(
       (base === "被" && (ruby === "かぶ" || ruby === "こうむ")) ||
       (base === "開" && (ruby === "ひら" || ruby === "あ")) ||
       (base === "埋" && (ruby === "う" || ruby === "うず")) ||
+      (base === "鶏" && (ruby === "とり" || ruby === "にわとり")) ||
       (base === "後" &&
         (ruby === "あと" || ruby === "のち" || ruby === "ご")) ||
       (base === "金" && ruby === "きん") ||
@@ -79,6 +80,7 @@ export function furiganaHighlight(
       (base === "罰" && ruby === "ばち") ||
       (base === "後" && ruby === "のち") ||
       (base === "終" && ruby === "おわり") ||
+      (base === "一歩" && ruby === "はじめ") ||
       (base === "側" && ruby === "がわ")
     )
       return primaryText;
@@ -116,7 +118,11 @@ export function furiganaHighlight(
       matchContexualFurigana(base, ruby, groupings, [
         ["泡", "ほう"],
         ["沫", "まつ"],
-      ]) 
+      ]) ||
+      matchContexualFurigana(base, ruby, groupings, [
+        ["二", "に"],
+        ["人", "にん"],
+      ]) ||
     ) {
       return secondaryText
     }
