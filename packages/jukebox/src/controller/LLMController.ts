@@ -8,6 +8,10 @@ import {
 } from "lyricova-common/utils/secret";
 import OpenAI from "openai";
 import { getTranslationAlignmentLLMPrompt } from "../utils/llmPrompt";
+import { CoreMessage, streamText } from "ai";
+import { openai } from "@ai-sdk/openai"
+import { azure } from '@ai-sdk/azure';
+import { openrouter } from '@openrouter/ai-sdk-provider';
 
 export class LLMController {
   public router: Router;
@@ -29,38 +33,32 @@ export class LLMController {
         .json({ error: "Original and translation are required." });
     }
 
-    if (!OPENAI_BASE_URL || !OPENAI_API_KEY || !OPENAI_MODEL) {
-      // throw new Error("OpenAI credentials are not set");
-      return res
-        .status(500)
-        .json({ error: "OpenAI credentials are not set" });
-    }
-    const client = new OpenAI({
-      baseURL: OPENAI_BASE_URL,
-      apiKey: OPENAI_API_KEY,
-    });
+    // if (!OPENAI_BASE_URL || !OPENAI_API_KEY || !OPENAI_MODEL) {
+    //   // throw new Error("OpenAI credentials are not set");
+    //   return res
+    //     .status(500)
+    //     .json({ error: "OpenAI credentials are not set" });
+    // }
+    // const client = new OpenAI({
+    //   baseURL: OPENAI_BASE_URL,
+    //   apiKey: OPENAI_API_KEY,
+    // });
 
-    const messages = getTranslationAlignmentLLMPrompt(original, translation);
-    console.log("messages", JSON.stringify(messages, undefined, 2));
+    const client = openrouter(model || OPENAI_MODEL || "gpt-4o");
 
-    const stream = await client.beta.chat.completions.stream(
-      {
-        messages,
-        model: model || OPENAI_MODEL || "gpt-4o",
-        // max_tokens: 65536,
+    const messages = getTranslationAlignmentLLMPrompt(original, translation) as CoreMessage[];
+  
+    const result = await streamText({
+      model: client,
+      messages,
+      onError: (error) => {
+        console.error("Error:", error);
+        res.write(
+          `data: ${JSON.stringify({ error: error })}\n\n`
+        );
+        res.flush();
       },
-      OPENAI_BASE_URL.includes("openai.azure.com")
-        ? {
-            headers: {
-              "Api-Key": OPENAI_API_KEY,
-              Authorization: "",
-            },
-            query: {
-              "api-version": "2024-10-01-preview",
-            },
-          }
-        : undefined
-    );
+    });
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -68,23 +66,52 @@ export class LLMController {
     res.setHeader("X-Accel-Buffering", "no");
     res.flushHeaders();
 
-    for await (const chunk of stream) {
-      const chunkContent = chunk.choices[0].delta.content;
-      if (chunkContent) {
-        res.write(`data: ${JSON.stringify({chunk: chunkContent})}\n\n`);
+    let fullContent = "";
+
+    for await (const chunk of result.fullStream) {
+      if (chunk.type === "text-delta") {
+        res.write(`data: ${JSON.stringify({chunk: chunk.textDelta})}\n\n`);
         res.flush();
       }
-      const reasoningContent = (chunk.choices[0].delta as { reasoning?: string }).reasoning;
-      if (reasoningContent) {
-        res.write(`data: ${JSON.stringify({reasoning: reasoningContent})}\n\n`);
+      if (chunk.type === "reasoning") {
+        res.write(`data: ${JSON.stringify({reasoning: chunk.textDelta})}\n\n`);
         res.flush();
       }
     }
-
-    const response = await stream.finalChatCompletion();
     
-    console.log("response", response.choices[0].message.content);
-    const parsedResponse = JSON.parse(response.choices[0].message.content);
+    const response: string = await result.text;
+    console.log("response", response);
+    const parsedResponse = (() => {
+      let currentPos = 0;
+      while (currentPos < response.length) {
+        try {
+          const arrayStart = response.indexOf('[', currentPos);
+          if (arrayStart === -1) break;
+          
+          let bracketCount = 1;
+          let pos = arrayStart + 1;
+          
+          while (bracketCount > 0 && pos < response.length) {
+            if (response[pos] === '[') bracketCount++;
+            if (response[pos] === ']') bracketCount--;
+            pos++;
+          }
+          
+          if (bracketCount === 0) {
+            const arrayStr = response.substring(arrayStart, pos);
+            const parsed = JSON.parse(arrayStr);
+            if (Array.isArray(parsed)) return parsed;
+          }
+          
+          currentPos = arrayStart + 1;
+        } catch (e) {
+          currentPos++;
+          continue;
+        }
+      }
+      throw new Error('No valid JSON array found in response');
+    })();
+
     if (!Array.isArray(parsedResponse)) {
       // throw new Error(`Invalid response format: ${JSON.stringify(response)}`);
       res.write(
