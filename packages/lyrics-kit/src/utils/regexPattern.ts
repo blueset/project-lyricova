@@ -28,14 +28,13 @@ export function buildTimeTag(position: number): string {
   if (isNaN(position)) return null;
   const min = Math.floor(position / 60),
     sec = position - min * 60;
-  return `${min.toString().padStart(2, "0")}:${sec
-    .toFixed(3)
-    .padStart(6, "0")}`;
+  return `${min.toString().padStart(2, "0")}:${sec.toFixed(3).padStart(6, "0")}`;
 }
 
 export const id3TagRegex = /^(?!\[[+-]?\d+:\d+(?:\.\d+)?\])\[(.+?):(.+)\]$/gm;
 
-export const lyricsLineRegex = /^(\[[+-]?\d+:\d+(?:\.\d+)?\])+(?!\[)([^\n\r]*?)(?:【([^【】]*)】)?$/gm;
+export const lyricsLineRegex =
+  /^(\[[+-]?\d+:\d+(?:\.\d+)?\])+(?!\[)([^\n\r]*?)(?:【([^【】]*)】)?$/gm;
 
 export const base60TimeRegex = /^\s*(?:(\d+):)?(\d+(?:.\d+)?)\s*$/;
 
@@ -51,11 +50,12 @@ export const krcLineRegex = /^\[(\d+),(\d+)\](.*)/gm;
 
 export const netEaseInlineTagRegex = /\(0,(\d+)\)([^(]+)(\(0,1\) )?/g;
 
-export const netEaseYrcInlineTagRegex = /\((\d+),(\d+),(\d+)\)([^\)]+)?/g;
+export const netEaseYrcInlineTagRegex = /\((\d+),(\d+),(\d+)\)([^\(]+)?/g;
 
 export const kugouInlineTagRegex = /<(\d+),(\d+),0>([^<]*)/g;
 
-export const ttpodXtrcLineRegex = /^((?:\[[+-]?\d+:\d+(?:\.\d+)?\])+)(?:((?:<\d+>[^<\r\n]+)+)|(.*))$(?:[\r\n]+\[x\-trans\](.*))?/gm;
+export const ttpodXtrcLineRegex =
+  /^((?:\[[+-]?\d+:\d+(?:\.\d+)?\])+)(?:((?:<\d+>[^<\r\n]+)+)|(.*))$(?:[\r\n]+\[x\-trans\](.*))?/gm;
 
 export const ttpodXtrcInlineTagRegex = /<(\d+)>([^<\r\n]*)/gm;
 

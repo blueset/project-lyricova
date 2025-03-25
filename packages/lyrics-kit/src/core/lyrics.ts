@@ -10,11 +10,7 @@ import { LyricsMetadata, ATTACHMENT_TAGS } from "./lyricsMetadata";
 import _ from "lodash";
 import { OFFSET, LENGTH, ARTIST, TITLE } from "./idTagKey";
 import { TIME_TAG, TRANSLATION } from "./lyricsLineAttachment";
-import {
-  isCaseInsensitiveSimilar,
-  similarity,
-  similarityIn,
-} from "./stringExtensions";
+import { isCaseInsensitiveSimilar, similarity, similarityIn } from "./stringExtensions";
 
 type LyricsMatch =
   | {
@@ -118,7 +114,7 @@ export class Lyrics {
         }
 
         lines.push(
-          ...timeTags.map((tag) => {
+          ...timeTags.map(tag => {
             const l = _.clone(line);
             l.position = tag;
             l.lyrics = this;
@@ -140,14 +136,9 @@ export class Lyrics {
         attachmentStr = match[3] || "";
 
       for (const timeTag of timeTags) {
-        const indexOutcome = shouldSort
-          ? this.lineIndex(timeTag)
-          : this.lineIndexLinear(timeTag);
+        const indexOutcome = shouldSort ? this.lineIndex(timeTag) : this.lineIndexLinear(timeTag);
         if (indexOutcome.state === "found") {
-          this.lines[indexOutcome.at].attachments.setTag(
-            attachmentTagStr,
-            attachmentStr
-          );
+          this.lines[indexOutcome.at].attachments.setTag(attachmentTagStr, attachmentStr);
         }
       }
       tags.add(attachmentTagStr);
@@ -156,9 +147,7 @@ export class Lyrics {
     this.metadata.data[ATTACHMENT_TAGS] = tags;
 
     if (lines.length === 0) {
-      throw new Error(
-        `No valid line is found in this lyric file: ${description}`
-      );
+      throw new Error(`No valid line is found in this lyric file: ${description}`);
     }
 
     this.lines = lines;
@@ -170,7 +159,7 @@ export class Lyrics {
    */
   private lineIndex(position: number): LyricsMatch {
     const index = _.sortedIndexBy<{ position: number }>(
-      this.lines.filter((l) => !isNaN(l.position)),
+      this.lines.filter(l => !isNaN(l.position)),
       { position },
       "position"
     );
@@ -187,39 +176,33 @@ export class Lyrics {
   }
 
   private lineIndexLinear(position: number): LyricsMatch {
-    const index = this.lines.findIndex((l) => l.position === position);
+    const index = this.lines.findIndex(l => l.position === position);
     if (index >= 0) return { state: "found", at: index };
     return { state: "notFound", insertAt: this.lines.length };
   }
 
   /** Build LRCX string. */
   public toString(): string {
-    const components = Object.entries(this.idTags).map(
-      (v) => `[${v[0]}:${v[1]}]`
-    );
-    components.push(...this.lines.map((v) => v.toString()));
+    const components = Object.entries(this.idTags).map(v => `[${v[0]}:${v[1]}]`);
+    components.push(...this.lines.map(v => v.toString()));
     return components.join("\n");
   }
 
   /** Build LRCX string in legacy syntax. */
   public legacyToString(): string {
-    const components = Object.entries(this.idTags).map(
-      (v) => `[${v[0]}:${v[1]}]`
-    );
-    components.push(...this.lines.map((v) => v.toLegacyString()));
+    const components = Object.entries(this.idTags).map(v => `[${v[0]}:${v[1]}]`);
+    components.push(...this.lines.map(v => v.toLegacyString()));
     return components.join("\n");
   }
 
   private static customSyntaxConfig: CustomSyntaxConfig = {
     idTag: (key, val) => `[${key}:${val}]`,
-    line: (line) => line.toString(),
+    line: line => line.toString(),
   };
 
   public toCustomSyntax(config: CustomSyntaxConfig): string {
     config = _.defaults(config, Lyrics.customSyntaxConfig);
-    const components = Object.entries(this.idTags).map((v) =>
-      config.idTag(v[0], v[1])
-    );
+    const components = Object.entries(this.idTags).map(v => config.idTag(v[0], v[1]));
     components.push(...this.lines.map(config.line));
     return components.join("\n");
   }
@@ -230,7 +213,7 @@ export class Lyrics {
    */
   public toPlainLRC(options: ToPlainLRCOptions = { lineOptions: {} }): string {
     return this.toCustomSyntax({
-      line: (line) => line.toLegacyString(options.lineOptions),
+      line: line => line.toLegacyString(options.lineOptions),
     });
   }
 
@@ -412,9 +395,8 @@ export class Lyrics {
         otherIndex++;
         continue;
       } else if (
-        Math.abs(
-          this.lines[index].position - other.lines[otherIndex].position
-        ) < mergeTimetagThreshold
+        Math.abs(this.lines[index].position - other.lines[otherIndex].position) <
+        mergeTimetagThreshold
       ) {
         const transStr = other.lines[otherIndex].content;
         if (transStr !== "") {
@@ -422,9 +404,7 @@ export class Lyrics {
         }
         index++;
         otherIndex++;
-      } else if (
-        this.lines[index].position > other.lines[otherIndex].position
-      ) {
+      } else if (this.lines[index].position > other.lines[otherIndex].position) {
         otherIndex++;
       } else {
         index++;
@@ -434,12 +414,13 @@ export class Lyrics {
   }
 
   public mergeByProximity(other: Lyrics, languageCode?: string): void {
-    const lines = this.lines.filter((l) => !isNaN(l.position));
-    const otherLines = other.lines.filter((l) => !isNaN(l.position) && l.content);
+    const lines = this.lines.filter(l => !isNaN(l.position));
+    const otherLines = other.lines.filter(l => !isNaN(l.position) && l.content);
 
     if (lines.length === 0 || otherLines.length === 0) return;
 
     for (const otherLine of otherLines) {
+      if (!otherLine.content) continue;
       const closestLine = lines.reduce((prev, curr) => {
         const prevDiff = Math.abs(prev.position - otherLine.position);
         const currDiff = Math.abs(curr.position - otherLine.position);
@@ -466,7 +447,7 @@ export class Lyrics {
   }
 
   public get translationLanguages(): (string | undefined)[] {
-    const result = [...new Set(this.lines.flatMap((v) => Object.keys(v.attachments.translations)))];
+    const result = [...new Set(this.lines.flatMap(v => Object.keys(v.attachments.translations)))];
     result.sort();
     return result;
   }

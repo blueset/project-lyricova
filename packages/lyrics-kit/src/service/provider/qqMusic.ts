@@ -6,10 +6,7 @@ import axiosJsonp from "../../utils/axiosJsonp";
 import _ from "lodash";
 import { TITLE, ARTIST, ALBUM } from "../../core/idTagKey";
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import {
-  QQSongItem,
-  QQResponseSearchResult,
-} from "../types/qqMusic/searchResult";
+import { QQSongItem, QQResponseSearchResult } from "../types/qqMusic/searchResult";
 import { QQResponseSinglePlainLyrics } from "../types/qqMusic/singleLyrics";
 import {
   Attachments,
@@ -27,8 +24,7 @@ import { LyricsLine } from "../../core";
 
 const SEARCH_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg";
 const LYRICS_URL = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg";
-const DETAILED_LYRICS_URL =
-  "https://c.y.qq.com/qqmusic/fcgi-bin/lyric_download.fcg ";
+const DETAILED_LYRICS_URL = "https://c.y.qq.com/qqmusic/fcgi-bin/lyric_download.fcg ";
 const headers = {
   Cookie:
     "os=pc;osver=Microsoft-Windows-10-Professional-build-16299.125-64bit;appver=2.0.3.131777;channel=netease;__remember_me=true",
@@ -42,15 +38,13 @@ const timeTagPattern = /^\[(\d+),(\d+)\](.*)/;
 class QQMusicQLyrics extends Lyrics {
   constructor(content: string) {
     super();
-    const linesString = content
-      .split("\n")
-      .filter((l) => l.match(timeTagPattern));
+    const linesString = content.split("\n").filter(l => l.match(timeTagPattern));
 
     if (linesString.length === 0) {
       throw new Error("Lyrics are empty");
     }
 
-    const lines = linesString.map<[number, number, string]>((line) => {
+    const lines = linesString.map<[number, number, string]>(line => {
       const timeTag = line.match(timeTagPattern);
       const start = parseInt(timeTag[1]);
       const duration = parseInt(timeTag[2]);
@@ -71,9 +65,7 @@ class QQMusicQLyrics extends Lyrics {
           lineContent += segments[idx - 1];
         }
       });
-      attachment.tags.push(
-        new WordTimeTagLabel(duration / 1000, lineContent.length)
-      );
+      attachment.tags.push(new WordTimeTagLabel(duration / 1000, lineContent.length));
 
       const att = new Attachments({ [TIME_TAG]: attachment });
       const lineObj = new LyricsLine(lineContent, start / 1000, att);
@@ -81,10 +73,7 @@ class QQMusicQLyrics extends Lyrics {
 
       lineObjs.push(lineObj);
 
-      if (
-        idx == lines.length - 1 ||
-        lines[idx + 1][0] - start - duration > 500
-      ) {
+      if (idx == lines.length - 1 || lines[idx + 1][0] - start - duration > 500) {
         const blankLine = new LyricsLine("", (start + duration) / 1000);
         blankLine.lyrics = this;
         lineObjs.push(blankLine);
@@ -103,9 +92,7 @@ function decodeLyrics(base64: string): string {
 export class QQMusicProvider extends LyricsProvider<QQSongItem> {
   // static source = LyricsProviderSource.qq;
 
-  public async searchLyrics(
-    request: LyricsSearchRequest
-  ): Promise<QQSongItem[]> {
+  public async searchLyrics(request: LyricsSearchRequest): Promise<QQSongItem[]> {
     try {
       const response = await axios.post<QQResponseSearchResult>(
         SEARCH_URL,
@@ -138,9 +125,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
     }
   }
   public async fetchLyrics(token: QQSongItem): Promise<Lyrics | undefined> {
-    return (
-      (await this.fetchLyricsQrc(token)) || (await this.fetchLyricsLrc(token))
-    );
+    return (await this.fetchLyricsQrc(token)) || (await this.fetchLyricsLrc(token));
   }
 
   async fetchLyricsLrc(token: QQSongItem): Promise<Lyrics | undefined> {
@@ -188,8 +173,8 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       const transLrcContent = data.trans ? decodeLyrics(data.trans) : null;
       if (transLrcContent) {
         const transLrc = new Lyrics(transLrcContent);
-        transLrc.lines.forEach((line) => {
-          if (line.content === "//") {
+        transLrc.lines.forEach(line => {
+          if (line.content.trim() === "//") {
             line.content = "";
           }
         });
@@ -197,8 +182,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       }
 
       lrc.idTags[TITLE] = token.title;
-      if (token.singer.length > 0)
-        lrc.idTags[ARTIST] = token.singer.map((s) => s.title).join(", ");
+      if (token.singer.length > 0) lrc.idTags[ARTIST] = token.singer.map(s => s.title).join(", ");
       lrc.idTags[ALBUM] = token.album?.title;
 
       lrc.length = token.interval;
@@ -206,8 +190,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       lrc.metadata.providerToken = `${token.mid}`;
       if (token.mid) {
         const id = parseInt(token.mid);
-        lrc.metadata.artworkURL = `http://imgcache.qq.com/music/photo/album/${id %
-          100}/${id}.jpg`;
+        lrc.metadata.artworkURL = `http://imgcache.qq.com/music/photo/album/${id % 100}/${id}.jpg`;
       }
       return lrc;
     } catch (e) {
@@ -224,16 +207,12 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         lrctype: "4",
         musicid: token.id.toString(),
       });
-      const response = await axios.post<string>(
-        DETAILED_LYRICS_URL,
-        payload.toString(),
-        {
-          headers: {
-            ...headers,
-            "content-type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
+      const response = await axios.post<string>(DETAILED_LYRICS_URL, payload.toString(), {
+        headers: {
+          ...headers,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+      });
 
       if (response.status !== 200) {
         console.error(response.data);
@@ -250,12 +229,8 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       const lyrics = $("lyric") || [];
       for (const lyricEntry of lyrics) {
         // let content = getChildElementCDATA(lyricEntry, 'content');
-        const contentHex = $(lyricEntry)
-          .find("content")
-          ?.text();
-        const contentHexTs = $(lyricEntry)
-          .find("contentts")
-          ?.text();
+        const contentHex = $(lyricEntry).find("content")?.text();
+        const contentHexTs = $(lyricEntry).find("contentts")?.text();
 
         const contentXml = decodeQrc(contentHex);
         $ = cheerio.load(contentXml, { xmlMode: true });
@@ -263,8 +238,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         const lrc = new QQMusicQLyrics(content);
 
         lrc.idTags[TITLE] = token.title;
-        if (token.singer.length > 0)
-          lrc.idTags[ARTIST] = token.singer.map((s) => s.title).join(", ");
+        if (token.singer.length > 0) lrc.idTags[ARTIST] = token.singer.map(s => s.title).join(", ");
         lrc.idTags[ALBUM] = token.album?.title;
 
         lrc.length = token.interval;
@@ -272,13 +246,19 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         lrc.metadata.providerToken = `${token.mid}`;
         if (token.mid) {
           const id = parseInt(token.mid);
-          lrc.metadata.artworkURL = `http://imgcache.qq.com/music/photo/album/${id %
-            100}/${id}.jpg`;
+          lrc.metadata.artworkURL = `http://imgcache.qq.com/music/photo/album/${
+            id % 100
+          }/${id}.jpg`;
         }
 
         if (contentHexTs) {
           const transLrcContent = decodeQrc(contentHexTs);
           const transLrc = new Lyrics(transLrcContent);
+          transLrc.lines.forEach(line => {
+            if (line.content.trim() === "//") {
+              line.content = "";
+            }
+          });
           lrc.mergeByProximity(transLrc, "zh");
 
           if (transLrc.idTags.kana) {
@@ -303,9 +283,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         if (furiganaReplacements.length < 1) break;
 
         // Matches either single kanji or a group of full-width digits together.
-        const kanjis = [
-          ...line.content.matchAll(/(\p{Script=Han}|[０-９0-9]+)/gu),
-        ];
+        const kanjis = [...line.content.matchAll(/(\p{Script=Han}|[０-９0-9]+)/gu)];
         const furigana: [string, Range][] = [];
 
         while (kanjis.length > 0 && furiganaReplacements.length > 0) {
