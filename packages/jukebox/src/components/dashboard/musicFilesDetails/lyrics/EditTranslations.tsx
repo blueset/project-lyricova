@@ -502,7 +502,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
                         "deepseek/deepseek-chat:free",
                         "openai/o1",
                         "openai/gpt-4o",
-                        "openai/o3",
+                        "openai/o3-mini",
                         "google/gemma-3-27b-it:free",
                         "meta-llama/llama-3.1-70b-instruct:free",
                         "qwen/qwq-32b:free",

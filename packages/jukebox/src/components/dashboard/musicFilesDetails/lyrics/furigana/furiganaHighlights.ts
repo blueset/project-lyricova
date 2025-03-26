@@ -122,7 +122,7 @@ export function furiganaHighlight(
       matchContexualFurigana(base, ruby, groupings, [
         ["二", "に"],
         ["人", "にん"],
-      ]) ||
+      ])
     ) {
       return secondaryText
     }
