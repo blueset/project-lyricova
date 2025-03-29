@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:20
 
 # Set the working directory to /app
 WORKDIR /app
@@ -14,10 +14,7 @@ RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git /tmp
     rm -rf /tmp/neologd
 
 # Install Python 3 and dependencies
-RUN apt-get install -y python3 python3-pip 
-RUN pip3 install yt-dlp https://github.com/coletdjnz/yt-dlp-youtube-oauth2/archive/refs/heads/master.zip --break-system-packages
-RUN echo 'machine youtube login oauth2 password ""' >  /etc/netrc.txt
-RUN echo '--netrc --netrc-location /etc/netrc.txt' > /etc/yt-dlp.conf
+RUN apt-get install -y python3 python3-pip
 
 RUN npm install -g concurrently
 
