@@ -5,13 +5,14 @@
       "ESNext.Array",
       "es5",
       "es6",
+      "ESNext",
       "DOM"
     ],
-    "module": "commonjs",
+    "module": "esnext",
     "esModuleInterop": true,
-    "target": "ES2020",
+    "target": "ES2024",
     "noImplicitAny": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
@@ -22,6 +23,9 @@
       "*": [
         "node_modules/*",
         "src/types"
+      ],
+      "@/*": [
+        "src/*"
       ]
     },
     "allowJs": true,

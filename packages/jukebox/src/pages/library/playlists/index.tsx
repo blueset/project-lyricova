@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import React from "react";
-import type { Playlist } from "lyricova-common/models/Playlist";
+import type { Playlist } from "@lyricova/api/graphql/types";
 import PlaylistAvatar, { gradients } from "../../../components/PlaylistAvatar";
 import type { DocumentNode } from "graphql";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";

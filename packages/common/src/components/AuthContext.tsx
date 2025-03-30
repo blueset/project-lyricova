@@ -1,7 +1,7 @@
 import { createContext, useEffect, useContext, ReactNode } from "react";
 import { User } from "../models/User";
 import { useQuery, gql } from "@apollo/client";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { LS_JWT_KEY } from "../frontendUtils/localStorage";
 import React from "react";
 
@@ -69,9 +69,9 @@ export function AuthContext({
       }
     }
     if (hasToken && !needAuth) {
-      router.push(authRedirect);
+      router?.push(authRedirect);
     } else if (!hasToken && needAuth) {
-      router.push("/login");
+      router?.push("/login");
     }
   }, [loading, error, data, noRedirect, authRedirect, router]);
 

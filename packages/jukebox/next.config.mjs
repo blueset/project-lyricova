@@ -6,9 +6,17 @@ const withBundleAnalyzer = analyzer({
 });
 
 export default withBundleAnalyzer({
-  // webpack: (config, options) => {
-  //   // config.resolve.alias.react = path.resolve(__dirname, "node_modules/react");
-  //   return config;
-  // },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:8083/api/:path*",
+      },
+      {
+        source: "/graphql",
+        destination: "http://localhost:8083/graphql",
+      },
+    ];
+  }
 });
 

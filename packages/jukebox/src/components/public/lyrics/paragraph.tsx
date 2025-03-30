@@ -1,4 +1,4 @@
-import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../hooks/useLyricsState";
 import { Box, styled } from "@mui/material";

@@ -39,9 +39,13 @@ const themeMod = createTheme({
 
 type AppPropsExtension = AppProps & {
   Component: NextComponentType & {
-    layout?: (children: React.ReactChild) => React.ReactChild;
+    layout?: (children: React.ReactNode) => React.ReactNode;
   };
 };
+
+function RenderLayout({ layout, children }: { layout?: (children: React.ReactNode) => React.ReactNode; children: React.ReactNode }) {
+  return layout ? layout(children) : <>{children}</>;
+}
 
 function MyApp({ Component, pageProps, ...props }: AppPropsExtension) {
   useEffect(() => {
@@ -105,7 +109,10 @@ function MyApp({ Component, pageProps, ...props }: AppPropsExtension) {
         <ThemeProvider theme={themeMod}>
           {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
           <CssBaseline />
-          {getLayout(<Component {...pageProps} />)}
+          {/* {getLayout(<Component {...pageProps} />)} */}
+          <RenderLayout layout={getLayout}>
+            <Component {...pageProps} />
+          </RenderLayout>
         </ThemeProvider>
       </ApolloProvider>
     </AppCacheProvider>

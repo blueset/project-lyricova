@@ -33,7 +33,7 @@ import PopupState, {
   bindPopover,
   bindTrigger,
 } from "material-ui-popup-state";
-import type { VocaDBLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
+import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 const TRANSLATION_ALIGNMENT_QUERY = gql`

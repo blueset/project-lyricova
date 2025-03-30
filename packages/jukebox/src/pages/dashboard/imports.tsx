@@ -2,18 +2,12 @@ import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
 import {
   Box,
   Button,
-  CircularProgress,
-  LinearProgress,
-  LinearProgressProps,
   Typography,
 } from "@mui/material";
-import { gql, useApolloClient, useMutation } from "@apollo/client";
-import { useCallback } from "react";
-import { MusicFilesScanOutcome } from "../../graphql/MusicFileResolver";
+import { gql, useApolloClient } from "@apollo/client";
 import { useNamedState } from "../../hooks/useNamedState";
-import { LyricsKitLyricsEntry } from "../../graphql/LyricsProvidersResolver";
 import { useSnackbar } from "notistack";
-import type { Artist } from "lyricova-common/models/Artist";
+import type { Artist } from "@lyricova/api/graphql/types";
 
 const ARTISTS_TO_IMPORT_QUERY = gql`
   query {

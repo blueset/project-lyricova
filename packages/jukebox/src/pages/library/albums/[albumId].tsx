@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
 import {
   Avatar,
@@ -22,10 +22,10 @@ import {
 } from "lyricova-common/utils/fragments";
 import Alert from "@mui/material/Alert";
 import React, { Fragment } from "react";
-import type { Album } from "lyricova-common/models/Album";
+import type { Album } from "@lyricova/api/graphql/types";
 import _ from "lodash";
 import filesize from "filesize";
-import type { Song } from "lyricova-common/models/Song";
+import type { Song } from "@lyricova/api/graphql/types";
 import ButtonRow from "../../../components/ButtonRow";
 import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
@@ -39,7 +39,7 @@ import {
   bindTrigger,
   usePopupState,
 } from "material-ui-popup-state/hooks";
-import type { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "@lyricova/api/graphql/types";
 import TrackListRow from "../../../components/public/library/TrackListRow";
 import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "../../../redux/public/store";

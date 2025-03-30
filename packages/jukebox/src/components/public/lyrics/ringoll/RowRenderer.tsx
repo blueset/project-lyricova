@@ -1,6 +1,6 @@
 import { forwardRef, memo, useEffect } from "react";
 import { useSpring, animated } from "@react-spring/web";
-import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
+import { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
 import { RowRendererProps } from "../components/LyricsVirtualizer";
 import { styled } from "@mui/material/styles";
 import { RingollLineRenderer } from "./LineRenderer";

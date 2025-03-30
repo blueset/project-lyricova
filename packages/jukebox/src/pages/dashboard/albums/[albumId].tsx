@@ -1,8 +1,8 @@
 import { getLayout } from "../../../components/dashboard/layouts/AlbumInfoLayout";
 import { gql, useQuery } from "@apollo/client";
 import { AlbumFragments } from "lyricova-common/utils/fragments";
-import type { Album } from "lyricova-common/models/Album";
-import { useRouter } from "next/router";
+import type { Album } from "@lyricova/api/graphql/types";
+import { useRouter } from "next/compat/router";
 import AlbumEntityDialog from "lyricova-common/components/albumEntityDialog";
 import { useCallback } from "react";
 

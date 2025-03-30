@@ -16,7 +16,7 @@ import {
 import { TextField } from "mui-rff";
 import { gql, useApolloClient } from "@apollo/client";
 import { useNamedState } from "../../../../hooks/useNamedState";
-import type { LyricsKitLyricsEntry } from "../../../../graphql/LyricsProvidersResolver";
+import type { LyricsKitLyricsEntry } from "@lyricova/api/graphql/types";
 import { useSnackbar } from "notistack";
 import {
   red,
@@ -34,8 +34,8 @@ import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
-import type { LyricsAnalysisResult } from "../../../../utils/lyricsCheck";
-import { lyricsAnalysis } from "../../../../utils/lyricsCheck";
+import type { LyricsAnalysisResult } from "@/frontendUtils/lyricsCheck";
+import { lyricsAnalysis } from "@/frontendUtils/lyricsCheck";
 import { Lyrics } from "lyrics-kit/core";
 import { useCallback, useMemo } from "react";
 import TooltipIconButton from "../../TooltipIconButton";

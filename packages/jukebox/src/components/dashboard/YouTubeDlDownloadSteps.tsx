@@ -28,9 +28,9 @@ import filesize from "filesize";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import { useSnackbar } from "notistack";
-import { swapExt } from "../../utils/path";
+import { swapExt } from "@/frontendUtils/path";
 import type { DocumentNode } from "graphql";
-import { YouTubeDlProgressType } from "../../graphql/DownloadResolver";
+import { YouTubeDlProgressType } from "@lyricova/api/graphql/types";
 
 const YOUTUBE_DL_INFO_QUERY = gql`
   query ($url: String!) {

@@ -1,5 +1,5 @@
 import { getLayout } from "../../../components/dashboard/layouts/ReviewLayout";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import MusicFileDetails from "../../../components/dashboard/MusicFileDetails";
 
 export default function ReviewFile() {

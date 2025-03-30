@@ -1,4 +1,4 @@
-import { LyricsKitLyrics } from "../../../../graphql/LyricsKitObjects";
+import { LyricsKitLyrics } from "@lyricova/api/graphql/types";
 import { LyricsVirtualizer } from "../components/LyricsVirtualizer";
 import { RowRenderer } from "./RowRenderer";
 import { styled } from "@mui/material";

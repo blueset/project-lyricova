@@ -10,7 +10,7 @@ import {
   useRef,
 } from "react";
 import { LyricsAnimationRef } from "./AnimationRef.type";
-import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
+import { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
 import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
 
 function lineToTimeSegments(line: LyricsKitLyricsLine, lineStart: number, lineEnd: number) {

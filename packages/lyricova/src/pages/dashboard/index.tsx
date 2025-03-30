@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { CountCard } from "lyricova-common/components/CountCard";
 import { CountUpCard } from "lyricova-common/components/CountUpCard";
-import type { DashboardStats } from "../../graphql/StatsResolver";
+import type { DashboardStats } from "@lyricova/api/graphql/types";
 
 const DASHBOARD_STATS_QUERY = gql`
   query {

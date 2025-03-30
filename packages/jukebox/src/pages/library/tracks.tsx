@@ -20,9 +20,9 @@ import ButtonRow from "../../components/ButtonRow";
 import AutoResizer from "react-virtualized-auto-sizer";
 import { gql, useQuery } from "@apollo/client";
 import { MusicFileFragments } from "lyricova-common/utils/fragments";
-import type { MusicFilesPagination } from "../../graphql/MusicFileResolver";
+import type { MusicFilesPagination } from "@lyricova/api/graphql/types";
 import React, { useCallback, useMemo, useRef } from "react";
-import type { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "@lyricova/api/graphql/types";
 import _ from "lodash";
 import { useNamedState } from "../../hooks/useNamedState";
 import {
@@ -32,7 +32,7 @@ import {
 } from "material-ui-popup-state/hooks";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useAuthContext } from "lyricova-common/components/AuthContext";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import ListItemTextWithTime from "../../components/public/library/ListItemTextWithTime";
 import type { DocumentNode } from "graphql";
 import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";

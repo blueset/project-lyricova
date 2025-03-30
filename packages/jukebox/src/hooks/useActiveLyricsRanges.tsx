@@ -1,6 +1,6 @@
 import { usePlayerLyricsState } from "./usePlayerLyricsState";
 import type { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
-import type { LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
+import type { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
 import { RefObject, useMemo } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 

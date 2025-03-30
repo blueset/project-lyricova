@@ -1,6 +1,6 @@
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
-import { FuriganaMapping } from "lyricova-common/models/FuriganaMapping";
+import { FuriganaMapping } from "@lyricova/api/graphql/types";
 import {
   DataGrid,
   GridActionsCellItem,

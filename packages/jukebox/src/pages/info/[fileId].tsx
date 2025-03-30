@@ -4,7 +4,7 @@ import { Box, Chip } from "@mui/material";
 import { useAuthContext } from "lyricova-common/components/AuthContext";
 import ButtonRow from "../../components/ButtonRow";
 import React from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import FileSongInfo from "../../components/public/FileSongInfo";
 import { useAppSelector } from "../../redux/public/store";
 import { currentSongSelector } from "../../redux/public/playlist";

@@ -1,4 +1,4 @@
-import type { LyricsKitLyrics, LyricsKitLyricsLine } from "../../../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics, LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
 import { styled } from "@mui/material";
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import clsx from "clsx";

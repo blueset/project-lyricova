@@ -8,13 +8,10 @@ import {
 } from "@mui/material";
 import { useNamedState } from "../../hooks/useNamedState";
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
-import { makeStyles } from "@mui/material/styles";
 import type { ReactNode } from "react";
 import { useCallback } from "react";
 import YouTubeDlDownloadSteps from "../../components/dashboard/YouTubeDlDownloadSteps";
-import MusicDlDownloadSteps from "../../components/dashboard/MusicDlDownloadSteps";
 import ButtonRow from "../../components/ButtonRow";
-import MxGetDownloadSteps from "../../components/dashboard/MxGetDownloadSteps";
 
 function BlankStepper({ firstStep }: { firstStep: ReactNode }) {
   return (
@@ -69,12 +66,6 @@ export default function DownloadMusicFile() {
       />
     );
   }
-  // if (chosenSource === "music-dl") {
-  //   return <MusicDlDownloadSteps step={step} setStep={setStep} firstStep={firstStep} />;
-  // }
-  // if (chosenSource === "mxget") {
-  //   return <MxGetDownloadSteps step={step} setStep={setStep} firstStep={firstStep} />;
-  // }
   return <BlankStepper firstStep={firstStep} />;
 }
 

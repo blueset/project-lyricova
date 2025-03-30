@@ -1,7 +1,7 @@
 import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
-} from "../../../graphql/LyricsKitObjects";
+} from "@lyricova/api/graphql/types";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import { Box } from "@mui/material";

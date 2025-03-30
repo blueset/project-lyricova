@@ -1,5 +1,5 @@
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
-import type { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "@lyricova/api/graphql/types";
 import {
   AppBar,
   Button,

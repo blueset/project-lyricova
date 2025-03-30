@@ -1,4 +1,4 @@
-import { hsv, rgb } from "color-convert";
+import convert from "color-convert";
 
 export type Pixel = [number, number, number];
 
@@ -35,9 +35,9 @@ export function resizeImage(
  * @returns 返回一个经过调整的颜色
  */
 export const normalizeColor = (color: Pixel): Pixel => {
-  const hsvColor = rgb.hsv.raw(color);
+  const hsvColor = convert.rgb.hsv.raw(color);
 
   hsvColor[2] = Math.min(80, Math.max(20, hsvColor[2]));
 
-  return hsv.rgb(hsvColor);
+  return convert.hsv.rgb(hsvColor);
 };

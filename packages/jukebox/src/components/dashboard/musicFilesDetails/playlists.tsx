@@ -1,4 +1,4 @@
-import type { Playlist } from "lyricova-common/models/Playlist";
+import type { Playlist } from "@lyricova/api/graphql/types";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import {
   Avatar,

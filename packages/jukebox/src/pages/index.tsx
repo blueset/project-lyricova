@@ -6,7 +6,7 @@ import { getLayout } from "../components/public/layouts/IndexLayout";
 import { FocusedLyrics } from "../components/public/lyrics/focused";
 import { PlainLyrics } from "../components/public/lyrics/plain";
 import { LyricsSwitchButton } from "../components/public/LyricsSwitchButton";
-import type { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
 import { SlantedLyrics } from "../components/public/lyrics/slanted";
 import { ParagraphLyrics } from "../components/public/lyrics/paragraph";
 import { TypingFocusedLyrics } from "../components/public/lyrics/typingFocused";

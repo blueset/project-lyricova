@@ -124,7 +124,7 @@ export function furiganaHighlight(
         ["人", "にん"],
       ])
     ) {
-      return secondaryText
+      return secondaryText;
     }
     return undefined;
   };

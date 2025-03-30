@@ -1,5 +1,5 @@
 import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
@@ -28,8 +28,8 @@ import { Field, Form, FormSpy } from "react-final-form";
 import { OnChange } from "react-final-form-listeners";
 import slugify from "slugify";
 import { useSnackbar } from "notistack";
-import type { Playlist } from "lyricova-common/models/Playlist";
-import type { MusicFile } from "lyricova-common/models/MusicFile";
+import type { Playlist } from "@lyricova/api/graphql/types";
+import type { MusicFile } from "@lyricova/api/graphql/types";
 import type {
   DropResult} from "react-beautiful-dnd";
 import {

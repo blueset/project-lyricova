@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
-import type { VocaDBLyricsEntry } from "../../../../../graphql/LyricsProvidersResolver";
+import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
 import Link from "lyricova-common/components/Link";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TooltipIconButton from "../../../TooltipIconButton";

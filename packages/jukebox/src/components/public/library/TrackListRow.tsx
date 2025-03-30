@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {
   bindMenu,
@@ -18,8 +18,8 @@ import {
 } from "@mui/material";
 import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import type { MusicFile } from "lyricova-common/models/MusicFile";
-import type { Song } from "lyricova-common/models/Song";
+import type { MusicFile } from "@lyricova/api/graphql/types";
+import type { Song } from "@lyricova/api/graphql/types";
 import ListItemTextWithTime from "./ListItemTextWithTime";
 import {
   playTrack,

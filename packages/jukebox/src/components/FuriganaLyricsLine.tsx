@@ -1,6 +1,6 @@
 import type { LyricsLine } from "lyrics-kit/core";
 import { FURIGANA } from "lyrics-kit/core";
-import type { LyricsKitLyricsLine } from "../graphql/LyricsKitObjects";
+import type { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
 import { CSSProperties } from "react";
 
 interface Props {

@@ -1,7 +1,7 @@
 import React, { AnchorHTMLAttributes } from "react";
 import NextLink from "next/link";
 import MuiLink from "@mui/material/Link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import clsx from "clsx";
 
 interface NextComposedProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -48,7 +48,7 @@ function Link(props: LinkProps) {
   const router = useRouter();
   const criteria = activeCriteria || ((v: string) => v === href);
   const className: string = clsx(classNameProps, {
-    [activeClassName]: criteria(router.pathname) && activeClassName,
+    [activeClassName]: router?.pathname && criteria(router?.pathname) && activeClassName,
   });
 
   if (naked) {

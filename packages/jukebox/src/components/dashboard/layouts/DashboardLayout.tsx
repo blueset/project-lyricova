@@ -40,7 +40,7 @@ import {
   AuthContext,
   AuthContextConsumer,
 } from "lyricova-common/components/AuthContext";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { NextComposedLink } from "lyricova-common/components/Link";
 import Head from "next/head";
 import type { SnackbarKey } from "notistack";
@@ -140,7 +140,7 @@ function NavMenuItem({
   as,
   prefixMatch,
 }: NavMenuItemProps) {
-  const router = useRouter();
+  const { pathname } = useRouter();
   const criteria =
     activeCriteria ||
     ((v: string) => (prefixMatch ? v.startsWith(href) : v === href));
@@ -148,7 +148,7 @@ function NavMenuItem({
   return (
     <ListItemButton
       component={NextComposedLink}
-      selected={criteria(router.pathname)}
+      selected={criteria(pathname)}
       href={href}
       as={as}
     >
@@ -381,4 +381,6 @@ export default function DashboardLayout({ title, children }: Props) {
 
 // eslint-disable-next-line react/display-name
 export const getLayout = (title?: string) => (page: ReactNode) =>
-  <DashboardLayout title={title}>{page}</DashboardLayout>;
+  DashboardLayout({ title, children: page });
+// export const getLayout = (title?: string) => (page: ReactNode) =>
+//   <DashboardLayout title={title}>{page}</DashboardLayout>;

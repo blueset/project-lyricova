@@ -1,7 +1,7 @@
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
 import { Grid2 as Grid, Typography, Box, Button } from "@mui/material";
-import type { DashboardStats } from "../../graphql/StatsResolver";
+import type { DashboardStats } from "@lyricova/api/graphql/types";
 import { useNamedState } from "../../hooks/useNamedState";
 import dayjs from "dayjs";
 import { useEffect } from "react";

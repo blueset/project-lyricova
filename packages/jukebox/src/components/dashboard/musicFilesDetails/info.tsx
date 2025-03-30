@@ -12,8 +12,8 @@ import {
   Tooltip,
 } from "@mui/material";
 import { gql, useApolloClient } from "@apollo/client";
-import type { Song } from "lyricova-common/models/Song";
-import type { Album } from "lyricova-common/models/Album";
+import type { Song } from "@lyricova/api/graphql/types";
+import type { Album } from "@lyricova/api/graphql/types";
 import SelectSongEntityBox from "lyricova-common/components/selectSongEntityBox";
 import TransliterationAdornment from "lyricova-common/components/TransliterationAdornment";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";

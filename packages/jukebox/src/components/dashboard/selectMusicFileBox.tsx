@@ -5,7 +5,7 @@ import { gql, useApolloClient } from "@apollo/client";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { useField, useForm } from "react-final-form";
 import { Autocomplete } from "mui-rff";
-import type { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "@lyricova/api/graphql/types";
 import { useNamedState } from "../../hooks/useNamedState";
 import type { DocumentNode } from "graphql";
 

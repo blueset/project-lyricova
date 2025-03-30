@@ -6,9 +6,9 @@ import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import GetAppIcon from "@mui/icons-material/GetApp";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { Avatar, Tooltip } from "@mui/material";
-import type { Artist } from "lyricova-common/models/Artist";
+import type { Artist } from "@lyricova/api/graphql/types";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 

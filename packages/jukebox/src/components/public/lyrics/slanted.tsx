@@ -1,4 +1,4 @@
-import type { LyricsKitLyrics } from "../../../graphql/LyricsKitObjects";
+import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import { useTrackwiseTimelineControl } from "../../../hooks/useTrackwiseTimelineControl";

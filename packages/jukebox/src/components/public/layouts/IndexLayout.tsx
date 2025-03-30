@@ -8,7 +8,7 @@ import type { Track } from "../AppContext";
 import { AppContext } from "../AppContext";
 import { useNamedState } from "../../../hooks/useNamedState";
 import CurrentPlaylist from "../CurrentPlaylist";
-import type { Texture } from "../../../graphql/TextureResolver";
+import type { Texture } from "@lyricova/api/graphql/types";
 import { AuthContext } from "lyricova-common/components/AuthContext";
 import type { DocumentNode } from "graphql";
 import store, {

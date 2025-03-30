@@ -25,6 +25,22 @@ export default withSuperjson()(
         },
       ];
     },
+    async rewrites() {
+      return [
+        {
+          source: "/api/:path*",
+          destination: "http://localhost:8083/api/:path*",
+        },
+        {
+          source: "/graphql",
+          destination: "http://localhost:8083/graphql",
+        },
+        {
+          source: "/feed",
+          destination: "http://localhost:8083/feed",
+        },
+      ];
+    },
     modularizeImports: {
       lodash: {
         transform: "lodash/{{member}}",

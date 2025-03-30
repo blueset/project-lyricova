@@ -1,6 +1,6 @@
 import { gql, useQuery } from "@apollo/client";
-import type { MusicFile } from "lyricova-common/models/MusicFile";
-import { useRouter } from "next/router";
+import type { MusicFile } from "@lyricova/api/graphql/types";
+import { useRouter } from "next/compat/router";
 import type { ReactNode } from "react";
 import React, { useCallback, useMemo } from "react";
 import {
@@ -12,7 +12,7 @@ import {
   Typography,
   Alert,
 } from "@mui/material";
-import type { Artist } from "lyricova-common/models/Artist";
+import type { Artist } from "@lyricova/api/graphql/types";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ButtonRow from "../ButtonRow";
 import { NextComposedLink } from "lyricova-common/components/Link";

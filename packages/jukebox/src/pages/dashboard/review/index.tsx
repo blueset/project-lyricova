@@ -2,13 +2,13 @@ import { getLayout } from "../../../components/dashboard/layouts/DashboardLayout
 import { gql, useQuery } from "@apollo/client";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
-import type { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
+import type { MusicFilesPagination } from "@lyricova/api/graphql/types";
 import React, { useCallback } from "react";
 import { useNamedState } from "../../../hooks/useNamedState";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 import { NextComposedLink } from "lyricova-common/components/Link";

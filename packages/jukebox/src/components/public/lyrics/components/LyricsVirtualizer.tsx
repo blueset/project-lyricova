@@ -3,7 +3,7 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import { LyricsKitLyricsLine } from "../../../../graphql/LyricsKitObjects";
+import { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
 import { type LyricsSegment, useActiveLyrcsRanges } from "../../../../hooks/useActiveLyricsRanges";
 import { useAppContext } from "../../AppContext";
 import { VirtualizerRowRenderProps, useLyricsVirtualizer } from "./useLyricsVirtualizer";

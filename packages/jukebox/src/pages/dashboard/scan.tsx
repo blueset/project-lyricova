@@ -1,11 +1,10 @@
 import { getLayout } from "../../components/dashboard/layouts/DashboardLayout";
 import type { LinearProgressProps} from "@mui/material";
-import { Box, Button, CircularProgress, LinearProgress, Typography } from "@mui/material";
+import { Box, Button, LinearProgress, Typography } from "@mui/material";
 import { gql, useApolloClient, useMutation } from "@apollo/client";
 import { useCallback } from "react";
-import type { MusicFilesScanOutcome } from "../../graphql/MusicFileResolver";
+import type { MusicFilesScanOutcome } from "@lyricova/api/graphql/types";
 import { useNamedState } from "../../hooks/useNamedState";
-import { LyricsKitLyricsEntry } from "../../graphql/LyricsProvidersResolver";
 
 const SCAN_MUTATION = gql`
   mutation($sessionId: String!) {
@@ -17,7 +16,6 @@ const SCAN_MUTATION = gql`
     }
   }
 `;
-
 
 const SCAN_PROGRESS_SUBSCRIPTION = gql`
   subscription ($sessionId: String!) {

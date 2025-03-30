@@ -1,8 +1,8 @@
 import { getLayout } from "../../../components/dashboard/layouts/ArtistInfoLayout";
 import { gql, useQuery } from "@apollo/client";
 import { ArtistFragments } from "lyricova-common/utils/fragments";
-import type { Artist } from "lyricova-common/models/Artist";
-import { useRouter } from "next/router";
+import type { Artist } from "@lyricova/api/graphql/types";
+import { useRouter } from "next/compat/router";
 import ArtistEntityDialog from "lyricova-common/components/artistEntityDialog";
 import { useCallback } from "react";
 

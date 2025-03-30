@@ -11,7 +11,7 @@ import type { ChangeEvent, FormEvent, ReactNode} from "react";
 import React, { useCallback } from "react";
 import { gql, useLazyQuery } from "@apollo/client";
 import { MusicFileFragments } from "lyricova-common/utils/fragments";
-import type { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "@lyricova/api/graphql/types";
 import Alert from "@mui/material/Alert";
 import SearchIcon from "@mui/icons-material/Search";
 import TrackListRow from "../components/public/library/TrackListRow";

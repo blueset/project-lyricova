@@ -8,7 +8,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { Pixel, normalizeColor } from "./utils";
 import { BUILDIN_RENDER_METHODS, CanvasBackgroundRender } from "./render";
-import { rgb } from "color-convert";
+import convert from "color-convert";
 import ColorThief from "colorthief";
 import { styled } from "@mui/material";
 import { FBMWaveMethod } from "./fbm-wave";
@@ -176,7 +176,7 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
       let l = Number(backgroundLightness);
       if (Number.isNaN(l)) l = 1;
       l = Math.max(Math.min(2, l), 0);
-      colors.sort((a, b) => rgb.hsv(a)[2] - rgb.hsv(b)[2]);
+      colors.sort((a, b) => convert.rgb.hsv(a)[2] - convert.rgb.hsv(b)[2]);
       colors.forEach((c) => {
         if (l > 1) {
           const m = 2 - l;

@@ -1,6 +1,6 @@
 import type { VDBArtistType } from "../../../types/vocadb";
 import { gql, useQuery } from "@apollo/client";
-import type { Artist } from "lyricova-common/models/Artist";
+import type { Artist } from "@lyricova/api/graphql/types";
 import Alert from "@mui/material/Alert";
 import React from "react";
 import {

@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useCallback, useMemo } from "react";
 import LyricsPreview from "./LyricsPreview";
-import { lyricsAnalysis } from "../../../utils/lyricsCheck";
+import { lyricsAnalysis } from "@/frontendUtils/lyricsCheck";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useSnackbar } from "notistack";

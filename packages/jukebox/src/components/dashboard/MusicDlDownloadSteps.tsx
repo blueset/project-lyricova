@@ -29,7 +29,7 @@ import {
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../hooks/useNamedState";
 import { gql, useLazyQuery } from "@apollo/client";
-import type { MusicDlSearchResult } from "../../graphql/DownloadResolver";
+import type { MusicDlSearchResult } from "@lyricova/api/graphql/types";
 import Alert from "@mui/material/Alert";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { blue, lightBlue, lightGreen, red } from "@mui/material/colors";

@@ -1,21 +1,14 @@
 {
-  "name": "lyricova-blog",
+  "name": "@lyricova/blog",
   "version": "2.0.0",
   "description": "A lyrics-focused blog for Project Lyricova",
   "main": "index.js",
   "scripts": {
-    "start": "npm run serve",
-    "build": "npm run build-ts && npm run lint && npm run build-next",
-    "serve": "node dist/server.js",
-    "watch-node": "nodemon dist/server.js",
-    "watch": "concurrently -n node,tscr -c green,blue npm:watch-node npm:watch-ts",
-    "build-ts": "tsc",
-    "watch-ts": "tsc -w",
-    "build-next": "next build",
-    "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
-    "debug": "npm run build && yarn run watch-debug",
-    "serve-debug": "nodemon --inspect dist/server.js",
-    "watch-debug": "yarn run watch serve-debug"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -56,7 +49,7 @@
     "matter-attractors": "^0.1.6",
     "matter-js": "^0.19.0",
     "mui-rff": "^8.0.1",
-    "next": "^15.1.2",
+    "next": "^15.2.4",
     "next-superjson": "^0.0.4",
     "notistack": "^3.0.2",
     "p5": "^1.6.0",
@@ -66,6 +59,7 @@
     "yup": "^1.4.0"
   },
   "devDependencies": {
+    "@lyricova/api": "^2.1.0",
     "@next/eslint-plugin-next": "^13.2.4",
     "@types/body-scroll-lock": "^3.1.0",
     "@types/cors": "^2.8.17",

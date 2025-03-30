@@ -1,8 +1,8 @@
 import { getLayout } from "../../../components/dashboard/layouts/SongInfoLayout";
 import { gql, useQuery } from "@apollo/client";
 import { SongFragments } from "lyricova-common/utils/fragments";
-import type { Song } from "lyricova-common/models/Song";
-import { useRouter } from "next/router";
+import type { Song } from "@lyricova/api/graphql/types";
+import { useRouter } from "next/compat/router";
 import SongEntityDialog from "lyricova-common/components/songEntityDialog";
 import { useCallback } from "react";
 

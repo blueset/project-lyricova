@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Box, GlobalStyles, IconButton, styled } from "@mui/material";
 import Link, { NextComposedLink } from "lyricova-common/components/Link";
 import SearchIcon from "@mui/icons-material/Search";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import type { GlobalStylesProps as StyledGlobalStylesProps } from "@mui/styled-engine/GlobalStyles/GlobalStyles";
 import { useAppSelector } from "../../redux/public/store";
 

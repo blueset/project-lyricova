@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
 import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {
@@ -30,7 +30,7 @@ import TrackListRow from "../../../components/public/library/TrackListRow";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
 import { MusicFileFragments } from "lyricova-common/utils/fragments";
-import type { Playlist } from "lyricova-common/models/Playlist";
+import type { Playlist } from "@lyricova/api/graphql/types";
 import PlaylistAvatar, {
   gradients,
   hash,
@@ -38,7 +38,7 @@ import PlaylistAvatar, {
 import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "../../../redux/public/store";
 import { loadTracks, toggleShuffle } from "../../../redux/public/playlist";
-import type { MusicFile } from "lyricova-common/models/MusicFile";
+import type { MusicFile } from "@lyricova/api/graphql/types";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import LocalPlayIcon from "@mui/icons-material/LocalPlay";
 import WhatshotIcon from "@mui/icons-material/Whatshot";

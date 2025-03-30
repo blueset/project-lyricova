@@ -1,7 +1,7 @@
 import { ApolloClient, gql } from "@apollo/client";
 import { kanaToHira, romaToHira } from "lyricova-common/utils/kanaUtils";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
-import { VocaDBLyricsEntry } from "../../../../../graphql/LyricsProvidersResolver";
+import { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
 import diff from "fast-diff";
 
 const VOCADB_LYRICS_QUERY = gql`

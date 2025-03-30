@@ -12,7 +12,7 @@ import {
 import { gql, useApolloClient } from "@apollo/client";
 import type {
   HmikuAtWikiSearchResultEntry,
-} from "../../../../../graphql/LyricsProvidersResolver";
+} from "@lyricova/api/graphql/types";
 import { useSnackbar } from "notistack";
 import { useNamedState } from "../../../../../hooks/useNamedState";
 import { TextField } from "mui-rff";

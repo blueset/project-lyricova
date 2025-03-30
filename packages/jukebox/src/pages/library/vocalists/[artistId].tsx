@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import ArtistDetails from "../../../components/public/library/ArtistDetails";
 import { getLayout } from "../../../components/public/layouts/LibraryLayout";
 

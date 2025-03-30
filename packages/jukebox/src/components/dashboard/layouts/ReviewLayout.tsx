@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { useCallback } from "react";
 import { Badge, Box, Chip, Stack, Typography } from "@mui/material";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { getLayout as getDashboardLayout } from "./DashboardLayout";
 import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
-import type { MusicFilesPagination } from "../../../graphql/MusicFileResolver";
+import type { MusicFilesPagination } from "@lyricova/api/graphql/types";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TooltipIconButton from "../TooltipIconButton";
