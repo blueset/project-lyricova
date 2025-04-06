@@ -1,5 +1,7 @@
-import type { Entry } from "lyricova-common/models/Entry";
-import type { CSSProperties} from "react";
+"use client";
+
+import type { Entry } from "@lyricova/api/graphql/types";
+import type { CSSProperties } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { TagRow } from "../TagRow";
 import { PulseStatus } from "./PulseStatus";

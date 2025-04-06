@@ -1,4 +1,4 @@
-import type { Pulse } from "lyricova-common/models/Pulse";
+import type { Pulse } from "@lyricova/api/graphql/types";
 import { Divider } from "../Divider";
 import classes from "./Pulses.module.scss";
 import dayjs from "dayjs";
@@ -24,7 +24,10 @@ export function Pulses({ pulses, creationDate }: PulsesProps) {
           <div className={classes.pulsesListing}>
             <div className={classes.pulseEntry}>
               First posted {creationObj.fromNow()}{" "}
-              <time dateTime={creationObj.toISOString()}>
+              <time
+                dateTime={creationObj.toISOString()}
+                suppressHydrationWarning
+              >
                 on {creationObj.format("D MMMM YYYY [at] hh:mm")}
               </time>
             </div>
@@ -42,13 +45,19 @@ export function Pulses({ pulses, creationDate }: PulsesProps) {
           <div className={classes.pulsesListing}>
             <div className={classes.pulseEntry}>
               Bumped {pulsesObj[0].fromNow()}{" "}
-              <time dateTime={pulsesObj[0].toISOString()}>
+              <time
+                dateTime={pulsesObj[0].toISOString()}
+                suppressHydrationWarning
+              >
                 on {pulsesObj[0].format("D MMMM YYYY [at] hh:mm")}
               </time>
             </div>
             <div className={classes.pulseEntry}>
               First posted {creationObj.fromNow()}{" "}
-              <time dateTime={creationObj.toISOString()}>
+              <time
+                dateTime={creationObj.toISOString()}
+                suppressHydrationWarning
+              >
                 on {creationObj.format("D MMMM YYYY [at] hh:mm")}
               </time>
             </div>

@@ -39,9 +39,9 @@ import { useNamedState } from "../../../hooks/useNamedState";
 import {
   AuthContext,
   AuthContextConsumer,
-} from "lyricova-common/components/AuthContext";
-import { useRouter } from "next/compat/router";
-import { NextComposedLink } from "lyricova-common/components/Link";
+  NextComposedLink,
+} from "@lyricova/components";
+import { usePathname, useRouter } from "next/navigation";
 import Head from "next/head";
 import type { SnackbarKey } from "notistack";
 import { SnackbarProvider, useSnackbar } from "notistack";
@@ -140,7 +140,7 @@ function NavMenuItem({
   as,
   prefixMatch,
 }: NavMenuItemProps) {
-  const { pathname } = useRouter();
+  const pathname = usePathname();
   const criteria =
     activeCriteria ||
     ((v: string) => (prefixMatch ? v.startsWith(href) : v === href));

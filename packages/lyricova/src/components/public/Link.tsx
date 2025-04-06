@@ -1,5 +1,7 @@
+"use client";
+
 import NextLink from "next/link";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { forwardRef } from "react";
 
 /// <reference types="../../types/global" />
@@ -8,8 +10,8 @@ export const Link = forwardRef<
   HTMLAnchorElement,
   React.ComponentProps<typeof NextLink>
 >(({ onClick, href, ...props }, ref) => {
-  const router = useRouter();
-  const isCurrentPage = href === router.asPath;
+  const pathname = usePathname();
+  const isCurrentPage = href === pathname;
   const Component = isCurrentPage ? "a" : NextLink;
   // if (isCurrentPage) {
   //   return <a {...props} ref={ref} />;
@@ -25,7 +27,7 @@ export const Link = forwardRef<
         window.lastClickTop = rect && rect.top + rect.height / 2;
         onClick?.(evt);
       }}
-      href={isCurrentPage ? (undefined as any) : href}
+      href={isCurrentPage ? "" : (href as string)}
       {...props}
       ref={ref}
     />

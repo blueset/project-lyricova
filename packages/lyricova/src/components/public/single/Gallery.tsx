@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { Divider } from "../Divider";
 import classes from "./Gallery.module.scss";

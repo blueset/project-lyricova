@@ -14,13 +14,13 @@ import {
 } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
 import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
-import Link from "lyricova-common/components/Link";
+import { Link } from "@lyricova/components";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TooltipIconButton from "../../../TooltipIconButton";
 import { useSnackbar } from "notistack";
 
 const VOCADB_LYRICS_QUERY = gql`
-  query($id: Int!) {
+  query ($id: Int!) {
     vocaDBLyrics(id: $id) {
       id
       translationType
@@ -59,10 +59,10 @@ export default function VocaDBLyricsDialog({
   const copyText = useCallback(
     (text: string) => async () => {
       navigator.clipboard.writeText(text).then(
-        function() {
+        function () {
           snackbar.enqueueSnackbar("Copied!", { variant: "success" });
         },
-        function(err) {
+        function (err) {
           console.error("Could not copy text: ", err);
           snackbar.enqueueSnackbar(`Failed to copy: ${err}`, {
             variant: "error",

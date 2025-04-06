@@ -1,3 +1,5 @@
+"use client";
+
 import { Fragment, useEffect, useRef } from "react";
 import classes from "./PlainTextHangingPunct.module.scss";
 import { shiftinPuncts } from "../../utils/typography";

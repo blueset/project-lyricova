@@ -58,7 +58,7 @@ export class LyricovaPublicApiController {
     this.router.get("/search", this.search);
     this.router.get("/verse", this.verse);
     this.router.get("/versesBySong", this.versesBySong);
-    this.router.get("/og/:entryId", this.og);
+    this.router.get("/og/:entryId(\\d+)", this.og);
   }
 
   public search = async (req: Request, res: Response) => {

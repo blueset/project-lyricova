@@ -9,8 +9,7 @@ export class LyricovaAdminApiController {
 
   constructor() {
     this.router = Router();
-    this.router.use(adminOnlyMiddleware);
-    this.router.patch("/bump/:entryId", this.bump);
+    this.router.patch("/bump/:entryId(\\d+)", adminOnlyMiddleware, this.bump);
   }
 
   public bump = async (req: Request, res: Response) => {

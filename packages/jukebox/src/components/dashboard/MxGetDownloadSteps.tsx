@@ -18,15 +18,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type {
-  ChangeEvent,
-  Dispatch,
-  ReactNode,
-  SetStateAction} from "react";
-import {
-  FormEvent,
-  useCallback,
-} from "react";
+import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from "react";
+import { FormEvent, useCallback } from "react";
 import ButtonRow from "../ButtonRow";
 import { useNamedState } from "../../hooks/useNamedState";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
@@ -47,14 +40,14 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { NextComposedLink } from "lyricova-common/components/Link";
+import { NextComposedLink } from "@lyricova/components";
 import parse from "autosuggest-highlight/parse";
 import match from "autosuggest-highlight/match";
 import { useSnackbar } from "notistack";
 import type { DocumentNode } from "graphql";
 
 const MUSIC_DL_SEARCH_QUERY = gql`
-  query($query: String!) {
+  query ($query: String!) {
     mxGetSearch(query: $query) {
       id
       source
@@ -69,13 +62,13 @@ const MUSIC_DL_SEARCH_QUERY = gql`
 ` as DocumentNode;
 
 const MUSIC_DL_DOWNLOAD_MUTATION = gql`
-  mutation($source: String!, $id: ID!) {
+  mutation ($source: String!, $id: ID!) {
     mxGetDownload(id: $id, source: $source)
   }
 ` as DocumentNode;
 
 const SINGLE_FILE_SCAN_MUTATION = gql`
-  mutation($path: String!) {
+  mutation ($path: String!) {
     scanByPath(path: $path) {
       id
     }

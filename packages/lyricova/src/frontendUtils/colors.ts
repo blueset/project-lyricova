@@ -1,5 +1,5 @@
 import Color from "colorjs.io";
-import type { Tag } from "lyricova-common/models/Tag";
+import type { Tag } from "@lyricova/api/graphql/types";
 
 function stringifyColor(color: Color) {
   const c = color.to("srgb") as Color & { r: number; g: number; b: number };

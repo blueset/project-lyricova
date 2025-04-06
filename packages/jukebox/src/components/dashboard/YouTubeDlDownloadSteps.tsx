@@ -26,7 +26,7 @@ import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import filesize from "filesize";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { NextComposedLink } from "lyricova-common/components/Link";
+import { NextComposedLink } from "@lyricova/components";
 import { useSnackbar } from "notistack";
 import { swapExt } from "@/frontendUtils/path";
 import type { DocumentNode } from "graphql";

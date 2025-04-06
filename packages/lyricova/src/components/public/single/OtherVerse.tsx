@@ -1,5 +1,4 @@
-import type { Verse } from "lyricova-common/models/Verse";
-import { PlainTextHangingPunct } from "../PlainTextHangingPunct";
+import type { Verse } from "@lyricova/api/graphql/types";
 import classes from "./OtherVerse.module.scss";
 import { VerseRenderer } from "./VerseRenderer";
 import StarBorderIcon from "@mui/icons-material/StarBorder";

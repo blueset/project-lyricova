@@ -1,3 +1,5 @@
+"use client";
+
 import { Field, Form, FormSpy } from "react-final-form";
 import PlaylistAvatar from "../PlaylistAvatar";
 import { TextField } from "mui-rff";
@@ -6,14 +8,13 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { OnChange } from "react-final-form-listeners";
 import slugify from "slugify";
-import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
-import SlugifyAdornment from "lyricova-common/components/SlugifyAdornment";
-import type { DocumentNode} from "@apollo/client";
+import { finalFormMutators, SlugifyAdornment } from "@lyricova/components";
+import type { DocumentNode } from "@apollo/client";
 import { gql, useApolloClient } from "@apollo/client";
 import { useSnackbar } from "notistack";
 
 const NEW_PLAYLIST_MUTATION = gql`
-  mutation($name: String!, $slug: String!) {
+  mutation ($name: String!, $slug: String!) {
     newPlaylist(data: { name: $name, slug: $slug }) {
       name
       slug

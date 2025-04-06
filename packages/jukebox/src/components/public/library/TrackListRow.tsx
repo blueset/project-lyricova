@@ -1,5 +1,6 @@
+"use client";
+
 import { useRouter } from "next/compat/router";
-import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {
   bindMenu,
   bindTrigger,
@@ -16,7 +17,7 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
+import { useAuthContext, formatArtistsPlainText } from "@lyricova/components";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import type { MusicFile } from "@lyricova/api/graphql/types";
 import type { Song } from "@lyricova/api/graphql/types";

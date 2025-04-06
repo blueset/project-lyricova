@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import {
@@ -111,10 +111,11 @@ function buildTimeline(
 
 export function TransitionCover() {
   const router = useRouter();
+  const pathname = usePathname();
   const coverRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<[gsap.core.Timeline, gsap.core.Timeline]>();
   const currentRouteRef = useRef<string>();
-  currentRouteRef.current = router.asPath;
+  currentRouteRef.current = pathname;
 
   useIsomorphicLayoutEffect(() => {
     const handleRouteChange = (
@@ -157,14 +158,14 @@ export function TransitionCover() {
       window.lastClickTop = undefined;
     };
 
-    router.events.on("routeChangeStart", handleRouteChange);
-    router.events.on("routeChangeComplete", handleRouteChangeComplete);
-    router.events.on("routeChangeError", handleRouteChangeComplete);
+    // router.events.on("routeChangeStart", handleRouteChange);
+    // router.events.on("routeChangeComplete", handleRouteChangeComplete);
+    // router.events.on("routeChangeError", handleRouteChangeComplete);
 
     return () => {
-      router.events.off("routeChangeStart", handleRouteChange);
-      router.events.off("routeChangeComplete", handleRouteChangeComplete);
-      router.events.off("routeChangeError", handleRouteChangeComplete);
+      // router.events.off("routeChangeStart", handleRouteChange);
+      // router.events.off("routeChangeComplete", handleRouteChangeComplete);
+      // router.events.off("routeChangeError", handleRouteChangeComplete);
       clearAllBodyScrollLocks();
     };
   }, [router]);

@@ -1,4 +1,4 @@
-import type { Tag } from "lyricova-common/models/Tag";
+import type { Tag } from "@lyricova/api/graphql/types";
 import type { CSSProperties } from "react";
 import { Link } from "./Link";
 import classes from "./TagRow.module.scss";

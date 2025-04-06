@@ -13,7 +13,7 @@ import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
 import { TabContext, TabPanel } from "@mui/lab";
 import InfoPanel from "./musicFilesDetails/info";
-import { SongFragments } from "lyricova-common/utils/fragments";
+import { SongFragments } from "@lyricova/components";
 import CoverArtPanel from "./musicFilesDetails/coverArt";
 import LyricsPanel from "./musicFilesDetails/lyrics";
 import PlaylistsPanel from "./musicFilesDetails/playlists";

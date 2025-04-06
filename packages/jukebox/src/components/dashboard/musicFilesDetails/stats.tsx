@@ -2,7 +2,7 @@ import { DocumentNode, gql, useApolloClient } from "@apollo/client";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Grid2 as Grid, Button } from "@mui/material";
-import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
+import { finalFormMutators } from "@lyricova/components";
 import { DateTimePicker, TextField, makeValidate } from "mui-rff";
 import { useSnackbar } from "notistack";
 import { Form } from "react-final-form";

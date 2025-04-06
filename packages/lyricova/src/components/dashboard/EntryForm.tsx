@@ -1,15 +1,23 @@
-import type { Entry } from "lyricova-common/models/Entry";
-import type { Song } from "lyricova-common/models/Song";
-import type { Verse } from "lyricova-common/models/Verse";
-import type { Tag } from "lyricova-common/models/Tag";
-import type { Pulse } from "lyricova-common/models/Pulse";
+"use client";
+
+import type {
+  Entry,
+  Song,
+  Verse,
+  Tag,
+  Pulse,
+} from "@lyricova/api/graphql/types";
 import { gql, useQuery, useApolloClient } from "@apollo/client";
 import { useSnackbar } from "notistack";
 import * as yup from "yup";
 import { makeValidate, Select, showErrorOnChange, TextField } from "mui-rff";
 import { Field, Form, FormSpy, useField } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
-import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
+import {
+  finalFormMutators,
+  SelectSongEntityBox,
+  SongFragments,
+} from "@lyricova/components";
 import arrayMutators from "final-form-arrays";
 import {
   Accordion,
@@ -25,19 +33,16 @@ import {
   Stack,
   Tooltip,
   Typography,
-  TextField as MuiTextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Box } from "@mui/system";
-import SelectSongEntityBox from "lyricova-common/components/selectSongEntityBox";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { DateTimePickerPopup } from "./DateTimePickerPopup";
-import { useRouter } from "next/router";
-import { SongFragments } from "lyricova-common/utils/fragments";
+import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 

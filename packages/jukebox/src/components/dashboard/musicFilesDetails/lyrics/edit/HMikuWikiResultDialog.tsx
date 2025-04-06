@@ -12,11 +12,11 @@ import { gql, useQuery } from "@apollo/client";
 import type { HmikuAtWikiEntry } from "@lyricova/api/graphql/types";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useSnackbar } from "notistack";
-import Link from "lyricova-common/components/Link";
+import { Link } from "@lyricova/components";
 import type { DocumentNode } from "graphql";
 
 const HMIKU_LYRICS_QUERY = gql`
-  query($id: String!) {
+  query ($id: String!) {
     hmikuLyrics(id: $id) {
       id
       name
@@ -53,10 +53,10 @@ export default function HMikuWikiResultDialog({
   const copyText = useCallback(
     (text: string) => async () => {
       navigator.clipboard.writeText(text).then(
-        function() {
+        function () {
           snackbar.enqueueSnackbar("Copied!", { variant: "success" });
         },
-        function(err) {
+        function (err) {
           console.error("Could not copy text: ", err);
           snackbar.enqueueSnackbar(`Failed to copy: ${err}`, {
             variant: "error",

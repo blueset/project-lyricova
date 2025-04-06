@@ -1,3 +1,5 @@
+"use client";
+
 import IconButton from "@mui/material/IconButton";
 import Portal from "@mui/material/Portal";
 import Tooltip from "@mui/material/Tooltip";
@@ -14,7 +16,7 @@ import {
   enableBodyScroll,
   clearAllBodyScrollLocks,
 } from "body-scroll-lock";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { Link } from "../Link";
 
 interface NavEntryProps {
@@ -26,7 +28,7 @@ interface NavEntryProps {
 function NavEntry({ href, children, rel }: NavEntryProps) {
   const isExternal = href.startsWith("http");
   const Component = isExternal ? "a" : Link;
-  const router = useRouter();
+  const pathname = usePathname();
 
   const positionChars = useCallback((elm: HTMLElement) => {
     const chars = elm.querySelectorAll("[data-animate-char]");
@@ -46,7 +48,7 @@ function NavEntry({ href, children, rel }: NavEntryProps) {
     <Component
       href={href}
       className={classes.navEntry}
-      data-active={router.pathname.startsWith(href)}
+      data-active={pathname.startsWith(href)}
       ref={(elm) => elm && positionChars(elm)}
       rel={rel}
     >

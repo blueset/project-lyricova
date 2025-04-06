@@ -31,9 +31,10 @@ import LabelIcon from "@mui/icons-material/Label";
 import {
   AuthContext,
   AuthContextConsumer,
-} from "lyricova-common/components/AuthContext";
-import { useRouter } from "next/router";
-import { NextComposedLink } from "lyricova-common/components/Link";
+  NextComposedLink,
+  apolloClient,
+} from "@lyricova/components";
+import { usePathname, useRouter } from "next/navigation";
 import Head from "next/head";
 import type { SnackbarKey } from "notistack";
 import { SnackbarProvider, useSnackbar } from "notistack";
@@ -43,7 +44,6 @@ import {
   usePopupState,
 } from "material-ui-popup-state/hooks";
 import { ApolloProvider } from "@apollo/client";
-import apolloClient from "lyricova-common/frontendUtils/apollo";
 
 const DRAWER_WIDTH = 240;
 const DASHBOARD_TITLE = "Lyricova Dashboard";
@@ -134,7 +134,7 @@ function NavMenuItem({
   as,
   prefixMatch,
 }: NavMenuItemProps) {
-  const router = useRouter();
+  const pathname = usePathname();
   const criteria =
     activeCriteria ||
     ((v: string) => (prefixMatch ? v.startsWith(href) : v === href));
@@ -142,7 +142,7 @@ function NavMenuItem({
   return (
     <ListItemButton
       component={NextComposedLink}
-      selected={criteria(router.pathname)}
+      selected={criteria(pathname)}
       href={href}
       as={as}
     >
@@ -168,8 +168,6 @@ interface Props {
 
 export default function DashboardLayout({ title, children }: Props) {
   const router = useRouter();
-
-  const container = () => window.document.body || undefined;
 
   const defaultDrawerOpen = useMediaQuery((theme) =>
     theme.breakpoints.up("sm")

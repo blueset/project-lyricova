@@ -1,0 +1,34 @@
+{
+  "name": "@lyricova/components",
+  "version": "0.1.0",
+  "private": true,
+  "sideEffects": false,
+  "main": "build/index.js",
+  "module": "build/index.esm.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "dev": "concurrently \"tsc -w\" \"tsc-alias -w\"",
+    "clean": "rimraf build"
+  },
+  "dependencies": {
+    "@mui/material": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.0",
+    "tsc-alias": "^1.8.8",
+    "concurrently": "^8.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}

@@ -1,5 +1,7 @@
-import type { Entry } from "lyricova-common/models/Entry";
-import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
+"use client";
+
+import type { Entry } from "@lyricova/api/graphql/types";
+import { buildAnimationSequence } from "@/utils/typingSequence";
 import type { CSSProperties } from "react";
 import { useCallback, useMemo, useRef } from "react";
 import { PlainTextHangingPunct } from "../PlainTextHangingPunct";

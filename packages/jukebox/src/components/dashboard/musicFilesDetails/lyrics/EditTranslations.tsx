@@ -24,7 +24,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import { smartypantsu } from "smartypants";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
-import { useAuthContext } from "lyricova-common/components/AuthContext";
+import { useAuthContext } from "@lyricova/components";
 import { fetchEventData } from "fetch-sse";
 import HoverPopover from "material-ui-popup-state/HoverPopover";
 import PopupState, {
@@ -482,7 +482,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
                       variant="outlined"
                       {...bindTrigger(popupState)}
                       disabled={isAlignmentLoading}
-                      sx={{ px: 0}}
+                      sx={{ px: 0 }}
                     >
                       <ArrowDropDownIcon />
                     </Button>

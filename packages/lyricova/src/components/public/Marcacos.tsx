@@ -8,10 +8,10 @@ import Matter from "matter-js";
 import type { Body } from "matter-js";
 import MatterAttractors from "matter-attractors";
 import p5 from "p5";
-import type { ScreensaverProps } from "../../utils/screensaverProps";
 import { useEffect, useLayoutEffect } from "react";
 import classes from "./Marcacos.module.scss";
 import { relayout } from "../../frontendUtils/relayout";
+import { ScreensaverProps } from "@/app/(public)/screensavers/screensaverData";
 const IS_SERVER = typeof window === "undefined";
 const useIsomorphicLayoutEffect = IS_SERVER ? useEffect : useLayoutEffect;
 
@@ -41,7 +41,7 @@ const buildContext =
         v.text
           .split("\n")
           .map((l) => l.trim())
-          .filter((v) => v).length > 1
+          .filter((v) => v).length >= 1
     );
     const verseLines = verses.map((v) =>
       v.text
@@ -75,10 +75,12 @@ const buildContext =
 
     sketch.windowResized = () => {
       sketch.resizeCanvas(sketch.windowWidth, sketch.windowHeight);
-      Matter.Body.setPosition(
-        gravity,
-        Matter.Vector.create(sketch.width * 0.5, sketch.height * 0.5)
-      );
+      if (gravity) {
+        Matter.Body.setPosition(
+          gravity,
+          Matter.Vector.create(sketch.width * 0.5, sketch.height * 0.5)
+        );
+      }
     };
 
     function nextVerseLine(): void {

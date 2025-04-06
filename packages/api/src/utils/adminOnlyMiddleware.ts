@@ -7,7 +7,7 @@ export function adminOnlyMiddleware(
   res: Response,
   next: NextFunction
 ): void {
-  passport.authenticate("jwt", function(err: unknown, user: User | null) {
+  passport.authenticate("jwt", function (err: unknown, user: User | null) {
     if (err) {
       return next(err);
     }

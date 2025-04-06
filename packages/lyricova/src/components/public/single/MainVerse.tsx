@@ -1,9 +1,8 @@
-import type { Entry } from "lyricova-common/models/Entry";
-import { resizeVerse } from "../../../utils/sizing";
-import { PlainTextHangingPunct } from "../PlainTextHangingPunct";
+import type { Entry } from "@lyricova/api/graphql/types";
 import { TagRow } from "../TagRow";
 import classes from "./MainVerse.module.scss";
 import { VerseRenderer } from "./VerseRenderer";
+import { VerseResizer } from "../VerseResizer";
 
 interface MainVerseProps {
   entry: Entry;
@@ -24,18 +23,9 @@ export function MainVerse({ entry }: MainVerseProps) {
         <div className={classes.title}>{entry.title}</div>
         <div className={classes.artists}>{artistString}</div>
       </div>
-      <div
-        className={classes.verse}
-        ref={(elm) => {
-          if (elm) {
-            document.fonts.ready.then(() => {
-              resizeVerse(elm);
-            });
-          }
-        }}
-      >
+      <VerseResizer className={classes.verse}>
         <VerseRenderer verse={verse} />
-      </div>
+      </VerseResizer>
       {verse.translator && <cite>Translation by {verse.translator}</cite>}
     </section>
   );

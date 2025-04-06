@@ -1,4 +1,6 @@
-import { buildAnimationSequence } from "lyricova-common/utils/typingSequence";
+"use client";
+
+import { buildAnimationSequence } from "@/utils/typingSequence";
 import { useCallback, useRef } from "react";
 import { BaseVerseRenderer } from "./BaseVerseRenderer";
 import gsap from "gsap";

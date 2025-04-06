@@ -1,5 +1,5 @@
 import { ApolloClient, gql } from "@apollo/client";
-import { kanaToHira, romaToHira } from "lyricova-common/utils/kanaUtils";
+import { kanaToHira, romaToHira } from "@lyricova/components";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
 import { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
 import diff from "fast-diff";

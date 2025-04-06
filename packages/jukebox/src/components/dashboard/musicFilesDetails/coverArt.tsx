@@ -14,7 +14,7 @@ import type { ChangeEvent } from "react";
 import { useCallback, useEffect } from "react";
 import axios from "axios";
 import { useDropzone } from "react-dropzone";
-import { useAuthContext } from "lyricova-common/components/AuthContext";
+import { useAuthContext } from "@lyricova/components";
 import { useSnackbar } from "notistack";
 
 const CoverAvatar = styled(Avatar)({

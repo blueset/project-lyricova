@@ -228,6 +228,9 @@ export default function CurrentPlaylist() {
             <Droppable
               droppableId="droppable-currentPlaylist"
               mode="virtual"
+              isDropDisabled={false}
+              isCombineEnabled={false}
+              ignoreContainerClipping={false}
               renderClone={(
                 provided: DraggableProvided,
                 snapshot: DraggableStateSnapshot,

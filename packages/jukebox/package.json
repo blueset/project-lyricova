@@ -39,6 +39,7 @@
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.10.5",
     "@graphql-tools/schema": "^8.5.1",
+    "@lyricova/components": "^0.1.0",
     "@mui/icons-material": "^6.1.7",
     "@mui/lab": "^6.0.0-beta.15",
     "@mui/material": "^6.4.8",

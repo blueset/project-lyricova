@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Avatar,
   Box,
@@ -11,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
-import { MusicFileFragments } from "lyricova-common/utils/fragments";
+import { MusicFileFragments, useAuthContext } from "@lyricova/components";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React from "react";
 import { useRouter } from "next/compat/router";
@@ -24,7 +26,6 @@ import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import FindInPageIcon from "@mui/icons-material/FindInPage";
 import ButtonRow from "../../ButtonRow";
-import { useAuthContext } from "lyricova-common/components/AuthContext";
 import {
   bindMenu,
   bindTrigger,

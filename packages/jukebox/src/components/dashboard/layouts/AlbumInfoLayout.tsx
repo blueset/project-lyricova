@@ -5,12 +5,11 @@ import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { useRouter } from "next/compat/router";
-import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
+import { useRouter } from "next/navigation";
+import { formatArtistsPlainText, DataGridToolbar } from "@lyricova/components";
 import { Avatar, ListItemText, Tooltip } from "@mui/material";
 import type { Album } from "@lyricova/api/graphql/types";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
 
 const ALBUM_INFO_LIST_QUERY = gql`
   query {
@@ -102,7 +101,7 @@ export default function AlbumInfoLayout({ children }: Props) {
                 <GridActionsCellItem
                   icon={<OpenInNewIcon />}
                   label="View in VocaDB"
-                  disabled={(rowData?.id as number ?? -1) < 0}
+                  disabled={((rowData?.id as number) ?? -1) < 0}
                   onClick={async () => {
                     if (rowData?.id !== undefined) {
                       await window.open(

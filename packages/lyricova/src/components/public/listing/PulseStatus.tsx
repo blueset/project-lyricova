@@ -1,4 +1,4 @@
-import type { Entry } from "lyricova-common/models/Entry";
+import type { Entry } from "@lyricova/api/graphql/types";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -23,7 +23,7 @@ export function PulseStatus({ entry }: PulseStatusProps) {
     ...entry.pulses.map((pulse) => pulse.creationDate.valueOf())
   );
   return (
-    <div>
+    <div suppressHydrationWarning>
       {lastPulseTime
         ? `Last bumped ${formatTime(lastPulseTime)}, first posted ${formatTime(
             entry.creationDate

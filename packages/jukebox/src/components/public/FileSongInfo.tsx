@@ -1,3 +1,5 @@
+"use client";
+
 import { gql, useQuery } from "@apollo/client";
 import type { MusicFile } from "@lyricova/api/graphql/types";
 import { useRouter } from "next/compat/router";
@@ -15,7 +17,7 @@ import {
 import type { Artist } from "@lyricova/api/graphql/types";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ButtonRow from "../ButtonRow";
-import { NextComposedLink } from "lyricova-common/components/Link";
+import { NextComposedLink } from "@lyricova/components";
 import { formatTime } from "../../frontendUtils/strings";
 import filesize from "filesize";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";

@@ -7,11 +7,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type { Song } from "@lyricova/api/graphql/types";
 import { useRouter } from "next/compat/router";
-import { formatArtistsPlainText } from "lyricova-common/frontendUtils/artists";
 import { Avatar, ListItemText, Tooltip } from "@mui/material";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { DataGridToolbar } from "lyricova-common/components/DataGridToolbar";
+import { formatArtistsPlainText, DataGridToolbar } from "@lyricova/components";
 
 const SONG_INFO_LIST_QUERY = gql`
   query {

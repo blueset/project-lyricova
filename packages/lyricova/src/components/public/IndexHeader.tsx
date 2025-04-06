@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import classes from "./IndexHeader.module.scss";
 import { Link } from "./Link";
 import { Jukebox } from "./nav/Jukebox";
@@ -7,9 +6,7 @@ import { Screensavers } from "./nav/Screensavers";
 import { Search } from "./nav/Search";
 import { Title } from "./nav/Title";
 
-export function IndexHeader() {
-  const router = useRouter();
-  const isHome = router.pathname === "/";
+export function IndexHeader({ isHome }: { isHome?: boolean }) {
   return (
     <header className={`container verticalPadding ${classes.headerRow}`}>
       <div>

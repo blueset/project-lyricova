@@ -1,7 +1,7 @@
-import type { Song } from "lyricova-common/models/Song";
+import type { Song } from "@lyricova/api/graphql/types";
 import { Divider } from "../Divider";
 import classes from "./Songs.module.scss";
-import { formatArtists } from "lyricova-common/frontendUtils/artists";
+import { formatArtists } from "@lyricova/components";
 import { IconButton, Tooltip } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Link } from "../Link";

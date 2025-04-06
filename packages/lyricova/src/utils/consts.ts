@@ -6,3 +6,5 @@ export const tagLine2 = "This is what I sing, all day long.";
 export const jukeboxUrl = "https://jukebox.1a23.studio";
 
 export const entriesPerPage = 15;
+
+export const apiBaseUrl = "http://127.0.0.1:8083/api";

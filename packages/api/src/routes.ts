@@ -3,10 +3,7 @@ import express from "express";
 import { MusicFileController } from "./controller/MusicFileController";
 import { VocaDBImportController } from "./controller/VocaDBImportController";
 import type { SegmentedTransliterationOptions } from "./utils/transliterate";
-import {
-  transliterate,
-  segmentedTransliteration,
-} from "./utils/transliterate";
+import { transliterate, segmentedTransliteration } from "./utils/transliterate";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController";
 import { AuthController } from "./controller/AuthController";
 import { PlaylistController } from "./controller/PlaylistController";
@@ -15,6 +12,8 @@ import { SongController } from "./controller/SongController";
 import { LLMController } from "./controller/LLMController";
 import { LyricovaAdminApiController } from "./controller/LyricovaAdminController";
 import { LyricovaPublicApiController } from "./controller/LyricovaPublicController";
+import { EntriesController } from "./controller/EntriesController";
+import { TagsController } from "./controller/TagsController";
 import generateRssFeed from "./utils/rss";
 
 export default (app: express.Express) => {
@@ -24,7 +23,7 @@ export default (app: express.Express) => {
   // API Routes
   const musicFileController = new MusicFileController();
   apiRouter.use("/files", musicFileController.router);
-  
+
   const songController = new SongController();
   apiRouter.use("/songs", songController.router);
 
@@ -37,11 +36,11 @@ export default (app: express.Express) => {
   const llmController = new LLMController();
   apiRouter.use("/llm", llmController.router);
 
-  // const downloadController = new DownloadController();
-  // apiRouter.use("/download", downloadController.router);
-
   const playlistController = new PlaylistController();
   apiRouter.use("/playlists", playlistController.router);
+
+  const entriesController = new EntriesController();
+  apiRouter.use("/entries", entriesController.router);
 
   const authController = new AuthController();
   apiRouter.use("/", authController.router);
@@ -67,9 +66,12 @@ export default (app: express.Express) => {
 
   const adminApiRouter = new LyricovaAdminApiController();
   apiRouter.use("/", adminApiRouter.router);
-  
+
   const publicApiRouter = new LyricovaPublicApiController();
   apiRouter.use("/", publicApiRouter.router);
+
+  const tagsController = new TagsController();
+  apiRouter.use("/tags", tagsController.router);
 
   app.get("/feed", async (req: Request, res: Response) => {
     const xml = await generateRssFeed();

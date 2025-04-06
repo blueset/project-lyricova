@@ -1,5 +1,4 @@
-import type { Verse } from "lyricova-common/models/Verse";
-import { PlainTextHangingPunct } from "../PlainTextHangingPunct";
+import type { Verse } from "@lyricova/api/graphql/types";
 import { BlockVerseRenderer } from "./BlockVerseRenderer";
 import { LineVerseRenderer } from "./LineVerseRenderer";
 

@@ -1,5 +1,7 @@
+"use client";
+
 import { Button } from "@mui/material";
-import { LS_JWT_KEY } from "lyricova-common/frontendUtils/localStorage";
+import { LS_JWT_KEY } from "@lyricova/components";
 import { useEffect, useState } from "react";
 import { Divider } from "../Divider";
 import classes from "./AdminLinks.module.scss";

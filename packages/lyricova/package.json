@@ -27,6 +27,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.10.6",
+    "@lyricova/components": "^0.1.0",
     "@mui/icons-material": "^6.1.7",
     "@mui/material": "^6.4.8",
     "@mui/material-nextjs": "^6.1.7",

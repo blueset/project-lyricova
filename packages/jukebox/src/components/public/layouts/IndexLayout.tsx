@@ -9,7 +9,7 @@ import { AppContext } from "../AppContext";
 import { useNamedState } from "../../../hooks/useNamedState";
 import CurrentPlaylist from "../CurrentPlaylist";
 import type { Texture } from "@lyricova/api/graphql/types";
-import { AuthContext } from "lyricova-common/components/AuthContext";
+import { AuthContext } from "@lyricova/components";
 import type { DocumentNode } from "graphql";
 import store, {
   persistor,
