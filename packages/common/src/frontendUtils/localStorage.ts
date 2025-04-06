@@ -1,1 +1,0 @@
-export const LS_JWT_KEY = "lyricova_jwt_token";
