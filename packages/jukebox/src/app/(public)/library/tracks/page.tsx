@@ -35,7 +35,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useRouter } from "next/compat/router";
 import ListItemTextWithTime from "@/components/public/library/ListItemTextWithTime";
 import type { DocumentNode } from "graphql";
-import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { SxProps } from "@mui/system";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAppDispatch } from "@/redux/public/store";
 import {

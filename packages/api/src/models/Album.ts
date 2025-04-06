@@ -1,5 +1,5 @@
 import { SongInAlbum } from "./SongInAlbum";
-import { AlbumForApiContract, AlbumContract } from "../types/vocadb";
+import type { AlbumForApiContract, AlbumContract } from "../types/vocadb";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
 import { MusicFile } from "./MusicFile";
 import {
@@ -90,7 +90,7 @@ export class Album extends Model<Album, Partial<Album>> {
   /** Incomplete build. */
   static async fromVocaDBAlbumContract(entity: AlbumContract): Promise<Album> {
     // import { transliterate } from "../utils/transliterate";
-    const { transliterate } = await import("../utils/transliterate");
+    const { transliterate } = await import("../utils/transliterate.js");
     const obj = (
       await Album.findOrCreate({
         where: { id: entity.id },
@@ -108,7 +108,7 @@ export class Album extends Model<Album, Partial<Album>> {
     entity: AlbumForApiContract
   ): Promise<Album | null> {
     // import { transliterate } from "../utils/transliterate";
-    const { transliterate } = await import("../utils/transliterate");
+    const { transliterate } = await import("../utils/transliterate.js");
     await Album.upsert({
       id: entity.id,
       name: entity.name,

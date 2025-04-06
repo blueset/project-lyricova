@@ -10,7 +10,7 @@ import { styled } from "@mui/material";
 import type { Transition } from "framer-motion";
 import { motion } from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { SxProps } from "@mui/system";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppSelector } from "../../../redux/public/store";
 import { currentSongSelector } from "../../../redux/public/playlist";

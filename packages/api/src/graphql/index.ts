@@ -22,7 +22,7 @@ import _ from "lodash";
 import type { Server } from "http";
 import { createServer } from "http";
 import { ServerOptions, WebSocketServer } from "ws";
-import { useServer } from "graphql-ws/lib/use/ws";
+import { useServer } from "graphql-ws/use/ws";
 import cors from "cors";
 import bodyParser from "body-parser";
 import passport from "passport";

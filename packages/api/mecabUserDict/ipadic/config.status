@@ -318,7 +318,7 @@ Copyright (C) 2006 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/Users/blueset/Codebase/project-lyricova/packages/common/mecabUserDict/ipadic'
+ac_pwd='/Users/blueset/Codebase/project-lyricova/packages/api/mecabUserDict/ipadic'
 srcdir='.'
 INSTALL='/usr/local/bin/ginstall -c'
 # If no file are specified by the user, then we need to provide default
@@ -495,9 +495,9 @@ s,@INSTALL_SCRIPT@,|#_!!_#|${INSTALL},g
 s,@INSTALL_DATA@,|#_!!_#|${INSTALL} -m 644,g
 s,@PACKAGE@,|#_!!_#|mecab-ipadic,g
 s,@VERSION@,|#_!!_#|2.7.0-20070801,g
-s,@ACLOCAL@,|#_!!_#|/Users/blueset/Codebase/project-lyricova/packages/common/mecabUserDict/ipadic/missing aclocal-1.4,g
+s,@ACLOCAL@,|#_!!_#|/Users/blueset/Codebase/project-lyricova/packages/api/mecabUserDict/ipadic/missing aclocal-1.4,g
 s,@AUTOCONF@,|#_!!_#|autoconf,g
-s,@AUTOMAKE@,|#_!!_#|/Users/blueset/Codebase/project-lyricova/packages/common/mecabUserDict/ipadic/missing automake-1.4,g
+s,@AUTOMAKE@,|#_!!_#|/Users/blueset/Codebase/project-lyricova/packages/api/mecabUserDict/ipadic/missing automake-1.4,g
 s,@AUTOHEADER@,|#_!!_#|autoheader,g
 s,@MAKEINFO@,|#_!!_#|makeinfo,g
 s,@SET_MAKE@,|#_!!_#|,g

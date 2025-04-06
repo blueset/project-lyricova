@@ -7,9 +7,15 @@ import type { Theme } from "@mui/material";
 import { styled } from "@mui/material";
 import type { Transition } from "framer-motion";
 import { motion } from "framer-motion";
-import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { SxProps } from "@mui/system";
 import { useActiveLyrcsRanges } from "../../../hooks/useActiveLyricsRanges";
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { LineRenderer, TimedSpanProps } from "./components/RubyLineRenderer";
 
@@ -18,33 +24,41 @@ const TRANSITION: Transition = {
   ease: "easeOut",
 };
 
-const TimedSpanGenerator = (full: boolean) => forwardRef<LyricsAnimationRef, TimedSpanProps>(
-  function TimedSpan({startTime, endTime, children}, ref) {
+const TimedSpanGenerator = (full: boolean) =>
+  forwardRef<LyricsAnimationRef, TimedSpanProps>(function TimedSpan(
+    { startTime, endTime, children },
+    ref
+  ) {
     const webAnimationRef = useRef<Animation | null>(null);
-    const refCallback = useCallback((node?: HTMLSpanElement) => {
-      if (node && node.style.opacity !== "1") {
-        node.style.opacity = "1";
-        const duration = Math.max(0.1, endTime - startTime);
-        webAnimationRef.current = node.animate(
-          full ? [
-            { opacity: "0.3" },
-            { opacity: "1", offset: 0.1 },
-            { opacity: "1" },
-          ] : [
-            { opacity: "0.3" },
-            { opacity: "1", offset: 0.1 },
-            { opacity: "1", offset: 0.9 },
-            { opacity: "0.6", offset: 1 },
-          ],
-          {
-            delay: startTime * 1000,
-            duration: duration * 1000,
-            fill: "both",
-            id: `static-mask-${startTime}-${endTime}-${children}`,
-          }
-        );
-      }
-    }, [children, startTime, endTime]);
+    const refCallback = useCallback(
+      (node?: HTMLSpanElement) => {
+        if (node && node.style.opacity !== "1") {
+          node.style.opacity = "1";
+          const duration = Math.max(0.1, endTime - startTime);
+          webAnimationRef.current = node.animate(
+            full
+              ? [
+                  { opacity: "0.3" },
+                  { opacity: "1", offset: 0.1 },
+                  { opacity: "1" },
+                ]
+              : [
+                  { opacity: "0.3" },
+                  { opacity: "1", offset: 0.1 },
+                  { opacity: "1", offset: 0.9 },
+                  { opacity: "0.6", offset: 1 },
+                ],
+            {
+              delay: startTime * 1000,
+              duration: duration * 1000,
+              fill: "both",
+              id: `static-mask-${startTime}-${endTime}-${children}`,
+            }
+          );
+        }
+      },
+      [children, startTime, endTime]
+    );
     useImperativeHandle(ref, () => ({
       resume(time?: number) {
         const anim = webAnimationRef.current;
@@ -63,8 +77,7 @@ const TimedSpanGenerator = (full: boolean) => forwardRef<LyricsAnimationRef, Tim
       },
     }));
     return <span ref={refCallback}>{children}</span>;
-  }
-);
+  });
 
 const TimedSpan = TimedSpanGenerator(true);
 const TimedSpanPerSyllable = TimedSpanGenerator(false);
@@ -107,46 +120,50 @@ const PlainDiv = styled(motion.div)({
   },
 });
 
-const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(function PlainLineElement({
-  className,
-  line,
-  start,
-  end,
-  transLang,
-  sx,
-  idx,
-}, ref) {
-  if (!line) return null;
+const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
+  function PlainLineElement(
+    { className, line, start, end, transLang, sx, idx },
+    ref
+  ) {
+    if (!line) return null;
 
-  return (
-    <PlainDiv
-      lang="ja"
-      layout
-      className={className}
-      transition={TRANSITION}
-      initial={{
-        opacity: 0,
-      }}
-      animate={{
-        opacity: 1,
-      }}
-      exit={{
-        opacity: 0,
-      }}
-      sx={sx}
-      data-role={line.attachments.role}
-      data-minor={line.attachments.minor}
-      layoutId={`${idx}`}
-    >
-      <LineRenderer line={line} start={start} end={end} lineContainer="div" timedSpan={TimedSpan} ref={ref} />
-      {line.attachments.translations[transLang] && (
-        <div lang={transLang || "zh"} className="translation">
+    return (
+      <PlainDiv
+        lang="ja"
+        layout
+        className={className}
+        transition={TRANSITION}
+        initial={{
+          opacity: 0,
+        }}
+        animate={{
+          opacity: 1,
+        }}
+        exit={{
+          opacity: 0,
+        }}
+        sx={sx}
+        data-role={line.attachments.role}
+        data-minor={line.attachments.minor}
+        layoutId={`${idx}`}
+      >
+        <LineRenderer
+          line={line}
+          start={start}
+          end={end}
+          lineContainer="div"
+          timedSpan={TimedSpan}
+          ref={ref}
+        />
+        {line.attachments.translations[transLang] && (
+          <div lang={transLang || "zh"} className="translation">
             {line.attachments.translations[transLang]}
-        </div>
-      )}
-    </PlainDiv>
-  );
-});
+          </div>
+        )}
+      </PlainDiv>
+    );
+  }
+);
 
 // #endregion
 
@@ -197,42 +214,52 @@ const GlowDiv = styled(motion.div)({
   },
 });
 
-const GlowLineElementGenerator = (full: boolean) => forwardRef<LyricsAnimationRef, LyricsLineElementProps>(function GlowLineElement({ line, start, end, transLang, idx }, ref) {
-  if (!line) return null;
-  const content = (
-    <>
-      <LineRenderer line={line} start={start} end={end} lineContainer="div" timedSpan={full ? TimedSpan : TimedSpanPerSyllable} ref={ref} />
-      {line.attachments?.translations[transLang] && (
-        <div className="translate" lang={transLang || "zh"}>
-          {line.attachments.translations[transLang]}
-        </div>
-      )}
-    </>
-  );
+const GlowLineElementGenerator = (full: boolean) =>
+  forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
+    function GlowLineElement({ line, start, end, transLang, idx }, ref) {
+      if (!line) return null;
+      const content = (
+        <>
+          <LineRenderer
+            line={line}
+            start={start}
+            end={end}
+            lineContainer="div"
+            timedSpan={full ? TimedSpan : TimedSpanPerSyllable}
+            ref={ref}
+          />
+          {line.attachments?.translations[transLang] && (
+            <div className="translate" lang={transLang || "zh"}>
+              {line.attachments.translations[transLang]}
+            </div>
+          )}
+        </>
+      );
 
-  return (
-    <GlowDiv
-      lang="ja"
-      transition={TRANSITION}
-      initial={{
-        opacity: 0,
-      }}
-      animate={{
-        opacity: 1,
-      }}
-      exit={{
-        opacity: 0,
-      }}
-      data-role={line.attachments.role}
-      data-minor={line.attachments.minor}
-      layout
-      layoutId={`${idx}`}
-    >
-      <div className="overlay">{content}</div>
-      <div className="text">{content}</div>
-    </GlowDiv>
+      return (
+        <GlowDiv
+          lang="ja"
+          transition={TRANSITION}
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          exit={{
+            opacity: 0,
+          }}
+          data-role={line.attachments.role}
+          data-minor={line.attachments.minor}
+          layout
+          layoutId={`${idx}`}
+        >
+          <div className="overlay">{content}</div>
+          <div className="text">{content}</div>
+        </GlowDiv>
+      );
+    }
   );
-});
 
 const GlowLineElement = GlowLineElementGenerator(true);
 const GlowPerSyllableLineElement = GlowLineElementGenerator(false);
@@ -245,7 +272,11 @@ interface Props {
   variant?: "plain" | "glow" | "glowPerSyllable";
 }
 
-export function FocusedLyrics({ lyrics, transLangIdx, variant = "plain" }: Props) {
+export function FocusedLyrics({
+  lyrics,
+  transLangIdx,
+  variant = "plain",
+}: Props) {
   const { playerRef } = useAppContext();
   const { currentFrame, segments, playerState } = useActiveLyrcsRanges(
     lyrics.lines,
@@ -257,7 +288,8 @@ export function FocusedLyrics({ lyrics, transLangIdx, variant = "plain" }: Props
   const animationRefs = useRef<LyricsAnimationRef[]>([]);
   useEffect(() => {
     if (playerState.state === "playing") {
-      const currentTime = (performance.now() - playerState.startingAt) / playerState.rate / 1000;
+      const currentTime =
+        (performance.now() - playerState.startingAt) / playerState.rate / 1000;
       animationRefs.current.forEach((ref) => {
         if (ref) {
           ref.resume(currentTime);
@@ -274,20 +306,31 @@ export function FocusedLyrics({ lyrics, transLangIdx, variant = "plain" }: Props
 
   const lines = lyrics.lines;
   const lang = lyrics.translationLanguages[transLangIdx ?? 0];
-  const LineElement = variant === "plain" ? PlainLineElement : variant === "glow" ? GlowLineElement : GlowPerSyllableLineElement;
+  const LineElement =
+    variant === "plain"
+      ? PlainLineElement
+      : variant === "glow"
+      ? GlowLineElement
+      : GlowPerSyllableLineElement;
 
-  const setRef = useCallback((index: number) => (ref?: LyricsAnimationRef) => {
-    if (animationRefs.current[index] === ref) return;
-    animationRefs.current[index] = ref;
-    if (ref) {
-      if (playerStateRef.current.state === "playing") {
-        const currentTime = (performance.now() - playerStateRef.current.startingAt) / playerStateRef.current.rate / 1000;
-        ref.resume(currentTime);
-      } else {
-        ref.pause(playerStateRef.current.progress);
+  const setRef = useCallback(
+    (index: number) => (ref?: LyricsAnimationRef) => {
+      if (animationRefs.current[index] === ref) return;
+      animationRefs.current[index] = ref;
+      if (ref) {
+        if (playerStateRef.current.state === "playing") {
+          const currentTime =
+            (performance.now() - playerStateRef.current.startingAt) /
+            playerStateRef.current.rate /
+            1000;
+          ref.resume(currentTime);
+        } else {
+          ref.pause(playerStateRef.current.progress);
+        }
       }
-    }
-  }, []);
+    },
+    []
+  );
 
   return (
     <motion.div
@@ -301,18 +344,18 @@ export function FocusedLyrics({ lyrics, transLangIdx, variant = "plain" }: Props
       }}
       layout
     >
-        {currentFrame?.data?.activeSegments.map((segment) => (
-          <LineElement
-            line={lines[segment]}
-            start={segments[segment].start}
-            end={segments[segment].end}
-            transLang={lang}
-            idx={segment}
-            key={segment}
-            animate={true}
-            ref={setRef(segment)}
-          />
-        ))}
+      {currentFrame?.data?.activeSegments.map((segment) => (
+        <LineElement
+          line={lines[segment]}
+          start={segments[segment].start}
+          end={segments[segment].end}
+          transLang={lang}
+          idx={segment}
+          key={segment}
+          animate={true}
+          ref={setRef(segment)}
+        />
+      ))}
     </motion.div>
   );
 }

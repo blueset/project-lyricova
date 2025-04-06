@@ -1,8 +1,6 @@
-import { Avatar, Theme } from "@mui/material";
+import { Avatar, Theme, type SxProps } from "@mui/material";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { useField } from "react-final-form";
-import { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
-import React from "react";
 
 export function AvatarField({
   name,

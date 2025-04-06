@@ -1,6 +1,6 @@
 import { MusicFile } from "./MusicFile";
 import { VideoFile } from "./VideoFile";
-import { SongForApiContract } from "../types/vocadb";
+import type { SongForApiContract } from "../types/vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { SongInAlbum } from "./SongInAlbum";
 import { Entry } from "./Entry";
@@ -110,11 +110,13 @@ export class Song extends Model<Song, Partial<Song>> {
   SongInAlbum?: Partial<SongInAlbum>;
 
   private static selectPreferredThumbUrl(
-    vocaDbJson: SongForApiContract | undefined,
+    vocaDbJson: SongForApiContract | undefined
   ): string | undefined {
     if (vocaDbJson === undefined) return undefined;
     if (vocaDbJson.pvs?.length) {
-      const candidate = vocaDbJson.pvs.find((p) => p.service === "Youtube" && p.pvType === "Original" && p.thumbUrl)?.thumbUrl;
+      const candidate = vocaDbJson.pvs.find(
+        (p) => p.service === "Youtube" && p.pvType === "Original" && p.thumbUrl
+      )?.thumbUrl;
       if (candidate) return candidate;
     }
     return vocaDbJson.thumbUrl;
@@ -126,7 +128,7 @@ export class Song extends Model<Song, Partial<Song>> {
     intermediate = false
   ): Promise<Song | null> {
     // import { transliterate } from "../utils/transliterate";
-    const { transliterate } = await import("../utils/transliterate");
+    const { transliterate } = await import("../utils/transliterate.js");
     await Song.upsert({
       id: entity.id,
       name: entity.name,

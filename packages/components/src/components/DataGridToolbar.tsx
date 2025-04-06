@@ -24,7 +24,7 @@ export function DataGridToolbar({ title, children }: DataGridToolbarProps) {
       <GridToolbarDensitySelector />
       <GridToolbarQuickFilter
         debounceMs={500}
-        quickFilterParser={(searchInput) =>
+        quickFilterParser={(searchInput: string) =>
           searchInput.split(",").map((value) => value.trim())
         }
       />

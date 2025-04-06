@@ -1,62 +1,40 @@
 import analyzer from "@next/bundle-analyzer";
-import { withSuperjson } from "next-superjson";
 
 const withBundleAnalyzer = analyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-export default withSuperjson()(
-  withBundleAnalyzer({
-    webpack: (config, options) => {
-      // config.resolve.alias.react = path.resolve(__dirname, "node_modules/react");
-      return config;
-    },
-    async redirects() {
-      return [
-        {
-          source: "/pages/1",
-          destination: "/",
-          permanent: true,
-        },
-        {
-          source: "/tags/:slug/pages/1",
-          destination: "/tags/:slug",
-          permanent: true,
-        },
-      ];
-    },
-    async rewrites() {
-      return [
-        {
-          source: "/api/:path*",
-          destination: "http://localhost:8083/api/:path*",
-        },
-        {
-          source: "/graphql",
-          destination: "http://localhost:8083/graphql",
-        },
-        {
-          source: "/feed",
-          destination: "http://localhost:8083/feed",
-        },
-      ];
-    },
-    modularizeImports: {
-      lodash: {
-        transform: "lodash/{{member}}",
+const config = withBundleAnalyzer({
+  async redirects() {
+    return [
+      {
+        source: "/pages/1",
+        destination: "/",
+        permanent: true,
       },
-      "@mui/material": {
-        transform: "@mui/material/{{member}}",
+      {
+        source: "/tags/:slug/pages/1",
+        destination: "/tags/:slug",
+        permanent: true,
       },
-      "@mui/core": {
-        transform: "@mui/core/{{member}}",
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:8083/api/:path*",
       },
-      "@mui/lab": {
-        transform: "@mui/lab/{{member}}",
+      {
+        source: "/graphql",
+        destination: "http://localhost:8083/graphql",
       },
-      "@mui/icons-material/?(((\\w*)?/?)*)": {
-        transform: "@mui/icons-material/{{ matches.[1] }}/{{member}}",
+      {
+        source: "/feed",
+        destination: "http://localhost:8083/feed",
       },
-    },
-  })
-);
+    ];
+  },
+});
+
+export default config;

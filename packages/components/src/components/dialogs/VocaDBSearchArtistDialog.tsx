@@ -29,7 +29,7 @@ import { Skeleton } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
 import { ArtistFragments } from "../../utils/fragments";
-import { DocumentNode } from "graphql";
+import type { DocumentNode } from "graphql";
 import React from "react";
 
 const IMPORT_SONG_MUTATION = gql`

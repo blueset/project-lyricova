@@ -16,7 +16,7 @@ if (fs.existsSync(".env")) {
     logger.warn(
       "No .env file found. Using .env.example file to supply config environment variables"
     );
-  };
+  }
 }
 
 export const SESSION_SECRET = process.env["SESSION_SECRET"]!;

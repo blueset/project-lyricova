@@ -23,7 +23,7 @@ import {
 import AddPlaylistPopoverContent from "@/components/dashboard/AddPlaylistPopoverContent";
 import AddIcon from "@mui/icons-material/Add";
 import type { DocumentNode } from "graphql";
-import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { SxProps } from "@mui/system";
 
 const PLAYLISTS_QUERY = gql`
   query {

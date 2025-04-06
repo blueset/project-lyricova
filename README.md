@@ -32,6 +32,7 @@ in VocaDB.net.</small>
 ## Install
 
 - Database
+
   - Setup a MySQL database and import the schema from `lyricova-schema.sql`.
   - Create a MySQL user and grant it access to the database.
 
@@ -43,16 +44,15 @@ in VocaDB.net.</small>
     for examples.
 - Node.js
   - Install Node.js and npm.
-  - Install dependencies: 
+  - Install dependencies:
     ```bash
     npm install
     ```
-  - Build: 
+  - Build:
     ```bash
-    npm run build --workspace=packages/common --workspace=packages/lyrics-kit --workspace=packages/jukebox --workspace=packages/lyricova`
+    npm run build
     ```
-    - Note, env var `DB_URI` is required for building.
-  - Create a Lyricova user in the database as admin. 
+  - Create a Lyricova user in the database as admin.
     ```bash
     npx lyricova-admin user add --username <username> --password <password> --email <email> --role admin --display-name <display-name>
     ```

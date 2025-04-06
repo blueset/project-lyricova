@@ -1,4 +1,4 @@
-import { ChatCompletionMessageParam } from "openai/resources";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 export function getTranslationAlignmentLLMPrompt(
   original: string,

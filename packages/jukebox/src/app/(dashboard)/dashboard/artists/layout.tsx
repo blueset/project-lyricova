@@ -123,7 +123,7 @@ export default function ArtistInfoLayout({ children }: Props) {
                       if (result.data.enrolArtistFromVocaDB) {
                         const updated = result.data.enrolArtistFromVocaDB;
                         query.updateQuery((prev) => ({
-                          artists: prev.artists.map((v) =>
+                          artists: prev.artists.map((v: Artist) =>
                             v.id === updated.id ? updated : v
                           ),
                         }));

@@ -22,7 +22,7 @@ import { formatTime } from "../../frontendUtils/strings";
 import filesize from "filesize";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type { DocumentNode } from "graphql";
-import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { SxProps } from "@mui/system";
 import type { Theme } from "@emotion/react";
 
 const SINGLE_FILE_SONG_QUERY = gql`

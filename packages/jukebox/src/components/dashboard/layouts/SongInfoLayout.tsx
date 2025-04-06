@@ -149,7 +149,7 @@ export default function SongInfoLayout({ children }: Props) {
                       if (result.data.enrolSongFromVocaDB) {
                         const updated = result.data.enrolSongFromVocaDB;
                         query.updateQuery((prev) => ({
-                          songs: prev.songs.map((v) =>
+                          songs: prev.songs.map((v: Song) =>
                             v.id === updated.id ? updated : v
                           ),
                         }));

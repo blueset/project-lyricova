@@ -10,7 +10,7 @@ import type { Variants, Transition, TargetAndTransition } from "framer-motion";
 import { motion, AnimatePresence } from "framer-motion";
 import Balancer from "react-wrap-balancer";
 import type { CSSProperties } from "react";
-import type { SxProps } from "@mui/system/styleFunctionSx/styleFunctionSx";
+import type { SxProps } from "@mui/system";
 
 const ANIMATION_THRESHOLD = 0.25;
 

@@ -1,6 +1,10 @@
 {
   "name": "root",
   "private": true,
+  "packageManager": "npm@10.9.2",
+  "scripts": {
+    "build": "turbo run build"
+  },
   "workspaces": [
     "packages/*"
   ],
@@ -13,6 +17,7 @@
   "devDependencies": {
     "prettier": "^2.8.7",
     "ts-jest": "^29.1.2",
+    "turbo": "^2.5.0",
     "typescript": "^5.4.5"
   }
 }

@@ -6,7 +6,7 @@ import {
   Button,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import DiffEditorTextarea from "./DiffEditorBox";
 import diff from "fast-diff";
 import {

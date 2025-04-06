@@ -7,7 +7,7 @@
 dicdir = /usr/lib/x86_64-linux-gnu/mecab/dic/mecab-ipadic-neologd
 
 ; userdic = /home/foo/bar/user.dic
-userdic = /app/packages/common/mecabUserDict/CustomDictWeightedCombined.dic
+userdic = /app/packages/api/mecabUserDict/CustomDictWeightedCombined.dic
 
 ; output-format-type = wakati
 ; input-buffer-size = 8192

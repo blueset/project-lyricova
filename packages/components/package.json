@@ -15,8 +15,25 @@
     "clean": "rimraf build"
   },
   "dependencies": {
+    "@apollo/client": "^3.13.6",
     "@mui/icons-material": "^7.0.1",
-    "@mui/material": "^7.0.1"
+    "@mui/material": "^7.0.1",
+    "@mui/x-data-grid": "^7.28.3",
+    "axios": "^1.8.4",
+    "base64url": "^3.0.1",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
+    "final-form": "^4.20.10",
+    "final-form-arrays": "^3.1.0",
+    "graphql": "^16.10.0",
+    "graphql-ws": "^6.0.4",
+    "lodash": "^4.17.21",
+    "mui-rff": "^8.0.1",
+    "notistack": "^3.0.2",
+    "react-final-form": "^6.5.9",
+    "react-final-form-arrays": "^3.1.4",
+    "slugify": "^1.6.6",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",

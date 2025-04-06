@@ -40,9 +40,9 @@ pkgincludedir = $(includedir)/mecab-ipadic
 
 top_builddir = .
 
-ACLOCAL = /Users/blueset/Codebase/project-lyricova/packages/common/mecabUserDict/ipadic/missing aclocal-1.4
+ACLOCAL = /Users/blueset/Codebase/project-lyricova/packages/api/mecabUserDict/ipadic/missing aclocal-1.4
 AUTOCONF = autoconf
-AUTOMAKE = /Users/blueset/Codebase/project-lyricova/packages/common/mecabUserDict/ipadic/missing automake-1.4
+AUTOMAKE = /Users/blueset/Codebase/project-lyricova/packages/api/mecabUserDict/ipadic/missing automake-1.4
 AUTOHEADER = autoheader
 
 INSTALL = /usr/local/bin/ginstall -c

@@ -145,7 +145,7 @@ export class Artist extends Model<Artist, Partial<Artist>> {
     artist: ArtistContract
   ): Promise<Artist> {
     // import { transliterate } from "../utils/transliterate";
-    const { transliterate } = await import("../utils/transliterate");
+    const { transliterate } = await import("../utils/transliterate.js");
     const obj = (
       await Artist.findOrCreate({
         where: { id: artist.id },
@@ -164,7 +164,7 @@ export class Artist extends Model<Artist, Partial<Artist>> {
     entity: ArtistForApiContract,
     baseVoiceBank: Artist | null
   ): Promise<Artist | null> {
-    const { transliterate } = await import("../utils/transliterate");
+    const { transliterate } = await import("../utils/transliterate.js");
     await Artist.upsert({
       id: entity.id,
       name: entity.name,
