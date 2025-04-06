@@ -15,17 +15,18 @@
     "clean": "rimraf build"
   },
   "dependencies": {
+    "@mui/icons-material": "^7.0.1",
     "@mui/material": "^7.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "concurrently": "^8.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rimraf": "^5.0.0",
-    "typescript": "^5.0.0",
     "tsc-alias": "^1.8.8",
-    "concurrently": "^8.0.0"
+    "typescript": "^5.0.0"
   },
   "peerDependencies": {
     "react": "^18.0.0",
