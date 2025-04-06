@@ -27,7 +27,7 @@ import {
   Button,
   ButtonGroup,
   FormHelperText,
-  Grid2 as Grid,
+  Grid,
   IconButton,
   MenuItem,
   Stack,

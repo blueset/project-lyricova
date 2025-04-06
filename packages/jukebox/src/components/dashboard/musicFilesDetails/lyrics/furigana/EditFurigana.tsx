@@ -1,7 +1,7 @@
 import {
   Box,
   Button,
-  Grid2 as Grid,
+  Grid,
   IconButton,
   List,
   ListItem,

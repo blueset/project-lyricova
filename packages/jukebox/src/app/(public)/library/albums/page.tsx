@@ -4,7 +4,7 @@ import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import React from "react";
 import type { Album } from "@lyricova/api/graphql/types";
-import { Avatar, ButtonBase, Grid2 as Grid, Typography } from "@mui/material";
+import { Avatar, ButtonBase, Grid, Typography } from "@mui/material";
 import { NextComposedLink, formatArtistsPlainText } from "@lyricova/components";
 import type { DocumentNode } from "graphql";
 

@@ -2,32 +2,29 @@ import {
   Avatar,
   Chip,
   FilterOptionsState,
-  Grid2 as Grid,
+  Grid,
   IconButton,
   Stack,
   Typography,
-} from "@mui/material";
-import { Song } from "../models/Song";
-import { useEffect, useState } from "react";
-import _ from "lodash";
-import axios from "axios";
-import { gql, useApolloClient } from "@apollo/client";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import SearchIcon from "@mui/icons-material/Search";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import VocaDBSearchSongDialog from "./vocaDBSearchSongDialog";
-import { SongFragments } from "../utils/fragments";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import EditIcon from "@mui/icons-material/Edit";
-import SongEntityDialog from "./songEntityDialog";
-import { useField, useForm } from "react-final-form";
-import { Autocomplete } from "mui-rff";
-import {
-  formatArtists,
-  formatArtistsPlainText,
-} from "../frontendUtils/artists";
-import { DocumentNode } from "graphql";
-import React from "react";
+} from '@mui/material';
+import { Song } from '../models/Song';
+import { useEffect, useState } from 'react';
+import _ from 'lodash';
+import axios from 'axios';
+import { gql, useApolloClient } from '@apollo/client';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import SearchIcon from '@mui/icons-material/Search';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import VocaDBSearchSongDialog from './vocaDBSearchSongDialog';
+import { SongFragments } from '../utils/fragments';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import EditIcon from '@mui/icons-material/Edit';
+import SongEntityDialog from './songEntityDialog';
+import { useField, useForm } from 'react-final-form';
+import { Autocomplete } from 'mui-rff';
+import { formatArtists, formatArtistsPlainText } from '../frontendUtils/artists';
+import { DocumentNode } from 'graphql';
+import React from 'react';
 
 export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
@@ -61,12 +58,10 @@ export default function SelectSongEntityBox<T extends string>({
   } = useField<ExtendedSong>(fieldName);
   const setValue = useForm().mutators.setValue;
 
-  const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useState<
-    ExtendedSong[]
-  >([]);
-  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useState("");
+  const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useState<ExtendedSong[]>([]);
+  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useState('');
 
-  const [importDialogKeyword, setImportDialogKeyword] = useState("");
+  const [importDialogKeyword, setImportDialogKeyword] = useState('');
   const [touched, setTouched] = useState(false);
 
   // Confirm import pop-up
@@ -80,7 +75,7 @@ export default function SelectSongEntityBox<T extends string>({
   useEffect(() => {
     let active = true;
 
-    if (vocaDBAutoCompleteText === "" || !touched) {
+    if (vocaDBAutoCompleteText === '' || !touched) {
       setVocaDBAutoCompleteOptions(value ? [value] : []);
       return undefined;
     }
@@ -91,15 +86,12 @@ export default function SelectSongEntityBox<T extends string>({
         variables: { text: vocaDBAutoCompleteText },
       });
 
-      const vocaDBPromise = axios.get<string[]>(
-        "https://vocadb.net/api/songs/names",
-        {
-          params: {
-            query: vocaDBAutoCompleteText,
-            nameMatchMode: "Auto",
-          },
-        }
-      );
+      const vocaDBPromise = axios.get<string[]>('https://vocadb.net/api/songs/names', {
+        params: {
+          query: vocaDBAutoCompleteText,
+          nameMatchMode: 'Auto',
+        },
+      });
 
       if (active) {
         let result: ExtendedSong[] = [];
@@ -117,7 +109,7 @@ export default function SelectSongEntityBox<T extends string>({
           const vocaDBResult = await vocaDBPromise;
           if (vocaDBResult.status === 200 && vocaDBResult.data) {
             result = result.concat(
-              vocaDBResult.data.map((v) => ({
+              vocaDBResult.data.map(v => ({
                 id: undefined,
                 name: v,
                 sortOrder: `"${v}"`,
@@ -125,7 +117,7 @@ export default function SelectSongEntityBox<T extends string>({
               }))
             );
           }
-          if (value && !_.some(result, (v) => v.id === value.id)) {
+          if (value && !_.some(result, v => v.id === value.id)) {
             result = [value, ...result];
           }
         } catch (e) {
@@ -139,12 +131,7 @@ export default function SelectSongEntityBox<T extends string>({
     return () => {
       active = false;
     };
-  }, [
-    vocaDBAutoCompleteText,
-    apolloClient,
-    setVocaDBAutoCompleteOptions,
-    touched,
-  ]);
+  }, [vocaDBAutoCompleteText, apolloClient, setVocaDBAutoCompleteOptions, touched]);
 
   return (
     <>
@@ -163,13 +150,10 @@ export default function SelectSongEntityBox<T extends string>({
             handleHomeEndKeys
             freeSolo
             {...input}
-            textFieldProps={{ variant: "outlined", size: "small" }}
+            textFieldProps={{ variant: 'outlined', size: 'small' }}
             // renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label={labelName} />}
-            filterOptions={(
-              v: ExtendedSong[],
-              params: FilterOptionsState<ExtendedSong>
-            ) => {
-              if (params.inputValue !== "") {
+            filterOptions={(v: ExtendedSong[], params: FilterOptionsState<ExtendedSong>) => {
+              if (params.inputValue !== '') {
                 v.push({
                   id: undefined,
                   name: `Search for “${params.inputValue}”`,
@@ -192,18 +176,18 @@ export default function SelectSongEntityBox<T extends string>({
               onChange(event);
               if (newValue === null) {
                 setVocaDBAutoCompleteOptions([]);
-                if (reason === "clear") {
+                if (reason === 'clear') {
                   setValue(fieldName, null);
                 }
                 return;
               }
               const newVal = newValue as ExtendedSong;
               if (newVal.vocaDBSuggestion) {
-                setImportDialogKeyword(newVal?.sortOrder ?? "");
+                setImportDialogKeyword(newVal?.sortOrder ?? '');
                 toggleImportDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
               } else if (newVal.manual) {
-                setImportDialogKeyword(newVal?.sortOrder ?? "");
+                setImportDialogKeyword(newVal?.sortOrder ?? '');
                 toggleManualDialogForCreate(true);
                 toggleManualDialogOpen(true);
                 setVocaDBAutoCompleteOptions([]);
@@ -213,38 +197,20 @@ export default function SelectSongEntityBox<T extends string>({
               }
             }}
             renderOption={(params, option: ExtendedSong | null) => {
-              let icon = (
-                <MusicNoteIcon
-                  sx={{ color: "text.secondary", marginRight: 2 }}
-                />
-              );
+              let icon = <MusicNoteIcon sx={{ color: 'text.secondary', marginRight: 2 }} />;
               if (option?.vocaDBSuggestion)
-                icon = (
-                  <SearchIcon
-                    sx={{ color: "text.secondary", marginRight: 2 }}
-                  />
-                );
+                icon = <SearchIcon sx={{ color: 'text.secondary', marginRight: 2 }} />;
               else if (option?.manual)
-                icon = (
-                  <AddCircleIcon
-                    sx={{ color: "text.secondary", marginRight: 2 }}
-                  />
-                );
+                icon = <AddCircleIcon sx={{ color: 'text.secondary', marginRight: 2 }} />;
               return (
-                <Stack
-                  component="li"
-                  {...params}
-                  flexDirection="row"
-                  alignItems="center"
-                >
-                  {icon}{" "}
+                <Stack component="li" {...params} flexDirection="row" alignItems="center">
+                  {icon}{' '}
                   <Stack flexDirection="column">
-                    <Typography>{option?.name} {option?.id ? ` (#${option.id})` : ''}</Typography>
+                    <Typography>
+                      {option?.name} {option?.id ? ` (#${option.id})` : ''}
+                    </Typography>
                     {option?.artists?.length && (
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "text.secondary", lineHeight: 1 }}
-                      >
+                      <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1 }}>
                         {formatArtistsPlainText(option.artists)}
                       </Typography>
                     )}
@@ -252,15 +218,10 @@ export default function SelectSongEntityBox<T extends string>({
                 </Stack>
               );
             }}
-            getOptionLabel={(option) => {
+            getOptionLabel={option => {
               // Prevent ”Manually add ...” item from being rendered
-              if (option === null || (option as ExtendedSong).id === null)
-                return "";
-              return (
-                `${(option as ExtendedSong).name} (#${
-                  (option as ExtendedSong).id
-                })` || ""
-              );
+              if (option === null || (option as ExtendedSong).id === null) return '';
+              return `${(option as ExtendedSong).name} (#${(option as ExtendedSong).id})` || '';
             }}
             onFocus={() => setTouched(true)}
           />
@@ -270,33 +231,28 @@ export default function SelectSongEntityBox<T extends string>({
             <Stack
               direction="row"
               alignItems="center"
-              sx={{ marginBottom: 2, flexWrap: { xs: "wrap" } }}
+              sx={{ marginBottom: 2, flexWrap: { xs: 'wrap' } }}
             >
               <div>
                 <Avatar
                   src={value.coverUrl}
                   variant="rounded"
-                  sx={{ height: "3em", width: "3em", marginRight: 2 }}
+                  sx={{ height: '3em', width: '3em', marginRight: 2 }}
                 >
                   <MusicNoteIcon />
                 </Avatar>
               </div>
               <div style={{ flexGrow: 1, flexBasis: 0 }}>
                 <div>
-                  <Typography component="span">{value.name}</Typography>{" "}
+                  <Typography component="span">{value.name}</Typography>{' '}
                   <Typography color="textSecondary" component="span">
                     ({value.sortOrder}) #{value.id}
                   </Typography>
                 </div>
                 {value.artists && (
-                  <Stack
-                    direction="row"
-                    alignContent="center"
-                    sx={{ gap: 1 }}
-                    flexWrap="wrap"
-                  >
-                    {formatArtists(value.artists, (a) =>
-                      a.map((v) => (
+                  <Stack direction="row" alignContent="center" sx={{ gap: 1 }} flexWrap="wrap">
+                    {formatArtists(value.artists, a =>
+                      a.map(v => (
                         <Chip
                           variant="outlined"
                           size="small"
@@ -310,10 +266,7 @@ export default function SelectSongEntityBox<T extends string>({
               </div>
               <div>
                 {value.id >= 0 && (
-                  <IconButton
-                    href={`https://vocadb.net/S/${value.id}`}
-                    target="_blank"
-                  >
+                  <IconButton href={`https://vocadb.net/S/${value.id}`} target="_blank">
                     <OpenInNewIcon />
                   </IconButton>
                 )}
@@ -336,7 +289,7 @@ export default function SelectSongEntityBox<T extends string>({
           toggleOpen={toggleImportDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
-          setSong={(v) => setValue(fieldName, v)}
+          setSong={v => setValue(fieldName, v)}
         />
       )}
       {isManualDialogOpen && (
@@ -347,7 +300,7 @@ export default function SelectSongEntityBox<T extends string>({
           songToEdit={value}
           create={isManualDialogForCreate}
           setKeyword={setImportDialogKeyword}
-          setSong={(v) => setValue(fieldName, v)}
+          setSong={v => setValue(fieldName, v)}
         />
       )}
     </>

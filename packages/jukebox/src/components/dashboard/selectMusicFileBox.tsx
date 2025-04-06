@@ -1,4 +1,4 @@
-import { Avatar, Grid2 as Grid, Stack, Typography } from "@mui/material";
+import { Avatar, Grid, Stack, Typography } from "@mui/material";
 import { useEffect } from "react";
 import _ from "lodash";
 import { gql, useApolloClient } from "@apollo/client";

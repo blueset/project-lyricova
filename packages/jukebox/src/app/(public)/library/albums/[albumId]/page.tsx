@@ -6,7 +6,7 @@ import {
   Avatar,
   Box,
   Chip,
-  Grid2 as Grid,
+  Grid,
   IconButton,
   List,
   ListItemText,

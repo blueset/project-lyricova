@@ -14,7 +14,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import { TransliterationAdornment } from "../adornments/TransliterationAdornment";

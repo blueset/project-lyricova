@@ -1,4 +1,4 @@
-import { Song } from "../models/Song";
+import { Song } from '../models/Song';
 import {
   Button,
   Dialog,
@@ -7,46 +7,40 @@ import {
   DialogTitle,
   Divider,
   FormHelperText,
-  Grid2 as Grid,
+  Grid,
   IconButton,
   InputAdornment,
   MenuItem,
   Stack,
   styled,
   Typography,
-} from "@mui/material";
-import { Fragment, useCallback } from "react";
-import { gql, useApolloClient } from "@apollo/client";
-import TransliterationAdornment from "./TransliterationAdornment";
-import { useSnackbar } from "notistack";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AlbumIcon from "@mui/icons-material/Album";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import SelectSongEntityBox from "./selectSongEntityBox";
-import SelectArtistEntityBox from "./selectArtistEntityBox";
-import SelectAlbumEntityBox from "./selectAlbumEntityBox";
-import TrackNameAdornment from "./TrackNameAdornment";
-import * as yup from "yup";
-import { SongFragments } from "../utils/fragments";
-import { Artist } from "../models/Artist";
-import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
-import { Album } from "../models/Album";
-import VideoThumbnailAdornment from "./VideoThumbnailAdornment";
-import { Field, Form } from "react-final-form";
-import {
-  Checkboxes,
-  makeValidate,
-  Select,
-  showErrorOnChange,
-  TextField,
-} from "mui-rff";
-import finalFormMutators from "../frontendUtils/finalFormMutators";
-import arrayMutators from "final-form-arrays";
-import { FieldArray } from "react-final-form-arrays";
-import AvatarField from "./AvatarField";
-import { DocumentNode } from "graphql";
-import React from "react";
+} from '@mui/material';
+import { Fragment, useCallback } from 'react';
+import { gql, useApolloClient } from '@apollo/client';
+import TransliterationAdornment from './TransliterationAdornment';
+import { useSnackbar } from 'notistack';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AlbumIcon from '@mui/icons-material/Album';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import SelectSongEntityBox from './selectSongEntityBox';
+import SelectArtistEntityBox from './selectArtistEntityBox';
+import SelectAlbumEntityBox from './selectAlbumEntityBox';
+import TrackNameAdornment from './TrackNameAdornment';
+import * as yup from 'yup';
+import { SongFragments } from '../utils/fragments';
+import { Artist } from '../models/Artist';
+import type { VDBArtistCategoryType, VDBArtistRoleType } from '../types/vocadb';
+import { Album } from '../models/Album';
+import VideoThumbnailAdornment from './VideoThumbnailAdornment';
+import { Field, Form } from 'react-final-form';
+import { Checkboxes, makeValidate, Select, showErrorOnChange, TextField } from 'mui-rff';
+import finalFormMutators from '../frontendUtils/finalFormMutators';
+import arrayMutators from 'final-form-arrays';
+import { FieldArray } from 'react-final-form-arrays';
+import AvatarField from './AvatarField';
+import { DocumentNode } from 'graphql';
+import React from 'react';
 
 const NEW_SONG_MUTATION = gql`
   mutation ($data: SongInput!) {
@@ -74,12 +68,12 @@ const dividerRowSx = {
 };
 
 const NumberField = styled(TextField)({
-  "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-    "-webkit-appearance": "none",
+  '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+    '-webkit-appearance': 'none',
     margin: 0,
   },
-  "input[type=number]": {
-    "-moz-appearance": "textfield",
+  'input[type=number]': {
+    '-moz-appearance': 'textfield',
   },
 });
 
@@ -133,15 +127,15 @@ export default function SongEntityDialog({
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
-    setKeyword("");
+    setKeyword('');
   }, [toggleOpen, setKeyword]);
 
   const initialValues: FormValues =
     create || !songToEdit
       ? {
-          name: keyword ?? "",
-          sortOrder: "",
-          coverUrl: "",
+          name: keyword ?? '',
+          sortOrder: '',
+          coverUrl: '',
           originalSong: undefined,
           artists: [],
           albums: [],
@@ -152,12 +146,12 @@ export default function SongEntityDialog({
           coverUrl: songToEdit.coverUrl!,
           originalSong: songToEdit.original ?? undefined,
           artists:
-            songToEdit.artists?.map((v) => ({
+            songToEdit.artists?.map(v => ({
               ...v.ArtistOfSong,
               artist: v,
             })) ?? [],
           albums:
-            songToEdit.albums?.map((v) => ({
+            songToEdit.albums?.map(v => ({
               ...v.SongInAlbum,
               album: v,
             })) ?? [],
@@ -175,10 +169,8 @@ export default function SongEntityDialog({
       artists: yup
         .array(
           yup.object({
-            artist: yup.object().typeError("Artist entity must be selected."),
-            artistRoles: yup
-              .array(yup.string() as yup.StringSchema<VDBArtistRoleType>)
-              .required(),
+            artist: yup.object().typeError('Artist entity must be selected.'),
+            artistRoles: yup.array(yup.string() as yup.StringSchema<VDBArtistRoleType>).required(),
             categories: yup
               .array(yup.string() as yup.StringSchema<VDBArtistCategoryType>)
               .required(),
@@ -190,14 +182,9 @@ export default function SongEntityDialog({
       albums: yup
         .array(
           yup.object({
-            album: yup.object().typeError("Album entity must be selected."),
+            album: yup.object().typeError('Album entity must be selected.'),
             diskNumber: yup.number().optional().nullable().positive().integer(),
-            trackNumber: yup
-              .number()
-              .optional()
-              .nullable()
-              .positive()
-              .integer(),
+            trackNumber: yup.number().optional().nullable().positive().integer(),
             name: yup.string().required(),
           })
         )
@@ -208,12 +195,7 @@ export default function SongEntityDialog({
   const validate = makeValidate<FormValues>(schema);
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="form-dialog-title"
-      scroll="paper"
-    >
+    <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
       <Form<FormValues>
         initialValues={initialValues}
         mutators={{
@@ -222,26 +204,24 @@ export default function SongEntityDialog({
         }}
         subscription={{}}
         validate={validate}
-        onSubmit={async (values) => {
+        onSubmit={async values => {
           try {
             const data = {
               name: values.name,
               sortOrder: values.sortOrder,
-              coverUrl: values.coverUrl || "",
+              coverUrl: values.coverUrl || '',
               originalId: values.originalSong?.id ?? null,
-              songInAlbums: values.albums.map((v) => ({
+              songInAlbums: values.albums.map(v => ({
                 name: v.name,
-                diskNumber:
-                  v.diskNumber && parseInt(v.diskNumber as unknown as string),
-                trackNumber:
-                  v.trackNumber && parseInt(v.trackNumber as unknown as string),
+                diskNumber: v.diskNumber && parseInt(v.diskNumber as unknown as string),
+                trackNumber: v.trackNumber && parseInt(v.trackNumber as unknown as string),
                 albumId: v.album.id,
               })),
-              artistsOfSong: values.artists.map((v) => ({
+              artistsOfSong: values.artists.map(v => ({
                 categories: v.categories,
                 artistRoles: v.artistRoles,
                 isSupport: v.isSupport,
-                customName: v.customName || "",
+                customName: v.customName || '',
                 artistId: v.artist.id,
               })),
             };
@@ -261,7 +241,7 @@ export default function SongEntityDialog({
                 snackbar.enqueueSnackbar(
                   `Song “${result.data.newSong.name}” is successfully created.`,
                   {
-                    variant: "success",
+                    variant: 'success',
                   }
                 );
                 handleClose();
@@ -282,7 +262,7 @@ export default function SongEntityDialog({
                 snackbar.enqueueSnackbar(
                   `Song “${result.data.updateSong.name}” is successfully updated.`,
                   {
-                    variant: "success",
+                    variant: 'success',
                   }
                 );
                 apolloClient.cache.evict({ id: `Song:${songId}` });
@@ -291,17 +271,15 @@ export default function SongEntityDialog({
             }
           } catch (e) {
             console.error(
-              `Error occurred while ${create ? "creating" : "updating"} song ${
-                values?.name
-              }.`,
+              `Error occurred while ${create ? 'creating' : 'updating'} song ${values?.name}.`,
               e
             );
             snackbar.enqueueSnackbar(
-              `Error occurred while ${create ? "creating" : "updating"} song ${
+              `Error occurred while ${create ? 'creating' : 'updating'} song ${
                 values?.name
               }. (${e})`,
               {
-                variant: "error",
+                variant: 'error',
               }
             );
           }
@@ -310,9 +288,7 @@ export default function SongEntityDialog({
         {({ form, values, submitting, handleSubmit }) => (
           <>
             <DialogTitle id="form-dialog-title">
-              {create
-                ? "Create new song entity"
-                : `Edit song entity #${songId}`}
+              {create ? 'Create new song entity' : `Edit song entity #${songId}`}
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
@@ -335,10 +311,7 @@ export default function SongEntityDialog({
                     required
                     InputProps={{
                       endAdornment: (
-                        <TransliterationAdornment
-                          sourceName="name"
-                          destinationName="sortOrder"
-                        />
+                        <TransliterationAdornment sourceName="name" destinationName="sortOrder" />
                       ),
                     }}
                     name="sortOrder"
@@ -352,8 +325,8 @@ export default function SongEntityDialog({
                       name="coverUrl"
                       sx={{
                         marginRight: 2,
-                        height: "3em",
-                        width: "3em",
+                        height: '3em',
+                        width: '3em',
                       }}
                     />
                     <TextField
@@ -361,9 +334,7 @@ export default function SongEntityDialog({
                       margin="dense"
                       fullWidth
                       InputProps={{
-                        endAdornment: (
-                          <VideoThumbnailAdornment name="coverUrl" />
-                        ),
+                        endAdornment: <VideoThumbnailAdornment name="coverUrl" />,
                       }}
                       name="coverUrl"
                       type="text"
@@ -372,10 +343,7 @@ export default function SongEntityDialog({
                   </Stack>
                 </Grid>
               </Grid>
-              <SelectSongEntityBox
-                fieldName="originalSong"
-                labelName="Original song"
-              />
+              <SelectSongEntityBox fieldName="originalSong" labelName="Original song" />
               <Typography sx={dividerRowSx} variant="h6" component="h3">
                 Artists
               </Typography>
@@ -393,10 +361,7 @@ export default function SongEntityDialog({
                   <>
                     {fields.map((name, idx) => (
                       <Fragment key={name}>
-                        <SelectArtistEntityBox
-                          fieldName={`${name}.artist`}
-                          labelName="Artist"
-                        />
+                        <SelectArtistEntityBox fieldName={`${name}.artist`} labelName="Artist" />
                         <Stack flexDirection="row" alignItems="center">
                           <Select
                             type="text"
@@ -405,8 +370,8 @@ export default function SongEntityDialog({
                             multiple
                             sx={{ marginRight: 1 }}
                             formControlProps={{
-                              margin: "dense",
-                              variant: "outlined",
+                              margin: 'dense',
+                              variant: 'outlined',
                               fullWidth: true,
                             }}
                             inputProps={{
@@ -422,21 +387,15 @@ export default function SongEntityDialog({
                             <MenuItem value="Animator">Animator</MenuItem>
                             <MenuItem value="Distributor">Distributor</MenuItem>
                             <MenuItem value="Illustrator">Illustrator</MenuItem>
-                            <MenuItem value="Instrumentalist">
-                              Instrumentalist
-                            </MenuItem>
+                            <MenuItem value="Instrumentalist">Instrumentalist</MenuItem>
                             <MenuItem value="Mastering">Mastering</MenuItem>
                             <MenuItem value="Publisher">Publisher</MenuItem>
-                            <MenuItem value="VoiceManipulator">
-                              Voice Manipulator
-                            </MenuItem>
+                            <MenuItem value="VoiceManipulator">Voice Manipulator</MenuItem>
                             <MenuItem value="Other">Other</MenuItem>
                             <MenuItem value="Mixer">Mixer</MenuItem>
                             <MenuItem value="Chorus">Chorus</MenuItem>
                             <MenuItem value="Encoder">Encoder</MenuItem>
-                            <MenuItem value="VocalDataProvider">
-                              Vocal Data Provider
-                            </MenuItem>
+                            <MenuItem value="VocalDataProvider">Vocal Data Provider</MenuItem>
                           </Select>
                           <Select
                             type="text"
@@ -444,8 +403,8 @@ export default function SongEntityDialog({
                             name={`${name}.categories`}
                             multiple
                             formControlProps={{
-                              margin: "dense",
-                              variant: "outlined",
+                              margin: 'dense',
+                              variant: 'outlined',
                               fullWidth: true,
                             }}
                             inputProps={{
@@ -466,49 +425,39 @@ export default function SongEntityDialog({
                           </Select>
                           <Field name={`${name}`}>
                             {({ input: { value } }) =>
-                              value.artist?.type === "Producer" ? (
+                              value.artist?.type === 'Producer' ? (
                                 <SquareButton
                                   variant="outlined"
                                   size="large"
                                   onClick={() => {
-                                    form.mutators.setValue(
-                                      `${name}.artistRoles`,
-                                      ["Composer", "Lyricist"]
-                                    );
-                                    form.mutators.setValue(
-                                      `${name}.categories`,
-                                      ["Producer"]
-                                    );
+                                    form.mutators.setValue(`${name}.artistRoles`, [
+                                      'Composer',
+                                      'Lyricist',
+                                    ]);
+                                    form.mutators.setValue(`${name}.categories`, ['Producer']);
                                   }}
                                 >
                                   P
                                 </SquareButton>
-                              ) : value.artist?.type === "Vocaloid" ||
-                                value.artist?.type === "UTAU" ||
-                                value.artist?.type === "CeVIO" ||
-                                value.artist?.type ===
-                                  "OtherVoiceSynthesizer" ||
-                                value.artist?.type === "OtherVocalist" ||
-                                value.artist?.type === "Utaite" ||
-                                value.artist?.type === "Vocalist" ||
-                                value.artist?.type === "CoverArtist" ||
-                                value.artist?.type === "SynthesizerV" ||
-                                value.artist?.type === "NEUTRINO" ||
-                                value.artist?.type === "VoiSona" ||
-                                value.artist?.type === "NewType" ||
-                                value.artist?.type === "Voiceroid" ? (
+                              ) : value.artist?.type === 'Vocaloid' ||
+                                value.artist?.type === 'UTAU' ||
+                                value.artist?.type === 'CeVIO' ||
+                                value.artist?.type === 'OtherVoiceSynthesizer' ||
+                                value.artist?.type === 'OtherVocalist' ||
+                                value.artist?.type === 'Utaite' ||
+                                value.artist?.type === 'Vocalist' ||
+                                value.artist?.type === 'CoverArtist' ||
+                                value.artist?.type === 'SynthesizerV' ||
+                                value.artist?.type === 'NEUTRINO' ||
+                                value.artist?.type === 'VoiSona' ||
+                                value.artist?.type === 'NewType' ||
+                                value.artist?.type === 'Voiceroid' ? (
                                 <SquareButton
                                   variant="outlined"
                                   size="large"
                                   onClick={() => {
-                                    form.mutators.setValue(
-                                      `${name}.artistRoles`,
-                                      ["Vocalist"]
-                                    );
-                                    form.mutators.setValue(
-                                      `${name}.categories`,
-                                      ["Vocalist"]
-                                    );
+                                    form.mutators.setValue(`${name}.artistRoles`, ['Vocalist']);
+                                    form.mutators.setValue(`${name}.categories`, ['Vocalist']);
                                   }}
                                 >
                                   V
@@ -521,10 +470,10 @@ export default function SongEntityDialog({
                           <Checkboxes
                             sx={{ marginRight: 1 }}
                             indeterminate={false}
-                            data={{ label: "Support", value: true }}
+                            data={{ label: 'Support', value: true }}
                             formControlProps={{
                               sx: {
-                                minWidth: "auto",
+                                minWidth: 'auto',
                                 marginRight: 0,
                               },
                             }}
@@ -558,9 +507,9 @@ export default function SongEntityDialog({
                       onClick={() =>
                         fields.push({
                           artist: null,
-                          artistRoles: ["Default"],
-                          categories: ["Nothing"],
-                          customName: "",
+                          artistRoles: ['Default'],
+                          categories: ['Nothing'],
+                          customName: '',
                           isSupport: false,
                         })
                       }
@@ -568,9 +517,7 @@ export default function SongEntityDialog({
                       Add artist
                     </Button>
                     {showErrorOnChange({ meta }) ? (
-                      <FormHelperText error>
-                        {meta.submitError ?? meta.error?.[0]}
-                      </FormHelperText>
+                      <FormHelperText error>{meta.submitError ?? meta.error?.[0]}</FormHelperText>
                     ) : (
                       false
                     )}
@@ -594,10 +541,7 @@ export default function SongEntityDialog({
                           }}
                         >
                           {() => (
-                            <SelectAlbumEntityBox
-                              fieldName={`${name}.album`}
-                              labelName="Album"
-                            />
+                            <SelectAlbumEntityBox fieldName={`${name}.album`} labelName="Album" />
                           )}
                         </Field>
                         <Stack flexDirection="row" alignItems="center" gap={1}>
@@ -674,7 +618,7 @@ export default function SongEntityDialog({
                               album: null,
                               trackNumber: null,
                               diskNumber: null,
-                              name: value ?? "",
+                              name: value ?? '',
                             });
                           }}
                         >
@@ -690,12 +634,8 @@ export default function SongEntityDialog({
               <Button onClick={handleClose} color="primary">
                 Cancel
               </Button>
-              <Button
-                disabled={submitting}
-                onClick={handleSubmit}
-                color="primary"
-              >
-                {create ? "Create" : "Update"}
+              <Button disabled={submitting} onClick={handleSubmit} color="primary">
+                {create ? 'Create' : 'Update'}
               </Button>
             </DialogActions>
           </>

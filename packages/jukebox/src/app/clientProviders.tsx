@@ -11,7 +11,6 @@ export const themeMod = createTheme({
       "var(--font-inter),var(--font-source-han-sans)," +
       theme.typography.fontFamily,
   },
-  // @ts-expect-error version mismatch
   components: {
     ...theme.components,
     MuiCssBaseline: {

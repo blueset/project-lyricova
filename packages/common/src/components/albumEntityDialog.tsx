@@ -1,4 +1,4 @@
-import { Album } from "../models/Album";
+import { Album } from '../models/Album';
 import {
   Box,
   Button,
@@ -11,34 +11,34 @@ import {
   MenuItem,
   Stack,
   Typography,
-} from "@mui/material";
-import Grid from "@mui/material/Grid2";
-import { Fragment, useCallback, useEffect, useState } from "react";
-import { gql, useApolloClient } from "@apollo/client";
-import TransliterationAdornment from "./TransliterationAdornment";
-import { useSnackbar } from "notistack";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SortIcon from "@mui/icons-material/Sort";
-import AutorenewIcon from "@mui/icons-material/Autorenew";
-import SelectSongEntityBox from "./selectSongEntityBox";
-import TrackNameAdornment from "./TrackNameAdornment";
-import SelectArtistEntityBox from "./selectArtistEntityBox";
-import _ from "lodash";
-import * as yup from "yup";
-import { AlbumFragments } from "../utils/fragments";
-import VideoThumbnailAdornment from "./VideoThumbnailAdornment";
-import { Artist } from "../models/Artist";
-import { Field, Form } from "react-final-form";
-import { makeValidate, Select, TextField } from "mui-rff";
-import finalFormMutators from "../frontendUtils/finalFormMutators";
-import arrayMutators from "final-form-arrays";
-import { FieldArray } from "react-final-form-arrays";
-import AvatarField from "./AvatarField";
-import { Song } from "../models/Song";
-import type { VDBArtistCategoryType, VDBArtistRoleType } from "../types/vocadb";
-import { DocumentNode } from "graphql";
-import React from "react";
+} from '@mui/material';
+import Grid from '@mui/material/Grid';
+import { Fragment, useCallback, useEffect, useState } from 'react';
+import { gql, useApolloClient } from '@apollo/client';
+import TransliterationAdornment from './TransliterationAdornment';
+import { useSnackbar } from 'notistack';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SortIcon from '@mui/icons-material/Sort';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import SelectSongEntityBox from './selectSongEntityBox';
+import TrackNameAdornment from './TrackNameAdornment';
+import SelectArtistEntityBox from './selectArtistEntityBox';
+import _ from 'lodash';
+import * as yup from 'yup';
+import { AlbumFragments } from '../utils/fragments';
+import VideoThumbnailAdornment from './VideoThumbnailAdornment';
+import { Artist } from '../models/Artist';
+import { Field, Form } from 'react-final-form';
+import { makeValidate, Select, TextField } from 'mui-rff';
+import finalFormMutators from '../frontendUtils/finalFormMutators';
+import arrayMutators from 'final-form-arrays';
+import { FieldArray } from 'react-final-form-arrays';
+import AvatarField from './AvatarField';
+import { Song } from '../models/Song';
+import type { VDBArtistCategoryType, VDBArtistRoleType } from '../types/vocadb';
+import { DocumentNode } from 'graphql';
+import React from 'react';
 
 const NEW_ALBUM_MUTATION = gql`
   mutation ($data: AlbumInput!) {
@@ -83,8 +83,8 @@ function RoleField<T extends string>({ name, label }: RoleFieldProps) {
       name={name}
       multiple
       formControlProps={{
-        margin: "dense",
-        variant: "outlined",
+        margin: 'dense',
+        variant: 'outlined',
         fullWidth: true,
         sx: { mt: 0 },
       }}
@@ -154,15 +154,15 @@ export default function AlbumEntityDialog({
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
-    setKeyword("");
+    setKeyword('');
   }, [toggleOpen, setKeyword]);
 
   const buildInitialValues: FormValues =
     create || !albumToEdit
       ? {
           name: keyword,
-          sortOrder: "",
-          coverUrl: "",
+          sortOrder: '',
+          coverUrl: '',
           songs: [],
           artists: [],
         }
@@ -171,12 +171,12 @@ export default function AlbumEntityDialog({
           sortOrder: albumToEdit.sortOrder!,
           coverUrl: albumToEdit.coverUrl!,
           artists:
-            albumToEdit.artists?.map((v) => ({
+            albumToEdit.artists?.map(v => ({
               ...v.ArtistOfAlbum,
               artist: v,
             })) ?? [],
           songs:
-            albumToEdit.songs?.map((v) => ({
+            albumToEdit.songs?.map(v => ({
               ...v.SongInAlbum,
               song: v,
             })) ?? [],
@@ -192,12 +192,12 @@ export default function AlbumEntityDialog({
         sortOrder: albumToEdit.sortOrder!,
         coverUrl: albumToEdit.coverUrl!,
         artists:
-          albumToEdit.artists?.map((v) => ({
+          albumToEdit.artists?.map(v => ({
             ...v.ArtistOfAlbum,
             artist: v,
           })) ?? [],
         songs:
-          albumToEdit.songs?.map((v) => ({
+          albumToEdit.songs?.map(v => ({
             ...v.SongInAlbum,
             song: v,
           })) ?? [],
@@ -221,55 +221,45 @@ export default function AlbumEntityDialog({
           sortOrder: album.sortOrder,
           coverUrl: album.coverUrl!,
           artists:
-            album.artists?.map((v) => ({
+            album.artists?.map(v => ({
               ...v.ArtistOfAlbum,
               artist: v,
             })) ?? [],
           songs:
-            album.songs?.map((v) => ({
+            album.songs?.map(v => ({
               ...v.SongInAlbum,
               song: v,
             })) ?? [],
         });
 
         snackbar.enqueueSnackbar(`Successfully refreshing album #${albumId}.`, {
-          variant: "success",
+          variant: 'success',
         });
       }
     } catch (e) {
       console.error(`Error occurred refreshing album #${albumId}.`, e);
-      snackbar.enqueueSnackbar(
-        `Error occurred refreshing album #${albumId}. (${e})`,
-        {
-          variant: "error",
-        }
-      );
+      snackbar.enqueueSnackbar(`Error occurred refreshing album #${albumId}. (${e})`, {
+        variant: 'error',
+      });
     }
   }, [albumId, apolloClient, setInitialValues, snackbar]);
 
   const songSchema = yup
     .object({
-      song: yup.object().typeError("Song entity must be selected."),
+      song: yup.object().typeError('Song entity must be selected.'),
       diskNumber: yup.number().required().nullable().positive().integer(),
       trackNumber: yup.number().required().nullable().positive().integer(),
       name: yup.string().optional(),
     })
     .required();
   const artistSchema = yup.object().shape({
-    artist: yup.object().typeError("Artist entity must be selected."),
+    artist: yup.object().typeError('Artist entity must be selected.'),
     categories: yup.string<VDBArtistCategoryType>().required(),
     roles: yup.array(yup.string<VDBArtistRoleType>().required()).required(), // as yup.ArraySchema<yup.StringSchema<VDBArtistRoleType>>,
-    effectiveRoles: yup
-      .array(yup.string<VDBArtistRoleType>().required())
-      .required(),
+    effectiveRoles: yup.array(yup.string<VDBArtistRoleType>().required()).required(),
   });
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="form-dialog-title"
-      scroll="paper"
-    >
+    <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
       <Form<FormValues>
         initialValues={initialValues}
         mutators={{
@@ -289,21 +279,19 @@ export default function AlbumEntityDialog({
             })
             .required()
         )}
-        onSubmit={async (values) => {
+        onSubmit={async values => {
           try {
             const data = {
               name: values.name,
               sortOrder: values.sortOrder,
               coverUrl: values.coverUrl,
-              songsInAlbum: values.songs.map((v) => ({
+              songsInAlbum: values.songs.map(v => ({
                 name: v.name,
-                diskNumber:
-                  v.diskNumber && parseInt(v.diskNumber as unknown as string),
-                trackNumber:
-                  v.trackNumber && parseInt(v.trackNumber as unknown as string),
+                diskNumber: v.diskNumber && parseInt(v.diskNumber as unknown as string),
+                trackNumber: v.trackNumber && parseInt(v.trackNumber as unknown as string),
                 songId: v.song.id,
               })),
-              artistsOfAlbum: values.artists.map((v) => ({
+              artistsOfAlbum: values.artists.map(v => ({
                 categories: v.categories,
                 roles: v.roles,
                 effectiveRoles: v.effectiveRoles,
@@ -324,7 +312,7 @@ export default function AlbumEntityDialog({
                 snackbar.enqueueSnackbar(
                   `Album “${result.data.newAlbum.name}” is successfully created.`,
                   {
-                    variant: "success",
+                    variant: 'success',
                   }
                 );
                 handleClose();
@@ -342,7 +330,7 @@ export default function AlbumEntityDialog({
                 snackbar.enqueueSnackbar(
                   `Album “${result.data.updateAlbum.name}” is successfully updated.`,
                   {
-                    variant: "success",
+                    variant: 'success',
                   }
                 );
                 apolloClient.cache.evict({ id: `Album:${albumId}` });
@@ -351,17 +339,15 @@ export default function AlbumEntityDialog({
             }
           } catch (e) {
             console.error(
-              `Error occurred while ${
-                create ? "creating" : "updating"
-              } artist #${values.name}.`,
+              `Error occurred while ${create ? 'creating' : 'updating'} artist #${values.name}.`,
               e
             );
             snackbar.enqueueSnackbar(
-              `Error occurred while ${create ? "creating" : "updating"} album ${
+              `Error occurred while ${create ? 'creating' : 'updating'} album ${
                 values.name
               }. (${e})`,
               {
-                variant: "error",
+                variant: 'error',
               }
             );
           }
@@ -370,14 +356,9 @@ export default function AlbumEntityDialog({
         {({ form, submitting, handleSubmit }) => (
           <>
             <DialogTitle id="form-dialog-title">
-              {create
-                ? "Create new album entity"
-                : `Edit album entity #${albumId}`}
+              {create ? 'Create new album entity' : `Edit album entity #${albumId}`}
               {!create && (
-                <IconButton
-                  sx={{ position: "absolute", top: 12, right: 12 }}
-                  onClick={refresh}
-                >
+                <IconButton sx={{ position: 'absolute', top: 12, right: 12 }} onClick={refresh}>
                   <AutorenewIcon />
                 </IconButton>
               )}
@@ -403,10 +384,7 @@ export default function AlbumEntityDialog({
                     required
                     InputProps={{
                       endAdornment: (
-                        <TransliterationAdornment
-                          sourceName="name"
-                          destinationName="sortOrder"
-                        />
+                        <TransliterationAdornment sourceName="name" destinationName="sortOrder" />
                       ),
                     }}
                     name="sortOrder"
@@ -417,17 +395,17 @@ export default function AlbumEntityDialog({
                 <Grid size={12}>
                   <Box
                     sx={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
                     }}
                   >
                     <AvatarField
                       name="coverUrl"
                       sx={{
                         marginRight: 2,
-                        height: "3em",
-                        width: "3em",
+                        height: '3em',
+                        width: '3em',
                       }}
                     />
                     <TextField
@@ -435,9 +413,7 @@ export default function AlbumEntityDialog({
                       margin="dense"
                       fullWidth
                       InputProps={{
-                        endAdornment: (
-                          <VideoThumbnailAdornment name="coverUrl" />
-                        ),
+                        endAdornment: <VideoThumbnailAdornment name="coverUrl" />,
                       }}
                       name="coverUrl"
                       type="text"
@@ -454,16 +430,10 @@ export default function AlbumEntityDialog({
                   <>
                     {fields.map((name, idx) => (
                       <Fragment key={name}>
-                        <SelectArtistEntityBox
-                          fieldName={`${name}.artist`}
-                          labelName="Artist"
-                        />
+                        <SelectArtistEntityBox fieldName={`${name}.artist`} labelName="Artist" />
                         <Stack direction="row" spacing={1}>
                           <RoleField name={`${name}.roles`} label="Roles" />
-                          <RoleField
-                            name={`${name}.effectiveRoles`}
-                            label="Effective roles"
-                          />
+                          <RoleField name={`${name}.effectiveRoles`} label="Effective roles" />
                         </Stack>
                         <Stack direction="row" spacing={1}>
                           <TextField
@@ -509,9 +479,9 @@ export default function AlbumEntityDialog({
                       onClick={() =>
                         fields.push({
                           artist: null,
-                          roles: ["Default"],
-                          effectiveRoles: ["Default"],
-                          categories: "Nothing",
+                          roles: ['Default'],
+                          effectiveRoles: ['Default'],
+                          categories: 'Nothing',
                         })
                       }
                     >
@@ -528,22 +498,19 @@ export default function AlbumEntityDialog({
                   <>
                     {fields.map((v, idx) => (
                       <>
-                        <SelectSongEntityBox
-                          fieldName={`songs.${idx}.song`}
-                          labelName="Track"
-                        />
+                        <SelectSongEntityBox fieldName={`songs.${idx}.song`} labelName="Track" />
                         <Stack direction="row" spacing={1}>
                           <TextField
                             sx={{
                               mt: 0,
-                              width: "10em",
-                              "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
+                              width: '10em',
+                              '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
                                 {
-                                  appearance: "none",
+                                  appearance: 'none',
                                   margin: 0,
                                 },
-                              "input[type=number]": {
-                                appearance: "textfield",
+                              'input[type=number]': {
+                                appearance: 'textfield',
                               },
                             }}
                             variant="outlined"
@@ -554,14 +521,14 @@ export default function AlbumEntityDialog({
                           />
                           <TextField
                             sx={{
-                              width: "10em",
-                              "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
+                              width: '10em',
+                              '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
                                 {
-                                  appearance: "none",
+                                  appearance: 'none',
                                   margin: 0,
                                 },
-                              "input[type=number]": {
-                                appearance: "textfield",
+                              'input[type=number]': {
+                                appearance: 'textfield',
                               },
                             }}
                             variant="outlined"
@@ -606,8 +573,8 @@ export default function AlbumEntityDialog({
                             startIcon={<SortIcon />}
                             onClick={() =>
                               form.mutators.setValue(
-                                "songs",
-                                _.sortBy(value, ["diskNumber", "trackNumber"])
+                                'songs',
+                                _.sortBy(value, ['diskNumber', 'trackNumber'])
                               )
                             }
                           >
@@ -625,7 +592,7 @@ export default function AlbumEntityDialog({
                             song: null,
                             trackNumber: null,
                             diskNumber: null,
-                            name: "",
+                            name: '',
                           })
                         }
                       >
@@ -640,12 +607,8 @@ export default function AlbumEntityDialog({
               <Button onClick={handleClose} color="primary">
                 Cancel
               </Button>
-              <Button
-                disabled={submitting}
-                onClick={handleSubmit}
-                color="primary"
-              >
-                {create ? "Create" : "Update"}
+              <Button disabled={submitting} onClick={handleSubmit} color="primary">
+                {create ? 'Create' : 'Update'}
               </Button>
             </DialogActions>
           </>

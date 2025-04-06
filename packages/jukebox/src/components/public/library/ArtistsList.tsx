@@ -10,7 +10,7 @@ import {
   Box,
   ButtonBase,
   Divider,
-  Grid2 as Grid,
+  Grid,
   Typography,
 } from "@mui/material";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";

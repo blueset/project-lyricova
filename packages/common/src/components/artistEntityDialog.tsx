@@ -1,26 +1,26 @@
-import { Artist } from "../models/Artist";
+import { Artist } from '../models/Artist';
 import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid2 as Grid,
+  Grid,
   MenuItem,
   Stack,
-} from "@mui/material";
-import { useCallback } from "react";
-import { gql, useApolloClient } from "@apollo/client";
-import TransliterationAdornment from "./TransliterationAdornment";
-import { useSnackbar } from "notistack";
-import * as yup from "yup";
-import { ArtistFragments } from "../utils/fragments";
-import { Form } from "react-final-form";
-import { makeValidate, Select, TextField } from "mui-rff";
-import AvatarField from "./AvatarField";
-import finalFormMutators from "../frontendUtils/finalFormMutators";
-import { DocumentNode } from "graphql";
-import React from "react";
+} from '@mui/material';
+import { useCallback } from 'react';
+import { gql, useApolloClient } from '@apollo/client';
+import TransliterationAdornment from './TransliterationAdornment';
+import { useSnackbar } from 'notistack';
+import * as yup from 'yup';
+import { ArtistFragments } from '../utils/fragments';
+import { Form } from 'react-final-form';
+import { makeValidate, Select, TextField } from 'mui-rff';
+import AvatarField from './AvatarField';
+import finalFormMutators from '../frontendUtils/finalFormMutators';
+import { DocumentNode } from 'graphql';
+import React from 'react';
 
 const NEW_ARTIST_MUTATION = gql`
   mutation ($data: ArtistInput!) {
@@ -73,16 +73,16 @@ export default function ArtistEntityDialog({
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
-    setKeyword("");
+    setKeyword('');
   }, [toggleOpen, setKeyword]);
 
   const initialValues =
     create || !artistToEdit
       ? {
           name: keyword,
-          sortOrder: "",
-          mainPictureUrl: "",
-          type: "Unknown",
+          sortOrder: '',
+          mainPictureUrl: '',
+          type: 'Unknown',
         }
       : {
           name: artistToEdit.name,
@@ -94,12 +94,7 @@ export default function ArtistEntityDialog({
   const artistId = artistToEdit?.id ?? null;
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="form-dialog-title"
-      scroll="paper"
-    >
+    <Dialog open={isOpen} onClose={handleClose} aria-labelledby="form-dialog-title" scroll="paper">
       <Form<FormValues>
         initialValues={initialValues}
         mutators={{
@@ -108,16 +103,13 @@ export default function ArtistEntityDialog({
         subscription={{}}
         validate={makeValidate(
           yup.object({
-            name: yup.string().required("Artist name is required"),
-            sortOrder: yup.string().required("Artist sort order is required"),
-            mainPictureUrl: yup
-              .string()
-              .nullable()
-              .url("Main picture URL is not a valid URL."),
-            type: yup.string().required("Type must be selected."),
+            name: yup.string().required('Artist name is required'),
+            sortOrder: yup.string().required('Artist sort order is required'),
+            mainPictureUrl: yup.string().nullable().url('Main picture URL is not a valid URL.'),
+            type: yup.string().required('Type must be selected.'),
           })
         )}
-        onSubmit={async (data) => {
+        onSubmit={async data => {
           try {
             if (create) {
               const result = await apolloClient.mutate<{
@@ -132,7 +124,7 @@ export default function ArtistEntityDialog({
                 snackbar.enqueueSnackbar(
                   `Artist “${result.data.newArtist.name}” is successfully created.`,
                   {
-                    variant: "success",
+                    variant: 'success',
                   }
                 );
                 handleClose();
@@ -150,7 +142,7 @@ export default function ArtistEntityDialog({
                 snackbar.enqueueSnackbar(
                   `Artist “${result.data.updateArtist.name}” is successfully updated.`,
                   {
-                    variant: "success",
+                    variant: 'success',
                   }
                 );
                 apolloClient.cache.evict({ id: `Artist:${artistId}` });
@@ -159,17 +151,15 @@ export default function ArtistEntityDialog({
             }
           } catch (e) {
             console.error(
-              `Error occurred while ${
-                create ? "creating" : "updating"
-              } artist #${data.name}.`,
+              `Error occurred while ${create ? 'creating' : 'updating'} artist #${data.name}.`,
               e
             );
             snackbar.enqueueSnackbar(
               `Error occurred while ${
-                create ? "creating" : "updating"
+                create ? 'creating' : 'updating'
               } artist #${data.name}. (${e})`,
               {
-                variant: "error",
+                variant: 'error',
               }
             );
           }
@@ -178,9 +168,7 @@ export default function ArtistEntityDialog({
         {({ submitting, handleSubmit }) => (
           <>
             <DialogTitle id="form-dialog-title">
-              {create
-                ? "Create new artist entity"
-                : `Edit artist entity #${artistId}`}
+              {create ? 'Create new artist entity' : `Edit artist entity #${artistId}`}
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={1}>
@@ -203,10 +191,7 @@ export default function ArtistEntityDialog({
                     fullWidth
                     InputProps={{
                       endAdornment: (
-                        <TransliterationAdornment
-                          sourceName="name"
-                          destinationName="sortOrder"
-                        />
+                        <TransliterationAdornment sourceName="name" destinationName="sortOrder" />
                       ),
                     }}
                     name="sortOrder"
@@ -220,8 +205,8 @@ export default function ArtistEntityDialog({
                       name="mainPictureUrl"
                       sx={{
                         marginRight: 2,
-                        height: "3em",
-                        width: "3em",
+                        height: '3em',
+                        width: '3em',
                       }}
                     />
                     <TextField
@@ -240,11 +225,11 @@ export default function ArtistEntityDialog({
                     label="Type"
                     name="type"
                     formControlProps={{
-                      margin: "dense",
-                      variant: "outlined",
+                      margin: 'dense',
+                      variant: 'outlined',
                       fullWidth: true,
                     }}
-                    inputProps={{ name: "type", id: "type" }}
+                    inputProps={{ name: 'type', id: 'type' }}
                   >
                     <MenuItem value="Unknown">Unknown</MenuItem>
                     <MenuItem value="Circle">Circle</MenuItem>
@@ -256,14 +241,10 @@ export default function ArtistEntityDialog({
                     <MenuItem value="Vocaloid">Vocaloid</MenuItem>
                     <MenuItem value="UTAU">UTAU</MenuItem>
                     <MenuItem value="CeVIO">CeVIO</MenuItem>
-                    <MenuItem value="OtherVoiceSynthesizer">
-                      Other Voice Synthesizer
-                    </MenuItem>
+                    <MenuItem value="OtherVoiceSynthesizer">Other Voice Synthesizer</MenuItem>
                     <MenuItem value="OtherVocalist">Other Vocalist</MenuItem>
                     <MenuItem value="OtherGroup">Other Group</MenuItem>
-                    <MenuItem value="OtherIndividual">
-                      Other Individual
-                    </MenuItem>
+                    <MenuItem value="OtherIndividual">Other Individual</MenuItem>
                     <MenuItem value="Utaite">Utaite</MenuItem>
                     <MenuItem value="Band">Band</MenuItem>
                     <MenuItem value="Vocalist">Vocalist</MenuItem>
@@ -282,12 +263,8 @@ export default function ArtistEntityDialog({
               <Button onClick={handleClose} color="primary">
                 Cancel
               </Button>
-              <Button
-                disabled={submitting}
-                onClick={handleSubmit}
-                color="primary"
-              >
-                {create ? "Create" : "Update"}
+              <Button disabled={submitting} onClick={handleSubmit} color="primary">
+                {create ? 'Create' : 'Update'}
               </Button>
             </DialogActions>
           </>

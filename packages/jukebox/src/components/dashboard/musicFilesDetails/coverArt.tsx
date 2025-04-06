@@ -2,7 +2,7 @@ import {
   Avatar,
   Box,
   Button,
-  Grid2 as Grid,
+  Grid,
   styled,
   TextField,
   Typography,

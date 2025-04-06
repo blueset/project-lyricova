@@ -1,7 +1,7 @@
 "use client";
 
 import { gql, useQuery } from "@apollo/client";
-import { Grid2 as Grid, Box } from "@mui/material";
+import { Grid, Box } from "@mui/material";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { CountCard, CountUpCard } from "@lyricova/components";

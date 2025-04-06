@@ -7,7 +7,7 @@ import {
   Box,
   ButtonBase,
   Divider,
-  Grid2 as Grid,
+  Grid,
   Typography,
 } from "@mui/material";
 import { NextComposedLink } from "@lyricova/components";

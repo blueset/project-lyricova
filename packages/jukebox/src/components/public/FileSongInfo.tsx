@@ -10,7 +10,7 @@ import {
   Box,
   Chip,
   Divider,
-  Grid2 as Grid,
+  Grid,
   Typography,
   Alert,
 } from "@mui/material";

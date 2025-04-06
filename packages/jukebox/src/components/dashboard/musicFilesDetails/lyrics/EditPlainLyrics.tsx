@@ -1,6 +1,6 @@
 import {
   Button,
-  Grid2 as Grid,
+  Grid,
   styled,
   TextField,
   ToggleButton,

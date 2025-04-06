@@ -3,7 +3,7 @@ import {
   Box,
   Button,
   Divider,
-  Grid2 as Grid,
+  Grid,
   IconButton,
   MenuItem,
   Stack,
@@ -14,17 +14,19 @@ import {
 import { gql, useApolloClient } from "@apollo/client";
 import type { Song } from "@lyricova/api/graphql/types";
 import type { Album } from "@lyricova/api/graphql/types";
-import SelectSongEntityBox from "lyricova-common/components/selectSongEntityBox";
-import TransliterationAdornment from "lyricova-common/components/TransliterationAdornment";
+import {
+  SelectSongEntityBox,
+  TransliterationAdornment,
+  finalFormMutators,
+  AlbumFragments,
+} from "@lyricova/components";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { Field, Form } from "react-final-form";
 import { makeValidate, Select, TextField } from "mui-rff";
-import finalFormMutators from "lyricova-common/frontendUtils/finalFormMutators";
 import * as yup from "yup";
 import { useSnackbar } from "notistack";
 import type { DocumentNode } from "graphql";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
-import { AlbumFragments } from "lyricova-common/utils/fragments";
 import { useNamedState } from "../../../hooks/useNamedState";
 
 const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
@@ -379,9 +381,7 @@ export default function InfoPanel({
                         </Select>
                         <Tooltip title="Import album info">
                           <IconButton
-                            disabled={
-                              !form.getState().values.albumId
-                            }
+                            disabled={!form.getState().values.albumId}
                             loading={isImporting}
                             onClick={handleRefreshAlbum}
                           >
