@@ -30,4 +30,4 @@ EXPOSE $LYRICOVA_PORT $JUKEBOX_PORT
 VOLUME ["/app", "/var/music"]
 
 # Start the website in the lyricova and jukebox packages concurrently
-CMD ["concurrently", "-n", "lyricova,jukebox", "-c", "green,blue", "--restart-tries", "-1", "cd packages/lyricova && npm run serve", "cd packages/jukebox && npm run serve"]
+CMD ["concurrently", "-n", "api,lyricova,jukebox", "-c", "yellow,green,blue", "--restart-tries", "-1", "cd packages/api && npm run start", "cd packages/lyricova && npm run start -- -p $LYRICOVA_PORT", "cd packages/jukebox && npm run start -- -p $JUKEBOX_PORT"]
