@@ -46,7 +46,9 @@ export default async function ArchivePage({ params }: EntryPageProps) {
     permanentRedirect("/");
   }
 
-  const response = await fetch(`${apiBaseUrl}/entries?page=${page}`);
+  const response = await fetch(`${apiBaseUrl}/entries?page=${page}`, {
+    cache: "no-store",
+  });
   const { entries, count } = (await response.json()) as {
     entries: Entry[];
     count: number;

@@ -14,7 +14,7 @@ const recursive = Recursive({
 });
 
 export default async function ScreensaverDocs() {
-  const response = await fetch(`${apiBaseUrl}/tags`);
+  const response = await fetch(`${apiBaseUrl}/tags`, { cache: "no-store" });
   const tags: Tag[] = await response.json();
   return (
     <div className={`container ${classes.container}`}>

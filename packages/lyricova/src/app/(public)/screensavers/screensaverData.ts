@@ -9,7 +9,8 @@ export interface ScreensaverProps {
 export async function getScreensaverData(searchParams: Record<string, string>) {
   const params = new URLSearchParams(searchParams);
   const response = await fetch(
-    `${apiBaseUrl}/entries/screensaver?${params.toString()}`
+    `${apiBaseUrl}/entries/screensaver?${params.toString()}`,
+    { cache: "no-store" }
   );
   const data: ScreensaverProps = await response.json();
   return data;

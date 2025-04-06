@@ -18,7 +18,7 @@ export const metadata = {
 };
 
 export default async function Tags() {
-  const res = await fetch(`${apiBaseUrl}/tags`);
+  const res = await fetch(`${apiBaseUrl}/tags`, { cache: "no-store" });
   const tags: TagWithCount[] = await res.json();
 
   return (

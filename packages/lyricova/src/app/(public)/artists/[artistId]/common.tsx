@@ -14,7 +14,9 @@ export async function generateMetadataData(
   artistId: string,
   page: string
 ): Promise<Metadata> {
-  const response = await fetch(`${apiBaseUrl}/artists/${artistId}`);
+  const response = await fetch(`${apiBaseUrl}/artists/${artistId}`, {
+    cache: "no-store",
+  });
   const { artist }: { artist: Artist } = await response.json();
 
   const typeName = getTypeName(artist.type);
@@ -54,7 +56,8 @@ export async function ArtistArchivePageComponent({
   page: string;
 }) {
   const response = await fetch(
-    `${apiBaseUrl}/artists/${artistId}/entries?page=${page}`
+    `${apiBaseUrl}/artists/${artistId}/entries?page=${page}`,
+    { cache: "no-store" }
   );
   const { entries, artist, totalPages }: ArtistArchivePageProps =
     await response.json();

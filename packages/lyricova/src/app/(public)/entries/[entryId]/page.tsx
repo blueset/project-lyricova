@@ -27,7 +27,9 @@ export async function generateMetadata({
   params,
 }: EntryPageProps): Promise<Metadata> {
   const { entryId } = await params;
-  const response = await fetch(`${apiBaseUrl}/entries/${entryId}`);
+  const response = await fetch(`${apiBaseUrl}/entries/${entryId}`, {
+    cache: "no-store",
+  });
   const entry = (await response.json()) as ExpandedEntry;
 
   const artistString = !entry.producersName
@@ -50,7 +52,9 @@ export async function generateMetadata({
 
 export default async function EntryPage({ params }: EntryPageProps) {
   const { entryId } = await params;
-  const response = await fetch(`${apiBaseUrl}/entries/${entryId}`);
+  const response = await fetch(`${apiBaseUrl}/entries/${entryId}`, {
+    cache: "no-store",
+  });
   const entry = (await response.json()) as ExpandedEntry;
 
   const otherVerses = entry.verses.filter((verse) => !verse.isMain);

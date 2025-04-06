@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 async function getEntries() {
-  const response = await fetch(`${apiBaseUrl}/entries`);
+  const response = await fetch(`${apiBaseUrl}/entries`, { cache: "no-store" });
   return (await response.json()) as { entries: Entry[]; count: number };
 }
 
