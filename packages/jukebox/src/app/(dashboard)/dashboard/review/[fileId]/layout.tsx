@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { useCallback } from "react";
 import { Box, Chip, Stack, Typography } from "@mui/material";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { gql, useQuery } from "@apollo/client";
 import Alert from "@mui/material/Alert";
 import type { MusicFilesPagination } from "@lyricova/api/graphql/types";
@@ -33,8 +33,8 @@ interface Props {
 
 export default function ReviewLayout({ children }: Props) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const fileId = parseInt(searchParams.get("fileId") as string);
+  const params = useParams();
+  const fileId = parseInt(params.fileId as string);
 
   const needReviewQuery = useQuery<{ musicFiles: MusicFilesPagination }>(
     PENDING_REVIEW_FILES_QUERY
