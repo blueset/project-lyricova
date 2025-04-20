@@ -191,7 +191,7 @@ export default function SelectMusicFileBox<
                                     }
                                     alt={option.trackName ?? "Music file cover"}
                                   />
-                                  <AvatarFallback>
+                                  <AvatarFallback className="rounded-md">
                                     <Music />
                                   </AvatarFallback>
                                 </Avatar>
@@ -242,7 +242,7 @@ export default function SelectMusicFileBox<
                 }
                 alt={value.trackName ?? "Music file cover"}
               />
-              <AvatarFallback>
+              <AvatarFallback className="rounded-md">
                 <Music />
               </AvatarFallback>
             </Avatar>

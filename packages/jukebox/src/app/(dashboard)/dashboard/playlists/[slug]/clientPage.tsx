@@ -329,18 +329,20 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                                     <div
                                       ref={provided.innerRef}
                                       {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
                                       className="flex items-center gap-2 p-2 border rounded-md bg-background"
                                     >
-                                      <GripVertical className="h-4 w-4 text-muted-foreground" />
-                                      <Avatar>
+                                      <GripVertical
+                                        {...provided.dragHandleProps}
+                                        className="h-4 w-4 text-muted-foreground"
+                                      />
+                                      <Avatar className="rounded-sm">
                                         {v.hasCover ? (
                                           <AvatarImage
                                             src={`/api/files/${v.id}/cover`}
                                             alt="Cover"
                                           />
                                         ) : (
-                                          <AvatarFallback>
+                                          <AvatarFallback className="rounded-sm">
                                             <Music />
                                           </AvatarFallback>
                                         )}

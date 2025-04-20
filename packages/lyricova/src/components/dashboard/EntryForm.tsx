@@ -800,7 +800,7 @@ export function EntryForm({ id }: EntityFormProps) {
                       <AccordionTrigger>
                         <div className="flex items-center justify-between w-full">
                           <span>Stylized text</span>
-                          <span className="text-muted-foreground truncate ml-2">
+                          <span className="text-muted-foreground truncate ml-2 w-0 grow">
                             {form.watch(`verses.${index}.stylizedText`)}
                           </span>
                         </div>
@@ -825,7 +825,7 @@ export function EntryForm({ id }: EntityFormProps) {
                       <AccordionTrigger>
                         <div className="flex items-center justify-between w-full">
                           <span>HTML</span>
-                          <span className="text-muted-foreground truncate ml-2">
+                          <span className="text-muted-foreground truncate ml-2 w-0 grow">
                             {form.watch(`verses.${index}.html`)}
                           </span>
                         </div>
@@ -853,7 +853,7 @@ export function EntryForm({ id }: EntityFormProps) {
                       <AccordionTrigger>
                         <div className="flex items-center justify-between w-full">
                           <span>Typing sequence</span>
-                          <span className="text-muted-foreground truncate ml-2">
+                          <span className="text-muted-foreground truncate ml-2 w-0 grow">
                             {form.watch(`verses.${index}.typingSequence`)}
                           </span>
                         </div>

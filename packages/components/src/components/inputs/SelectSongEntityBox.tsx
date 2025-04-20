@@ -359,7 +359,7 @@ export function SelectSongEntityBox<
                   src={value.coverUrl ?? undefined}
                   alt={value.name ?? "Song cover"}
                 />
-                <AvatarFallback>
+                <AvatarFallback className="rounded-md">
                   <Music />
                 </AvatarFallback>
               </Avatar>
