@@ -13,6 +13,7 @@ import ColorThief from "colorthief";
 import { FBMWaveMethod } from "./fbm-wave";
 import dynamic from "next/dynamic";
 import { usePlayerState } from "../../../hooks/usePlayerState";
+import Color from "colorjs.io";
 
 const BackgroundRenderNoSSR = dynamic(
   () => import("../compat/amllBackground").then((m) => m.BackgroundRender),
@@ -35,6 +36,48 @@ export function BackgroundCanvas({
   hasLyrics,
 }: Props) {
   const playerState = usePlayerState(playerRef);
+
+  useEffect(() => {
+    if (textureUrl) {
+      document.body.style.removeProperty("--brand-hue");
+    } else {
+      let canceled = false;
+      const image = new Image();
+      image.crossOrigin = "anonymous";
+      const albumImageLoaded = new Promise<void>((resolve, reject) => {
+        if (image.complete && image.naturalWidth) {
+          resolve();
+          return;
+        }
+        image.onload = () => {
+          resolve();
+        };
+        image.onerror = (err) => {
+          reject(err);
+        };
+      });
+      image.src = coverUrl;
+      (async () => {
+        try {
+          await albumImageLoaded;
+          const colorThief = new ColorThief();
+          const [r, g, b] = colorThief.getColor(image);
+          const color = new Color("sRGB", [r / 255, g / 255, b / 255]);
+          const hue = color.oklch.h;
+          if (canceled) return;
+          document.body.style.setProperty("--brand-hue", `${hue}`);
+        } catch (err) {
+          console.error("Failed to extract hue", err);
+          document.body.style.removeProperty("--brand-hue");
+        }
+      })();
+
+      return () => {
+        canceled = true;
+      };
+    }
+  }, [textureUrl, coverUrl]);
+
   if (textureUrl) {
     return (
       <div
