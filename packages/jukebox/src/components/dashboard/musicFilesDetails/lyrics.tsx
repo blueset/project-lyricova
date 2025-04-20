@@ -148,7 +148,10 @@ export default function LyricsPanel({
                 </p>
                 <p>
                   Last timestamp:{" "}
-                  {format(analysisResult.lastTimestamp * 1000, "HH:mm:ss")}
+                  {analysisResult.lastTimestamp &&
+                  !Number.isNaN(analysisResult.lastTimestamp)
+                    ? format(analysisResult.lastTimestamp * 1000, "HH:mm:ss")
+                    : "N/A"}
                 </p>
               </>
             )}
