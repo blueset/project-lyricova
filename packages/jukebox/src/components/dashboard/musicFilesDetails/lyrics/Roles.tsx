@@ -1,26 +1,14 @@
 import { Lyrics, LyricsLine } from "lyrics-kit/core";
-import { useSnackbar } from "notistack";
-import { useMemo, useRef, useEffect, useState, memo, useCallback } from "react";
-import { useNamedState } from "../../../../hooks/useNamedState";
+import { toast } from "sonner";
+import { useMemo, useEffect, memo, useCallback } from "react";
+import { Button } from "@lyricova/components/components/ui/button";
 import {
-  Box,
-  List,
-  ListItemButton,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  styled,
-} from "@mui/material";
-import { FullWidthAudio } from "../FullWIdthAudio";
-
-const SmallButton = styled(ToggleButton)({
-  minWidth: "24px !important",
-  paddingBlock: 0,
-});
-const MajMinButton = styled(ToggleButton)({
-  minWidth: "45px",
-  paddingBlock: 0,
-});
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@lyricova/components/components/ui/toggle-group";
+import { cn } from "@lyricova/components/utils";
+import { useNamedStateWithRef } from "@/hooks/useNamedStateWithRef";
+import { Toggle } from "@lyricova/components/components/ui/toggle";
 
 const RowItem = memo(function RowItem({
   line,
@@ -33,35 +21,86 @@ const RowItem = memo(function RowItem({
   line: LyricsLine;
   idx: number;
   selected: boolean;
-  onClick: (event: React.MouseEvent<HTMLDivElement>) => void;
-  onRoleChange?: (event: React.MouseEvent<HTMLElement>, role: number) => void;
-  onMinorChange?: (event: React.MouseEvent<HTMLElement>, minor: boolean) => void;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onRoleChange?: (value: string) => void;
+  onMinorChange?: (pressed: boolean) => void;
 }) {
+  const handleRoleChangeInternal = useCallback(
+    (value: string) => {
+      if (value && onRoleChange) {
+        onRoleChange(value);
+      }
+    },
+    [onRoleChange]
+  );
+
+  const handleMinorChangeInternal = useCallback(
+    (pressed: boolean) => {
+      if (onMinorChange) {
+        onMinorChange(pressed);
+      }
+    },
+    [onMinorChange]
+  );
+
   return (
-    <ListItemButton data-index={idx} selected={selected} onClick={onClick}>
-      <Stack direction="row" spacing={1} alignItems="center">
-        <ToggleButtonGroup value={line.attachments.role} size="small" onChange={onRoleChange} exclusive>
-          <SmallButton value={0}>0</SmallButton>
-          <SmallButton value={2}>2</SmallButton>
-          <SmallButton value={1}>1</SmallButton>
-        </ToggleButtonGroup>
-        <MajMinButton
-          size="small"
-          value={line.attachments.minor}
-          selected={line.attachments.minor}
-          onChange={onMinorChange}
+    <Button
+      variant="ghost"
+      className={cn(
+        "w-full justify-start h-auto py-1 px-2 data-[selected=true]:bg-info data-[selected=true]:text-accent-foreground rounded-none",
+        selected && "bg-accent text-accent-foreground"
+      )}
+      data-index={idx}
+      data-selected={selected}
+      onClick={onClick}
+    >
+      <div className="flex items-center gap-2">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={String(line.attachments.role ?? 0)}
+          onValueChange={handleRoleChangeInternal}
+          size="sm"
+          onClick={(e) => e.stopPropagation()} // Prevent row click when clicking toggle group
+        >
+          <ToggleGroupItem value="0" className="py-0 px-2 h-auto">
+            0
+          </ToggleGroupItem>
+          <ToggleGroupItem value="2" className="py-0 px-2 h-auto">
+            2
+          </ToggleGroupItem>
+          <ToggleGroupItem value="1" className="py-0 px-2 h-auto">
+            1
+          </ToggleGroupItem>
+        </ToggleGroup>
+        <Toggle
+          variant="outline"
+          size="sm"
+          className={cn(
+            "py-0 px-2 h-auto",
+            line.attachments.minor && "bg-secondary text-secondary-foreground"
+          )}
+          pressed={line.attachments.minor}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent row click
+            handleMinorChangeInternal(!line.attachments.minor);
+          }}
         >
           {line.attachments.minor ? "Min" : "Maj"}
-        </MajMinButton>
+        </Toggle>
         <span>{line.content}</span>
-      </Stack>
-    </ListItemButton>
+      </div>
+    </Button>
   );
 });
 
-function getTargetLines(event: React.MouseEvent<HTMLElement>, selectedLines: number[]) {
+function getTargetLines(
+  event: React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>,
+  selectedLines: number[]
+) {
   const eventLine = parseInt(
-    event.currentTarget.closest("[data-index]")?.getAttribute("data-index") ?? "-1"
+    event.currentTarget.closest("[data-index]")?.getAttribute("data-index") ??
+      "-1"
   );
   if (selectedLines.includes(eventLine)) {
     return selectedLines;
@@ -76,8 +115,6 @@ interface Props {
 }
 
 export default function Roles({ lyrics, setLyrics, fileId }: Props) {
-  const snackbar = useSnackbar();
-
   // Parse lyrics
   const parsedLyrics = useMemo<Lyrics | null>(() => {
     if (!lyrics) return null;
@@ -86,18 +123,16 @@ export default function Roles({ lyrics, setLyrics, fileId }: Props) {
       return new Lyrics(lyrics);
     } catch (e) {
       console.error(`Error occurred while loading lyrics text: ${e}`, e);
-      snackbar.enqueueSnackbar(
-        `Error occurred while loading lyrics text: ${e}`,
-        { variant: "error" }
-      );
+      toast.error(`Error occurred while loading lyrics text: ${e}`);
       return null;
     }
-  }, [lyrics, snackbar]);
+  }, [lyrics]);
 
   // Parse and set `lines`.
-  const [lines, setLines] = useNamedState<LyricsLine[]>([], "lines");
-  const linesRef = useRef<LyricsLine[]>();
-  linesRef.current = lines;
+  const [lines, setLines, linesRef] = useNamedStateWithRef<LyricsLine[]>(
+    [],
+    "lines"
+  );
   useEffect(() => {
     if (parsedLyrics !== null) {
       setLines(parsedLyrics.lines);
@@ -110,12 +145,11 @@ export default function Roles({ lyrics, setLyrics, fileId }: Props) {
     // dropping dependency [parsedLyrics] to prevent loop with parsedLyrics.
   }, [setLines, setLyrics]);
 
-  const [selectedLines, setSelectedLines] = useState<number[]>([]);
-  const selectedLinesRef = useRef<number[]>();
-  selectedLinesRef.current = selectedLines;
+  const [selectedLines, setSelectedLines, selectedLinesRef] =
+    useNamedStateWithRef<number[]>([], "selectedLines");
 
   const handleListItemClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+    (event: React.MouseEvent<HTMLButtonElement>) => {
       const index = parseInt(
         event.currentTarget.getAttribute("data-index") ?? "-1"
       );
@@ -126,7 +160,7 @@ export default function Roles({ lyrics, setLyrics, fileId }: Props) {
           if (prevSelectedLines.includes(index)) {
             return prevSelectedLines.filter((i) => i !== index);
           } else {
-            return [...prevSelectedLines, index];
+            return [...prevSelectedLines, index].sort((a, b) => a - b);
           }
         });
       } else if (shiftKey) {
@@ -134,10 +168,15 @@ export default function Roles({ lyrics, setLyrics, fileId }: Props) {
           if (prevSelectedLines.length === 0) {
             return [index];
           } else {
-            const start = prevSelectedLines.at(-1);
+            const start = prevSelectedLines.at(0); // Use first selected as start
             const end = index;
+            const rangeStart = Math.min(start ?? end, end);
+            const rangeEnd = Math.max(start ?? end, end);
             return [
-              ...Array.from({ length: end - start + 1 }, (_, i) => i + start),
+              ...Array.from(
+                { length: rangeEnd - rangeStart + 1 },
+                (_, i) => i + rangeStart
+              ),
             ];
           }
         });
@@ -145,17 +184,15 @@ export default function Roles({ lyrics, setLyrics, fileId }: Props) {
         setSelectedLines([index]);
       }
     },
-    []
+    [setSelectedLines]
   );
 
-  const handleRoleChange = useCallback(
-    (event: React.MouseEvent<HTMLElement>, role: number | null) => {
-      if (role === null) return;
-      event.stopPropagation();
-      const indexes = getTargetLines(event, selectedLinesRef.current);
-      setLines((prevLines) => 
-        prevLines.map((line, idx) => {
-          if (indexes.includes(idx)) {
+  const handleRoleChangeForRow = useCallback(
+    (value: string) => {
+      const role = parseInt(value);
+      setLines((prevLines) =>
+        prevLines.map((line, i) => {
+          if (selectedLinesRef.current.includes(i)) {
             line = Object.assign(Object.create(line), line);
             line.attachments.role = role;
           }
@@ -163,42 +200,33 @@ export default function Roles({ lyrics, setLyrics, fileId }: Props) {
         })
       );
     },
-    [setLines]
+    [setLines, selectedLinesRef]
   );
 
-  const handleMinorChange = useCallback(
-    (event: React.MouseEvent<HTMLElement>, minor: boolean | null) => {
-      if (minor === null) return;
-      event.stopPropagation();
-      minor = !minor;
-      const indexes = getTargetLines(event, selectedLinesRef.current);
-      setLines((prevLines) => 
-        prevLines.map((line, idx) => {
-          if (indexes.includes(idx)) {
+  const handleMinorChangeForRow = useCallback(
+    (pressed: boolean) => {
+      setLines((prevLines) =>
+        prevLines.map((line, i) => {
+          if (selectedLinesRef.current.includes(i)) {
             line = Object.assign(Object.create(line), line);
-            line.attachments.minor = minor;
+            line.attachments.minor = pressed;
           }
           return line;
         })
       );
     },
-    [setLines]
+    [selectedLinesRef, setLines]
   );
 
   return (
-    <Stack spacing={2}>
-      <Box
-        sx={{
-          position: "sticky",
-          top: 2,
-          left: 0,
-          zIndex: 2,
-        }}
+    <div className="flex flex-col gap-4">
+      <div
+        className="sticky top-0.5 left-0 z-10" // Adjusted top slightly
       >
-        <FullWidthAudio src={`/api/files/${fileId}/file`} controls />
-      </Box>
-      <Box>
-        <List dense>
+        <audio className="w-full" src={`/api/files/${fileId}/file`} controls />
+      </div>
+      <div>
+        <div className="flex flex-col">
           {lines.map((line, idx) => (
             <RowItem
               key={idx}
@@ -206,12 +234,12 @@ export default function Roles({ lyrics, setLyrics, fileId }: Props) {
               idx={idx}
               selected={selectedLines.includes(idx)}
               onClick={handleListItemClick}
-              onRoleChange={handleRoleChange}
-              onMinorChange={handleMinorChange}
+              onRoleChange={handleRoleChangeForRow}
+              onMinorChange={handleMinorChangeForRow}
             />
           ))}
-        </List>
-      </Box>
-    </Stack>
+        </div>
+      </div>
+    </div>
   );
 }

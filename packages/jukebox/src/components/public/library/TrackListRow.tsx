@@ -1,24 +1,12 @@
 "use client";
 
-import { useRouter } from "next/compat/router";
-import {
-  bindMenu,
-  bindTrigger,
-  usePopupState,
-} from "material-ui-popup-state/hooks";
 import React, { Fragment } from "react";
 import {
-  Divider,
-  IconButton,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-} from "@mui/material";
-import { useAuthContext, formatArtistsPlainText } from "@lyricova/components";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+  useAuthContext,
+  formatArtistsPlainText,
+  NextComposedLink,
+} from "@lyricova/components";
+import { MoreVertical } from "lucide-react";
 import type { MusicFile } from "@lyricova/api/graphql/types";
 import type { Song } from "@lyricova/api/graphql/types";
 import ListItemTextWithTime from "./ListItemTextWithTime";
@@ -28,6 +16,15 @@ import {
   loadTracks,
 } from "../../../redux/public/playlist";
 import { useAppDispatch } from "../../../redux/public/store";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@lyricova/components/components/ui/dropdown-menu";
+import { cn } from "@lyricova/components/utils";
+import { Separator } from "@lyricova/components/components/ui/separator";
 
 interface Props {
   song: Song | null;
@@ -37,89 +34,32 @@ interface Props {
 }
 
 export default function TrackListRow({ song, file, files, showAlbum }: Props) {
-  const router = useRouter();
   const { user } = useAuthContext();
   const dispatch = useAppDispatch();
   const id = song ? song.id : file.id;
-  const popupState = usePopupState({
-    variant: "popover",
-    popupId: `single-track-menu-${id}`,
-  });
   const showTrackNumber = song && song.SongInAlbum !== undefined;
 
   const handlePlayNext = () => {
     dispatch(addTrackToNext(file));
-    popupState.close();
   };
   const handlePlayInList = () => {
     dispatch(loadTracks(files));
     dispatch(playTrack({ track: files.indexOf(file), playNow: true }));
-    popupState.close();
-  };
-  const handleShowDetails = () => {
-    router.push(`/info/${file?.id}`);
-    popupState.close();
-  };
-  const handleEditMusicFileEntry = () => {
-    window.open(`/dashboard/review/${file?.id}`, "_blank");
-    popupState.close();
-  };
-  const handleEditSongEntry = () => {
-    window.open(`/dashboard/songs/${song?.id}`, "_blank");
-    popupState.close();
   };
 
   return (
     <Fragment key={id}>
-      <ListItem
-        disablePadding
-        secondaryAction={
-          <>
-            <IconButton
-              edge="end"
-              aria-label="Actions"
-              {...bindTrigger(popupState)}
-            >
-              <MoreVertIcon />
-            </IconButton>
-            <Menu
-              id={`currentPlaylist-menu-${id}`}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              {...bindMenu(popupState)}
-            >
-              <MenuItem disabled={!file} onClick={handlePlayNext}>
-                <ListItemText primary="Play next" />
-              </MenuItem>
-              <MenuItem disabled={!file} onClick={handlePlayInList}>
-                <ListItemText primary="Play in the playlist" />
-              </MenuItem>
-              <MenuItem disabled={!file} onClick={handleShowDetails}>
-                <ListItemText primary="Show details" />
-              </MenuItem>
-              {user && (
-                <MenuItem disabled={!file} onClick={handleEditMusicFileEntry}>
-                  <ListItemText primary="Edit music file entry" />
-                </MenuItem>
-              )}
-              {user && (
-                <MenuItem disabled={!song} onClick={handleEditSongEntry}>
-                  <ListItemText primary="Edit song entity" />
-                </MenuItem>
-              )}
-            </Menu>
-          </>
-        }
-      >
-        <ListItemButton disabled={file === null}>
+      <div className="flex items-center justify-between py-2 ">
+        <div
+          className={cn(
+            "flex flex-1 items-center text-left",
+            file === null && "text-muted-foreground"
+          )}
+        >
           {showTrackNumber && (
-            <ListItemIcon>{song?.SongInAlbum.trackNumber ?? "?"}</ListItemIcon>
+            <div className="mr-4 w-6">
+              {song?.SongInAlbum.trackNumber ?? "?"}
+            </div>
           )}
           <ListItemTextWithTime
             primary={song ? song.name : file.trackName}
@@ -140,11 +80,55 @@ export default function TrackListRow({ song, file, files, showAlbum }: Props) {
             }
             time={file?.duration ?? null}
           />
-        </ListItemButton>
-      </ListItem>
-      <Divider
-        variant={showTrackNumber ? "inset" : "fullWidth"}
-        component="li"
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreVertical />
+              <span className="sr-only">Actions</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem disabled={!file} onClick={handlePlayNext}>
+              Play next
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={!file} onClick={handlePlayInList}>
+              Play in the playlist
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={!file} asChild>
+              <NextComposedLink href={`/info/${file?.id}`}>
+                Show details
+              </NextComposedLink>
+            </DropdownMenuItem>
+            {user && (
+              <DropdownMenuItem disabled={!file} asChild>
+                <NextComposedLink
+                  href={`/dashboard/review/${file?.id}`}
+                  target="_blank"
+                >
+                  Edit music file entry
+                </NextComposedLink>
+              </DropdownMenuItem>
+            )}
+            {user && (
+              <DropdownMenuItem disabled={!song} asChild>
+                <NextComposedLink
+                  href={`/dashboard/songs/${song?.id}`}
+                  target="_blank"
+                >
+                  Edit song entity
+                </NextComposedLink>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <Separator
+        className={
+          showTrackNumber
+            ? "ml-10 box-border data-[orientation=horizontal]:w-[calc(100%_-_2.5rem)]"
+            : ""
+        }
       />
     </Fragment>
   );

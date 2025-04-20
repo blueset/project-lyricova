@@ -1,13 +1,24 @@
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import Typography from "@mui/material/Typography";
+import { Textarea } from "@lyricova/components/components/ui/textarea";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@lyricova/components/components/ui/toggle-group";
+import { Button } from "@lyricova/components/components/ui/button";
+import { CornerDownLeft } from "lucide-react";
 import { createRef, useMemo, useState } from "react";
 import { FURIGANA, Lyrics, LyricsLine, TIME_TAG } from "lyrics-kit/core";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
+import { cn } from "@lyricova/components/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@lyricova/components/components/ui/tabs";
 
 function PreviewLine({ line }: { line: LyricsLine }) {
   const rubyGroups = useMemo((): [string, string | null, number][] => {
@@ -42,17 +53,15 @@ function PreviewLine({ line }: { line: LyricsLine }) {
     <div>
       {rubyGroups.map(([base, ruby, count]) => {
         const baseElm = [...base].map((v, idx) => (
-          <Box
+          <span
             key={idx}
-            display="inline"
-            sx={{
-              borderColor: "secondary.main",
-              borderInlineStartStyle: "solid",
-              borderInlineStartWidth: hasTagMapping.has(idx + count) ? 1 : 0,
-            }}
+            className={cn(
+              "border-secondary",
+              hasTagMapping.has(idx + count) && "border-s"
+            )}
           >
             {v}
-          </Box>
+          </span>
         ));
         return ruby ? (
           <ruby key={count}>
@@ -64,18 +73,13 @@ function PreviewLine({ line }: { line: LyricsLine }) {
         );
       })}
       {hasTagMapping.has(line.content.length) && (
-        <Box
-          display="inline"
-          sx={{
-            borderColor: "secondary.main",
-            borderInlineStartStyle: "solid",
-            borderInlineStartWidth: 1,
-            color: "text.secondary",
-            opacity: 0.5,
-          }}
+        <span
+          className={cn(
+            "border-secondary border-s text-muted-foreground opacity-50"
+          )}
         >
           ¶
-        </Box>
+        </span>
       )}
     </div>
   );
@@ -94,7 +98,7 @@ export default function DiffEditorTextarea({
   lineBreakButton,
   onChange,
 }: Props) {
-  const [panel, setPanel] = useState<"preview" | "edit">("edit");
+  const [panel, setPanel] = useState<string>("edit");
   const textfieldRef = createRef<HTMLTextAreaElement>();
 
   const lyricsObj = useMemo(() => {
@@ -106,67 +110,62 @@ export default function DiffEditorTextarea({
   }, [value]);
 
   return (
-    (<Stack spacing={2} sx={{height: "100%"}}>
-      <Stack
-        direction="row"
-        spacing={2}
-        alignItems="center"
-        justifyContent="space-between"
-        sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "background.paper", backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))" }}
-      >
-        <Typography variant="overline" display="inline">
-          {title}
-        </Typography>
-        <Stack direction="row" spacing={2}>
-          {lineBreakButton && panel === "edit" && (
-            <Button
-              sx={{ minWidth: 0, px: 1 }}
-              variant="outlined"
-              aria-label="Insert line break (⏎)"
-              onClick={() => {
-                const elm = textfieldRef.current;
-                if (!elm) return;
-                const start = elm.selectionStart;
-                const end = elm.selectionEnd;
-                elm.setRangeText("⏎", start, end, "end");
-                onChange(elm.value);
-                elm.focus();
-              }}
-            >
-              <KeyboardReturnIcon />
-            </Button>
-          )}
-          <ToggleButtonGroup
-            value={panel}
-            size="small"
-            exclusive
-            onChange={(evt, val) => setPanel(val)}
-            aria-label="text alignment"
-          >
-            <ToggleButton value="edit">Edit</ToggleButton>
-            <ToggleButton value="preview">Preview</ToggleButton>
-          </ToggleButtonGroup>
-        </Stack>
-      </Stack>
-      {panel === "edit" ? (
-        <TextField
-          fullWidth
-          inputRef={textfieldRef}
-          value={value || ""}
-          onChange={(evt) => onChange(evt.target.value)}
-          multiline
-          variant="outlined"
-          slotProps={{
-            htmlInput: { sx: { fontFamily: "monospace" }, lang: "ja" }
-          }}
-        />
-      ) : (
-        <div>
-          {lyricsObj.lines.map((l, idx) => (
-            <PreviewLine key={idx} line={l} />
-          ))}
+    <div className="flex flex-col space-y-2 h-full">
+      <Tabs value={panel} onValueChange={setPanel} className="w-full">
+        <div className="flex flex-row items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-2">
+          <span className="text-xs font-medium tracking-wider uppercase inline-block">
+            {title}
+          </span>
+          <div className="flex flex-row gap-2">
+            {lineBreakButton && panel === "edit" && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    aria-label="Insert line break (⏎)"
+                    onClick={() => {
+                      const elm = textfieldRef.current;
+                      if (!elm) return;
+                      const start = elm.selectionStart;
+                      const end = elm.selectionEnd;
+                      elm.setRangeText("⏎", start, end, "end");
+                      onChange(elm.value);
+                      elm.focus();
+                    }}
+                  >
+                    <CornerDownLeft />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Insert line break (⏎)</TooltipContent>
+              </Tooltip>
+            )}
+            <TabsList>
+              <TabsTrigger value="edit">Edit</TabsTrigger>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
+            </TabsList>
+          </div>
         </div>
-      )}
-    </Stack>)
+        <TabsContent value="edit">
+          <Textarea
+            className="w-full font-mono flex-grow resize-none" // Added flex-grow and resize-none
+            ref={textfieldRef}
+            autoResize
+            value={value || ""}
+            onChange={(evt) => onChange(evt.target.value)}
+            lang="ja"
+          />
+        </TabsContent>
+        <TabsContent value="preview">
+          <div className="flex-grow overflow-auto">
+            {" "}
+            {/* Added flex-grow and overflow-auto */}
+            {lyricsObj?.lines.map((l, idx) => (
+              <PreviewLine key={idx} line={l} />
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

@@ -113,8 +113,8 @@ export function TransitionCover() {
   const router = useRouter();
   const pathname = usePathname();
   const coverRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<[gsap.core.Timeline, gsap.core.Timeline]>();
-  const currentRouteRef = useRef<string>();
+  const timelineRef = useRef<[gsap.core.Timeline, gsap.core.Timeline]>(null);
+  const currentRouteRef = useRef<string>(pathname);
   currentRouteRef.current = pathname;
 
   useIsomorphicLayoutEffect(() => {

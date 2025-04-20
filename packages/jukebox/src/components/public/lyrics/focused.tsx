@@ -3,11 +3,8 @@ import type {
   LyricsKitLyricsLine,
 } from "@lyricova/api/graphql/types";
 import { useAppContext } from "../AppContext";
-import type { Theme } from "@mui/material";
-import { styled } from "@mui/material";
 import type { Transition } from "framer-motion";
 import { motion } from "framer-motion";
-import type { SxProps } from "@mui/system";
 import { useActiveLyrcsRanges } from "../../../hooks/useActiveLyricsRanges";
 import {
   forwardRef,
@@ -18,6 +15,7 @@ import {
 } from "react";
 import { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { LineRenderer, TimedSpanProps } from "./components/RubyLineRenderer";
+import { cn } from "@lyricova/components/utils";
 
 const TRANSITION: Transition = {
   duration: 0.2,
@@ -90,48 +88,25 @@ interface LyricsLineElementProps {
   idx: number;
   transLang?: string;
   animate: boolean;
-  sx?: SxProps<Theme>;
 }
 
 // #region plain style
 
-const PlainDiv = styled(motion.div)({
-  fontWeight: 600,
-  lineHeight: 1.2,
-  fontSize: "3.5em",
-  color: "rgba(255, 255, 255, 0.8)",
-  "&[data-minor='true']": {
-    fontSize: "2.5em",
-  },
-  "&[data-role='1']": {
-    textAlign: "end",
-  },
-  "&[data-role='2']": {
-    textAlign: "center",
-  },
-  "& > div": {
-    textWrap: "balance",
-    wordBreak: "auto-phrase",
-  },
-  "& > .translation": {
-    marginTop: 8,
-    display: "block",
-    fontSize: "0.6em",
-  },
-});
-
 const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
   function PlainLineElement(
-    { className, line, start, end, transLang, sx, idx },
+    { className, line, start, end, transLang, idx },
     ref
   ) {
     if (!line) return null;
 
     return (
-      <PlainDiv
+      <motion.div
         lang="ja"
         layout
-        className={className}
+        className={cn(
+          "font-semibold leading-tight text-white/80 data-[role='1']:text-end data-[role='2']:text-center text-7xl data-[minor='true']:text-4xl",
+          className
+        )}
         transition={TRANSITION}
         initial={{
           opacity: 0,
@@ -142,7 +117,6 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
         exit={{
           opacity: 0,
         }}
-        sx={sx}
         data-role={line.attachments.role}
         data-minor={line.attachments.minor}
         layoutId={`${idx}`}
@@ -154,13 +128,16 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
           lineContainer="div"
           timedSpan={TimedSpan}
           ref={ref}
+          lineContainerProps={{
+            style: { textWrap: "balance", wordBreak: "auto-phrase" },
+          }}
         />
         {line.attachments.translations[transLang] && (
-          <div lang={transLang || "zh"} className="translation">
+          <div lang={transLang || "zh"} className="mt-2 block text-[0.6em]">
             {line.attachments.translations[transLang]}
           </div>
         )}
-      </PlainDiv>
+      </motion.div>
     );
   }
 );
@@ -168,56 +145,20 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
 // #endregion
 
 // #region glow style
-const GlowDiv = styled(motion.div)({
-  fontWeight: 100,
-  lineHeight: 1.2,
-  fontSize: "4em",
-  color: "white",
-  margin: "16px",
-  fontVariationSettings: "'wght' 150, 'palt' 1",
-  "&": {
-    textWrap: "balance",
-    wordBreak: "auto-phrase",
-  },
-  "&[data-minor='true']": {
-    fontSize: "2.5em",
-  },
-  "&[data-role='1']": {
-    textAlign: "end",
-  },
-  "&[data-role='2']": {
-    textAlign: "center",
-  },
-  "& .translate": {
-    display: "block",
-    fontSize: "0.6em",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundAttachment: "fixed",
-  },
-  "& .overlay": {
-    position: "absolute",
-    width: "calc(100% - 32px)",
-    filter: "blur(5px) drop-shadow(0 0 5px white)",
-    maskImage: "url(/images/glowMask.png)",
-    maskSize: "200%",
-    maskPosition: "0% 0%",
-    animation: "lyricsGlowEffect 20s linear infinite alternate",
-  },
-  "@keyframes lyricsGlowEffect": {
-    from: {
-      maskPosition: "0 1024px",
-    },
-    to: {
-      maskPosition: "1024px 0",
-    },
-  },
-});
+
+// Keyframes need to be defined globally or in a separate CSS file for Tailwind
+const glowKeyframes = `
+  @keyframes lyricsGlowEffect {
+    from { mask-position: 0 1024px; }
+    to { mask-position: 1024px 0; }
+  }
+`;
 
 const GlowLineElementGenerator = (full: boolean) =>
   forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
     function GlowLineElement({ line, start, end, transLang, idx }, ref) {
       if (!line) return null;
+
       const content = (
         <>
           <LineRenderer
@@ -229,7 +170,10 @@ const GlowLineElementGenerator = (full: boolean) =>
             ref={ref}
           />
           {line.attachments?.translations[transLang] && (
-            <div className="translate" lang={transLang || "zh"}>
+            <div
+              className="block text-[0.6em] bg-cover bg-center bg-fixed"
+              lang={transLang || "zh"}
+            >
               {line.attachments.translations[transLang]}
             </div>
           )}
@@ -237,26 +181,47 @@ const GlowLineElementGenerator = (full: boolean) =>
       );
 
       return (
-        <GlowDiv
-          lang="ja"
-          transition={TRANSITION}
-          initial={{
-            opacity: 0,
-          }}
-          animate={{
-            opacity: 1,
-          }}
-          exit={{
-            opacity: 0,
-          }}
-          data-role={line.attachments.role}
-          data-minor={line.attachments.minor}
-          layout
-          layoutId={`${idx}`}
-        >
-          <div className="overlay">{content}</div>
-          <div className="text">{content}</div>
-        </GlowDiv>
+        <>
+          {/* Inject keyframes - consider moving to global CSS */}
+          <style>{glowKeyframes}</style>
+          <motion.div
+            lang="ja"
+            className="font-thin leading-tight text-white m-4 text-balance data-[role='1']:text-end data-[role='2']:text-center data-[minor='true']:text-4xl text-7xl"
+            style={{
+              fontVariationSettings: "'wght' 150, 'palt' 1",
+              // @ts-expect-error - TS doesn't recognize auto-phrase yet
+              wordBreak: "auto-phrase",
+            }}
+            transition={TRANSITION}
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            data-role={line.attachments.role}
+            data-minor={line.attachments.minor}
+            layout
+            layoutId={`${idx}`}
+          >
+            <div
+              className="overlay absolute w-[calc(100%-32px)]"
+              style={{
+                filter: "blur(5px) drop-shadow(0 0 5px white)",
+                maskImage: "url(/images/glowMask.png)",
+                maskSize: "200%",
+                maskPosition: "0% 0%",
+                animation: "lyricsGlowEffect 20s linear infinite alternate",
+              }}
+            >
+              {content}
+            </div>
+            <div className="text relative">{content}</div>
+          </motion.div>
+        </>
       );
     }
   );

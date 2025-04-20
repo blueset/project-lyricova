@@ -1,15 +1,12 @@
 import type { Entry } from "@lyricova/api/graphql/types";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-
-dayjs.extend(relativeTime);
+import { formatDistanceToNow } from "date-fns";
 
 function formatTime(date: Date | number) {
-  const dateObj = dayjs(date);
-  if (dateObj.diff(dayjs(), "year") >= 1) {
-    return `in ${dateObj.year()}`;
+  const now = new Date();
+  if (date instanceof Date && date.getFullYear() > now.getFullYear()) {
+    return `in ${date.getFullYear()}`;
   } else {
-    return dateObj.fromNow();
+    return formatDistanceToNow(date, { addSuffix: true });
   }
 }
 
@@ -20,15 +17,15 @@ interface PulseStatusProps {
 export function PulseStatus({ entry }: PulseStatusProps) {
   const lastPulseTime = Math.max(
     0,
-    ...entry.pulses.map((pulse) => pulse.creationDate.valueOf())
+    ...entry.pulses.map((pulse) => new Date(pulse.creationDate).getTime())
   );
   return (
     <div suppressHydrationWarning>
       {lastPulseTime
         ? `Last bumped ${formatTime(lastPulseTime)}, first posted ${formatTime(
-            entry.creationDate
+            new Date(entry.creationDate)
           )}.`
-        : `First posted ${formatTime(entry.creationDate)}.`}
+        : `First posted ${formatTime(new Date(entry.creationDate))}.`}
     </div>
   );
 }

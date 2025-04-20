@@ -15,6 +15,7 @@ import { LyricovaPublicApiController } from "./controller/LyricovaPublicControll
 import { EntriesController } from "./controller/EntriesController";
 import { TagsController } from "./controller/TagsController";
 import generateRssFeed from "./utils/rss";
+import { ArtistsController } from "./controller/ArtistsController";
 
 export default (app: express.Express) => {
   const apiRouter = express.Router();
@@ -26,6 +27,9 @@ export default (app: express.Express) => {
 
   const songController = new SongController();
   apiRouter.use("/songs", songController.router);
+
+  const artistsController = new ArtistsController();
+  apiRouter.use("/artists", artistsController.router);
 
   const vocaDBImportController = new VocaDBImportController();
   apiRouter.use("/vocadb", vocaDBImportController.router);

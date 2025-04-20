@@ -1,6 +1,10 @@
 import { getScreensaverData } from "../screensaverData";
 import TypingCenteredScreensaver from "./screensaver";
 
+export const metadata = {
+  title: "Centered",
+};
+
 export default async function Screensaver({
   searchParams,
 }: {

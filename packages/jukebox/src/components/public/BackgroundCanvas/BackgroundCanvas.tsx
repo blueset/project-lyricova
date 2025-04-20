@@ -5,12 +5,11 @@
  * @license GPLv3
  */
 
-import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import { Pixel, normalizeColor } from "./utils";
 import { BUILDIN_RENDER_METHODS, CanvasBackgroundRender } from "./render";
 import convert from "color-convert";
 import ColorThief from "colorthief";
-import { styled } from "@mui/material";
 import { FBMWaveMethod } from "./fbm-wave";
 import dynamic from "next/dynamic";
 import { usePlayerState } from "../../../hooks/usePlayerState";
@@ -25,46 +24,30 @@ const BackgroundRenderNoSSR = dynamic(
 interface Props {
   coverUrl?: string;
   textureUrl?: string;
-  playerRef?: MutableRefObject<HTMLAudioElement>;
+  playerRef?: RefObject<HTMLAudioElement>;
   hasLyrics?: boolean;
 }
 
-const AmLyricsBackgroundCanvas = styled("canvas")`
-  position: fixed;
-  inset: 0;
-  height: 100%;
-  width: 100%;
-`;
-
-const PatternBackground = styled("div")`
-  position: fixed;
-  inset: 0;
-  height: 100%;
-  width: 100%;
-`;
-
-export function BackgroundCanvas({ coverUrl, textureUrl, playerRef, hasLyrics }: Props) {
+export function BackgroundCanvas({
+  coverUrl,
+  textureUrl,
+  playerRef,
+  hasLyrics,
+}: Props) {
   const playerState = usePlayerState(playerRef);
   if (textureUrl) {
     return (
-      <PatternBackground
+      <div
+        className="fixed inset-0 size-full"
         style={{ backgroundImage: `url("/textures/${textureUrl}")` }}
       />
     );
   } else {
-    // return <BackgroundCanvasRender coverUrl={coverUrl} />;
     return (
       <BackgroundRenderNoSSR
         album={coverUrl}
-        // playing={playerState?.state === "playing"}
-        // hasLyric={hasLyrics}
         staticMode
-        style={{
-          position: "fixed",
-          inset: 0,
-          height: "100%",
-          width: "100%",
-        }}
+        className="fixed inset-0 size-full"
       />
     );
   }
@@ -132,7 +115,6 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
         (v) => v.value === backgroundRenderMethod
       );
       if (m) {
-        // console.log("已切换背景渲染方式为", backgroundRenderMethod);
         renderer.setRenderMethod(m);
         renderer.shouldRedraw();
       }
@@ -150,7 +132,6 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
           (v) => v.value === backgroundRenderMethod
         );
         if (m) {
-          // console.log("已切换背景渲染方式为", backgroundRenderMethod);
           renderer.setRenderMethod(m);
         }
         rendererRef.current = renderer;
@@ -160,7 +141,6 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
         };
       }
     } catch (err) {
-      // console.warn("切换渲染方式发生错误", err);
       setCanvasError(`切换渲染方式发生错误：${err}`);
     }
   }, [backgroundRenderMethod]);
@@ -197,11 +177,8 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
       if (renderer) {
         renderer.setAlbumColorMap(colors);
         renderer.shouldRedraw();
-      } else {
-        // console.warn("错误：渲染器对象不存在");
       }
     } catch (err) {
-      // console.warn("更新专辑图主要颜色表到渲染管线时发生错误", err);
       setCanvasError(`更新专辑图主要颜色表到渲染管线时发生错误：${err}`);
     }
   }, [albumImageMainColors, backgroundLightness]);
@@ -236,7 +213,6 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
           renderer.shouldRedraw();
         }
       } catch (err) {
-        // console.warn("更新专辑图片到渲染管线时发生错误", err);
         setCanvasError(`更新专辑图片到渲染管线时发生错误：${err}`);
       }
     })();
@@ -246,9 +222,9 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
   }, [coverUrl]);
 
   return (
-    <AmLyricsBackgroundCanvas
+    <canvas
       ref={canvasRef}
-      className={backgroundRenderMethod}
+      className={`fixed inset-0 size-full ${backgroundRenderMethod}`}
     />
   );
 }

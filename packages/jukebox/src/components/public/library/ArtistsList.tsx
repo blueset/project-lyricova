@@ -3,19 +3,20 @@
 import type { VDBArtistType } from "../../../types/vocadb";
 import { gql, useQuery } from "@apollo/client";
 import type { Artist } from "@lyricova/api/graphql/types";
-import Alert from "@mui/material/Alert";
 import React from "react";
-import {
-  Avatar,
-  Box,
-  ButtonBase,
-  Divider,
-  Grid,
-  Typography,
-} from "@mui/material";
-import RecentActorsIcon from "@mui/icons-material/RecentActors";
+import { SquareUserRound } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";
 import type { DocumentNode } from "graphql";
+import {
+  Alert,
+  AlertDescription,
+} from "@lyricova/components/components/ui/alert";
+import { cn } from "@lyricova/components/utils";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@lyricova/components/components/ui/avatar";
 
 const ARTISTS_LIST_QUERY = gql`
   query ($types: [String!]!) {
@@ -39,9 +40,22 @@ export default function ArtistsList({ types, typeName }: Props) {
     variables: { types },
   });
 
-  if (query.loading) return <Alert severity="info">Loading...</Alert>;
+  if (query.loading)
+    return (
+      <Alert
+        variant="info"
+        className="bg-blue-50 text-blue-800 border-blue-200"
+      >
+        <AlertDescription>Loading...</AlertDescription>
+      </Alert>
+    );
+
   if (query.error)
-    return <Alert severity="error">Error: {`${query.error}`}</Alert>;
+    return (
+      <Alert variant="error">
+        <AlertDescription>Error: {`${query.error}`}</AlertDescription>
+      </Alert>
+    );
 
   let lastKey: string | null = null;
   const convertedList: (Artist | string)[] = [];
@@ -62,62 +76,52 @@ export default function ArtistsList({ types, typeName }: Props) {
   });
 
   return (
-    <Box p={4}>
-      <Grid container spacing={2}>
+    <div className="p-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-2">
         {convertedList.map((v) => {
           if (typeof v === "string") {
             return (
-              <Grid size={12} key={`header-${v}`}>
-                <Typography variant="h6">{v}</Typography>
-                <Divider />
-              </Grid>
+              <div className="col-span-full" key={`header-${v}`}>
+                <h2 className="text-xl font-semibold">{v}</h2>
+                <hr className="mt-2" />
+              </div>
             );
           } else {
             return (
-              <Grid size={{ xs: 12, md: 6 }} key={`artist-${v.id}`}>
-                <ButtonBase
-                  component={NextComposedLink}
-                  href={`/library/${typeName}/${v.id}`}
-                  sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <Avatar
-                    variant="rounded"
+              <NextComposedLink
+                key={`artist-${v.id}`}
+                href={`/library/${typeName}/${v.id}`}
+                className="-m-2 p-2 flex flex-row items-center hover:bg-accent/50 rounded-md"
+              >
+                <Avatar className="size-16 mr-4 rounded-md">
+                  <AvatarImage
                     src={v.mainPictureUrl}
-                    sx={{
-                      height: "3em",
-                      width: "3em",
-                      marginRight: 1,
-                    }}
-                    imgProps={{
-                      loading: "lazy",
-                      style: { objectPosition: "top center" },
-                    }}
-                  >
-                    <RecentActorsIcon fontSize="large" />
-                  </Avatar>
-                  <div style={{ flexGrow: 1, width: 0 }}>
-                    <Typography variant="body1" lang="ja">
-                      {v.name}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {v.type
-                        .replace("Other", "")
-                        .split(/(?=[A-Z])/)
-                        .join(" ")
-                        .replace("U T A U", "UTAU")
-                        .replace(" V I O", "VIO")}
-                    </Typography>
-                  </div>
-                </ButtonBase>
-              </Grid>
+                    alt={v.name}
+                    className="object-top"
+                    loading="lazy"
+                  />
+                  <AvatarFallback className="text-lg rounded-md">
+                    <SquareUserRound />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-grow overflow-hidden">
+                  <p lang="ja" className="text-base">
+                    {v.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {v.type
+                      .replace("Other", "")
+                      .split(/(?=[A-Z])/)
+                      .join(" ")
+                      .replace("U T A U", "UTAU")
+                      .replace(" V I O", "VIO")}
+                  </p>
+                </div>
+              </NextComposedLink>
             );
           }
         })}
-      </Grid>
-    </Box>
+      </div>
+    </div>
   );
 }

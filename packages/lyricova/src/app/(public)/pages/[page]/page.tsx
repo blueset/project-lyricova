@@ -28,7 +28,7 @@ export async function generateMetadata({
   const { page } = await params;
 
   return {
-    title: `Archive Page ${page} – ${siteName}`,
+    title: `Archive Page ${page}`,
     description: `Archive Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`,
     openGraph: {
       title: `Archive Page ${page} – ${siteName}`,

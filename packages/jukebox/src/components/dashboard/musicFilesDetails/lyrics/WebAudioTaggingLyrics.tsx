@@ -11,41 +11,31 @@ import { useNamedState } from "../../../../hooks/useNamedState";
 import { useWebAudio } from "../../../../hooks/useWebAudio";
 import type { WebAudioPlayerState } from "../../../../hooks/types";
 import type { MouseEvent, ChangeEvent, MouseEventHandler } from "react";
-import { useCallback, useEffect, useRef, useMemo, memo } from "react";
-import {
-  Box,
-  Button,
-  FormControlLabel,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  ListItemText,
-  Stack,
-  styled,
-  Switch,
-  Typography,
-} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import { useCallback, useEffect, useRef, useMemo, memo, useId } from "react";
+import { Pencil } from "lucide-react";
 import _ from "lodash";
 import { buildTimeTag, resolveTimeTag } from "lyrics-kit/core";
 import { linearRegression } from "simple-statistics";
 import DismissibleAlert from "../../DismissibleAlert";
 import { WebAudioControls } from "./WebAudioControls";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Switch } from "@lyricova/components/components/ui/switch";
+import { Label } from "@lyricova/components/components/ui/label";
+import { AlertDescription } from "@lyricova/components/components/ui/alert";
+import { cn } from "@lyricova/components/utils";
 
 function Instructions() {
   return (
-    <ControlRow p={1} spacing={2} direction="row" alignItems="center">
-      <DismissibleAlert
-        severity="warning"
-        collapseProps={{ sx: { flexGrow: 1 } }}
-      >
-        Switch to another tab to save changes. ↑WJ/↓RK: Navigate; Home/End:
-        First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5 seconds; Space: Tag;
-        Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter:
-        play/pause).
+    <div className="flex items-center gap-2 p-1 mb-1">
+      <DismissibleAlert variant="info" className="flex-grow">
+        <AlertDescription>
+          Switch to another tab to save changes. ↑WJ/↓RK: Navigate; Home/End:
+          First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5 seconds; Space: Tag;
+          Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter:
+          play/pause).
+        </AlertDescription>
       </DismissibleAlert>
-    </ControlRow>
+    </div>
   );
 }
 const InstructionsMemo = memo(Instructions);
@@ -55,19 +45,17 @@ function ExtrapolateModeToggle({
   handleExtrapolateModeToggle,
 }: {
   isInExtrapolateMode: boolean;
-  handleExtrapolateModeToggle: (event: ChangeEvent<HTMLInputElement>) => void;
+  handleExtrapolateModeToggle: (checked: boolean) => void;
 }) {
   return (
-    <FormControlLabel
-      control={
-        <Switch
-          checked={isInExtrapolateMode}
-          onChange={handleExtrapolateModeToggle}
-          color="secondary"
-        />
-      }
-      label="Extrapolate mode"
-    />
+    <Label className="flex items-center space-x-2">
+      <Switch
+        checked={isInExtrapolateMode}
+        onCheckedChange={handleExtrapolateModeToggle}
+        color="secondary" // Note: color prop might not be directly applicable in shadcn Switch
+      />
+      Extrapolate mode
+    </Label>
   );
 }
 const ExtrapolateModeToggleMemo = memo(ExtrapolateModeToggle);
@@ -75,8 +63,8 @@ const ExtrapolateModeToggleMemo = memo(ExtrapolateModeToggle);
 interface LineListItemProps {
   isCurrent: boolean;
   isCursorOn: boolean;
-  onClickCapture?: MouseEventHandler<HTMLDivElement>;
-  onDoubleClickCapture?: MouseEventHandler<HTMLDivElement>;
+  onClickCapture?: MouseEventHandler<HTMLLIElement>;
+  onDoubleClickCapture?: MouseEventHandler<HTMLLIElement>;
   extrapolateTag: number | undefined;
   line: [number, string[]];
 }
@@ -90,54 +78,35 @@ const LineListItem = ({
   line: v,
 }: LineListItemProps) => {
   return (
-    <ListItemButton
-      dense
-      selected={isCurrent}
+    <li
+      className={cn(
+        "flex items-center px-2 py-1 text-sm cursor-pointer hover:bg-accent",
+        isCurrent && "bg-accent text-accent-foreground"
+      )}
       onClickCapture={onClickCapture}
       onDoubleClickCapture={onDoubleClickCapture}
       tabIndex={-1}
+      data-selected={isCurrent}
     >
-      {isCursorOn && (
-        <ListItemIcon>
-          <EditIcon />
-        </ListItemIcon>
-      )}
-      <ListItemText
-        disableTypography
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "start",
-        }}
-        inset={!isCursorOn}
-      >
-        <Typography
-          variant="body1"
-          component="span"
-          display="block"
-          sx={{ fontVariantNumeric: "tabular-nums" }}
-        >
+      <span className={cn("w-6 flex-shrink-0", !isCursorOn && "invisible")}>
+        {isCursorOn && <Pencil className="h-4 w-4" />}
+      </span>
+      <div className="flex flex-row items-start flex-grow gap-2">
+        <span className="block tabular-nums w-max flex-shrink-0">
           {v[0] != undefined ? `[${buildTimeTag(v[0])}]` : ""}
-        </Typography>
-        <div>
+        </span>
+        <div className="flex-grow">
           {v[1].map((l, lidx) => (
-            <Typography
-              key={lidx}
-              variant="body1"
-              color="textSecondary"
-              display="block"
-            >
+            <span key={lidx} className="block text-muted-foreground">
               {l}
-            </Typography>
+            </span>
           ))}
         </div>
-      </ListItemText>
-      <ListItemSecondaryAction>
-        <span style={{ fontVariantNumeric: "tabular-nums" }}>
-          {extrapolateTag && `[${buildTimeTag(extrapolateTag)}]`}
-        </span>
-      </ListItemSecondaryAction>
-    </ListItemButton>
+      </div>
+      <span className="ml-auto tabular-nums text-xs text-muted-foreground">
+        {extrapolateTag != null ? `[${buildTimeTag(extrapolateTag)}]` : ""}
+      </span>
+    </li>
   );
 };
 
@@ -153,12 +122,7 @@ const MemoLineListItem = memo(LineListItem, (prev, next) => {
 
 type LinesPerTag = [number, string[]][];
 
-const ControlRow = styled(Stack)(({ theme }) => ({
-  marginBottom: theme.spacing(1),
-  "&:last-child": {
-    marginBottom: 0,
-  },
-}));
+// Removed styled(Stack) ControlRow
 
 const BLANK_LINE = { index: Infinity, start: Infinity, end: -Infinity };
 
@@ -194,7 +158,7 @@ export default function WebAudioTaggingLyrics({
     [],
     "linesPerTag"
   );
-  const linesPerTagRef = useRef<LinesPerTag>();
+  const linesPerTagRef = useRef<LinesPerTag>(linesPerTag);
   linesPerTagRef.current = linesPerTag;
 
   const [playbackProgress, setPlaybackProgress] = useNamedState(
@@ -202,38 +166,34 @@ export default function WebAudioTaggingLyrics({
     "playbackProgress"
   );
 
-  const listRef = useRef<HTMLUListElement>();
+  const listRef = useRef<HTMLUListElement>(null);
 
   const [cursor, setCursor] = useNamedState<number>(0, "cursor");
-  const cursorRef = useRef<number | null>();
+  const cursorRef = useRef<number | null>(cursor);
   cursorRef.current = cursor;
 
   const [currentLine, setCurrentLine] = useNamedState<CurrentLineState>(
     BLANK_LINE,
     "currentLine"
   );
-  const currentLineRef = useRef<CurrentLineState>();
+  const currentLineRef = useRef<CurrentLineState>(currentLine);
   currentLineRef.current = currentLine;
 
   const { playerStatus, play, pause, seek, setRate, getProgress, audioBuffer } =
     useWebAudio(`/api/files/${fileId}/file`);
-  const playerStatusRef = useRef<WebAudioPlayerState>();
+  const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
   playerStatusRef.current = playerStatus;
-
-  // const playerState = usePlayerState(playerRef);
-  // const playerStateRef = useRef<PlayerState>();
-  // playerStateRef.current = playerState;
 
   const [isInExtrapolateMode, toggleExtrapolateMode] = useNamedState<boolean>(
     false,
     "isInExtrapolateMode"
   );
-  const isInExtrapolateModeRef = useRef<boolean>();
+  const isInExtrapolateModeRef = useRef<boolean>(isInExtrapolateMode);
   isInExtrapolateModeRef.current = isInExtrapolateMode;
   const [extrapolateTags, setExtrapolateTags] = useNamedState<
     (number | null)[]
   >([], "extrapolateTags");
-  const extrapolateTagsRef = useRef<(number | null)[]>();
+  const extrapolateTagsRef = useRef<(number | null)[]>(extrapolateTags);
   extrapolateTagsRef.current = extrapolateTags;
 
   const linearRegressionResult = useMemo<{
@@ -351,9 +311,9 @@ export default function WebAudioTaggingLyrics({
   }, [onFrame, playerStatus]);
 
   const handleExtrapolateModeToggle = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      toggleExtrapolateMode(event.target.checked);
-      if (!event.target.checked) {
+    (checked: boolean) => {
+      toggleExtrapolateMode(checked);
+      if (!checked) {
         setExtrapolateTags([]);
       }
     },
@@ -371,12 +331,20 @@ export default function WebAudioTaggingLyrics({
           if (line.match(/^\[tt\](<\d+,\d+>)+$/)) {
             return line.replace(/(?<=<)\d+(?=,)/g, (v) => {
               const time = parseInt(v, 10);
-              return Math.max(0, Math.round(time * linearRegressionResult.m)).toString();
+              return Math.max(
+                0,
+                Math.round(time * linearRegressionResult.m)
+              ).toString();
             });
           } else if (line.match(/^\[tags\](\d*)([,/]\d*)+$/)) {
             return line.replace(/\d+/g, (v) => {
               const time = parseInt(v, 10);
-              return Math.max(0, Math.round(time * linearRegressionResult.m + linearRegressionResult.b)).toString();
+              return Math.max(
+                0,
+                Math.round(
+                  time * linearRegressionResult.m + linearRegressionResult.b
+                )
+              ).toString();
             });
           } else {
             return line;
@@ -404,7 +372,7 @@ export default function WebAudioTaggingLyrics({
   );
 
   const onLineClick = useCallback(
-    (idx: number) => (ev: MouseEvent<HTMLDivElement>) => {
+    (idx: number) => (ev: MouseEvent<HTMLLIElement>) => {
       ev.stopPropagation();
       moveCursor(idx);
     },
@@ -412,7 +380,7 @@ export default function WebAudioTaggingLyrics({
   );
 
   const onLineDoubleClick = useCallback(
-    (idx: number) => (ev: MouseEvent<HTMLDivElement>) => {
+    (idx: number) => (ev: MouseEvent<HTMLLIElement>) => {
       ev.stopPropagation();
 
       if (!audioBuffer) {
@@ -585,21 +553,15 @@ export default function WebAudioTaggingLyrics({
   ]);
 
   return (
-    <div>
-      <Box
-        sx={{
-          position: "sticky",
-          top: 0,
-          left: 0,
-          zIndex: 1,
-          backgroundColor: "#12121280",
-          backdropFilter: "blur(5px)",
-          paddingTop: 1,
-          paddingBottom: 1,
-        }}
+    <div className="relative">
+      <div
+        className={cn(
+          "sticky top-0 left-0 z-10 py-1", // Basic sticky positioning
+          "bg-background/80 backdrop-blur-sm" // Background with transparency and blur
+        )}
       >
         <InstructionsMemo />
-        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
+        <div className="flex items-center gap-2 p-1 mb-1">
           <WebAudioControls
             audioBuffer={audioBuffer}
             seek={seek}
@@ -614,45 +576,45 @@ export default function WebAudioTaggingLyrics({
             isInExtrapolateMode={isInExtrapolateMode}
             handleExtrapolateModeToggle={handleExtrapolateModeToggle}
           />
-        </ControlRow>
+        </div>
         {isInExtrapolateMode && (
-          <ControlRow direction="row" alignItems="center">
-            <Box component="span" sx={{ marginTop: 2, marginBottom: 2 }}>
+          <div className="flex items-center gap-2 p-1 mb-1">
+            <span className="my-2 text-sm">
               {extrapolateTags.reduce(
                 (prev, curr) => prev + (curr == null ? 0 : 1),
                 0
               )}{" "}
               tags added, formula:{" "}
-              <span style={{ fontFamily: "serif" }}>
-                <var>y</var> = {linearRegressionResult?.m ?? "??"}
-                <var>x</var> + {linearRegressionResult?.b ?? "??"}
+              <span className="font-serif">
+                <i>y</i> = {linearRegressionResult?.m?.toFixed(3) ?? "??"}
+                <i>x</i> + {linearRegressionResult?.b?.toFixed(3) ?? "??"}
               </span>
-            </Box>
+            </span>
             <Button
-              variant="outlined"
-              color="secondary"
+              variant="outline"
+              size="sm"
               disabled={!linearRegressionResult}
               onClick={applyExtrapolation}
             >
               Apply
             </Button>
-          </ControlRow>
+          </div>
         )}
-      </Box>
+      </div>
 
-      <List component="ul" dense ref={listRef}>
+      <ul ref={listRef} className="space-y-0.5">
         {linesPerTag.map((v, idx) => (
           <MemoLineListItem
             line={v}
+            key={idx}
             extrapolateTag={extrapolateTags[idx]}
             isCurrent={idx === currentLine.index}
             isCursorOn={idx === cursor}
             onClickCapture={onLineClick(idx)}
             onDoubleClickCapture={onLineDoubleClick(idx)}
-            key={idx}
           />
         ))}
-      </List>
+      </ul>
     </div>
   );
 }

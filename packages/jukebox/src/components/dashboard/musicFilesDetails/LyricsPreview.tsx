@@ -10,26 +10,8 @@ import {
 import type { Lyrics, LyricsLine } from "lyrics-kit/core";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import { measureTextWidths } from "../../../frontendUtils/measure";
-import { Box, styled } from "@mui/material";
 import { useActiveLyrcsRanges } from "../../../hooks/useActiveLyricsRanges";
-import { FullWidthAudio } from "./FullWIdthAudio";
-
-const TranslationRow = styled("div")({
-  fontSize: "0.8em",
-});
-const LanguageTag = styled("span")(({ theme }) => ({
-  display: "inline-block",
-  borderWidth: "1px",
-  borderInlineStyle: "solid",
-  borderColor: theme.palette.secondary.main,
-  color: theme.palette.secondary.main,
-  fontFamily: "monospace",
-  padding: "0.05em 0.3em",
-  textTransform: "uppercase",
-  fontSize: "0.75em",
-  borderRadius: "0.5em",
-  marginInlineEnd: "0.5em",
-}));
+import { cn } from "@lyricova/components/utils";
 
 interface LyricsRowRefs {
   resume(time: number): void;
@@ -48,7 +30,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
   { line, isActive, start = 0, end = 1e100 },
   ref
 ) {
-  const boxRef = useRef<HTMLDivElement>();
+  const boxRef = useRef<HTMLDivElement>(null);
   const webAnimationRef = useRef<Animation>(null);
 
   useImperativeHandle(ref, () => ({
@@ -77,33 +59,17 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
   }));
 
   return (
-    <Box
-      sx={[
-        {
-          color: "text.secondary",
-          marginBottom: 2,
-          textAlign: "start",
-          fontSize: "1.2rem",
-          minHeight: "1.5em",
-        },
-        isActive && {
-          color: "secondary.main",
-          fontWeight: "bold",
-          "& > .furigana": {
-            display: "inline",
-            backgroundImage: "linear-gradient(0deg, #923cbd, #923cbd)",
-            backgroundBlendMode: "difference",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "0% 100%",
-          },
-        },
-        line.attachments.role % 3 === 1 && { textAlign: "end" },
-        line.attachments.role % 3 === 2 && { textAlign: "center" },
-        line.attachments.minor && { fontSize: "1rem", opacity: 0.75 },
-      ]}
+    <div
+      data-active={isActive}
+      className={cn(
+        "mb-8 text-start text-lg min-h-8 text-muted-foreground group/lyrics-row",
+        isActive && "text-foreground font-medium",
+        line.attachments.role % 3 === 1 && "text-end",
+        line.attachments.role % 3 === 2 && "text-center",
+        line.attachments.minor && "text-base opacity-75"
+      )}
       ref={(elm: HTMLDivElement) => {
         if (!elm || boxRef.current === elm) return;
-        console.log("called row ref", elm);
         boxRef.current = elm;
         const tags = line?.attachments?.timeTag?.tags;
         if (elm && tags?.length) {
@@ -128,18 +94,24 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
         }
       }}
     >
-      <div className="furigana">
+      <div className="furigana group-data-[active=true]/lyrics-row:inline group-data-[active=true]/lyrics-row:bg-linear-to-r group-data-[active=true]/lyrics-row:from-info-foreground/30 group-data-[active=true]/lyrics-row:to-info-foreground/30 group-data-[active=true]/lyrics-row:bg-blend-difference group-data-[active=true]/lyrics-row:bg-no-repeat group-data-[active=true]/lyrics-row:bg-size-[0%_100%]">
         <FuriganaLyricsLine lyricsKitLine={line} />
       </div>
       {Object.entries(line.attachments.translations).map(([lang, content]) => (
-        <TranslationRow key={lang} lang={lang}>
-          <LanguageTag lang="en">{lang || "-"}</LanguageTag>
+        <div key={lang} lang={lang} className="text-sm">
+          <span
+            lang="en"
+            className="inline-block border border-y-0 border-solid border-accent-foreground text-accent-foreground font-mono py-0 px-1 uppercase text-sm rounded-sm mr-2"
+          >
+            {lang || "-"}
+          </span>
           {content}
-        </TranslationRow>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 });
+
 const LyricsRowMemo = memo(LyricsRow, (prev, next) => {
   return (
     prev.line === next.line &&
@@ -154,11 +126,12 @@ LyricsRowMemo.displayName = "LyricsRowMemo";
 interface Props {
   lyrics: Lyrics;
   fileId: number;
+  className?: string;
 }
 
-export default function LyricsPreview({ lyrics, fileId }: Props) {
-  const playerRef = useRef<HTMLAudioElement>();
-  const containerRef = useRef<HTMLDivElement>();
+export default function LyricsPreview({ lyrics, fileId, className }: Props) {
+  const playerRef = useRef<HTMLAudioElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const { playerState, currentFrame, segments } = useActiveLyrcsRanges(
     lyrics?.lines ?? [],
@@ -198,23 +171,15 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
   }, []);
 
   return (
-    <div>
-      <FullWidthAudio
+    <div className={cn("h-[calc(100vh-10rem)] flex flex-col", className)}>
+      <audio
+        className="w-full"
         ref={playerRef}
         src={`/api/files/${fileId}/file`}
         controls
       />
-      <Box
-        sx={{
-          height: "calc(100vh - 15rem)",
-          overflow: "scroll",
-          paddingInline: "calc(50% - 30ch)",
-          "&:before, &:after": {
-            content: '""',
-            height: "50%",
-            display: "block",
-          },
-        }}
+      <div
+        className="grow basis-0 overflow-y-scroll px-[calc(50%-30ch)] before:h-1/2 before:block after:content-[''] after:h-1/2 after:block"
         ref={containerRef}
       >
         {(lyrics?.lines ?? []).map((v, idx) => (
@@ -227,7 +192,7 @@ export default function LyricsPreview({ lyrics, fileId }: Props) {
             ref={rowRefUpdater(idx)}
           />
         ))}
-      </Box>
+      </div>
     </div>
   );
 }

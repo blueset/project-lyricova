@@ -2,7 +2,7 @@ import { siteName, tagLine1, tagLine2 } from "../../../utils/consts";
 import classes from "./SubArchiveHeader.module.scss";
 import { NavPanel } from "../nav/NavPanel";
 import { Search } from "../nav/Search";
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import _ from "lodash";
 import { Link } from "../Link";
@@ -66,8 +66,6 @@ export function SubArchiveHeader({
   type,
   keywords,
 }: SubArchiveHeaderProps) {
-  // const resizeObserverRef = useRef<ResizeObserver>();
-
   return (
     <header className={`container verticalPadding ${classes.headerRow}`}>
       <Search />
@@ -89,22 +87,8 @@ export function SubArchiveHeader({
             <br />
             <strong>{type}</strong>
           </div>
-          <div
-            className={classes.keywords}
-            data-resizer
-            // ref={(elm) => {
-            //   if (!resizeObserverRef.current) {
-            //     resizeObserverRef.current = buildObserver();
-            //   }
-            //   // console.log("Ref used", resizeObserverRef.current, elm);
-            //   if (elm) {
-            //     resizeObserverRef.current?.observe(document.body);
-            //   } else {
-            //     resizeObserverRef.current?.disconnect();
-            //   }
-            // }}
-          >
-            <Balancer>{keywords}</Balancer>
+          <div className={classes.keywords} data-resizer>
+            {keywords}
           </div>
         </div>
       </div>

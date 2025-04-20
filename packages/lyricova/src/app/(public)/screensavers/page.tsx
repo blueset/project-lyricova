@@ -3,6 +3,13 @@ import { NavPanel } from "@/components/public/nav/NavPanel";
 import { Footer } from "@/components/public/Footer";
 import { Link } from "@/components/public/Link";
 
+export const metadata = {
+  title: {
+    template: "%s – Screensavers",
+    default: "Screensavers",
+  },
+};
+
 export default function ScreensaversDirectory() {
   return (
     <div className={`container ${classes.container}`}>

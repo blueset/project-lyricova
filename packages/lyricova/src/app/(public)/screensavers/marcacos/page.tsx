@@ -1,6 +1,10 @@
 import { getScreensaverData } from "../screensaverData";
 import MarcacosScreensaver from "./screensaver";
 
+export const metadata = {
+  title: "Marcacos",
+};
+
 export default async function Screensaver({
   searchParams,
 }: {

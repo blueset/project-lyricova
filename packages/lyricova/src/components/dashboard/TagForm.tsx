@@ -1,16 +1,31 @@
 import type { ReactElement } from "react";
-import { cloneElement, useId } from "react";
-import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
-import { Alert, Box, Button, Popover, Stack } from "@mui/material";
+import { useState } from "react";
 import { gql, useQuery, useApolloClient } from "@apollo/client";
 import type { Tag } from "@lyricova/api/graphql/types";
-import { Field, Form, FormSpy } from "react-final-form";
-import { makeValidate, TextField } from "mui-rff";
-import * as yup from "yup";
-import { useSnackbar } from "notistack";
+import { toast } from "sonner";
 import { SlugifyAdornment } from "@lyricova/components";
-import { OnChange } from "react-final-form-listeners";
-import slugify from "slugify";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@lyricova/components/components/ui/popover";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@lyricova/components/components/ui/form";
+import { Input } from "@lyricova/components/components/ui/input";
+import {
+  Alert,
+  AlertDescription,
+} from "@lyricova/components/components/ui/alert";
 
 const TAG_QUERY = gql`
   query Tag($slug: String!) {
@@ -42,11 +57,11 @@ const UPDATE_TAG_MUTATION = gql`
   }
 `;
 
-interface FormValues {
-  name: string;
-  slug: string;
-  color: string;
-}
+const formSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  color: z.string().min(1),
+});
 
 export interface TagFormProps {
   slug?: string;
@@ -55,140 +70,127 @@ export interface TagFormProps {
 
 export function TagForm({ slug = null, onSubmit }: TagFormProps) {
   const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
   const { data, loading, refetch } = useQuery<{ tag: Tag }>(TAG_QUERY, {
     variables: { slug },
   });
 
-  if (slug && (loading || !data?.tag)) {
-    return <Alert severity="info">Loading...</Alert>;
-  }
-
-  const initialValues: FormValues = {
+  const values = {
     name: data?.tag?.name ?? "",
     slug: data?.tag?.slug ?? "",
     color: data?.tag?.color ?? "#ffffff",
   };
 
-  const schema = yup.object().shape({
-    name: yup.string().required(),
-    slug: yup.string().required(),
-    color: yup.string().required(),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    values,
+    resetOptions: {
+      keepDirtyValues: true,
+    },
   });
 
+  if (slug && (loading || !data?.tag)) {
+    return (
+      <Alert variant="info">
+        <AlertDescription>Loading...</AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
-    <Form<FormValues>
-      initialValues={initialValues}
-      onSubmit={async (values) => {
-        try {
-          if (slug) {
-            const result = await apolloClient.mutate({
-              mutation: UPDATE_TAG_MUTATION,
-              variables: {
-                slug,
-                data: values,
-              },
-            });
-            onSubmit?.();
-            refetch();
-            snackbar.enqueueSnackbar("Tag updated", { variant: "success" });
-          } else {
-            const result = await apolloClient.mutate({
-              mutation: NEW_TAG_MUTATION,
-              variables: {
-                data: values,
-              },
-            });
-            onSubmit?.();
-            snackbar.enqueueSnackbar("Tag created", { variant: "success" });
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={form.handleSubmit(async (values) => {
+          try {
+            if (slug) {
+              await apolloClient.mutate({
+                mutation: UPDATE_TAG_MUTATION,
+                variables: {
+                  slug,
+                  data: values,
+                },
+              });
+              onSubmit?.();
+              refetch();
+              toast.success("Tag updated");
+            } else {
+              await apolloClient.mutate({
+                mutation: NEW_TAG_MUTATION,
+                variables: {
+                  data: values,
+                },
+              });
+              onSubmit?.();
+              toast.success("Tag created");
+            }
+          } catch (error) {
+            toast.error(error.message);
+            console.error(error);
           }
-        } catch (error) {
-          snackbar.enqueueSnackbar(error.message, { variant: "error" });
-          console.error(error);
-        }
-      }}
-      validate={makeValidate(schema)}
-    >
-      {({ handleSubmit, submitting, values }) => (
-        <form onSubmit={handleSubmit}>
-          <Stack spacing={1} alignItems="start">
-            <TextField
-              name="name"
-              label="Name"
-              required
-              sx={{ width: "250px" }}
-              disabled={submitting}
-              variant="outlined"
-              margin="dense"
-            />
-            <TextField
-              name="slug"
-              label="Slug"
-              required
-              sx={{ width: "250px" }}
-              disabled={submitting}
-              variant="outlined"
-              margin="dense"
-              InputProps={{
-                endAdornment: (
-                  <SlugifyAdornment sourceName="name" destinationName="slug" />
-                ),
-              }}
-            />
-            <TextField
-              name="color"
-              label="Color"
-              required
-              sx={{ width: "250px" }}
-              disabled={submitting}
-              variant="outlined"
-              margin="dense"
-              InputProps={{
-                endAdornment: (
-                  <Box
-                    sx={{
-                      width: 24,
-                      height: 24,
-                      bgcolor: values.color,
-                      borderRadius: 1,
-                      border: "1px solid rgba(255,255,255,0.23)",
-                    }}
-                  />
-                ),
-              }}
-            />
-            <Button
-              type="submit"
-              disabled={submitting}
-              color="primary"
-              variant="contained"
-            >
-              Submit
-            </Button>
-          </Stack>
-          {/**
-           * Slugify name while slug field is untouched.
-           * @link https://codesandbox.io/s/52q597j2p?file=/src/index.js:579-587
-           */}
-          {!slug && (
-            <Field name="slug">
-              {({ input: { onChange }, meta: { touched } }) => (
-                <FormSpy subscription={{ values: true, touched: true }}>
-                  {() => (
-                    <OnChange name="name">
-                      {(value) => {
-                        if (!touched) {
-                          onChange(slugify(value, { lower: true }));
-                        }
-                      }}
-                    </OnChange>
-                  )}
-                </FormSpy>
-              )}
-            </Field>
+        })}
+      >
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </form>
-      )}
+        />
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Slug</FormLabel>
+              <div className="flex items-center gap-2">
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <SlugifyAdornment
+                  form={form}
+                  sourceName="name"
+                  destinationName="slug"
+                />
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="color"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Color</FormLabel>
+              <div className="flex items-center gap-2">
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <div
+                  className="w-8 h-8 rounded flex-shrink-0 flex-grow-1 border border-gray-300"
+                  style={{
+                    backgroundColor: field.value,
+                  }}
+                />
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          variant="default"
+        >
+          Submit
+        </Button>
+      </form>
     </Form>
   );
 }
@@ -208,37 +210,19 @@ export function TagFormPopup({
   onSubmit,
   children,
 }: TagFormPopupProps) {
-  const popupId = useId();
+  const [isOpen, setIsOpen] = useState(false);
   return (
-    <PopupState variant="popover" popupId={popupId}>
-      {(popupState) => (
-        <>
-          {cloneElement(children, {
-            ...bindTrigger(popupState),
-          })}
-          <Popover
-            {...bindPopover(popupState)}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-          >
-            <Box p={2}>
-              <TagForm
-                slug={slug}
-                onSubmit={() => {
-                  onSubmit?.();
-                  popupState.close();
-                }}
-              />
-            </Box>
-          </Popover>
-        </>
-      )}
-    </PopupState>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverContent align="end" side="bottom">
+        <TagForm
+          slug={slug}
+          onSubmit={() => {
+            onSubmit?.();
+            setIsOpen(false);
+          }}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }

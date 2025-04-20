@@ -5,6 +5,7 @@ const withBundleAnalyzer = analyzer({
 });
 
 const config = withBundleAnalyzer({
+  transpilePackages: ["@lyricova/components"],
   async redirects() {
     return [
       {

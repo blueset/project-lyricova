@@ -1,57 +1,111 @@
 "use client";
 
 import type { Song } from "@lyricova/api/graphql/types";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  FormHelperText,
-  Grid,
-  IconButton,
-  InputAdornment,
-  MenuItem,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material";
 import { Fragment, useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
-import { TransliterationAdornment } from "../adornments/TransliterationAdornment";
 import { useSnackbar } from "notistack";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AlbumIcon from "@mui/icons-material/Album";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import { Plus, X, Disc3, Music, Trash } from "lucide-react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+} from "@lyricova/components/components/ui/sheet";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@lyricova/components/components/ui/form";
+import { Input } from "@lyricova/components/components/ui/input";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Separator } from "@lyricova/components/components/ui/separator";
+import { Checkbox } from "@lyricova/components/components/ui/checkbox";
+import { MultiSelect } from "@lyricova/components/components/ui/multi-select";
+
+import { TransliterationAdornment } from "../adornments/TransliterationAdornment";
+import { VideoThumbnailAdornment } from "../adornments/VideoThumbnailAdornment";
+import { TrackNameAdornment } from "../adornments/TrackNameAdornment";
 import { SelectSongEntityBox } from "../inputs/SelectSongEntityBox";
 import { SelectArtistEntityBox } from "../inputs/SelectArtistEntityBox";
 import { SelectAlbumEntityBox } from "../inputs/SelectAlbumEntityBox";
-import { TrackNameAdornment } from "../adornments/TrackNameAdornment";
-import * as yup from "yup";
-import { SongFragments } from "../../utils/fragments";
-import type { Artist } from "@lyricova/api/graphql/types";
-import type {
-  VDBArtistCategoryType,
-  VDBArtistRoleType,
-} from "@lyricova/api/graphql/types";
-import type { Album } from "@lyricova/api/graphql/types";
-import { VideoThumbnailAdornment } from "../adornments/VideoThumbnailAdornment";
-import { Field, Form } from "react-final-form";
-import {
-  Checkboxes,
-  makeValidate,
-  Select,
-  showErrorOnChange,
-  TextField,
-} from "mui-rff";
-import finalFormMutators from "../../utils/finalFormMutators";
-import arrayMutators from "final-form-arrays";
-import { FieldArray } from "react-final-form-arrays";
 import { AvatarField } from "../inputs/AvatarField";
-import { DocumentNode } from "graphql";
-import React from "react";
+import { SongFragments } from "../../utils/fragments";
+
+interface MultiSelectOption {
+  value: string;
+  label: string;
+}
+
+const rolesChoices: MultiSelectOption[] = [
+  { value: "Default", label: "Default" },
+  { value: "Composer", label: "Composer" },
+  { value: "Lyricist", label: "Lyricist" },
+  { value: "Arranger", label: "Arranger" },
+  { value: "Vocalist", label: "Vocalist" },
+  { value: "Animator", label: "Animator" },
+  { value: "Distributor", label: "Distributor" },
+  { value: "Illustrator", label: "Illustrator" },
+  { value: "Instrumentalist", label: "Instrumentalist" },
+  { value: "Mastering", label: "Mastering" },
+  { value: "Publisher", label: "Publisher" },
+  { value: "VoiceManipulator", label: "Voice Manipulator" },
+  { value: "Other", label: "Other" },
+  { value: "Mixer", label: "Mixer" },
+  { value: "Chorus", label: "Chorus" },
+  { value: "Encoder", label: "Encoder" },
+  { value: "VocalDataProvider", label: "Vocal Data Provider" },
+];
+
+const artistRolesChoices: MultiSelectOption[] = [
+  { value: "Nothing", label: "Nothing" },
+  { value: "Vocalist", label: "Vocalist" },
+  { value: "Producer", label: "Producer" },
+  { value: "Animator", label: "Animator" },
+  { value: "Label", label: "Label" },
+  { value: "Circle", label: "Circle" },
+  { value: "Other", label: "Other" },
+  { value: "Band", label: "Band" },
+  { value: "Illustrator", label: "Illustrator" },
+  { value: "Subject", label: "Subject" },
+];
+
+const formSchema = z.object({
+  name: z.string().min(1, "Required"),
+  sortOrder: z.string().min(1, "Required"),
+  coverUrl: z.string().url().optional(),
+  originalSong: z.any().optional(),
+  artists: z.array(
+    z.object({
+      artist: z
+        .any()
+        .refine((val) => val !== null, "Artist entity must be selected"),
+      artistRoles: z.array(z.string()),
+      categories: z.array(z.string()),
+      customName: z.string().optional(),
+      isSupport: z.boolean(),
+    })
+  ),
+  albums: z.array(
+    z.object({
+      album: z
+        .any()
+        .refine((val) => val !== null, "Album entity must be selected"),
+      diskNumber: z.number().positive().int().optional(),
+      trackNumber: z.number().positive().int().optional(),
+      name: z.string().min(1, "Required"),
+    })
+  ),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const NEW_SONG_MUTATION = gql`
   mutation ($data: SongInput!) {
@@ -61,7 +115,7 @@ const NEW_SONG_MUTATION = gql`
   }
 
   ${SongFragments.SelectSongEntry}
-` as DocumentNode;
+`;
 
 const UPDATE_SONG_MUTATION = gql`
   mutation ($id: Int!, $data: SongInput!) {
@@ -71,47 +125,6 @@ const UPDATE_SONG_MUTATION = gql`
   }
 
   ${SongFragments.SelectSongEntry}
-` as DocumentNode;
-
-const dividerRowSx = {
-  marginTop: 1,
-  marginBottom: 1,
-};
-
-const NumberField = styled(TextField)({
-  "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
-    WebkitAppearance: "none",
-    margin: 0,
-  },
-  "input[type=number]": {
-    MozAppearance: "textfield",
-  },
-});
-
-interface FormValues {
-  name: string;
-  sortOrder: string;
-  coverUrl?: string | null;
-  originalSong?: Partial<Song>;
-  artists: {
-    artist: Partial<Artist>;
-    artistRoles: VDBArtistRoleType[];
-    categories: VDBArtistCategoryType[];
-    customName?: string | null;
-    isSupport: boolean;
-  }[];
-  albums: {
-    album: Partial<Album>;
-    trackNumber?: number | null;
-    diskNumber?: number | null;
-    name?: string;
-  }[];
-}
-
-const SquareButton = styled(Button)`
-  width: 1em;
-  min-width: 1em;
-  margin-left: 8px;
 `;
 
 interface Props {
@@ -141,7 +154,7 @@ export function SongEntityDialog({
     setKeyword("");
   }, [toggleOpen, setKeyword]);
 
-  const initialValues: FormValues =
+  const defaultValues: FormValues =
     create || !songToEdit
       ? {
           name: keyword ?? "",
@@ -152,9 +165,9 @@ export function SongEntityDialog({
           albums: [],
         }
       : {
-          name: songToEdit.name!,
-          sortOrder: songToEdit.sortOrder!,
-          coverUrl: songToEdit.coverUrl!,
+          name: songToEdit.name ?? "",
+          sortOrder: songToEdit.sortOrder ?? "",
+          coverUrl: songToEdit.coverUrl ?? "",
           originalSong: songToEdit.original ?? undefined,
           artists:
             songToEdit.artists?.map((v) => ({
@@ -164,548 +177,540 @@ export function SongEntityDialog({
           albums:
             songToEdit.albums?.map((v) => ({
               ...v.SongInAlbum,
+              name: v.SongInAlbum.name ?? "",
+              diskNumber: v.SongInAlbum.diskNumber ?? undefined,
+              trackNumber: v.SongInAlbum.trackNumber ?? undefined,
               album: v,
             })) ?? [],
         };
 
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    values: defaultValues,
+    resetOptions: {
+      keepDirtyValues: true,
+    },
+    mode: "onChange",
+  });
+
   const songId = songToEdit?.id ?? null;
 
-  const schema = yup
-    .object({})
-    .shape({
-      name: yup.string().required(),
-      sortOrder: yup.string().required(),
-      coverUrl: yup.string().nullable().url(),
-      originalSong: yup.object().optional(),
-      artists: yup
-        .array(
-          yup.object({
-            artist: yup.object().typeError("Artist entity must be selected."),
-            artistRoles: yup
-              .array(yup.string() as yup.StringSchema<VDBArtistRoleType>)
-              .required(),
-            categories: yup
-              .array(yup.string() as yup.StringSchema<VDBArtistCategoryType>)
-              .required(),
-            customName: yup.string().nullable(),
-            isSupport: yup.boolean().required(),
-          })
-        )
-        .required(),
-      albums: yup
-        .array(
-          yup.object({
-            album: yup.object().typeError("Album entity must be selected."),
-            diskNumber: yup.number().optional().nullable().positive().integer(),
-            trackNumber: yup
-              .number()
-              .optional()
-              .nullable()
-              .positive()
-              .integer(),
-            name: yup.string().required(),
-          })
-        )
-        .required(),
-    })
-    .required();
+  async function onSubmit(values: FormValues) {
+    try {
+      const data = {
+        name: values.name,
+        sortOrder: values.sortOrder,
+        coverUrl: values.coverUrl || "",
+        originalId: values.originalSong?.id ?? null,
+        songInAlbums: values.albums.map((v) => ({
+          name: v.name,
+          diskNumber: v.diskNumber,
+          trackNumber: v.trackNumber,
+          albumId: v.album.id,
+        })),
+        artistsOfSong: values.artists.map((v) => ({
+          categories: v.categories,
+          artistRoles: v.artistRoles,
+          isSupport: v.isSupport,
+          customName: v.customName || "",
+          artistId: v.artist.id,
+        })),
+      };
 
-  const validate = makeValidate<FormValues>(schema);
+      if (create) {
+        const result = await apolloClient.mutate<{
+          newSong: Partial<Song>;
+        }>({
+          mutation: NEW_SONG_MUTATION,
+          variables: {
+            data,
+          },
+        });
+
+        if (result.data) {
+          setSong(result.data.newSong);
+          snackbar.enqueueSnackbar(
+            `Song "${result.data.newSong.name}" is successfully created.`,
+            {
+              variant: "success",
+            }
+          );
+          handleClose();
+        }
+      } else {
+        const result = await apolloClient.mutate<{
+          updateSong: Partial<Song>;
+        }>({
+          mutation: UPDATE_SONG_MUTATION,
+          variables: {
+            id: songId,
+            data,
+          },
+        });
+
+        if (result.data) {
+          setSong(result.data.updateSong);
+          snackbar.enqueueSnackbar(
+            `Song "${result.data.updateSong.name}" is successfully updated.`,
+            {
+              variant: "success",
+            }
+          );
+          apolloClient.cache.evict({ id: `Song:${songId}` });
+          handleClose();
+        }
+      }
+    } catch (e) {
+      console.error(
+        `Error occurred while ${create ? "creating" : "updating"} song ${
+          values?.name
+        }.`,
+        e
+      );
+      snackbar.enqueueSnackbar(
+        `Error occurred while ${create ? "creating" : "updating"} song ${
+          values?.name
+        }. (${e})`,
+        {
+          variant: "error",
+        }
+      );
+    }
+  }
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="form-dialog-title"
-      scroll="paper"
-    >
-      <Form<FormValues>
-        initialValues={initialValues}
-        mutators={{
-          ...finalFormMutators,
-          ...arrayMutators,
-        }}
-        subscription={{}}
-        validate={validate}
-        onSubmit={async (values) => {
-          try {
-            const data = {
-              name: values.name,
-              sortOrder: values.sortOrder,
-              coverUrl: values.coverUrl || "",
-              originalId: values.originalSong?.id ?? null,
-              songInAlbums: values.albums.map((v) => ({
-                name: v.name,
-                diskNumber:
-                  v.diskNumber && parseInt(v.diskNumber as unknown as string),
-                trackNumber:
-                  v.trackNumber && parseInt(v.trackNumber as unknown as string),
-                albumId: v.album.id,
-              })),
-              artistsOfSong: values.artists.map((v) => ({
-                categories: v.categories,
-                artistRoles: v.artistRoles,
-                isSupport: v.isSupport,
-                customName: v.customName || "",
-                artistId: v.artist.id,
-              })),
-            };
+    <Sheet open={isOpen} onOpenChange={handleClose}>
+      <SheetContent className="w-5/6 md:max-w-lg lg:max-w-2xl">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col h-full"
+          >
+            <SheetHeader>
+              <SheetTitle>
+                {create
+                  ? "Create new song entity"
+                  : `Edit song entity #${songId}`}
+              </SheetTitle>
+            </SheetHeader>
 
-            if (create) {
-              const result = await apolloClient.mutate<{
-                newSong: Partial<Song>;
-              }>({
-                mutation: NEW_SONG_MUTATION,
-                variables: {
-                  data,
-                },
-              });
+            <div className="grow basis-0 flex flex-col gap-4 overflow-auto py-4 px-6 -mx-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Track name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              if (result.data) {
-                setSong(result.data.newSong);
-                snackbar.enqueueSnackbar(
-                  `Song “${result.data.newSong.name}” is successfully created.`,
-                  {
-                    variant: "success",
-                  }
-                );
-                handleClose();
-              }
-            } else {
-              const result = await apolloClient.mutate<{
-                updateSong: Partial<Song>;
-              }>({
-                mutation: UPDATE_SONG_MUTATION,
-                variables: {
-                  id: songId,
-                  data,
-                },
-              });
+                <FormField
+                  control={form.control}
+                  name="sortOrder"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sort order</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <Input {...field} />
+                          <TransliterationAdornment
+                            form={form}
+                            sourceName="name"
+                            destinationName="sortOrder"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              if (result.data) {
-                setSong(result.data.updateSong);
-                snackbar.enqueueSnackbar(
-                  `Song “${result.data.updateSong.name}” is successfully updated.`,
-                  {
-                    variant: "success",
-                  }
-                );
-                apolloClient.cache.evict({ id: `Song:${songId}` });
-                handleClose();
-              }
-            }
-          } catch (e) {
-            console.error(
-              `Error occurred while ${create ? "creating" : "updating"} song ${
-                values?.name
-              }.`,
-              e
-            );
-            snackbar.enqueueSnackbar(
-              `Error occurred while ${create ? "creating" : "updating"} song ${
-                values?.name
-              }. (${e})`,
-              {
-                variant: "error",
-              }
-            );
-          }
-        }}
-      >
-        {({ form, values, submitting, handleSubmit }) => (
-          <>
-            <DialogTitle id="form-dialog-title">
-              {create
-                ? "Create new song entity"
-                : `Edit song entity #${songId}`}
-            </DialogTitle>
-            <DialogContent dividers>
-              <Grid container spacing={1}>
-                <Grid size={12}>
-                  <TextField
-                    variant="outlined"
-                    margin="dense"
-                    fullWidth
-                    required
-                    name="name"
-                    type="text"
-                    label="Track name"
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <TextField
-                    variant="outlined"
-                    margin="dense"
-                    fullWidth
-                    required
-                    InputProps={{
-                      endAdornment: (
-                        <TransliterationAdornment
-                          sourceName="name"
-                          destinationName="sortOrder"
+                <FormField
+                  control={form.control}
+                  name="coverUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cover URL</FormLabel>
+                      <div className="flex items-center gap-2">
+                        <AvatarField
+                          form={form}
+                          name="coverUrl"
+                          className="size-12"
                         />
-                      ),
-                    }}
-                    name="sortOrder"
-                    type="text"
-                    label="Sort order"
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <Stack flexDirection="row" alignItems="center">
-                    <AvatarField
-                      name="coverUrl"
-                      sx={{
-                        marginRight: 2,
-                        height: "3em",
-                        width: "3em",
-                      }}
-                    />
-                    <TextField
-                      variant="outlined"
-                      margin="dense"
-                      fullWidth
-                      InputProps={{
-                        endAdornment: (
-                          <VideoThumbnailAdornment name="coverUrl" />
-                        ),
-                      }}
-                      name="coverUrl"
-                      type="text"
-                      label="Cover URL"
-                    />
-                  </Stack>
-                </Grid>
-              </Grid>
-              <SelectSongEntityBox
-                fieldName="originalSong"
-                labelName="Original song"
-              />
-              <Typography sx={dividerRowSx} variant="h6" component="h3">
-                Artists
-              </Typography>
-              <FieldArray
-                name="artists"
-                subscription={{
-                  error: true,
-                  touched: true,
-                  modified: true,
-                  dirtySinceLastSubmit: true,
-                  submitError: true,
-                }}
-              >
-                {({ fields, meta }) => (
-                  <>
-                    {fields.map((name, idx) => (
-                      <Fragment key={name}>
-                        <SelectArtistEntityBox
-                          fieldName={`${name}.artist`}
-                          labelName="Artist"
-                        />
-                        <Stack flexDirection="row" alignItems="center">
-                          <Select
-                            type="text"
-                            label="Roles"
-                            name={`${name}.artistRoles`}
-                            multiple
-                            sx={{ marginRight: 1 }}
-                            formControlProps={{
-                              margin: "dense",
-                              variant: "outlined",
-                              fullWidth: true,
-                            }}
-                            inputProps={{
-                              name: `${name}.artistRoles`,
-                              id: `${name}.artistRoles`,
+                        <FormControl>
+                          <div className="flex items-center gap-2 flex-1">
+                            <Input {...field} />
+                            <VideoThumbnailAdornment
+                              name="coverUrl"
+                              form={form}
+                            />
+                          </div>
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <SelectSongEntityBox
+                  form={form}
+                  fieldName="originalSong"
+                  labelName="Original song"
+                />
+              </div>
+
+              {/* Artists Section */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">Artists</h3>
+                <div className="space-y-4">
+                  {form.watch("artists")?.map((_, index) => (
+                    <Fragment key={index}>
+                      <div className="space-y-4">
+                        <div className="flex gap-2">
+                          <SelectArtistEntityBox
+                            form={form}
+                            fieldName={`artists.${index}.artist`}
+                            labelName="Artist"
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            type="button"
+                            onClick={() => {
+                              const artists = form.getValues("artists");
+                              artists.splice(index, 1);
+                              form.setValue("artists", artists);
                             }}
                           >
-                            <MenuItem value="Default">Default</MenuItem>
-                            <MenuItem value="Composer">Composer</MenuItem>
-                            <MenuItem value="Lyricist">Lyricist</MenuItem>
-                            <MenuItem value="Arranger">Arranger</MenuItem>
-                            <MenuItem value="Vocalist">Vocalist</MenuItem>
-                            <MenuItem value="Animator">Animator</MenuItem>
-                            <MenuItem value="Distributor">Distributor</MenuItem>
-                            <MenuItem value="Illustrator">Illustrator</MenuItem>
-                            <MenuItem value="Instrumentalist">
-                              Instrumentalist
-                            </MenuItem>
-                            <MenuItem value="Mastering">Mastering</MenuItem>
-                            <MenuItem value="Publisher">Publisher</MenuItem>
-                            <MenuItem value="VoiceManipulator">
-                              Voice Manipulator
-                            </MenuItem>
-                            <MenuItem value="Other">Other</MenuItem>
-                            <MenuItem value="Mixer">Mixer</MenuItem>
-                            <MenuItem value="Chorus">Chorus</MenuItem>
-                            <MenuItem value="Encoder">Encoder</MenuItem>
-                            <MenuItem value="VocalDataProvider">
-                              Vocal Data Provider
-                            </MenuItem>
-                          </Select>
-                          <Select
-                            type="text"
-                            label="Categories"
-                            name={`${name}.categories`}
-                            multiple
-                            formControlProps={{
-                              margin: "dense",
-                              variant: "outlined",
-                              fullWidth: true,
-                            }}
-                            inputProps={{
-                              name: `${name}.categories`,
-                              id: `${name}.categories`,
-                            }}
-                          >
-                            <MenuItem value="Nothing">Nothing</MenuItem>
-                            <MenuItem value="Vocalist">Vocalist</MenuItem>
-                            <MenuItem value="Producer">Producer</MenuItem>
-                            <MenuItem value="Animator">Animator</MenuItem>
-                            <MenuItem value="Label">Label</MenuItem>
-                            <MenuItem value="Circle">Circle</MenuItem>
-                            <MenuItem value="Other">Other</MenuItem>
-                            <MenuItem value="Band">Band</MenuItem>
-                            <MenuItem value="Illustrator">Illustrator</MenuItem>
-                            <MenuItem value="Subject">Subject</MenuItem>
-                          </Select>
-                          <Field name={`${name}`}>
-                            {({ input: { value } }) =>
-                              value.artist?.type === "Producer" ? (
-                                <SquareButton
-                                  variant="outlined"
-                                  size="large"
+                            <Trash />
+                          </Button>
+                        </div>
+
+                        <div className="flex gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`artists.${index}.artistRoles`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>Roles</FormLabel>
+                                <MultiSelect
+                                  isMulti
+                                  onChange={(selected) => {
+                                    field.onChange(
+                                      selected
+                                        ? selected.map((option) => option.value)
+                                        : []
+                                    );
+                                  }}
+                                  value={field.value.map((v) => ({
+                                    value: v,
+                                    label:
+                                      rolesChoices.find(
+                                        (option) => option.value === v
+                                      )?.label ?? v,
+                                  }))}
+                                  placeholder="Select roles"
+                                  options={rolesChoices}
+                                  getOptionValue={(value) => value.value}
+                                  getOptionLabel={(value) => value.label}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`artists.${index}.categories`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>Categories</FormLabel>
+                                <MultiSelect
+                                  isMulti
+                                  onChange={(selected) => {
+                                    field.onChange(
+                                      selected
+                                        ? selected.map((option) => option.value)
+                                        : []
+                                    );
+                                  }}
+                                  value={field.value.map((v) => ({
+                                    value: v,
+                                    label:
+                                      artistRolesChoices.find(
+                                        (option) => option.value === v
+                                      )?.label ?? v,
+                                  }))}
+                                  placeholder="Select categories"
+                                  options={artistRolesChoices}
+                                  getOptionValue={(value) => value.value}
+                                  getOptionLabel={(value) => value.label}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`artists.${index}.artist.type`}
+                            render={({ field }) =>
+                              field.value === "Producer" ? (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  type="button"
+                                  className="mt-5.5"
                                   onClick={() => {
-                                    form.mutators.setValue(
-                                      `${name}.artistRoles`,
+                                    form.setValue(
+                                      `artists.${index}.artistRoles`,
                                       ["Composer", "Lyricist"]
                                     );
-                                    form.mutators.setValue(
-                                      `${name}.categories`,
+                                    form.setValue(
+                                      `artists.${index}.categories`,
                                       ["Producer"]
                                     );
                                   }}
                                 >
                                   P
-                                </SquareButton>
-                              ) : value.artist?.type === "Vocaloid" ||
-                                value.artist?.type === "UTAU" ||
-                                value.artist?.type === "CeVIO" ||
-                                value.artist?.type ===
-                                  "OtherVoiceSynthesizer" ||
-                                value.artist?.type === "OtherVocalist" ||
-                                value.artist?.type === "Utaite" ||
-                                value.artist?.type === "Vocalist" ||
-                                value.artist?.type === "CoverArtist" ||
-                                value.artist?.type === "SynthesizerV" ||
-                                value.artist?.type === "NEUTRINO" ||
-                                value.artist?.type === "VoiSona" ||
-                                value.artist?.type === "NewType" ||
-                                value.artist?.type === "Voiceroid" ? (
-                                <SquareButton
-                                  variant="outlined"
-                                  size="large"
+                                </Button>
+                              ) : field.value === "Vocaloid" ||
+                                field.value === "UTAU" ||
+                                field.value === "CeVIO" ||
+                                field.value === "OtherVoiceSynthesizer" ||
+                                field.value === "OtherVocalist" ||
+                                field.value === "Utaite" ||
+                                field.value === "Vocalist" ||
+                                field.value === "CoverArtist" ||
+                                field.value === "SynthesizerV" ||
+                                field.value === "NEUTRINO" ||
+                                field.value === "VoiSona" ||
+                                field.value === "NewType" ||
+                                field.value === "Voiceroid" ? (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  type="button"
+                                  className="mt-5.5"
                                   onClick={() => {
-                                    form.mutators.setValue(
-                                      `${name}.artistRoles`,
+                                    form.setValue(
+                                      `artists.${index}.artistRoles`,
                                       ["Vocalist"]
                                     );
-                                    form.mutators.setValue(
-                                      `${name}.categories`,
+                                    form.setValue(
+                                      `artists.${index}.categories`,
                                       ["Vocalist"]
                                     );
                                   }}
                                 >
                                   V
-                                </SquareButton>
-                              ) : null
+                                </Button>
+                              ) : (
+                                <></>
+                              )
                             }
-                          </Field>
-                        </Stack>
-                        <Stack flexDirection="row" alignItems="center">
-                          <Checkboxes
-                            sx={{ marginRight: 1 }}
-                            indeterminate={false}
-                            data={{ label: "Support", value: true }}
-                            formControlProps={{
-                              sx: {
-                                minWidth: "auto",
-                                marginRight: 0,
-                              },
-                            }}
-                            name={`${name}.isSupport`}
                           />
-                          <TextField
-                            sx={{ marginRight: 1 }}
-                            variant="outlined"
-                            margin="dense"
-                            fullWidth
-                            name={`${name}.customName`}
-                            type="text"
-                            label="Custom name"
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`artists.${index}.isSupport`}
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel>Support</FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
                           />
-                          <IconButton
-                            color="primary"
-                            aria-label="Delete artist item"
-                            onClick={() => fields.remove(idx)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                        <Divider sx={dividerRowSx} />
-                      </Fragment>
-                    ))}
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      color="secondary"
-                      startIcon={<AddIcon />}
-                      onClick={() =>
-                        fields.push({
+
+                          <FormField
+                            control={form.control}
+                            name={`artists.${index}.customName`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input {...field} placeholder="Custom name" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <Separator className="my-4" />
+                    </Fragment>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const artists = form.getValues("artists") || [];
+                      form.setValue("artists", [
+                        ...artists,
+                        {
                           artist: null,
                           artistRoles: ["Default"],
                           categories: ["Nothing"],
                           customName: "",
                           isSupport: false,
-                        })
-                      }
-                    >
-                      Add artist
-                    </Button>
-                    {showErrorOnChange({ meta }) ? (
-                      <FormHelperText error>
-                        {meta.submitError ?? meta.error?.[0]}
-                      </FormHelperText>
-                    ) : (
-                      false
-                    )}
-                  </>
-                )}
-              </FieldArray>
-              <Typography variant="h6" component="h3" sx={dividerRowSx}>
-                Albums
-              </Typography>
-              <FieldArray name="albums" subscription={{}}>
-                {({ fields }) => (
-                  <>
-                    {fields.map((name, idx) => (
-                      <Fragment key={name}>
-                        <Field
-                          name={`${name}.album`}
-                          subscription={{
-                            value: true,
-                            touched: true,
-                            error: true,
-                          }}
-                        >
-                          {() => (
-                            <SelectAlbumEntityBox
-                              fieldName={`${name}.album`}
-                              labelName="Album"
-                            />
-                          )}
-                        </Field>
-                        <Stack flexDirection="row" alignItems="center" gap={1}>
-                          <NumberField
-                            variant="outlined"
-                            margin="dense"
-                            fullWidth
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <AlbumIcon />
-                                </InputAdornment>
-                              ),
-                            }}
-                            name={`${name}.diskNumber`}
-                            type="number"
-                            label="Disk number"
+                        },
+                      ]);
+                    }}
+                  >
+                    <Plus />
+                    Add artist
+                  </Button>
+                </div>
+              </div>
+
+              {/* Albums Section */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">Albums</h3>
+                <div className="space-y-4">
+                  {form.watch("albums")?.map((_, index) => (
+                    <Fragment key={index}>
+                      <div className="space-y-4">
+                        <div className="flex gap-2">
+                          <SelectAlbumEntityBox
+                            form={form}
+                            fieldName={`albums.${index}.album`}
+                            labelName="Album"
                           />
-                          <NumberField
-                            variant="outlined"
-                            margin="dense"
-                            fullWidth
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <MusicNoteIcon />
-                                </InputAdornment>
-                              ),
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            type="button"
+                            onClick={() => {
+                              const albums = form.getValues("albums");
+                              albums.splice(index, 1);
+                              form.setValue("albums", albums);
                             }}
-                            name={`${name}.trackNumber`}
-                            type="number"
-                            label="Track number"
-                          />
-                        </Stack>
-                        <Stack flexDirection="row" alignItems="center">
-                          <TextField
-                            variant="outlined"
-                            margin="dense"
-                            fullWidth
-                            required
-                            name={`${name}.name`}
-                            type="text"
-                            label="Track name"
-                            InputProps={{
-                              endAdornment: (
-                                <TrackNameAdornment
-                                  sourceName="name"
-                                  destinationName={`${name}.name`}
-                                />
-                              ),
-                            }}
-                          />
-                          <IconButton
-                            color="primary"
-                            aria-label="Delete album item"
-                            onClick={() => fields.remove(idx)}
                           >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                        <Divider sx={dividerRowSx} />
-                      </Fragment>
-                    ))}
-                    <Field name="name" subscription={{ value: true }}>
-                      {({ input: { value } }) => (
-                        <Button
-                          fullWidth
-                          variant="outlined"
-                          color="secondary"
-                          startIcon={<AddIcon />}
-                          onClick={() => {
-                            console.log(values);
-                            fields.push({
-                              album: null,
-                              trackNumber: null,
-                              diskNumber: null,
-                              name: value ?? "",
-                            });
-                          }}
-                        >
-                          Add Album
-                        </Button>
-                      )}
-                    </Field>
-                  </>
-                )}
-              </FieldArray>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose} color="primary">
+                            <Trash />
+                          </Button>
+                        </div>
+
+                        <div className="flex gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`albums.${index}.diskNumber`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>Disk number</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center">
+                                    <Disc3 className="mr-2" />
+                                    <Input
+                                      type="number"
+                                      {...field}
+                                      onChange={(e) =>
+                                        field.onChange(e.target.valueAsNumber)
+                                      }
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`albums.${index}.trackNumber`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>Track number</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center">
+                                    <Music className="mr-2" />
+                                    <Input
+                                      type="number"
+                                      {...field}
+                                      onChange={(e) =>
+                                        field.onChange(e.target.valueAsNumber)
+                                      }
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`albums.${index}.name`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>Track name</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center gap-2">
+                                    <Input {...field} />
+                                    <TrackNameAdornment
+                                      form={form}
+                                      sourceName="name"
+                                      destinationName={`albums.${index}.name`}
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <Separator className="my-4" />
+                    </Fragment>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const albums = form.getValues("albums") || [];
+                      form.setValue("albums", [
+                        ...albums,
+                        {
+                          name: form.getValues("name") ?? "",
+                        },
+                      ]);
+                    }}
+                  >
+                    <Plus />
+                    Add Album
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <SheetFooter className="flex-row justify-end">
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button
-                disabled={submitting}
-                onClick={handleSubmit}
-                color="primary"
-              >
+              <Button type="submit" disabled={form.formState.isSubmitting}>
                 {create ? "Create" : "Update"}
               </Button>
-            </DialogActions>
-          </>
-        )}
-      </Form>
-    </Dialog>
+            </SheetFooter>
+          </form>
+        </Form>
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -7,6 +7,10 @@ import { Fragment } from "react";
 import { apiBaseUrl } from "@/utils/consts";
 import { Tag } from "@lyricova/api/graphql/types";
 
+export const metadata = {
+  title: "Documentation",
+};
+
 const recursive = Recursive({
   subsets: ["latin"],
   weight: "variable",

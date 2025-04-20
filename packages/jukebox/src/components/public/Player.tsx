@@ -1,22 +1,15 @@
-import type { Theme } from "@mui/material";
+import React, { CSSProperties } from "react";
+import { CardContent } from "@lyricova/components/components/ui/card";
+import { Button } from "@lyricova/components/components/ui/button";
 import {
-  CardContent,
-  Typography,
-  IconButton,
-  ButtonBase,
-  useMediaQuery,
-  Box,
-  Stack,
-} from "@mui/material";
-import type { CSSProperties } from "react";
-import React from "react";
-import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
-import SkipNextIcon from "@mui/icons-material/SkipNext";
-import ShuffleIcon from "@mui/icons-material/Shuffle";
-import RepeatOneIcon from "@mui/icons-material/RepeatOne";
-import RepeatIcon from "@mui/icons-material/Repeat";
-import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
-import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
+  Shuffle,
+  Repeat,
+  Repeat1,
+  SkipBack,
+  SkipForward,
+  ChevronsDownUp,
+  ChevronsUpDown,
+} from "lucide-react";
 import type { Track } from "./AppContext";
 import { useAppContext } from "./AppContext";
 import { TimeSlider } from "./TimeSlider";
@@ -30,6 +23,7 @@ import {
   setLoopMode,
   toggleShuffle,
 } from "../../redux/public/playlist";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const LOOP_MODE_SWITCH = {
   all: "single",
@@ -59,8 +53,7 @@ export default function Player() {
   const currentSong = useAppSelector(currentSongSelector);
   const { playerRef } = useAppContext();
 
-  const isFlatPlayer =
-    useMediaQuery((theme) => theme.breakpoints.up("sm")) && isCollapsed;
+  const isFlatPlayer = useMediaQuery("(min-width: 768px)") && isCollapsed;
 
   const nextTrack = () => dispatch(playNext(!playerRef?.current.paused));
   const previousTrack = () =>
@@ -71,170 +64,111 @@ export default function Player() {
 
   const loopModeButton = {
     all: (
-      <IconButton
+      <Button
         id="player-loop-mode"
-        color="default"
+        variant="ghost"
+        size="icon"
         aria-label="Repeat all"
         onClick={switchLoopMode}
       >
-        <RepeatIcon />
-      </IconButton>
+        <Repeat />
+      </Button>
     ),
     single: (
-      <IconButton
+      <Button
         id="player-loop-mode"
-        color="default"
+        variant="ghost"
+        size="icon"
         aria-label="Repeat one"
         onClick={switchLoopMode}
       >
-        <RepeatOneIcon />
-      </IconButton>
+        <Repeat1 />
+      </Button>
     ),
     none: (
-      <IconButton
+      <Button
         id="player-loop-mode"
-        color="default"
+        variant="ghost"
+        size="icon"
         aria-label="No repeat"
-        style={{ opacity: 0.5 }}
         onClick={switchLoopMode}
       >
-        <RepeatIcon />
-      </IconButton>
+        <Repeat className="opacity-50" />
+      </Button>
     ),
   };
 
   return (
     <CardContent
-      sx={{
-        padding: 2,
-        ...(isCollapsed && { height: { xs: "12.5rem", sm: "auto" } }),
-      }}
+      className="p-4 group/player data-[collapsed]:h-52 data-[collapsed]:md:h-auto"
+      data-collapsed={isCollapsed || undefined}
+      data-flat={isFlatPlayer || undefined}
     >
-      <ButtonBase
-        sx={{
-          width: "4rem",
-          height: "4rem",
-          float: "left",
-          marginRight: "0.75rem",
-          borderRadius: 1,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          transition: "box-shadow 0.5s, background-image 0.5s",
-          "&:hover, &:focus": {
-            boxShadow: 2,
-          },
-          "& > .backdrop": {
-            opacity: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            width: "100%",
-            height: "100%",
-            transition: "opacity 0.5s",
-            borderRadius: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          },
-          "&:hover > .backdrop, &:focus > .backdrop": {
-            opacity: 1,
-          },
-        }}
+      <button
         aria-label={isCollapsed ? "Expand player" : "Collapse player"}
-        style={generateBackgroundStyle(currentSong)}
         onClick={() => dispatch(setCollapsed(!isCollapsed))}
+        style={generateBackgroundStyle(currentSong)}
+        className="group/toggle w-16 h-16 float-left mr-3 rounded bg-cover bg-center transition-shadow duration-500 focus:outline-none hover:shadow"
       >
-        <div className="backdrop">
-          {isCollapsed ? <UnfoldMoreIcon /> : <UnfoldLessIcon />}
+        <div className="flex items-center justify-center w-full h-full rounded bg-black/50 opacity-0 group-hover/toggle:opacity-100 transition-opacity">
+          {isCollapsed ? <ChevronsUpDown /> : <ChevronsDownUp />}
         </div>
-      </ButtonBase>
-      <Box
-        sx={
-          isFlatPlayer
-            ? { marginTop: "-0.3rem", marginBottom: "-0.3rem" }
-            : undefined
-        }
-      >
-        <Typography
-          variant={isFlatPlayer ? "subtitle1" : "h6"}
-          component={isFlatPlayer ? "span" : null}
-          noWrap={true}
-        >
+      </button>
+      <div className="group-data-[flat]/player:-my-1.5 group-data-[flat]/player:md:truncate">
+        <span className="truncate block font-semibold text-xl group-data-[flat]/player:text-base group-data-[flat]/player:inline">
           {currentSong?.trackName || "No title"}
-        </Typography>
-        {isFlatPlayer && " / "}
-        <Typography
-          variant="subtitle1"
-          component={isFlatPlayer ? "span" : null}
-          sx={{ opacity: isFlatPlayer ? 0.75 : 1 }}
-          noWrap={true}
-        >
+        </span>
+        <span className="hidden group-data-[flat]/player:inline-block mb-1 mx-2">
+          {" "}
+          /{" "}
+        </span>
+        <span className="truncate text-lg block group-data-[flat]/player:text-base group-data-[flat]/player:text-muted-foreground group-data-[flat]/player:inline">
           {currentSong?.artistName || "Unknown artists"}
-        </Typography>
-      </Box>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-around"
-        sx={
-          isCollapsed
-            ? {
-                flexWrap: { xs: "wrap", sm: "inherit" },
-                width: { xs: "100%", sm: "auto" },
-                marginBottom: { sm: "-1rem" },
-                marginTop: { sm: "0.5rem" },
-                "& #player-previous": {
-                  order: { sm: -3 },
-                  marginLeft: { sm: "-0.5rem" },
-                },
-                "& #player-play-pause": {
-                  order: { sm: -2 },
-                },
-                "& #player-next": {
-                  order: { sm: -2 },
-                },
-                "& #player-time-slider": {
-                  margin: { sm: "0 1rem" },
-                },
-              }
-            : {
-                flexWrap: "wrap",
-                width: "100%",
-              }
-        }
-      >
+        </span>
+      </div>
+      <div className="flex flex-row items-center justify-around flex-wrap w-full group-data-[collapsed]/player:flex-wrap group-data-[collapsed]/player:md:flex-nowrap group-data-[collapsed]/player:w-full group-data-[collapsed]/player:md:w-auto -group-data-[collapsed]/player:md:mb-4 group-data-[collapsed]/player:md:mt-2">
         <TimeSlider
+          className="mt-2 group-data-[collapsed]/player:md:mt-0 group-data-[collapsed]/player:md:mx-2"
           playerRef={playerRef}
           disabled={nowPlaying === null}
           isCollapsed={isCollapsed}
         />
-        <IconButton
+        <Button
           id="player-shuffle"
-          color="default"
+          variant="ghost"
+          size="icon"
           aria-label="Shuffle"
-          style={{ opacity: shuffleMapping ? 1 : 0.5 }}
           disabled={tracks.length < 2}
           onClick={toggleShuffleHandler}
         >
-          <ShuffleIcon />
-        </IconButton>
-        <IconButton
+          <Shuffle className={shuffleMapping ? "" : "opacity-50"} />
+        </Button>
+        <Button
           id="player-previous"
-          color="default"
+          variant="ghost"
+          size="icon"
           aria-label="Previous track"
+          className="group-data-[collapsed]/player:md:-order-3 group-data-[flat]/player:md:-ml-2"
           onClick={previousTrack}
         >
-          <SkipPreviousIcon />
-        </IconButton>
-        <PlayButton playerRef={playerRef} />
-        <IconButton
+          <SkipBack />
+        </Button>
+        <PlayButton
+          playerRef={playerRef}
+          className="group-data-[collapsed]/player:md:-order-2"
+        />
+        <Button
           id="player-next"
-          color="default"
+          variant="ghost"
+          size="icon"
           aria-label="Next track"
+          className="group-data-[collapsed]/player:md:-order-2"
           onClick={nextTrack}
         >
-          <SkipNextIcon />
-        </IconButton>
+          <SkipForward />
+        </Button>
         {loopModeButton[loopMode]}
-      </Stack>
+      </div>
     </CardContent>
   );
 }

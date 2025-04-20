@@ -1,6 +1,10 @@
 import { getScreensaverData } from "../screensaverData";
 import GlucagonScreensaver from "./screensaver";
 
+export const metadata = {
+  title: "Glucagon",
+};
+
 export default async function Screensaver({
   searchParams,
 }: {

@@ -4,13 +4,13 @@ import type {
 } from "@lyricova/api/graphql/types";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
-import { Box } from "@mui/material";
 import Balancer from "react-wrap-balancer";
 import type { RefObject } from "react";
-import { useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import type { MeasuredComponentProps } from "react-measure";
 import Measure from "react-measure";
 import { Scene } from "react-scenejs";
+import { cn } from "@lyricova/components/utils";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -160,9 +160,9 @@ function LyricsLineElement({
   width,
   progressorRef,
 }: LyricsLineElementProps) {
-  const textRef = useRef<SVGTextElement>();
-  const sizerRef = useRef<HTMLDivElement>();
-  const canvasRef = useRef<SVGSVGElement>();
+  const textRef = useRef<SVGTextElement>(null);
+  const sizerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<SVGSVGElement>(null);
   const animate = duration >= ANIMATION_THRESHOLD;
 
   useEffect(() => {
@@ -210,22 +210,12 @@ function LyricsLineElement({
   return (
     <div>
       <div lang="ja">
-        <Box
+        <div
           ref={sizerRef}
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 32,
-            right: 32,
-            lineHeight: 1,
-            fontWeight: 600,
-            fontSize: "4em",
-            zIndex: -1,
-            opacity: 0,
-          }}
+          className="absolute top-0 left-8 right-8 leading-none font-semibold text-7xl -z-10 opacity-0"
         >
-          <span style={{ display: "inline-block" }} />
-        </Box>
+          <span className="inline-block" />
+        </div>
         {/* @ts-expect-error Scene is an JSX element. */}
         <Scene
           keyframes={animate ? keyframes : null}
@@ -243,13 +233,9 @@ function LyricsLineElement({
               y="1em"
               id="svgText"
               lang="ja"
+              className="font-semibold leading-[1.2] text-[4em] fill-white/80 stroke-white/80 stroke-1"
               style={{
-                fontWeight: 600,
-                lineHeight: 1.2,
-                fontSize: "4em",
-                fill: "rgba(255, 255, 255, 0.8)",
-                stroke: "rgba(255, 255, 255, 0.8)",
-                strokeWidth: 1,
+                // strokeDasharray and strokeDashoffset are likely initial animation values, keep inline
                 strokeDasharray: 600,
                 strokeDashoffset: 600,
               }}
@@ -259,23 +245,15 @@ function LyricsLineElement({
         </Scene>
       </div>
       {line.attachments?.translation && (
-        <Box
+        <div
           lang="zh"
-          className={translationClassName}
-          sx={{
-            display: "block",
-            fontSize: "2.2em",
-            // backgroundSize: "cover",
-            // backgroundPosition: "center",
-            // backgroundAttachment: "fixed",
-            lineHeight: 1.2,
-            fontWeight: 600,
-            color: "rgba(255, 255, 255, 0.6)",
-            // filter: "var(--jukebox-cover-filter-bright)",
-          }}
+          className={cn(
+            "block text-4xl leading-tight font-semibold text-white/60",
+            translationClassName
+          )}
         >
           <Balancer>{line.attachments.translation}</Balancer>
-        </Box>
+        </div>
       )}
     </div>
   );
@@ -287,7 +265,7 @@ interface Props {
 
 export function StrokeLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
-  const progressorRef = useRef<Scene>();
+  const progressorRef = useRef<Scene>(null);
 
   const { currentFrame, currentFrameId, endTime, playerState } =
     usePlainPlayerLyricsState(lyrics, playerRef);
@@ -314,7 +292,7 @@ export function StrokeLyrics({ lyrics }: Props) {
     // Player progress is not included to prevent animation loop.
   }, [playerState.state, currentFrame, currentFrameId, lyrics.lines.length]);
 
-  let lineElement: (width: number) => JSX.Element | null = () => null;
+  let lineElement: (width: number) => React.ReactNode | null = () => null;
   if (currentFrame !== null) {
     const start = currentFrame.start;
     const end = endTime;
@@ -330,21 +308,12 @@ export function StrokeLyrics({ lyrics }: Props) {
   }
 
   return (
-    <Box
-      sx={{
-        padding: 4,
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-      }}
-    >
+    <div className="p-8 w-full h-full flex flex-col justify-center">
       <Measure bounds>
         {({ contentRect, measureRef }: MeasuredComponentProps) => (
           <div ref={measureRef}>{lineElement(contentRect.bounds.width)}</div>
         )}
       </Measure>
-    </Box>
+    </div>
   );
 }

@@ -1,5 +1,4 @@
-import type { AvatarProps } from "@mui/material";
-import { Avatar, styled } from "@mui/material";
+import { cn } from "@lyricova/components/utils";
 import _ from "lodash";
 import { useMemo } from "react";
 
@@ -722,29 +721,28 @@ export function hash(str: string): number {
   return hash >>> 0;
 }
 
-const StyledAvatar = styled(Avatar)({
-  color: "white",
-});
-
-interface Props extends AvatarProps {
+interface Props extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
   slug: string;
 }
 
 export default function PlaylistAvatar(props: Props) {
-  const { name, slug, ...avatarProps } = props;
+  const { name, slug, className, ...others } = props;
   const initial = useMemo(() => initials(name), [name]);
   const gradient = useMemo(
     () => gradients[hash(slug) % gradients.length].colors.join(", "),
     [slug]
   );
   return (
-    <StyledAvatar
+    <div
       style={{ background: `linear-gradient(135deg, ${gradient})` }}
-      variant="rounded"
-      {...avatarProps}
+      className={cn(
+        "rounded-md text-white flex items-center justify-center",
+        className
+      )}
+      {...others}
     >
       {initial}
-    </StyledAvatar>
+    </div>
   );
 }

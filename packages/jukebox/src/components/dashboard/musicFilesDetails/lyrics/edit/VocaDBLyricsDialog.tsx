@@ -1,23 +1,24 @@
 import { useCallback } from "react";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  ListItemText,
-  Typography,
-} from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
 import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
 import { Link } from "@lyricova/components";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import TooltipIconButton from "../../../TooltipIconButton";
-import { useSnackbar } from "notistack";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@lyricova/components/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { toast } from "sonner";
+import { Copy } from "lucide-react";
 
 const VOCADB_LYRICS_QUERY = gql`
   query ($id: Int!) {
@@ -43,8 +44,6 @@ export default function VocaDBLyricsDialog({
   toggleOpen,
   songId,
 }: Props) {
-  const snackbar = useSnackbar();
-
   const handleClose = useCallback(() => {
     toggleOpen(false);
   }, [toggleOpen]);
@@ -53,6 +52,7 @@ export default function VocaDBLyricsDialog({
     VOCADB_LYRICS_QUERY,
     {
       variables: { id: songId },
+      skip: !isOpen || !songId, // Skip query if dialog is not open or songId is missing
     }
   );
 
@@ -60,88 +60,106 @@ export default function VocaDBLyricsDialog({
     (text: string) => async () => {
       navigator.clipboard.writeText(text).then(
         function () {
-          snackbar.enqueueSnackbar("Copied!", { variant: "success" });
+          toast.success("Copied!");
         },
         function (err) {
           console.error("Could not copy text: ", err);
-          snackbar.enqueueSnackbar(`Failed to copy: ${err}`, {
-            variant: "error",
-          });
+          toast.error(`Failed to copy: ${err}`);
         }
       );
     },
-    [snackbar]
+    []
   );
 
-  let content = <DialogContentText>Loading...</DialogContentText>;
+  let content = <DialogDescription>Loading...</DialogDescription>;
   if (query.error) {
     content = (
-      <DialogContentText>
+      <DialogDescription className="text-destructive">
         Error occurred while loading lyrics: {`${query.error}`}
-      </DialogContentText>
+      </DialogDescription>
     );
   } else if (query.data) {
     if (query.data.vocaDBLyrics.length < 1) {
       content = (
-        <DialogContentText>
+        <DialogDescription>
           No lyrics found form VocaDB.{" "}
-          <Link href={`https://vocadb.net/S/${songId}`}>Contribute one?</Link>
-        </DialogContentText>
+          {songId && (
+            <Link
+              href={`https://vocadb.net/S/${songId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              Contribute one?
+            </Link>
+          )}
+        </DialogDescription>
       );
     } else {
       content = (
-        <List>
+        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
           {query.data.vocaDBLyrics.map((v) => (
-            <ListItem key={v.id}>
-              <ListItemText disableTypography>
-                <Typography variant="body1" component="span" display="block">
+            <div
+              key={v.id}
+              className="flex items-center justify-between p-2 border rounded"
+            >
+              <div className="flex-1 overflow-hidden mr-2">
+                <p className="text-sm font-medium">
                   {v.translationType} ({v.cultureCodes?.join(", ") || "Unknown"}
                   {v.source && (
                     <>
-                      , <Link href={v.url}>{v.source}</Link>
+                      ,{" "}
+                      <Link
+                        href={v.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        {v.source}
+                      </Link>
                     </>
                   )}
                   )
-                </Typography>
-                <Typography
-                  variant="body2"
-                  component="span"
-                  display="block"
-                  color="textSecondary"
-                  noWrap
-                >
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
                   {v.value}
-                </Typography>
-              </ListItemText>
-              <ListItemSecondaryAction>
-                <TooltipIconButton
-                  title="Copy lyrics"
-                  onClick={copyText(v.value)}
-                >
-                  <ContentCopyIcon />
-                </TooltipIconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
+                </p>
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={copyText(v.value)}
+                      aria-label="Copy lyrics"
+                    >
+                      <Copy />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Copy lyrics</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           ))}
-        </List>
+        </div>
       );
     }
   }
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="form-dialog-title"
-      scroll="paper"
-    >
-      <DialogTitle>Retrieve lyrics from VocaDB</DialogTitle>
-      <DialogContent>{content}</DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="primary">
-          Close
-        </Button>
-      </DialogActions>
+    <Dialog open={isOpen} onOpenChange={toggleOpen}>
+      <DialogContent className="sm:max-w-[625px]">
+        <DialogHeader>
+          <DialogTitle>Retrieve lyrics from VocaDB</DialogTitle>
+        </DialogHeader>
+        {content}
+        <DialogFooter>
+          <Button onClick={handleClose}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

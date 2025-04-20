@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/tailwindGlobal.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@lyricova/components/components",
+    "utils": "@lyricova/components/utils",
+    "ui": "@lyricova/components/components/ui",
+    "lib": "@lyricova/components/lib",
+    "hooks": "@lyricova/components/hooks"
+  },
+  "iconLibrary": "lucide"
+}

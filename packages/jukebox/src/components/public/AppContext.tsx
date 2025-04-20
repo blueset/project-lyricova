@@ -1,4 +1,4 @@
-import type { RefObject, ReactChild} from "react";
+import type { ReactNode, RefObject } from "react";
 import React, { useContext } from "react";
 import type { MusicFile } from "@lyricova/api/graphql/types";
 
@@ -53,7 +53,7 @@ PlayerRefContext.displayName = "PlayerRefContext";
 
 export interface ContextProps {
   playerRef: RefObject<HTMLAudioElement>;
-  children?: ReactChild;
+  children?: ReactNode;
 }
 export function AppContext({ playerRef, children }: ContextProps) {
   return (

@@ -17,12 +17,11 @@ export async function generateMetadataData(
   const response = await fetch(`${apiBaseUrl}/artists/${artistId}`, {
     cache: "no-store",
   });
-  const { artist }: { artist: Artist } = await response.json();
-
+  const artist: Artist = await response.json();
   const typeName = getTypeName(artist.type);
 
   return {
-    title: `${typeName} Archive of ${artist.name} – Page ${page} – ${siteName}`,
+    title: `${typeName} Archive of ${artist.name} – Page ${page}`,
     description: `${typeName} Archive of ${artist.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`,
     openGraph: {
       title: `${typeName} Archive of ${artist.name} – Page ${page} – ${siteName}`,

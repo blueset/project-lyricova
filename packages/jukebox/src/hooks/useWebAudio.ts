@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { WebAudioPlayerState } from "./types";
 
-
 let globalAudioContext: AudioContext | undefined = undefined;
 let globalAudioGain: GainNode | undefined = undefined;
 
@@ -34,7 +33,9 @@ export function useWebAudio(mediaUrl: string) {
   }, []);
 
   // File-scope variables
-  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | undefined>(cachedWebAudioBuffer[mediaUrl]);
+  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | undefined>(
+    cachedWebAudioBuffer[mediaUrl]
+  );
   useEffect(() => {
     let active = true;
     (window.requestIdleCallback ?? window.setTimeout)(load);
@@ -63,8 +64,9 @@ export function useWebAudio(mediaUrl: string) {
         if (!active) return;
         const arrayBuffer = await response.arrayBuffer();
         if (!active) return;
-        cachedWebAudioBuffer[mediaUrl] = await audioContext.decodeAudioData(arrayBuffer);
-        // console.log("update buffer", cachedWebAudioBuffer[mediaUrl]);
+        cachedWebAudioBuffer[mediaUrl] = await audioContext.decodeAudioData(
+          arrayBuffer
+        );
       }
       if (!active) return;
       setAudioBuffer(cachedWebAudioBuffer[mediaUrl]);
@@ -79,6 +81,7 @@ export function useWebAudio(mediaUrl: string) {
   });
   const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
   playerStatusRef.current = playerStatus;
+  const bufferSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
   const getBufferSource = useCallback(() => {
     const bufferSource = audioContext.createBufferSource();
@@ -86,6 +89,7 @@ export function useWebAudio(mediaUrl: string) {
     bufferSource.buffer = audioBuffer;
     bufferSource.connect(audioGain);
     bufferSource.playbackRate.value = playerStatus.rate;
+    bufferSourceRef.current = bufferSource;
     return bufferSource;
   }, [audioContext, audioBuffer, audioGain]);
 
@@ -117,6 +121,8 @@ export function useWebAudio(mediaUrl: string) {
       if (ps.state === "playing" && ps.bufferSource) {
         ps.bufferSource?.stop();
         ps.bufferSource?.disconnect();
+        bufferSourceRef.current?.stop();
+        bufferSourceRef.current?.disconnect();
       }
       return { state: "paused", rate: playerStatus.rate, progress };
     });
@@ -133,6 +139,8 @@ export function useWebAudio(mediaUrl: string) {
           if (ps.state === "playing" && ps.bufferSource) {
             ps.bufferSource?.stop();
             ps.bufferSource?.disconnect();
+            bufferSourceRef.current?.stop();
+            bufferSourceRef.current?.disconnect();
           }
           const bufferSource = getBufferSource();
           bufferSource.start(audioContext.currentTime, progress);

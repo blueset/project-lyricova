@@ -43,14 +43,13 @@ function convertLine(line: LyricsLine): string {
 }
 
 export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
-  const playerRef = useRef<HTMLVideoElement>();
+  const playerRef = useRef<HTMLVideoElement>(null);
   const lyrics = useMemo(() => {
     if (!lyricsString) return null;
     try {
       return new Lyrics(lyricsString);
     } catch (e) {
       console.error("Error while parsing lyrics", e);
-      // snackbar.enqueueSnackbar(`Error while parsing lyrics: ${e}`, { variant: "error" });
       return null;
     }
   }, [lyricsString]);
@@ -64,8 +63,10 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
     webvtt +=
       'STYLE\n::cue(.tt) {\n  font-variant-numeric: "tabular-nums";\n}\n\n';
     webvtt += "STYLE\n::cue(.pndg) {\n  opacity: 0.3;\n}\n\n";
-    webvtt += "STYLE\n::cue(.min) {\n  font-size: 0.75em;\n  color: #00ffff;\n}\n\n";
-    webvtt += "STYLE\n::cue(.lang) {\n  font-size: 0.7em;\n  color: #ffff00;\n}\n\n";
+    webvtt +=
+      "STYLE\n::cue(.min) {\n  font-size: 0.75em;\n  color: #00ffff;\n}\n\n";
+    webvtt +=
+      "STYLE\n::cue(.lang) {\n  font-size: 0.7em;\n  color: #ffff00;\n}\n\n";
 
     const trackNumbers = lyrics.lines
       .flatMap((line, idx, arr) => [
@@ -74,8 +75,8 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
           idx,
           time: _.round(
             line.attachments?.timeTag?.tags?.at(-1)?.timeTag
-            ? line.attachments.timeTag.tags.at(-1)?.timeTag + line.position
-            : arr[idx + 1]?.position ?? line.position + 10, 
+              ? line.attachments.timeTag.tags.at(-1)?.timeTag + line.position
+              : arr[idx + 1]?.position ?? line.position + 10,
             3
           ),
           offset: -1,
@@ -118,7 +119,9 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
         const role = (v.attachments.role ?? 0) % 3;
         const align = role === 0 ? "start" : role === 1 ? "end" : "middle";
         const minor = v.attachments.minor ? ".min" : "";
-        const metadata = `#${idx}${vttOffsiteLine !== 0 ? "&" + vttOffsiteLine : ""}${role !== 0 ? "R" + role : ""}${v.attachments.minor ? "Min" : ""}`;
+        const metadata = `#${idx}${
+          vttOffsiteLine !== 0 ? "&" + vttOffsiteLine : ""
+        }${role !== 0 ? "R" + role : ""}${v.attachments.minor ? "Min" : ""}`;
         if (v.attachments.timeTag?.tags) {
           const base = v.content;
           const timeTags = v.attachments.timeTag?.tags;
@@ -173,21 +176,23 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
   }, []);
 
   return (
-    <div>
-      <video
-        ref={playerRef}
-        src={`/api/files/${fileId}/file`}
-        controls
-        style={{ width: "calc(100vw - 5em)", height: "calc(100vh - 10em)" }}
-      >
-        <track
-          src={trackDataUrl}
-          kind="subtitles"
-          srcLang="ja"
-          label="LRCX Preview"
-          default
-        />
-      </video>
-    </div>
+    <video
+      ref={playerRef}
+      src={`/api/files/${fileId}/file`}
+      controls
+      style={{
+        // width: "calc(100vw - 5em)", height: "calc(100vh - 10em)"
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      <track
+        src={trackDataUrl}
+        kind="subtitles"
+        srcLang="ja"
+        label="LRCX Preview"
+        default
+      />
+    </video>
   );
 }

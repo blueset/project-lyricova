@@ -13,6 +13,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
+    "rootDir": "..",
     "paths": {
       "*": ["node_modules/*", "src/types"],
       "@/*": ["src/*"]

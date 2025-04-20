@@ -1,6 +1,5 @@
 import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
 import { useAppContext } from "../AppContext";
-import { Box } from "@mui/material";
 import type { CSSProperties } from "react";
 import { useRef } from "react";
 import { usePlayerLyricsTypingState } from "../../../hooks/usePlayerLyricsTypingState";
@@ -11,8 +10,8 @@ interface Props {
 
 export function TypingStackedLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
-  const doneRef = useRef<HTMLSpanElement>();
-  const typingRef = useRef<HTMLSpanElement>();
+  const doneRef = useRef<HTMLSpanElement>(null);
+  const typingRef = useRef<HTMLSpanElement>(null);
 
   const { sequenceQuery, currentFrameId } = usePlayerLyricsTypingState(
     lyrics,
@@ -33,23 +32,18 @@ export function TypingStackedLyrics({ lyrics }: Props) {
     node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
   else if (sequenceQuery.data) {
     node = (
-      <div style={{ fontSize: "3em", fontWeight: 600, marginBottom: "0.5rem" }}>
+      <div className="text-5xl font-semibold mb-2">
         <span ref={doneRef} />
-        <span ref={typingRef} style={{ backgroundColor: "#ffffff80" }} />
+        <span ref={typingRef} className="bg-white/50" />
       </div>
     );
   }
 
   return (
-    <Box
-      sx={
+    <div
+      className="size-full overflow-hidden flex justify-start flex-col px-8"
+      style={
         {
-          width: "100%",
-          height: "100%",
-          overflow: "hidden",
-          display: "flex",
-          justifyContent: "start",
-          flexDirection: "column",
           maskBorderImageSource:
             "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
           maskBorderImageSlice: "0 49% fill",
@@ -58,11 +52,10 @@ export function TypingStackedLyrics({ lyrics }: Props) {
             "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
           maskBoxImageSlice: "0 49% fill",
           maskBoxImageWidth: "0 40px",
-          padding: "0 2rem",
-          "-webkit-mask-box-image-source":
+          WebkitMaskBoxImageSource:
             "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          "-webkit-mask-box-image-slice": "49% 0 fill",
-          "-webkit-mask-box-image-width": "0 0 40px",
+          WebkitMaskBoxImageSlice: "49% 0 fill",
+          WebkitMaskBoxImageWidth: "0 0 40px",
         } as unknown as CSSProperties
       }
       lang="ja"
@@ -73,14 +66,7 @@ export function TypingStackedLyrics({ lyrics }: Props) {
           .map((v, idx) => {
             if (idx >= currentFrameId || idx < currentFrameId - 30) return null;
             return (
-              <Box
-                sx={{
-                  fontSize: "2em",
-                  opacity: 0.7,
-                  marginBottom: "0.5rem",
-                }}
-                key={idx}
-              >
+              <div className="text-3xl opacity-70 mb-2" key={idx}>
                 {v
                   .map((vv) =>
                     vv.sequence.length > 0
@@ -88,10 +74,10 @@ export function TypingStackedLyrics({ lyrics }: Props) {
                       : ""
                   )
                   .join("")}
-              </Box>
+              </div>
             );
           })
           .reverse()}
-    </Box>
+    </div>
   );
 }

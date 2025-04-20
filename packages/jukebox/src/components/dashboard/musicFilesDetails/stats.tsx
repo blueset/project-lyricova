@@ -1,13 +1,22 @@
 import { DocumentNode, gql, useApolloClient } from "@apollo/client";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Grid, Button } from "@mui/material";
-import { finalFormMutators } from "@lyricova/components";
-import { DateTimePicker, TextField, makeValidate } from "mui-rff";
-import { useSnackbar } from "notistack";
-import { Form } from "react-final-form";
-import * as yup from "yup";
-import dayjs from "dayjs";
+import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { parseISO } from "date-fns";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@lyricova/components/components/ui/form";
+import { Input } from "@lyricova/components/components/ui/input";
+import { Button } from "@lyricova/components/components/ui/button";
+import { DateTimePicker } from "@lyricova/components/components/ui/datetime-picker";
+import { DateTimeInput } from "@lyricova/components/components/ui/datetime-input";
 
 const UPDATE_MUSIC_FILE_STATS_MUTATION = gql`
   mutation ($fileId: Int!, $playCount: Int!, $lastPlayed: Date) {
@@ -21,13 +30,17 @@ const UPDATE_MUSIC_FILE_STATS_MUTATION = gql`
   }
 ` as DocumentNode;
 
-interface FormProps {
-  playCount?: number;
-  lastPlayed?: dayjs.Dayjs;
-}
+const formSchema = z.object({
+  playCount: z.number().min(0, "Play count must be 0 or greater").optional(),
+  lastPlayed: z.date().optional(),
+});
 
-interface Props extends FormProps {
+type FormSchema = z.infer<typeof formSchema>;
+
+interface Props {
   fileId: number;
+  playCount?: number;
+  lastPlayed?: string | Date;
   refresh: () => unknown | Promise<unknown>;
 }
 
@@ -38,84 +51,101 @@ export default function StatsPanel({
   refresh,
 }: Props) {
   const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
+  const form = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    values: {
+      playCount: playCount ?? 0,
+      lastPlayed: lastPlayed ? parseISO(lastPlayed.toString()) : undefined,
+    },
+    resetOptions: {
+      keepDefaultValues: true,
+    },
+  });
+
+  const onSubmit = async (values: FormSchema) => {
+    try {
+      const result = await apolloClient.mutate<{
+        updateMusicFileStats: { trackName: string };
+      }>({
+        mutation: UPDATE_MUSIC_FILE_STATS_MUTATION,
+        variables: {
+          fileId,
+          playCount: values.playCount,
+          lastPlayed: values.lastPlayed?.valueOf() ?? null,
+        },
+      });
+
+      if (result.data?.updateMusicFileStats?.trackName) {
+        toast.success(
+          `Stats of "${result.data?.updateMusicFileStats?.trackName}" is successfully updated.`
+        );
+        await refresh();
+      }
+    } catch (e) {
+      console.error("Error occurred while updating stats.", e);
+      toast.error(`Error occurred while updating stats: ${e}`);
+    }
+  };
 
   return (
-    <Form<FormProps>
-      mutators={{ ...finalFormMutators }}
-      initialValues={{ playCount, lastPlayed: dayjs(lastPlayed) }}
-      validate={makeValidate(
-        yup.object({
-          playCount: yup.object().optional(),
-        })
-      )}
-      onSubmit={async (values) => {
-        try {
-          const result = await apolloClient.mutate<{
-            updateMusicFileStats: { trackName: string };
-          }>({
-            mutation: UPDATE_MUSIC_FILE_STATS_MUTATION,
-            variables: {
-              fileId,
-              playCount: values.playCount,
-              lastPlayed: values.lastPlayed?.valueOf() ?? null,
-            },
-          });
-          if (result.data?.updateMusicFileStats?.trackName) {
-            snackbar.enqueueSnackbar(
-              `Stats of “${result.data?.updateMusicFileStats?.trackName}” is successfully updated.`,
-              { variant: "success" }
-            );
-            await refresh();
-          }
-        } catch (e) {
-          console.error("Error occurred while updating stats.", e);
-          snackbar.enqueueSnackbar(
-            `Error occurred while updating stats: ${e}`,
-            {
-              variant: "error",
-            }
-          );
-        }
-      }}
-    >
-      {({ handleSubmit, submitting }) => (
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            <Grid size={12}>
-              <TextField
-                name="playCount"
-                label="Play Count"
-                type="number"
-                fullWidth
-                disabled={submitting}
-                variant="outlined"
-              />
-            </Grid>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <Grid size={12}>
-                <DateTimePicker
-                  name="lastPlayed"
-                  label="Last Played"
-                  disabled={submitting}
-                  ampm={false}
-                  format="YYYY-MM-DD HH:mm:ss"
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="@2xl/dashboard:space-y-4"
+      >
+        <FormField
+          control={form.control}
+          name="playCount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Play Count</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  {...field}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  disabled={form.formState.isSubmitting}
                 />
-              </Grid>
-            </LocalizationProvider>
-            <Grid size={12}>
-              <Button
-                type="submit"
-                variant="outlined"
-                color="secondary"
-                disabled={submitting}
-              >
-                Update
-              </Button>
-            </Grid>
-          </Grid>
-        </form>
-      )}
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="lastPlayed"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Last Played</FormLabel>
+              <FormControl>
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  timePicker={{ hour: true, minute: true, second: true }}
+                  renderTrigger={({ open, value, setOpen }) => (
+                    <DateTimeInput
+                      value={value}
+                      onChange={(x) => !open && field.onChange(x)}
+                      disabled={open || form.formState.isSubmitting}
+                      onCalendarClick={() => setOpen(!open)}
+                    />
+                  )}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button
+          type="submit"
+          variant="outline"
+          disabled={form.formState.isSubmitting}
+        >
+          Update
+        </Button>
+      </form>
     </Form>
   );
 }

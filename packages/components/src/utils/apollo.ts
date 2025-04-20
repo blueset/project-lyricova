@@ -40,9 +40,6 @@ const link = (() => {
   if (process.browser) {
     const protocol = location.protocol === "http:" ? "ws:" : "wss:";
     let wsPort = location.port;
-    if (process.env.NODE_ENV === "development") {
-      wsPort = "30001";
-    }
     const wsHost = location.hostname + (wsPort ? ":" + wsPort : "");
     const wsLink = new GraphQLWsLink(
       createClient({

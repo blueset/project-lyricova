@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@mui/material";
+import { Button } from "@lyricova/components/components/ui/button";
 import { LS_JWT_KEY } from "@lyricova/components";
 import { useEffect, useState } from "react";
 import { Divider } from "../Divider";
@@ -32,15 +32,17 @@ export function AdminLinks({ id }: AdminLinksProps) {
       <div className={`container verticalPadding ${classes.container}`}>
         <h2 className={classes.title}>Admin</h2>
         <div className={classes.content}>
-          <Button
-            LinkComponent="a"
-            target="_blank"
-            rel="noreferrer"
-            href={`/dashboard/entries/${id}`}
-          >
-            Edit
+          <Button variant="ghostBright" asChild>
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href={`/dashboard/entries/${id}`}
+            >
+              Edit
+            </a>
           </Button>
           <Button
+            variant="ghostBright"
             onClick={async () => {
               try {
                 const response = await fetch(`/api/bump/${id}`, {

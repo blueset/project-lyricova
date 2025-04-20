@@ -4,40 +4,16 @@ import type {
 } from "@lyricova/api/graphql/types";
 import { useAppContext } from "../AppContext";
 import { useLyricsState } from "../../../hooks/useLyricsState";
-import type { Theme } from "@mui/material";
-import { styled, useTheme } from "@mui/material";
 import type { Variants, Transition, TargetAndTransition } from "framer-motion";
 import { motion, AnimatePresence } from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import type { CSSProperties } from "react";
-import type { SxProps } from "@mui/system";
+import { cn } from "@lyricova/components/utils";
 
 const ANIMATION_THRESHOLD = 0.25;
 
-const SxMotionDiv = styled(motion.div)``;
-const MotionDivLine = styled(motion.div)`
-  font-weight: 600;
-  line-height: 1.2;
-  text-wrap: balance;
-  font-size: 3em;
-  // background-size: cover;
-  // background-position: center;
-  // background-attachment: fixed;
-  display: flex;
-  flex-direction: column-reverse;
-  color: rgba(255, 255, 255, 0.4);
-  // --jukebox-cover-filter-bright-blur: var(--jukebox-cover-filter-bright)
-  //   blur(var(--jukebox-ringo-blur-radius));
-  filter: blur(var(--jukebox-ringo-blur-radius));
-  transform-origin: top left;
-  & .translation {
-    display: block;
-    font-size: 0.7em;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-  }
-`;
+const motionDivLineBaseClasses = cn(
+  "font-semibold leading-tight text-balance text-[3em] flex flex-col-reverse text-white/40 origin-top-left"
+);
 
 const TRANSLATION_LINE_VARIANTS: Variants = {
   current: {
@@ -62,7 +38,7 @@ interface LyricsLineElementProps {
   offsetIndex: number;
   animate: boolean;
   resize: boolean;
-  sx?: SxProps<Theme>;
+  // sx prop removed as SxMotionDiv is removed
 }
 
 function LyricsLineElement({
@@ -71,7 +47,6 @@ function LyricsLineElement({
   offsetIndex,
   animate,
 }: LyricsLineElementProps) {
-  const theme = useTheme();
   if (!line) return null;
   const transition: Transition = animate ? TRANSITION : { duration: 0 };
 
@@ -79,8 +54,8 @@ function LyricsLineElement({
     opacity: 1,
     height: "auto",
     marginBottom: 50,
-    // width: resize ? "72.5%" : "100%",
-    fontSize: theme.typography.fontSize * 3,
+    // width: resize ? "72.5%" : "100%", // Handled by sx prop before, now needs direct class or style if required
+    fontSize: "3em", // Replaced theme calculation with direct value, adjust if needed
     // trans
     transitionEnd: {
       filter: "blur(var(--jukebox-ringo-blur-radius))",
@@ -114,10 +89,10 @@ function LyricsLineElement({
   };
 
   return (
-    <MotionDivLine
+    <motion.div
       lang="ja"
       layout
-      className={className}
+      className={cn(motionDivLineBaseClasses, className)}
       transition={transition}
       animate={styles}
       exit={{
@@ -145,7 +120,7 @@ function LyricsLineElement({
           </motion.div>
         )}
       </div>
-    </MotionDivLine>
+    </motion.div>
   );
 }
 
@@ -162,31 +137,22 @@ export function RingoLyrics({ lyrics, resize }: Props) {
 
   const lineNumber = line || 0;
 
+  const containerStyle: React.CSSProperties = {
+    // @ts-expect-error Non-standard properties
+    maskBorderImageSource:
+      "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+    maskBorderImageSlice: "49% 0 fill",
+    maskBorderImageWidth: "100px 0",
+    WebkitMaskBoxImageSource:
+      "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
+    WebkitMaskBoxImageSlice: "49% 0 fill",
+    WebkitMaskBoxImageWidth: "35px 0 50%",
+  };
+
   return (
-    <SxMotionDiv
-      sx={
-        {
-          paddingLeft: 4,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "start",
-          overflow: "hidden",
-          maskBorderImageSource:
-            "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          maskBorderImageSlice: "49% 0 fill",
-          maskBorderImageWidth: "100px 0",
-          maskBoxImageSource:
-            "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          maskBoxImageSlice: "49% 0 fill",
-          maskBoxImageWidth: "35px 0 50%",
-          "-webkit-mask-box-image-source":
-            "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          "-webkit-mask-box-image-slice": "49% 0 fill",
-          "-webkit-mask-box-image-width": "35px 0 50%",
-        } as unknown as CSSProperties
-      }
+    <motion.div
+      className="pl-16 w-full h-full flex flex-col justify-start overflow-hidden" // Converted sx to Tailwind
+      style={containerStyle} // Kept mask properties as inline style
       transition={{ staggerChildren: 1 }}
     >
       <AnimatePresence initial={false} mode="popLayout">
@@ -201,12 +167,8 @@ export function RingoLyrics({ lyrics, resize }: Props) {
             lines[idx + 1].position - l.position >= ANIMATION_THRESHOLD;
           return (
             <LyricsLineElement
-              sx={
-                {
-                  ...(resize && { width: "62.5%" }),
-                } as unknown as CSSProperties
-              }
-              // className="coverMask"
+              className={cn(resize && "w-[62.5%]")} // Apply width conditionally
+              // className="coverMask" // This class seems unused
               line={l}
               key={idx}
               animate={animate}
@@ -216,6 +178,6 @@ export function RingoLyrics({ lyrics, resize }: Props) {
           );
         })}
       </AnimatePresence>
-    </SxMotionDiv>
+    </motion.div>
   );
 }

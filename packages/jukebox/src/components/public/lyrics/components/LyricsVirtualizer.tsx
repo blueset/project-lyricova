@@ -1,12 +1,14 @@
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
-import { type LyricsSegment, useActiveLyrcsRanges } from "../../../../hooks/useActiveLyricsRanges";
+import {
+  type LyricsSegment,
+  useActiveLyrcsRanges,
+} from "../../../../hooks/useActiveLyricsRanges";
 import { useAppContext } from "../../AppContext";
-import { VirtualizerRowRenderProps, useLyricsVirtualizer } from "./useLyricsVirtualizer";
+import {
+  VirtualizerRowRenderProps,
+  useLyricsVirtualizer,
+} from "./useLyricsVirtualizer";
 import { LyricsAnimationRef } from "./AnimationRef.type";
 
 export interface RowRendererProps<T> {
@@ -22,14 +24,18 @@ export interface RowRendererProps<T> {
   onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
-export interface LyricsVirtualizerProps<T> {
+export interface LyricsVirtualizerProps<
+  T,
+  TELement extends React.ElementType = React.ElementType
+> {
   children: (props: RowRendererProps<T>) => React.ReactNode;
   rows: T[];
   estimatedRowHeight?: number;
   align?: "start" | "center" | "end";
   /** Align anchor, between 0 and 1 inclusive. */
   alignAnchor?: number;
-  containerAs?: React.ElementType;
+  containerAs?: TELement;
+  containerProps?: React.ComponentProps<TELement>;
 }
 
 export function LyricsVirtualizer({
@@ -39,17 +45,22 @@ export function LyricsVirtualizer({
   align = "center",
   alignAnchor = 0.5,
   containerAs: ContainerAs = "div",
+  containerProps = {},
 }: LyricsVirtualizerProps<LyricsKitLyricsLine>) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { playerRef } = useAppContext();
-  const { currentFrame, segments, playerState } = useActiveLyrcsRanges(rows, playerRef);
+  const { currentFrame, segments, playerState } = useActiveLyrcsRanges(
+    rows,
+    playerRef
+  );
   const playerStateRef = useRef(playerState);
   playerStateRef.current = playerState;
 
   useEffect(() => {
     if (playerState.state === "playing") {
-      const currentTime = (performance.now() - playerState.startingAt) / playerState.rate / 1000;
+      const currentTime =
+        (performance.now() - playerState.startingAt) / playerState.rate / 1000;
       animationRefs.current.forEach((ref) => {
         if (ref) {
           ref.resume(currentTime);
@@ -69,34 +80,50 @@ export function LyricsVirtualizer({
   const activeSegmentsRef = useRef<number[]>([]);
   activeSegmentsRef.current = currentFrame?.data?.activeSegments ?? [];
   const animationRefs = useRef<LyricsAnimationRef[]>([]);
-  const setRef = useCallback((index: number) => (ref?: LyricsAnimationRef) => {
-    if (animationRefs.current[index] === ref) return;
-    animationRefs.current[index] = ref;
-    if (ref) {
-      if (playerStateRef.current.state === "playing") {
-        const currentTime = (performance.now() - playerStateRef.current.startingAt) / playerStateRef.current.rate / 1000;
-        ref.resume(currentTime);
-      } else {
-        ref.pause(playerStateRef.current.progress);
-      }
-    }
-  }, []);
-
-  const virtualizerRowRender = useCallback(({index, absoluteIndex, top, rowRefHandler, isActiveScroll}: VirtualizerRowRenderProps) => rowRenderer({
-    row: rows[index],
-    segment: segments[index],
-    ref: rowRefHandler,
-    top,
-    absoluteIndex,
-    isActiveScroll,
-    isActive: activeSegmentsRef.current.includes(index),
-    animationRef: setRef(index),
-    onClick: () => {
-      if (playerRef.current && segments[index]?.start) {
-        playerRef.current.currentTime = segments[index].start;
+  const setRef = useCallback(
+    (index: number) => (ref?: LyricsAnimationRef) => {
+      if (animationRefs.current[index] === ref) return;
+      animationRefs.current[index] = ref;
+      if (ref) {
+        if (playerStateRef.current.state === "playing") {
+          const currentTime =
+            (performance.now() - playerStateRef.current.startingAt) /
+            playerStateRef.current.rate /
+            1000;
+          ref.resume(currentTime);
+        } else {
+          ref.pause(playerStateRef.current.progress);
+        }
       }
     },
-  }), [playerRef, rowRenderer, rows, segments, setRef]);
+    []
+  );
+
+  const virtualizerRowRender = useCallback(
+    ({
+      index,
+      absoluteIndex,
+      top,
+      rowRefHandler,
+      isActiveScroll,
+    }: VirtualizerRowRenderProps) =>
+      rowRenderer({
+        row: rows[index],
+        segment: segments[index],
+        ref: rowRefHandler,
+        top,
+        absoluteIndex,
+        isActiveScroll,
+        isActive: activeSegmentsRef.current.includes(index),
+        animationRef: setRef(index),
+        onClick: () => {
+          if (playerRef.current && segments[index]?.start) {
+            playerRef.current.currentTime = segments[index].start;
+          }
+        },
+      }),
+    [playerRef, rowRenderer, rows, segments, setRef]
+  );
 
   const { renderedRows, isActiveScroll } = useLyricsVirtualizer({
     containerRef,
@@ -113,6 +140,7 @@ export function LyricsVirtualizer({
     <ContainerAs
       ref={containerRef}
       isActiveScroll={isActiveScroll}
+      {...containerProps}
     >
       {renderedRows}
     </ContainerAs>

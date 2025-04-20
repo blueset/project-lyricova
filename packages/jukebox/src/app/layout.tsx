@@ -1,10 +1,10 @@
 import * as React from "react";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import CssBaseline from "@mui/material/CssBaseline";
-import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import type { Metadata, Viewport } from "next";
 import { ClientProviders } from "./clientProviders";
 import { palette } from "@lyricova/components";
+import { Inter, SourceHanSans, SourceHanSansPunct } from "@/fonts";
+import clsx from "clsx";
+import "@lyricova/components/styles/tailwindGlobal.css";
 
 export const viewport: Viewport = {
   themeColor: palette.primary.main,
@@ -14,7 +14,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Lyricova Jukebox",
+  title: {
+    template: "%s – Lyricova Jukebox",
+    default: "Lyricova Jukebox",
+  },
   appleWebApp: {
     title: "Lyricova Jukebox",
   },
@@ -24,15 +27,15 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
-        <InitColorSchemeScript attribute="class" />
-        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-          <ClientProviders>
-            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-            <CssBaseline />
-            {props.children}
-          </ClientProviders>
-        </AppRouterCacheProvider>
+      <body
+        className={clsx(
+          "dark",
+          Inter.variable,
+          SourceHanSans.variable,
+          SourceHanSansPunct.variable
+        )}
+      >
+        <ClientProviders>{props.children}</ClientProviders>
       </body>
     </html>
   );

@@ -1,12 +1,17 @@
-import { Card, CardContent, Typography } from "@mui/material";
-import dayjs from "dayjs";
-import duration from "dayjs/plugin/duration";
-import localizedFormat from "dayjs/plugin/localizedFormat";
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@lyricova/components/components/ui/card";
+import { cn } from "@lyricova/components/utils";
+import { format, intervalToDuration } from "date-fns";
 import React from "react";
 
 interface CountUpCardProps {
   title: string;
-  now: dayjs.Dayjs;
+  now: Date;
   time?: number;
   className?: string;
 }
@@ -16,72 +21,59 @@ const COUNT_UP_LEVELS: ("years" | "months" | "days")[] = [
   "months",
   "days",
 ];
-dayjs.extend(duration);
-dayjs.extend(localizedFormat);
 
 export function CountUpCard({ title, now, time, className }: CountUpCardProps) {
   let countUpValue = <>...</>;
   if (time) {
-    const duration = dayjs.duration(now.diff(time));
-
-    let highestLevel = 0;
-    while (
-      highestLevel + 1 < COUNT_UP_LEVELS.length &&
-      duration.as(COUNT_UP_LEVELS[highestLevel]) < 1
-    ) {
-      highestLevel++;
+    const dur = intervalToDuration({ start: time, end: now });
+    let highestLevel = 2;
+    if (dur.years ?? 0 > 0) {
+      highestLevel = 0;
+    } else if (dur.months ?? 0 > 0) {
+      highestLevel = 1;
     }
 
     countUpValue = (
       <>
         {highestLevel <= 0 && (
           <>
-            {duration.years()}
-            <small style={{ fontSize: "0.65em" }}>Y</small>
+            {dur.years}
+            <small>Y</small>
           </>
         )}
         {highestLevel <= 1 && (
           <>
-            {duration.months()}
-            <small style={{ fontSize: "0.65em" }}>M</small>
+            {dur.months}
+            <small>M</small>
           </>
         )}
         {highestLevel <= 2 && (
           <>
-            {duration.days()}
-            <small style={{ fontSize: "0.65em" }}>D</small>{" "}
+            {dur.days}
+            <small>D</small>{" "}
           </>
         )}
-        <small style={{ fontSize: "0.65em" }}>
-          {duration
-            .hours()
-            .toString()
-            .padStart(2, "0")}
-          :
-          {duration
-            .minutes()
-            .toString()
-            .padStart(2, "0")}
-          :
-          {duration
-            .seconds()
-            .toString()
-            .padStart(2, "0")}
+        <small>
+          {String(dur.hours).padStart(2, "0")}:
+          {String(dur.minutes).padStart(2, "0")}:
+          {String(dur.seconds).padStart(2, "0")}
         </small>
       </>
     );
   }
   return (
-    <Card className={className}>
-      <CardContent>
-        <Typography color="textSecondary" gutterBottom>
-          {title}
-        </Typography>
-        <Typography variant="h3">{countUpValue}</Typography>
-        <Typography color="textSecondary">
-          since {time ? dayjs(time).format("LL") : "..."}
-        </Typography>
-      </CardContent>
+    <Card className={cn("@container/card", className)}>
+      <CardHeader className="relative">
+        <CardDescription>{title}</CardDescription>
+        <CardTitle className="@[250px]/card:text-4xl text-2xl font-semibold tabular-nums">
+          {countUpValue}
+        </CardTitle>
+      </CardHeader>
+      <CardFooter>
+        <CardDescription className="mt-1">
+          since {time ? format(new Date(time), "PP") : "..."}
+        </CardDescription>
+      </CardFooter>
     </Card>
   );
 }

@@ -1,21 +1,6 @@
 "use client";
 
-import {
-  Avatar,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemSecondaryAction,
-  ListItemText,
-  Radio,
-} from "@mui/material";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Song } from "@lyricova/api/graphql/types";
 import axios from "axios";
 import type {
@@ -23,14 +8,30 @@ import type {
   SongForApiContract,
 } from "@lyricova/api/graphql/types";
 import _ from "lodash";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { Skeleton } from "@mui/material";
-import { useSnackbar } from "notistack";
 import { gql, useApolloClient } from "@apollo/client";
 import { SongFragments } from "../../utils/fragments";
 import { DocumentNode } from "graphql";
-import React from "react";
+import { toast } from "sonner";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@lyricova/components/components/ui/avatar";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@lyricova/components/components/ui/dialog";
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@lyricova/components/components/ui/radio-group";
+import { Music, ExternalLink } from "lucide-react";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
+import { Label } from "@lyricova/components/components/ui/label";
 
 const IMPORT_SONG_MUTATION = gql`
   mutation ($id: Int!) {
@@ -62,7 +63,6 @@ export function VocaDBSearchSongDialog({
   const [selectedSong, setSelectedSong] = useState<number | null>(null);
   const [isImporting, toggleImporting] = useState(false);
 
-  const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
 
   const handleClose = useCallback(() => {
@@ -83,9 +83,8 @@ export function VocaDBSearchSongDialog({
 
   const handleSubmit = useCallback(async () => {
     if (selectedSong === null) {
-      snackbar.enqueueSnackbar("Please choose a song to import.", {
-        variant: "error",
-      });
+      toast.error("Please choose a song to import.");
+      return;
     }
 
     toggleImporting(true);
@@ -101,11 +100,8 @@ export function VocaDBSearchSongDialog({
 
       if (result.data) {
         setSong(result.data.enrolSongFromVocaDB);
-        snackbar.enqueueSnackbar(
-          `Song “${result.data.enrolSongFromVocaDB.name}” is successfully enrolled.`,
-          {
-            variant: "success",
-          }
+        toast.success(
+          `Song "${result.data.enrolSongFromVocaDB.name}" is successfully enrolled.`
         );
         handleClose();
       } else {
@@ -113,29 +109,12 @@ export function VocaDBSearchSongDialog({
       }
     } catch (e) {
       console.error(`Error occurred while importing song #${selectedSong}.`, e);
-      snackbar.enqueueSnackbar(
-        `Error occurred while importing song #${selectedSong}. (${e})`,
-        {
-          variant: "error",
-        }
+      toast.error(
+        `Error occurred while importing song #${selectedSong}. (${e})`
       );
       toggleImporting(false);
     }
-  }, [
-    apolloClient,
-    handleClose,
-    selectedSong,
-    setSong,
-    snackbar,
-    toggleImporting,
-  ]);
-
-  const handleChooseRadio = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setSelectedSong(parseInt(event.target.value));
-    },
-    [setSelectedSong]
-  );
+  }, [apolloClient, handleClose, selectedSong, setSong, toggleImporting]);
 
   useEffect(() => {
     if (keyword === "") return;
@@ -175,11 +154,8 @@ export function VocaDBSearchSongDialog({
             "Error occurred while loading search results from VocaDB",
             response
           );
-          snackbar.enqueueSnackbar(
-            `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`,
-            {
-              variant: "error",
-            }
+          toast.error(
+            `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`
           );
         }
       }
@@ -188,80 +164,86 @@ export function VocaDBSearchSongDialog({
     return () => {
       active = false;
     };
-  }, [keyword, setResults, snackbar, toggleLoaded]);
+  }, [keyword, setResults, toggleLoaded]);
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="form-dialog-title"
-      scroll="paper"
-    >
-      <DialogTitle id="form-dialog-title">
-        Searching VocaDB for <strong>{keyword}</strong>
-      </DialogTitle>
-      <DialogContent dividers>
-        <List>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>
+            Searching VocaDB for <span className="font-bold">{keyword}</span>
+          </DialogTitle>
+        </DialogHeader>
+
+        <div>
           {isLoaded ? (
             results.length > 0 ? (
-              results.map((v) => (
-                <ListItem key={v.id} sx={{ pr: 12 }}>
-                  <ListItemAvatar>
-                    <Avatar variant="rounded" src={v.thumbUrl}>
-                      <MusicNoteIcon />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={v.name} secondary={v.artistString} />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      href={`https://vocadb.net/S/${v.id}`}
-                      target="_blank"
-                    >
-                      <OpenInNewIcon />
-                    </IconButton>
-                    <Radio
-                      checked={selectedSong === v.id}
-                      value={v.id}
-                      onChange={handleChooseRadio}
-                      name="selectedSong"
-                      inputProps={{
-                        "aria-label": `${v.name} / ${v.artistString}`,
-                      }}
+              <RadioGroup
+                className="gap-4"
+                value={selectedSong?.toString()}
+                onValueChange={(value) => setSelectedSong(parseInt(value))}
+              >
+                {results.map((v) => (
+                  <Label key={v.id} className="flex items-center gap-3">
+                    <RadioGroupItem
+                      value={v.id.toString()}
+                      id={`song-${v.id}`}
+                      aria-label={`${v.name} / ${v.artistString}`}
                     />
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))
+                    <Avatar className="rounded-md size-12">
+                      <AvatarImage src={v.thumbUrl} alt={v.name} />
+                      <AvatarFallback className="rounded-md">
+                        <Music />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="font-medium text-base">{v.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {v.artistString}
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="icon" asChild>
+                      <a
+                        href={`https://vocadb.net/S/${v.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink />
+                      </a>
+                    </Button>
+                  </Label>
+                ))}
+              </RadioGroup>
             ) : (
-              <ListItem>
-                <ListItemText secondary="No result found." />
-              </ListItem>
+              <div className="py-4 text-muted-foreground text-center">
+                No result found.
+              </div>
             )
           ) : (
             _.range(5).map((v) => (
-              <ListItem key={v}>
-                <ListItemAvatar>
-                  <Skeleton variant="rectangular">
-                    <Avatar variant="rounded" />
-                  </Skeleton>
-                </ListItemAvatar>
-                <ListItemText primary={<Skeleton />} secondary={<Skeleton />} />
-              </ListItem>
+              <div key={v} className="flex items-center space-x-4 py-2">
+                <Skeleton className="h-10 w-10 rounded-lg" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
             ))
           )}
-        </List>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button
+            disabled={selectedSong === null || isImporting}
+            onClick={handleSubmit}
+          >
+            Import
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          disabled={selectedSong === null || isImporting}
-          onClick={handleSubmit}
-          color="primary"
-        >
-          Import
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

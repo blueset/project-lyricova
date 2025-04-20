@@ -152,13 +152,10 @@ export class EntryResolver {
         },
         { transaction: t }
       );
-      await Promise.all(
-        verses.map(async (verse) =>
-          await entry.$create("verse", await this.populateVerseTypingSequence(verse), {
-            transaction: t,
-          })
-        )
-      );
+      for await (const verse of verses) {
+        const populatedVerse = await this.populateVerseTypingSequence(verse);
+        await entry.$create("verse", populatedVerse, { transaction: t });
+      }
       await entry.$add("song", songIds, { transaction: t });
       await entry.$add("tag", tagSlugs, { transaction: t });
       await entry.$add(
@@ -226,48 +223,47 @@ export class EntryResolver {
           transaction: t,
         });
       }
+      const verseObjs: Verse[] = [];
+      for await (const v of verses) {
+        const vObj = Verse.build(v, { isNewRecord: !v.id });
+        vObj.update(v);
 
-      const verseObjs = await Promise.all(
-        verses.map(async (v) => {
-          const vObj = Verse.build(v, { isNewRecord: !v.id });
-          vObj.update(v);
-          await vObj.save({ transaction: t });
-          return vObj;
-        })
-      );
+        await vObj.save({ transaction: t });
+
+        verseObjs.push(vObj);
+      }
       await entry.$set("verses", verseObjs, { transaction: t });
+      await entry.$set("songs", songIds, { transaction: t });
+      await entry.$set("tags", tagSlugs, { transaction: t });
+      const pulseObjs: Pulse[] = [];
+      for await (const pi of pulses) {
+        const p = Pulse.build(pi, { isNewRecord: !pi.id });
+        p.changed("creationDate", true);
+        p.set("creationDate", pi.creationDate, { raw: true });
+        await p.save({
+          silent: true,
+          fields: pi.id ? ["id", "creationDate"] : ["creationDate"],
+          transaction: t,
+        });
+        pulseObjs.push(p);
+      }
+      await entry.$set("pulses", pulseObjs, { transaction: t });
+
+      await t.commit();
+
       // Remove pulses with no entryId as Sequelize doesn’t do it
       await Verse.destroy({
         where: {
           entryId: null,
         },
-        transaction: t,
       });
-      await entry.$set("songs", songIds, { transaction: t });
-      await entry.$set("tags", tagSlugs, { transaction: t });
-      const pulseObjs = await Promise.all(
-        pulses.map(async (pi) => {
-          const p = Pulse.build(pi, { isNewRecord: !pi.id });
-          p.changed("creationDate", true);
-          p.set("creationDate", pi.creationDate, { raw: true });
-          await p.save({
-            silent: true,
-            fields: pi.id ? ["id", "creationDate"] : ["creationDate"],
-            transaction: t,
-          });
-          return p;
-        })
-      );
-      await entry.$set("pulses", pulseObjs, { transaction: t });
       // Remove pulses with no entryId as Sequelize doesn’t do it
       await Pulse.destroy({
         where: {
           entryId: null,
         },
-        transaction: t,
       });
 
-      await t.commit();
       return entry;
     } catch (e) {
       await t.rollback();

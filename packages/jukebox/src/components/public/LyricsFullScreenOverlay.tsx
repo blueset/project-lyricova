@@ -7,35 +7,20 @@ import {
 } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
 import { useAppContext } from "./AppContext";
+import { Button } from "@lyricova/components/components/ui/button";
 import {
-  ToggleButtonGroup,
-  IconButton,
-  styled,
-  ToggleButton,
-} from "@mui/material";
-import Replay5Icon from "@mui/icons-material/Replay5";
-import Forward5Icon from "@mui/icons-material/Forward5";
-import PauseIcon from "@mui/icons-material/Pause";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-
-const ShadeDiv = styled("div")`
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  transition: opacity 0.5s ease-out;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-evenly;
-`;
-
-const FullScreenControlDiv = styled("div")`
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 0.5rem;
-`;
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@lyricova/components/components/ui/toggle-group";
+import { cn } from "@lyricova/components/utils";
+import {
+  Maximize,
+  Rewind,
+  Forward,
+  Pause,
+  Play,
+  FastForward,
+} from "lucide-react";
 
 interface SO extends ScreenOrientation {
   lock(orientation: string): Promise<void>;
@@ -81,6 +66,7 @@ export function LyricsFullScreenOverlay({
 
   const rewind5 = useCallback(
     (event: { stopPropagation: () => void }) => {
+      console.log("rewind5");
       event.stopPropagation();
       if (!playerRef.current) {
         return;
@@ -100,7 +86,7 @@ export function LyricsFullScreenOverlay({
     [playerRef]
   );
 
-  const toggleVisible: ComponentProps<typeof ShadeDiv>["onClick"] = useCallback(
+  const toggleVisible: ComponentProps<"div">["onClick"] = useCallback(
     (event) => {
       const now = performance.now();
       if (now - lastClickTime.current < 500) {
@@ -155,26 +141,30 @@ export function LyricsFullScreenOverlay({
   }, [setFullscreenMode]);
 
   return (
-    <ShadeDiv
-      sx={{
-        opacity: isVisible ? 1 : 0,
-      }}
+    <div
+      className={cn(
+        "absolute inset-0 bg-black/50 transition-opacity duration-500 flex flex-row items-center justify-evenly",
+        isVisible ? "opacity-100" : "opacity-0"
+      )}
       onClick={toggleVisible}
     >
       <div
-        style={{
-          pointerEvents: isVisible ? "auto" : "none",
-          position: "fixed",
-          inset: 0,
-        }}
+        className={cn(
+          "fixed inset-0",
+          isVisible ? "pointer-events-auto" : "pointer-events-none"
+        )}
       >
         {children}
-        <FullScreenControlDiv>
-          <ToggleButtonGroup
-            aria-label="Fullscreen options"
-            exclusive
-            onChange={async (evt, value) => {
-              evt.stopPropagation();
+        <div className="absolute top-0 left-0 p-2">
+          <ToggleGroup
+            className="z-10"
+            type="single"
+            value={fullscreenMode}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Fullscreen"
+            onValueChange={async (
+              value: "web" | "0" | "90" | "180" | "270"
+            ) => {
               if (value) {
                 if (value === "web") {
                   await document?.exitFullscreen?.().catch(() => {
@@ -212,55 +202,57 @@ export function LyricsFullScreenOverlay({
                 setFullscreenMode(value);
               }
             }}
-            value={fullscreenMode}
           >
-            <ToggleButton value="web">
-              <FullscreenIcon />
-            </ToggleButton>
-            <ToggleButton value="0">0°</ToggleButton>
-            <ToggleButton value="90">90°</ToggleButton>
-            <ToggleButton value="180">180°</ToggleButton>
-            <ToggleButton value="270">270°</ToggleButton>
-          </ToggleButtonGroup>
-        </FullScreenControlDiv>
+            <ToggleGroupItem value="web" aria-label="Fullscreen">
+              <Maximize />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="0">0°</ToggleGroupItem>
+            <ToggleGroupItem value="90">90°</ToggleGroupItem>
+            <ToggleGroupItem value="180">180°</ToggleGroupItem>
+            <ToggleGroupItem value="270">270°</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
-      <IconButton
-        aria-label="Rewind 5 seconds"
-        sx={{
-          fontSize: "2em",
-          backgroundColor: "rgba(0, 0, 0, 0.4)",
-          pointerEvents: isVisible ? "auto" : "none",
-        }}
+      <Button
+        variant="ghostBright"
+        size="icon"
+        className={cn(
+          "text-2xl size-14 bg-black/40 rounded-full z-10",
+          isVisible ? "pointer-events-auto" : "pointer-events-none"
+        )}
         onClick={rewind5}
+        aria-label="Rewind 5 seconds"
       >
-        <Replay5Icon fontSize="inherit" />
-      </IconButton>
-      <IconButton
-        aria-label={!isPlaying ? "Play" : "Pause"}
+        <Rewind className="size-6" />
+      </Button>
+      <Button
+        variant="ghostBright"
+        size="icon"
+        className={cn(
+          "size-20 text-4xl bg-black/40 rounded-full z-10 hover:bg-foreground/50",
+          isVisible ? "pointer-events-auto" : "pointer-events-none"
+        )}
         onClick={togglePlay}
-        sx={{
-          fontSize: "4em",
-          backgroundColor: "rgba(0, 0, 0, 0.4)",
-          pointerEvents: isVisible ? "auto" : "none",
-        }}
+        aria-label={!isPlaying ? "Play" : "Pause"}
       >
         {!isPlaying ? (
-          <PlayArrowIcon fontSize="inherit" />
+          <Play className="size-10" />
         ) : (
-          <PauseIcon fontSize="inherit" />
+          <Pause className="size-10" />
         )}
-      </IconButton>
-      <IconButton
-        aria-label="Forward 5 seconds"
-        sx={{
-          fontSize: "2em",
-          backgroundColor: "rgba(0, 0, 0, 0.4)",
-          pointerEvents: isVisible ? "auto" : "none",
-        }}
+      </Button>
+      <Button
+        variant="ghostBright"
+        size="icon"
+        className={cn(
+          "text-2xl size-14 bg-black/40 rounded-full z-10",
+          isVisible ? "pointer-events-auto" : "pointer-events-none"
+        )}
         onClick={forward5}
+        aria-label="Forward 5 seconds"
       >
-        <Forward5Icon fontSize="inherit" />
-      </IconButton>
-    </ShadeDiv>
+        <FastForward className="size-6" />
+      </Button>
+    </div>
   );
 }

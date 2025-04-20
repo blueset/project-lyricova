@@ -1,46 +1,37 @@
 import type { Playlist } from "@lyricova/api/graphql/types";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  ListItemText,
-  Popover,
-} from "@mui/material";
-import { Alert, Skeleton } from "@mui/material";
 import _ from "lodash";
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { useCallback, useEffect } from "react";
-import PlaylistAvatar from "../../PlaylistAvatar";
+import { toast } from "sonner";
+import { PlusCircle, Plus } from "lucide-react";
 import { useNamedState } from "../../../hooks/useNamedState";
-import AddIcon from "@mui/icons-material/Add";
-import { useSnackbar } from "notistack";
-import {
-  bindPopover,
-  bindTrigger,
-  usePopupState,
-} from "material-ui-popup-state/hooks";
+import PlaylistAvatar from "../../PlaylistAvatar";
 import AddPlaylistPopoverContent from "../AddPlaylistPopoverContent";
-
-import ListItemButton from "@mui/material/ListItemButton";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@lyricova/components/components/ui/popover";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription,
+} from "@lyricova/components/components/ui/alert";
+import { Checkbox } from "@lyricova/components/components/ui/checkbox";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
+import { Label } from "@lyricova/components/components/ui/label";
 
 function SkeletonItem() {
   return (
-    <ListItem>
-      <ListItemAvatar>
-        <Skeleton variant="rectangular">
-          <Avatar variant="rounded" />
-        </Skeleton>
-      </ListItemAvatar>
-      <ListItemText>
-        <Skeleton />
-      </ListItemText>
-    </ListItem>
+    <div className="flex items-center gap-4">
+      <Skeleton className="size-8 rounded-md" />
+      <div className="space-y-2 flex-1">
+        <Skeleton className="h-4 w-[200px]" />
+        <Skeleton className="h-4 w-[160px]" />
+      </div>
+    </div>
   );
 }
 
@@ -54,7 +45,7 @@ const PLAYLISTS_QUERY = gql`
 `;
 
 const SET_PLAYLISTS_MUTATION = gql`
-  mutation($slugs: [String!]!, $fileId: Int!) {
+  mutation ($slugs: [String!]!, $fileId: Int!) {
     setPlaylistsOfFile(playlistSlugs: $slugs, fileId: $fileId) {
       playlists {
         name
@@ -73,20 +64,16 @@ interface Props {
 export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
   const playlistsQuery = useQuery<{ playlists: Playlist[] }>(PLAYLISTS_QUERY);
   const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
 
+  const [isOpen, setIsOpen] = useNamedState(false, "isOpen");
   const [checkedPlaylists, setCheckedPlaylists] = useNamedState<string[]>(
     [],
     "checkedPlaylists"
   );
+
   useEffect(() => {
     setCheckedPlaylists(playlists.map((v) => v.slug));
   }, [playlists, setCheckedPlaylists]);
-
-  const popupState = usePopupState({
-    variant: "popover",
-    popupId: "add-playlist-popover",
-  });
 
   const handleSubmit = useCallback(async () => {
     try {
@@ -100,27 +87,17 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
         setCheckedPlaylists(
           result.data.setPlaylistsOfFile.playlists.map((v) => v.slug)
         );
-        snackbar.enqueueSnackbar("Playlists saved", { variant: "success" });
+        toast.success("Playlists saved");
         await refresh();
       }
     } catch (e) {
       console.error("Error occurred while updating playlists", e);
-      snackbar.enqueueSnackbar(
-        `Error occurred while updating playlists: ${e}`,
-        { variant: "error" }
-      );
+      toast.error(`Error occurred while updating playlists: ${e}`);
     }
-  }, [
-    apolloClient,
-    checkedPlaylists,
-    fileId,
-    refresh,
-    setCheckedPlaylists,
-    snackbar,
-  ]);
+  }, [apolloClient, checkedPlaylists, fileId, refresh, setCheckedPlaylists]);
 
   const handleToggle = useCallback(
-    (value: string) => () => {
+    (value: string) => {
       if (checkedPlaylists.indexOf(value) < 0) {
         setCheckedPlaylists([...checkedPlaylists, value]);
       } else {
@@ -130,61 +107,61 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
     [checkedPlaylists, setCheckedPlaylists]
   );
 
-  let items: ReactNode = _.fill(Array(5), <SkeletonItem />);
+  let content: ReactNode = Array.from({ length: 5 }, (_, index) => (
+    <SkeletonItem key={index} />
+  ));
   if (playlistsQuery.error) {
-    items = (
-      <Alert severity="error">
-        Error occurred while retrieving playlists: {`${playlistsQuery.error}`}
+    content = (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          Error occurred while retrieving playlists: {`${playlistsQuery.error}`}
+        </AlertDescription>
       </Alert>
     );
   } else if (playlistsQuery.data) {
-    items = playlistsQuery.data.playlists.map((v) => (
-      <ListItemButton key={v.slug} onClick={handleToggle(v.slug)}>
-        <ListItemAvatar>
-          <PlaylistAvatar name={v.name} slug={v.slug} />
-        </ListItemAvatar>
-        <ListItemText primary={v.name} secondary={v.slug} />
-        <ListItemSecondaryAction>
-          <Checkbox
-            edge="end"
-            onChange={handleToggle(v.slug)}
-            checked={checkedPlaylists.indexOf(v.slug) !== -1}
-          />
-        </ListItemSecondaryAction>
-      </ListItemButton>
+    content = playlistsQuery.data.playlists.map((v) => (
+      <Label
+        key={v.slug}
+        className="flex items-center gap-4 py-2 -mx-4 px-4 hover:bg-accent/50 rounded-md cursor-pointer"
+      >
+        <Checkbox
+          checked={checkedPlaylists.indexOf(v.slug) !== -1}
+          onCheckedChange={() => handleToggle(v.slug)}
+        />
+        <PlaylistAvatar name={v.name} slug={v.slug} className="size-8" />
+        <div className="flex-1">
+          <div className="font-medium">{v.name}</div>
+          <div className="text-sm text-muted-foreground">{v.slug}</div>
+        </div>
+      </Label>
     ));
   }
 
   return (
-    (<div>
-      <List>
-        {items}
-        <ListItemButton {...bindTrigger(popupState)}>
-          <ListItemIcon>
-            <AddIcon />
-          </ListItemIcon>
-          <ListItemText>Add new playlist</ListItemText>
-        </ListItemButton>
-      </List>
-      <Button variant="outlined" color="secondary" onClick={handleSubmit}>
+    <div className="flex gap-2 flex-col">
+      {content}
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <button className="text-sm leading-none font-medium select-none flex items-center gap-4 py-2 -mx-4 px-4 hover:bg-accent/50 rounded-md cursor-pointer">
+            <Plus className="size-4" />
+            <span className="flex-1 font-medium text-start">
+              Add new playlist
+            </span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-lg" align="end">
+          <AddPlaylistPopoverContent
+            refresh={playlistsQuery.refetch}
+            dismiss={() => {
+              setIsOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+      <Button variant="outline" className="self-start" onClick={handleSubmit}>
         Save
       </Button>
-      <Popover
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "left",
-        }}
-        {...bindPopover(popupState)}
-      >
-        <AddPlaylistPopoverContent
-          refresh={playlistsQuery.refetch}
-          dismiss={popupState.close}
-        />
-      </Popover>
-    </div>)
+    </div>
   );
 }

@@ -1,21 +1,19 @@
 "use client";
 
-import {
-  Box,
-  IconButton,
-  InputAdornment,
-  List,
-  TextField,
-} from "@mui/material";
 import { useNamedState } from "@/hooks/useNamedState";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import React, { useCallback } from "react";
 import { gql, useLazyQuery } from "@apollo/client";
 import { MusicFileFragments } from "@lyricova/components";
 import type { MusicFile } from "@lyricova/api/graphql/types";
-import Alert from "@mui/material/Alert";
-import SearchIcon from "@mui/icons-material/Search";
 import TrackListRow from "@/components/public/library/TrackListRow";
+import { Search as SearchIcon } from "lucide-react";
+import { Input } from "@lyricova/components/components/ui/input";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Alert,
+  AlertDescription,
+} from "@lyricova/components/components/ui/alert";
 
 const MUSIC_FILE_SEARCH_QUERY = gql`
   query ($keywords: String!) {
@@ -40,6 +38,7 @@ export default function Search() {
   const [searchFiles, searchFilesQuery] = useLazyQuery<{
     searchMusicFiles: MusicFile[];
   }>(MUSIC_FILE_SEARCH_QUERY);
+
   const handleSearch = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -52,13 +51,25 @@ export default function Search() {
   let content: ReactNode;
   if (!searchFilesQuery.called) content = null;
   else if (searchFilesQuery.loading)
-    content = <Alert severity="info">Loading...</Alert>;
+    content = (
+      <Alert variant="info">
+        <AlertDescription>Loading...</AlertDescription>
+      </Alert>
+    );
   else if (searchFilesQuery.error)
     content = (
-      <Alert severity="error">Error: {`${searchFilesQuery.error}`}</Alert>
+      <Alert variant="error">
+        <AlertDescription>
+          Error: {`${searchFilesQuery.error}`}
+        </AlertDescription>
+      </Alert>
     );
   else if (searchFilesQuery.data.searchMusicFiles.length < 1)
-    content = <Alert severity="info">No result found.</Alert>;
+    content = (
+      <Alert variant="info">
+        <AlertDescription>No result found.</AlertDescription>
+      </Alert>
+    );
   else {
     content = searchFilesQuery.data.searchMusicFiles.map((v) => (
       <TrackListRow
@@ -72,48 +83,27 @@ export default function Search() {
   }
 
   return (
-    <Box p={4} pt={0}>
-      <form
-        onSubmit={handleSearch}
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 1,
-        }}
-      >
-        <TextField
-          value={searchKeyword}
-          label="Search keywords"
-          variant="filled"
-          fullWidth
-          margin="none"
-          size="medium"
-          sx={{ backdropFilter: "blur(10px)" }}
-          onChange={handleChange}
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton type="submit" aria-label="search" edge="end">
-                    <SearchIcon fontSize="large" />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-
-            htmlInput: { sx: { fontSize: "2em" } },
-
-            inputLabel: {
-              sx: {
-                "&[data-shrink=false]": {
-                  transform: "translate(14px, 20px) scale(2)",
-                },
-              },
-            },
-          }}
-        />
+    <div className="p-4 pt-0">
+      <form onSubmit={handleSearch} className="sticky top-1 z-10">
+        <div className="relative">
+          <Input
+            value={searchKeyword}
+            placeholder="Search keywords"
+            className="backdrop-blur-lg text-4xl md:text-4xl h-16 py-6 px-4 border-primary"
+            onChange={handleChange}
+          />
+          <Button
+            type="submit"
+            aria-label="search"
+            variant="ghostBright"
+            size="icon"
+            className="absolute right-2 top-1/2 -translate-y-1/2"
+          >
+            <SearchIcon />
+          </Button>
+        </div>
       </form>
-      <List>{content}</List>
-    </Box>
+      <div className="mt-4">{content}</div>
+    </div>
   );
 }

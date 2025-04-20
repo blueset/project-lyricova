@@ -1,34 +1,61 @@
 "use client";
 
+// Shadcn & RHF imports needed for SelectArtistEntityBoxRHF
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@lyricova/components/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@lyricova/components/components/ui/popover";
+import { Button } from "@lyricova/components/components/ui/button";
 import {
   Avatar,
-  FilterOptionsState,
-  Grid,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { useEffect, useState } from "react";
+  AvatarFallback,
+  AvatarImage,
+} from "@lyricova/components/components/ui/avatar";
+import { Badge } from "@lyricova/components/components/ui/badge";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
+import { ScrollArea } from "@lyricova/components/components/ui/scroll-area";
+import { cn } from "@lyricova/components/utils";
+import {
+  Music,
+  Search,
+  PlusCircle,
+  ExternalLink,
+  Pencil,
+  ChevronsUpDown,
+  Check,
+  X,
+} from "lucide-react";
+import type { Artist } from "@lyricova/api/graphql/types";
+import { useEffect, useState, useCallback } from "react";
 import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import SearchIcon from "@mui/icons-material/Search";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { ArtistFragments } from "../../utils/fragments";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import EditIcon from "@mui/icons-material/Edit";
-import type { Artist } from "@lyricova/api/graphql/types";
 import { VocaDBSearchArtistDialog } from "../dialogs/VocaDBSearchArtistDialog";
 import { ArtistEntityDialog } from "../dialogs/ArtistEntityDialog";
-import { useField, useForm } from "react-final-form";
-import { Autocomplete } from "mui-rff";
 import { DocumentNode } from "graphql";
-import React from "react";
+import {
+  FieldValues,
+  FieldPath,
+  UseFormReturn,
+  useController,
+} from "react-hook-form";
 
 export type ExtendedArtist = Partial<Artist> & {
   vocaDBSuggestion?: boolean;
   manual?: boolean;
+  /** Internal flag for action items */
+  isAction?: boolean;
 };
 
 const LOCAL_ARTIST_ENTITY_QUERY = gql`
@@ -41,65 +68,63 @@ const LOCAL_ARTIST_ENTITY_QUERY = gql`
   ${ArtistFragments.SelectArtistEntry}
 ` as DocumentNode;
 
-interface Props<T extends string> {
-  fieldName: T;
+interface Props<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> {
+  form: UseFormReturn<TFieldValues>;
+  fieldName: TName;
   labelName: string;
   title?: string;
 }
 
-export function SelectArtistEntityBox<T extends string>({
-  fieldName,
-  labelName,
-  title,
-}: Props<T>) {
+export function SelectArtistEntityBox<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({ fieldName, labelName, title, form }: Props<TFieldValues, TName>) {
   const apolloClient = useApolloClient();
-  const {
-    input: { value },
-  } = useField<ExtendedArtist>(fieldName);
-  const setValue = useForm().mutators.setValue;
+  const { field, fieldState } = useController({
+    name: fieldName,
+    control: form.control,
+  });
+  const value = field.value as ExtendedArtist | null;
 
-  const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useState<
-    ExtendedArtist[]
-  >([]);
-  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useState("");
+  const [open, setOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [options, setOptions] = useState<ExtendedArtist[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [importDialogKeyword, setImportDialogKeyword] = useState("");
-  const [touched, setTouched] = useState(false);
-
-  // Confirm import pop-up
   const [isImportDialogOpen, toggleImportDialogOpen] = useState(false);
-
-  // Confirm manual enrol pop-up
   const [isManualDialogOpen, toggleManualDialogOpen] = useState(false);
   const [isManualDialogForCreate, toggleManualDialogForCreate] = useState(true);
 
-  // Query server for local autocomplete
-  useEffect(() => {
-    let active = true;
-
-    if (vocaDBAutoCompleteText === "" || !touched) {
-      setVocaDBAutoCompleteOptions(value ? [value] : []);
-      return undefined;
-    }
-
-    _.throttle(async () => {
-      const apolloPromise = apolloClient.query<{ searchArtists: Artist[] }>({
-        query: LOCAL_ARTIST_ENTITY_QUERY,
-        variables: { text: vocaDBAutoCompleteText },
-      });
-
-      const vocaDBPromise = axios.get<string[]>(
-        "https://vocadb.net/api/artists/names",
-        {
-          params: {
-            query: vocaDBAutoCompleteText,
-            nameMatchMode: "Auto",
-          },
+  const fetchOptions = useCallback(
+    _.debounce(
+      async (searchText: string, currentValue: ExtendedArtist | null) => {
+        if (searchText === "") {
+          setOptions(currentValue ? [currentValue] : []);
+          setIsLoading(false);
+          return;
         }
-      );
 
-      if (active) {
+        setIsLoading(true);
         let result: ExtendedArtist[] = [];
+
+        const apolloPromise = apolloClient.query<{ searchArtists: Artist[] }>({
+          query: LOCAL_ARTIST_ENTITY_QUERY,
+          variables: { text: searchText },
+        });
+
+        const vocaDBPromise = axios.get<string[]>(
+          "https://vocadb.net/api/artists/names",
+          {
+            params: {
+              query: searchText,
+              nameMatchMode: "Auto",
+            },
+          }
+        );
 
         try {
           const apolloResult = await apolloPromise;
@@ -119,183 +144,267 @@ export function SelectArtistEntityBox<T extends string>({
                 name: v,
                 sortOrder: `"${v}"`,
                 vocaDBSuggestion: true,
+                isAction: true, // Mark as action
               }))
             );
-          }
-          if (value && !_.some(result, (v) => v.id === value.id)) {
-            result = [value, ...result];
           }
         } catch (e) {
           /* No-Op. */
         }
 
-        setVocaDBAutoCompleteOptions(result);
-      }
-    }, 200)();
+        // Ensure current value is in options if it exists and isn't already there
+        if (currentValue && !result.some((opt) => opt.id === currentValue.id)) {
+          result = [currentValue, ...result];
+        }
 
-    return () => {
-      active = false;
-    };
-  }, [
-    vocaDBAutoCompleteText,
-    apolloClient,
-    setVocaDBAutoCompleteOptions,
-    touched,
-  ]);
+        // Add special options
+        result.push({
+          id: undefined,
+          name: `Search VocaDB for “${searchText}”`,
+          sortOrder: searchText,
+          vocaDBSuggestion: true,
+          isAction: true, // Mark as action
+        });
+        result.push({
+          id: undefined,
+          name: `Manually add “${searchText}”`,
+          sortOrder: searchText,
+          manual: true,
+          isAction: true, // Mark as action
+        });
+
+        setOptions(result);
+        setIsLoading(false);
+      },
+      300
+    ),
+    [apolloClient]
+  );
+
+  useEffect(() => {
+    // Fetch options when input value changes
+    fetchOptions(inputValue, value);
+  }, [inputValue, fetchOptions, value]);
+
+  useEffect(() => {
+    // Pre-populate input text if value exists when opening
+    if (open && value) {
+      setInputValue(value.name || "");
+    }
+    if (!open) {
+      setInputValue(""); // Clear search text when closing
+    }
+  }, [open, value]);
+
+  const handleSelect = (selectedOptionValue: string) => {
+    const selectedOption = options.find(
+      (option) => `${option.name}-${option.id}` === selectedOptionValue
+    );
+
+    if (!selectedOption) return;
+
+    if (selectedOption.vocaDBSuggestion && selectedOption.isAction) {
+      setImportDialogKeyword(selectedOption?.sortOrder ?? "");
+      toggleImportDialogOpen(true);
+      setOpen(false);
+      setInputValue("");
+    } else if (selectedOption.manual && selectedOption.isAction) {
+      setImportDialogKeyword(selectedOption?.sortOrder ?? "");
+      toggleManualDialogForCreate(true);
+      toggleManualDialogOpen(true);
+      setOpen(false);
+      setInputValue("");
+      form.setValue(fieldName, null as any); // Clear selection
+    } else {
+      form.setValue(fieldName, selectedOption as any, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setOpen(false);
+      setInputValue(""); // Clear search text after selection
+    }
+  };
 
   return (
     <>
-      {title && (
-        <Typography variant="h6" component="h3" gutterBottom>
-          {title}
-        </Typography>
-      )}
-      <Grid container spacing={1}>
-        <Grid size={12}>
-          <Autocomplete
-            name={fieldName}
-            options={vocaDBAutoCompleteOptions}
-            label={labelName}
-            selectOnFocus
-            clearOnBlur
-            handleHomeEndKeys
-            freeSolo
-            textFieldProps={{ variant: "outlined", size: "small" }}
-            // renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label={labelName} />}
-            filterOptions={(
-              v: ExtendedArtist[],
-              params: FilterOptionsState<ExtendedArtist>
-            ) => {
-              if (params.inputValue !== "") {
-                v.push({
-                  id: undefined,
-                  name: `Search for “${params.inputValue}”`,
-                  sortOrder: params.inputValue,
-                  vocaDBSuggestion: true,
-                });
-                v.push({
-                  id: undefined,
-                  name: `Manually add “${params.inputValue}”`,
-                  sortOrder: params.inputValue,
-                  manual: true,
-                });
-              }
-              return v;
-            }}
-            onInputChange={(event: unknown, newValue: string) => {
-              setVocaDBAutoCompleteText(newValue);
-            }}
-            onChange={(event: unknown, newValue, reason: string) => {
-              if (newValue === null) {
-                setVocaDBAutoCompleteOptions([]);
-                if (reason === "clear") {
-                  setValue(fieldName, null);
-                }
-                return;
-              }
-              const newVal = newValue as ExtendedArtist;
-              if (newVal.vocaDBSuggestion) {
-                setImportDialogKeyword(newVal?.sortOrder ?? "");
-                toggleImportDialogOpen(true);
-                setVocaDBAutoCompleteOptions([]);
-              } else if (newVal.manual) {
-                setImportDialogKeyword(newVal?.sortOrder ?? "");
-                toggleManualDialogOpen(true);
-                toggleManualDialogForCreate(true);
-                setVocaDBAutoCompleteOptions([]);
-              } else {
-                setValue(fieldName, newVal);
-              }
-            }}
-            renderOption={(params, option: ExtendedArtist | null) => {
-              let icon = (
-                <MusicNoteIcon
-                  sx={{ color: "text.secondary", marginRight: 2 }}
+      {title && <h3 className="text-lg font-semibold mb-4">{title}</h3>}
+      <div className="grid grid-cols-1 gap-2 w-full">
+        <div>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between text-muted-foreground"
+              >
+                <span className="truncate">
+                  {value
+                    ? `${value.name}${value.id ? ` (#${value.id})` : ""}`
+                    : `Select ${labelName}...`}
+                </span>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-(--radix-popper-anchor-width) max-h-(--radix-popper-available-height) p-0">
+              <Command shouldFilter={false}>
+                <CommandInput
+                  placeholder={`Search for an artist...`}
+                  value={inputValue}
+                  onValueChange={setInputValue}
                 />
-              );
-              if (option?.vocaDBSuggestion)
-                icon = (
-                  <SearchIcon
-                    sx={{ color: "text.secondary", marginRight: 2 }}
-                  />
-                );
-              else if (option?.manual)
-                icon = (
-                  <AddCircleIcon
-                    sx={{ color: "text.secondary", marginRight: 2 }}
-                  />
-                );
-              return (
-                <Stack
-                  component="li"
-                  {...params}
-                  flexDirection="row"
-                  alignItems="center"
-                >
-                  {icon} {option?.name}
-                </Stack>
-              );
-            }}
-            getOptionLabel={(option) => {
-              // Prevent ”Manually add ...” item from being rendered
-              if (option === null || (option as ExtendedArtist).id === null)
-                return "";
-              return (option as ExtendedArtist).name ?? "";
-            }}
-            onFocus={() => setTouched(true)}
-          />
-        </Grid>
-        {value && (
-          <Grid size={12}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              sx={{ marginBottom: 2, flexWrap: { xs: "wrap" } }}
-            >
+                <ScrollArea>
+                  <CommandList>
+                    {isLoading && (
+                      <CommandItem disabled>
+                        <Skeleton className="h-8 w-full" />
+                      </CommandItem>
+                    )}
+                    <CommandEmpty>Enter keywords to search.</CommandEmpty>
+                    {!isLoading && (
+                      <CommandGroup>
+                        {options.map((option) => {
+                          const optionValue = `${option.name}-${option.id}`;
+                          let icon = (
+                            <Music className="text-muted-foreground" />
+                          );
+                          if (option.vocaDBSuggestion && option.isAction)
+                            icon = <Search className="text-muted-foreground" />;
+                          else if (option.manual && option.isAction)
+                            icon = (
+                              <PlusCircle className="text-muted-foreground" />
+                            );
+
+                          return (
+                            <CommandItem
+                              key={option.id ?? option.name}
+                              value={optionValue}
+                              onSelect={handleSelect}
+                              className="flex items-center cursor-pointer"
+                            >
+                              <div className="flex items-center flex-shrink-0">
+                                {icon}
+                              </div>
+                              <div className="flex flex-col flex-grow ml-2">
+                                <span className="text-sm">
+                                  {option.name}
+                                  {option.id ? ` (#${option.id})` : ""}
+                                </span>
+                                {option.type && !option.isAction && (
+                                  <span className="text-xs text-muted-foreground leading-tight">
+                                    {option.type}
+                                  </span>
+                                )}
+                              </div>
+                              {value?.id === option.id && !option.isAction && (
+                                <Check
+                                  className={cn(
+                                    "ml-auto h-4 w-4",
+                                    value?.id === option.id
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                              )}
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    )}
+                    <CommandSeparator />
+                    <CommandGroup>
+                      <CommandItem
+                        onSelect={() => {
+                          form.setValue(fieldName, null as any, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                          setOpen(false);
+                          setInputValue("");
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <X className="text-muted-foreground" />
+                        <span className="ml-2">Unselect artist</span>
+                      </CommandItem>
+                    </CommandGroup>
+                  </CommandList>
+                </ScrollArea>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          {fieldState.error && (
+            <p className="text-sm text-destructive mt-1">
+              {fieldState.error.message}
+            </p>
+          )}
+        </div>
+
+        {value && value.id && (
+          <div className="flex items-center flex-row gap-2 p-2 border rounded-md">
+            <Avatar className="size-14 w-14 h-14 rounded-md border border-border">
+              <AvatarImage
+                className="object-contain"
+                src={value.mainPictureUrl ?? undefined}
+                alt={value.name ?? "Artist picture"}
+              />
+              <AvatarFallback className="rounded-md">
+                <Music />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-grow min-w-0">
               <div>
-                <Avatar
-                  src={value.mainPictureUrl}
-                  variant="rounded"
-                  sx={{ height: "3em", width: "3em", marginRight: 2 }}
-                >
-                  <MusicNoteIcon />
-                </Avatar>
+                <span className="font-medium">{value.name}</span>{" "}
+                <span className="text-sm text-muted-foreground">
+                  ({value.sortOrder}) #{value.id}
+                </span>
               </div>
-              <div style={{ flexGrow: 1, flexBasis: 0 }}>
-                <Typography>{value.name}</Typography>
-                <Typography color="textSecondary">
-                  {value.sortOrder} ({value.type}) #{value.id}
-                </Typography>
-              </div>
-              <div>
-                {(value?.id ?? -1) >= 0 && (
-                  <IconButton
+              {value.type && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  <Badge variant="secondary">{value.type}</Badge>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center">
+              {value.id >= 0 && (
+                <Button variant="ghost" size="icon" asChild>
+                  <a
                     href={`https://vocadb.net/Ar/${value.id}`}
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <OpenInNewIcon />
-                  </IconButton>
-                )}
-                <IconButton
-                  onClick={() => {
-                    toggleManualDialogForCreate(false);
-                    toggleManualDialogOpen(true);
-                  }}
-                >
-                  <EditIcon />
-                </IconButton>
-              </div>
-            </Stack>
-          </Grid>
+                    <ExternalLink />
+                  </a>
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setImportDialogKeyword(value.name ?? "");
+                  toggleManualDialogForCreate(false);
+                  toggleManualDialogOpen(true);
+                }}
+              >
+                <Pencil />
+              </Button>
+            </div>
+          </div>
         )}
-      </Grid>
+      </div>
+
       {isImportDialogOpen && (
         <VocaDBSearchArtistDialog
           isOpen={isImportDialogOpen}
           toggleOpen={toggleImportDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
-          setArtist={(v) => setValue(fieldName, v)}
+          setArtist={(v) =>
+            form.setValue(fieldName, v as any, {
+              shouldValidate: true,
+              shouldDirty: true,
+            })
+          }
         />
       )}
       {isManualDialogOpen && (
@@ -303,10 +412,15 @@ export function SelectArtistEntityBox<T extends string>({
           isOpen={isManualDialogOpen}
           toggleOpen={toggleManualDialogOpen}
           keyword={importDialogKeyword}
+          artistToEdit={value ?? undefined}
           create={isManualDialogForCreate}
-          artistToEdit={value}
           setKeyword={setImportDialogKeyword}
-          setArtist={(v) => setValue(fieldName, v)}
+          setArtist={(v) =>
+            form.setValue(fieldName, v as any, {
+              shouldValidate: true,
+              shouldDirty: true,
+            })
+          }
         />
       )}
     </>

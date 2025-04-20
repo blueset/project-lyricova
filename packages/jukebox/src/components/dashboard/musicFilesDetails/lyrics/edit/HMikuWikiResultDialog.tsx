@@ -1,19 +1,19 @@
-import { useCallback } from "react";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  IconButton,
-} from "@mui/material";
+import { ReactNode, useCallback } from "react";
 import { gql, useQuery } from "@apollo/client";
 import type { HmikuAtWikiEntry } from "@lyricova/api/graphql/types";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { useSnackbar } from "notistack";
+import { Copy } from "lucide-react";
+import { toast } from "sonner";
 import { Link } from "@lyricova/components";
 import type { DocumentNode } from "graphql";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@lyricova/components/components/ui/dialog";
 
 const HMIKU_LYRICS_QUERY = gql`
   query ($id: String!) {
@@ -37,94 +37,91 @@ export default function HMikuWikiResultDialog({
   toggleOpen,
   articleId,
 }: Props) {
-  const snackbar = useSnackbar();
-
-  const handleClose = useCallback(() => {
-    toggleOpen(false);
-  }, [toggleOpen]);
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      toggleOpen(open);
+    },
+    [toggleOpen]
+  );
 
   const query = useQuery<{ hmikuLyrics: HmikuAtWikiEntry }>(
     HMIKU_LYRICS_QUERY,
     {
       variables: { id: articleId || "" },
+      skip: !isOpen || !articleId, // Skip query if dialog is not open or no articleId
     }
   );
 
-  const copyText = useCallback(
-    (text: string) => async () => {
-      navigator.clipboard.writeText(text).then(
-        function () {
-          snackbar.enqueueSnackbar("Copied!", { variant: "success" });
-        },
-        function (err) {
-          console.error("Could not copy text: ", err);
-          snackbar.enqueueSnackbar(`Failed to copy: ${err}`, {
-            variant: "error",
-          });
-        }
-      );
-    },
-    [snackbar]
-  );
+  const copyText = useCallback(async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Copied!");
+    } catch (err) {
+      console.error("Could not copy text: ", err);
+      toast.error(`Failed to copy: ${err}`);
+    }
+  }, []);
 
-  let content = <DialogTitle>Loading...</DialogTitle>;
+  let title: ReactNode = "Loading...";
+  let description: ReactNode = null;
+  let content: ReactNode = null;
+
   if (query.error) {
-    content = (
-      <DialogTitle>
-        Error occurred while loading lyrics: {`${query.error}`}
-      </DialogTitle>
-    );
+    title = "Error";
+    description = `Error occurred while loading lyrics: ${query.error.message}`;
   } else if (query.data) {
     if (!query.data.hmikuLyrics) {
-      content = <DialogTitle>Article #{articleId} is not found.</DialogTitle>;
+      title = "Not Found";
+      description = `Article #${articleId} is not found.`;
     } else {
       const data = query.data.hmikuLyrics;
-      content = (
-        <>
-          <DialogTitle>
+      title = (
+        <div className="flex items-center justify-between">
+          <span>
             <Link
               href={`https://w.atwiki.jp/hmiku/pages/${data.id}.html`}
               target="_blank"
+              className="hover:underline"
             >
               {data.name}
             </Link>{" "}
-            ({data.furigana}, #{data.id})
-            <IconButton
-              aria-label="close"
-              sx={{
-                position: "absolute",
-                right: 8,
-                top: 8,
-                color: (theme) => theme.palette.grey[500],
-              }}
-              onClick={copyText(data.lyrics)}
-            >
-              <ContentCopyIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent dividers>
-            <DialogContentText>
-              <pre>{data.lyrics}</pre>
-            </DialogContentText>
-          </DialogContent>
-        </>
+            <small className="text-muted-foreground">
+              ({data.furigana}, #{data.id})
+            </small>
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Copy lyrics"
+            onClick={() => copyText(data.lyrics)}
+          >
+            <Copy />
+          </Button>
+        </div>
+      );
+      description = null; // No separate description needed when title is complex
+      content = (
+        <pre className="mt-2 max-h-[60vh] overflow-y-auto rounded-md bg-muted p-4 font-mono text-sm">
+          {data.lyrics}
+        </pre>
       );
     }
   }
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="form-dialog-title"
-      scroll="paper"
-    >
-      {content}
-      <DialogActions>
-        <Button onClick={handleClose} color="primary">
-          Close
-        </Button>
-      </DialogActions>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-[600px] grid-rows-[auto_1fr_auto]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          {description && <DialogDescription>{description}</DialogDescription>}
+        </DialogHeader>
+        {content}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => toggleOpen(false)}>
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

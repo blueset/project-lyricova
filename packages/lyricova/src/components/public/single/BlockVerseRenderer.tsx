@@ -25,7 +25,7 @@ export function BlockVerseRenderer({
   language,
   isMain,
 }: BlockVerseRendererProps) {
-  const timelineRef = useRef<gsap.core.Timeline>();
+  const timelineRef = useRef<gsap.core.Timeline>(null);
   const buildTimeline = useCallback(
     (verseRefEl: HTMLElement) => {
       if (timelineRef.current) {

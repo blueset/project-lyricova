@@ -7,33 +7,24 @@
 import type { PlayerState } from "../../../../hooks/types";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import { usePlayerState } from "../../../../hooks/usePlayerState";
-import type { MouseEvent, ChangeEvent, MouseEventHandler } from "react";
-import { useCallback, useEffect, useRef, useMemo, memo } from "react";
-import {
-  Box,
-  Button,
-  FormControlLabel,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  ListItemText,
-  Stack,
-  styled,
-  Switch,
-  Typography,
-} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import type { MouseEvent, MouseEventHandler } from "react";
+import { useCallback, useEffect, useRef, useMemo, memo, useId } from "react";
+import { Pencil } from "lucide-react";
 import _ from "lodash";
 import { buildTimeTag, resolveTimeTag } from "lyrics-kit/core";
 import { linearRegression } from "simple-statistics";
 import DismissibleAlert from "../../DismissibleAlert";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Switch } from "@lyricova/components/components/ui/switch";
+import { Label } from "@lyricova/components/components/ui/label";
+import { AlertDescription } from "@lyricova/components/components/ui/alert";
+import { cn } from "@lyricova/components/utils";
 
 interface LineListItemProps {
   isCurrent: boolean;
   isCursorOn: boolean;
-  onClickCapture?: MouseEventHandler<HTMLDivElement>;
-  onDoubleClickCapture?: MouseEventHandler<HTMLDivElement>;
+  onClickCapture?: MouseEventHandler<HTMLLIElement>;
+  onDoubleClickCapture?: MouseEventHandler<HTMLLIElement>;
   extrapolateTag: number | undefined;
   line: [number, string[]];
 }
@@ -44,58 +35,38 @@ const LineListItem = ({
   onClickCapture,
   onDoubleClickCapture,
   extrapolateTag,
-  line: v,
+  line,
 }: LineListItemProps) => {
-  // console.log("LineListItem render", v);
   return (
-    <ListItemButton
-      dense
-      selected={isCurrent}
+    <li
+      className={cn(
+        "flex items-center px-2 py-1 text-sm cursor-pointer hover:bg-accent",
+        isCurrent && "bg-accent text-accent-foreground"
+      )}
       onClickCapture={onClickCapture}
       onDoubleClickCapture={onDoubleClickCapture}
       tabIndex={-1}
+      data-selected={isCurrent}
     >
-      {isCursorOn && (
-        <ListItemIcon>
-          <EditIcon />
-        </ListItemIcon>
-      )}
-      <ListItemText
-        disableTypography
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "start",
-        }}
-        inset={!isCursorOn}
-      >
-        <Typography
-          variant="body1"
-          component="span"
-          display="block"
-          sx={{ fontVariantNumeric: "tabular-nums" }}
-        >
-          {v[0] != undefined ? `[${buildTimeTag(v[0])}]` : ""}
-        </Typography>
-        <div>
-          {v[1].map((l, lidx) => (
-            <Typography
-              key={lidx}
-              variant="body1"
-              color="textSecondary"
-              display="block"
-            >
+      <span className={cn("w-6 flex-shrink-0", !isCursorOn && "invisible")}>
+        {isCursorOn && <Pencil className="h-4 w-4" />}
+      </span>
+      <div className="flex flex-row items-start flex-grow gap-2">
+        <span className="block tabular-nums w-max flex-shrink-0">
+          {line[0] != undefined ? `[${buildTimeTag(line[0])}]` : ""}
+        </span>
+        <div className="flex-grow">
+          {line[1].map((l, lidx) => (
+            <span key={lidx} className="block text-muted-foreground">
               {l}
-            </Typography>
+            </span>
           ))}
         </div>
-      </ListItemText>
-      <ListItemSecondaryAction>
-        <span style={{ fontVariantNumeric: "tabular-nums" }}>
-          {extrapolateTag && `[${buildTimeTag(extrapolateTag)}]`}
-        </span>
-      </ListItemSecondaryAction>
-    </ListItemButton>
+      </div>
+      <span className="ml-auto tabular-nums text-xs text-muted-foreground">
+        {extrapolateTag != null ? `[${buildTimeTag(extrapolateTag)}]` : ""}
+      </span>
+    </li>
   );
 };
 
@@ -111,13 +82,6 @@ const MemoLineListItem = memo(LineListItem, (prev, next) => {
 
 type LinesPerTag = [number, string[]][];
 
-const ControlRow = styled(Stack)(({ theme }) => ({
-  marginBottom: theme.spacing(1),
-  "&:last-child": {
-    marginBottom: 0,
-  },
-}));
-
 const BLANK_LINE = { index: Infinity, start: Infinity, end: -Infinity };
 
 interface CurrentLineState {
@@ -132,55 +96,79 @@ interface Props {
   fileId: number;
 }
 
+function Instructions() {
+  return (
+    <div className="flex items-center gap-2 p-1 mb-1">
+      <DismissibleAlert variant="info" className="flex-grow">
+        <AlertDescription>
+          Switch to another tab to save changes. ↑WJ/↓RK: Navigate; Home/End:
+          First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5 seconds; Space: Tag;
+          Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter:
+          play/pause).
+        </AlertDescription>
+      </DismissibleAlert>
+    </div>
+  );
+}
+const InstructionsMemo = memo(Instructions);
+
+function ExtrapolateModeToggle({
+  isInExtrapolateMode,
+  handleExtrapolateModeToggle,
+}: {
+  isInExtrapolateMode: boolean;
+  handleExtrapolateModeToggle: (checked: boolean) => void;
+}) {
+  return (
+    <Label className="flex items-center space-x-2">
+      <Switch
+        checked={isInExtrapolateMode}
+        onCheckedChange={handleExtrapolateModeToggle}
+      />
+      Extrapolate mode
+    </Label>
+  );
+}
+const ExtrapolateModeToggleMemo = memo(ExtrapolateModeToggle);
+
 export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
-  /**
-   * Lines per tag:
-   * ```js
-   * [
-   *  ["", ["Untagged line"]],
-   *  ["[12:34.56]", ["Tagged line"]],
-   *  ["[12:56.78]", ["Tagged line with", "[tr]Attachments"]],
-   *  ["", ["Another untagged line"]],
-   * ]
-   * ```
-   */
   const [linesPerTag, setLinesPerTag] = useNamedState<LinesPerTag>(
     [],
     "linesPerTag"
   );
-  const linesPerTagRef = useRef<LinesPerTag>();
+  const linesPerTagRef = useRef<LinesPerTag>(linesPerTag);
   linesPerTagRef.current = linesPerTag;
 
-  const playerRef = useRef<HTMLAudioElement>();
+  const playerRef = useRef<HTMLAudioElement>(null);
   const [playbackRate, setPlaybackRate] = useNamedState(1, "playbackRate");
 
-  const listRef = useRef<HTMLUListElement>();
+  const listRef = useRef<HTMLUListElement>(null);
 
   const [cursor, setCursor] = useNamedState<number>(0, "cursor");
-  const cursorRef = useRef<number | null>();
+  const cursorRef = useRef<number | null>(cursor);
   cursorRef.current = cursor;
 
   const [currentLine, setCurrentLine] = useNamedState<CurrentLineState>(
     BLANK_LINE,
     "currentLine"
   );
-  const currentLineRef = useRef<CurrentLineState>();
+  const currentLineRef = useRef<CurrentLineState>(currentLine);
   currentLineRef.current = currentLine;
 
   const playerState = usePlayerState(playerRef);
-  const playerStateRef = useRef<PlayerState>();
+  const playerStateRef = useRef<PlayerState>(playerState);
   playerStateRef.current = playerState;
 
   const [isInExtrapolateMode, toggleExtrapolateMode] = useNamedState<boolean>(
     false,
     "isInExtrapolateMode"
   );
-  const isInExtrapolateModeRef = useRef<boolean>();
+  const isInExtrapolateModeRef = useRef<boolean>(isInExtrapolateMode);
   isInExtrapolateModeRef.current = isInExtrapolateMode;
   const [extrapolateTags, setExtrapolateTags] = useNamedState<
     (number | null)[]
   >([], "extrapolateTags");
-  const extrapolateTagsRef = useRef<(number | null)[]>();
+  const extrapolateTagsRef = useRef<(number | null)[]>(extrapolateTags);
   extrapolateTagsRef.current = extrapolateTags;
 
   const linearRegressionResult = useMemo<{
@@ -305,9 +293,9 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
   }, [onFrame, playerState]);
 
   const handleExtrapolateModeToggle = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      toggleExtrapolateMode(event.target.checked);
-      if (!event.target.checked) {
+    (checked: boolean) => {
+      toggleExtrapolateMode(checked);
+      if (!checked) {
         setExtrapolateTags([]);
       }
     },
@@ -344,7 +332,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
   );
 
   const onLineClick = useCallback(
-    (idx: number) => (ev: MouseEvent<HTMLDivElement>) => {
+    (idx: number) => (ev: MouseEvent<HTMLLIElement>) => {
       ev.stopPropagation();
       moveCursor(idx);
     },
@@ -352,7 +340,7 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
   );
 
   const onLineDoubleClick = useCallback(
-    (idx: number) => (ev: MouseEvent<HTMLDivElement>) => {
+    (idx: number) => (ev: MouseEvent<HTMLLIElement>) => {
       ev.stopPropagation();
 
       if (!playerRef.current?.duration) {
@@ -447,7 +435,6 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
             ? ((perfNow - playerStateRef.current.startingAt) / 1000) *
               playerStateRef.current.rate
             : playerStateRef.current.progress;
-        console.log("Tag time", time);
         const cursor = cursorRef.current;
         if (!isInExtrapolateModeRef.current) {
           setLinesPerTag((linesPerTag) => {
@@ -526,98 +513,65 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
   ]);
 
   return (
-    <>
-      <div>
-        <Box
-          sx={{
-            position: "sticky",
-            top: 0,
-            left: 0,
-            zIndex: 1,
-            backgroundColor: "#12121280",
-            backdropFilter: "blur(5px)",
-            paddingTop: 1,
-            paddingBottom: 1,
-          }}
-        >
-          <ControlRow p={1} spacing={2} direction="row" alignItems="center">
-            <DismissibleAlert
-              severity="warning"
-              collapseProps={{ sx: { flexGrow: 1 } }}
+    <div className="relative">
+      <div
+        className={cn(
+          "sticky top-0 left-0 z-10 py-1",
+          "bg-background/80 backdrop-blur-sm"
+        )}
+      >
+        <InstructionsMemo />
+        <div className="flex items-center gap-2 p-1 mb-1">
+          <audio
+            ref={playerRef}
+            src={`/api/files/${fileId}/file`}
+            controls
+            className="flex-grow"
+          />
+          <span className="my-2 tabular-nums">@{playbackRate.toFixed(2)}x</span>
+          <ExtrapolateModeToggleMemo
+            isInExtrapolateMode={isInExtrapolateMode}
+            handleExtrapolateModeToggle={handleExtrapolateModeToggle}
+          />
+        </div>
+        {isInExtrapolateMode && (
+          <div className="flex items-center gap-2 p-1 mb-1">
+            <span className="my-2 text-sm">
+              {extrapolateTags.reduce(
+                (prev, curr) => prev + (curr == null ? 0 : 1),
+                0
+              )}{" "}
+              tags added, formula:{" "}
+              <span className="font-serif">
+                <i>y</i> = {linearRegressionResult?.m?.toFixed(3) ?? "??"}
+                <i>x</i> + {linearRegressionResult?.b?.toFixed(3) ?? "??"}
+              </span>
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!linearRegressionResult}
+              onClick={applyExtrapolation}
             >
-              Switch to another tab to save changes. ↑WJ/↓RK: Navigate;
-              Home/End: First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5
-              seconds R: Reset rate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K:
-              speed; Enter: play/pause).
-            </DismissibleAlert>
-          </ControlRow>
-          <ControlRow p={1} spacing={2} direction="row" alignItems="center">
-            <audio
-              ref={playerRef}
-              src={`/api/files/${fileId}/file`}
-              controls
-              style={{ flexGrow: 1 }}
-            />
-            <Typography
-              variant="body1"
-              sx={{
-                marginTop: 2,
-                marginBottom: 2,
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              @{playbackRate.toFixed(2)}x
-            </Typography>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={isInExtrapolateMode}
-                  onChange={handleExtrapolateModeToggle}
-                  color="secondary"
-                />
-              }
-              label="Extrapolate mode"
-            />
-          </ControlRow>
-          {isInExtrapolateMode && (
-            <ControlRow direction="row" alignItems="center">
-              <Box component="span" sx={{ marginTop: 2, marginBottom: 2 }}>
-                {extrapolateTags.reduce(
-                  (prev, curr) => prev + (curr == null ? 0 : 1),
-                  0
-                )}{" "}
-                tags added, formula:{" "}
-                <span style={{ fontFamily: "serif" }}>
-                  <var>y</var> = {linearRegressionResult?.m ?? "??"}
-                  <var>x</var> + {linearRegressionResult?.b ?? "??"}
-                </span>
-              </Box>
-              <Button
-                variant="outlined"
-                color="secondary"
-                disabled={!linearRegressionResult}
-                onClick={applyExtrapolation}
-              >
-                Apply
-              </Button>
-            </ControlRow>
-          )}
-        </Box>
-
-        <List component="ul" dense ref={listRef}>
-          {linesPerTag.map((v, idx) => (
-            <MemoLineListItem
-              line={v}
-              extrapolateTag={extrapolateTags[idx]}
-              isCurrent={idx === currentLine.index}
-              isCursorOn={idx === cursor}
-              onClickCapture={onLineClick(idx)}
-              onDoubleClickCapture={onLineDoubleClick(idx)}
-              key={idx}
-            />
-          ))}
-        </List>
+              Apply
+            </Button>
+          </div>
+        )}
       </div>
-    </>
+
+      <ul ref={listRef} className="space-y-0.5">
+        {linesPerTag.map((v, idx) => (
+          <MemoLineListItem
+            line={v}
+            extrapolateTag={extrapolateTags[idx]}
+            isCurrent={idx === currentLine.index}
+            isCursorOn={idx === cursor}
+            onClickCapture={onLineClick(idx)}
+            onDoubleClickCapture={onLineDoubleClick(idx)}
+            key={idx}
+          />
+        ))}
+      </ul>
+    </div>
   );
 }

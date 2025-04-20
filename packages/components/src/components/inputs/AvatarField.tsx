@@ -1,20 +1,32 @@
-import { Avatar, Theme, type SxProps } from "@mui/material";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import { useField } from "react-final-form";
+import {
+  Avatar as ShadcnAvatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@lyricova/components/components/ui/avatar";
+import { Music } from "lucide-react";
+import { FieldValues, FieldPath, UseFormReturn } from "react-hook-form";
+import { cn } from "@/utils";
 
-export function AvatarField({
-  name,
-  className,
-  sx,
-}: {
-  name: string;
+type AvatarFieldProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> = {
+  form: UseFormReturn<TFieldValues>; // Replace with the correct type for your form
+  name: TName;
   className?: string;
-  sx?: SxProps<Theme>;
-}) {
-  const src = useField<string>(name).input.value;
+};
+
+export function AvatarField<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({ form, name, className }: AvatarFieldProps<TFieldValues, TName>) {
+  const src = form.watch(name);
   return (
-    <Avatar src={src} variant="rounded" className={className} sx={sx}>
-      <MusicNoteIcon />
-    </Avatar>
+    <ShadcnAvatar className={cn("rounded-md", className)}>
+      <AvatarImage src={src} className="rounded-md object-contain" />
+      <AvatarFallback className="rounded-md">
+        <Music />
+      </AvatarFallback>
+    </ShadcnAvatar>
   );
 }

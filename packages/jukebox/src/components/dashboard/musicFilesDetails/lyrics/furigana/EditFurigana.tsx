@@ -1,36 +1,24 @@
-import {
-  Box,
-  Button,
-  Grid,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Stack,
-  Switch,
-  ToggleButton,
-  Toolbar,
-  Tooltip,
-  Typography,
-  useTheme,
-} from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 import { Lyrics, RangeAttribute, FURIGANA } from "lyrics-kit/core";
-import { useSnackbar } from "notistack";
+import { toast } from "sonner";
 import { useNamedState } from "../../../../../hooks/useNamedState";
-import FuriganaLyricsLine from "../../../../FuriganaLyricsLine";
 import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";
+import { FuriganaLineButton } from "./FuriganaLineButton";
 import type { DocumentNode } from "graphql";
-import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
-import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
-import DifferenceIcon from "@mui/icons-material/Difference";
-import { FullWidthAudio } from "../../FullWIdthAudio";
+import { CheckSquare, Wand2, FileDiff } from "lucide-react";
 import { furiganaRomajiMatching } from "./FuriganaRomajiMatching";
-import { furiganaHighlight } from "./furiganaHighlights";
 import { ApplyAllFurigana } from "./ApplyAllFurigana";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Toggle } from "@lyricova/components/components/ui/toggle";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { cn } from "@lyricova/components/utils";
 
 const KARAOKE_TRANSLITERATION_QUERY = gql`
   query ($text: String!) {
@@ -53,9 +41,7 @@ export default function EditFurigana({
   fileId,
   songId,
 }: Props) {
-  const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
-  const theme = useTheme();
 
   const [selectedLine, setSelectedLine] = useNamedState(null, "selectedLine");
   const [autoApplyIdentical, setAutoApplyIdentical] = useNamedState(
@@ -71,30 +57,36 @@ export default function EditFurigana({
       return new Lyrics(lyrics);
     } catch (e) {
       console.error(`Error occurred while loading lyrics text: ${e}`, e);
-      snackbar.enqueueSnackbar(
-        `Error occurred while loading lyrics text: ${e}`,
-        { variant: "error" }
-      );
+      toast.error(`Error occurred while loading lyrics text: ${e}`);
       return null;
     }
-  }, [lyrics, snackbar]);
+  }, [lyrics]);
 
   // Parse and set `lines`.
   const [lines, setLines] = useNamedState<LyricsLine[]>([], "lines");
-  const linesRef = useRef<LyricsLine[]>();
+  const [linesInitialized, setLinesInitialized] = useNamedState(
+    false,
+    "linesInitialized"
+  );
+  const linesInitializedRef = useRef(false);
+  const linesRef = useRef<LyricsLine[]>(lines);
   linesRef.current = lines;
+  linesInitializedRef.current = linesInitialized;
   useEffect(() => {
     if (parsedLyrics !== null) {
       setLines(parsedLyrics.lines);
+      setLinesInitialized(true);
 
       return () => {
-        parsedLyrics.lines = linesRef.current;
-        setLyrics(parsedLyrics.toString());
+        if (linesInitializedRef.current) {
+          parsedLyrics.lines = linesRef.current;
+          setLyrics(parsedLyrics.toString());
+        }
       };
     }
     // dropping dependency [parsedLyrics] to prevent loop with parsedLyrics.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setLines, setLyrics]);
+  }, []);
 
   // Romaji matching from VocaDB
   const [romajiMatching, setRomajiMatching] = useNamedState<
@@ -155,12 +147,9 @@ export default function EditFurigana({
       }
     } catch (e) {
       console.error(`Error occurred while generating furigana: ${e}`, e);
-      snackbar.enqueueSnackbar(
-        `Error occurred while generating furigana: ${e}`,
-        { variant: "error" }
-      );
+      toast.error(`Error occurred while generating furigana: ${e}`);
     }
-  }, [apolloClient, lines, setLines, snackbar]);
+  }, [apolloClient, lines, setLines]);
 
   // Apply furigana to all identical lines
   const applyFuriganaToAll = useCallback(
@@ -202,143 +191,86 @@ export default function EditFurigana({
   );
 
   return (
-    <Grid container spacing={2}>
-      <Grid
-        size={12}
-        sx={{
-          position: "sticky",
-          top: 2,
-          left: 0,
-          zIndex: 2,
-        }}
-      >
-        <FullWidthAudio src={`/api/files/${fileId}/file`} controls />
-      </Grid>
-      <Grid
-        size={{ xs: 12, sm: 5 }}
-        sx={{
-          position: "sticky",
-          top: 60,
-          left: 0,
-          height: "fit-content",
-          zIndex: 2,
-        }}
-      >
-        <Toolbar disableGutters sx={{ p: 0 }}>
-          <Tooltip title="Overwrite with generated furigana">
-            <IconButton onClick={overwriteFurigana}>
-              <AutoFixHighIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Match with VocaDB Romanization">
-            <IconButton
-              onClick={() =>
-                furiganaRomajiMatching({ apolloClient, lines, songId }).then(
-                  (result) => {
-                    // console.log(result);
-                    setRomajiMatching(result);
+    <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+      <div className="col-span-full sticky top-0 left-0 z-10">
+        <audio className="w-full" src={`/api/files/${fileId}/file`} controls />
+      </div>
+      <div className="col-span-full sm:col-span-5 sticky top-18 left-0 h-fit z-10 bg-background/50 backdrop-blur-lg">
+        <div className="flex items-center flex-wrap">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" onClick={overwriteFurigana}>
+                  <Wand2 /> <span className="hidden md:inline">Generate</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Overwrite with generated furigana</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    furiganaRomajiMatching({
+                      apolloClient,
+                      lines,
+                      songId,
+                    }).then((result) => setRomajiMatching(result))
                   }
-                )
-              }
-            >
-              <DifferenceIcon />
-            </IconButton>
-          </Tooltip>
-          <ApplyAllFurigana setLines={setLines} />
-          <Tooltip title="Auto-apply furigana to identical lines">
-            <ToggleButton
-              value="check"
-              selected={autoApplyIdentical}
-              size="small"
-              color="secondary"
-              onChange={() => setAutoApplyIdentical((v) => !v)}
-            >
-              <PlaylistAddCheckIcon />
-            </ToggleButton>
-          </Tooltip>
-        </Toolbar>
-        <Box sx={{ marginTop: 2, marginBottom: 2 }}>
+                >
+                  <FileDiff /> <span className="hidden md:inline">Diff</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Match with VocaDB Romanization</TooltipContent>
+            </Tooltip>
+
+            <ApplyAllFurigana setLines={setLines} />
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Toggle
+                    variant="default"
+                    pressed={autoApplyIdentical}
+                    onPressedChange={setAutoApplyIdentical}
+                  >
+                    <CheckSquare />{" "}
+                    <span className="hidden md:inline">Auto apply</span>
+                  </Toggle>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                Auto-apply furigana to identical lines
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <div className="mt-4 mb-4">
           {selectedLine != null && selectedLine < lines.length && (
             <EditFuriganaLine
               line={lines[selectedLine]}
               setLine={saveCurrentLine(selectedLine)}
             />
           )}
-        </Box>
-      </Grid>
-      <Grid size={{ xs: 12, sm: 7 }}>
-        <List dense>
-          {lines.map((v, idx) => (
-            <ListItem
+        </div>
+      </div>
+      <div className="col-span-full sm:col-span-7">
+        <div className="space-y-1">
+          {lines.map((line, idx) => (
+            <FuriganaLineButton
               key={idx}
-              disablePadding
-              secondaryAction={
-                <Tooltip
-                  title="Apply furigana to all identical lines"
-                  placement="bottom-end"
-                >
-                  <IconButton onClick={applyFuriganaToAll(idx)}>
-                    <PlaylistAddCheckIcon />
-                  </IconButton>
-                </Tooltip>
-              }
-              sx={{
-                "& .MuiListItemSecondaryAction-root": {
-                  visibility: "hidden",
-                },
-                "&:hover .MuiListItemSecondaryAction-root, &:focus .MuiListItemSecondaryAction-root":
-                  {
-                    visibility: "visible",
-                  },
-              }}
-            >
-              <ListItemButton
-                onClick={() => setSelectedLine(idx)}
-                selected={selectedLine === idx}
-              >
-                <ListItemText
-                  primaryTypographyProps={{
-                    variant: "body1",
-                    lang: "ja",
-                    sx: {
-                      fontSize: "2em",
-                      minHeight: "1em",
-                    },
-                  }}
-                >
-                  <FuriganaLyricsLine
-                    lyricsKitLine={v}
-                    rubyStyles={furiganaHighlight(theme)}
-                  />
-                  {romajiMatching[idx] && (
-                    <Box sx={{ lineHeight: 1 }}>
-                      {romajiMatching[idx].map(([i, text], idx) => (
-                        <Typography
-                          key={idx}
-                          lang="ja"
-                          component="span"
-                          variant="body2"
-                          sx={{
-                            textDecoration: i === -1 ? "line-through" : "none",
-                            color:
-                              i === 0
-                                ? "text.primary"
-                                : i === -1
-                                ? "primary.main"
-                                : "secondary.main",
-                          }}
-                        >
-                          {text}
-                        </Typography>
-                      ))}
-                    </Box>
-                  )}
-                </ListItemText>
-              </ListItemButton>
-            </ListItem>
+              line={line}
+              idx={idx}
+              selectedLine={selectedLine}
+              setSelectedLine={setSelectedLine}
+              romajiMatching={romajiMatching}
+              applyFuriganaToAll={applyFuriganaToAll}
+            />
           ))}
-        </List>
-      </Grid>
-    </Grid>
+        </div>
+      </div>
+    </div>
   );
 }

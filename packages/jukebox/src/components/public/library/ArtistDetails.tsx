@@ -1,38 +1,16 @@
 "use client";
 
-import {
-  Avatar,
-  Box,
-  Chip,
-  IconButton,
-  List,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Stack,
-  Typography,
-} from "@mui/material";
 import { gql, useQuery } from "@apollo/client";
-import { MusicFileFragments, useAuthContext } from "@lyricova/components";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import React from "react";
-import { useRouter } from "next/compat/router";
-import type { Artist } from "@lyricova/api/graphql/types";
-import Alert from "@mui/material/Alert";
-import _ from "lodash";
-import RecentActorsIcon from "@mui/icons-material/RecentActors";
-import filesize from "filesize";
-import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
-import ShuffleIcon from "@mui/icons-material/Shuffle";
-import FindInPageIcon from "@mui/icons-material/FindInPage";
-import ButtonRow from "../../ButtonRow";
 import {
-  bindMenu,
-  bindTrigger,
-  usePopupState,
-} from "material-ui-popup-state/hooks";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import TrackListRow from "./TrackListRow";
+  MusicFileFragments,
+  useAuthContext,
+  NextComposedLink,
+} from "@lyricova/components";
+import React from "react";
+import { useRouter } from "next/navigation";
+import type { Artist } from "@lyricova/api/graphql/types";
+import _ from "lodash";
+import filesize from "filesize";
 import type { DocumentNode } from "graphql";
 import {
   playTrack,
@@ -40,6 +18,32 @@ import {
   loadTracks,
 } from "../../../redux/public/playlist";
 import { useAppDispatch } from "../../../redux/public/store";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@lyricova/components/components/ui/avatar";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Alert,
+  AlertDescription,
+} from "@lyricova/components/components/ui/alert";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@lyricova/components/components/ui/dropdown-menu";
+import {
+  AlertCircle,
+  ChevronLeft,
+  MoreVertical,
+  Shuffle,
+  TextSearch,
+  Users,
+  Play,
+} from "lucide-react";
+import TrackListRow from "./TrackListRow";
 
 const ARTIST_DETAILS_QUERY = gql`
   query ($id: Int!) {
@@ -89,22 +93,26 @@ export default function ArtistDetails({ id, type }: Props) {
   const router = useRouter();
   const { user } = useAuthContext();
   const dispatch = useAppDispatch();
-  const popupState = usePopupState({
-    variant: "popover",
-    popupId: "single-artist-overflow-menu",
-  });
 
   const query = useQuery<{ artist: Artist }>(ARTIST_DETAILS_QUERY, {
     variables: { id },
   });
   let content;
 
-  if (query.loading) content = <Alert severity="info">Loading...</Alert>;
+  if (query.loading) content = <Alert>Loading...</Alert>;
   else if (query.error)
-    content = <Alert severity="error">Error: {`${query.error}`}</Alert>;
+    content = (
+      <Alert variant="destructive">
+        <AlertCircle />
+        <AlertDescription>Error: {`${query.error}`}</AlertDescription>
+      </Alert>
+    );
   else if (query.data.artist === null)
     content = (
-      <Alert severity="error">Error: Artist #{id} was not found.</Alert>
+      <Alert variant="destructive">
+        <AlertCircle />
+        <AlertDescription>Error: Artist #{id} was not found.</AlertDescription>
+      </Alert>
     );
   else {
     const artist = query.data.artist;
@@ -126,87 +134,73 @@ export default function ArtistDetails({ id, type }: Props) {
 
     content = (
       <>
-        <Stack direction="row" alignItems="center">
-          <Avatar
-            variant="rounded"
-            src={artist.mainPictureUrl}
-            sx={{
-              marginRight: 1,
-              height: "4em",
-              width: "4em",
-            }}
-            imgProps={{
-              style: { objectPosition: "top center" },
-            }}
-          >
-            <RecentActorsIcon fontSize="large" />
-          </Avatar>
-          <Box sx={{ flexGrow: 1, width: 0 }}>
-            <Typography variant="h6" lang="ja">
-              {artist.name}
-            </Typography>
-            <Typography variant="body2" color="textSecondary" lang="ja">
-              {artist.sortOrder}, {artist.type}
-              {". "}
-              {trackCount} {trackCount < 2 ? "song" : "songs"}, {totalMinutes}{" "}
-              {totalMinutes < 2 ? "minute" : "minutes"}, {filesize(totalSize)}
-            </Typography>
-          </Box>
-          <ButtonRow>
+        <div className="flex flex-col items-start gap-2 @3xl/details:flex-row @3xl/details:justify-between @3xl/details:items-center">
+          <div className="flex items-center gap-4">
+            <Avatar
+              className="h-18 w-18 rounded-md"
+              style={{ objectPosition: "top center" }}
+            >
+              <AvatarImage src={artist.mainPictureUrl} />
+              <AvatarFallback className="rounded-md">
+                <Users className="h-8 w-8" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-grow min-w-0">
+              <h2 className="text-xl font-semibold" lang="ja">
+                {artist.name}
+              </h2>
+              <p className="text-sm text-muted-foreground" lang="ja">
+                {artist.sortOrder}, {artist.type}
+                {". "}
+                {trackCount} {trackCount < 2 ? "song" : "songs"}, {totalMinutes}{" "}
+                {totalMinutes < 2 ? "minute" : "minutes"}, {filesize(totalSize)}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
             {canPlay && (
-              <Chip
-                icon={<PlaylistPlayIcon />}
-                label="Play"
-                clickable
-                onClick={playAll}
-              />
+              <Button variant="outline" size="sm" onClick={playAll}>
+                <Play />
+                Play
+              </Button>
             )}
             {canPlay && (
-              <Chip
-                icon={<ShuffleIcon />}
-                label="Shuffle"
-                clickable
-                onClick={shuffleAll}
-              />
+              <Button variant="outline" size="sm" onClick={shuffleAll}>
+                <Shuffle />
+                Shuffle
+              </Button>
             )}
             {artist.id >= 0 && (
-              <Chip
-                icon={<FindInPageIcon />}
-                label="VocaDB"
-                clickable
-                onClick={() =>
-                  window.open(`https://vocadb.net/Ar/${artist.id}`, "_blank")
-                }
-              />
+              <Button variant="outline" size="sm" asChild>
+                <NextComposedLink
+                  href={`https://vocadb.net/Ar/${artist.id}`}
+                  target="_blank"
+                >
+                  <TextSearch />
+                  VocaDB
+                </NextComposedLink>
+              </Button>
             )}
-            <IconButton {...bindTrigger(popupState)}>
-              <MoreVertIcon />
-            </IconButton>
-            <Menu
-              id={"single-album-overflow-menu"}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              {...bindMenu(popupState)}
-            >
-              <MenuItem
-                disabled={!user}
-                onClick={() => {
-                  window.open(`/dashboard/artists/${artist.id}`);
-                  popupState.close();
-                }}
-              >
-                <ListItemText primary="Edit artist entity" />
-              </MenuItem>
-            </Menu>
-          </ButtonRow>
-        </Stack>
-        <List>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild disabled={!user}>
+                  <NextComposedLink
+                    href={`/dashboard/artists/${artist.id}`}
+                    target="_blank"
+                  >
+                    Edit artist entity
+                  </NextComposedLink>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        <div className="mt-4">
           {_.sortBy(
             artist.songs.filter((v) => v.files.length),
             "sortOrder"
@@ -219,22 +213,20 @@ export default function ArtistDetails({ id, type }: Props) {
               showAlbum
             />
           ))}
-        </List>
+        </div>
       </>
     );
   }
 
   return (
-    <Box sx={{ marginTop: 2, marginBottom: 2, marginLeft: 4, marginRight: 4 }}>
-      <Chip
-        label={type}
-        icon={<ArrowBackIcon />}
-        clickable
-        size="small"
-        sx={{ marginTop: 2, marginBottom: 2, textTransform: "capitalize" }}
-        onClick={() => router.push(`/library/${type}`)}
-      />
+    <div className="mt-2 mb-2 mx-4">
+      <Button variant="outline" size="sm" className="my-2 capitalize" asChild>
+        <NextComposedLink href={`/library/${type}`}>
+          <ChevronLeft />
+          {type}
+        </NextComposedLink>
+      </Button>
       {content}
-    </Box>
+    </div>
   );
 }

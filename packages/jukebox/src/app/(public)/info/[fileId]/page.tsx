@@ -1,8 +1,7 @@
 "use client";
 
-import { Box, Chip } from "@mui/material";
 import { NextComposedLink, useAuthContext } from "@lyricova/components";
-import ButtonRow from "@/components/ButtonRow";
+import { Button } from "@lyricova/components/components/ui/button";
 import React from "react";
 import FileSongInfo from "@/components/public/FileSongInfo";
 import { useAppSelector } from "@/redux/public/store";
@@ -16,24 +15,20 @@ export default function InformationById() {
   const fileId = fileIdString ? parseInt(fileIdString as string) : null;
 
   return (
-    <Box p={4} pt={0}>
+    <div className="p-4 pt-0">
       {currentSong && (
         <FileSongInfo partialFile={currentSong} fileId={fileId} />
       )}
-      {user && (
-        <ButtonRow>
-          {currentSong && (
-            <Chip
-              label="Edit song"
-              component={NextComposedLink}
-              target="_blank"
-              href={`/dashboard/review/${fileId ?? currentSong.id}`}
-              clickable
-              variant="outlined"
-            />
-          )}
-        </ButtonRow>
+      {user && currentSong && (
+        <Button variant="outline" size="sm" asChild>
+          <NextComposedLink
+            target="_blank"
+            href={`/dashboard/review/${fileId ?? currentSong.id}`}
+          >
+            Edit song
+          </NextComposedLink>
+        </Button>
       )}
-    </Box>
+    </div>
   );
 }

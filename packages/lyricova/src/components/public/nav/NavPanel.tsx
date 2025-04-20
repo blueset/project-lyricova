@@ -1,13 +1,9 @@
 "use client";
 
-import IconButton from "@mui/material/IconButton";
-import Portal from "@mui/material/Portal";
-import Tooltip from "@mui/material/Tooltip";
+import { Root as Portal } from "@radix-ui/react-portal";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import classes from "./NavPanel.module.scss";
-import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";
 import { Title } from "./Title";
 import { jukeboxUrl } from "../../../utils/consts";
 import gsap from "gsap";
@@ -18,6 +14,13 @@ import {
 } from "body-scroll-lock";
 import { usePathname } from "next/navigation";
 import { Link } from "../Link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Menu, X } from "lucide-react";
 
 interface NavEntryProps {
   href: string;
@@ -68,7 +71,7 @@ function NavEntry({ href, children, rel }: NavEntryProps) {
 
 export function NavPanel() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const timelineRef = useRef<gsap.core.Timeline>();
+  const timelineRef = useRef<gsap.core.Timeline>(null);
   const togglePanel = useCallback(
     (open: boolean) => {
       setIsPanelOpen(open);
@@ -146,13 +149,18 @@ export function NavPanel() {
             className={clsx("container verticalPadding", classes.navPanel)}
             onClick={(e) => e.stopPropagation()}
           >
-            <Tooltip title="Close menu">
-              <IconButton
-                onClick={() => togglePanel(false)}
-                data-nav-icon="close"
-              >
-                <CloseIcon />
-              </IconButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghostBright"
+                  size="icon"
+                  onClick={() => togglePanel(false)}
+                  data-nav-icon="close"
+                >
+                  <X />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Close menu</TooltipContent>
             </Tooltip>
             <nav className={classes.nav} ref={(elm) => buildTimeline(elm)}>
               <NavEntry href={jukeboxUrl}>Jukebox</NavEntry>
@@ -170,10 +178,18 @@ export function NavPanel() {
           </header>
         </div>
       </Portal>
-      <Tooltip title="Menu">
-        <IconButton onClick={() => togglePanel(true)}>
-          <MenuIcon />
-        </IconButton>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghostBright"
+            size="icon"
+            onClick={() => togglePanel(true)}
+            data-nav-icon="menu"
+          >
+            <Menu />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Menu</TooltipContent>
       </Tooltip>
     </>
   );

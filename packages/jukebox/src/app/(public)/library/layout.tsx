@@ -1,7 +1,11 @@
 "use client";
-import type { ChangeEvent, ReactNode } from "react";
-import { AppBar, Box, Paper, Tab, Tabs } from "@mui/material";
+import type { ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@lyricova/components/components/ui/tabs";
 
 export default function LibraryLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -9,38 +13,26 @@ export default function LibraryLayout({ children }: { children: ReactNode }) {
   const match = pathname.match(/^\/library\/(\w+)\/?.*/);
   const tabBarValue = match ? match[1] : "tracks";
 
-  const handleChange = (event: ChangeEvent<unknown>, newValue: string) => {
-    return router.push(`/library/${newValue}`);
+  const handleTabChange = (value: string) => {
+    router.push(`/library/${value}`);
   };
 
   return (
-    <Paper
-      sx={{
-        height: "100%",
-        marginLeft: 4,
-        marginRight: 4,
-        backgroundColor: "background.default",
-        display: "flex",
-        flexDirection: "column",
-      }}
+    <Tabs
+      value={tabBarValue}
+      onValueChange={handleTabChange}
+      className="mx-4 self-start h-full"
     >
-      <AppBar position="static" color="default">
-        <Tabs
-          value={tabBarValue}
-          onChange={handleChange}
-          aria-label="Library sections"
-          textColor="primary"
-          indicatorColor="primary"
-          variant="scrollable"
-        >
-          <Tab label="Tracks" value="tracks" />
-          <Tab label="Albums" value="albums" />
-          <Tab label="Producers" value="producers" />
-          <Tab label="Vocalists" value="vocalists" />
-          <Tab label="Playlists" value="playlists" />
-        </Tabs>
-      </AppBar>
-      <Box sx={{ flexGrow: 1, flexBasis: 0, overflow: "auto" }}>{children}</Box>
-    </Paper>
+      <TabsList className="overflow-x-auto self-start shrink-0">
+        <TabsTrigger value="tracks">Tracks</TabsTrigger>
+        <TabsTrigger value="albums">Albums</TabsTrigger>
+        <TabsTrigger value="producers">Producers</TabsTrigger>
+        <TabsTrigger value="vocalists">Vocalists</TabsTrigger>
+        <TabsTrigger value="playlists">Playlists</TabsTrigger>
+      </TabsList>
+      <div className="flex flex-col h-full bg-background rounded-t-md">
+        <div className="flex-grow h-0 overflow-auto">{children}</div>
+      </div>
+    </Tabs>
   );
 }

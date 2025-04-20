@@ -1,10 +1,11 @@
 import {
-  Box,
-  CircularProgress,
-  Typography,
   Card,
   CardContent,
-} from "@mui/material";
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@lyricova/components/components/ui/card";
+import { cn } from "@lyricova/components/utils";
 import React from "react";
 
 interface PercentageCardProps {
@@ -20,72 +21,39 @@ export function PercentageCard({
   total = 1,
   className,
 }: PercentageCardProps) {
-  let rotator = <></>;
-  let valueText = <>...</>;
-  if (value !== null && total !== null) {
-    const percentage = total === 0 ? 0 : (value / total) * 100;
-    valueText = (
+  const percentage = !value || !total ? 0 : (value / total) * 100;
+  const valueText =
+    value === undefined || total === undefined ? (
+      "..."
+    ) : (
       <>
         {value}
-        <small>/{total}</small>
+        <small> / {total}</small>
       </>
     );
-    rotator = (
-      <Box
-        position="relative"
-        display="inline-flex"
-        className="rotator"
-        sx={{ float: "right" }}
-      >
-        <CircularProgress
-          size="6em"
-          value={100}
-          thickness={5}
-          className="background"
-          variant="determinate"
-          sx={{ color: "grey.800" }}
-        />
-        <CircularProgress
-          size="6em"
-          value={percentage}
-          thickness={5}
-          className="foreground"
-          variant="determinate"
-          sx={{ strokeLinecap: "round", position: "absolute" }}
-        />
-        <Box
-          top={0}
-          left={0}
-          bottom={0}
-          right={0}
-          position="absolute"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Typography
-            variant="body1"
-            component="div"
-            color="textPrimary"
-            sx={{ fontSize: "1.75em" }}
-            className="percentageText"
-          >
-            {`${Math.round(percentage)}`}
-            <small style={{ fontSize: "0.65em" }}>%</small>
-          </Typography>
-        </Box>
-      </Box>
-    );
-  }
+
   return (
-    <Card className={className}>
-      <CardContent>
-        {rotator}
-        <Typography color="textSecondary" gutterBottom>
-          {title}
-        </Typography>
-        <Typography variant="h3">{valueText}</Typography>
-      </CardContent>
+    <Card className={cn("@container/card relative overflow-hidden", className)}>
+      <div
+        className="absolute inset-0 bg-gradient-to-r from-info/30 to-info/50 z-0"
+        style={{ width: `${Math.round(percentage)}%` }}
+      >
+        <div className="absolute right-0 top-0 bottom-0 w-[0.5px] bg-info-foreground/30"></div>
+      </div>
+      <CardHeader className="relative z-10">
+        <CardDescription>{title} </CardDescription>
+        <CardTitle className="@[250px]/card:text-4xl text-2xl font-semibold tabular-nums flex items-center justify-between">
+          <span>{valueText}</span>
+          {value !== undefined && total !== undefined && (
+            <div className="tabular-nums">
+              <span className="">
+                {Math.round(percentage)}
+                <small>%</small>
+              </span>
+            </div>
+          )}
+        </CardTitle>
+      </CardHeader>
     </Card>
   );
 }

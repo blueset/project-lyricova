@@ -1,28 +1,40 @@
 "use client";
 
 import type { Artist } from "@lyricova/api/graphql/types";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  MenuItem,
-  Stack,
-} from "@mui/material";
 import { useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import { TransliterationAdornment } from "../adornments/TransliterationAdornment";
-import { useSnackbar } from "notistack";
-import * as yup from "yup";
+import { toast } from "sonner";
+import { z } from "zod";
 import { ArtistFragments } from "../../utils/fragments";
-import { Form } from "react-final-form";
-import { makeValidate, Select, TextField } from "mui-rff";
-import { AvatarField } from "../inputs/AvatarField";
-import finalFormMutators from "../../utils/finalFormMutators";
 import { DocumentNode } from "graphql";
-import React from "react";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@lyricova/components/components/ui/form";
+import { Input } from "@lyricova/components/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@lyricova/components/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+} from "@lyricova/components/components/ui/sheet";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { AvatarField } from "../inputs/AvatarField";
 
 const NEW_ARTIST_MUTATION = gql`
   mutation ($data: ArtistInput!) {
@@ -44,12 +56,17 @@ const UPDATE_ARTIST_MUTATION = gql`
   ${ArtistFragments.SelectArtistEntry}
 ` as DocumentNode;
 
-interface FormValues {
-  name: string;
-  sortOrder: string;
-  mainPictureUrl?: string;
-  type: string;
-}
+const formSchema = z.object({
+  name: z.string().min(1, "Artist name is required"),
+  sortOrder: z.string().min(1, "Artist sort order is required"),
+  mainPictureUrl: z
+    .string()
+    .url("Main picture URL is not a valid URL.")
+    .optional(),
+  type: z.string().min(1, "Type must be selected"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface Props {
   isOpen: boolean;
@@ -71,230 +88,224 @@ export function ArtistEntityDialog({
   artistToEdit,
 }: Props) {
   const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    values:
+      create || !artistToEdit
+        ? {
+            name: keyword,
+            sortOrder: "",
+            mainPictureUrl: "",
+            type: "Unknown",
+          }
+        : {
+            name: artistToEdit.name ?? "",
+            sortOrder: artistToEdit.sortOrder ?? "",
+            mainPictureUrl: artistToEdit.mainPictureUrl ?? "",
+            type: artistToEdit.type ?? "",
+          },
+
+    resetOptions: {
+      keepDefaultValues: true,
+    },
+  });
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
     setKeyword("");
   }, [toggleOpen, setKeyword]);
 
-  const initialValues =
-    create || !artistToEdit
-      ? {
-          name: keyword,
-          sortOrder: "",
-          mainPictureUrl: "",
-          type: "Unknown",
-        }
-      : {
-          name: artistToEdit.name,
-          sortOrder: artistToEdit.sortOrder,
-          mainPictureUrl: artistToEdit.mainPictureUrl,
-          type: artistToEdit.type,
-        };
-
   const artistId = artistToEdit?.id ?? null;
 
+  const onSubmit = async (data: FormValues) => {
+    try {
+      if (create) {
+        const result = await apolloClient.mutate<{
+          newArtist: Partial<Artist>;
+        }>({
+          mutation: NEW_ARTIST_MUTATION,
+          variables: { data },
+        });
+
+        if (result.data) {
+          setArtist(result.data.newArtist);
+          toast.success(
+            `Artist "${result.data.newArtist.name}" is successfully created.`
+          );
+          handleClose();
+        }
+      } else {
+        const result = await apolloClient.mutate<{
+          updateArtist: Partial<Artist>;
+        }>({
+          mutation: UPDATE_ARTIST_MUTATION,
+          variables: { id: artistId, data },
+        });
+
+        if (result.data) {
+          setArtist(result.data.updateArtist);
+          toast.success(
+            `Artist "${result.data.updateArtist.name}" is successfully updated.`
+          );
+          apolloClient.cache.evict({ id: `Artist:${artistId}` });
+          handleClose();
+        }
+      }
+    } catch (e) {
+      console.error(
+        `Error occurred while ${create ? "creating" : "updating"} artist #${
+          data.name
+        }.`,
+        e
+      );
+      toast.error(
+        `Error occurred while ${create ? "creating" : "updating"} artist #${
+          data.name
+        }. (${e})`
+      );
+    }
+  };
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="form-dialog-title"
-      scroll="paper"
-    >
-      <Form<FormValues>
-        initialValues={initialValues}
-        mutators={{
-          ...finalFormMutators,
-        }}
-        subscription={{}}
-        validate={makeValidate(
-          yup.object({
-            name: yup.string().required("Artist name is required"),
-            sortOrder: yup.string().required("Artist sort order is required"),
-            mainPictureUrl: yup
-              .string()
-              .nullable()
-              .url("Main picture URL is not a valid URL."),
-            type: yup.string().required("Type must be selected."),
-          })
-        )}
-        onSubmit={async (data) => {
-          try {
-            if (create) {
-              const result = await apolloClient.mutate<{
-                newArtist: Partial<Artist>;
-              }>({
-                mutation: NEW_ARTIST_MUTATION,
-                variables: { data },
-              });
+    <Sheet open={isOpen} onOpenChange={handleClose}>
+      <SheetContent className="w-5/6 md:max-w-lg lg:max-w-2xl">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col h-full"
+          >
+            <SheetHeader>
+              <SheetTitle>
+                {create
+                  ? "Create new artist entity"
+                  : `Edit artist entity #${artistId}`}
+              </SheetTitle>
+            </SheetHeader>
 
-              if (result.data) {
-                setArtist(result.data.newArtist);
-                snackbar.enqueueSnackbar(
-                  `Artist “${result.data.newArtist.name}” is successfully created.`,
-                  {
-                    variant: "success",
-                  }
-                );
-                handleClose();
-              }
-            } else {
-              const result = await apolloClient.mutate<{
-                updateArtist: Partial<Artist>;
-              }>({
-                mutation: UPDATE_ARTIST_MUTATION,
-                variables: { id: artistId, data },
-              });
+            <div className="grow basis-0 flex flex-col gap-4 overflow-auto py-4 px-6 -mx-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              if (result.data) {
-                setArtist(result.data.updateArtist);
-                snackbar.enqueueSnackbar(
-                  `Artist “${result.data.updateArtist.name}” is successfully updated.`,
-                  {
-                    variant: "success",
-                  }
-                );
-                apolloClient.cache.evict({ id: `Artist:${artistId}` });
-                handleClose();
-              }
-            }
-          } catch (e) {
-            console.error(
-              `Error occurred while ${
-                create ? "creating" : "updating"
-              } artist #${data.name}.`,
-              e
-            );
-            snackbar.enqueueSnackbar(
-              `Error occurred while ${
-                create ? "creating" : "updating"
-              } artist #${data.name}. (${e})`,
-              {
-                variant: "error",
-              }
-            );
-          }
-        }}
-      >
-        {({ submitting, handleSubmit }) => (
-          <>
-            <DialogTitle id="form-dialog-title">
-              {create
-                ? "Create new artist entity"
-                : `Edit artist entity #${artistId}`}
-            </DialogTitle>
-            <DialogContent dividers>
-              <Grid container spacing={1}>
-                <Grid size={12}>
-                  <TextField
-                    variant="outlined"
-                    margin="dense"
-                    required
-                    fullWidth
-                    name="name"
-                    type="text"
-                    label="Name"
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <TextField
-                    variant="outlined"
-                    margin="dense"
-                    required
-                    fullWidth
-                    InputProps={{
-                      endAdornment: (
-                        <TransliterationAdornment
-                          sourceName="name"
-                          destinationName="sortOrder"
-                        />
-                      ),
-                    }}
-                    name="sortOrder"
-                    type="text"
-                    label="Sort order"
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <Stack direction="row" alignItems="center">
-                    <AvatarField
-                      name="mainPictureUrl"
-                      sx={{
-                        marginRight: 2,
-                        height: "3em",
-                        width: "3em",
-                      }}
-                    />
-                    <TextField
-                      variant="outlined"
-                      margin="dense"
-                      fullWidth
-                      name="mainPictureUrl"
-                      type="text"
-                      label="Main picture URL"
-                    />
-                  </Stack>
-                </Grid>
-                <Grid size={12}>
-                  <Select
-                    type="text"
-                    label="Type"
-                    name="type"
-                    formControlProps={{
-                      margin: "dense",
-                      variant: "outlined",
-                      fullWidth: true,
-                    }}
-                    inputProps={{ name: "type", id: "type" }}
-                  >
-                    <MenuItem value="Unknown">Unknown</MenuItem>
-                    <MenuItem value="Circle">Circle</MenuItem>
-                    <MenuItem value="Label">Label</MenuItem>
-                    <MenuItem value="Producer">Producer</MenuItem>
-                    <MenuItem value="Animator">Animator</MenuItem>
-                    <MenuItem value="Illustrator">Illustrator</MenuItem>
-                    <MenuItem value="Lyricist">Lyricist</MenuItem>
-                    <MenuItem value="Vocaloid">Vocaloid</MenuItem>
-                    <MenuItem value="UTAU">UTAU</MenuItem>
-                    <MenuItem value="CeVIO">CeVIO</MenuItem>
-                    <MenuItem value="OtherVoiceSynthesizer">
-                      Other Voice Synthesizer
-                    </MenuItem>
-                    <MenuItem value="OtherVocalist">Other Vocalist</MenuItem>
-                    <MenuItem value="OtherGroup">Other Group</MenuItem>
-                    <MenuItem value="OtherIndividual">
-                      Other Individual
-                    </MenuItem>
-                    <MenuItem value="Utaite">Utaite</MenuItem>
-                    <MenuItem value="Band">Band</MenuItem>
-                    <MenuItem value="Vocalist">Vocalist</MenuItem>
-                    <MenuItem value="Character">Character</MenuItem>
-                    <MenuItem value="SynthesizerV">SynthesizerV</MenuItem>
-                    <MenuItem value="CoverArtist">CoverArtist</MenuItem>
-                    <MenuItem value="NEUTRINO">NEUTRINO</MenuItem>
-                    <MenuItem value="VoiSona">VoiSona</MenuItem>
-                    <MenuItem value="NewType">NewType</MenuItem>
-                    <MenuItem value="Voiceroid">Voiceroid</MenuItem>
-                  </Select>
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose} color="primary">
+              <FormField
+                control={form.control}
+                name="sortOrder"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sort order</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <TransliterationAdornment
+                        form={form}
+                        sourceName="name"
+                        destinationName="sortOrder"
+                      />
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="mainPictureUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Main picture URL</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <AvatarField
+                        form={form}
+                        className="size-12"
+                        name="mainPictureUrl"
+                      />
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Unknown">Unknown</SelectItem>
+                        <SelectItem value="Circle">Circle</SelectItem>
+                        <SelectItem value="Label">Label</SelectItem>
+                        <SelectItem value="Producer">Producer</SelectItem>
+                        <SelectItem value="Animator">Animator</SelectItem>
+                        <SelectItem value="Illustrator">Illustrator</SelectItem>
+                        <SelectItem value="Lyricist">Lyricist</SelectItem>
+                        <SelectItem value="Vocaloid">Vocaloid</SelectItem>
+                        <SelectItem value="UTAU">UTAU</SelectItem>
+                        <SelectItem value="CeVIO">CeVIO</SelectItem>
+                        <SelectItem value="OtherVoiceSynthesizer">
+                          Other Voice Synthesizer
+                        </SelectItem>
+                        <SelectItem value="OtherVocalist">
+                          Other Vocalist
+                        </SelectItem>
+                        <SelectItem value="OtherGroup">Other Group</SelectItem>
+                        <SelectItem value="OtherIndividual">
+                          Other Individual
+                        </SelectItem>
+                        <SelectItem value="Utaite">Utaite</SelectItem>
+                        <SelectItem value="Band">Band</SelectItem>
+                        <SelectItem value="Vocalist">Vocalist</SelectItem>
+                        <SelectItem value="Character">Character</SelectItem>
+                        <SelectItem value="SynthesizerV">
+                          SynthesizerV
+                        </SelectItem>
+                        <SelectItem value="CoverArtist">CoverArtist</SelectItem>
+                        <SelectItem value="NEUTRINO">NEUTRINO</SelectItem>
+                        <SelectItem value="VoiSona">VoiSona</SelectItem>
+                        <SelectItem value="NewType">NewType</SelectItem>
+                        <SelectItem value="Voiceroid">Voiceroid</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <SheetFooter className="flex-row justify-end">
+              <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button
-                disabled={submitting}
-                onClick={handleSubmit}
-                color="primary"
-              >
+              <Button type="submit" disabled={form.formState.isSubmitting}>
                 {create ? "Create" : "Update"}
               </Button>
-            </DialogActions>
-          </>
-        )}
-      </Form>
-    </Dialog>
+            </SheetFooter>
+          </form>
+        </Form>
+      </SheetContent>
+    </Sheet>
   );
 }

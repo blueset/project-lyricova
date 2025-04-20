@@ -1,6 +1,3 @@
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import CssBaseline from "@mui/material/CssBaseline";
-import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import {
   MonaSans,
   HubotSans,
@@ -12,7 +9,25 @@ import "../../styles/global.scss";
 import * as React from "react";
 import type { Metadata, Viewport } from "next";
 import { palette } from "@lyricova/components";
-import { ClientProviders } from "./clientProvider";
+import "@lyricova/components/styles/tailwindGlobal.css";
+import { siteName } from "@/utils/consts";
+import { Inter } from "next/font/google";
+
+const InterInstance = Inter({
+  weight: "variable",
+  subsets: [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese",
+  ],
+  style: ["normal", "italic"],
+  variable: "--font-inter",
+  axes: ["opsz"],
+});
 
 export const viewport: Viewport = {
   themeColor: palette.primary.main,
@@ -22,11 +37,14 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Project Lyricova",
-  appleWebApp: {
-    title: "Project Lyricova",
+  title: {
+    default: siteName,
+    template: `%s – ${siteName}`,
   },
-  applicationName: "Project Lyricova",
+  appleWebApp: {
+    title: siteName,
+  },
+  applicationName: siteName,
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -34,19 +52,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body
         className={clsx(
+          "dark",
+          InterInstance.variable,
           MonaSans.variable,
           HubotSans.variable,
           SourceHanSans.variable,
           SourceHanSansPunct.variable
         )}
       >
-        <InitColorSchemeScript attribute="class" />
-        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-          <ClientProviders>
-            <CssBaseline />
-            {children}
-          </ClientProviders>
-        </AppRouterCacheProvider>
+        {children}
       </body>
     </html>
   );

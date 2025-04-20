@@ -1,10 +1,7 @@
 "use client";
 
 import { gql, useQuery } from "@apollo/client";
-import { Stack, styled } from "@mui/material";
-import _ from "lodash";
 import { ReactNode, useMemo, useRef, useState } from "react";
-import { getLayout } from "@/components/public/layouts/IndexLayout";
 import { FocusedLyrics } from "@/components/public/lyrics/focused";
 import { PlainLyrics } from "@/components/public/lyrics/plain";
 import { LyricsSwitchButton } from "@/components/public/LyricsSwitchButton";
@@ -19,15 +16,16 @@ import { useClientPersistentState } from "@/frontendUtils/clientPersistantState"
 import type { DocumentNode } from "graphql";
 import { useAppDispatch, useAppSelector } from "@/redux/public/store";
 import { currentSongSelector } from "@/redux/public/playlist";
-import TooltipIconButton from "@/components/dashboard/TooltipIconButton";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import { toggleFullscreen } from "@/redux/public/display";
 import { LyricsFullScreenOverlay } from "@/components/public/LyricsFullScreenOverlay";
 import { PictureInPictureLyrics } from "@/components/public/lyrics/pip";
 import { AMLLyrics } from "@/components/public/lyrics/amll";
 import { RingollLyrics } from "@/components/public/lyrics/ringoll/ringoll";
 import { LyricsTranslationLanguageSwitchButton } from "@/components/public/LyricsTranslationLanguageSwitchButton";
+import TooltipIconButton from "@/components/dashboard/TooltipIconButton";
+import { Maximize, Minimize } from "lucide-react";
+import { cn } from "@lyricova/components/utils";
+import _ from "lodash";
 
 const args = new URLSearchParams(
   typeof window === "object" ? window?.location?.search ?? "" : ""
@@ -89,15 +87,6 @@ const MODULE_LIST = {
   "PIP (Alpha)": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PictureInPictureLyrics lyrics={lyrics} />,
 } as const;
 
-const LyricsControlsDiv = styled("div")`
-  position: absolute;
-  top: 0;
-  right: 16px;
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-`;
-
 export default function Index() {
   const [module, setModule] = useClientPersistentState<
     keyof typeof MODULE_LIST
@@ -132,18 +121,11 @@ export default function Index() {
   }, [lyricsQuery.data?.musicFile?.lyrics?.translationLanguages]);
 
   const MessageBox = ({ children }: { children: ReactNode }) => (
-    <Stack
-      // className="coverMask"
-      alignItems="center"
-      justifyContent="center"
-      sx={{
-        width: "100%",
-        height: "100%",
-        fontWeight: 600,
-        fontSize: useYuuruka ? "1.5em" : "2.5em",
-        fontStyle: "italic",
-        padding: 4,
-      }}
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center w-full h-full font-semibold italic p-4",
+        useYuuruka ? "text-2xl" : "text-4xl"
+      )}
     >
       {useYuuruka && (
         <img
@@ -153,7 +135,7 @@ export default function Index() {
         />
       )}
       {children}
-    </Stack>
+    </div>
   );
 
   let node;
@@ -175,13 +157,16 @@ export default function Index() {
   }
 
   const controls = (
-    <LyricsControlsDiv
-      sx={{ pt: isFullscreen ? 2 : 0 }}
+    <div
+      className={cn(
+        "absolute top-0 right-4 flex flex-row gap-2",
+        isFullscreen && "pt-2"
+      )}
       onClick={(evt) => evt.stopPropagation()}
     >
       <TooltipIconButton
         title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-        color="primary"
+        variant="ghostBright"
         onClick={async () => {
           dispatch(toggleFullscreen());
           if (isFullscreen) {
@@ -204,7 +189,7 @@ export default function Index() {
           }
         }}
       >
-        {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+        {isFullscreen ? <Minimize /> : <Maximize />}
       </TooltipIconButton>
       <LyricsTranslationLanguageSwitchButton
         languages={languages}
@@ -216,7 +201,7 @@ export default function Index() {
         setModule={setModule}
         moduleNames={keys}
       />
-    </LyricsControlsDiv>
+    </div>
   );
 
   return (

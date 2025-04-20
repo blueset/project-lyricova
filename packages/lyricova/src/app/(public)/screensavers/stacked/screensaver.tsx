@@ -40,7 +40,7 @@ export default function TypingStackedScreensaver({
   }, []);
 
   const [cursor, setCursor] = useState(0);
-  const cursorRef = useRef<number>();
+  const cursorRef = useRef<number>(cursor);
   cursorRef.current = cursor;
 
   const verse = verses[cursor];
@@ -61,8 +61,8 @@ export default function TypingStackedScreensaver({
     ? entry.producersName
     : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
-  const timelineRef = useRef<gsap.core.Timeline>();
-  const typingLineRef = useRef<HTMLDivElement>();
+  const timelineRef = useRef<gsap.core.Timeline>(null);
+  const typingLineRef = useRef<HTMLDivElement>(null);
 
   const buildTimeline = useCallback(
     (lineEl: HTMLElement, cursor: number) => {

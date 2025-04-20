@@ -18,7 +18,7 @@ export async function generateMetadataData(
   const { tag }: { tag: Tag } = await response.json();
 
   return {
-    title: `Tag Archive of ${tag.name} – Page ${page} – ${siteName}`,
+    title: `Tag Archive of ${tag.name} – Page ${page}`,
     description: `Tag Archive of ${tag.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`,
     openGraph: {
       title: `Tag Archive of ${tag.name} – Page ${page} – ${siteName}`,

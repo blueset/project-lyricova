@@ -1,10 +1,6 @@
 import { useCallback } from "react";
-import TranslateIcon from "@mui/icons-material/Translate";
-import { Button, styled } from "@mui/material";
-
-const NarrowButton = styled(Button)({
-  minWidth: "unset",
-});
+import { Captions } from "lucide-react";
+import { Button } from "@lyricova/components/components/ui/button";
 
 interface Props {
   languages: (string | undefined)[];
@@ -24,13 +20,8 @@ export function LyricsTranslationLanguageSwitchButton({
   if (languages.length <= 1) return null;
 
   return (
-    <NarrowButton
-      size="small"
-      variant="outlined"
-      color="primary"
-      onClick={handleNext}
-    >
-      {languages[selectedLanguageIdx] ?? <TranslateIcon />}
-    </NarrowButton>
+    <Button size="sm" variant="outline" onClick={handleNext}>
+      {languages[selectedLanguageIdx] ?? <Captions />}
+    </Button>
   );
 }

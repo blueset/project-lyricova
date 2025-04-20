@@ -1,10 +1,7 @@
 import type { Pulse } from "@lyricova/api/graphql/types";
 import { Divider } from "../Divider";
 import classes from "./Pulses.module.scss";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-
-dayjs.extend(relativeTime);
+import { formatDistanceToNow, format } from "date-fns";
 
 interface PulsesProps {
   pulses: Pulse[];
@@ -12,10 +9,13 @@ interface PulsesProps {
 }
 
 export function Pulses({ pulses, creationDate }: PulsesProps) {
-  const creationObj = dayjs(creationDate);
+  const creationObj = new Date(creationDate);
   const pulsesObj = pulses
-    .sort((a, b) => b.creationDate.valueOf() - a.creationDate.valueOf())
-    .map((pulse) => dayjs(pulse.creationDate));
+    .sort(
+      (a, b) =>
+        new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime()
+    )
+    .map((pulse) => new Date(pulse.creationDate));
   if (!pulses || pulses.length === 0) {
     return (
       <>
@@ -23,12 +23,13 @@ export function Pulses({ pulses, creationDate }: PulsesProps) {
           <h2 className={classes.pulsesTitle}>Pulses</h2>
           <div className={classes.pulsesListing}>
             <div className={classes.pulseEntry}>
-              First posted {creationObj.fromNow()}{" "}
+              First posted{" "}
+              {formatDistanceToNow(creationObj, { addSuffix: true })}{" "}
               <time
                 dateTime={creationObj.toISOString()}
                 suppressHydrationWarning
               >
-                on {creationObj.format("D MMMM YYYY [at] hh:mm")}
+                on {format(creationObj, "d MMMM yyyy 'at' hh:mm")}
               </time>
             </div>
           </div>
@@ -44,21 +45,22 @@ export function Pulses({ pulses, creationDate }: PulsesProps) {
           <h2 className={classes.pulsesTitle}>Pulses</h2>
           <div className={classes.pulsesListing}>
             <div className={classes.pulseEntry}>
-              Bumped {pulsesObj[0].fromNow()}{" "}
+              Bumped {formatDistanceToNow(pulsesObj[0], { addSuffix: true })}{" "}
               <time
                 dateTime={pulsesObj[0].toISOString()}
                 suppressHydrationWarning
               >
-                on {pulsesObj[0].format("D MMMM YYYY [at] hh:mm")}
+                on {format(pulsesObj[0], "d MMMM yyyy 'at' hh:mm")}
               </time>
             </div>
             <div className={classes.pulseEntry}>
-              First posted {creationObj.fromNow()}{" "}
+              First posted{" "}
+              {formatDistanceToNow(creationObj, { addSuffix: true })}{" "}
               <time
                 dateTime={creationObj.toISOString()}
                 suppressHydrationWarning
               >
-                on {creationObj.format("D MMMM YYYY [at] hh:mm")}
+                on {format(creationObj, "d MMMM yyyy 'at' hh:mm")}
               </time>
             </div>
           </div>
@@ -78,16 +80,17 @@ export function Pulses({ pulses, creationDate }: PulsesProps) {
           <div className={classes.pulsesListingInner}>
             {pulsesObj.map((pulseObj, index) => (
               <div className={classes.pulseEntry} key={index}>
-                Bumped {pulseObj.fromNow()}{" "}
+                Bumped {formatDistanceToNow(pulseObj, { addSuffix: true })}{" "}
                 <time dateTime={pulseObj.toISOString()}>
-                  on {pulseObj.format("D MMMM YYYY [at] hh:mm")}
+                  on {format(pulseObj, "d MMMM yyyy 'at' hh:mm")}
                 </time>
               </div>
             ))}
             <div className={classes.pulseEntry}>
-              First posted {creationObj.fromNow()}{" "}
+              First posted{" "}
+              {formatDistanceToNow(creationObj, { addSuffix: true })}{" "}
               <time dateTime={creationObj.toISOString()}>
-                on {creationObj.format("D MMMM YYYY [at] hh:mm")}
+                on {format(creationObj, "d MMMM yyyy 'at' hh:mm")}
               </time>
             </div>
           </div>

@@ -1,4 +1,5 @@
-import { Button, Grid, styled, TextField, Typography } from "@mui/material";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Textarea } from "@lyricova/components/components/ui/textarea";
 import type { ChangeEvent } from "react";
 import { useCallback } from "react";
 import { useNamedState } from "../../../../../hooks/useNamedState";
@@ -48,11 +49,6 @@ function smartTranslationSeparation(text: string): string {
   return text;
 }
 
-const SpacedButton = styled(Button)(({ theme }) => ({
-  marginRight: theme.spacing(1),
-  marginBottom: theme.spacing(1),
-}));
-
 interface Props {
   lyrics: string;
   songId?: number;
@@ -67,7 +63,7 @@ export default function EditLyrics({
   title,
 }: Props) {
   const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setLyrics(event.target.value);
     },
     [setLyrics]
@@ -98,58 +94,71 @@ export default function EditLyrics({
 
   return (
     <>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <Typography variant="overline" display="block">
-            Load plain text
-          </Typography>
-          <SpacedButton
-            variant="outlined"
-            disabled={songId == null}
-            onClick={() => toggleVocaDBDialog(true)}
-          >
-            Load lyrics from VocaDB
-          </SpacedButton>
-          <SpacedButton
-            variant="outlined"
-            onClick={() => toggleHMikuWikiDialog(true)}
-          >
-            Search from 初音ミク@wiki
-          </SpacedButton>
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <Typography variant="overline" display="block">
-            Common operations
-          </Typography>
-          <SpacedButton variant="outlined" onClick={trimSpaces}>
-            Trim spaces
-          </SpacedButton>
-          <SpacedButton variant="outlined" onClick={separateTranslations}>
-            Smart translation extraction
-          </SpacedButton>
-          <SpacedButton variant="outlined" onClick={() => setLyrics("")}>
-            Clear
-          </SpacedButton>
-          <SpacedButton
-            variant="outlined"
-            onClick={() => toggleDiffDialog(true)}
-          >
-            Diff editor
-          </SpacedButton>
-        </Grid>
-      </Grid>
-      <TextField
-        id="lyrics-source"
-        label="Lyrics source"
-        fullWidth
-        value={lyrics || ""}
-        onChange={handleChange}
-        multiline
-        variant="outlined"
-        slotProps={{
-          htmlInput: { sx: { fontFamily: "monospace" }, lang: "ja" },
-        }}
-      />
+      <div className="flex flex-col gap-2 h-full">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div>
+            <span className="text-xs uppercase tracking-wider text-muted-foreground block mb-2">
+              Load plain text
+            </span>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <Button
+                variant="outline"
+                disabled={songId == null}
+                onClick={() => toggleVocaDBDialog(true)}
+                type="button"
+              >
+                Load lyrics from VocaDB
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => toggleHMikuWikiDialog(true)}
+                type="button"
+              >
+                Search from 初音ミク@wiki
+              </Button>
+            </div>
+          </div>
+          <div>
+            <span className="text-xs uppercase tracking-wider text-muted-foreground block mb-2">
+              Common operations
+            </span>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <Button variant="outline" onClick={trimSpaces} type="button">
+                Trim spaces
+              </Button>
+              <Button
+                variant="outline"
+                onClick={separateTranslations}
+                type="button"
+              >
+                Smart translation extraction
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setLyrics("")}
+                type="button"
+              >
+                Clear
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => toggleDiffDialog(true)}
+                type="button"
+              >
+                Diff editor
+              </Button>
+            </div>
+          </div>
+        </div>
+        <Textarea
+          id="lyrics-source"
+          className="font-mono h-full grow resize-none"
+          placeholder="Lyrics source"
+          value={lyrics || ""}
+          onChange={handleChange}
+          lang="ja"
+        />
+      </div>
       <VocaDBLyricsDialog
         isOpen={showVocaDBDialog}
         toggleOpen={toggleVocaDBDialog}

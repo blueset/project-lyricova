@@ -1,22 +1,34 @@
 "use client";
 
-import { IconButton, InputAdornment } from "@mui/material";
 import { useCallback } from "react";
-import { useSnackbar } from "notistack";
-import AutorenewIcon from "@mui/icons-material/Autorenew";
-import { useField, useForm } from "react-final-form";
-import React from "react";
+import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { Button } from "@lyricova/components/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import {
+  FieldPath,
+  FieldValues,
+  PathValue,
+  UseFormReturn,
+} from "react-hook-form";
 
-interface Props {
-  name: string;
-}
+type Props<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> = {
+  form: UseFormReturn<TFieldValues>;
+  name: TName;
+};
 
-export function VideoThumbnailAdornment({ name }: Props) {
-  const snackbar = useSnackbar();
-  const {
-    input: { value },
-  } = useField(name);
-  const setValue = useForm().mutators.setValue;
+export function VideoThumbnailAdornment<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({ form, name }: Props<TFieldValues, TName>) {
+  const value = form.watch(name);
 
   const convertUrl = useCallback(() => {
     if (
@@ -24,39 +36,71 @@ export function VideoThumbnailAdornment({ name }: Props) {
     ) {
       const numId = value.match(/\d{6,12}/g);
       if (numId) {
-        setValue(name, `https://tn.smilevideo.jp/smile?i=${numId[0]}`);
+        form.setValue(
+          name,
+          `https://tn.smilevideo.jp/smile?i=${numId[0]}` as PathValue<
+            TFieldValues,
+            TName
+          >,
+          {
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
+          }
+        );
         return;
       }
     } else if (value.match(/(youtu.be\/|youtube.com\/watch\?\S*?v=)\S{11}/g)) {
       const id = /(youtu.be\/|youtube.com\/watch\?\S*?v=)(\S{11})/g.exec(
         value
       )!;
-      setValue(name, `https://img.youtube.com/vi/${id[2]}/maxresdefault.jpg`);
+      form.setValue(
+        name,
+        `https://img.youtube.com/vi/${id[2]}/maxresdefault.jpg` as PathValue<
+          TFieldValues,
+          TName
+        >,
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        }
+      );
       return;
     } else if (
       value.match(/(i\.ytimg\.com|img\.youtube\.com).+\/default.jpg$/g)
     ) {
-      setValue(name, value.replace(/\/default\.jpg$/, "/maxresdefault.jpg"));
+      form.setValue(
+        name,
+        value.replace(/\/default\.jpg$/, "/maxresdefault.jpg") as PathValue<
+          TFieldValues,
+          TName
+        >,
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        }
+      );
       return;
     }
 
-    snackbar.enqueueSnackbar(
-      "URL is not from a known site, no thumbnail is converted.",
-      {
-        variant: "info",
-      }
-    );
-  }, [name, setValue, snackbar, value]);
+    toast.info("URL is not from a known site, no thumbnail is converted.");
+  }, [form, name, value]);
 
   return (
-    <InputAdornment position="end">
-      <IconButton
-        size="small"
-        aria-label="Convert from video site link"
-        onClick={convertUrl}
-      >
-        <AutorenewIcon />
-      </IconButton>
-    </InputAdornment>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          type="button"
+          onClick={convertUrl}
+        >
+          <RefreshCw />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="left">Convert from video site link</TooltipContent>
+    </Tooltip>
   );
 }

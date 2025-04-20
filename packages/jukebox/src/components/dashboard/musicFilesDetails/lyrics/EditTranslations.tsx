@@ -1,47 +1,41 @@
+import { AlertDescription } from "@lyricova/components/components/ui/alert";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Input } from "@lyricova/components/components/ui/input";
 import {
-  Button,
-  CircularProgress,
-  Grid,
-  IconButton,
-  Stack,
-  styled,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-  Tooltip,
-  ButtonGroup,
-  Menu,
-  MenuItem,
-} from "@mui/material";
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@lyricova/components/components/ui/toggle-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@lyricova/components/components/ui/dropdown-menu";
+import { cn } from "@lyricova/components/utils";
 import DismissibleAlert from "../../DismissibleAlert";
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Lyrics, TRANSLATION } from "lyrics-kit/core";
-import { useSnackbar } from "notistack";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
-import { useNamedState } from "../../../../hooks/useNamedState";
+import { Lyrics } from "lyrics-kit/core";
+import { toast } from "sonner";
+import { PlusIcon, ChevronDownIcon, X } from "lucide-react";
 import { smartypantsu } from "smartypants";
-import { gql, useApolloClient, useQuery } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import { useAuthContext } from "@lyricova/components";
 import { fetchEventData } from "fetch-sse";
-import HoverPopover from "material-ui-popup-state/HoverPopover";
-import PopupState, {
-  bindHover,
-  bindMenu,
-  bindPopover,
-  bindTrigger,
-} from "material-ui-popup-state";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { CircularProgress } from "@lyricova/components/components/ui/circular-progress";
 import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-
-const TRANSLATION_ALIGNMENT_QUERY = gql`
-  query ($translation: String!, $original: String!) {
-    translationAlignment(translation: $translation, original: $original)
-  }
-`;
-
+import { useNamedStateWithRef } from "@/hooks/useNamedStateWithRef";
+import { Textarea } from "@lyricova/components/components/ui/textarea";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@lyricova/components/components/ui/hover-card";
 const VOCADB_LYRICS_QUERY = gql`
   query ($id: Int!) {
     vocaDBLyrics(id: $id) {
@@ -61,30 +55,9 @@ interface Props {
   songId: number;
 }
 
-const StyledHoverPopover = styled(HoverPopover)(({ theme }) => ({
-  "& .MuiPaper-root": {
-    padding: theme.spacing(0, 2),
-    maxHeight: "80vh",
-    overflowY: "auto",
-  },
-}));
-
-const ReasoningContainer = styled("div")(({ theme }) => ({
-  maxHeight: "4.5em", // Approximately 3 lines
-  overflowY: "auto",
-  padding: theme.spacing(1),
-  marginTop: theme.spacing(1),
-  fontStyle: "italic",
-  color: theme.palette.text.secondary,
-  whiteSpace: "pre-wrap",
-  maxWidth: "80ch",
-}));
-
 export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
-  const snackbar = useSnackbar();
   const authContext = useAuthContext();
 
-  const apolloClient = useApolloClient();
   const [isAlignmentLoading, setIsAlignmentLoading] = useState(false);
 
   const parsedLyrics = useMemo<Lyrics | null>(() => {
@@ -93,30 +66,22 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
       return new Lyrics(lyrics);
     } catch (e) {
       console.error(`Error while loading lyrics text: ${e}`, e);
-      snackbar.enqueueSnackbar(`Error while loading lyrics text: ${e}`, {
-        variant: "error",
-      });
+      toast.error(`Error while loading lyrics text: ${e}`);
       return null;
     }
-  }, [lyrics, snackbar]);
+  }, [lyrics]);
 
-  const [languages, setLanguages] = useNamedState<(string | undefined)[]>(
-    [],
-    "languages"
-  );
-  const [currentLanguageIdx, setCurrentLanguageIdx] = useNamedState<number>(
-    0,
-    "currentLanguageIdx"
-  );
-  const currentLanguage = languages[currentLanguageIdx];
-  const currentLanguageRef = useRef<string | undefined>();
-  currentLanguageRef.current = currentLanguage;
+  const [languages, setLanguages, languagesRef] = useNamedStateWithRef<
+    (string | undefined)[]
+  >([], "languages");
+  const [currentLanguageIdx, setCurrentLanguageIdx, currentLanguageIdxRef] =
+    useNamedStateWithRef<number>(0, "currentLanguageIdx");
+  const currentLanguage = useMemo(() => {
+    return languages[currentLanguageIdx] || undefined;
+  }, [currentLanguageIdx, languages]);
 
-  const [translatedLines, setTranslatedLines] = useNamedState<
-    (string | null)[]
-  >([], "translatedLines");
-  const translatedLinesRef = useRef<(string | null)[]>();
-  translatedLinesRef.current = translatedLines;
+  const [translatedLines, setTranslatedLines, translatedLinesRef] =
+    useNamedStateWithRef<(string | null)[]>([], "translatedLines");
 
   const { data: vocaDBTranslationsData } = useQuery<{
     vocaDBLyrics: VocaDBLyricsEntry[];
@@ -150,17 +115,26 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
         parsedLyrics.lines.forEach((v, idx) => {
           v.attachments.setTranslation(
             translatedLines[idx],
-            currentLanguageRef.current
+            languagesRef.current[currentLanguageIdxRef.current]
           );
         });
         setLyrics(parsedLyrics.toString());
       }
     };
-    // Dropping dependencies [parsedLyrics] to prevent infinite loop between this effect and `parsedLyrics`
-  }, [setLyrics, setTranslatedLines, setCurrentLanguageIdx, setLanguages]);
+  }, [
+    setLyrics,
+    setTranslatedLines,
+    setCurrentLanguageIdx,
+    setLanguages,
+    translatedLinesRef,
+    languagesRef,
+    currentLanguageIdxRef,
+  ]);
 
   useEffect(() => {
     if (parsedLyrics) {
+      const currentLanguage =
+        languagesRef.current[currentLanguageIdxRef.current];
       const lines = parsedLyrics.lines.map(
         (v) => v?.attachments?.translation(currentLanguage) ?? null
       );
@@ -169,7 +143,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
   }, [currentLanguage, parsedLyrics, setTranslatedLines]);
 
   const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLTextAreaElement>) => {
       setTranslatedLines(event.target.value.split("\n"));
     },
     [setTranslatedLines]
@@ -193,7 +167,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
   );
 
   const handleLanguageSwitch = useCallback(
-    (event: React.MouseEvent<HTMLElement>, value: number) => {
+    (value: string) => {
       if (value === null) return;
       // commit current language translations
       const translatedLines = translatedLinesRef.current;
@@ -201,7 +175,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
         v.attachments.setTranslation(translatedLines[idx], currentLanguage);
       });
       setLyrics(parsedLyrics.toString());
-      setCurrentLanguageIdx(value);
+      setCurrentLanguageIdx(parseInt(value));
     },
     [currentLanguage, parsedLyrics, setCurrentLanguageIdx, setLyrics]
   );
@@ -239,9 +213,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
           return typeof line === "string" ? smartypantsu(line) : line;
         });
       } catch (e) {
-        snackbar.enqueueSnackbar(`Error while applying rules: ${e}`, {
-          variant: "error",
-        });
+        toast.error(`Error while applying rules: ${e}`);
         console.error(e);
         return lines;
       }
@@ -269,6 +241,7 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
     }
   }, [reasoningBuffer, isScrolledToBottom]);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
   const handleAlignment = useCallback(
     (model?: string) => async () => {
       const translation = translatedLines.join("\n");
@@ -279,6 +252,8 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
       setReasoningBuffer("");
       try {
         const token = authContext.jwt();
+        abortControllerRef.current = new AbortController();
+        const { signal } = abortControllerRef.current;
         await fetchEventData("/api/llm/translation-alignment", {
           method: "POST",
           headers: {
@@ -286,13 +261,12 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
             "Content-Type": "application/json",
           },
           data: { translation, original, model },
+          signal,
           onMessage: (event) => {
             const data = JSON.parse(event.data);
             if (data.error) {
               console.error(data.error);
-              snackbar.enqueueSnackbar(`Error while aligning: ${data.error}`, {
-                variant: "error",
-              });
+              toast.error(`Error while aligning: ${data.error}`);
               setIsAlignmentLoading(false);
             } else if (data.aligned) {
               setTranslatedLines(data.aligned.split("\n"));
@@ -315,26 +289,20 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
             }
           },
           onClose: () => {
-            snackbar.enqueueSnackbar("Alignment completed", {
-              variant: "success",
-            });
-            setIsAlignmentLoading(false);
+            toast.success("Alignment completed");
           },
           onError: (error) => {
+            if (error === "User canceled the request") {
+              toast.info("Alignment canceled");
+              return;
+            }
             console.error(error);
-            snackbar.enqueueSnackbar(`Error while aligning: ${error}`, {
-              variant: "error",
-            });
+            toast.error(`Error while aligning: ${error}`);
             setIsAlignmentLoading(false);
           },
         });
-        snackbar.enqueueSnackbar("Alignment completed", {
-          variant: "success",
-        });
       } catch (e) {
-        snackbar.enqueueSnackbar(`Error while aligning: ${e}`, {
-          variant: "error",
-        });
+        toast.error(`Error while aligning: ${e}`);
         return;
       } finally {
         setIsAlignmentLoading(false);
@@ -344,11 +312,19 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
       authContext,
       parsedLyrics?.lines,
       setTranslatedLines,
-      snackbar,
       translatedLines,
       isScrolledToBottom,
     ]
   );
+  const handleCancelAlignment = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort("User canceled the request");
+      abortControllerRef.current = null;
+    }
+    setIsAlignmentLoading(false);
+    setChunkBuffer("");
+    setReasoningBuffer("");
+  }, []);
 
   const handleImportTranslation = useCallback(
     (translation: VocaDBLyricsEntry) => {
@@ -378,228 +354,217 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
     ]
   );
 
+  const progressValue = chunkBuffer
+    ? Math.min(
+        100,
+        Math.max(
+          0,
+          (chunkBuffer.split("\n").length * 100) /
+            (parsedLyrics.lines.length * 4 + 2)
+        )
+      )
+    : undefined;
+
   return (
-    <Grid container spacing={2}>
-      <Grid size={12}>
-        <Stack direction="column" spacing={1}>
-          <DismissibleAlert severity="warning">
-            Switch to another tab to save changes.
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="col-span-full">
+        <div className="flex flex-col gap-2">
+          <DismissibleAlert variant="warning">
+            <AlertDescription>
+              Switch to another tab to save changes.
+            </AlertDescription>
           </DismissibleAlert>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <TextField
-              label="Language"
-              size="small"
+          <div className="flex flex-wrap items-center gap-4">
+            <Input
+              type="text"
+              placeholder="Language"
               value={currentLanguage || ""}
-              placeholder="Unknown"
               onChange={handleLanguageChange}
+              className="w-24"
             />
             <span>Translations:</span>
-            <ToggleButtonGroup
-              value={currentLanguageIdx}
-              size="small"
-              onChange={handleLanguageSwitch}
-              exclusive
-            >
-              {languages.map((v, idx) => (
-                <ToggleButton key={idx} value={idx}>
-                  #{idx} ({v || "Unknown"})
-                  <IconButton size="small" onClick={handleDeleteLanguage(idx)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-            <IconButton onClick={handleAddLanguage}>
-              <AddIcon />
-            </IconButton>
-            <Button variant="outlined" onClick={handleFixQuotes}>
-              Fix quotes
-            </Button>
-            <ButtonGroup>
-              <PopupState variant="popover" popupId="llm-alignment">
-                {(popupState) => (
-                  <>
-                    <div {...bindHover(popupState)}>
-                      <Button
-                        variant="outlined"
-                        onClick={handleAlignment()}
-                        disabled={isAlignmentLoading}
-                      >
-                        LLM Alignment
-                        {isAlignmentLoading && (
-                          <CircularProgress
-                            size={16}
-                            value={
-                              chunkBuffer
-                                ? Math.min(
-                                    100,
-                                    Math.max(
-                                      0,
-                                      (chunkBuffer.split("\n").length * 100) /
-                                        (parsedLyrics.lines.length * 4 + 2)
-                                    )
-                                  )
-                                : undefined
-                            }
-                            variant={
-                              chunkBuffer ? "determinate" : "indeterminate"
-                            }
-                            sx={{ ml: 1 }}
-                          />
-                        )}
-                      </Button>
-                    </div>
-                    {chunkBuffer || reasoningBuffer ? (
-                      <StyledHoverPopover
-                        {...bindPopover(popupState)}
-                        anchorOrigin={{
-                          vertical: "bottom",
-                          horizontal: "center",
-                        }}
-                        transformOrigin={{
-                          vertical: "top",
-                          horizontal: "center",
-                        }}
-                      >
-                        {reasoningBuffer && (
-                          <ReasoningContainer ref={reasoningContainerRef}>
-                            {reasoningBuffer}
-                          </ReasoningContainer>
-                        )}
-                        <pre>{chunkBuffer || "…"}</pre>
-                      </StyledHoverPopover>
-                    ) : null}
-                  </>
-                )}
-              </PopupState>
-              <PopupState
-                variant="popover"
-                popupId="llm-alignment-select-model"
+            <div className="flex flex-row">
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                value={currentLanguageIdx.toString()}
+                onValueChange={handleLanguageSwitch}
               >
-                {(popupState) => (
-                  <>
+                {languages.map((v, idx) => (
+                  <div key={idx} className="relative">
+                    <ToggleGroupItem
+                      value={idx.toString()}
+                      size="sm"
+                      className="flex items-center gap-2 pr-8"
+                    >
+                      #{idx} ({v || "Unknown"})
+                    </ToggleGroupItem>
                     <Button
-                      variant="outlined"
-                      {...bindTrigger(popupState)}
-                      disabled={isAlignmentLoading}
-                      sx={{ px: 0 }}
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDeleteLanguage(idx)}
+                      className="h-6 w-6 absolute right-1 top-1 hover:border border-border"
                     >
-                      <ArrowDropDownIcon />
+                      <X />
                     </Button>
-                    <Menu
-                      {...bindMenu(popupState)}
-                      anchorOrigin={{
-                        vertical: "bottom",
-                        horizontal: "center",
-                      }}
-                      transformOrigin={{
-                        vertical: "top",
-                        horizontal: "center",
-                      }}
-                    >
-                      {[
-                        "openai/o1-mini",
-                        "deepseek/deepseek-chat:free",
-                        "openai/o1",
-                        "openai/gpt-4o",
-                        "openai/o3-mini",
-                        "google/gemma-3-27b-it:free",
-                        "meta-llama/llama-3.1-70b-instruct:free",
-                        "qwen/qwq-32b:free",
-                        "qwen/qwen-2.5-72b-instruct:free",
-                        "meta-llama/llama-3.3-70b-instruct:free",
-                      ].map((model) => (
-                        <MenuItem
-                          key={model}
+                  </div>
+                ))}
+              </ToggleGroup>
+              <Button variant="ghost" size="icon" onClick={handleAddLanguage}>
+                <PlusIcon />
+              </Button>
+            </div>
+            <div className="flex flex-row">
+              <Button variant="ghost" size="sm" onClick={handleFixQuotes}>
+                Fix quotes
+              </Button>
+              <DropdownMenu>
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <div className="flex flex-row gap-2">
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           disabled={isAlignmentLoading}
-                          onClick={() => {
-                            popupState.close();
-                            handleAlignment(model)();
-                          }}
+                          className="flex items-center gap-2"
                         >
-                          {model}
-                        </MenuItem>
-                      ))}
-                    </Menu>
-                  </>
-                )}
-              </PopupState>
-            </ButtonGroup>
+                          LLM Alignment
+                          {isAlignmentLoading ? (
+                            <CircularProgress
+                              size={16}
+                              value={progressValue ?? undefined}
+                            />
+                          ) : (
+                            <ChevronDownIcon />
+                          )}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      {isAlignmentLoading && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleCancelAlignment}
+                        >
+                          <X />
+                        </Button>
+                      )}
+                    </div>
+                  </HoverCardTrigger>
+                  {(chunkBuffer || reasoningBuffer) && (
+                    <HoverCardContent
+                      className="w-auto max-w-[80ch] max-h-(--radix-hover-card-content-available-height) overflow-y-auto p-4"
+                      side="bottom"
+                    >
+                      {reasoningBuffer && (
+                        <div
+                          ref={reasoningContainerRef}
+                          className="max-h-16 overflow-y-auto p-4 mt-4 italic text-muted-foreground whitespace-pre-wrap"
+                        >
+                          {reasoningBuffer}
+                        </div>
+                      )}
+                      <pre>{chunkBuffer || "…"}</pre>
+                    </HoverCardContent>
+                  )}
+                </HoverCard>
+
+                <DropdownMenuContent>
+                  {[
+                    "openai/o1-mini",
+                    "deepseek/deepseek-chat:free",
+                    "openai/o1",
+                    "openai/gpt-4o",
+                    "openai/o3-mini",
+                    "google/gemma-3-27b-it:free",
+                    "meta-llama/llama-3.1-70b-instruct:free",
+                    "qwen/qwq-32b:free",
+                    "qwen/qwen-2.5-72b-instruct:free",
+                    "meta-llama/llama-3.3-70b-instruct:free",
+                  ].map((model) => (
+                    <DropdownMenuItem
+                      key={model}
+                      disabled={isAlignmentLoading}
+                      onSelect={() => handleAlignment(model)()}
+                    >
+                      {model}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <span>VocaDB:</span>
-            {vocaDBTranslations.map((translation) => (
-              <Tooltip
-                key={translation.id}
-                title={
-                  <>
-                    {translation.cultureCodes?.join(", ")} –{" "}
-                    {translation.source}
-                    <br />
-                    {translation.value.substring(0, 100)}…
-                  </>
-                }
-              >
-                <Button
-                  variant="outlined"
-                  sx={{ minWidth: 0 }}
-                  onClick={() => handleImportTranslation(translation)}
-                >
-                  {translation.cultureCodes?.join(", ")}
-                </Button>
-              </Tooltip>
-            ))}
-          </Stack>
-        </Stack>
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6 }}>
-        <Typography variant="overline">Preview</Typography>
+            <div className="flex flex-wrap">
+              {vocaDBTranslations.map((translation) => (
+                <Tooltip key={translation.id}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="min-w-0"
+                      size="sm"
+                      onClick={() => handleImportTranslation(translation)}
+                    >
+                      {translation.cultureCodes?.join(", ")}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div>
+                      {translation.cultureCodes?.join(", ")} –{" "}
+                      {translation.source}
+                      <br />
+                      {translation.value.substring(0, 100)}…
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="">
+        <div className="text-xs uppercase text-muted-foreground mb-2">
+          Preview
+        </div>
         {parsedLyrics?.lines.map((v, idx) => (
-          <div key={idx}>
-            <Typography
-              variant="body2"
-              display="inline"
-              sx={{
-                color:
-                  v.content.trim() && !translatedLines[idx]
-                    ? "secondary.light"
-                    : "textSecondary",
-              }}
+          <div key={idx} className="text-sm leading-relaxed">
+            <span
+              className={cn(
+                v.content.trim() && !translatedLines[idx]
+                  ? "text-error-foreground"
+                  : "text-muted-foreground"
+              )}
               lang="ja"
             >
               {v.content}
-            </Typography>
-            <Typography variant="body2" display="inline" color="textSecondary">
-              {" ✲ "}
-            </Typography>
-            <Typography
-              variant="body2"
-              display="inline"
+            </span>
+            <span className="text-muted-foreground/50"> ✲ </span>
+            <span
+              className={cn(
+                translatedLines[idx] && !v.content.trim()
+                  ? "text-error-foreground"
+                  : "text-foreground"
+              )}
               lang={currentLanguage || "zh"}
-              sx={{
-                color:
-                  translatedLines[idx] && !v.content.trim()
-                    ? "secondary.light"
-                    : "textSecondary",
-              }}
             >
               {translatedLines[idx]}
-            </Typography>
+            </span>
           </div>
         ))}
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6 }}>
-        <TextField
+      </div>
+      <div>
+        <div className="text-xs uppercase text-muted-foreground mb-2">
+          Translations
+        </div>
+        <Textarea
           id="translations"
-          label="Translations"
-          fullWidth
+          placeholder="Translations"
           value={translatedLines.join("\n")}
           onChange={handleChange}
-          multiline
-          variant="outlined"
-          slotProps={{
-            htmlInput: { lang: currentLanguage || "zh" },
-          }}
+          autoResize
+          className="text-sm leading-relaxed"
+          lang={currentLanguage || "zh"}
         />
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 }

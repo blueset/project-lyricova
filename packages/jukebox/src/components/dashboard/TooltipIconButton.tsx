@@ -1,34 +1,34 @@
-import type { PropTypes, Theme} from "@mui/material";
-import { IconButton, Tooltip } from "@mui/material";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
 import type { ComponentProps, ReactNode } from "react";
-import type { SxProps } from "@mui/system";
 
-interface TooltipIconButtonProps {
-  title: string;
-  color?: PropTypes.Color;
-  disabled?: boolean;
-  "aria-label"?: string;
-  onClick?: ComponentProps<typeof IconButton>["onClick"];
-  children?: ReactNode;
-  sx?: SxProps<Theme>;
+interface TooltipIconButtonProps
+  extends Omit<ComponentProps<typeof Button>, "title"> {
+  title: ReactNode;
 }
 
-export default function TooltipIconButton(props: TooltipIconButtonProps) {
+export default function TooltipIconButton({
+  title,
+  ...props
+}: TooltipIconButtonProps) {
   const iconButton = (
-    <IconButton
-      disabled={props.disabled}
-      aria-label={props["aria-label"]}
-      color={props.color}
-      onClick={props.onClick}
-      sx={props.sx}
-    >
+    <Button variant="ghost" size="icon" {...props}>
       {props.children}
-    </IconButton>
+    </Button>
   );
 
   if (props.disabled) {
     return iconButton;
   }
 
-  return <Tooltip title={props.title}>{iconButton}</Tooltip>;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{iconButton}</TooltipTrigger>
+      <TooltipContent>{title}</TooltipContent>
+    </Tooltip>
+  );
 }

@@ -1,26 +1,36 @@
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import type { MusicFile } from "@lyricova/api/graphql/types";
-import {
-  AppBar,
-  Button,
-  Card,
-  CardActions,
-  Divider,
-  Tab,
-  Tabs,
-} from "@mui/material";
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
-import { TabContext, TabPanel } from "@mui/lab";
 import InfoPanel from "./musicFilesDetails/info";
 import { SongFragments } from "@lyricova/components";
 import CoverArtPanel from "./musicFilesDetails/coverArt";
 import LyricsPanel from "./musicFilesDetails/lyrics";
 import PlaylistsPanel from "./musicFilesDetails/playlists";
-import { useSnackbar } from "notistack";
 import type { DocumentNode } from "graphql";
 import StatsPanel from "./musicFilesDetails/stats";
-import dayjs from "dayjs";
+import { toast } from "sonner";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleToggleButton,
+} from "@lyricova/components/components/ui/collapsible";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardAction,
+  CardFooter,
+} from "@lyricova/components/components/ui/card";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Separator } from "@lyricova/components/components/ui/separator";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@lyricova/components/components/ui/tabs";
 
 const SINGLE_FILE_DATA = gql`
   query ($id: Int!) {
@@ -99,7 +109,6 @@ interface MusicFileDetailsProps {
 
 export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
   const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
 
   const [getFile, fileData] = useLazyQuery<{
     musicFile: ExtendedMusicFile;
@@ -111,17 +120,9 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
     }
   }, [fileId, getFile]);
 
-  const [tabIndex, setTabIndex] = useNamedState("info", "tabIndex");
   const [submittingReview, toggleSubmittingReview] = useNamedState(
     false,
     "submittingReview"
-  );
-
-  const onTabSwitch = useCallback(
-    (event: unknown, newValue: string) => {
-      setTabIndex(newValue);
-    },
-    [setTabIndex]
   );
 
   const toggleReviewStatus = useCallback(async () => {
@@ -136,111 +137,138 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
       await fileData.refetch();
     } catch (e) {
       console.error("Error occurred while toggling review status.", e);
-      snackbar.enqueueSnackbar(
-        `Error occurred while toggling review status: ${e}`,
-        {
-          variant: "error",
-        }
-      );
+      toast.error(`Error occurred while toggling review status: ${e}`);
     }
     toggleSubmittingReview(false);
-  }, [toggleSubmittingReview, apolloClient, fileData, fileId, snackbar]);
+  }, [toggleSubmittingReview, apolloClient, fileData, fileId]);
+
+  useEffect(() => {
+    if (document?.title && fileData?.data?.musicFile?.trackName) {
+      document.title = `Edit ${fileData?.data?.musicFile?.trackName} – Playlist – Lyricova Jukebox Dashboard`;
+    }
+  }, [fileData?.data?.musicFile?.trackName]);
 
   return (
     <>
-      <Card sx={{ margin: 2 }}>
-        <TabContext value={tabIndex}>
-          <AppBar position="static" color="default">
-            <Tabs
-              value={tabIndex}
-              onChange={onTabSwitch}
-              aria-label="Music file details tabs"
-              indicatorColor="secondary"
-              textColor="secondary"
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              <Tab label="Info" value="info" />
-              <Tab label="Cover art" value="cover-art" />
-              <Tab label="Lyrics" value="lyrics" />
-              <Tab label="Playlists" value="playlists" />
-              <Tab label="Stats" value="stats" />
-            </Tabs>
-          </AppBar>
-          <TabPanel value="info">
-            <InfoPanel
-              fileId={fileId}
-              path={fileData.data?.musicFile.path ?? ""}
-              trackName={fileData.data?.musicFile.trackName ?? ""}
-              trackSortOrder={fileData.data?.musicFile.trackSortOrder ?? ""}
-              artistName={fileData.data?.musicFile.artistName ?? ""}
-              artistSortOrder={fileData.data?.musicFile.artistSortOrder ?? ""}
-              albumName={fileData.data?.musicFile.albumName ?? ""}
-              albumSortOrder={fileData.data?.musicFile.albumSortOrder ?? ""}
-              song={fileData.data?.musicFile.song ?? null}
-              albumId={fileData.data?.musicFile.album?.id ?? null}
-              refresh={fileData.refetch}
-            />
-          </TabPanel>
-          <TabPanel value="cover-art">
-            <CoverArtPanel
-              fileId={fileId}
-              trackName={fileData.data?.musicFile.trackName ?? ""}
-              hasCover={fileData.data?.musicFile.hasCover ?? false}
-              hasSong={(fileData.data?.musicFile.song ?? null) !== null}
-              hasAlbum={(fileData.data?.musicFile.album ?? null) !== null}
-              songCoverUrl={fileData.data?.musicFile.song?.coverUrl ?? null}
-              albumCoverUrl={fileData.data?.musicFile.album?.coverUrl ?? null}
-              refresh={fileData.refetch}
-            />
-          </TabPanel>
-          <TabPanel value="lyrics">
-            <LyricsPanel
-              fileId={fileId}
-              title={fileData.data?.musicFile.trackName ?? ""}
-              artists={fileData.data?.musicFile.artistName ?? ""}
-              lrcLyrics={fileData.data?.musicFile.lrcLyrics}
-              lrcxLyrics={fileData.data?.musicFile.lrcxLyrics}
-              duration={fileData.data?.musicFile.duration ?? 0}
-              songId={fileData.data?.musicFile.song?.id ?? null}
-              refresh={fileData.refetch}
-            />
-          </TabPanel>
-          <TabPanel value="playlists">
-            <PlaylistsPanel
-              fileId={fileId}
-              playlists={fileData.data?.musicFile.playlists ?? []}
-              refresh={fileData.refetch}
-            />
-          </TabPanel>
-          <TabPanel value="stats">
-            <StatsPanel
-              fileId={fileId}
-              playCount={fileData.data?.musicFile.playCount}
-              lastPlayed={dayjs(fileData.data?.musicFile.lastPlayed)}
-              refresh={fileData.refetch}
-            />
-          </TabPanel>
-        </TabContext>
-        <Divider />
-        <CardActions>
-          <Button
-            disabled={!fileData.data || submittingReview}
-            color={
-              fileData.data?.musicFile.needReview ?? false
-                ? "secondary"
-                : "inherit"
-            }
-            onClick={toggleReviewStatus}
-          >
-            {`${
-              fileData.data?.musicFile.needReview
-                ? "Mark as reviewed"
-                : "Mark as need review"
-            }`}
-          </Button>
-        </CardActions>
-      </Card>
+      <div className="grid grid-cols-1 @6xl/dashboard:grid-cols-[auto_30ch] @7xl/dashboard:grid-cols-[auto_40ch] gap-4">
+        <Tabs defaultValue="info" className="gap-4">
+          <TabsList>
+            <TabsTrigger value="info">Info</TabsTrigger>
+            <TabsTrigger value="cover-art">Cover art</TabsTrigger>
+            <TabsTrigger value="lyrics">Lyrics</TabsTrigger>
+          </TabsList>
+          <Card>
+            <CardContent>
+              <TabsContent value="info">
+                <InfoPanel
+                  fileId={fileId}
+                  path={fileData.data?.musicFile.path ?? ""}
+                  trackName={fileData.data?.musicFile.trackName ?? ""}
+                  trackSortOrder={fileData.data?.musicFile.trackSortOrder ?? ""}
+                  artistName={fileData.data?.musicFile.artistName ?? ""}
+                  artistSortOrder={
+                    fileData.data?.musicFile.artistSortOrder ?? ""
+                  }
+                  albumName={fileData.data?.musicFile.albumName ?? ""}
+                  albumSortOrder={fileData.data?.musicFile.albumSortOrder ?? ""}
+                  song={fileData.data?.musicFile.song ?? null}
+                  albumId={fileData.data?.musicFile.album?.id ?? null}
+                  refresh={fileData.refetch}
+                />
+              </TabsContent>
+              <TabsContent value="cover-art">
+                <CoverArtPanel
+                  fileId={fileId}
+                  trackName={fileData.data?.musicFile.trackName ?? ""}
+                  hasCover={fileData.data?.musicFile.hasCover ?? false}
+                  hasSong={(fileData.data?.musicFile.song ?? null) !== null}
+                  hasAlbum={(fileData.data?.musicFile.album ?? null) !== null}
+                  songCoverUrl={fileData.data?.musicFile.song?.coverUrl ?? null}
+                  albumCoverUrl={
+                    fileData.data?.musicFile.album?.coverUrl ?? null
+                  }
+                  refresh={fileData.refetch}
+                />
+              </TabsContent>
+              <TabsContent value="lyrics">
+                <LyricsPanel
+                  fileId={fileId}
+                  title={fileData.data?.musicFile.trackName ?? ""}
+                  artists={fileData.data?.musicFile.artistName ?? ""}
+                  lrcLyrics={fileData.data?.musicFile.lrcLyrics}
+                  lrcxLyrics={fileData.data?.musicFile.lrcxLyrics}
+                  duration={fileData.data?.musicFile.duration ?? 0}
+                  songId={fileData.data?.musicFile.song?.id ?? null}
+                  refresh={fileData.refetch}
+                />
+              </TabsContent>
+            </CardContent>
+            <Separator />
+            <CardFooter>
+              <CardAction>
+                <Button
+                  disabled={!fileData.data || submittingReview}
+                  variant={
+                    fileData.data?.musicFile.needReview ?? false
+                      ? "default"
+                      : "secondary"
+                  }
+                  onClick={toggleReviewStatus}
+                >
+                  {`${
+                    fileData.data?.musicFile.needReview
+                      ? "Mark as reviewed"
+                      : "Mark as need review"
+                  }`}
+                </Button>
+              </CardAction>
+            </CardFooter>
+          </Card>
+        </Tabs>
+        <div className="flex flex-col gap-4">
+          <Collapsible defaultOpen asChild className="gap-0">
+            <Card className="py-2">
+              <CardHeader className="px-6 items-center">
+                <CardTitle>Playlists</CardTitle>
+                <CardAction>
+                  <CollapsibleToggleButton />
+                </CardAction>
+              </CardHeader>
+              <CollapsibleContent>
+                <Separator className="my-2" />
+                <CardContent className="py-4">
+                  <PlaylistsPanel
+                    fileId={fileId}
+                    playlists={fileData.data?.musicFile.playlists ?? []}
+                    refresh={fileData.refetch}
+                  />
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+          <Collapsible defaultOpen asChild className="gap-0">
+            <Card className="py-2">
+              <CardHeader className="px-6 items-center">
+                <CardTitle>Stats</CardTitle>
+                <CardAction>
+                  <CollapsibleToggleButton />
+                </CardAction>
+              </CardHeader>
+              <CollapsibleContent>
+                <Separator className="my-2" />
+                <CardContent className="py-4">
+                  <StatsPanel
+                    fileId={fileId}
+                    playCount={fileData.data?.musicFile.playCount}
+                    lastPlayed={fileData.data?.musicFile.lastPlayed}
+                    refresh={fileData.refetch}
+                  />
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+        </div>
+      </div>
     </>
   );
 }

@@ -1,17 +1,13 @@
 import {
-  Fab,
-  IconButton,
-  Slider,
-  Stack,
   Tooltip,
-  Typography,
-} from "@mui/material";
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Slider } from "@lyricova/components/components/ui/slider";
 import { formatTime } from "../../../../frontendUtils/strings";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
-import Forward5Icon from "@mui/icons-material/Forward5";
-import Replay5Icon from "@mui/icons-material/Replay5";
-import SpeedIcon from "@mui/icons-material/Speed";
+import { Play, Pause, FastForward, Rewind, Gauge } from "lucide-react";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import type { WebAudioPlayerState } from "../../../../hooks/types";
 import { memo, useCallback } from "react";
@@ -33,14 +29,23 @@ export function Rewind5({
   getProgress,
 }: Pick<WebAudioControlsProps, "audioBuffer" | "seek" | "getProgress">) {
   return (
-    <Tooltip title="Rewind 5 seconds">
-      <IconButton
-        disabled={!audioBuffer}
-        onClick={() => seek(Math.max(0, getProgress() - 5))}
-      >
-        <Replay5Icon />
-      </IconButton>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={!audioBuffer}
+            onClick={() => seek(Math.max(0, getProgress() - 5))}
+          >
+            <Rewind />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Rewind 5 seconds</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 const Rewind5Memo = memo(Rewind5, (prevProps, nextProps) => {
@@ -60,19 +65,28 @@ export function PlayPause({
   WebAudioControlsProps,
   "audioBuffer" | "playerStatus" | "play" | "pause"
 >) {
+  const isPaused = playerStatus.state === "paused";
   return (
-    <Tooltip title={playerStatus.state === "paused" ? "Play" : "Pause"}>
-      <Fab
-        color="primary"
-        disabled={!audioBuffer}
-        size="small"
-        onClick={() => {
-          playerStatus.state === "playing" ? pause() : play();
-        }}
-      >
-        {playerStatus.state === "paused" ? <PlayArrowIcon /> : <PauseIcon />}
-      </Fab>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="default"
+            size="icon"
+            disabled={!audioBuffer}
+            onClick={() => {
+              isPaused ? play() : pause();
+            }}
+            className="rounded-full size-10 mx-1"
+          >
+            {isPaused ? <Play /> : <Pause />}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{isPaused ? "Play" : "Pause"}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 const PlayPauseMemo = memo(PlayPause, (prevProps, nextProps) => {
@@ -90,14 +104,27 @@ function Forward5({
   getProgress,
 }: Pick<WebAudioControlsProps, "audioBuffer" | "seek" | "getProgress">) {
   return (
-    <Tooltip title="Forward 5 seconds">
-      <IconButton
-        disabled={!audioBuffer}
-        onClick={() => seek(Math.min(audioBuffer.duration, getProgress() + 5))}
-      >
-        <Forward5Icon />
-      </IconButton>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={!audioBuffer}
+            onClick={() =>
+              seek(
+                Math.min(audioBuffer?.duration ?? Infinity, getProgress() + 5)
+              )
+            }
+          >
+            <FastForward />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Forward 5 seconds</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 const Forward5Memo = memo(Forward5, (prevProps, nextProps) => {
@@ -114,14 +141,24 @@ function SpeedDown({
   setRate,
 }: Pick<WebAudioControlsProps, "audioBuffer" | "setRate" | "playerStatus">) {
   return (
-    <Tooltip title="Speed down 0.05x">
-      <IconButton
-        disabled={!audioBuffer}
-        onClick={() => setRate(Math.min(2, playerStatus.rate - 0.05))}
-      >
-        <SpeedIcon sx={{ transform: "scaleX(-1)" }} />
-      </IconButton>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={!audioBuffer}
+            onClick={() => setRate(Math.max(0.5, playerStatus.rate - 0.05))} // Ensure rate doesn't go below 0.5
+          >
+            {/* Use transform scale for visual direction */}
+            <Gauge className="transform -scale-x-100" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Speed down 0.05x</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 const SpeedDownMemo = memo(SpeedDown, (prevProps, nextProps) => {
@@ -138,14 +175,23 @@ function SpeedUp({
   setRate,
 }: Pick<WebAudioControlsProps, "audioBuffer" | "setRate" | "playerStatus">) {
   return (
-    <Tooltip title="Speed up 0.05x">
-      <IconButton
-        disabled={!audioBuffer}
-        onClick={() => setRate(Math.max(0.5, playerStatus.rate + 0.05))}
-      >
-        <SpeedIcon />
-      </IconButton>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={!audioBuffer}
+            onClick={() => setRate(Math.min(2, playerStatus.rate + 0.05))} // Ensure rate doesn't go above 2
+          >
+            <Gauge />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Speed up 0.05x</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 const SpeedUpMemo = memo(SpeedUp, (prevProps, nextProps) => {
@@ -165,52 +211,50 @@ function Seekbar({
   WebAudioControlsProps,
   "audioBuffer" | "seek" | "playbackProgress" | "playerStatus"
 >) {
-  const [seekBarTime, setSeekBarTime] = useNamedState(0, "seekBarTime");
-  const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
-  const handleOnChange = useCallback(
-    (evt: Event, newValue: number | number[]) => {
-      setIsDragging(true);
-      setSeekBarTime(newValue as number);
-    },
-    [setIsDragging, setSeekBarTime]
+  const [seekBarValue, setSeekBarValue] = useNamedState<number[]>(
+    [0],
+    "seekBarValue"
   );
-  const handleOnChangeCommitted = useCallback(
-    (evt: Event, newValue: number | number[]) => {
-      seek(newValue as number);
+  const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
+
+  const handleValueChange = useCallback(
+    (newValue: number[]) => {
+      setIsDragging(true);
+      setSeekBarValue(newValue);
+    },
+    [setIsDragging, setSeekBarValue]
+  );
+
+  const handleValueCommit = useCallback(
+    (newValue: number[]) => {
+      seek(newValue[0]);
       setIsDragging(false);
     },
     [seek, setIsDragging]
   );
 
+  const displayValue = !isDragging ? [playbackProgress] : seekBarValue;
+  const duration = audioBuffer?.duration ?? 0;
+
   return (
     <>
       <Slider
-        sx={{
-          "& .MuiSlider-track, & .MuiSlider-thumb": {
-            transitionDuration: "0s",
-          },
-        }}
         aria-label="Playback progress"
-        value={!isDragging ? playbackProgress * 1 : seekBarTime}
-        getAriaValueText={formatTime}
+        value={displayValue}
         min={0}
-        max={audioBuffer?.duration ?? 0}
+        max={duration}
+        step={0.1}
         disabled={!audioBuffer}
-        onChange={handleOnChange}
-        onChangeCommitted={handleOnChangeCommitted}
+        onValueChange={handleValueChange}
+        onValueCommit={handleValueCommit}
+        className="my-2"
       />
-      <Typography
-        variant="body1"
-        sx={{
-          marginTop: 2,
-          marginBottom: 2,
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {formatTime(playbackProgress)}/
-        {formatTime(audioBuffer?.duration ?? NaN)}@
+      <p className="mt-2 mb-2 text-sm tabular-nums">
+        {" "}
+        {formatTime(displayValue[0])}
+        <span className="text-muted-foreground">/{formatTime(duration)}@</span>
         {playerStatus.rate.toFixed(2)}x
-      </Typography>
+      </p>
     </>
   );
 }
@@ -227,7 +271,7 @@ export function WebAudioControls({
 }: WebAudioControlsProps) {
   return (
     <>
-      <Stack direction="row">
+      <div className="flex flex-row items-center justify-center">
         <Rewind5Memo
           audioBuffer={audioBuffer}
           getProgress={getProgress}
@@ -254,7 +298,7 @@ export function WebAudioControls({
           setRate={setRate}
           playerStatus={playerStatus}
         />
-      </Stack>
+      </div>
       <Seekbar
         audioBuffer={audioBuffer}
         seek={seek}

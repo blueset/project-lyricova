@@ -1,6 +1,3 @@
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import CssBaseline from "@mui/material/CssBaseline";
-import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import {
   MonaSans,
   HubotSans,
@@ -8,11 +5,12 @@ import {
   SourceHanSansPunct,
 } from "@/fonts";
 import clsx from "clsx";
-import "../../styles/global.scss";
 import * as React from "react";
 import type { Metadata, Viewport } from "next";
 import { palette } from "@lyricova/components";
-import { ClientProviders } from "./clientProvider";
+import { siteName } from "@/utils/consts";
+import "../../styles/global.scss";
+import "@lyricova/components/styles/tailwindGlobal.css";
 
 export const viewport: Viewport = {
   themeColor: palette.primary.main,
@@ -22,11 +20,14 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Project Lyricova",
-  appleWebApp: {
-    title: "Project Lyricova",
+  title: {
+    template: `%s – ${siteName}`,
+    default: siteName,
   },
-  applicationName: "Project Lyricova",
+  appleWebApp: {
+    title: siteName,
+  },
+  applicationName: siteName,
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -34,6 +35,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body
         className={clsx(
+          "dark",
           "wrapper",
           MonaSans.variable,
           HubotSans.variable,
@@ -41,13 +43,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           SourceHanSansPunct.variable
         )}
       >
-        <InitColorSchemeScript attribute="class" />
-        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-          <ClientProviders>
-            <CssBaseline />
-            {children}
-          </ClientProviders>
-        </AppRouterCacheProvider>
+        {children}
       </body>
     </html>
   );

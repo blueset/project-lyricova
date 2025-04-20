@@ -1,21 +1,32 @@
 import type { ReactNode } from "react";
-import { Box, IconButton, styled } from "@mui/material";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Search } from "lucide-react";
 import { Link, NextComposedLink } from "@lyricova/components";
-import SearchIcon from "@mui/icons-material/Search";
-import { useRouter } from "next/compat/router";
 import { useAppSelector } from "../../redux/public/store";
 import { usePathname } from "next/navigation";
+import { cn } from "@lyricova/components/utils";
 
-const StyledLink = styled(Link)({
-  fontSize: "1.75em",
-  fontWeight: 500,
-  marginRight: "1em",
-  fontStyle: "italic",
-  color: "text.secondary",
-  "&.active": {
-    color: "primary.light",
-  },
-});
+function NavLink({
+  href,
+  children,
+  activeCriteria,
+}: {
+  href: string;
+  children: ReactNode;
+  activeCriteria?: (v: string) => boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      activeCriteria={activeCriteria}
+      className={
+        "text-2xl font-medium italic mr-4 transition-colors text-muted-foreground hover:text-primary data[active]:font-medium data[active]:text-primary"
+      }
+    >
+      {children}
+    </Link>
+  );
+}
 
 interface Props {
   coverUrl: string | null;
@@ -23,37 +34,20 @@ interface Props {
 }
 
 export default function DetailsPanel({ coverUrl = null, children }: Props) {
-  const router = useRouter();
   const pathname = usePathname();
   const { isFullscreen } = useAppSelector((s) => s.display);
 
   let backgroundNode = (
-    <div
-      style={{
-        position: "absolute",
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        zIndex: 0,
-      }}
-    />
+    <div className="absolute w-full h-full bg-black/50 z-0" />
   );
 
   if (coverUrl) {
     backgroundNode = (
       <>
         <div
+          className="absolute inset-0 bg-cover bg-center bg-fixed z-0"
           style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
             filter: "url(#sharpBlur)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundAttachment: "fixed",
-            zIndex: 0,
             backgroundImage: `url(${coverUrl})`,
           }}
         />
@@ -64,75 +58,39 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
 
   return (
     <div
-      style={{
-        position: isFullscreen ? "fixed" : "relative",
-        inset: 0,
-        overflow: "hidden",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: isFullscreen ? 2 : 0,
-      }}
+      className={cn(
+        "inset-0 overflow-hidden w-full h-full flex flex-col",
+        isFullscreen ? "fixed z-10" : "relative z-0"
+      )}
     >
       {backgroundNode}
       {!isFullscreen && (
-        <Box
-          pt={2}
-          pb={2}
-          pl={4}
-          pr={4}
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
-          zIndex={1}
-        >
-          <StyledLink href="/">Lyrics</StyledLink>
-          <StyledLink
+        <div className="py-4 px-6 flex flex-row items-center z-10">
+          <NavLink href="/">Lyrics</NavLink>
+          <NavLink
             href="/library/tracks"
             activeCriteria={(v) => v.startsWith("/library/")}
           >
             Library
-          </StyledLink>
-          <StyledLink
-            href="/info"
-            activeCriteria={(v) => v.startsWith("/info")}
-          >
+          </NavLink>
+          <NavLink href="/info" activeCriteria={(v) => v.startsWith("/info")}>
             Info
-          </StyledLink>
-          <Box flexGrow={1} />
-          <IconButton
-            component={NextComposedLink}
-            color={(router?.pathname ?? pathname) === "/search" ? "primary" : "default"}
-            href="/search"
-            aria-label="search"
-            edge="end"
+          </NavLink>
+          <div className="flex-1" />
+          <Button
+            asChild
+            variant={pathname === "/search" ? "default" : "ghostBright"}
+            size="icon"
+            aria-label="Search"
           >
-            <SearchIcon />
-          </IconButton>
-        </Box>
+            <NextComposedLink href="/search">
+              <Search className="size-5" />
+            </NextComposedLink>
+          </Button>
+        </div>
       )}
-      <Box
-        position="relative"
-        width="1"
-        flexGrow={1}
-        flexBasis={0}
-        overflow="auto"
-      >
-        {children}
-      </Box>
-      <svg
-        style={{
-          border: 0,
-          clip: "rect(0 0 0 0)",
-          height: "1px",
-          margin: "-1px",
-          overflow: "hidden",
-          padding: 0,
-          position: "absolute",
-          width: "1px",
-        }}
-      >
+      <div className="relative w-full flex-1 overflow-auto">{children}</div>
+      <svg className="sr-only">
         <filter id="nicokaraBefore">
           <feMorphology
             operator="dilate"
@@ -159,7 +117,11 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
             edgeMode="wrap"
             result="blurShadow"
           />
-          <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
+          <feFlood
+            floodColor="var(--primary)"
+            floodOpacity="1"
+            result="floodShadow"
+          />
           <feComposite
             in="floodShadow"
             in2="blurShadow"
@@ -198,7 +160,11 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
             edgeMode="wrap"
             result="blurShadow"
           />
-          <feFlood floodColor="#fa9dff" floodOpacity="1" result="floodShadow" />
+          <feFlood
+            floodColor="var(--primary)"
+            floodOpacity="1"
+            result="floodShadow"
+          />
           <feComposite
             in="floodShadow"
             in2="blurShadow"

@@ -35,7 +35,7 @@ export function TopEntry({ entry }: TopEntryProps) {
   );
 
   const entryRef = useRef<HTMLElement>(null);
-  const timelineRef = useRef<gsap.core.Timeline>();
+  const timelineRef = useRef<gsap.core.Timeline>(null);
 
   const buildTimeline = useCallback(
     (verseRefEl: HTMLElement) => {

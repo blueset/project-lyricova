@@ -1,8 +1,13 @@
 import type { Verse } from "@lyricova/api/graphql/types";
 import classes from "./OtherVerse.module.scss";
 import { VerseRenderer } from "./VerseRenderer";
-import StarBorderIcon from "@mui/icons-material/StarBorder";
-import { Tooltip } from "@mui/material";
+import { Star } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
 
 interface OtherVerseProps {
   verse: Verse;
@@ -17,10 +22,11 @@ export function OtherVerse({ verse }: OtherVerseProps) {
       <h2 className={classes.verseTitle}>
         {verse.language}{" "}
         {verse.isOriginal && (
-          <Tooltip title="Original" placement="top">
-            <StarBorderIcon
-              sx={{ fontSize: "1em", verticalAlign: "text-bottom" }}
-            />
+          <Tooltip>
+            <TooltipTrigger>
+              <Star className="align-text-bottom size-3" />
+            </TooltipTrigger>
+            <TooltipContent side="top">Original</TooltipContent>
           </Tooltip>
         )}
       </h2>

@@ -2,9 +2,10 @@ import type { Artist } from "@lyricova/api/graphql/types";
 import React from "react";
 import { ReactNode } from "react";
 
-function splitArtists(
-  artists: Artist[]
-): { producers: Artist[]; vocalists: Artist[] } {
+function splitArtists(artists: Artist[]): {
+  producers: Artist[];
+  vocalists: Artist[];
+} {
   const producers: Artist[] = [],
     vocalists: Artist[] = [];
 
@@ -48,7 +49,7 @@ export function formatArtists(
     const list = producers.length ? producers : vocalists;
     return <>{renderer(list, !!producers.length)}</>;
   } else {
-    return <em style={{ opacity: 0.5 }}>Various artists</em>;
+    return <em className="text-muted-foreground">Various artists</em>;
   }
 }
 

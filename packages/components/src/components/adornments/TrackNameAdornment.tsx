@@ -1,43 +1,79 @@
-import { IconButton, InputAdornment } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import ClearIcon from "@mui/icons-material/Clear";
+"use client";
+
 import { useCallback } from "react";
-import { useField, useForm } from "react-final-form";
-import React from "react";
+import { Copy, X } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  FieldPath,
+  FieldValues,
+  PathValue,
+  UseFormReturn,
+} from "react-hook-form";
 
-interface Props {
-  sourceName: string;
-  destinationName: string;
-}
+type Props<
+  TFieldValues extends FieldValues = FieldValues,
+  TSourceName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TDestName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> = {
+  form: UseFormReturn<TFieldValues>;
+  sourceName: TSourceName;
+  destinationName: TDestName;
+};
 
-export function TrackNameAdornment({ sourceName, destinationName }: Props) {
-  const {
-    input: { trackName },
-  } = useField(sourceName);
-  const {
-    input: { value },
-  } = useField(destinationName);
-  const setValue = useForm().mutators.setValue;
+export function TrackNameAdornment<
+  TFieldValues extends FieldValues = FieldValues,
+  TSourceName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TDestName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({
+  form,
+  sourceName,
+  destinationName,
+}: Props<TFieldValues, TSourceName, TDestName>) {
+  const trackName = form.watch(sourceName);
+  const value = form.watch(destinationName);
 
   const trackNameButtonCallback = useCallback(() => {
     if (value === "" || value == null) {
-      setValue(destinationName, trackName);
+      form.setValue(
+        destinationName,
+        trackName as PathValue<TFieldValues, TDestName>,
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        }
+      );
     } else {
-      setValue(destinationName, "");
+      form.setValue(destinationName, "" as PathValue<TFieldValues, TDestName>, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
     }
-  }, [value, setValue, destinationName, trackName]);
+  }, [form, destinationName, trackName, value]);
+
+  if (trackName === "" && value === "") return null;
 
   return (
-    <InputAdornment position="end">
-      {(trackName !== "" || value !== "") && (
-        <IconButton
-          size="small"
-          aria-label={!value ? "Clear" : "Copy from track name"}
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          type="button"
           onClick={trackNameButtonCallback}
         >
-          {!value ? <ContentCopyIcon /> : <ClearIcon />}
-        </IconButton>
-      )}
-    </InputAdornment>
+          {!value ? <Copy /> : <X />}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="left">
+        {!value ? "Copy from track name" : "Clear"}
+      </TooltipContent>
+    </Tooltip>
   );
 }

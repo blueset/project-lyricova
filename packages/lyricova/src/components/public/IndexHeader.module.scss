@@ -25,7 +25,6 @@
 .nav {
   display: flex;
   flex-direction: row;
-  gap: $gap;
 
   @include media-breakpoint-down(desktop) {
     [data-nav-icon="jukebox"],

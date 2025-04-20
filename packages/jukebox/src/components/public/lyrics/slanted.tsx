@@ -2,11 +2,11 @@ import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import { useTrackwiseTimelineControl } from "../../../hooks/useTrackwiseTimelineControl";
-import { Box } from "@mui/material";
 import type { CSSProperties } from "react";
 import { useMemo, useRef } from "react";
 import gsap from "gsap";
 import _ from "lodash";
+import { cn } from "@lyricova/components/utils";
 
 interface Props {
   lyrics: LyricsKitLyrics;
@@ -15,12 +15,12 @@ interface Props {
 
 export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
-  const container = useRef<HTMLDivElement>();
-  const wrapper = useRef<HTMLDivElement>();
-  const currentLine = useRef<HTMLSpanElement>();
-  const translationContainer = useRef<HTMLDivElement>();
-  const translationWrapper = useRef<HTMLDivElement>();
-  const currentTranslation = useRef<HTMLSpanElement>();
+  const container = useRef<HTMLDivElement>(null);
+  const wrapper = useRef<HTMLDivElement>(null);
+  const currentLine = useRef<HTMLSpanElement>(null);
+  const translationContainer = useRef<HTMLDivElement>(null);
+  const translationWrapper = useRef<HTMLDivElement>(null);
+  const currentTranslation = useRef<HTMLSpanElement>(null);
   const lang = lyrics.translationLanguages[transLangIdx ?? 0];
 
   const hasTranslation = lyrics.translationLanguages.length > 0;
@@ -96,15 +96,10 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
   useTrackwiseTimelineControl(playerState, timeline);
 
   return (
-    <Box
-      sx={
+    <div
+      className="size-full overflow-hidden flex justify-center flex-col"
+      style={
         {
-          width: "100%",
-          height: "100%",
-          overflow: "hidden",
-          display: "flex",
-          justifyContent: "center",
-          flexDirection: "column",
           maskBorderImageSource:
             "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
           maskBorderImageSlice: "0 49% fill",
@@ -113,93 +108,67 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
             "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
           maskBoxImageSlice: "0 49% fill",
           maskBoxImageWidth: "0 40px",
-          "-webkit-mask-box-image-source":
+          WebkitMaskBoxImageSource:
             "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          "-webkit-mask-box-image-slice": "0 49% fill",
-          "-webkit-mask-box-image-width": "0 40px",
+          WebkitMaskBoxImageSlice: "0 49% fill",
+          WebkitMaskBoxImageWidth: "0 40px",
         } as unknown as CSSProperties
       }
     >
-      <Box
-        sx={{
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          transform: "skew(-5deg, -5deg)",
-          fontSize: "2em",
-        }}
+      <div
+        className="whitespace-nowrap overflow-hidden text-3xl"
+        style={{ transform: "skew(-5deg, -5deg)" }}
         lang="ja"
         ref={container}
       >
-        <Box
+        <div
           ref={wrapper}
-          sx={{
-            "&:before, &:after": {
-              content: '" "',
-              width: "50%",
-              display: "inline-block",
-            },
-          }}
+          className="before:content-[' '] before:w-1/2 before:inline-block after:content-[' '] after:w-1/2 after:inline-block"
         >
           {lyrics.lines.map((v, idx) => {
             return (
-              <Box
-                component="span"
+              <span
                 key={idx}
-                sx={{
-                  fontWeight: 600,
-                  opacity: 0.5,
-                  paddingInlineEnd: "1em",
-                  ...(idx === currentFrameId && { opacity: 1 }),
-                }}
+                className={cn(
+                  "font-semibold opacity-50 pr-4",
+                  idx === currentFrameId && "opacity-100"
+                )}
                 ref={idx === currentFrameId ? currentLine : null}
               >
                 {v.content}
-              </Box>
+              </span>
             );
           })}
-        </Box>
-      </Box>
+        </div>
+      </div>
       {hasTranslation && (
-        <Box
-          sx={{
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            transform: "skew(-5deg, -5deg)",
-            fontSize: "1.5em",
-          }}
+        <div
+          className="whitespace-nowrap overflow-hidden text-2xl"
+          style={{ transform: "skew(-5deg, -5deg)" }}
           lang="zh"
           ref={translationContainer}
         >
-          <Box
+          <div
             ref={translationWrapper}
-            sx={{
-              "&:before, &:after": {
-                content: '" "',
-                width: "50%",
-                display: "inline-block",
-              },
-            }}
+            className="before:content-[' '] before:w-1/2 before:inline-block after:content-[' '] after:w-1/2 after:inline-block"
           >
             {lyrics.lines.map((v, idx) => {
               return (
-                <Box
-                  component="span"
+                <span
                   key={idx}
-                  sx={{
-                    fontWeight: 600,
-                    opacity: 0.5,
-                    paddingInlineEnd: "1em",
-                    ...(idx === currentFrameId && { opacity: 1 }),
-                  }}
+                  className={cn(
+                    "font-semibold opacity-50 pr-4",
+                    idx === currentFrameId && "opacity-100"
+                  )}
                   ref={idx === currentFrameId ? currentTranslation : null}
                 >
                   {v.attachments.translations[lang]}
-                </Box>
+                </span>
               );
             })}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

@@ -4,11 +4,10 @@ import { Footer } from "@/components/public/Footer";
 import { IndexHeader } from "@/components/public/IndexHeader";
 import classes from "./index.module.scss";
 import { apiBaseUrl, host, siteName, tagLine1, tagLine2 } from "@/utils/consts";
-import { GlobalStyles } from "@mui/material";
 import { TagNode, TagWithCount } from "./Tag";
 
 export const metadata = {
-  title: `Tags – ${siteName}`,
+  title: "Tags",
   description: `Tags – ${siteName}: ${tagLine1} ${tagLine2}`,
   openGraph: {
     title: `Tags – ${siteName}`,
@@ -23,21 +22,6 @@ export default async function Tags() {
 
   return (
     <>
-      <GlobalStyles
-        styles={{
-          html: {
-            height: "100%",
-          },
-          body: {
-            height: "100%",
-          },
-          "#__next": {
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-          },
-        }}
-      />
       <IndexHeader />
       <Divider />
       <div className={`container verticalPadding ${classes.tags}`}>
@@ -47,6 +31,13 @@ export default async function Tags() {
       </div>
       <Divider />
       <Footer />
+      <style>{`
+        body {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+      `}</style>
     </>
   );
 }

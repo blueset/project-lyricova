@@ -1,41 +1,38 @@
 "use client";
 
+import { AlertCircle, MoreVertical, PlaySquare, Shuffle } from "lucide-react";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Badge } from "@lyricova/components/components/ui/badge";
 import {
-  Alert,
-  Box,
-  Chip,
-  IconButton,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Slider,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@lyricova/components/components/ui/dropdown-menu";
+import { Slider, SliderThumb } from "@lyricova/components/components/ui/slider";
+import {
   Tooltip,
-} from "@mui/material";
-import type { SliderValueLabel } from "@mui/material/Slider";
-import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
-import ShuffleIcon from "@mui/icons-material/Shuffle";
-import ButtonRow from "@/components/ButtonRow";
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { cn } from "@lyricova/components/utils";
 import AutoResizer from "react-virtualized-auto-sizer";
 import { gql, useQuery } from "@apollo/client";
-import { MusicFileFragments, useAuthContext } from "@lyricova/components";
+import {
+  Link,
+  MusicFileFragments,
+  NextComposedLink,
+  useAuthContext,
+} from "@lyricova/components";
 import type { MusicFilesPagination } from "@lyricova/api/graphql/types";
 import React, { useCallback, useMemo, useRef } from "react";
 import type { MusicFile } from "@lyricova/api/graphql/types";
 import _ from "lodash";
 import { useNamedState } from "@/hooks/useNamedState";
-import {
-  bindMenu,
-  bindTrigger,
-  usePopupState,
-} from "material-ui-popup-state/hooks";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useRouter } from "next/compat/router";
+import { useRouter } from "next/navigation";
 import ListItemTextWithTime from "@/components/public/library/ListItemTextWithTime";
 import type { DocumentNode } from "graphql";
-import type { SxProps } from "@mui/system";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAppDispatch } from "@/redux/public/store";
 import {
@@ -44,6 +41,10 @@ import {
   playTrack,
   toggleShuffle,
 } from "@/redux/public/playlist";
+import {
+  Alert,
+  AlertDescription,
+} from "@lyricova/components/components/ui/alert";
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
@@ -58,37 +59,6 @@ const MUSIC_FILES_COUNT_QUERY = gql`
 
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
 ` as DocumentNode;
-
-const SxSliderLabel = {
-  height: "4rem",
-  width: "4rem",
-  minWidth: "4rem",
-  fontSize: "2rem",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  textAlign: "center",
-  backgroundColor: "primary.dark",
-  color: "common.white",
-  borderRadius: "50% 50% 0% 50%",
-};
-
-function SliderLabel(
-  props: React.ComponentProps<typeof SliderValueLabel> & {
-    children: React.ReactElement;
-  }
-) {
-  return (
-    <Tooltip
-      enterTouchDelay={0}
-      placement={"left-end"}
-      componentsProps={{ tooltip: { sx: SxSliderLabel as SxProps } }}
-      title={props.value}
-    >
-      {props.children}
-    </Tooltip>
-  );
-}
 
 const ITEM_HEIGHT = 60;
 
@@ -110,10 +80,6 @@ const Row = React.memo(
     const dispatch = useAppDispatch();
     const { user } = useAuthContext();
     const router = useRouter();
-    const popupState = usePopupState({
-      variant: "popover",
-      popupId: `track-list-menu-${item?.id ?? -1}`,
-    });
 
     if (item === null) {
       const playAll = () => {
@@ -126,54 +92,53 @@ const Row = React.memo(
         dispatch(playTrack({ track: 0, playNow: true }));
       };
       return (
-        <ListItem style={{ height, transform: `translateY(${start}px)` }}>
-          <ButtonRow>
-            <Chip
-              icon={<PlaylistPlayIcon />}
-              onClick={playAll}
-              label="Play all"
-              clickable
-            />
-            <Chip
-              icon={<ShuffleIcon />}
-              onClick={shuffleAll}
-              label="Shuffle all"
-              clickable
-            />
-          </ButtonRow>
-        </ListItem>
+        <div
+          className="py-2 flex items-center gap-2"
+          style={{
+            height,
+            transform: `translateY(${start}px)`,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+          }}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 px-3 py-1.5 cursor-pointer hover:bg-secondary"
+            onClick={playAll}
+          >
+            <PlaySquare />
+            Play all
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 px-3 py-1.5 cursor-pointer hover:bg-secondary"
+            onClick={shuffleAll}
+          >
+            <Shuffle />
+            Shuffle all
+          </Button>
+        </div>
       );
     }
 
     const handlePlayNext = () => {
       dispatch(addTrackToNext(item));
-      popupState.close();
     };
     const handlePlayInList = () => {
       dispatch(loadTracks(data.slice()));
       dispatch(playTrack({ track: index, playNow: true }));
-      popupState.close();
-    };
-    const handleShowDetails = () => {
-      router.push(`/info/${item.id}`);
-      popupState.close();
-    };
-    const handleEditSongEntry = () => {
-      window.open(`/dashboard/review/${item.id}`, "_blank");
-      popupState.close();
     };
 
     return (
-      <ListItem
-        ContainerProps={{
-          style: {
-            height,
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            transform: `translateY(${start}px)`,
-          },
+      <div
+        className="flex items-center justify-between absolute top-0 left-0 w-full"
+        style={{
+          height,
+          translate: `0 ${start}px`,
         }}
       >
         <ListItemTextWithTime
@@ -190,47 +155,40 @@ const Row = React.memo(
               {item?.albumName || <em>Unknown album</em>}
             </>
           }
-          primaryTypographyProps={{ noWrap: true }}
-          secondaryTypographyProps={{ noWrap: true }}
           time={item?.duration ?? 0}
         />
-        <ListItemSecondaryAction>
-          <IconButton
-            edge="end"
-            aria-label="Actions"
-            {...bindTrigger(popupState)}
-          >
-            <MoreVertIcon />
-          </IconButton>
-          <Menu
-            id={`currentPlaylist-menu-${item?.id}`}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            {...bindMenu(popupState)}
-          >
-            <MenuItem onClick={handlePlayNext}>
-              <ListItemText primary="Play next" />
-            </MenuItem>
-            <MenuItem onClick={handlePlayInList}>
-              <ListItemText primary="Play in the playlist" />
-            </MenuItem>
-            <MenuItem onClick={handleShowDetails}>
-              <ListItemText primary="Show details" />
-            </MenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreVertical />
+              <span className="sr-only">Actions</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handlePlayNext}>
+              Play next
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handlePlayInList}>
+              Play in the playlist
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <NextComposedLink href={`/info/${item.id}`}>
+                Show details
+              </NextComposedLink>
+            </DropdownMenuItem>
             {user && (
-              <MenuItem onClick={handleEditSongEntry}>
-                <ListItemText primary="Edit song entry" />
-              </MenuItem>
+              <DropdownMenuItem asChild>
+                <NextComposedLink
+                  href={`/dashboard/review/${item.id}`}
+                  target="_blank"
+                >
+                  Edit song entry
+                </NextComposedLink>
+              </DropdownMenuItem>
             )}
-          </Menu>
-        </ListItemSecondaryAction>
-      </ListItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     );
   }
 );
@@ -240,8 +198,7 @@ export default function LibraryTracks() {
   const query = useQuery<{ musicFiles: MusicFilesPagination }>(
     MUSIC_FILES_COUNT_QUERY
   );
-  // const recycleListRef = useRef<FixedSizeList>();
-  const parentRef = useRef<HTMLDivElement>();
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const entries = useMemo<MusicFile[]>(() => {
     if (query.data) {
@@ -261,24 +218,13 @@ export default function LibraryTracks() {
   );
   const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
 
-  // const { outerRef, innerRef, items, scrollToItem } = useVirtual<HTMLDivElement, HTMLDivElement>({
-  //   itemCount: entries.length + 1,
-  //   itemSize: ITEM_HEIGHT,
-  //   // overscanCount: 10,
-  //   // onScroll: ({ scrollOffset, userScroll }) => {
-  //   //   console.log("on scroll", userScroll, scrollOffset);
-  //   //   if (userScroll) setInvScrollDistance(scrollLength - scrollOffset);
-  //   // }
-  // });
   const rowVirtualizer = useVirtualizer({
     count: entries.length + 1,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ITEM_HEIGHT,
     overscan: 10,
-    // debug: true,
     onChange: (instance) => {
       if (instance.scrollElement && !isDragging) {
-        // console.log("onChange", instance.scrollElement?.scrollTop);
         setScrollDistance(instance.scrollElement?.scrollTop);
       }
     },
@@ -292,8 +238,6 @@ export default function LibraryTracks() {
       parentRef.current = elm;
     }
   }, []);
-
-  // console.log("Items count", entries.length + 1, items.length);
 
   const sliderLookup = useMemo(() => {
     const rows = [null, ...entries];
@@ -316,58 +260,65 @@ export default function LibraryTracks() {
     return indexes;
   }, [entries]);
 
-  if (query.loading) return <Alert severity="info">Loading...</Alert>;
-  if (query.error)
-    return <Alert severity="error">Error: {`${query.error}`}</Alert>;
+  if (query.loading) return <Alert variant="info">Loading...</Alert>;
 
-  const onScrollSliderChange = (event: any, newValue: number) => {
-    // console.log("Slider change", newValue);
+  if (query.error)
+    return (
+      <Alert variant="error">
+        <AlertCircle />
+        <AlertDescription>Error: {`${query.error}`}</AlertDescription>
+      </Alert>
+    );
+
+  const onScrollSliderChange = (newValue: number[]) => {
     setIsDragging(true);
-    setScrollDistance(scrollLength - newValue);
-    // scrollToItem((scrollLength - newValue) / ITEM_HEIGHT, () => console.log("Scroll to done"));
-    rowVirtualizer.scrollToOffset(scrollLength - newValue);
+    setScrollDistance(scrollLength - newValue[0]);
+    rowVirtualizer.scrollToOffset(scrollLength - newValue[0]);
   };
 
   return (
-    <Box
-      sx={{
-        paddingLeft: 4,
-        paddingRight: 4,
-        height: "100%",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
+    <div className="px-4 h-full relative overflow-hidden">
       <AutoResizer>
         {({ height, width }) => (
           <>
-            <Slider
-              orientation="vertical"
-              track={false}
-              sx={{
-                position: "absolute",
-                top: 1,
-                bottom: 1,
-                right: 0,
-                zIndex: 500,
-              }}
-              onChange={onScrollSliderChange}
-              onChangeCommitted={() => setIsDragging(false)}
-              valueLabelDisplay="auto"
-              components={{ ValueLabel: SliderLabel }}
-              valueLabelFormat={(x) => {
-                const index =
-                  _.sortedLastIndexBy(
-                    sliderLookup,
-                    { index: scrollLength - x, name: "" },
-                    "index"
-                  ) - 1;
-                return sliderLookup[Math.max(0, index)].name;
-              }}
-              value={scrollLength - scrollDistance}
-              min={height}
-              max={scrollLength}
-            />
+            <TooltipProvider>
+              <Tooltip delayDuration={0} open={isDragging}>
+                <div className="absolute top-1 bottom-1 right-2 z-50">
+                  <Slider
+                    orientation="vertical"
+                    className="h-full"
+                    onValueChange={onScrollSliderChange}
+                    onValueCommit={() => setIsDragging(false)}
+                    value={[scrollLength - scrollDistance]}
+                    min={height}
+                    max={scrollLength}
+                    track={false}
+                    renderThumb={(index) => (
+                      <TooltipTrigger asChild key={index}>
+                        <SliderThumb key={index} />
+                      </TooltipTrigger>
+                    )}
+                  />
+                </div>
+                <TooltipContent
+                  side="left"
+                  className="h-16 w-16 min-w-16 text-2xl flex items-center justify-center text-center bg-primary text-primary-foreground rounded-full"
+                >
+                  {(() => {
+                    const index =
+                      _.sortedLastIndexBy(
+                        sliderLookup,
+                        {
+                          index: scrollLength - (scrollLength - scrollDistance),
+                          name: "",
+                        },
+                        "index"
+                      ) - 1;
+                    return sliderLookup[Math.max(0, index)].name;
+                  })()}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <div
               style={{
                 width,
@@ -377,8 +328,7 @@ export default function LibraryTracks() {
               }}
               ref={parentRefCallback}
             >
-              {/* Items: {entries.length + 1} @ {rowVirtualizer.getTotalSize()}, w: {width}, h: {height} */}
-              <List
+              <div
                 style={{
                   height: rowVirtualizer.getTotalSize(),
                   width: "100%",
@@ -397,20 +347,11 @@ export default function LibraryTracks() {
                       isScrolling={isDragging}
                     />
                   ))}
-              </List>
-              {/* <FixedSizeList
-            itemSize={ITEM_HEIGHT} itemCount={entries.length + 1}
-            height={height} width={width}
-            itemData={[null, ...entries]}
-            // useIsScrolling
-            onScroll={({ scrollOffset }) => setScrollDistance(scrollOffset)}
-            ref={recycleListRef}
-            style={{ scrollbarWidth: "none", }}
-          >{Row}</FixedSizeList> */}
+              </div>
             </div>
           </>
         )}
       </AutoResizer>
-    </Box>
+    </div>
   );
 }

@@ -1,13 +1,12 @@
 "use client";
 
 import { gql, useQuery, useApolloClient } from "@apollo/client";
-import { Button, IconButton, Stack, Typography } from "@mui/material";
+import { Button } from "@lyricova/components/components/ui/button";
 import type { UserPublicKeyCredential } from "@lyricova/api/graphql/types";
 import { MouseEvent, useCallback, useEffect, useState } from "react";
 import base64url from "base64url";
 import { LS_JWT_KEY } from "../utils/localStorage";
-import DeleteIcon from "@mui/icons-material/Delete";
-import React from "react";
+import { Trash2 } from "lucide-react";
 
 const GET_CREDENTIALS_QUERY = gql`
   query {
@@ -136,47 +135,44 @@ export function WebAuthnCredManager() {
 
   return (
     <div>
-      <Typography variant="h5" paragraph>
-        WebAuthn Credentials
-      </Typography>
-      <Stack
-        direction="row"
-        spacing={2}
-        sx={{ justifyContent: "space-between", alignItems: "center" }}
-      >
-        {loading && "Loading..."}
-        {error && `Error occurred while loading credentials: ${error}`}
-        {data && <>{data?.currentCredentials?.length} credential(s) found.</>}
+      <div className="flex flex-row justify-between items-center mb-4">
+        <div>
+          {loading && <p>Loading...</p>}
+          {error && (
+            <p className="text-destructive-foreground">
+              Error occurred while loading credentials: {error.message}
+            </p>
+          )}
+          {data && (
+            <p>{data?.currentCredentials?.length ?? 0} credential(s) found.</p>
+          )}
+        </div>
         <Button
-          variant="outlined"
+          variant="outline"
           disabled={!webAuthnSupported}
           onClick={addCredential}
         >
           Add credential
         </Button>
-      </Stack>
-      <ul>
+      </div>
+      <ul className="space-y-2">
         {data?.currentCredentials.map((cred) => (
           <li
             key={cred.id}
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
+            className="flex flex-row justify-between items-center p-2 border rounded"
           >
-            <Typography variant="body2" paragraph>
-              <b>{cred.id}</b>: {cred.remarks},{" "}
+            <p className="text-sm">
+              <b className="font-medium">{cred.id}</b>: {cred.remarks},{" "}
               {new Date(cred.creationDate).toISOString()}
-            </Typography>
-            <IconButton
-              color="error"
+            </p>
+            <Button
+              variant="destructive"
+              size="icon"
               aria-label="Remove token"
               onClick={removeCredential(cred.id!)}
             >
-              <DeleteIcon />
-            </IconButton>
+              <Trash2 />
+            </Button>
           </li>
         ))}
       </ul>

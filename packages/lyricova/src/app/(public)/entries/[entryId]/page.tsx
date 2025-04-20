@@ -40,7 +40,7 @@ export async function generateMetadata({
   const verse = entry.verses.find((verse) => verse.isMain);
 
   return {
-    title: `${entry.title} / ${artistString} – ${siteName}`,
+    title: `${entry.title} / ${artistString}`,
     description: verse.text,
     openGraph: {
       title: `${entry.title} / ${artistString} – ${siteName}`,

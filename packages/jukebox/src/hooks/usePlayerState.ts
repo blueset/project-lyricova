@@ -7,7 +7,7 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
     { state: "paused", progress: 0 },
     "playerState"
   );
-  const playerStateRef = useRef<PlayerState>();
+  const playerStateRef = useRef<PlayerState>(playerState);
   playerStateRef.current = playerState;
 
   const updatePlayerState = useCallback(() => {
@@ -15,7 +15,10 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
     if (!player) return;
     if (player.paused) {
       setPlayerState((v) => {
-        if (v.state === "paused" && Math.abs(v.progress - player.currentTime) < 0.01) {
+        if (
+          v.state === "paused" &&
+          Math.abs(v.progress - player.currentTime) < 0.01
+        ) {
           return v;
         }
         return { state: "paused", progress: player.currentTime };
@@ -24,7 +27,11 @@ export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
       const rate = player.playbackRate;
       const startingAt = performance.now() - (player.currentTime * 1000) / rate;
       setPlayerState((v) => {
-        if (v.state === "playing" && Math.abs(v.startingAt - startingAt) < 100 && v.rate === rate) {
+        if (
+          v.state === "playing" &&
+          Math.abs(v.startingAt - startingAt) < 100 &&
+          v.rate === rate
+        ) {
           return v;
         }
         return { state: "playing", startingAt, rate };

@@ -11,4 +11,6 @@ export * from "./localStorage";
 
 export * from "./kanaUtils";
 
+export * from "./cn";
+
 export { apolloClient, finalFormMutators };

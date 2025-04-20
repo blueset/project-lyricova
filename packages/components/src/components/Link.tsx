@@ -2,10 +2,8 @@
 
 import React, { AnchorHTMLAttributes } from "react";
 import NextLink from "next/link";
-import MuiLink from "@mui/material/Link";
-import { useRouter } from "next/compat/router";
 import { usePathname } from "next/navigation";
-import clsx from "clsx";
+import { cn } from "@lyricova/components/utils";
 
 interface NextComposedProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   as?: string;
@@ -23,15 +21,8 @@ export const NextComposedLink = React.forwardRef<
   return <NextLink href={href} as={as} ref={ref} {...(other as any)} />;
 });
 
-interface LinkProps extends Omit<React.ComponentProps<typeof MuiLink>, "ref"> {
-  activeClassName?: string;
-  as?: string;
-  className?: string;
-  href: string;
+interface LinkProps extends Omit<NextComposedProps, "ref"> {
   innerRef: React.Ref<HTMLAnchorElement>;
-  naked?: boolean;
-  prefetch?: boolean;
-  children?: React.ReactNode;
   activeCriteria?: (pathName: string) => boolean;
 }
 
@@ -40,36 +31,24 @@ interface LinkProps extends Omit<React.ComponentProps<typeof MuiLink>, "ref"> {
 function Link(props: LinkProps) {
   const {
     href,
-    activeClassName = "active",
     className: classNameProps,
     innerRef,
-    naked,
     activeCriteria,
     ...other
   } = props;
 
-  const router = useRouter();
   const pathname = usePathname();
-  const effectivePathname = router?.pathname ?? pathname;
   const criteria = activeCriteria || ((v: string) => v === href);
-  const className: string = clsx(classNameProps, {
-    [activeClassName]: effectivePathname && criteria(effectivePathname) && activeClassName,
-  });
+  const isActive = pathname && criteria(pathname);
 
-  if (naked) {
-    return (
-      <NextComposedLink
-        className={className}
-        ref={innerRef}
-        href={href}
-        {...((other as unknown) as Omit<NextComposedProps, "href">)}
-      />
-    );
-  }
+  const className = cn(
+    "text-primary underline-offset-4 hover:underline data-[active]:font-semibold data-[active]:text-primary",
+    classNameProps
+  );
 
   return (
-    <MuiLink
-      component={NextComposedLink}
+    <NextComposedLink
+      data-active={isActive ? "true" : undefined}
       className={className}
       ref={innerRef}
       href={href}
@@ -84,4 +63,3 @@ const RefLink = React.forwardRef<
 >((props, ref) => <Link {...props} innerRef={ref} />);
 RefLink.displayName = "Link";
 export { RefLink as Link };
-

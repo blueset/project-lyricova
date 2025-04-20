@@ -5,12 +5,7 @@ import type {
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import { useTrackwiseTimelineControl } from "../../../hooks/useTrackwiseTimelineControl";
-import { Button, Theme } from "@mui/material";
-import { styled } from "@mui/material";
-import type { Transition } from "framer-motion";
-import { motion } from "framer-motion";
-import Balancer from "react-wrap-balancer";
-import type { SxProps } from "@mui/system";
+import { Button } from "@lyricova/components/components/ui/button";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppSelector } from "../../../redux/public/store";
 import { currentSongSelector } from "../../../redux/public/playlist";
@@ -326,7 +321,7 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
       <video ref={videoRef} />
       <p>
         <Button
-          variant="outlined"
+          variant="outline"
           onClick={() => {
             videoRef.current?.play();
             videoRef.current?.requestPictureInPicture?.();

@@ -1,0 +1,185 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@source "..";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(0.98 0.00 247.86);
+  --foreground: oklch(0.28 0.04 260.03);
+  --card: oklch(1.00 0 0);
+  --card-foreground: oklch(0.28 0.04 260.03);
+  --popover: oklch(1.00 0 0);
+  --popover-foreground: oklch(0.28 0.04 260.03);
+  --primary: oklch(0.59 0.20 277.12);
+  --primary-foreground: oklch(1.00 0 0);
+  --secondary: oklch(0.93 0.01 264.53);
+  --secondary-foreground: oklch(0.37 0.03 259.73);
+  --muted: oklch(0.97 0.00 264.54);
+  --muted-foreground: oklch(0.55 0.02 264.36);
+  --accent: oklch(0.93 0.03 272.79);
+  --accent-foreground: oklch(0.37 0.03 259.73);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.87 0.01 258.34);
+  --input: oklch(0.87 0.01 258.34);
+  --ring: oklch(0.59 0.20 277.12);
+  --chart-1: oklch(0.59 0.20 277.12);
+  --chart-2: oklch(0.51 0.23 276.97);
+  --chart-3: oklch(0.46 0.21 277.02);
+  --chart-4: oklch(0.40 0.18 277.37);
+  --chart-5: oklch(0.36 0.14 278.70);
+  --sidebar: oklch(0.97 0.00 264.54);
+  --sidebar-foreground: oklch(0.28 0.04 260.03);
+  --sidebar-primary: oklch(0.59 0.20 277.12);
+  --sidebar-primary-foreground: oklch(1.00 0 0);
+  --sidebar-accent: oklch(0.93 0.03 272.79);
+  --sidebar-accent-foreground: oklch(0.37 0.03 259.73);
+  --sidebar-border: oklch(0.87 0.01 258.34);
+  --sidebar-ring: oklch(0.59 0.20 277.12);
+
+  --radius: 0.625rem;
+  
+  --success: oklch(0.92 0.07 142.495);
+  --success-foreground: oklch(0.45 0.177 142.495);
+  --warning: oklch(0.93 0.07 78.193);
+  --warning-foreground: oklch(0.55 0.181 78.193);
+  --error: oklch(0.93 0.07 27.325);
+  --error-foreground: oklch(0.5 0.245 27.325);
+  --info: oklch(0.92 0.07 231.642);
+  --info-foreground: oklch(0.45 0.175 231.642);
+}
+
+.dark {
+  --brand-hue: 320;
+  --background: oklch(0.19 0.04 222.38);
+  --foreground: oklch(0.93 0.01 255.51);
+  --card: oklch(0.22 0.03 226.79);
+  --card-foreground: oklch(0.93 0.01 255.51);
+  --popover: oklch(0.22 0.03 226.79);
+  --popover-foreground: oklch(0.93 0.01 255.51);
+  --primary: oklch(0.82 0.16 var(--brand-hue));
+  --primary-darker: oklch(0.48 0.20 var(--brand-hue));
+  --primary-foreground: oklch(0.19 0.04 222.38);
+  --secondary: oklch(0.34 0.03 260.91);
+  --secondary-foreground: oklch(0.87 0.01 258.34);
+  --muted: oklch(0.28 0.04 260.03);
+  --muted-foreground: oklch(0.71 0.02 261.32);
+  --accent: oklch(0.37 0.03 259.73);
+  --accent-foreground: oklch(0.87 0.01 258.34);
+  --destructive: oklch(0.306 0.141 25.723);
+  --destructive-foreground: oklch(0.85 0.237 25.331);
+  --border: oklch(0.45 0.03 256.80);
+  --input: oklch(0.35 0.03 256.80);
+  --ring: oklch(0.68 0.20 var(--brand-hue));
+  --chart-1: oklch(0.68 0.16 276.93);
+  --chart-2: oklch(0.59 0.20 277.12);
+  --chart-3: oklch(0.51 0.23 276.97);
+  --chart-4: oklch(0.46 0.21 277.02);
+  --chart-5: oklch(0.40 0.18 277.37);
+  --sidebar: oklch(0.28 0.04 260.03);
+  --sidebar-foreground: oklch(0.93 0.01 255.51);
+  --sidebar-primary: oklch(0.82 0.16 var(--brand-hue));
+  --sidebar-primary-foreground: oklch(0.21 0.04 265.75);
+  --sidebar-accent: oklch(0.37 0.03 259.73);
+  --sidebar-accent-foreground: oklch(0.87 0.01 258.34);
+  --sidebar-border: oklch(0.45 0.03 256.80);
+  --sidebar-ring: oklch(0.68 0.20 var(--brand-hue));
+
+  --sidebar-ring: oklch(0.439 0 0);
+  --success: oklch(0.24 0.08 142.495);
+  --success-foreground: oklch(0.9 0.192 142.495);
+  --warning: oklch(0.25 0.08 78.193);
+  --warning-foreground: oklch(0.9 0.181 78.193);
+  --error: oklch(0.24 0.08 27.325);
+  --error-foreground: oklch(0.9 0.245 27.325);
+  --info: oklch(0.24 0.08 231.642);
+  --info-foreground: oklch(0.9 0.175 231.642);
+
+  color-scheme: dark;
+  font-feature-settings: 'palt' 1, 'ss01' 1, 'ss03' 1, 'cv01' 1;
+}
+
+body {
+  font-family: var(--font-sans);
+  --font-sans: var(--font-inter, 'Inter V'), var(--font-source-han-sans, 'Source Han Sans'),  "-apple-system", "BlinkMacSystemFont", "Segoe UI Variable Text", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+:lang(zh), :lang(ja) {
+  --font-sans: var(--font-source-han-sans-punct, "Source Han Sans Punct"), var(--font-inter, "Inter V"), var(--font-source-han-sans, "Source Han Sans"), "-apple-system", "BlinkMacSystemFont", "Segoe UI Variable Text", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-darker: var(--primary-darker);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --default-font-family: var(--font-sans);
+  --font-sans: var(--font-sans);
+  --font-markers: Iosevka, "Segoe UI Symbol", sans-serif;
+  --font-serif: var(--font-source-han-serif, "font-source-han-serif"), "Source Han Serif", "Noto Serif CJK", "Noto Serif JP", serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

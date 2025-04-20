@@ -1,16 +1,33 @@
-import { Box, IconButton, TextField, Tooltip } from "@mui/material";
-import Button from "@mui/material/Button";
-import Popover from "@mui/material/Popover";
-import BatchPredictionIcon from "@mui/icons-material/BatchPrediction";
-import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
-import { useNamedState } from "../../../../../hooks/useNamedState";
-import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import { CopyCheck } from "lucide-react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import {
   FURIGANA,
   LyricsLine,
   RangeAttribute,
   RangeAttributeLabel,
 } from "lyrics-kit/core";
+
+import { Button } from "@lyricova/components/components/ui/button";
+import { Input } from "@lyricova/components/components/ui/input";
+import { Label } from "@lyricova/components/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@lyricova/components/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { useNamedState } from "../../../../../hooks/useNamedState";
 
 type FuriganaGroup = string | [string, string];
 
@@ -24,7 +41,7 @@ type FuriganaGroup = string | [string, string];
  * furiganaText matches /^.*(;*,.*)*$/
  * furiganaText.count(";") + furiganaText.count(",") == [...baseText].length - 1
  */
-function codeToFuriganaGroups(
+export function codeToFuriganaGroups(
   baseText: string,
   furiganaText: string
 ): FuriganaGroup[] {
@@ -167,13 +184,14 @@ export function ApplyAllFurigana({
     "",
     "furiganaText"
   );
+  const [isOpen, setIsOpen] = useState(false);
 
   const furiganaGroups = useMemo(() => {
     return codeToFuriganaGroups(baseText, furiganaText);
   }, [baseText, furiganaText]);
 
   const handlePaste = useCallback(
-    (event: React.ClipboardEvent<HTMLDivElement>) => {
+    (event: React.ClipboardEvent<HTMLInputElement>) => {
       if (!event.clipboardData.types.includes("text/html")) return;
       const html = event.clipboardData.getData("text/html");
       const parser = new DOMParser();
@@ -245,7 +263,10 @@ export function ApplyAllFurigana({
           groups.forEach((group) => {
             if (Array.isArray(group)) {
               furiganaAttribute.push(
-                new RangeAttributeLabel(group[1], [pos, pos + [...group[0]].length])
+                new RangeAttributeLabel(group[1], [
+                  pos,
+                  pos + [...group[0]].length,
+                ])
               );
               pos += [...group[0]].length;
             } else {
@@ -272,78 +293,61 @@ export function ApplyAllFurigana({
         return line;
       })
     );
+    setIsOpen(false);
   }, [baseText, furiganaText, setLines]);
 
   return (
-    <PopupState variant="popover" popupId="apply-furigana-pattern-to-all">
-      {(popupState) => (
-        <>
-        <Tooltip title="Apply pattern to all lines">
-          <IconButton {...bindTrigger(popupState)}>
-            <BatchPredictionIcon />
-          </IconButton>
-          </Tooltip>
-          <Popover
-            {...bindPopover(popupState)}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "center",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "center",
-            }}
-            sx={{
-              ".MuiPaper-root": {
-                padding: 1,
-              },
-            }}
-          >
-            <Box
-              sx={{
-                textAlign: "center",
-                fontSize: "1.5rem",
-              }}
-            >
-              {furiganaGroups.map((group, index) =>
-                Array.isArray(group) ? (
-                  <ruby key={index} style={{ borderInline: "1px solid" }}>
-                    {group[0]}
-                    <rt>{group[1]}</rt>
-                  </ruby>
-                ) : (
-                  <span key={index}>{group}</span>
-                )
-              )}
-            </Box>
-            <TextField
-              label="Base text"
-              value={baseText}
-              onChange={(e) => setBaseText(e.target.value)}
-              variant="outlined"
-              fullWidth
-              size="small"
-              margin="dense"
-              placeholder="VOCALOIDが大好き"
-              onPaste={handlePaste}
-            />
-            <TextField
-              label="Furigana text"
-              value={furiganaText}
-              onChange={(e) => setFuriganaText(e.target.value)}
-              variant="outlined"
-              fullWidth
-              size="small"
-              margin="dense"
-              placeholder="ボー;,カ;,ロ;,イ,ド,,だい,す,"
-              onPaste={handlePaste}
-            />
-            <Button variant="contained" size="small" onClick={handleApply}>
-              Apply
-            </Button>
-          </Popover>
-        </>
-      )}
-    </PopupState>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button variant="ghost">
+                <CopyCheck />{" "}
+                <span className="hidden md:inline">Apply all</span>
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Apply pattern to all lines</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <PopoverContent className="w-80 p-4 space-y-4">
+        <div className="text-center text-2xl">
+          {furiganaGroups.map((group, index) =>
+            Array.isArray(group) ? (
+              <ruby key={index} className="border-x border-solid">
+                {group[0]}
+                <rt>{group[1]}</rt>
+              </ruby>
+            ) : (
+              <span key={index}>{group}</span>
+            )
+          )}
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="baseText">Base text</Label>
+          <Input
+            id="baseText"
+            value={baseText}
+            onChange={(e) => setBaseText(e.target.value)}
+            placeholder="VOCALOIDが大好き"
+            onPaste={handlePaste}
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="furiganaText">Furigana text</Label>
+          <Input
+            id="furiganaText"
+            value={furiganaText}
+            onChange={(e) => setFuriganaText(e.target.value)}
+            placeholder="ボー;,カ;,ロ;,イ,ド,,だい,す,"
+            onPaste={handlePaste}
+          />
+        </div>
+        <Button size="sm" onClick={handleApply}>
+          Apply
+        </Button>
+      </PopoverContent>
+    </Popover>
   );
 }

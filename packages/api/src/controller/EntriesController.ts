@@ -28,7 +28,7 @@ export class EntriesController {
       include: [
         {
           association: "verses",
-          attributes: ["text", "isMain", "language", "typingSequence"],
+          attributes: ["id", "text", "isMain", "language", "typingSequence"],
         },
         {
           association: "tags",

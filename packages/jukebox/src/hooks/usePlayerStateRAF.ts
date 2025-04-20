@@ -7,13 +7,13 @@ export function usePlayerStateRAF(
   callback: (time: number, state: "playing" | "paused") => void
 ) {
   const playerState = usePlayerState(playerRef);
-  const playerStateRef = useRef<PlayerState>();
+  const playerStateRef = useRef<PlayerState>(playerState);
   playerStateRef.current = playerState;
 
-  const frameCallbackRef = useRef<number>();
-  
+  const frameCallbackRef = useRef<number>(0);
+
   // Added to prevent operation on unmounted components
-  const thisLifespan = useRef<boolean>();
+  const thisLifespan = useRef<boolean>(true);
 
   // Advance a frame when the current frame ends
   const onFrame = useCallback(

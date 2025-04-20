@@ -2,10 +2,15 @@ import type { Song } from "@lyricova/api/graphql/types";
 import { Divider } from "../Divider";
 import classes from "./Songs.module.scss";
 import { formatArtists } from "@lyricova/components";
-import { IconButton, Tooltip } from "@mui/material";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { SquareArrowOutUpRight } from "lucide-react";
 import { Link } from "../Link";
 import { Fragment } from "react";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
 
 type ExpandedSong = Song & { videoUrl?: string };
 interface ArtistMetaProps {
@@ -63,15 +68,21 @@ export function Songs({ songs }: SongsProps) {
             </div>
             {song.id > 0 && (
               <div className={classes.songLink}>
-                <Tooltip title="See details on VocaDB">
-                  <IconButton
-                    LinkComponent="a"
-                    href={`https://vocadb.net/S/${song.id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <OpenInNewIcon />
-                  </IconButton>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghostBright" size="icon" asChild>
+                      <a
+                        href={`https://vocadb.net/S/${song.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <SquareArrowOutUpRight />
+                      </a>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    See details on VocaDB
+                  </TooltipContent>
                 </Tooltip>
               </div>
             )}

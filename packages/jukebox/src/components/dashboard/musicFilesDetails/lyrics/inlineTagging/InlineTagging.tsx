@@ -17,10 +17,8 @@ import React, {
 import type { WebAudioPlayerState } from "../../../../../hooks/types";
 import { useNamedState } from "../../../../../hooks/useNamedState";
 import { useWebAudio } from "../../../../../hooks/useWebAudio";
-import { Box, Button, Stack, styled } from "@mui/material";
 import DismissibleAlert from "../../../DismissibleAlert";
 import { InlineTaggingLineMemo } from "./InlineTaggingLine";
-import { useSnackbar } from "notistack";
 import {
   Lyrics,
   LyricsLine,
@@ -46,16 +44,19 @@ import { populateDots } from "./InlineTaggingDots";
 import { WebAudioControls } from "../WebAudioControls";
 import { isNaN } from "lodash";
 import { populateDotsEn } from "./InlineTaggingEnSyllables";
+import { useNamedStateWithRef } from "@/hooks/useNamedStateWithRef";
+import { AlertDescription } from "@lyricova/components/components/ui/alert";
+import { Button } from "@lyricova/components/components/ui/button";
+import { toast } from "sonner";
 
 function Instructions() {
   return (
-    <DismissibleAlert
-      severity="warning"
-      collapseProps={{ sx: { flexGrow: 1, width: 0 } }}
-    >
-      Switch to another tab to save changes. Arrow keys: Navigate; Space: Tag;
-      Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter: play/pause,
-      ←/→: +/-5 seconds).
+    <DismissibleAlert variant="info" className="grow">
+      <AlertDescription>
+        Switch to another tab to save changes. Arrow keys: Navigate; Space: Tag;
+        Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter: play/pause,
+        ←/→: +/-5 seconds).
+      </AlertDescription>
     </DismissibleAlert>
   );
 }
@@ -75,13 +76,6 @@ const BLANK_LINE: CurrentLineState = {
   borderIndex: -Infinity,
 };
 
-const ControlRow = styled(Stack)(({ theme }) => ({
-  marginBottom: theme.spacing(1),
-  "&:last-child": {
-    marginBottom: 0,
-  },
-}));
-
 interface Props {
   lyrics: string;
   setLyrics: (lyrics: string) => void;
@@ -89,8 +83,6 @@ interface Props {
 }
 
 export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
-  const snackbar = useSnackbar();
-
   const { playerStatus, play, pause, seek, setRate, getProgress, audioBuffer } =
     useWebAudio(`/api/files/${fileId}/file`);
   const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
@@ -101,39 +93,37 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     "playbackProgress"
   );
   const section = playerStatus.state === "playing" ? "tag" : "mark";
-  const [dots, setDots] = useNamedState<number[][]>([], "dots");
-  const dotsRef = useRef<number[][]>();
-  dotsRef.current = dots;
+  const [dots, setDots, dotsRef] = useNamedStateWithRef<number[][]>([], "dots");
+  const [tags, setTags, tagsRef] = useNamedStateWithRef<number[][][]>(
+    [],
+    "tags"
+  );
 
-  const [tags, setTags] = useNamedState<number[][][]>([], "tags");
-  const tagsRef = useRef<number[][][]>();
-  tagsRef.current = tags;
-
-  const taggingAreaRef = useRef<HTMLDivElement>();
+  const taggingAreaRef = useRef<HTMLDivElement>(null);
 
   // Parse lyrics
   const parsedLyrics = useMemo<Lyrics | null>(() => {
     if (!lyrics) return null;
 
     try {
+      console.log("Inline tagging: Parsing lyrics", lyrics);
       return new Lyrics(lyrics);
     } catch (e) {
       console.error(`Error occurred while loading lyrics text: ${e}`, e);
-      snackbar.enqueueSnackbar(
-        `Error occurred while loading lyrics text: ${e}`,
-        { variant: "error" }
-      );
+      toast.error(`Error occurred while loading lyrics text: ${e}`);
       return null;
     }
-  }, [lyrics, snackbar]);
+  }, [lyrics]);
 
   // Parse and set `lines`.
-  const [lines, setLines] = useNamedState<LyricsLine[]>([], "lines");
-  const linesRef = useRef<LyricsLine[]>();
-  linesRef.current = lines;
+  const [lines, setLines, linesRef] = useNamedStateWithRef<LyricsLine[]>(
+    [],
+    "lines"
+  );
+
   useEffect(() => {
-    // console.log("useEffect parseLines");
     if (parsedLyrics !== null) {
+      console.log("Inline tagging: Parsing lyrics for tags", parsedLyrics);
       const timeTagLines = parsedLyrics.lines.map((l) => {
         const tags = l.attachments.timeTag;
         if (!tags) return null;
@@ -187,6 +177,10 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
       );
 
       return () => {
+        console.log(
+          "Inline tagging: Saving lyrics for lines",
+          linesRef.current
+        );
         const lines = linesRef.current.map((l, idx) => {
           const prevTags = tagsRef.current?.[idx - 1]?.flat();
           const prevEndTime = prevTags?.length ? Math.max(...prevTags) : null;
@@ -237,6 +231,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           return l;
         });
         parsedLyrics.lines = lines;
+        console.log("Inline tagging: Saving lyrics", parsedLyrics.toString());
         setLyrics(parsedLyrics.toString());
       };
     }
@@ -415,12 +410,8 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     seek,
   ]);
 
-  const [currentLine, setCurrentLine] = useNamedState<CurrentLineState>(
-    BLANK_LINE,
-    "currentLine"
-  );
-  const currentLineRef = useRef<CurrentLineState>();
-  currentLineRef.current = currentLine;
+  const [currentLine, setCurrentLine, currentLineRef] =
+    useNamedStateWithRef<CurrentLineState>(BLANK_LINE, "currentLine");
 
   const timelinesRef = useRef<gsap.core.Timeline[]>([]);
 
@@ -602,53 +593,45 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
   );
 
   return (
-    <Stack gap={1} sx={{ height: "100%" }} ref={taggingAreaRef}>
-      <Box
-        sx={{
-          position: "sticky",
-          top: 0,
-          left: 0,
-          zIndex: 1,
-          backgroundColor: "#12121280",
-          paddingTop: 1,
-          paddingBottom: 1,
-        }}
-      >
-        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
+    <div className="flex h-full flex-col" ref={taggingAreaRef}>
+      <div className="sticky top-0 left-0 z-10 bg-background/80 py-4 space-y-2 backdrop-blur-sm">
+        <div className="flex items-center gap-2">
           <Button
-            variant="outlined"
+            variant="outline"
             onClick={() => setDots(populateDots(lines))}
           >
             Marks&nbsp;(ja)
           </Button>
           <Button
-            variant="outlined"
+            variant="outline"
             onClick={() => populateDotsEn(lines).then((dots) => setDots(dots))}
           >
             Marks&nbsp;(en)
           </Button>
           <InstructionsMemo />
-        </ControlRow>
-        <ControlRow p={1} spacing={2} direction="row" alignItems="center">
-          <WebAudioControls
-            audioBuffer={audioBuffer}
-            seek={seek}
-            play={play}
-            pause={pause}
-            setRate={setRate}
-            getProgress={getProgress}
-            playerStatus={playerStatus}
-            playbackProgress={playbackProgress}
-          />
-        </ControlRow>
-      </Box>
-      <Box
-        sx={{ flexGrow: 1, height: 0, overflow: "auto", mx: -1, px: 1 }}
+        </div>
+        <div className="flex items-center">
+          {audioBuffer && (
+            <WebAudioControls
+              audioBuffer={audioBuffer}
+              seek={seek}
+              play={play}
+              pause={pause}
+              setRate={setRate}
+              getProgress={getProgress}
+              playerStatus={playerStatus}
+              playbackProgress={playbackProgress}
+            />
+          )}
+        </div>
+      </div>
+      <div
+        className="h-0 flex-grow overflow-auto px-4"
         onKeyDown={preventSpaceScrollerCallback}
       >
         {lines.map((l, idx) => (
           <InlineTaggingLineMemo
-            key={idx}
+            key={`${idx}-${l.content}`}
             index={idx}
             line={l}
             tags={tags[idx]}
@@ -678,7 +661,7 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
             onUpdateCursor={onUpdateCursorHandler}
           />
         ))}
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 }

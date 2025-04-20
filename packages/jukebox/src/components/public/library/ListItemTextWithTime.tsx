@@ -1,10 +1,14 @@
-import type { ListItemTextProps } from "@mui/material";
-import { Box, ListItemText, Typography } from "@mui/material";
 import * as React from "react";
+import { cn } from "@lyricova/components/utils";
 import { formatTime } from "../../../frontendUtils/strings";
 
-interface Props extends ListItemTextProps {
+interface Props extends React.HTMLAttributes<HTMLDivElement> {
+  primary: React.ReactNode;
+  secondary?: React.ReactNode;
   time: number | null;
+  primaryTypographyProps?: React.HTMLAttributes<HTMLParagraphElement>;
+  secondaryTypographyProps?: React.HTMLAttributes<HTMLParagraphElement>;
+  className?: string;
 }
 
 export default function ListItemTextWithTime({
@@ -13,6 +17,8 @@ export default function ListItemTextWithTime({
   time,
   primaryTypographyProps,
   secondaryTypographyProps,
+  className,
+  ...props
 }: Props) {
   let timeStr: string = null;
   if (time !== null) {
@@ -20,32 +26,29 @@ export default function ListItemTextWithTime({
   }
 
   return (
-    <ListItemText
-      sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
-      disableTypography
+    <div
+      className={cn("flex flex-row items-center grow", className)}
+      {...props}
     >
-      <Box sx={{ flexGrow: 1, width: 0, marginRight: 1 }}>
-        <Typography variant="body1" lang="ja" {...primaryTypographyProps}>
+      <div className="flex-grow w-0 mr-1">
+        <p className="text-base truncate" lang="ja" {...primaryTypographyProps}>
           {primary}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          lang="ja"
-          {...secondaryTypographyProps}
-        >
-          {secondary}
-        </Typography>
-      </Box>
+        </p>
+        {secondary && (
+          <p
+            className="text-sm text-muted-foreground truncate"
+            lang="ja"
+            {...secondaryTypographyProps}
+          >
+            {secondary}
+          </p>
+        )}
+      </div>
       {timeStr !== null && (
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          sx={{ marginRight: 1, fontVariantNumeric: "tabular-nums" }}
-        >
+        <p className="text-sm text-muted-foreground mr-1 tabular-nums">
           {timeStr}
-        </Typography>
+        </p>
       )}
-    </ListItemText>
+    </div>
   );
 }

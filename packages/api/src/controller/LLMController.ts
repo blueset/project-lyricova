@@ -1,11 +1,7 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
-import {
-  OPENAI_BASE_URL,
-  OPENAI_API_KEY,
-  OPENAI_MODEL,
-} from "../utils/secret";
+import { OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL } from "../utils/secret";
 import OpenAI from "openai";
 import { getTranslationAlignmentLLMPrompt } from "../utils/llmPrompt";
 import { CoreMessage, streamText } from "ai";
@@ -45,17 +41,26 @@ export class LLMController {
     // });
 
     const client = openrouter(model || OPENAI_MODEL || "gpt-4o");
+    const abortController = new AbortController();
+    const { signal } = abortController;
 
-    const messages = getTranslationAlignmentLLMPrompt(original, translation) as CoreMessage[];
-  
+    req.on("close", () => {
+      console.log("Request aborted");
+      abortController.abort();
+    });
+
+    const messages = getTranslationAlignmentLLMPrompt(
+      original,
+      translation
+    ) as CoreMessage[];
+
     const result = await streamText({
       model: client,
       messages,
+      abortSignal: signal,
       onError: (error) => {
         console.error("Error:", error);
-        res.write(
-          `data: ${JSON.stringify({ error: error })}\n\n`
-        );
+        res.write(`data: ${JSON.stringify({ error: error })}\n\n`);
         res.flush();
       },
     });
@@ -66,73 +71,80 @@ export class LLMController {
     res.setHeader("X-Accel-Buffering", "no");
     res.flushHeaders();
 
-    const fullContent = "";
-
     for await (const chunk of result.fullStream) {
       if (chunk.type === "text-delta") {
-        res.write(`data: ${JSON.stringify({chunk: chunk.textDelta})}\n\n`);
+        res.write(`data: ${JSON.stringify({ chunk: chunk.textDelta })}\n\n`);
         res.flush();
       }
       if (chunk.type === "reasoning") {
-        res.write(`data: ${JSON.stringify({reasoning: chunk.textDelta})}\n\n`);
+        res.write(
+          `data: ${JSON.stringify({ reasoning: chunk.textDelta })}\n\n`
+        );
         res.flush();
       }
     }
-    
+
     const response: string = await result.text;
     console.log("response", response);
-    const parsedResponse = (() => {
-      let currentPos = 0;
-      while (currentPos < response.length) {
-        try {
-          const arrayStart = response.indexOf("[", currentPos);
-          if (arrayStart === -1) break;
-          
-          let bracketCount = 1;
-          let pos = arrayStart + 1;
-          
-          while (bracketCount > 0 && pos < response.length) {
-            if (response[pos] === "[") bracketCount++;
-            if (response[pos] === "]") bracketCount--;
-            pos++;
-          }
-          
-          if (bracketCount === 0) {
-            const arrayStr = response.substring(arrayStart, pos);
-            const parsed = JSON.parse(arrayStr);
-            if (Array.isArray(parsed)) return parsed;
-          }
-          
-          currentPos = arrayStart + 1;
-        } catch (e) {
-          currentPos++;
-          continue;
-        }
-      }
-      throw new Error("No valid JSON array found in response");
-    })();
 
-    if (!Array.isArray(parsedResponse)) {
-      // throw new Error(`Invalid response format: ${JSON.stringify(response)}`);
+    try {
+      const parsedResponse = (() => {
+        let currentPos = 0;
+        while (currentPos < response.length) {
+          try {
+            const arrayStart = response.indexOf("[", currentPos);
+            if (arrayStart === -1) break;
+
+            let bracketCount = 1;
+            let pos = arrayStart + 1;
+
+            while (bracketCount > 0 && pos < response.length) {
+              if (response[pos] === "[") bracketCount++;
+              if (response[pos] === "]") bracketCount--;
+              pos++;
+            }
+
+            if (bracketCount === 0) {
+              const arrayStr = response.substring(arrayStart, pos);
+              const parsed = JSON.parse(arrayStr);
+              if (Array.isArray(parsed)) return parsed;
+            }
+
+            currentPos = arrayStart + 1;
+          } catch (e) {
+            currentPos++;
+            continue;
+          }
+        }
+        throw new Error("No valid JSON array found in response");
+      })();
+
+      if (!Array.isArray(parsedResponse)) {
+        throw new Error("Parsed response is not an array");
+      }
+
+      const aligned = (
+        parsedResponse as {
+          original: string;
+          aligned: string;
+        }[]
+      )
+        .map((item) => item.aligned)
+        .join("\n");
+
+      res.write(`data: ${JSON.stringify({ aligned })}\n\n`);
+      res.flush();
+      res.end();
+    } catch (e) {
+      console.error("Error parsing response:", e);
       res.write(
-        `data: ${JSON.stringify({ error: `Invalid response format: ${JSON.stringify(response)}` })}\n\n`
+        `data: ${JSON.stringify({
+          error: `Error parsing response: ${e}`,
+        })}\n\n`
       );
       res.flush();
       res.end();
       return;
     }
-
-    const aligned = (
-      parsedResponse as {
-        original: string;
-        aligned: string;
-      }[]
-    )
-      .map((item) => item.aligned)
-      .join("\n");
-
-    res.write(`data: ${JSON.stringify({ aligned })}\n\n`);
-    res.flush();
-    res.end();
   }
 }

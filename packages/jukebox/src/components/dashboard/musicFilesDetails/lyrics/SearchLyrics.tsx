@@ -1,46 +1,40 @@
-import { Form } from "react-final-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
   Avatar,
-  Badge,
-  Button,
-  Chip,
-  InputAdornment,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemSecondaryAction,
-  ListItemText,
-  styled,
-  Typography,
-} from "@mui/material";
-import { TextField } from "mui-rff";
+  AvatarFallback,
+  AvatarImage,
+} from "@lyricova/components/components/ui/avatar";
+import { Badge } from "@lyricova/components/components/ui/badge";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Input } from "@lyricova/components/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@lyricova/components/components/ui/form";
 import { gql, useApolloClient } from "@apollo/client";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import type { LyricsKitLyricsEntry } from "@lyricova/api/graphql/types";
-import { useSnackbar } from "notistack";
-import {
-  red,
-  lightBlue,
-  orange,
-  pink,
-  blueGrey,
-  blue,
-  purple,
-  lightGreen,
-  green,
-} from "@mui/material/colors";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import CheckIcon from "@mui/icons-material/Check";
-import ClearIcon from "@mui/icons-material/Clear";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import FileCopyIcon from "@mui/icons-material/FileCopy";
+import { toast } from "sonner";
+import { Check, Copy, Images, Loader2, Music, X } from "lucide-react";
 import type { LyricsAnalysisResult } from "@/frontendUtils/lyricsCheck";
 import { lyricsAnalysis } from "@/frontendUtils/lyricsCheck";
 import { Lyrics } from "lyrics-kit/core";
-import { useCallback, useMemo } from "react";
-import TooltipIconButton from "../../TooltipIconButton";
+import { ComponentProps, useCallback, useMemo, useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
 import type { DocumentNode } from "graphql";
 import type { Subscription } from "zen-observable-ts";
+import { cn } from "@lyricova/components/utils";
 
 const SEARCH_LYRICS_QUERY = gql`
   query (
@@ -80,7 +74,22 @@ const SEARCH_LYRICS_PROGRESS_SUBSCRIPTION = gql`
   }
 ` as DocumentNode;
 
-const AnalysisChip = styled(Chip)({ marginRight: 1 });
+function AnalysisBadge({
+  variant,
+  className,
+  children,
+  ...props
+}: ComponentProps<typeof Badge>) {
+  return (
+    <Badge
+      variant={variant}
+      className={cn("mr-1 mb-1 text-xs", className)}
+      {...props}
+    >
+      {children}
+    </Badge>
+  );
+}
 
 function InlineAnalysisResult({
   result,
@@ -92,192 +101,172 @@ function InlineAnalysisResult({
   length?: number;
 }) {
   const lengthChip = !length ? (
-    <AnalysisChip
-      size="small"
-      variant="outlined"
-      color="default"
-      label="?? seconds"
-    />
+    <AnalysisBadge variant="outline">?? seconds</AnalysisBadge>
   ) : Math.abs(length - duration) < 3 ? (
-    <AnalysisChip size="small" color="secondary" label={`${length} seconds`} />
+    <AnalysisBadge variant="success">{length} seconds</AnalysisBadge>
   ) : (
-    <AnalysisChip
-      size="small"
-      variant="outlined"
-      color="primary"
-      label={`${length} seconds`}
-    />
+    <AnalysisBadge variant="outline">{length} seconds</AnalysisBadge>
   );
 
   if (result) {
     const translation = result.hasTranslation ? (
-      <AnalysisChip
-        size="small"
-        color="secondary"
-        icon={<CheckIcon />}
-        label="Translation"
-      />
+      <AnalysisBadge variant="success">
+        <Check className="h-3 w-3" />
+        Translation
+      </AnalysisBadge>
     ) : (
-      <AnalysisChip
-        size="small"
-        variant="outlined"
-        color="default"
-        icon={<ClearIcon />}
-        label="Translation"
-      />
+      <AnalysisBadge variant="outline">
+        <X className="h-3 w-3" />
+        Translation
+      </AnalysisBadge>
     );
     const inlineTimeTags = result.hasInlineTimeTags ? (
-      <AnalysisChip
-        size="small"
-        color="secondary"
-        icon={<CheckIcon />}
-        label="Inline time tags"
-      />
+      <AnalysisBadge variant="success">
+        <Check className="h-3 w-3" />
+        Inline time tags
+      </AnalysisBadge>
     ) : (
-      <AnalysisChip
-        size="small"
-        variant="outlined"
-        color="default"
-        icon={<ClearIcon />}
-        label="Inline time tags"
-      />
+      <AnalysisBadge variant="outline">
+        <X className="h-3 w-3" />
+        Inline time tags
+      </AnalysisBadge>
     );
     const furigana = result.hasFurigana ? (
-      <AnalysisChip
-        size="small"
-        color="secondary"
-        icon={<CheckIcon />}
-        label="Furigana"
-      />
+      <AnalysisBadge variant="success">
+        <Check className="h-3 w-3" />
+        Furigana
+      </AnalysisBadge>
     ) : (
-      <AnalysisChip
-        size="small"
-        variant="outlined"
-        color="default"
-        icon={<ClearIcon />}
-        label="Furigana"
-      />
+      <AnalysisBadge variant="outline">
+        <X className="h-3 w-3" />
+        Furigana
+      </AnalysisBadge>
     );
     const simplifiedJapanese = result.hasSimplifiedJapanese ? (
-      <AnalysisChip
-        size="small"
-        color="primary"
-        icon={<CheckIcon />}
-        label="Simplified Japanese"
-      />
+      <AnalysisBadge variant="destructive">
+        <Check className="h-3 w-3" />
+        Simplified Japanese
+      </AnalysisBadge>
     ) : (
-      <AnalysisChip
-        size="small"
-        variant="outlined"
-        color="secondary"
-        icon={<ClearIcon />}
-        label="Simplified Japanese"
-      />
+      <AnalysisBadge variant="success">
+        <X className="h-3 w-3" />
+        Simplified Japanese
+      </AnalysisBadge>
     );
     const lastTimestamp =
       result.lastTimestamp < duration ? (
-        <AnalysisChip
-          size="small"
-          variant="outlined"
-          color="secondary"
-          label={`Last line: ${result.lastTimestamp} seconds`}
-        />
+        <AnalysisBadge variant="success">
+          Last line: {result.lastTimestamp} seconds
+        </AnalysisBadge>
       ) : (
-        <AnalysisChip
-          size="small"
-          variant="outlined"
-          color="primary"
-          label={`Last line: ${result.lastTimestamp} seconds`}
-        />
+        <AnalysisBadge variant="outline">
+          Last line: {result.lastTimestamp} seconds
+        </AnalysisBadge>
       );
 
     return (
-      <>
+      <div className="mt-1 flex flex-wrap items-center">
         {lengthChip}
         {translation}
         {inlineTimeTags}
         {furigana}
         {simplifiedJapanese}
         {lastTimestamp}
-      </>
+      </div>
     );
   } else {
     return (
-      <>
+      <div className="mt-1 flex flex-wrap items-center">
         {lengthChip}
-        <AnalysisChip
-          size="small"
-          color="primary"
-          icon={<ClearIcon />}
-          label="Parse failed"
-        />
-      </>
+        <AnalysisBadge variant="destructive">
+          <X className="mr-1 h-3 w-3" />
+          Parse failed
+        </AnalysisBadge>
+      </div>
     );
   }
 }
 
-function getBackgroundColor(key: string): string {
-  switch (key) {
-    case "Ne":
-      return red[900];
-    case "QQ":
-      return lightGreen[600];
-    case "Ku":
-      return lightBlue[900];
-    case "Xi":
-      return orange[900];
-    case "Ge":
-      return pink[900];
-    case "Vi":
-      return blueGrey[600];
-    case "Sy":
-      return blue[900];
-    case "Ma":
-      return purple[600];
-    case "Mu":
-      return orange[900];
-    case "Yo":
-      return red[900];
-    case "Sp":
-      return green[900];
-    case "So":
-      return pink[900];
-    default:
-      return "secondary.dark";
-  }
-}
-
-function BadgeAvatar({ children }: { children: unknown }) {
+function SourceBadge({ children }: { children: unknown }) {
   const truncated = `${children || "??"}`.substring(0, 2);
+  // Basic color mapping, can be expanded
+  const bgColorClass = useMemo(() => {
+    switch (truncated.toLowerCase()) {
+      case "ne":
+        return "bg-red-700";
+      case "qq":
+        return "bg-green-600";
+      case "ku":
+        return "bg-blue-800";
+      case "xi":
+        return "bg-orange-700";
+      case "ge":
+        return "bg-pink-700";
+      case "vi":
+        return "bg-slate-600";
+      case "sy":
+        return "bg-blue-700";
+      case "ma":
+        return "bg-purple-600";
+      case "mu":
+        return "bg-orange-700";
+      case "yo":
+        return "bg-red-700";
+      case "sp":
+        return "bg-green-700";
+      case "so":
+        return "bg-pink-700";
+      default:
+        return "bg-gray-500";
+    }
+  }, [truncated]);
+
   return (
-    <Avatar
-      sx={{
-        width: 22,
-        height: 22,
-        fontSize: 10,
-        background: getBackgroundColor(truncated),
-        color: "white",
-        border: 1,
-        borderColor: "background.paper",
-      }}
-    >
-      {truncated}
+    <Avatar className={cn("h-6 w-6 border border-background", bgColorClass)}>
+      <AvatarFallback className="text-xs text-white bg-transparent">
+        {truncated}
+      </AvatarFallback>
     </Avatar>
   );
 }
 
-interface FormValues {
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  artists: z.string().optional(),
+  duration: z.number(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+interface SearchLyricsProps {
   title: string;
   artists?: string;
   duration: number;
 }
 
-export default function SearchLyrics({ title, artists, duration }: FormValues) {
+export default function SearchLyrics({
+  title,
+  artists,
+  duration,
+}: SearchLyricsProps) {
   const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
   const [searchResults, setSearchResults] = useNamedState<
     LyricsKitLyricsEntry[]
   >([], "searchResults");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    values: {
+      title: title ?? "",
+      artists: artists ?? "",
+      duration: duration ?? 0,
+    },
+    resetOptions: {
+      keepDefaultValues: true,
+    },
+  });
+
   const parsedResults = useMemo(
     () =>
       searchResults.map((v) => {
@@ -293,201 +282,237 @@ export default function SearchLyrics({ title, artists, duration }: FormValues) {
   );
 
   const copyText = useCallback(
-    (text: string) => async () => {
+    (text: string | undefined | null) => async () => {
+      if (!text) return;
       navigator.clipboard.writeText(text).then(
         function () {
-          snackbar.enqueueSnackbar("Copied!", { variant: "success" });
+          toast.success("Copied!");
         },
         function (err) {
           console.error("Could not copy text: ", err);
-          snackbar.enqueueSnackbar(`Failed to copy: ${err}`, {
-            variant: "error",
-          });
+          toast.error(`Failed to copy: ${err}`);
         }
       );
     },
-    [snackbar]
+    []
   );
 
-  return (
-    <>
-      <Form<FormValues>
-        initialValues={{ title, artists, duration }}
-        onSubmit={async (values) => {
-          try {
-            const sessionId = `${Math.random()}`;
-            setSearchResults([]);
+  const onSubmit = async (values: FormValues) => {
+    setIsSubmitting(true);
+    try {
+      const sessionId = `${Math.random()}`;
+      setSearchResults([]);
 
-            const query = apolloClient.query<{
-              lyricsKitSearch: LyricsKitLyricsEntry[];
-            }>({
-              query: SEARCH_LYRICS_QUERY,
-              variables: {
-                ...values,
-                sessionId,
-              },
-            });
+      const query = apolloClient.query<{
+        lyricsKitSearch: LyricsKitLyricsEntry[];
+      }>({
+        query: SEARCH_LYRICS_QUERY,
+        variables: {
+          ...values,
+          sessionId,
+        },
+        fetchPolicy: "network-only", // Ensure fresh results
+      });
 
-            const subscription = apolloClient.subscribe<{
-              lyricsKitSearchIncremental: LyricsKitLyricsEntry;
-            }>({
-              query: SEARCH_LYRICS_PROGRESS_SUBSCRIPTION,
-              variables: { sessionId },
-            });
-            const zenSubscription = subscription.subscribe({
-              start(subscription: Subscription) {
-                console.log("subscription started", subscription);
-              },
-              next(x) {
-                console.log("subscription event", x);
-                if (x.data.lyricsKitSearchIncremental !== null) {
-                  setSearchResults((results) => {
-                    const arr = [...results, x.data.lyricsKitSearchIncremental];
-                    arr.sort((a, b) => b.quality - a.quality);
-                    return arr;
-                  });
-                }
-              },
-              error(err) {
-                console.log(`Finished with error: ${err}`);
-              },
-              complete() {
-                console.log("Finished");
-              },
-            });
+      const subscription = apolloClient.subscribe<{
+        lyricsKitSearchIncremental: LyricsKitLyricsEntry;
+      }>({
+        query: SEARCH_LYRICS_PROGRESS_SUBSCRIPTION,
+        variables: { sessionId },
+      });
 
-            const result = await query;
-            if (result.data) {
-              const results = [...result.data.lyricsKitSearch];
-              results.sort((a, b) => b.quality - a.quality);
-              setSearchResults(results);
-            }
-            zenSubscription.unsubscribe();
-          } catch (e) {
-            console.error(`Error while loading search result; ${e}`);
-            snackbar.enqueueSnackbar(`Failed to load search results: ${e}`, {
-              variant: "error",
+      const zenSubscription = subscription.subscribe({
+        start(subscription: Subscription) {
+          console.log("subscription started", subscription);
+        },
+        next(x) {
+          console.log("subscription event", x);
+          if (x.data?.lyricsKitSearchIncremental) {
+            setSearchResults((results) => {
+              // Avoid duplicates based on lyrics content
+              if (
+                results.some(
+                  (r) => r.lyrics === x.data.lyricsKitSearchIncremental.lyrics
+                )
+              ) {
+                return results;
+              }
+              const arr = [...results, x.data.lyricsKitSearchIncremental];
+              arr.sort((a, b) => b.quality - a.quality);
+              return arr;
             });
           }
-        }}
-      >
-        {({ submitting, handleSubmit }) => (
-          <form
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-            onSubmit={handleSubmit}
+        },
+        error(err) {
+          console.log(`Finished with error: ${err}`);
+          toast.error(`Subscription error: ${err.message}`);
+        },
+        complete() {
+          console.log("Subscription finished");
+        },
+      });
+
+      const result = await query;
+      zenSubscription.unsubscribe(); // Unsubscribe after query completes
+
+      if (result.data) {
+        setSearchResults((currentResults) => {
+          const newResults = result.data.lyricsKitSearch.filter(
+            (newItem) =>
+              !currentResults.some(
+                (existing) => existing.lyrics === newItem.lyrics
+              )
+          );
+          const combined = [...currentResults, ...newResults];
+          combined.sort((a, b) => b.quality - a.quality);
+          return combined;
+        });
+      }
+    } catch (e: any) {
+      console.error(`Error while loading search result; ${e}`);
+      toast.error(`Failed to load search results: ${e.message || e}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <TooltipProvider>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col lg:flex-row lg:items-end w-full gap-2"
+        >
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem className="flex-grow">
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="Song title" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="artists"
+            render={({ field }) => (
+              <FormItem className="flex-grow">
+                <FormLabel>Artists</FormLabel>
+                <FormControl>
+                  <Input placeholder="Artist names" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="duration"
+            render={({ field }) => (
+              <FormItem className="w-full lg:w-36">
+                <FormLabel>Duration</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      readOnly
+                      disabled
+                      {...field}
+                      value={field.value || 0} // Ensure value is controlled
+                    />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">
+                      sec
+                    </span>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full shrink-0 lg:w-auto"
           >
-            <TextField
-              sx={{ marginRight: 1 }}
-              variant="outlined"
-              required
-              fullWidth
-              margin="dense"
-              size="small"
-              name="title"
-              type="text"
-              label="Title"
-            />
-            <TextField
-              sx={{ marginRight: 1 }}
-              variant="outlined"
-              fullWidth
-              margin="dense"
-              size="small"
-              name="artists"
-              type="text"
-              label="Artists"
-            />
-            <TextField
-              sx={{ marginRight: 1, flexBasis: "25em" }}
-              variant="outlined"
-              margin="dense"
-              size="small"
-              disabled
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">sec</InputAdornment>
-                  ),
-                  readOnly: true,
-                },
-              }}
-              name="duration"
-              type="number"
-              label="Duration"
-            />
-            <Button
-              sx={{ flexShrink: 0 }}
-              variant="contained"
-              color="secondary"
-              type="submit"
-              loading={submitting}
-              loadingPosition="start"
-            >
-              Search
-            </Button>
-          </form>
-        )}
+            {isSubmitting && <Loader2 className="animate-spin" />}
+            Search
+          </Button>
+        </form>
       </Form>
-      <List>
+      <div className="mt-4 space-y-2 w-full">
         {searchResults.map((v, idx) => (
-          <ListItem key={idx} alignItems="flex-start" sx={{ pr: 12 }}>
-            <ListItemAvatar>
-              <Badge
-                overlap="rectangular"
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                badgeContent={<BadgeAvatar>{v.metadata?.source}</BadgeAvatar>}
-              >
-                <Avatar src={v.metadata?.artworkURL} variant="rounded">
-                  <MusicNoteIcon />
-                </Avatar>
-              </Badge>
-            </ListItemAvatar>
-            <ListItemText disableTypography>
-              <Typography variant="body1" display="block">
+          <div
+            key={idx}
+            className="flex items-start gap-3 rounded-md border p-3 pr-16 relative"
+          >
+            <div className="relative shrink-0">
+              <Avatar className="h-10 w-10 rounded-md">
+                <AvatarImage src={v.metadata?.artworkURL ?? undefined} />
+                <AvatarFallback className="rounded-md">
+                  <Music className="h-5 w-5" />
+                </AvatarFallback>
+              </Avatar>
+              {v.metadata?.source && (
+                <div className="absolute -bottom-1 -right-1">
+                  <SourceBadge>{v.metadata.source}</SourceBadge>
+                </div>
+              )}
+            </div>
+            <div className="flex-grow w-0 overflow-hidden">
+              <p className="font-medium truncate">
                 {`${v.tags?.ti}` || <em>No title</em>}
-              </Typography>
-              <Typography variant="body2" display="block" color="textSecondary">
+              </p>
+              <p className="text-sm text-muted-foreground truncate">
                 {`${v.tags?.ar}` || <em>Various artists</em>} /{" "}
                 {`${v.tags?.al}` || <em>Unknown album</em>}
-              </Typography>
-              <Typography
-                variant="body2"
-                display="block"
-                color="textSecondary"
-                noWrap
-              >
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
                 {v.lyrics.replace(/\n?\[[^\]]*?]/g, "¶").replace(/^¶+/g, "")}
-              </Typography>
-              <Typography variant="body2" display="block" color="textSecondary">
-                <InlineAnalysisResult
-                  result={parsedResults[idx]?.analysis}
-                  duration={duration}
-                  length={v.tags?.length as number | undefined}
-                />
-              </Typography>
-            </ListItemText>
-            <ListItemSecondaryAction>
-              <TooltipIconButton
-                title="Copy lyrics"
-                onClick={copyText(v.lyrics)}
-              >
-                <ContentCopyIcon />
-              </TooltipIconButton>
-              <TooltipIconButton
-                title="Copy cover URL"
-                disabled={!v.metadata?.artworkURL}
-                onClick={copyText(v.metadata?.artworkURL)}
-              >
-                <FileCopyIcon />
-              </TooltipIconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
+              </p>
+              <InlineAnalysisResult
+                result={parsedResults[idx]?.analysis}
+                duration={duration}
+                length={v.tags?.length as number | undefined}
+              />
+            </div>
+            <div className="absolute top-2 right-2 flex flex-col">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={copyText(v.lyrics)}
+                  >
+                    <Copy />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  <p>Copy lyrics</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={!v.metadata?.artworkURL}
+                    onClick={copyText(v.metadata?.artworkURL)}
+                  >
+                    <Images />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  <p>Copy cover URL</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
         ))}
-      </List>
-    </>
+      </div>
+    </TooltipProvider>
   );
 }

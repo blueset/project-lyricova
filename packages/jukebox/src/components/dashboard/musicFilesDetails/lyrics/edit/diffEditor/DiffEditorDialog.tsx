@@ -1,12 +1,12 @@
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
-} from "@mui/material";
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@lyricova/components/components/ui/dialog";
+import { Button } from "@lyricova/components/components/ui/button";
 import { useCallback, useEffect, useState } from "react";
-import Grid from "@mui/material/Grid";
 import DiffEditorTextarea from "./DiffEditorBox";
 import diff from "fast-diff";
 import {
@@ -162,7 +162,7 @@ function applyDiff(source: string, edited: string): string {
     });
     return result.toString();
   } catch (e) {
-    alert("Error: " + e.message);
+    alert("Error: " + (e as Error).message);
     console.error(e);
     return source;
   }
@@ -177,10 +177,15 @@ export default function DiffEditorDialog({ isOpen, toggleOpen }: Props) {
   const [sourceValue, setSourceValue] = useState("");
   const [editedValue, setEditedValue] = useState("");
 
-  const handleClose = useCallback(() => {
-    navigator.clipboard.writeText(editedValue);
-    toggleOpen(false);
-  }, [editedValue, toggleOpen]);
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        navigator.clipboard.writeText(editedValue);
+      }
+      toggleOpen(open);
+    },
+    [editedValue, toggleOpen]
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -193,43 +198,39 @@ export default function DiffEditorDialog({ isOpen, toggleOpen }: Props) {
   const handleApplyDiff = useCallback(() => {
     setEditedValue(applyDiff(sourceValue, editedValue));
   }, [editedValue, sourceValue]);
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="form-dialog-title"
-      scroll="paper"
-      fullWidth
-      maxWidth="lg"
-    >
-      <DialogTitle>Diff editor</DialogTitle>
-      <DialogContent>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 6 }}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-auto grid-rows-[auto_1fr_auto]">
+        <DialogHeader>
+          <DialogTitle>Diff editor</DialogTitle>
+        </DialogHeader>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-auto -mr-6 pr-6">
+          <div className="col-span-1">
             <DiffEditorTextarea
               title="Source"
               value={sourceValue}
               onChange={setSourceValue}
             />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          </div>
+          <div className="col-span-1">
             <DiffEditorTextarea
               title="Edited"
               value={editedValue}
               onChange={setEditedValue}
               lineBreakButton
             />
-          </Grid>
-        </Grid>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="default" onClick={handleApplyDiff}>
+            Apply Diff
+          </Button>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button color="primary" onClick={handleApplyDiff}>
-          Apply Diff
-        </Button>
-        <Button onClick={handleClose} color="primary">
-          Close
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

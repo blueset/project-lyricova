@@ -1,23 +1,17 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Grid,
-  Stack,
-  Typography,
-} from "@mui/material";
 import { useCallback, useMemo } from "react";
 import LyricsPreview from "./LyricsPreview";
 import { lyricsAnalysis } from "@/frontendUtils/lyricsCheck";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useSnackbar } from "notistack";
+import { format } from "date-fns";
 import { Lyrics } from "lyrics-kit/core";
 import { useNamedState } from "../../../hooks/useNamedState";
 import LyricsEditDialog from "./LyricsEditDialog";
 import { gql, useApolloClient } from "@apollo/client";
 import type { DocumentNode } from "graphql";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Badge } from "@lyricova/components/components/ui/badge";
+import { cn } from "@lyricova/components/utils";
 
 const REMOVE_LYRICS_MUTATION = gql`
   mutation ($fileId: Int!) {
@@ -36,8 +30,6 @@ interface Props {
   refresh: () => unknown | Promise<unknown>;
 }
 
-dayjs.extend(utc);
-
 export default function LyricsPanel({
   fileId,
   lrcLyrics,
@@ -48,7 +40,6 @@ export default function LyricsPanel({
   duration,
   songId,
 }: Props) {
-  const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
 
   const [isLyricsEditDialogOpen, toggleLyricsEditDialogOpen] = useNamedState(
@@ -69,22 +60,16 @@ export default function LyricsPanel({
         variables: { fileId },
       });
       if (result) {
-        snackbar.enqueueSnackbar(`Lyrics removed for ${title}.`, {
-          variant: "success",
-        });
+        toast.success(`Lyrics removed for ${title}.`);
         await refresh();
       } else {
-        snackbar.enqueueSnackbar(`Lyrics not removed for ${title}.`, {
-          variant: "error",
-        });
+        toast.error(`Lyrics not removed for ${title}.`);
       }
     } catch (e) {
       console.error("Lyrics removal failed", e);
-      snackbar.enqueueSnackbar(`Lyrics not removed for ${title}: ${e}`, {
-        variant: "error",
-      });
+      toast.error(`Lyrics not removed for ${title}: ${e}`);
     }
-  }, [apolloClient, fileId, refresh, snackbar, title]);
+  }, [apolloClient, fileId, refresh, title]);
 
   const effectiveLyricsText = lrcxLyrics || lrcLyrics || null;
 
@@ -94,18 +79,12 @@ export default function LyricsPanel({
       return new Lyrics(effectiveLyricsText);
     } catch (e) {
       console.error("Error while parsing lyrics", e);
-      snackbar.enqueueSnackbar(`Error while parsing lyrics: ${e}`, {
-        variant: "error",
-      });
+      toast.error(`Error while parsing lyrics: ${e}`);
       return null;
     }
-  }, [effectiveLyricsText, snackbar]);
+  }, [effectiveLyricsText]);
 
-  let lyricsNode = (
-    <Typography variant="h6" component="div">
-      No lyrics
-    </Typography>
-  );
+  let lyricsNode = <h2 className="text-xl font-semibold">No lyrics</h2>;
   if (lyrics) {
     lyricsNode = <LyricsPreview lyrics={lyrics} fileId={fileId} />;
   }
@@ -114,118 +93,87 @@ export default function LyricsPanel({
 
   return (
     <>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 9 }}>{lyricsNode}</Grid>
-        <Grid size={{ xs: 12, sm: 3 }}>
-          <Typography variant="h6" component="h3">
-            Lyric state
-          </Typography>
-          <Box component="section" sx={{ marginBottom: 2 }}>
-            <Typography>
+      <div className="grid gap-4 @2xl/dashboard:grid-cols-12">
+        <div className="@2xl/dashboard:col-span-9">{lyricsNode}</div>
+        <div className="@2xl/dashboard:col-span-3">
+          <h3 className="text-xl font-semibold mb-2">Lyric state</h3>
+          <section className="mb-4">
+            <p>
               Lyrics type:{" "}
               {lrcxLyrics ? (
-                <Typography component="span" color="secondary">
-                  LRCX
-                </Typography>
+                <Badge variant="successOutline">LRCX</Badge>
               ) : lrcLyrics ? (
                 "LRC"
               ) : (
-                <Typography component="span" color="textSecondary">
-                  No lyrics
-                </Typography>
+                <Badge variant="outline">No lyrics</Badge>
               )}
-            </Typography>
+            </p>
             {effectiveLyricsText !== null && (
               <>
                 {lrcxLyrics !== null && (
                   <>
-                    <Typography>
-                      Has translation:{" "}
+                    <p>
+                      Translation:{" "}
                       {analysisResult.hasTranslation ? (
-                        <Typography component="span" color="secondary">
-                          Yes
-                        </Typography>
+                        <Badge variant="successOutline">Yes</Badge>
                       ) : (
-                        <Typography component="span">No</Typography>
+                        <Badge variant="outline">No</Badge>
                       )}
-                    </Typography>
-                    <Typography>
-                      Has inline time tags:{" "}
+                    </p>
+                    <p>
+                      Inline time tags:{" "}
                       {analysisResult.hasInlineTimeTags ? (
-                        <Typography component="span" color="secondary">
-                          Yes
-                        </Typography>
+                        <Badge variant="successOutline">Yes</Badge>
                       ) : (
-                        <Typography component="span">No</Typography>
+                        <Badge variant="outline">No</Badge>
                       )}
-                    </Typography>
-                    <Typography>
-                      Has furigana:{" "}
+                    </p>
+                    <p>
+                      Furigana:{" "}
                       {analysisResult.hasFurigana ? (
-                        <Typography component="span" color="secondary">
-                          Yes
-                        </Typography>
+                        <Badge variant="successOutline">Yes</Badge>
                       ) : (
-                        <Typography component="span">No</Typography>
+                        <Badge variant="outline">No</Badge>
                       )}
-                    </Typography>
+                    </p>
                   </>
                 )}
-                <Typography>
-                  Has “Simplified Japanese”:{" "}
+                <p>
+                  “Simplified Japanese”:{" "}
                   {analysisResult.hasSimplifiedJapanese ? (
-                    <Typography component="span" color="error">
-                      Yes
-                    </Typography>
+                    <Badge variant="destructive">Yes</Badge>
                   ) : (
-                    <Typography component="span" color="secondary">
-                      No
-                    </Typography>
+                    <Badge variant="successOutline">No</Badge>
                   )}
-                </Typography>
-                <Typography>
+                </p>
+                <p>
                   Last timestamp:{" "}
-                  {dayjs
-                    .utc(analysisResult.lastTimestamp * 1000)
-                    .format("HH:mm:ss")}
-                </Typography>
+                  {format(analysisResult.lastTimestamp * 1000, "HH:mm:ss")}
+                </p>
               </>
             )}
-          </Box>
-          <Typography variant="h6" component="h3">
-            What to do?
-          </Typography>
-          <Stack direction="row">
-            <Button
-              sx={{ marginRight: 1, marginBottom: 1 }}
-              variant="outlined"
-              onClick={handleOpenLyricsEditDialog}
-            >
-              Adjust
+          </section>
+          <section className="flex gap-2 flex-wrap">
+            <Button variant="outline" onClick={handleOpenLyricsEditDialog}>
+              Edit
             </Button>
             {!warnRemove ? (
-              <Button
-                sx={{ marginRight: 1, marginBottom: 1 }}
-                variant="outlined"
-                color="error"
-                onClick={() => setWarnRemove(true)}
-              >
+              <Button variant="destructive" onClick={() => setWarnRemove(true)}>
                 Remove
               </Button>
             ) : (
-              <ButtonGroup
-                variant="outlined"
-                sx={{ marginRight: 1, marginBottom: 1 }}
-              >
-                <Button onClick={() => setWarnRemove(false)}>Cancel</Button>
-                <Button size="small" color="error" onClick={handleRemoveLyrics}>
-                  <DeleteIcon />
+              <>
+                <Button variant="outline" onClick={() => setWarnRemove(false)}>
+                  Cancel
                 </Button>
-              </ButtonGroup>
+                <Button variant="destructive" onClick={handleRemoveLyrics}>
+                  <Trash2 />
+                </Button>
+              </>
             )}
-          </Stack>
-        </Grid>
-      </Grid>
+          </section>
+        </div>
+      </div>
       <LyricsEditDialog
         refresh={refresh}
         fileId={fileId}

@@ -1,17 +1,20 @@
 "use client";
 
-import { Field, Form, FormSpy } from "react-final-form";
+import { useForm } from "react-hook-form";
 import PlaylistAvatar from "../PlaylistAvatar";
-import { TextField } from "mui-rff";
-import { IconButton } from "@mui/material";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import { OnChange } from "react-final-form-listeners";
-import slugify from "slugify";
-import { finalFormMutators, SlugifyAdornment } from "@lyricova/components";
+import { SlugifyAdornment } from "@lyricova/components";
 import type { DocumentNode } from "@apollo/client";
 import { gql, useApolloClient } from "@apollo/client";
-import { useSnackbar } from "notistack";
+import { toast } from "sonner";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+} from "@lyricova/components/components/ui/form";
+import { Input } from "@lyricova/components/components/ui/input";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Check, X } from "lucide-react";
 
 const NEW_PLAYLIST_MUTATION = gql`
   mutation ($name: String!, $slug: String!) {
@@ -34,101 +37,84 @@ interface Props {
 
 export default function AddPlaylistPopoverContent({ refresh, dismiss }: Props) {
   const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
+  const form = useForm<FormValues>({
+    defaultValues: {
+      name: "",
+      slug: "",
+    },
+  });
+
+  const onSubmit = async (values: FormValues) => {
+    try {
+      await apolloClient.mutate({
+        mutation: NEW_PLAYLIST_MUTATION,
+        variables: values,
+      });
+      await refresh();
+      dismiss();
+    } catch (e) {
+      console.error("Error occurred while creating playlist:", e);
+      toast.error(`Error occurred while creating playlist: ${e}`);
+    }
+  };
+
+  const values = form.watch();
 
   return (
-    <Form<FormValues>
-      initialValues={{ name: "", slug: "" }}
-      mutators={{ ...finalFormMutators }}
-      onSubmit={async (values) => {
-        try {
-          await apolloClient.mutate({
-            mutation: NEW_PLAYLIST_MUTATION,
-            variables: values,
-          });
-          await refresh();
-          dismiss();
-        } catch (e) {
-          console.error("Error occurred while creating playlist:", e);
-          snackbar.enqueueSnackbar(
-            `Error occurred while creating playlist: ${e}`,
-            { variant: "error" }
-          );
-        }
-      }}
-    >
-      {({ submitting, values, handleSubmit }) => (
-        <form
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-          onSubmit={handleSubmit}
-        >
-          <PlaylistAvatar
-            name={values.name || ""}
-            slug={values.slug || ""}
-            sx={{
-              marginLeft: 1,
-              marginRight: 1,
-              fontSize: "3rem",
-              height: "6rem",
-              width: "6rem",
-            }}
-          />
-          <div>
-            <TextField
-              name="name"
-              label="Name"
-              variant="outlined"
-              margin="dense"
-              size="small"
-              required
-            />
-            <TextField
-              name="slug"
-              label="Slug"
-              variant="outlined"
-              margin="dense"
-              size="small"
-              required
-              InputProps={{
-                endAdornment: (
-                  <SlugifyAdornment sourceName="name" destinationName="slug" />
-                ),
-              }}
-            />
-          </div>
-          <div>
-            <IconButton type="submit" disabled={submitting}>
-              <CheckIcon />
-            </IconButton>
-            <IconButton onClick={dismiss}>
-              <CloseIcon />
-            </IconButton>
-          </div>
-          {/**
-           * Slugify name while slug field is untouched.
-           * @link https://codesandbox.io/s/52q597j2p?file=/src/index.js:579-587
-           */}
-          <Field name="slug">
-            {({ input: { onChange }, meta: { touched } }) => (
-              <FormSpy subscription={{ values: true, touched: true }}>
-                {() => (
-                  <OnChange name="name">
-                    {(value) => {
-                      if (!touched) {
-                        onChange(slugify(value, { lower: true }));
-                      }
-                    }}
-                  </OnChange>
-                )}
-              </FormSpy>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="grid grid-cols-[auto_1fr_auto] items-center @2xl/dashboard:flex-row flex-row gap-4"
+      >
+        <PlaylistAvatar
+          name={values.name || ""}
+          slug={values.slug || ""}
+          className="text-[3rem] aspect-square h-full shrink-0"
+        />
+        <div className="flex flex-col grow gap-3">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="Name" required {...field} />
+                </FormControl>
+              </FormItem>
             )}
-          </Field>
-        </form>
-      )}
+          />
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormControl>
+                    <Input placeholder="Slug" required {...field} />
+                  </FormControl>
+                  <SlugifyAdornment
+                    form={form}
+                    sourceName="name"
+                    destinationName="slug"
+                  />
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button
+            type="submit"
+            size="icon"
+            disabled={form.formState.isSubmitting}
+          >
+            <Check />
+          </Button>
+          <Button type="button" size="icon" variant="outline" onClick={dismiss}>
+            <X />
+          </Button>
+        </div>
+      </form>
     </Form>
   );
 }

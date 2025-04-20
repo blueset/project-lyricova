@@ -30,7 +30,7 @@ export function useLyricsStateRAF(
   callback?: LyricsFrameCallback
 ): number {
   const [line, setLine] = useNamedState<number | null>(null, "line");
-  const lineRef = useRef<number>();
+  const lineRef = useRef<number>(line);
   lineRef.current = line;
 
   const onTimeUpdate = useCallback(

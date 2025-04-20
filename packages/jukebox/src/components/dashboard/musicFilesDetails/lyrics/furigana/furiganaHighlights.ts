@@ -1,6 +1,3 @@
-import { Theme } from "@mui/material";
-import { CSSProperties } from "react";
-
 function matchContexualFurigana(
   base: string,
   ruby: string,
@@ -35,15 +32,13 @@ function matchContexualFurigana(
   return false;
 }
 
-export function furiganaHighlight(
-  theme: Theme
-): (
+export function furiganaHighlight(): (
   base: string,
   ruby: string,
   groupings: (string | [string, string])[]
-) => CSSProperties | undefined {
-  const primaryText = { color: theme.palette.primary.light };
-  const secondaryText = { color: theme.palette.secondary.light };
+) => string | undefined {
+  const primaryText = "text-info-foreground";
+  const secondaryText = "text-error-foreground";
   return (base, ruby, groupings) => {
     if (
       (base === "明日" && (ruby === "あした" || ruby === "あす")) ||

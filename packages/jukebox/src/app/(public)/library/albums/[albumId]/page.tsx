@@ -1,22 +1,7 @@
 "use client";
 
-import { useRouter } from "next/compat/router";
+import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
-import {
-  Avatar,
-  Box,
-  Chip,
-  Grid,
-  IconButton,
-  List,
-  ListItemText,
-  ListSubheader,
-  Menu,
-  MenuItem,
-  Stack,
-  Typography,
-} from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { gql, useQuery } from "@apollo/client";
 import {
   AlbumFragments,
@@ -24,28 +9,44 @@ import {
   formatArtists,
   Link,
   useAuthContext,
+  NextComposedLink,
 } from "@lyricova/components";
-import Alert from "@mui/material/Alert";
 import React, { Fragment } from "react";
 import type { Album } from "@lyricova/api/graphql/types";
 import _ from "lodash";
 import filesize from "filesize";
 import type { Song } from "@lyricova/api/graphql/types";
-import ButtonRow from "@/components/ButtonRow";
-import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
-import ShuffleIcon from "@mui/icons-material/Shuffle";
-import FindInPageIcon from "@mui/icons-material/FindInPage";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import {
-  bindMenu,
-  bindTrigger,
-  usePopupState,
-} from "material-ui-popup-state/hooks";
 import type { MusicFile } from "@lyricova/api/graphql/types";
-import TrackListRow from "@/components/public/library/TrackListRow";
 import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, playTrack, toggleShuffle } from "@/redux/public/playlist";
+import {
+  Alert,
+  AlertDescription,
+} from "@lyricova/components/components/ui/alert";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@lyricova/components/components/ui/avatar";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@lyricova/components/components/ui/dropdown-menu";
+import {
+  ChevronLeft,
+  Play,
+  Shuffle,
+  TextSearch,
+  MoreVertical,
+  AlertCircle,
+  Disc,
+} from "lucide-react";
+
+import TrackListRow from "@/components/public/library/TrackListRow";
 
 const ALBUM_QUERY = gql`
   query ($id: Int!) {
@@ -73,19 +74,26 @@ export default function LibrarySingleAlbum() {
   const { user } = useAuthContext();
   const { albumId: albumIdString } = useParams<{ albumId: string }>();
   const albumId = albumIdString ? parseInt(albumIdString as string) : null;
-  const popupState = usePopupState({
-    variant: "popover",
-    popupId: "single-album-overflow-menu",
-  });
   const dispatch = useAppDispatch();
 
   const query = useQuery<{ album: Album }>(ALBUM_QUERY, {
     variables: { id: albumId },
   });
 
-  if (query.loading) return <Alert severity="info">Loading...</Alert>;
+  if (query.loading)
+    return (
+      <Alert>
+        <AlertDescription>Loading...</AlertDescription>
+      </Alert>
+    );
+
   if (query.error)
-    return <Alert severity="error">Error: {`${query.error}`}</Alert>;
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>Error: {`${query.error}`}</AlertDescription>
+      </Alert>
+    );
 
   const album = query.data.album;
   const trackCount = album.files.length;
@@ -134,57 +142,38 @@ export default function LibrarySingleAlbum() {
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Chip
-        label="Albums"
-        icon={<ArrowBackIcon />}
-        clickable
-        size="small"
-        sx={{ marginTop: 1, marginBottom: 1 }}
-        onClick={() => router.push("/library/albums")}
-      />
-      <Grid container sx={{ marginTop: 2 }}>
-        <Grid size={{ md: 4, xs: 12 }}>
-          <Box
-            sx={{
-              position: { md: "sticky" },
-              top: { md: 2 },
-              marginBottom: 4,
-            }}
-          >
+    <div className="p-4">
+      <Button variant="outline" size="sm" asChild>
+        <NextComposedLink href="/library/albums">
+          <ChevronLeft />
+          Albums
+        </NextComposedLink>
+      </Button>
+
+      <div className="mt-2 grid grid-cols-1 @3xl/details:grid-cols-[1fr_2fr] gap-6">
+        <div>
+          <div className="md:sticky md:top-2 space-y-2">
             {album.coverUrl && (
-              <Avatar
-                variant="rounded"
-                src={album.coverUrl}
-                sx={{
-                  width: "calc(100% - 16px)",
-                  paddingTop: "calc(100% - 16px)",
-                  height: 0,
-                  overflow: "hidden",
-                  position: "relative",
-                  marginBottom: 2,
-                  "& > img": {
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                  },
-                }}
-              />
+              <Avatar className="h-auto rounded-md w-full overflow-hidden">
+                <AvatarImage
+                  src={album.coverUrl}
+                  className="w-full h-auto object-cover aspect-square rounded-md max-w-72 @3xl/details:max-w-none"
+                />
+              </Avatar>
             )}
-            <Typography variant="body2" color="textSecondary">
+            <p className="text-sm text-muted-foreground">
               {trackCount} {trackCount < 2 ? "song" : "songs"}, {totalMinutes}{" "}
               {totalMinutes < 2 ? "minute" : "minutes"}, {filesize(totalSize)}
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid size={{ md: 8, xs: 12 }}>
-          <Box ml={2}>
-            <Typography variant="h5" lang="ja">
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <div>
+            <h1 className="text-2xl font-semibold" lang="ja">
               {album.name}
-            </Typography>
-            <Typography variant="h6" color="textSecondary" lang="ja">
+            </h1>
+            <h2 className="text-lg text-muted-foreground" lang="ja">
               {formatArtists(album.artists, (v, isProd) =>
                 v.map((artist, idx) => (
                   <Fragment key={artist.id}>
@@ -199,82 +188,71 @@ export default function LibrarySingleAlbum() {
                   </Fragment>
                 ))
               )}
-            </Typography>
-            <Stack direction="row" alignItems="center" sx={{ marginRight: 1 }}>
-              <ButtonRow sx={{ flexGrow: 1 }}>
+            </h2>
+
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex-grow flex flex-wrap gap-2">
                 {canPlay && (
-                  <Chip
-                    icon={<PlaylistPlayIcon />}
-                    label="Play"
-                    clickable
-                    onClick={playAll}
-                  />
+                  <Button variant="outline" size="sm" onClick={playAll}>
+                    <Play />
+                    Play
+                  </Button>
                 )}
                 {canPlay && (
-                  <Chip
-                    icon={<ShuffleIcon />}
-                    label="Shuffle"
-                    clickable
-                    onClick={shuffleAll}
-                  />
+                  <Button variant="outline" size="sm" onClick={shuffleAll}>
+                    <Shuffle />
+                    Shuffle
+                  </Button>
                 )}
                 {album.id >= 0 && (
-                  <Chip
-                    icon={<FindInPageIcon />}
-                    label="VocaDB"
-                    clickable
-                    onClick={() =>
-                      window.open(`https://vocadb.net/Al/${album.id}`, "_blank")
-                    }
-                  />
+                  <Button variant="outline" size="sm" asChild>
+                    <NextComposedLink
+                      href={`https://vocadb.net/Al/${album.id}`}
+                      target="_blank"
+                    >
+                      <TextSearch />
+                      VocaDB
+                    </NextComposedLink>
+                  </Button>
                 )}
-              </ButtonRow>
-              <IconButton {...bindTrigger(popupState)}>
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                id={"single-album-overflow-menu"}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                {...bindMenu(popupState)}
-              >
-                <MenuItem
-                  disabled={!user}
-                  onClick={() => {
-                    window.open(`/dashboard/albums/${album.id}`);
-                    popupState.close();
-                  }}
-                >
-                  <ListItemText primary="Edit album entity" />
-                </MenuItem>
-              </Menu>
-            </Stack>
-          </Box>
-          <List>
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild disabled={!user}>
+                    <NextComposedLink href={`/dashboard/albums/${album.id}`}>
+                      Edit album entity
+                    </NextComposedLink>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          <div className="mt-4">
             {diskSeparatedTracked.map((v, idx) => {
               if (v === null) {
                 return (
-                  <ListSubheader
-                    sx={{ backgroundColor: "background.default" }}
+                  <div
+                    className="py-2 font-medium uppercase tracking-wide text-xs text-muted-foreground"
                     key="unknownDisc"
                   >
                     Unknown disc
-                  </ListSubheader>
+                  </div>
                 );
               } else if (typeof v === "number") {
                 return (
-                  <ListSubheader
-                    sx={{ backgroundColor: "background.default" }}
+                  <div
+                    className="py-2 font-medium uppercase tracking-wide text-xs text-muted-foreground"
                     key={`disc${v}`}
                   >
                     Disc {v}
-                  </ListSubheader>
+                  </div>
                 );
               } else {
                 return (
@@ -287,9 +265,9 @@ export default function LibrarySingleAlbum() {
                 );
               }
             })}
-          </List>
-        </Grid>
-      </Grid>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

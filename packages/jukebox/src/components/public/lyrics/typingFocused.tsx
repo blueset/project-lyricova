@@ -1,6 +1,5 @@
 import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
 import { useAppContext } from "../AppContext";
-import { Box } from "@mui/material";
 import { useRef } from "react";
 import { usePlayerLyricsTypingState } from "../../../hooks/usePlayerLyricsTypingState";
 
@@ -11,8 +10,8 @@ interface Props {
 
 export function TypingFocusedLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
-  const doneRef = useRef<HTMLSpanElement>();
-  const typingRef = useRef<HTMLSpanElement>();
+  const doneRef = useRef<HTMLSpanElement>(null);
+  const typingRef = useRef<HTMLSpanElement>(null);
 
   const { sequenceQuery } = usePlayerLyricsTypingState(
     lyrics,
@@ -33,26 +32,16 @@ export function TypingFocusedLyrics({ lyrics }: Props) {
     node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
   else if (sequenceQuery.data) {
     node = (
-      <div style={{ fontSize: "4em", fontWeight: 600 }}>
+      <div className="text-7xl font-semibold">
         <span ref={doneRef} />
-        <span ref={typingRef} style={{ color: "#ffffff80" }} />
+        <span ref={typingRef} className="text-foreground/50" />
       </div>
     );
   }
 
   return (
-    <Box
-      sx={{
-        padding: 4,
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-      }}
-      lang="ja"
-    >
+    <div className="p-8 size-full flex flex-col justify-center" lang="ja">
       {node}
-    </Box>
+    </div>
   );
 }

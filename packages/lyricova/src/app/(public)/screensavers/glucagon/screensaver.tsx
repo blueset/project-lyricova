@@ -385,9 +385,9 @@ export default function GlucagonScreensaver({
   entries,
   verses,
 }: ScreensaverProps) {
-  const canvasRef = useRef<HTMLCanvasElement>();
-  const backUpCanvasRef = useRef<HTMLCanvasElement>();
-  const sizerRef = useRef<HTMLSpanElement>();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const backUpCanvasRef = useRef<HTMLCanvasElement>(null);
+  const sizerRef = useRef<HTMLSpanElement>(null);
 
   const [[h, m, s], setTime] = useState(["00", "00", "00"]);
   const [entryId, setEntryId] = useState(1);

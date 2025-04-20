@@ -1,19 +1,23 @@
-import Tooltip from "@mui/material/Tooltip";
-import IconButton from "@mui/material/IconButton";
-import SearchIcon from "@mui/icons-material/Search";
+import { Search as SearchIcon } from "lucide-react";
+import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
 import { Link } from "../Link";
 
 export function Search() {
   return (
-    <Tooltip title="Search">
-      <IconButton
-        LinkComponent={Link}
-        href="/search"
-        data-nav-icon="search"
-        rel="search"
-      >
-        <SearchIcon />
-      </IconButton>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghostBright" size="icon" asChild>
+          <Link href="/search" data-nav-icon="search">
+            <SearchIcon />
+          </Link>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">Search</TooltipContent>
     </Tooltip>
   );
 }

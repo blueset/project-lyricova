@@ -51,6 +51,7 @@
   @media (hover: hover) {
     .text span {
       display: inline-block;
+      white-space: pre;
       transition: transform 0.2s cubic-bezier(0,0,.6,1);
     }
     &:hover {

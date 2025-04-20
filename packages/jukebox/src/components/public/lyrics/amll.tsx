@@ -6,7 +6,6 @@ import type {
 } from "@applemusic-like-lyrics/core";
 import { useAppContext } from "../AppContext";
 import { usePlayerState } from "../../../hooks/usePlayerState";
-import styled from "@emotion/styled";
 import dynamic from "next/dynamic";
 
 const LyricPlayer = dynamic(
@@ -15,24 +14,6 @@ const LyricPlayer = dynamic(
     ssr: false,
   }
 );
-
-const ContainerDiv = styled("div")`
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-  --amll-lyric-player-font-size: 3em;
-  > div {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    position: relative;
-  }
-  > div div[class*="lyricMainLine-"] {
-    font-weight: 600;
-    text-wrap: balance;
-  }
-`;
 
 interface Props {
   lyrics: LyricsKitLyrics;
@@ -136,7 +117,11 @@ export function AMLLyrics({ lyrics, transLangIdx }: Props) {
   }, [playerRef, updatePlaybackProgressMs]);
 
   return (
-    <ContainerDiv lang="ja" ref={containerRef}>
+    <div
+      lang="ja"
+      ref={containerRef}
+      className="w-full h-full overflow-hidden relative [--amll-lyric-player-font-size:3em] [&_>_div]:size-full [&_>_div]:overflow-hidden [&_>_div]:relative [&_>_div_div[class*='lyricMainLine-']]:font-semibold [&_>_div_div[class*='lyricMainLine-']]:text-balance"
+    >
       <LyricPlayer
         lyricLines={amlLyricsArray}
         currentTime={playbackProgressMs}
@@ -147,6 +132,6 @@ export function AMLLyrics({ lyrics, transLangIdx }: Props) {
           playerRef.current.currentTime = evt.line.getLine().startTime / 1000;
         }}
       />
-    </ContainerDiv>
+    </div>
   );
 }

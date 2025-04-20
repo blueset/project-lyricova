@@ -1,6 +1,5 @@
 "use client";
 
-import { Box, Paper } from "@mui/material";
 import Player from "@/components/public/Player";
 import DetailsPanel from "@/components/public/DetailsPanel";
 import type { ReactNode, CSSProperties } from "react";
@@ -8,7 +7,6 @@ import React, { useEffect, useRef, useCallback } from "react";
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import type { Track } from "@/components/public/AppContext";
 import { AppContext } from "@/components/public/AppContext";
-import { useNamedState } from "@/hooks/useNamedState";
 import CurrentPlaylist from "@/components/public/CurrentPlaylist";
 import type { Texture } from "@lyricova/api/graphql/types";
 import { AuthContext } from "@lyricova/components";
@@ -27,8 +25,9 @@ import {
   stop,
 } from "@/redux/public/playlist";
 import { setTextureUrl } from "@/redux/public/display";
-import { BackgroundGradient } from "@/components/public/Background";
 import { BackgroundCanvas } from "@/components/public/BackgroundCanvas/BackgroundCanvas";
+import { cn } from "@lyricova/components/utils";
+import { Card } from "@lyricova/components/components/ui/card";
 
 interface Props {
   children: ReactNode;
@@ -76,7 +75,7 @@ function generateBackgroundStyle(
 }
 
 function IndexLayout({ children }: Props) {
-  const playerRef = useRef<HTMLAudioElement>();
+  const playerRef = useRef<HTMLAudioElement>(null);
   const apolloClient = useApolloClient();
 
   const dispatch = useAppDispatch();
@@ -318,17 +317,9 @@ function IndexLayout({ children }: Props) {
       <audio ref={playerRef} />
       <AppContext playerRef={playerRef}>
         <AuthContext noRedirect>
-          <Box
-            sx={{
-              height: "100lvh",
-              display: "flex",
-              ...(isCollapsed
-                ? { flexDirection: "column" }
-                : {
-                    flexDirection: { xs: "column", md: "row" },
-                  }),
-            }}
-            // style={generateBackgroundStyle(currentSong, textureURL)}
+          <div
+            data-collapsed={isCollapsed ? "true" : undefined}
+            className="h-lvh flex flex-col not-data-collapsed:md:flex-row group/player"
           >
             <BackgroundCanvas
               coverUrl={currentSong ? getTrackCoverURL(currentSong) : undefined}
@@ -337,47 +328,28 @@ function IndexLayout({ children }: Props) {
               hasLyrics={currentSong?.hasLyrics || false}
             />
             {!isFullscreen && (
-              <Box
-                sx={{
-                  zIndex: 2,
-                  ...(isCollapsed
-                    ? { order: 1 }
-                    : {
-                        width: { md: "clamp(25em, 33%, 45em)" },
-                        padding: { md: "24px" },
-                        height: { xs: "100lvh", md: "100%" },
-                        position: { xs: "absolute", md: "unset" },
-                        inset: { xs: 0, md: "unset" },
-                      }),
-                }}
+              <div
+                className={cn(
+                  "z-10",
+                  "group-data-collapsed/player:order-1 group-data-collapsed/player:w-full",
+                  "group-not-data-collapsed/player:md:w-[clamp(25em,33%,45em)] group-not-data-collapsed/player:md:p-6 group-not-data-collapsed/player:h-lvh group-not-data-collapsed/player:md:h-full group-not-data-collapsed/player:absolute group-not-data-collapsed/player:md:static group-not-data-collapsed/player:inset-0"
+                )}
               >
-                <Paper
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
+                <Card
+                  className="w-full h-full flex flex-col p-0 gap-0 rounded-none border-none group-data-collapsed/player:rounded-none md:rounded-md"
                   lang="ja"
                 >
                   <Player />
                   {!isCollapsed && <CurrentPlaylist />}
-                </Paper>
-              </Box>
+                </Card>
+              </div>
             )}
-            <Box
-              sx={{
-                flexGrow: 1,
-                maxHeight: { xs: "calc(100% - 12.5rem)", sm: "unset" },
-                ...(isCollapsed
-                  ? {
-                      height: { md: 0, xs: "100%" },
-                    }
-                  : {
-                      height: "100%",
-                      width: 0,
-                    }),
-              }}
+            <div
+              className={cn(
+                "grow sm:max-h-none @container/details",
+                "group-data-collapsed/player:h-0",
+                "group-not-data-collapsed/player:h-full group-not-data-collapsed/player:w-0"
+              )}
             >
               <DetailsPanel
                 coverUrl={null}
@@ -385,8 +357,8 @@ function IndexLayout({ children }: Props) {
               >
                 {children}
               </DetailsPanel>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </AuthContext>
       </AppContext>
     </>

@@ -11,7 +11,7 @@ interface Props {
     base: string,
     ruby: string,
     groupings: (string | [string, string])[]
-  ) => CSSProperties | undefined;
+  ) => string | undefined;
 }
 
 export default function FuriganaLyricsLine({
@@ -54,7 +54,7 @@ export default function FuriganaLyricsLine({
             return <span key={k}>{v}</span>;
           } else {
             return (
-              <ruby key={k} style={rubyStyles?.(v[0], v[1], groupings)}>
+              <ruby key={k} className={rubyStyles?.(v[0], v[1], groupings)}>
                 {v[0]}
                 <rp>(</rp>
                 <rt>{v[1]}</rt>

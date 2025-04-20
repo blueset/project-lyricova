@@ -172,11 +172,7 @@ export async function applyApollo(app: Application): Promise<Server> {
     path: "/graphql",
     // server: httpServer,
   };
-  if (process.env.NODE_ENV === "development") {
-    wsConfig.port = 30001;
-  } else {
-    wsConfig.server = httpServer;
-  }
+  wsConfig.server = httpServer;
 
   const wsServer = new WebSocketServer(wsConfig, () =>
     console.log("Websocket server started")

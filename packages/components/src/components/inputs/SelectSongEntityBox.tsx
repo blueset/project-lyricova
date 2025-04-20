@@ -1,36 +1,63 @@
 "use client";
 
+// Shadcn & RHF imports needed for SelectSongEntityBoxRHF
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@lyricova/components/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@lyricova/components/components/ui/popover";
+import { Button } from "@lyricova/components/components/ui/button";
 import {
   Avatar,
-  Chip,
-  FilterOptionsState,
-  Grid,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+  AvatarFallback,
+  AvatarImage,
+} from "@lyricova/components/components/ui/avatar";
+import { FormItem, FormLabel } from "@lyricova/components/components/ui/form";
+import { Badge } from "@lyricova/components/components/ui/badge";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
+import { ScrollArea } from "@lyricova/components/components/ui/scroll-area";
+import { cn } from "@lyricova/components/utils";
+import {
+  Music,
+  Search,
+  PlusCircle,
+  ExternalLink,
+  Pencil,
+  ChevronsUpDown,
+  Check,
+  X,
+} from "lucide-react";
 import type { Song } from "@lyricova/api/graphql/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import SearchIcon from "@mui/icons-material/Search";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { VocaDBSearchSongDialog } from "../dialogs/VocaDBSearchSongDialog";
 import { SongFragments } from "../../utils/fragments";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import EditIcon from "@mui/icons-material/Edit";
 import { SongEntityDialog } from "../dialogs/SongEntityDialog";
-import { useField, useForm } from "react-final-form";
-import { Autocomplete } from "mui-rff";
 import { formatArtists, formatArtistsPlainText } from "../../utils/artists";
 import { DocumentNode } from "graphql";
-import React from "react";
+import {
+  FieldValues,
+  FieldPath,
+  UseFormReturn,
+  useController,
+} from "react-hook-form";
 
 export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
   manual?: boolean;
+  /** Internal flag for action items */
+  isAction?: boolean;
 };
 
 const LOCAL_SONG_ENTITY_QUERY = gql`
@@ -43,65 +70,63 @@ const LOCAL_SONG_ENTITY_QUERY = gql`
   ${SongFragments.SelectSongEntry}
 ` as DocumentNode;
 
-interface Props<T extends string> {
-  fieldName: T;
-  labelName: string;
+interface Props<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> {
+  form: UseFormReturn<TFieldValues>;
+  fieldName: TName;
+  labelName?: string;
   title?: string;
 }
 
-export function SelectSongEntityBox<T extends string>({
-  fieldName,
-  labelName,
-  title,
-}: Props<T>) {
+export function SelectSongEntityBox<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({ fieldName, labelName, title, form }: Props<TFieldValues, TName>) {
   const apolloClient = useApolloClient();
-  const {
-    input: { value, onChange, ...input },
-  } = useField<ExtendedSong>(fieldName);
-  const setValue = useForm().mutators.setValue;
+  const { field, fieldState } = useController({
+    name: fieldName,
+    control: form.control,
+  });
+  const value = field.value as ExtendedSong | null;
 
-  const [vocaDBAutoCompleteOptions, setVocaDBAutoCompleteOptions] = useState<
-    ExtendedSong[]
-  >([]);
-  const [vocaDBAutoCompleteText, setVocaDBAutoCompleteText] = useState("");
+  const [open, setOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [options, setOptions] = useState<ExtendedSong[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [importDialogKeyword, setImportDialogKeyword] = useState("");
-  const [touched, setTouched] = useState(false);
-
-  // Confirm import pop-up
   const [isImportDialogOpen, toggleImportDialogOpen] = useState(false);
-
-  // Confirm manual enrol pop-up
   const [isManualDialogOpen, toggleManualDialogOpen] = useState(false);
   const [isManualDialogForCreate, toggleManualDialogForCreate] = useState(true);
 
-  // Query server for local autocomplete
-  useEffect(() => {
-    let active = true;
-
-    if (vocaDBAutoCompleteText === "" || !touched) {
-      setVocaDBAutoCompleteOptions(value ? [value] : []);
-      return undefined;
-    }
-
-    _.throttle(async () => {
-      const apolloPromise = apolloClient.query<{ searchSongs: Song[] }>({
-        query: LOCAL_SONG_ENTITY_QUERY,
-        variables: { text: vocaDBAutoCompleteText },
-      });
-
-      const vocaDBPromise = axios.get<string[]>(
-        "https://vocadb.net/api/songs/names",
-        {
-          params: {
-            query: vocaDBAutoCompleteText,
-            nameMatchMode: "Auto",
-          },
+  const fetchOptions = useCallback(
+    _.debounce(
+      async (searchText: string, currentValue: ExtendedSong | null) => {
+        if (searchText === "") {
+          setOptions(currentValue ? [currentValue] : []);
+          setIsLoading(false);
+          return;
         }
-      );
 
-      if (active) {
+        setIsLoading(true);
         let result: ExtendedSong[] = [];
+
+        const apolloPromise = apolloClient.query<{ searchSongs: Song[] }>({
+          query: LOCAL_SONG_ENTITY_QUERY,
+          variables: { text: searchText },
+        });
+
+        const vocaDBPromise = axios.get<string[]>(
+          "https://vocadb.net/api/songs/names",
+          {
+            params: {
+              query: searchText,
+              nameMatchMode: "Auto",
+            },
+          }
+        );
 
         try {
           const apolloResult = await apolloPromise;
@@ -121,223 +146,283 @@ export function SelectSongEntityBox<T extends string>({
                 name: v,
                 sortOrder: `"${v}"`,
                 vocaDBSuggestion: true,
+                isAction: true, // Mark as action
               }))
             );
-          }
-          if (value && !_.some(result, (v) => v.id === value.id)) {
-            result = [value, ...result];
           }
         } catch (e) {
           /* No-Op. */
         }
 
-        setVocaDBAutoCompleteOptions(result);
-      }
-    }, 200)();
+        // Ensure current value is in options if it exists and isn't already there
+        if (currentValue && !result.some((opt) => opt.id === currentValue.id)) {
+          result = [currentValue, ...result];
+        }
 
-    return () => {
-      active = false;
-    };
-  }, [
-    vocaDBAutoCompleteText,
-    apolloClient,
-    setVocaDBAutoCompleteOptions,
-    touched,
-  ]);
+        // Add special options
+        result.push({
+          id: undefined,
+          name: `Search VocaDB for “${searchText}”`,
+          sortOrder: searchText,
+          vocaDBSuggestion: true,
+          isAction: true, // Mark as action
+        });
+        result.push({
+          id: undefined,
+          name: `Manually add “${searchText}”`,
+          sortOrder: searchText,
+          manual: true,
+          isAction: true, // Mark as action
+        });
+
+        setOptions(result);
+        setIsLoading(false);
+      },
+      300
+    ), // Debounce time
+    [apolloClient]
+  );
+
+  useEffect(() => {
+    // Fetch options when input value changes
+    fetchOptions(inputValue, value);
+  }, [inputValue, fetchOptions, value]);
+
+  useEffect(() => {
+    // Pre-populate input text if value exists when opening
+    if (open && value) {
+      setInputValue(value.name || "");
+    }
+    if (!open) {
+      setInputValue(""); // Clear search text when closing
+    }
+  }, [open, value]);
+
+  const handleSelect = (selectedOptionValue: string) => {
+    const selectedOption = options.find(
+      (option) => `${option.name}-${option.id}` === selectedOptionValue
+    );
+
+    if (!selectedOption) return;
+
+    if (selectedOption.vocaDBSuggestion && selectedOption.isAction) {
+      setImportDialogKeyword(selectedOption?.sortOrder ?? "");
+      toggleImportDialogOpen(true);
+      setOpen(false);
+      setInputValue("");
+    } else if (selectedOption.manual && selectedOption.isAction) {
+      setImportDialogKeyword(selectedOption?.sortOrder ?? "");
+      toggleManualDialogForCreate(true);
+      toggleManualDialogOpen(true);
+      setOpen(false);
+      setInputValue("");
+      form.setValue(fieldName, null as any); // Clear selection
+    } else {
+      form.setValue(fieldName, selectedOption as any, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setOpen(false);
+      setInputValue(""); // Clear search text after selection
+    }
+  };
 
   return (
     <>
-      {title && (
-        <Typography variant="h6" component="h3" gutterBottom>
-          {title}
-        </Typography>
-      )}
-      <Grid container spacing={3} flexGrow={1}>
-        <Grid size={12}>
-          <Autocomplete
-            options={vocaDBAutoCompleteOptions}
-            label={labelName}
-            selectOnFocus
-            clearOnBlur
-            handleHomeEndKeys
-            freeSolo
-            {...input}
-            textFieldProps={{ variant: "outlined", size: "small" }}
-            // renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label={labelName} />}
-            filterOptions={(
-              v: ExtendedSong[],
-              params: FilterOptionsState<ExtendedSong>
-            ) => {
-              if (params.inputValue !== "") {
-                v.push({
-                  id: undefined,
-                  name: `Search for “${params.inputValue}”`,
-                  sortOrder: params.inputValue,
-                  vocaDBSuggestion: true,
-                });
-                v.push({
-                  id: undefined,
-                  name: `Manually add “${params.inputValue}”`,
-                  sortOrder: params.inputValue,
-                  manual: true,
-                });
-              }
-              return v;
-            }}
-            onInputChange={(event: unknown, newValue: string) => {
-              setVocaDBAutoCompleteText(newValue);
-            }}
-            onChange={(event: unknown, newValue, reason: string) => {
-              onChange(event);
-              if (newValue === null) {
-                setVocaDBAutoCompleteOptions([]);
-                if (reason === "clear") {
-                  setValue(fieldName, null);
-                }
-                return;
-              }
-              const newVal = newValue as ExtendedSong;
-              if (newVal.vocaDBSuggestion) {
-                setImportDialogKeyword(newVal?.sortOrder ?? "");
-                toggleImportDialogOpen(true);
-                setVocaDBAutoCompleteOptions([]);
-              } else if (newVal.manual) {
-                setImportDialogKeyword(newVal?.sortOrder ?? "");
-                toggleManualDialogForCreate(true);
-                toggleManualDialogOpen(true);
-                setVocaDBAutoCompleteOptions([]);
-                setValue(fieldName, null);
-              } else {
-                setValue(fieldName, newVal);
-              }
-            }}
-            renderOption={(params, option: ExtendedSong | null) => {
-              let icon = (
-                <MusicNoteIcon
-                  sx={{ color: "text.secondary", marginRight: 2 }}
+      {title && <h3 className="text-lg font-semibold mb-4">{title}</h3>}
+      <FormItem className="grow">
+        {labelName && <FormLabel>{labelName}</FormLabel>}
+        <div className="grid grid-cols-1 gap-2 w-full">
+          <div>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between text-muted-foreground"
+                >
+                  <span className="truncate">
+                    {value
+                      ? `${value.name}${value.id ? ` (#${value.id})` : ""}`
+                      : `Select ${labelName}...`}
+                  </span>
+                  <ChevronsUpDown className="ml-2 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-(--radix-popper-anchor-width) max-h-(--radix-popper-available-height) p-0">
+                <Command
+                  shouldFilter={false} // We handle filtering/fetching externally
+                >
+                  <CommandInput
+                    placeholder={`Search for a song...`}
+                    value={inputValue}
+                    onValueChange={setInputValue}
+                  />
+                  <ScrollArea>
+                    <CommandList>
+                      {isLoading && (
+                        <CommandItem disabled>
+                          <Skeleton className="h-8 w-full" />
+                        </CommandItem>
+                      )}
+                      <CommandEmpty>Enter keywords to search.</CommandEmpty>
+                      {!isLoading && (
+                        <CommandGroup>
+                          {options.map((option) => {
+                            const optionValue = `${option.name}-${option.id}`; // Unique value for CommandItem
+                            let icon = (
+                              <Music className="text-muted-foreground" />
+                            );
+                            if (option.vocaDBSuggestion && option.isAction)
+                              icon = (
+                                <Search className="text-muted-foreground" />
+                              );
+                            else if (option.manual && option.isAction)
+                              icon = (
+                                <PlusCircle className="text-muted-foreground" />
+                              );
+
+                            return (
+                              <CommandItem
+                                key={option.id ?? option.name} // Use name as key if ID is missing (for suggestions/actions)
+                                value={optionValue}
+                                onSelect={handleSelect}
+                                className="flex items-center cursor-pointer"
+                              >
+                                <div className="flex items-center flex-shrink-0">
+                                  {icon}
+                                </div>
+                                <div className="flex flex-col flex-grow">
+                                  <span className="text-sm">
+                                    {option.name}{" "}
+                                    {option.id ? ` (#${option.id})` : ""}
+                                  </span>
+                                  {option.artists?.length &&
+                                    !option.isAction && (
+                                      <span className="text-xs text-muted-foreground leading-tight">
+                                        {formatArtistsPlainText(option.artists)}
+                                      </span>
+                                    )}
+                                </div>
+                                {value?.id &&
+                                  value?.id === option.id &&
+                                  !option.isAction && (
+                                    <Check
+                                      className={cn(
+                                        "ml-auto",
+                                        value?.id === option.id
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                  )}
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      )}
+                      <CommandSeparator />
+                      <CommandGroup>
+                        <CommandItem
+                          onSelect={() => {
+                            form.setValue(fieldName, null as any, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            });
+                            setOpen(false);
+                            setInputValue(""); // Clear search text after selection
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <X className="text-muted-foreground" />
+                          Unselect song
+                        </CommandItem>
+                      </CommandGroup>
+                    </CommandList>
+                  </ScrollArea>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {fieldState.error && (
+              <p className="text-sm text-destructive mt-1">
+                {fieldState.error.message}
+              </p>
+            )}
+          </div>
+
+          {value && value.id && (
+            <div className="flex items-center flex-row gap-2 p-2 border rounded-md">
+              <Avatar className="size-14 w-14 h-14 rounded-md border border-border">
+                <AvatarImage
+                  className="object-contain"
+                  src={value.coverUrl ?? undefined}
+                  alt={value.name ?? "Song cover"}
                 />
-              );
-              if (option?.vocaDBSuggestion)
-                icon = (
-                  <SearchIcon
-                    sx={{ color: "text.secondary", marginRight: 2 }}
-                  />
-                );
-              else if (option?.manual)
-                icon = (
-                  <AddCircleIcon
-                    sx={{ color: "text.secondary", marginRight: 2 }}
-                  />
-                );
-              return (
-                <Stack
-                  component="li"
-                  {...params}
-                  flexDirection="row"
-                  alignItems="center"
-                >
-                  {icon}{" "}
-                  <Stack flexDirection="column">
-                    <Typography>
-                      {option?.name} {option?.id ? ` (#${option.id})` : ""}
-                    </Typography>
-                    {option?.artists?.length && (
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "text.secondary", lineHeight: 1 }}
-                      >
-                        {formatArtistsPlainText(option.artists)}
-                      </Typography>
-                    )}
-                  </Stack>
-                </Stack>
-              );
-            }}
-            getOptionLabel={(option) => {
-              // Prevent ”Manually add ...” item from being rendered
-              if (option === null || (option as ExtendedSong).id === null)
-                return "";
-              return (
-                `${(option as ExtendedSong).name} (#${
-                  (option as ExtendedSong).id
-                })` || ""
-              );
-            }}
-            onFocus={() => setTouched(true)}
-          />
-        </Grid>
-        {value && value.id && (
-          <Grid size={12}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              sx={{ marginBottom: 2, flexWrap: { xs: "wrap" } }}
-            >
-              <div>
-                <Avatar
-                  src={value.coverUrl}
-                  variant="rounded"
-                  sx={{ height: "3em", width: "3em", marginRight: 2 }}
-                >
-                  <MusicNoteIcon />
-                </Avatar>
-              </div>
-              <div style={{ flexGrow: 1, flexBasis: 0 }}>
+                <AvatarFallback>
+                  <Music />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-grow min-w-0">
                 <div>
-                  <Typography component="span">{value.name}</Typography>{" "}
-                  <Typography color="textSecondary" component="span">
+                  <span className="font-medium">{value.name}</span>{" "}
+                  <span className="text-sm text-muted-foreground">
                     ({value.sortOrder}) #{value.id}
-                  </Typography>
+                  </span>
                 </div>
                 {value.artists && (
-                  <Stack
-                    direction="row"
-                    alignContent="center"
-                    sx={{ gap: 1 }}
-                    flexWrap="wrap"
-                  >
+                  <div className="flex flex-wrap gap-1 mt-1">
                     {formatArtists(value.artists, (a) =>
                       a.map((v) => (
-                        <Chip
-                          variant="outlined"
-                          size="small"
-                          key={v.sortOrder}
-                          label={v.ArtistOfSong?.customName || v.name}
-                        />
+                        <Badge variant="secondary" key={v.sortOrder}>
+                          {v.ArtistOfSong?.customName || v.name}
+                        </Badge>
                       ))
                     )}
-                  </Stack>
+                  </div>
                 )}
               </div>
-              <div>
+              <div className="flex items-center">
                 {value.id >= 0 && (
-                  <IconButton
-                    href={`https://vocadb.net/S/${value.id}`}
-                    target="_blank"
-                  >
-                    <OpenInNewIcon />
-                  </IconButton>
+                  <Button variant="ghost" size="icon" asChild>
+                    <a
+                      href={`https://vocadb.net/S/${value.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink />
+                    </a>
+                  </Button>
                 )}
-                <IconButton
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => {
-                    toggleManualDialogForCreate(false);
+                    setImportDialogKeyword(value.name ?? ""); // Use current name as keyword
+                    toggleManualDialogForCreate(false); // Set to edit mode
                     toggleManualDialogOpen(true);
                   }}
                 >
-                  <EditIcon />
-                </IconButton>
+                  <Pencil />
+                </Button>
               </div>
-            </Stack>
-          </Grid>
-        )}
-      </Grid>
+            </div>
+          )}
+        </div>
+      </FormItem>
+
       {isImportDialogOpen && (
         <VocaDBSearchSongDialog
           isOpen={isImportDialogOpen}
           toggleOpen={toggleImportDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
-          setSong={(v) => setValue(fieldName, v)}
+          setSong={(v) =>
+            form.setValue(fieldName, v as any, {
+              shouldValidate: true,
+              shouldDirty: true,
+            })
+          }
         />
       )}
       {isManualDialogOpen && (
@@ -345,10 +430,15 @@ export function SelectSongEntityBox<T extends string>({
           isOpen={isManualDialogOpen}
           toggleOpen={toggleManualDialogOpen}
           keyword={importDialogKeyword}
-          songToEdit={value}
+          songToEdit={value ?? undefined}
           create={isManualDialogForCreate}
           setKeyword={setImportDialogKeyword}
-          setSong={(v) => setValue(fieldName, v)}
+          setSong={(v) =>
+            form.setValue(fieldName, v as any, {
+              shouldValidate: true,
+              shouldDirty: true,
+            })
+          }
         />
       )}
     </>

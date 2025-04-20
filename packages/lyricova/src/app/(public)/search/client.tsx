@@ -4,8 +4,7 @@ import { Divider } from "@/components/public/Divider";
 import { Footer } from "@/components/public/Footer";
 import { IndexHeader } from "@/components/public/IndexHeader";
 import classes from "./index.module.scss";
-import SearchIcon from "@mui/icons-material/Search";
-import { CircularProgress } from "@mui/material";
+import { Search, LoaderCircle } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import _ from "lodash";
@@ -119,7 +118,7 @@ export default function SearchClient() {
               handleOnChange(evt);
             }}
           />
-          {isLoading ? <CircularProgress size="1.25rem" /> : <SearchIcon />}
+          {isLoading ? <LoaderCircle className="animate-spin" /> : <Search />}
         </div>
       </div>
       <Divider />

@@ -6,6 +6,7 @@ const withBundleAnalyzer = analyzer({
 });
 
 export default withBundleAnalyzer({
+  transpilePackages: ["@lyricova/components"],
   async rewrites() {
     return [
       {
@@ -17,6 +18,5 @@ export default withBundleAnalyzer({
         destination: "http://localhost:8083/graphql",
       },
     ];
-  }
+  },
 });
-

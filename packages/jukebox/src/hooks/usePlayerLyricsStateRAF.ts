@@ -20,7 +20,7 @@ export function usePlayerLyricsStateRAF<T>(
     -1,
     "currentFrameId"
   );
-  const currentFrameIdRef = useRef<number>();
+  const currentFrameIdRef = useRef<number>(currentFrameId);
   currentFrameIdRef.current = currentFrameId;
 
   /**

@@ -1,23 +1,10 @@
-import {
-  AppBar,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  IconButton,
-  Tab,
-  Tabs,
-  Toolbar,
-} from "@mui/material";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNamedState } from "../../../hooks/useNamedState";
-import { TabContext, TabPanel } from "@mui/lab";
 import LyricsPreview from "./LyricsPreview";
 import { Lyrics } from "lyrics-kit/core";
 import { useSnackbar } from "notistack";
 import EditLyrics from "./lyrics/edit/EditLyrics";
 import SearchLyrics from "./lyrics/SearchLyrics";
-import CloseIcon from "@mui/icons-material/Close";
 import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
 import EditTranslations from "./lyrics/EditTranslations";
@@ -28,6 +15,19 @@ import LyricsPreviewPanel from "./lyrics/WebVTTPreview";
 import WebAudioTaggingLyrics from "./lyrics/WebAudioTaggingLyrics";
 import InlineTagging from "./lyrics/inlineTagging/InlineTagging";
 import Roles from "./lyrics/Roles";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+} from "@lyricova/components/components/ui/dialog";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@lyricova/components/components/ui/tabs";
+import { Button } from "@lyricova/components/components/ui/button";
 
 const WRITE_LYRICS_MUTATION = gql`
   mutation ($fileId: Int!, $lyrics: String!, $ext: String!) {
@@ -55,7 +55,9 @@ function PreviewPanel({
       return null;
     }
   }, [lyricsString, snackbar]);
-  return <LyricsPreview lyrics={lyricsObj} fileId={fileId} />;
+  return (
+    <LyricsPreview lyrics={lyricsObj} fileId={fileId} className="h-full" />
+  );
 }
 
 interface Props {
@@ -99,12 +101,6 @@ export default function LyricsEditDialog({
 
   // Tab status
   const [tabIndex, setTabIndex] = useNamedState("webvttPreview", "tabIndex");
-  const onTabSwitch = useCallback(
-    (event: unknown, newValue: string) => {
-      setTabIndex(newValue);
-    },
-    [setTabIndex]
-  );
 
   const needsCommit =
     tabIndex === "webAudioTagging" ||
@@ -121,7 +117,6 @@ export default function LyricsEditDialog({
   }, [toggleOpen, setLrc, setLrcx]);
 
   const handleSubmit = useCallback(async () => {
-    // toggleOpen(false);
     toggleSubmitting(true);
     const promises: Promise<unknown>[] = [];
     if (lrc) {
@@ -131,12 +126,6 @@ export default function LyricsEditDialog({
           variables: { fileId, lyrics: lrc, ext: "lrc" },
         })
       );
-      // TODO: Resolve Node-id3 stripping cover when updating lyrics.
-      // const tagsStripped = lrc.replace(/^(\[[0-9:.]+\])/gm, "");
-      // promises.push(apolloClient.mutate<{writeLyricsToMusicFile: boolean}>({
-      //   mutation: WRITE_LYRICS_TO_FILE_MUTATION,
-      //   variables: {fileId, lyrics: tagsStripped},
-      // }));
     }
     if (lrcx && lrcx !== lrc) {
       promises.push(
@@ -170,125 +159,164 @@ export default function LyricsEditDialog({
   ]);
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      fullScreen
-      maxWidth={false}
-      scroll="paper"
-      aria-labelledby="form-dialog-title"
-    >
-      <TabContext value={tabIndex}>
-        <AppBar position="static" color="default">
-          <Toolbar disableGutters variant="dense">
-            <Tabs
-              value={tabIndex}
-              onChange={onTabSwitch}
-              sx={{ flexGrow: 1 }}
-              aria-label="Lyrics edit dialog tabs"
-              indicatorColor="secondary"
-              textColor="secondary"
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              <Tab label="WebVTT Preview" value="webvttPreview" />
-              <Tab label="Preview" value="preview" />
-              <Tab label="Download" value="download" />
-              <Tab label="Edit" value="edit" />
-              <Tab label="Edit Plain" value="editLrc" />
-              <Tab
-                disabled={needsCommit}
-                label="WebAudioAPI Tagging"
-                value="webAudioTagging"
-              />
-              <Tab
-                disabled={needsCommit}
-                label="Translation"
-                value="translation"
-              />
-              <Tab disabled={needsCommit} label="Furigana" value="furigana" />
-              <Tab
-                disabled={needsCommit}
-                label="Inline Tagging"
-                value="inline"
-              />
-              <Tab disabled={needsCommit} label="Roles" value="roles" />
-              <Tab disabled={needsCommit} label="* Tagging" value="tagging" />
-            </Tabs>
-            <IconButton
-              color="inherit"
-              onClick={handleClose}
-              aria-label="close"
-            >
-              <CloseIcon />
-            </IconButton>
-          </Toolbar>
-        </AppBar>
-        <DialogContent dividers sx={{ padding: 0 }}>
-          <TabPanel value="preview">
-            <PreviewPanel lyricsString={effectiveLyrics} fileId={fileId} />
-          </TabPanel>
-          <TabPanel value="webvttPreview">
-            <LyricsPreviewPanel
-              lyricsString={effectiveLyrics}
-              fileId={fileId}
-            />
-          </TabPanel>
-          <TabPanel value="download">
-            <SearchLyrics title={title} artists={artists} duration={duration} />
-          </TabPanel>
-          <TabPanel value="edit">
-            <EditLyrics
-              lyrics={lrcx}
-              setLyrics={setLrcx}
-              songId={songId}
-              title={title}
-            />
-          </TabPanel>
-          <TabPanel value="editLrc">
-            <EditPlainLyrics lyrics={lrc} lrcx={lrcx} setLyrics={setLrc} />
-          </TabPanel>
-          <TabPanel value="webAudioTagging">
-            <WebAudioTaggingLyrics
-              lyrics={lrcx}
-              setLyrics={setLrcx}
-              fileId={fileId}
-            />
-          </TabPanel>
-          <TabPanel value="tagging">
-            <TaggingLyrics lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
-          </TabPanel>
-          <TabPanel value="translation">
-            <EditTranslations lyrics={lrcx} setLyrics={setLrcx} songId={songId} />
-          </TabPanel>
-          <TabPanel value="furigana">
-            <EditFurigana
-              lyrics={lrcx}
-              setLyrics={setLrcx}
-              fileId={fileId}
-              songId={songId}
-            />
-          </TabPanel>
-          <TabPanel value="inline" sx={{ height: "100%" }}>
-            <InlineTagging lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
-          </TabPanel>
-          <TabPanel value="roles">
-            <Roles lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
-          </TabPanel>
-        </DialogContent>
-      </TabContext>
-      <DialogActions>
-        <Button onClick={handleClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          disabled={submitting || !lrcx || !lrc || needsCommit}
-          onClick={handleSubmit}
-          color="primary"
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent
+        className="w-full h-full max-w-dvw sm:max-w-dvw rounded-none p-0 flex flex-col gap-0"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onFocusOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        <DialogTitle className="sr-only">Edit lyrics</DialogTitle>
+        <Tabs
+          value={tabIndex}
+          onValueChange={setTabIndex}
+          className="m-4 mb-0 xl:flex-row grow h-0 gap-2 xl:gap-4"
         >
-          Save
-        </Button>
-      </DialogActions>
+          <TabsList
+            aria-label="Lyrics edit dialog tabs"
+            className="xl:flex-col xl:h-auto xl:self-start xl:items-stretch max-w-full overflow-auto justify-center-safe no-scrollbar shrink-0"
+          >
+            <TabsTrigger className="xl:justify-start" value="webvttPreview">
+              WebVTT Preview
+            </TabsTrigger>
+            <TabsTrigger className="xl:justify-start" value="preview">
+              Preview
+            </TabsTrigger>
+            <TabsTrigger className="xl:justify-start" value="download">
+              Download
+            </TabsTrigger>
+            <TabsTrigger className="xl:justify-start" value="edit">
+              Edit
+            </TabsTrigger>
+            <TabsTrigger className="xl:justify-start" value="editLrc">
+              Edit Plain
+            </TabsTrigger>
+            <TabsTrigger
+              className="xl:justify-start"
+              disabled={needsCommit}
+              value="webAudioTagging"
+            >
+              WebAudioAPI Tagging
+            </TabsTrigger>
+            <TabsTrigger
+              className="xl:justify-start"
+              disabled={needsCommit}
+              value="translation"
+            >
+              Translation
+            </TabsTrigger>
+            <TabsTrigger
+              className="xl:justify-start"
+              disabled={needsCommit}
+              value="furigana"
+            >
+              Furigana
+            </TabsTrigger>
+            <TabsTrigger
+              className="xl:justify-start"
+              disabled={needsCommit}
+              value="inline"
+            >
+              Inline Tagging
+            </TabsTrigger>
+            <TabsTrigger
+              className="xl:justify-start"
+              disabled={needsCommit}
+              value="roles"
+            >
+              Roles
+            </TabsTrigger>
+            <TabsTrigger
+              className="xl:justify-start"
+              disabled={needsCommit}
+              value="tagging"
+            >
+              * Tagging
+            </TabsTrigger>
+          </TabsList>
+          <div className="p-0 grow flex overflow-auto pr-4 -mr-4">
+            <TabsContent value="preview">
+              <PreviewPanel lyricsString={effectiveLyrics} fileId={fileId} />
+            </TabsContent>
+            <TabsContent value="webvttPreview">
+              <LyricsPreviewPanel
+                lyricsString={effectiveLyrics}
+                fileId={fileId}
+              />
+            </TabsContent>
+            <TabsContent value="download">
+              <SearchLyrics
+                title={title}
+                artists={artists}
+                duration={duration}
+              />
+            </TabsContent>
+            <TabsContent value="edit">
+              <EditLyrics
+                lyrics={lrcx}
+                setLyrics={setLrcx}
+                songId={songId}
+                title={title}
+              />
+            </TabsContent>
+            <TabsContent value="editLrc">
+              <EditPlainLyrics lyrics={lrc} lrcx={lrcx} setLyrics={setLrc} />
+            </TabsContent>
+            <TabsContent value="webAudioTagging">
+              <WebAudioTaggingLyrics
+                lyrics={lrcx}
+                setLyrics={setLrcx}
+                fileId={fileId}
+              />
+            </TabsContent>
+            <TabsContent value="tagging">
+              <TaggingLyrics
+                lyrics={lrcx}
+                setLyrics={setLrcx}
+                fileId={fileId}
+              />
+            </TabsContent>
+            <TabsContent value="translation">
+              <EditTranslations
+                lyrics={lrcx}
+                setLyrics={setLrcx}
+                songId={songId}
+              />
+            </TabsContent>
+            <TabsContent value="furigana">
+              <EditFurigana
+                lyrics={lrcx}
+                setLyrics={setLrcx}
+                fileId={fileId}
+                songId={songId}
+              />
+            </TabsContent>
+            <TabsContent value="inline">
+              <InlineTagging
+                lyrics={lrcx}
+                setLyrics={setLrcx}
+                fileId={fileId}
+              />
+            </TabsContent>
+            <TabsContent value="roles">
+              <Roles lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
+            </TabsContent>
+          </div>
+        </Tabs>
+        <DialogFooter className="m-4 flex-row justify-end">
+          <Button onClick={handleClose} variant="secondary">
+            Cancel
+          </Button>
+          <Button
+            disabled={submitting || !lrcx || !lrc || needsCommit}
+            onClick={handleSubmit}
+            variant="default"
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

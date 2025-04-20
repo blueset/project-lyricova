@@ -2,51 +2,28 @@ import { forwardRef, memo, useEffect } from "react";
 import { useSpring, animated } from "@react-spring/web";
 import { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
 import { RowRendererProps } from "../components/LyricsVirtualizer";
-import { styled } from "@mui/material/styles";
 import { RingollLineRenderer } from "./LineRenderer";
+import { cn } from "@lyricova/components/utils";
 
-const RowContainer = styled(animated.div)(({"data-role": role, "data-minor": minor}: {"data-role": number, "data-minor": boolean}) => [
-  {
-    position: "absolute",
-    fontSize: "2em",
-    willChange: "translate, opacity, filter",
-    minHeight: "0.5em",
-    maxWidth: "calc(100% - 4rem)",
-    transition: "filter 0.5s",
-    "&:hover": {
-      filter: "blur(0) !important",
-      backgroundColor: "color-mix(in srgb, currentcolor 20%, transparent)",
-    },
-  },
-  role % 3 === 0 && { 
-    textAlign: "start",
-    padding: "1rem 3rem 1rem 2rem",
-    left: 0,
-    borderRadius: "0 0.75rem 0.75rem 0",
-  },
-  role % 3 === 1 && { 
-    textAlign: "end",
-    padding: "1rem 2rem 1rem 3rem",
-    right: 0,
-    borderRadius: "0.75rem 0 0 0.75rem ",
-  },
-  role % 3 === 2 && { 
-    textAlign: "center",
-    padding: "1rem 0",
-    width: "100%",
-    borderRadius: "0.75rem",
-  },
-  minor && { fontSize: "1.25em" },
-]);
+const rowContainerClasses = cn(
+  "absolute",
+  "text-4xl", // fontSize: "2em"
+  "will-change-[transform,opacity,filter]",
+  "min-h-[0.5em]",
+  "max-w-[calc(100%-4rem)]",
+  "transition-filter duration-500",
+  "hover:!blur-none hover:bg-current/20", // filter: blur(0), backgroundColor: color-mix(...)
 
-const TranslationContainer = styled("div")((props: { dim: boolean }) => ({
-  opacity: props.dim ? 0.5 : 1,
-  fontSize: "0.625em",
-  "&:not(:empty)": {
-    textWrap: "balance",
-    wordBreak: "auto-phrase",
-  }
-}));
+  // role % 3 === 0
+  "data-[role='0']:text-start data-[role='0']:py-4 data-[role='0']:pl-8 data-[role='0']:pr-12 data-[role='0']:left-0 data-[role='0']:rounded-tr-[0.75rem] data-[role='0']:rounded-br-[0.75rem]",
+  // role % 3 === 1
+  "data-[role='1']:text-end data-[role='1']:py-4 data-[role='1']:pr-8 data-[role='1']:pl-12 data-[role='1']:right-0 data-[role='1']:rounded-tl-[0.75rem] data-[role='1']:rounded-bl-[0.75rem]",
+  // role % 3 === 2
+  "data-[role='2']:text-center data-[role='2']:py-4 data-[role='2']:w-full data-[role='2']:rounded-[0.75rem]",
+
+  // minor
+  "data-[minor='true']:text-xl"
+);
 
 const InnerRowRenderer = forwardRef<
   HTMLDivElement,
@@ -90,14 +67,15 @@ const InnerRowRenderer = forwardRef<
     }, [absoluteIndex, api, isActive, isActiveScroll, top]);
 
     return (
-      <RowContainer
+      <animated.div
         ref={ref}
         style={{
           ...springs,
         }}
         onClick={onClick}
-        data-role={row.attachments.role}
+        data-role={row.attachments.role % 3}
         data-minor={row.attachments.minor}
+        className={rowContainerClasses}
       >
         <RingollLineRenderer
           line={row}
@@ -105,10 +83,18 @@ const InnerRowRenderer = forwardRef<
           end={segment.end}
           ref={animationRef}
         />
-        <TranslationContainer dim={absoluteIndex > 0 && !isActive} lang={transLang}>
+        <div
+          className={cn(
+            "text-[0.625em] text-balance", // fontSize, textWrap
+            absoluteIndex > 0 && !isActive && "opacity-50" // dim opacity
+          )}
+          // @ts-expect-error TypeScript doesn't know about the `wordBreak` property
+          style={{ wordBreak: "auto-phrase" }} // wordBreak
+          lang={transLang}
+        >
           {row.attachments.translations[transLang]}
-        </TranslationContainer>
-      </RowContainer>
+        </div>
+      </animated.div>
     );
   }
 );

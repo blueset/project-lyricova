@@ -3,10 +3,19 @@ import { RangeAttribute, FURIGANA } from "lyrics-kit/core";
 import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { useNamedState } from "../../../../../hooks/useNamedState";
-import { Box, IconButton, Paper, TextField, Typography } from "@mui/material";
 import _ from "lodash";
-import CloseIcon from "@mui/icons-material/Close";
-import CheckIcon from "@mui/icons-material/Check";
+import { X, Check } from "lucide-react";
+import { Button } from "@lyricova/components/components/ui/button";
+import { Input } from "@lyricova/components/components/ui/input";
+import { Label } from "@lyricova/components/components/ui/label";
+import { cn } from "@lyricova/components/utils";
+import {
+  Dialog,
+  DialogTitle,
+  DialogPlainContent,
+  DialogPortal,
+} from "@lyricova/components/components/ui/dialog";
+import { codeToFuriganaGroups } from "./ApplyAllFurigana";
 
 interface FloatingWindowProps {
   nodeIdx: number;
@@ -23,6 +32,24 @@ type RenderableFuriganaElement =
       value: string;
     };
 
+function sanitizeSequence(
+  sequence: RenderableFuriganaElement[]
+): RenderableFuriganaElement[] {
+  return sequence.reduce<RenderableFuriganaElement[]>((acc, value) => {
+    if (acc.length === 0) {
+      acc.push(value);
+    } else {
+      const last = acc[acc.length - 1];
+      if (typeof last === "string" && typeof value === "string") {
+        acc[acc.length - 1] = last + value;
+      } else {
+        acc.push(value);
+      }
+    }
+    return acc;
+  }, []);
+}
+
 interface Props {
   line: LyricsLine;
   setLine: (line: LyricsLine) => void;
@@ -38,7 +65,7 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
     "",
     "floatingWindowInput"
   );
-  const lineContainerRef = useRef<HTMLDivElement>();
+  const lineContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const result: RenderableFuriganaElement[] = [];
@@ -57,7 +84,7 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
     if (i < content.length) result.push(content.substring(i, content.length));
     setRenderableFurigana(result);
     setFloatingWindow(null);
-    setFloatingWindowInput(null);
+    setFloatingWindowInput("");
   }, [line, setFloatingWindow, setFloatingWindowInput, setRenderableFurigana]);
 
   const updateLine = useCallback(
@@ -94,11 +121,24 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
         after = node.substring(end, node.length);
       let result = renderableFurigana.slice(0, nodeIdx);
       if (before) result.push(before);
-      result.push({ base, value });
+
+      if (base.length > 1 && (value.includes(",") || value.includes(";"))) {
+        const processedSequence = codeToFuriganaGroups(base, value);
+        result = result.concat(
+          processedSequence.map((v) => {
+            if (typeof v === "string") return v;
+            else return { base: v[0], value: v[1] };
+          })
+        );
+      } else {
+        result.push({ base, value });
+      }
+
       if (after) result.push(after);
       result = result.concat(
         renderableFurigana.slice(nodeIdx + 1, renderableFurigana.length)
       );
+      result = sanitizeSequence(result);
       setRenderableFurigana(result);
       updateLine(result);
     },
@@ -108,21 +148,23 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
   const onSelect = useCallback(() => {
     const selection = document.getSelection();
     const trigger =
-      selection.anchorNode &&
+      selection?.anchorNode &&
       selection.focusNode &&
       selection.anchorNode === selection.focusNode &&
       selection.toString().length > 0 &&
       lineContainerRef.current &&
       lineContainerRef.current.contains(selection.anchorNode);
     if (!trigger) return;
+
+    const parentElement = selection.anchorNode?.parentElement;
     const show =
-      selection.anchorNode.parentElement &&
-      selection.anchorNode.parentElement.dataset.furiganaCreatable === "true" &&
+      parentElement &&
+      parentElement.dataset.furiganaCreatable === "true" &&
       selection.rangeCount > 0;
 
-    if (show) {
+    if (show && parentElement.dataset.index) {
       const rect = selection.getRangeAt(0).getBoundingClientRect();
-      const id = parseInt(selection.anchorNode.parentElement.dataset.index);
+      const id = parseInt(parentElement.dataset.index, 10);
       const start = Math.min(selection.anchorOffset, selection.focusOffset),
         end = Math.max(selection.anchorOffset, selection.focusOffset);
       setFloatingWindow({
@@ -132,16 +174,8 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
         top: rect.top + rect.height,
         left: rect.left,
       });
-      console.log({
-        nodeIdx: id,
-        start,
-        end,
-        top: rect.top + rect.height,
-        left: rect.left,
-      });
     } else {
       setFloatingWindow(null);
-      console.log(null);
       setFloatingWindowInput("");
     }
   }, [setFloatingWindow, setFloatingWindowInput]);
@@ -174,6 +208,7 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
           .concat([self.base])
           .concat(renderableFurigana.slice(idx + 1, renderableFurigana.length));
       }
+      result = sanitizeSequence(result);
       setRenderableFurigana(result);
       updateLine(result);
       onSelect();
@@ -186,6 +221,7 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
     document.addEventListener("selectionchange", debounced);
     return () => {
       document.removeEventListener("selectionchange", debounced);
+      debounced.cancel();
     };
   }, [onSelect]);
 
@@ -215,9 +251,16 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
     ]
   );
 
+  const floatingWindowBaseText = floatingWindow
+    ? (renderableFurigana[floatingWindow.nodeIdx] as string)?.slice?.(
+        floatingWindow.start,
+        floatingWindow.end
+      ) ?? "❓"
+    : "";
+
   return (
     <div>
-      <Typography variant="h4" component="div" ref={lineContainerRef}>
+      <div className="text-3xl font-medium" ref={lineContainerRef}>
         {renderableFurigana.map((v, idx) => {
           if (typeof v === "string")
             return (
@@ -227,81 +270,87 @@ export default function EditFuriganaLine({ line, setLine }: Props) {
             );
           else
             return (
-              <Box
-                component="span"
+              <span
                 key={idx}
                 data-index={idx}
-                sx={{
-                  display: "inline-flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  "& > ruby": {
-                    border: 1,
-                    borderColor: "divider",
-                    borderRadius: 1,
-                    padding: 0.5,
-                    marginTop: 0.5,
-                    marginBottom: 0.5,
-                  },
-                  "& > button": {
-                    visibility: "hidden",
-                  },
-                  "&:hover > button, &:focus > button": {
-                    visibility: "visible",
-                  },
-                }}
+                className={cn(
+                  "group inline-flex flex-col items-center",
+                  "focus-within:outline-none"
+                )}
               >
-                <ruby>
-                  {v.base}
-                  <rt>{v.value}</rt>
-                </ruby>
-                <IconButton
-                  size="small"
-                  onClick={removeRange(idx)}
-                  color="primary"
+                <ruby
+                  className={cn(
+                    "border border-border rounded p-0.5 my-0.5",
+                    "text-center"
+                  )}
                 >
-                  <CloseIcon />
-                </IconButton>
-              </Box>
+                  {v.base}
+                  <rt className="text-xs">{v.value}</rt>{" "}
+                  {/* Adjusted rt size */}
+                </ruby>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="invisible group-hover:visible group-focus-within:visible h-6 w-6"
+                  onClick={removeRange(idx)}
+                  aria-label={`Remove furigana for ${v.base}`}
+                >
+                  <X />
+                </Button>
+              </span>
             );
         })}
-      </Typography>
-      {floatingWindow && (
-        <Paper
-          style={{ top: floatingWindow.top, left: floatingWindow.left }}
-          sx={{
-            position: "fixed",
-            width: "fit-content",
-            zIndex: 1500,
-          }}
-          elevation={5}
-        >
-          <form
-            onSubmit={handleFloatingInputConfirm}
-            style={{ display: "flex", alignItems: "center" }}
+      </div>
+      <Dialog open={!!floatingWindow} modal={false}>
+        <DialogPortal>
+          <DialogPlainContent
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            className="fixed z-[1500] w-fit shadow-lg p-2 pointer-events-auto translate-0"
+            style={{ top: floatingWindow?.top, left: floatingWindow?.left }}
           >
-            <TextField
-              id="outlined-multiline-flexible"
-              label={
-                (renderableFurigana[floatingWindow.nodeIdx] as string)?.slice?.(
-                  floatingWindow.start,
-                  floatingWindow.end
-                ) ?? "❓"
-              }
-              value={floatingWindowInput}
-              onChange={handleFloatingInputChange}
-              margin="dense"
-              variant="outlined"
-            />
-            <IconButton type="submit" disabled={!floatingWindowInput}>
-              <CheckIcon />
-            </IconButton>
-            <IconButton onClick={() => setFloatingWindow(null)}>
-              <CloseIcon />
-            </IconButton>
-          </form>
-        </Paper>
-      )}
+            <DialogTitle className="sr-only">Edit Furigana</DialogTitle>
+            <form
+              onSubmit={handleFloatingInputConfirm}
+              className="flex items-center"
+            >
+              <div className="flex flex-col">
+                <Label
+                  htmlFor="furigana-input"
+                  className="text-xs text-muted-foreground px-1"
+                >
+                  {floatingWindowBaseText}
+                </Label>
+                <Input
+                  id="furigana-input"
+                  value={floatingWindowInput}
+                  onChange={handleFloatingInputChange}
+                  className="h-8"
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="ghost"
+                size="icon"
+                disabled={!floatingWindowInput}
+                className="h-8 w-8"
+                aria-label="Confirm furigana"
+              >
+                <Check />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setFloatingWindow(null)}
+                className="h-8 w-8"
+                aria-label="Cancel furigana input"
+              >
+                <X />
+              </Button>
+            </form>
+          </DialogPlainContent>
+        </DialogPortal>
+      </Dialog>
     </div>
   );
 }

@@ -1,12 +1,9 @@
+import { Button } from "@lyricova/components/components/ui/button";
+import { Textarea } from "@lyricova/components/components/ui/textarea";
 import {
-  Button,
-  Grid,
-  styled,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from "@mui/material";
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@lyricova/components/components/ui/toggle-group";
 import type { ChangeEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { FURIGANA, Lyrics } from "lyrics-kit/core";
@@ -21,11 +18,6 @@ const KARAOKE_TRANSLITERATION_QUERY = gql`
   }
 `;
 
-const SpacedButton = styled(Button)(({ theme }) => ({
-  marginRight: theme.spacing(1),
-  marginBottom: theme.spacing(1),
-}));
-
 interface Props {
   lyrics: string;
   lrcx: string;
@@ -34,7 +26,7 @@ interface Props {
 
 export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
   const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setLyrics(event.target.value);
     },
     [setLyrics]
@@ -126,65 +118,67 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
 
   return (
     <>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <Typography variant="overline" display="block">
-            Common operations
-          </Typography>
-          <SpacedButton
-            variant="outlined"
-            disabled={!lrcx}
-            onClick={copyFromLRCX(false)}
-          >
-            Copy from LRCX
-          </SpacedButton>
-          <SpacedButton
-            variant="outlined"
-            disabled={!lrcx}
-            onClick={copyFromLRCX(true)}
-          >
-            Copy from LRCX with Furigana
-          </SpacedButton>
-          <SpacedButton
-            variant="outlined"
-            disabled={!lrcx}
-            onClick={copyFromLRCXWithSmartFurigana}
-          >
-            Copy from LRCX with Smart Furigana
-          </SpacedButton>
-        </Grid>
-        {languages.length ? (
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Typography variant="overline" display="block">
-              Translation Language
-            </Typography>
-            <ToggleButtonGroup
-              size="small"
-              value={selectedLanguageIdx}
-              onChange={(_, value) => setSelectedLanguageIdx(value)}
-              exclusive
-            >
-              {languages.map((v, idx) => (
-                <ToggleButton key={idx} value={idx}>
-                  {v || "Unknown"}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          </Grid>
-        ) : null}
-      </Grid>
-      <TextField
-        id="lyrics-source"
-        label="Lyrics source"
-        fullWidth
-        value={lyrics || ""}
-        onChange={handleChange}
-        multiline
-        variant="outlined"
-        slotProps={{
-          htmlInput: { sx: { fontFamily: "monospace" }, lang: "ja" },
-        }}
-      />
+      <div className="flex flex-col gap-4 h-full">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div>
+            <span className="text-xs uppercase tracking-wider text-muted-foreground block mb-2">
+              Copy from
+            </span>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <Button
+                variant="outline"
+                disabled={!lrcx}
+                onClick={copyFromLRCX(false)}
+                type="button"
+              >
+                LRCX
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!lrcx}
+                onClick={copyFromLRCX(true)}
+                type="button"
+              >
+                LRCX with Furigana
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!lrcx}
+                onClick={copyFromLRCXWithSmartFurigana}
+                type="button"
+              >
+                LRCX with Smart Furigana
+              </Button>
+            </div>
+          </div>
+          {languages.length ? (
+            <div>
+              <span className="text-xs uppercase tracking-wider text-muted-foreground block mb-2">
+                Translation Language
+              </span>
+              <ToggleGroup type="single" value={`${selectedLanguageIdx}`}>
+                {languages.map((v, idx) => (
+                  <ToggleGroupItem
+                    key={idx}
+                    value={`${idx}`}
+                    onClick={() => setSelectedLanguageIdx(idx)}
+                  >
+                    {v || "Unknown"}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+          ) : null}
+        </div>
+        <Textarea
+          id="lyrics-source"
+          className="font-mono h-full grow resize-none"
+          placeholder="Lyrics source"
+          value={lyrics || ""}
+          onChange={handleChange}
+          lang="ja"
+        />
+      </div>
     </>
   );
 }

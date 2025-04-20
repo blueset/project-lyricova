@@ -1,84 +1,24 @@
-import { IconButton, Tooltip, styled } from "@mui/material";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
-import { MouseEventHandler, MutableRefObject, memo, useEffect, useRef, useState } from "react";
+import {
+  MouseEventHandler,
+  RefObject,
+  memo,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { measureTextWidths } from "../../../../../frontendUtils/measure";
 import type { WebAudioPlayerState } from "../../../../../hooks/types";
-import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import gsap from "gsap";
-
-const InlineTagRowContainer = styled("div")`
-  white-space: nowrap;
-  font-size: 1.5em;
-  margin-bottom: 0.5rem;
-  position: relative;
-
-  & > button {
-    visibility: hidden;
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-  &:hover > button {
-    visibility: visible;
-  }
-`;
-
-const InlineTagContainer = styled("div")`
-  position: relative;
-  font-size: 0.7rem;
-  height: 1em;
-  line-height: 1;
-  font-family: "Corporate Logo ver3", sans-serif;
-  & span {
-    position: absolute;
-    transform-origin: left;
-    text-align: center;
-  }
-`;
-
-const InlineLabelContainer = styled("div")`
-  position: relative;
-  font-size: 0.4rem;
-  height: 1em;
-  line-height: 1;
-  font-family: Iosevka, "Segoe UI Symbol", sans-serif;
-  &[data-tags] span {
-    color: #ce93d8;
-  }
-  & > span {
-    position: absolute;
-    & > span[data-current="true"] {
-      color: #f589ae;
-    }
-  }
-  & span.cursor {
-    z-index: 1;
-    scale: 1 2;
-    color: lime;
-    transform-origin: top right;
-  }
-`;
-
-const InlineMainContainer = styled("div")`
-  line-height: 1;
-  letter-spacing: 3;
-  background-image: linear-gradient(0deg, #923cbd, #923cbd);
-  background-blend-mode: difference;
-  background-repeat: no-repeat;
-  background-size: 0px 100%;
-  & [data-is-valid] {
-    width: 1em;
-    height: 1em;
-    display: inline-block;
-    position: relative;
-    vertical-align: bottom;
-  }
-  & [data-is-valid="false"]::before {
-    content: "⚠️";
-    color: #ffeb3b;
-  }
-`;
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { Button } from "@lyricova/components/components/ui/button";
+import { ListChecks } from "lucide-react";
+import { cn } from "@lyricova/components/utils";
 
 function ApplyMarksToAllButton({
   applyMarksToAll,
@@ -90,20 +30,25 @@ function ApplyMarksToAllButton({
   index: number;
 }) {
   return (
-    <Tooltip
-      title={
-        <span>
-          Apply marks to all identical lines
-          <br />
-          {lineContent}
-        </span>
-      }
-      placement="bottom-end"
-    >
-      <IconButton onClick={applyMarksToAll} data-row-index={index}>
-        <PlaylistAddCheckIcon />
-      </IconButton>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={applyMarksToAll}
+            data-row-index={index}
+            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/inline-row:opacity-100 transition-opacity"
+          >
+            <ListChecks />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="end">
+          <p>Apply marks to all identical lines</p>
+          <p>{lineContent}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 const ApplyMarksToAllButtonMemo = memo(
@@ -119,9 +64,12 @@ interface InlineTaggingLineProps {
   relativeProgress: -1 | 0 | 1;
   cursorIdx?: number;
   dotCursorIdx?: [number, number];
-  onUpdateCursor?: (event: React.MouseEvent<HTMLElement>, cursorIdx: number) => void;
-  timelinesRef: MutableRefObject<gsap.core.Timeline[]>;
-  playerStatusRef: MutableRefObject<WebAudioPlayerState>;
+  onUpdateCursor?: (
+    event: React.MouseEvent<HTMLElement>,
+    cursorIdx: number
+  ) => void;
+  timelinesRef: RefObject<gsap.core.Timeline[]>;
+  playerStatusRef: RefObject<WebAudioPlayerState>;
   getProgress: () => number;
   applyMarksToAll: MouseEventHandler<HTMLButtonElement>;
 }
@@ -220,7 +168,7 @@ export function InlineTaggingLine({
       // console.log("built timeline", index, timelinesRef.current);
     } else if (relativeProgress === 1) {
       centerRow.style.backgroundSize = "0px 100%";
-      if (timelinesRef.current[index]) { 
+      if (timelinesRef.current[index]) {
         timelinesRef.current[index].kill();
         timelinesRef.current[index] = undefined;
       }
@@ -231,7 +179,7 @@ export function InlineTaggingLine({
         idx === 0 ? true : x > arr[idx - 1]
       );
       setIsValid(areTagsIncreasing);
-      if (timelinesRef.current[index]) { 
+      if (timelinesRef.current[index]) {
         timelinesRef.current[index].kill();
         timelinesRef.current[index] = undefined;
       }
@@ -241,11 +189,13 @@ export function InlineTaggingLine({
   }, [relativeProgress]);
 
   return (
-    <InlineTagRowContainer>
-      <InlineTagContainer>
+    <div className="group/inline-row relative mb-2 whitespace-nowrap text-2xl">
+      {/* Furigana */}
+      <div className="relative h-[1em] text-xs leading-none">
         {furigana.map((t, idx) => (
           <span
             key={idx}
+            className="absolute text-center origin-left"
             style={{
               left: coords[t.range[0] - 1] ?? 0,
               width: coords[t.range[1] - 1] - (coords[t.range[0] - 1] ?? 0),
@@ -254,30 +204,51 @@ export function InlineTaggingLine({
             {t.content}
           </span>
         ))}
-      </InlineTagContainer>
-      <InlineMainContainer ref={centerRowRef}>
+      </div>
+      {/* Main Content */}
+      <div
+        ref={centerRowRef}
+        className="leading-none tracking-wider bg-no-repeat bg-blend-difference"
+        style={{
+          backgroundImage: "linear-gradient(0deg, #923cbd, #923cbd)",
+          backgroundSize: "0px 100%",
+        }}
+      >
         {[...line.content].map((i, idx) => (
-          <span key={idx} onClick={(event) => onUpdateCursor?.(event, idx)} data-row-index={index}>
+          <span
+            key={idx}
+            onClick={(event) => onUpdateCursor?.(event, idx)}
+            data-row-index={index}
+          >
             {i}
           </span>
         ))}
         <span
           onClick={(event) => onUpdateCursor?.(event, line.content.length)}
           data-row-index={index}
-          data-is-valid={isValid}
+          className={cn(
+            "inline-block w-[1em] h-[1em] relative align-bottom",
+            !isValid && "before:content-['⚠️'] before:text-warning-foreground"
+          )}
         ></span>
-      </InlineMainContainer>
-      <InlineLabelContainer>
+      </div>
+      {/* Dots/Labels */}
+      <div className="relative h-[1em] font-markers text-[0.4rem] leading-none">
         {dots?.map((x, idx) =>
           x ? (
-            <span key={idx} style={{ left: coords[idx - 1] ?? 0 }}>
+            <span
+              key={idx}
+              className="absolute"
+              style={{ left: coords[idx - 1] ?? 0 }}
+            >
               {x === -1 ? (
                 <span
-                  data-current={
+                  className={cn(
                     dotCursorIdx &&
-                    dotCursorIdx[0] === idx &&
-                    dotCursorIdx[1] === 0
-                  }
+                      dotCursorIdx[0] === idx &&
+                      dotCursorIdx[1] === 0 &&
+                      "text-error-foreground"
+                  )}
                 >
                   □
                 </span>
@@ -287,11 +258,12 @@ export function InlineTaggingLine({
                   .map((_, i) => (
                     <span
                       key={i}
-                      data-current={
+                      className={cn(
                         dotCursorIdx &&
-                        dotCursorIdx[0] === idx &&
-                        dotCursorIdx[1] === i
-                      }
+                          dotCursorIdx[0] === idx &&
+                          dotCursorIdx[1] === i &&
+                          "text-error-foreground"
+                      )}
                     >
                       {i === 0 ? "◣" : "❚"}
                     </span>
@@ -307,27 +279,32 @@ export function InlineTaggingLine({
                 coords[cursorIdx - 1] ?? 0
               }px - 1em))`,
             }}
-            className="cursor"
+            className="absolute z-10 scale-y-200 text-info-foreground origin-top-right"
           >
             ◢
           </span>
         )}
-      </InlineLabelContainer>
-      <InlineLabelContainer data-tags>
+      </div>
+      {/* Tags Indicator */}
+      <div className="relative h-[1em] font-markers text-[0.4rem] leading-none text-success-foreground">
         {[0, ...coords]
           .filter((x, idx) => tags?.[idx]?.length > 0)
           .map((x, idx) => (
-            <span key={idx} style={{ left: x, width: coords[idx] - x }}>
+            <span
+              key={idx}
+              className="absolute"
+              style={{ left: x, width: coords[idx] - x }}
+            >
               ◣
             </span>
           ))}
-      </InlineLabelContainer>
+      </div>
       <ApplyMarksToAllButtonMemo
         applyMarksToAll={applyMarksToAll}
         lineContent={line.content}
         index={index}
       />
-    </InlineTagRowContainer>
+    </div>
   );
 }
 

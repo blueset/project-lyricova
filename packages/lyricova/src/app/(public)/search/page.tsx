@@ -4,7 +4,7 @@ import SearchClient from "./client";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: `Search – ${siteName}`,
+  title: "Search",
   description: `Search – ${siteName}: ${tagLine1} ${tagLine2}`,
   openGraph: {
     title: `Search – ${siteName}`,

@@ -1,19 +1,5 @@
-import style from "./CurrentPlaylist.module.scss";
 import type { Track } from "./AppContext";
-import {
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  ListItemIcon,
-  Menu,
-  MenuItem,
-  ListItemButton,
-} from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DragHandleIcon from "@mui/icons-material/DragHandle";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { MoreVertical, GripVertical, Trash } from "lucide-react";
 import { useEffect, useRef } from "react";
 import AutoResizer from "react-virtualized-auto-sizer";
 import type { CSSProperties } from "react";
@@ -26,11 +12,6 @@ import type {
   DroppableProvided,
 } from "react-beautiful-dnd";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import {
-  bindMenu,
-  bindTrigger,
-  usePopupState,
-} from "material-ui-popup-state/hooks";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAppDispatch, useAppSelector } from "../../redux/public/store";
 import {
@@ -39,6 +20,14 @@ import {
   removeTrack,
   visualPlaylistSelector,
 } from "../../redux/public/playlist";
+import { cn } from "@lyricova/components/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@lyricova/components/components/ui/dropdown-menu";
+import { Button } from "@lyricova/components/components/ui/button";
 
 function CurrentPlaylistItem({
   provided,
@@ -46,8 +35,7 @@ function CurrentPlaylistItem({
   index,
   style,
   isDragging,
-}: // provided,
-{
+}: {
   provided: DraggableProvided;
   index: number;
   track?: Track;
@@ -57,83 +45,68 @@ function CurrentPlaylistItem({
   const dispatch = useAppDispatch();
   const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
 
-  const popupState = usePopupState({
-    variant: "popover",
-    popupId: `current-playlist-menu-${track?.id}`,
-  });
-
   const handleRemoveFromPlaylist = () => {
     dispatch(removeTrack(index));
-    popupState.close();
   };
-  // isDragging = true;
+
   return (
-    <ListItem
+    <div
       ref={provided.innerRef}
       {...provided.draggableProps}
       style={{
         ...provided.draggableProps.style,
-        opacity: index < nowPlaying ? 0.375 : 1,
         ...style,
       }}
-      // disablePadding
-      // ContainerComponent={isDragging ? "div" : (<li />).type}
-      component={isDragging ? "div" : "li"}
-      secondaryAction={
-        <>
-          <IconButton
-            edge="end"
-            aria-label="More actions"
-            {...bindTrigger(popupState)}
-          >
-            <MoreVertIcon />
-          </IconButton>
-          <Menu
-            id={`currentPlaylist-menu-${track?.id}`}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            {...bindMenu(popupState)}
-          >
-            <MenuItem onClick={handleRemoveFromPlaylist}>
-              <ListItemIcon>
-                <DeleteIcon color="error" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Remove from playlist"
-                primaryTypographyProps={{ color: "error" }}
-              />
-            </MenuItem>
-          </Menu>
-        </>
-      }
+      className={cn(
+        "flex items-center justify-between pr-2",
+        index < nowPlaying ? "opacity-40" : "opacity-100",
+        nowPlaying === index || isDragging ? "bg-secondary" : "hover:bg-muted"
+      )}
     >
-      <ListItemButton
-        selected={nowPlaying === index || isDragging}
+      <div
+        className={cn("flex items-center gap-2 flex-1 p-2 cursor-pointer")}
         onClick={
           isDragging
-            ? null
+            ? undefined
             : () => {
                 dispatch(playTrack({ track: index, playNow: true }));
               }
-        }>
-        <ListItemIcon style={{ zIndex: 10 }} {...provided.dragHandleProps}>
-          <DragHandleIcon />
-        </ListItemIcon>
-        <ListItemText
-          sx={{ width: 0 }}
-          primary={track?.trackName || "No title"}
-          primaryTypographyProps={{ noWrap: true }}
-          secondary={track?.artistName || "Unknown artist"}
-          secondaryTypographyProps={{ noWrap: true }}
-          />
-      </ListItemButton>
-    </ListItem>
+        }
+      >
+        <div
+          className="z-10 text-muted-foreground"
+          {...provided.dragHandleProps}
+        >
+          <GripVertical className="size-4" />
+        </div>
+        <div className="flex-1 w-0">
+          <div className="truncate text-sm font-medium">
+            {track?.trackName || "No title"}
+          </div>
+          <div className="truncate text-sm text-muted-foreground">
+            {track?.artistName || "Unknown artist"}
+          </div>
+        </div>
+      </div>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreVertical />
+            <span className="sr-only">More actions</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={handleRemoveFromPlaylist}
+          >
+            <Trash />
+            Remove from playlist
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 
@@ -201,7 +174,7 @@ export default function CurrentPlaylist() {
     dispatch(moveTrack({ from: src, to: dest }));
   }
 
-  const parentRef = useRef<HTMLDivElement>();
+  const parentRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
     // tracks.length on load is 0, we need at least `playlist.nowPlaying` plus an offset to ensure that
     // the list scrolls to the correct position before we have the data.
@@ -221,7 +194,7 @@ export default function CurrentPlaylist() {
   }, [nowPlaying, rowVirtualizer, tracks]);
 
   return (
-    <List dense={true} className={style.playlist}>
+    <div className="flex-1 flex-grow">
       <AutoResizer>
         {({ height, width }) => (
           <DragDropContext onDragEnd={onDragEnd}>
@@ -247,7 +220,8 @@ export default function CurrentPlaylist() {
               {(droppableProvided: DroppableProvided) => {
                 return (
                   <div
-                    style={{ height, width, overflowY: "scroll" }}
+                    className="overflow-y-auto"
+                    style={{ height, width }}
                     ref={(r) => {
                       droppableProvided.innerRef(r);
                       if (r !== null && parentRef.current !== r) {
@@ -288,6 +262,6 @@ export default function CurrentPlaylist() {
           </DragDropContext>
         )}
       </AutoResizer>
-    </List>
+    </div>
   );
 }

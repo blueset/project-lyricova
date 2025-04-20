@@ -8,11 +8,9 @@ import type {
   PlayerLyricsState,
 } from "../../../hooks/types";
 import { usePlayerLyricsState } from "../../../hooks/usePlayerLyricsState";
-import { Box, styled } from "@mui/material";
 import _ from "lodash";
 import { gql, useQuery } from "@apollo/client";
-import clsx from "clsx";
-import type { MutableRefObject, RefObject } from "react";
+import type { RefObject } from "react";
 import { useEffect, useMemo, useRef } from "react";
 import type { MeasuredComponentProps } from "react-measure";
 import Measure from "react-measure";
@@ -22,6 +20,7 @@ import measureElement, {
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
 import type { DocumentNode } from "graphql";
+import { cn } from "@lyricova/components/utils";
 
 type Timeline = gsap.core.Timeline;
 const COUNTDOWN_DURATION = 3;
@@ -262,10 +261,20 @@ interface CountdownProps {
 function Countdown({ activeRef, className }: CountdownProps) {
   const content = "●●●●●";
   return (
-    <div className={clsx("countdown", className)}>
-      <span className="before">{content}</span>
-      <span className="after" ref={activeRef}>
-        <span>{content}</span>
+    <div
+      className={cn(
+        "relative w-0 tracking-widest translate-y-16 text-[max(0.5em,1.5rem)]",
+        className
+      )}
+    >
+      <span className="before absolute top-0 left-0 color-white [filter:url(#nicokaraBefore)]">
+        {content}
+      </span>
+      <span
+        className="after group-data-done/line:![clip-path:none] [clip-path:inset(-50%_102%_-10%_-2%)] group-data-pending/line:![clip-path:inset(-50%_102%_-10%_-2%)] group-data-active/line:[clip-path:inset(-50%_102%_-10%_-2%)] text-primary-darker"
+        ref={activeRef}
+      >
+        <span className="[filter:url(#nicokaraAfter)]">{content}</span>
       </span>
     </div>
   );
@@ -275,7 +284,7 @@ interface LyricsLineProps {
   textLine: string;
   furiganaLine?: [string, string][];
   done?: boolean;
-  activeRef?: MutableRefObject<HTMLSpanElement>;
+  activeRef?: RefObject<HTMLSpanElement>;
 }
 
 function LyricsLine({
@@ -284,7 +293,7 @@ function LyricsLine({
   done,
   activeRef,
 }: LyricsLineProps) {
-  const thisRef = useRef<HTMLSpanElement>();
+  const thisRef = useRef<HTMLSpanElement>(null);
   const elm = thisRef.current;
   if (elm && (activeRef === null || done)) {
     elm.style.clipPath = "inset(-50% 102% -10% -2%)";
@@ -297,54 +306,25 @@ function LyricsLine({
       <span>{textLine}</span>
     );
   return (
-    <Box
-      sx={{
-        position: "relative",
-        fontWeight: 800,
-        fontFamily:
-          'var(--font-source-han-serif), "Source Han Serif", "Noto Serif CJK", "Noto Serif JP", serif',
-        whiteSpace: "nowrap",
-        "& span.after": {
-          color: "primary.dark",
-          clipPath: "inset(-50% 102% 0 -2%)",
-          "& > span": {
-            filter: "url(#nicokaraAfter)",
-          },
-        },
-        "&.done span.after": {
-          clipPath: "none !important",
-        },
-        "&.pending span.after": {
-          clipPath: "inset(-50% 102% -10% -2%) !important",
-        },
-        "&.active span.after": {
-          clipPath: "inset(-50% 102% -10% -2%)",
-        },
-        "& span.before": {
-          position: "absolute",
-          top: 0,
-          left: 0,
-          color: "#fff",
-          filter: "url(#nicokaraBefore)",
-        },
-      }}
-      className={clsx(
-        done && "done",
-        !done && !activeRef && "pending",
-        activeRef && "active"
-      )}
+    <div
+      className="relative font-extrabold font-serif whitespace-nowrap group/line"
+      data-done={done ? "true" : undefined}
+      data-pending={!done && !activeRef ? "true" : undefined}
+      data-active={activeRef ? "true" : undefined}
     >
-      <span className="before">{content}</span>
+      <span className="before absolute top-0 left-0 text-white [filter:url(#nicokaraBefore)]">
+        {content}
+      </span>
       <span
-        className="after"
+        className="after text-primary-darker [clip-path:inset(-50%_102%_-10%_-2%)] group-data-done/line:![clip-path:none] group-data-pending/line:![clip-path:inset(-50%_102%_-10%_-2%)] group-data-active/line:[clip-path:inset(-50%_102%_-10%_-2%)]"
         ref={(elm) => {
           thisRef.current = elm;
           if (activeRef) activeRef.current = elm;
         }}
       >
-        <span>{content}</span>
+        <span className="[filter:url(#nicokaraAfter)]">{content}</span>
       </span>
-    </Box>
+    </div>
   );
 }
 
@@ -504,7 +484,12 @@ function LyricsScreen({
 
   return (
     <>
-      <div className={clsx("row", "row-4")}>
+      <div
+        className={cn(
+          "h-36 flex flex-row relative items-end" /* row */,
+          "row-4"
+        )}
+      >
         {linesToShow[0] !== null && (
           <>
             {linesToShow[0].left !== null && (
@@ -523,7 +508,12 @@ function LyricsScreen({
           </>
         )}
       </div>
-      <div className={clsx("row", "row-3")}>
+      <div
+        className={cn(
+          "h-36 flex flex-row relative items-end" /* row */,
+          "row-3"
+        )}
+      >
         {linesToShow[1] !== null && (
           <>
             {linesToShow[1].left !== null && (
@@ -542,7 +532,12 @@ function LyricsScreen({
           </>
         )}
       </div>
-      <div className={clsx("row", "row-2")}>
+      <div
+        className={cn(
+          "h-36 flex flex-row relative items-end" /* row */,
+          "row-2"
+        )}
+      >
         {linesToShow[2] !== null && (
           <>
             {linesToShow[2].left !== null && (
@@ -561,7 +556,12 @@ function LyricsScreen({
           </>
         )}
       </div>
-      <div className={clsx("row", "row-1")}>
+      <div
+        className={cn(
+          "h-36 flex flex-row relative items-end" /* row */,
+          "row-1"
+        )}
+      >
         {linesToShow[3] !== null && (
           <>
             {linesToShow[3].left !== null && (
@@ -584,17 +584,6 @@ function LyricsScreen({
   );
 }
 
-const MeasureLayer = styled("div")({
-  display: "inline-block",
-  position: "absolute",
-  visibility: "hidden",
-  zIndex: -1,
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-});
-
 interface Props {
   lyrics: LyricsKitLyrics;
   blur?: boolean;
@@ -609,7 +598,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     () => buildPages(lyrics, playerRef.current.duration),
     [lyrics, playerRef.current.duration]
   );
-  const activeRef = useRef<HTMLSpanElement>();
+  const activeRef = useRef<HTMLSpanElement>(null);
 
   const { currentFrame, playerState } = useNicokaraLyricsState(
     lyrics,
@@ -647,7 +636,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           : lyrics.lines[page.lines[lineIdx + 1]].position;
       return [line, start, end, end];
     }, [pageIdx, pages, lineIdx, currentFrame, lyrics.lines]);
-  const currentLineStartRef = useRef<number | null>();
+  const currentLineStartRef = useRef<number | null>(null);
   currentLineStartRef.current = currentLineStart;
 
   const sequenceQuery = useQuery<SequenceQueryResult>(SEQUENCE_QUERY, {
@@ -666,7 +655,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     },
   });
 
-  const timelineRef = useRef<Timeline>();
+  const timelineRef = useRef<Timeline>(null);
   // Line object or -1 for countdown.
   const timelineForRef = useRef<LyricsKitLyricsLine | -1 | null>(null);
 
@@ -801,67 +790,25 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   return (
     <Measure bounds>
       {({ contentRect, measureRef }: MeasuredComponentProps) => (
-        <Box
-          sx={{
-            padding: 4,
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-end",
-            fontSize: {
-              lg: "3.5rem",
-              sm: "2.5rem",
-              xs: "2rem",
-            },
-            "& .row": {
-              height: "9rem",
-              display: "flex",
-              flexDirection: "row",
-              position: "relative",
-              alignItems: "flex-end",
-            },
-            "& .countdown": {
-              position: "relative",
-              width: "0",
-              fontSize: "max(0.5em, 1.5rem)",
-              letterSpacing: "0.1em",
-              transform: "translateY(-3.75em)",
-            },
-            "& .countdown > span.after": {
-              color: "primary.dark",
-              clipPath: "inset(-50% 102% 0 -2%)",
-              "& > span": {
-                filter: "url(#nicokaraAfter)",
-              },
-            },
-            "&.done .countdown > span.after": {
-              clipPath: "none !important",
-            },
-            "&.pending .countdown > span.after": {
-              clipPath: "inset(-50% 102% -10% -2%) !important",
-            },
-            "&.active .countdown > span.after": {
-              clipPath: "inset(-50% 102% -10% -2%)",
-            },
-            "& .countdown > span.before": {
-              position: "absolute",
-              top: 0,
-              left: 0,
-              color: "#fff",
-              filter: "url(#nicokaraBefore)",
-            },
-            "& rt": {
-              fontSize: "max(0.35em, 1.125rem)",
-            },
-            "@supports (-moz-appearance: none)": {
-              "& rt": {
-                marginBottom: "-0.5em",
-              },
-            },
-          }}
+        <div
           lang="ja"
           ref={measureRef}
+          className={cn(
+            "p-16 size-full flex flex-col justify-end text-white",
+            "lg:text-6xl sm:text-4xl text-3xl", // Font sizes
+            "[&_rt]:text-[max(0.35em,1.125rem)]", // Ruby text styles
+            "supports-[-moz-appearance:none]:[&_rt]:-mb-2" // Firefox fix
+          )}
+          // Add group/page for conditional countdown styles based on parent state
+          data-done={
+            lineIdx !== null &&
+            pages[pageIdx] &&
+            lineIdx >= pages[pageIdx].lines.length
+              ? "true"
+              : undefined
+          }
+          data-pending={lineIdx === null ? "true" : undefined}
+          data-active={lineIdx !== null ? "true" : undefined}
         >
           {node}
           <LyricsScreen
@@ -874,8 +821,11 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             activeRef={activeRef}
             containerWidth={contentRect.bounds.width}
           />
-          <MeasureLayer id="measure-layer" />
-        </Box>
+          <div
+            id="measure-layer"
+            className="absolute inset-0 size-full opacity-0 -z-10 pointer-events-none"
+          />
+        </div>
       )}
     </Measure>
   );

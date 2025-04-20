@@ -1,11 +1,12 @@
-import { Button, Menu, MenuItem } from "@mui/material";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useCallback } from "react";
+import { ChevronDown } from "lucide-react";
+import { Button } from "@lyricova/components/components/ui/button";
 import {
-  bindMenu,
-  bindTrigger,
-  usePopupState,
-} from "material-ui-popup-state/hooks";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@lyricova/components/components/ui/dropdown-menu";
 import type { ReactNode } from "react";
 
 interface Props<T extends ReactNode> {
@@ -19,39 +20,28 @@ export function LyricsSwitchButton<T extends ReactNode>({
   setModule,
   moduleNames,
 }: Props<T>) {
-  const popupState = usePopupState({
-    variant: "popover",
-    popupId: "lyrics-style-menu",
-  });
-
-  const handleClose = useCallback(
-    (option: T | null = null) => {
-      if (option !== null) {
-        setModule(option);
-      }
-      popupState.close();
+  const handleSelect = useCallback(
+    (option: T) => {
+      setModule(option);
     },
-    [popupState, setModule]
+    [setModule]
   );
 
   return (
-    <>
-      <Button
-        size="small"
-        variant="outlined"
-        color="primary"
-        endIcon={<ArrowDropDownIcon />}
-        {...bindTrigger(popupState)}
-      >
-        {module}
-      </Button>
-      <Menu id="lyrics-style-menu" {...bindMenu(popupState)}>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">
+          {module}
+          <ChevronDown />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
         {moduleNames.map((v) => (
-          <MenuItem key={`${v}`} onClick={() => handleClose(v)}>
+          <DropdownMenuItem key={`${v}`} onClick={() => handleSelect(v)}>
             {v}
-          </MenuItem>
+          </DropdownMenuItem>
         ))}
-      </Menu>
-    </>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
