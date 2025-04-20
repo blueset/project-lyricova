@@ -62,7 +62,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
     <div
       data-active={isActive}
       className={cn(
-        "mb-8 text-start text-lg min-h-8 text-muted-foreground group/lyrics-row",
+        "mb-2 text-start text-lg min-h-8 text-muted-foreground group/lyrics-row",
         isActive && "text-foreground font-medium",
         line.attachments.role % 3 === 1 && "text-end",
         line.attachments.role % 3 === 2 && "text-center",
