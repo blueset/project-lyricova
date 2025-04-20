@@ -471,11 +471,16 @@ export default function EditTranslations({ lyrics, setLyrics, songId }: Props) {
 
                 <DropdownMenuContent>
                   {[
-                    "openai/o1-mini",
                     "deepseek/deepseek-chat:free",
-                    "openai/o1",
-                    "openai/gpt-4o",
+                    "google/gemini-2.5-pro-exp-03-25:free",
+                    "openai/o4-mini",
                     "openai/o3-mini",
+                    "openai/o1-mini",
+                    "openai/o1",
+                    "openai/gpt-4.1-nano",
+                    "openai/gpt-4.1-mini",
+                    "openai/gpt-4.1",
+                    "openai/gpt-4o",
                     "google/gemma-3-27b-it:free",
                     "meta-llama/llama-3.1-70b-instruct:free",
                     "qwen/qwq-32b:free",
