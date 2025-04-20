@@ -263,7 +263,7 @@ function Countdown({ activeRef, className }: CountdownProps) {
   return (
     <div
       className={cn(
-        "relative w-0 tracking-widest translate-y-16 text-[max(0.5em,1.5rem)]",
+        "relative w-0 tracking-widest -translate-y-16 text-[max(0.5em,1.5rem)]",
         className
       )}
     >
