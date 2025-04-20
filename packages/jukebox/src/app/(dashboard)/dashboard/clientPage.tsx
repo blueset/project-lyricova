@@ -50,14 +50,14 @@ export default function DashboardIndex() {
       <div className="p-4">
         {error && `Error occurred while loading stats: ${error}`}
         <div className="grid grid-cols-1 @3xl/dashboard:grid-cols-12 gap-4 mb-4">
-          <div className="col-span-6">
+          <div className="@3xl/dashboard:col-span-6">
             <CountUpCard
               title="Revamp dev time"
               now={now}
               time={data?.dashboardStats.revampStartedOn}
             />
           </div>
-          <div className="col-span-6">
+          <div className="@3xl/dashboard:col-span-6">
             <CountUpCard
               title="Project uptime"
               now={now}

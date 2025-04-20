@@ -37,26 +37,26 @@ export function CountUpCard({ title, now, time, className }: CountUpCardProps) {
       <>
         {highestLevel <= 0 && (
           <>
-            {dur.years}
+            {dur.years ?? 0}
             <small>Y</small>
           </>
         )}
         {highestLevel <= 1 && (
           <>
-            {dur.months}
+            {dur.months ?? 0}
             <small>M</small>
           </>
         )}
         {highestLevel <= 2 && (
           <>
-            {dur.days}
+            {dur.days ?? 0}
             <small>D</small>{" "}
           </>
         )}
         <small>
-          {String(dur.hours).padStart(2, "0")}:
-          {String(dur.minutes).padStart(2, "0")}:
-          {String(dur.seconds).padStart(2, "0")}
+          {String(dur.hours ?? 0).padStart(2, "0")}:
+          {String(dur.minutes ?? 0).padStart(2, "0")}:
+          {String(dur.seconds ?? 0).padStart(2, "0")}
         </small>
       </>
     );
