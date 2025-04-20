@@ -80,7 +80,7 @@ const artistRolesChoices: MultiSelectOption[] = [
 const formSchema = z.object({
   name: z.string().min(1, "Required"),
   sortOrder: z.string().min(1, "Required"),
-  coverUrl: z.string().url().optional(),
+  coverUrl: z.string().url().optional().or(z.literal("")),
   originalSong: z.any().optional(),
   artists: z.array(
     z.object({
@@ -460,9 +460,9 @@ export function SongEntityDialog({
 
                           <FormField
                             control={form.control}
-                            name={`artists.${index}.artist.type`}
+                            name={`artists.${index}.artist`}
                             render={({ field }) =>
-                              field.value === "Producer" ? (
+                              field.value?.type === "Producer" ? (
                                 <Button
                                   variant="outline"
                                   size="icon"
@@ -481,19 +481,19 @@ export function SongEntityDialog({
                                 >
                                   P
                                 </Button>
-                              ) : field.value === "Vocaloid" ||
-                                field.value === "UTAU" ||
-                                field.value === "CeVIO" ||
-                                field.value === "OtherVoiceSynthesizer" ||
-                                field.value === "OtherVocalist" ||
-                                field.value === "Utaite" ||
-                                field.value === "Vocalist" ||
-                                field.value === "CoverArtist" ||
-                                field.value === "SynthesizerV" ||
-                                field.value === "NEUTRINO" ||
-                                field.value === "VoiSona" ||
-                                field.value === "NewType" ||
-                                field.value === "Voiceroid" ? (
+                              ) : field.value?.type === "Vocaloid" ||
+                                field.value?.type === "UTAU" ||
+                                field.value?.type === "CeVIO" ||
+                                field.value?.type === "OtherVoiceSynthesizer" ||
+                                field.value?.type === "OtherVocalist" ||
+                                field.value?.type === "Utaite" ||
+                                field.value?.type === "Vocalist" ||
+                                field.value?.type === "CoverArtist" ||
+                                field.value?.type === "SynthesizerV" ||
+                                field.value?.type === "NEUTRINO" ||
+                                field.value?.type === "VoiSona" ||
+                                field.value?.type === "NewType" ||
+                                field.value?.type === "Voiceroid" ? (
                                 <Button
                                   variant="outline"
                                   size="icon"

@@ -85,7 +85,7 @@ const artistCategoryChoices: MultiSelectOption[] = [
 const formSchema = z.object({
   name: z.string().min(1, "Required"),
   sortOrder: z.string().min(1, "Required"),
-  coverUrl: z.string().url().optional(),
+  coverUrl: z.string().url().optional().or(z.literal("")),
   artists: z.array(
     z.object({
       artist: z

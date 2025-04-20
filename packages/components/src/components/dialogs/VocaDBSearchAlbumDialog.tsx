@@ -171,7 +171,7 @@ export function VocaDBSearchAlbumDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl grid-rows-[auto_1fr_auto]">
         <DialogHeader>
           <DialogTitle>
             Searching VocaDB for <span className="font-bold">{keyword}</span>

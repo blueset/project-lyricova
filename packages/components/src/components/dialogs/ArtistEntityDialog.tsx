@@ -62,7 +62,8 @@ const formSchema = z.object({
   mainPictureUrl: z
     .string()
     .url("Main picture URL is not a valid URL.")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
   type: z.string().min(1, "Type must be selected"),
 });
 
