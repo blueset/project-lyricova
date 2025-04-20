@@ -37,8 +37,8 @@ export function furiganaHighlight(): (
   ruby: string,
   groupings: (string | [string, string])[]
 ) => string | undefined {
-  const primaryText = "text-info-foreground";
-  const secondaryText = "text-error-foreground";
+  const primaryText = "text-error-foreground";
+  const secondaryText = "text-info-foreground";
   return (base, ruby, groupings) => {
     if (
       (base === "明日" && (ruby === "あした" || ruby === "あす")) ||
