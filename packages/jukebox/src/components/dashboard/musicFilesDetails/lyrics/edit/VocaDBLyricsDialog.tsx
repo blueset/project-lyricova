@@ -97,7 +97,7 @@ export default function VocaDBLyricsDialog({
       );
     } else {
       content = (
-        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+        <div className="space-y-4 max-h-96 overflow-y-auto pb-0.5">
           {query.data.vocaDBLyrics.map((v) => (
             <div
               key={v.id}
@@ -151,7 +151,7 @@ export default function VocaDBLyricsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={toggleOpen}>
-      <DialogContent className="sm:max-w-[625px]">
+      <DialogContent className="sm:max-w-[625px] grid-rows-[auto_1fr_auto]">
         <DialogHeader>
           <DialogTitle>Retrieve lyrics from VocaDB</DialogTitle>
         </DialogHeader>
