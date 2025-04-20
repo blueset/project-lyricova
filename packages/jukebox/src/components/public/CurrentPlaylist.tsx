@@ -10,8 +10,8 @@ import type {
   DraggableStateSnapshot,
   DraggableRubric,
   DroppableProvided,
-} from "react-beautiful-dnd";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+} from "@hello-pangea/dnd";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAppDispatch, useAppSelector } from "../../redux/public/store";
 import {
@@ -48,7 +48,6 @@ function CurrentPlaylistItem({
   const handleRemoveFromPlaylist = () => {
     dispatch(removeTrack(index));
   };
-
   return (
     <div
       ref={provided.innerRef}
@@ -74,7 +73,7 @@ function CurrentPlaylistItem({
         }
       >
         <div
-          className="z-10 text-muted-foreground"
+          className="z-10 text-muted-foreground self-stretch place-content-center p-2 -m-2"
           {...provided.dragHandleProps}
         >
           <GripVertical className="size-4" />
@@ -144,7 +143,7 @@ const Row = React.memo(
               top: 0,
               left: 0,
               width: "100%",
-              transform: `translateY(${start}px)`,
+              translate: `0px ${start}px`,
             }}
             provided={provided}
           />

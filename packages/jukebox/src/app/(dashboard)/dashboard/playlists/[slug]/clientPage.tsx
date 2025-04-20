@@ -34,8 +34,8 @@ import type {
   Playlist,
   MusicFile as MusicFileModel,
 } from "@lyricova/api/graphql/types";
-import type { DropResult } from "react-beautiful-dnd";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import type { DropResult } from "@hello-pangea/dnd";
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { move } from "@/frontendUtils/arrays";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -331,10 +331,12 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                                       {...provided.draggableProps}
                                       className="flex items-center gap-2 p-2 border rounded-md bg-background"
                                     >
-                                      <GripVertical
+                                      <div
+                                        className="self-stretch place-content-center p-2 -m-2"
                                         {...provided.dragHandleProps}
-                                        className="h-4 w-4 text-muted-foreground"
-                                      />
+                                      >
+                                        <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                      </div>
                                       <Avatar className="rounded-sm">
                                         {v.hasCover ? (
                                           <AvatarImage
