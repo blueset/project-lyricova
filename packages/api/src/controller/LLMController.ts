@@ -6,7 +6,7 @@ import OpenAI from "openai";
 import { getTranslationAlignmentLLMPrompt } from "../utils/llmPrompt";
 import { CoreMessage, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { azure } from "@ai-sdk/azure";
+import { createAzure } from "@ai-sdk/azure";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 
 export class LLMController {
@@ -43,12 +43,16 @@ export class LLMController {
     const effectiveModel = model || OPENAI_MODEL || "gpt-4o";
     const client = effectiveModel.includes("/")
       ? openrouter(effectiveModel)
-      : azure(effectiveModel);
+      : createAzure({ apiVersion: "2025-03-01-preview" })(effectiveModel);
     const abortController = new AbortController();
     const { signal } = abortController;
 
     req.on("close", () => {
       console.log("Request aborted");
+      abortController.abort();
+    });
+    res.on("close", () => {
+      console.log("Response closed");
       abortController.abort();
     });
 
@@ -74,21 +78,47 @@ export class LLMController {
     res.setHeader("X-Accel-Buffering", "no");
     res.flushHeaders();
 
+    res.write(": streaming started\n\n");
+    res.flush();
+
+    let counter = 0;
+    const interval = setInterval(() => {
+      res.write(`: heartbeat #${counter++}\n\n`);
+      res.flush();
+    }, 1000);
+    abortController.signal.addEventListener("abort", () => {
+      clearInterval(interval);
+    });
+
     for await (const chunk of result.fullStream) {
-      if (chunk.type === "text-delta") {
+      console.log("incoming chunk", chunk);
+      if (chunk.type === "step-start") {
+        res.write(
+          `data: ${JSON.stringify({ reasoning: chunk.request.body })}\n\n`
+        );
+        res.flush();
+      } else if (chunk.type === "text-delta") {
         res.write(`data: ${JSON.stringify({ chunk: chunk.textDelta })}\n\n`);
         res.flush();
-      }
-      if (chunk.type === "reasoning") {
+      } else if (chunk.type === "reasoning") {
         res.write(
           `data: ${JSON.stringify({ reasoning: chunk.textDelta })}\n\n`
         );
         res.flush();
+      } else {
+        res.write(`: unknown chunk: ${JSON.stringify(chunk)}\n\n`);
+        res.flush();
       }
     }
 
+    res.write(": streaming ended, waiting for full text\n\n");
+    res.flush();
+
     const response: string = await result.text;
     console.log("response", response);
+
+    res.write(`: full text response: ${JSON.stringify(response)}\n\n`);
+    res.flush();
 
     try {
       const parsedResponse = (() => {

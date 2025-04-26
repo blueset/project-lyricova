@@ -75,29 +75,38 @@ export default function LyricsTools() {
           data: { translation, original, model },
           signal,
           onMessage: (event) => {
-            const data = JSON.parse(event.data);
-            if (data.error) {
-              console.error(data.error);
-              toast.error(`Error while aligning: ${data.error}`);
+            try {
+              if (!event.data) return;
+              const data = JSON.parse(event.data);
+              if (data.error) {
+                console.error(data.error);
+                toast.error(`Error while aligning: ${data.error}`);
+                abortControllerRef.current?.abort();
+                setIsAlignmentLoading(false);
+              } else if (data.aligned) {
+                setTextareaValue(data.aligned);
+              } else if (data.chunk) {
+                setChunkBuffer((prev) => prev + data.chunk);
+              } else if (data.reasoning) {
+                const wasScrolledToBottom = isScrolledToBottom();
+                setReasoningBuffer((prev) => {
+                  const newValue = prev + data.reasoning;
+                  if (wasScrolledToBottom && reasoningContainerRef.current) {
+                    setTimeout(() => {
+                      reasoningContainerRef.current?.scrollTo(
+                        0,
+                        reasoningContainerRef.current.scrollHeight
+                      );
+                    }, 0);
+                  }
+                  return newValue;
+                });
+              }
+            } catch (e) {
+              console.error("Error parsing event data:", e);
+              toast.error(`Error while aligning: ${e}`);
+              abortControllerRef.current?.abort();
               setIsAlignmentLoading(false);
-            } else if (data.aligned) {
-              setTextareaValue(data.aligned);
-            } else if (data.chunk) {
-              setChunkBuffer((prev) => prev + data.chunk);
-            } else if (data.reasoning) {
-              const wasScrolledToBottom = isScrolledToBottom();
-              setReasoningBuffer((prev) => {
-                const newValue = prev + data.reasoning;
-                if (wasScrolledToBottom && reasoningContainerRef.current) {
-                  setTimeout(() => {
-                    reasoningContainerRef.current?.scrollTo(
-                      0,
-                      reasoningContainerRef.current.scrollHeight
-                    );
-                  }, 0);
-                }
-                return newValue;
-              });
             }
           },
           onClose: () => {
