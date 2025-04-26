@@ -70,12 +70,12 @@ export const createMainSlice: StateCreator<
     });
   };
   const generateImpl = () => {
+    // update timetags
+    get().inlineTagging.updateTimeTags();
+
     set((state) => {
       const { lyrics } = state;
       if (!lyrics) return;
-
-      // update timetags
-      state.inlineTagging.updateTimeTags();
 
       const lrcx = Lyrics.fromJSON(lyrics).toString();
       state.lrcx = lrcx;

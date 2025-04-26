@@ -508,7 +508,9 @@ export const createInlineTaggingSlice: StateCreator<
             const newTime = firstTag || fallbackStartTime;
             if (
               isNaN(newTime) != isNaN(line.position) &&
-              Math.abs(line.position - newTime) > 0.01
+              (isNaN(newTime) ||
+                isNaN(line.position) ||
+                Math.abs(line.position - newTime) > 0.01)
             ) {
               line.position = newTime;
             }
