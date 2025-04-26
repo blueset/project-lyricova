@@ -324,7 +324,7 @@ export const createInlineTaggingSlice: StateCreator<
               values: [],
             };
           }
-          const tags = line.attachments[TAGS].values;
+          const tags = line.attachments?.[TAGS]?.values;
           if (!Array.isArray(tags)) {
             line.attachments[TAGS].values = [];
           }
@@ -450,6 +450,9 @@ export const createInlineTaggingSlice: StateCreator<
                   values: [],
                 };
               }
+              if (!line.attachments[TAGS].values) {
+                line.attachments[TAGS].values = [];
+              }
               if (
                 !line.attachments[TAGS].values.some((v) => v?.some((t) => t))
               ) {
@@ -507,12 +510,30 @@ export const createInlineTaggingSlice: StateCreator<
                   prevEndTime;
             const newTime = firstTag || fallbackStartTime;
             if (
-              isNaN(newTime) != isNaN(line.position) &&
-              (isNaN(newTime) ||
-                isNaN(line.position) ||
-                Math.abs(line.position - newTime) > 0.01)
+              !isNaN(newTime) &&
+              (isNaN(line.position) || Math.abs(line.position - newTime) > 0.01)
             ) {
               line.position = newTime;
+              if (line.attachments?.[TAGS]?.values?.length) {
+                if (!line.attachments?.[TIME_TAG]) {
+                  line.attachments[TIME_TAG] = {
+                    type: "time_tag",
+                    tags: [],
+                  };
+                }
+                line.attachments[TIME_TAG].tags = line.attachments[TAGS].values
+                  .map((tags, idx) => {
+                    const timeTag = tags[0];
+                    if (timeTag !== null && timeTag !== undefined) {
+                      return {
+                        index: idx,
+                        timeTag: timeTag - line.position,
+                      };
+                    }
+                    return null;
+                  })
+                  .filter((tag) => tag !== null);
+              }
             }
           });
         });

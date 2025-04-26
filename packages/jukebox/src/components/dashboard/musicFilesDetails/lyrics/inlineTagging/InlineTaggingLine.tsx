@@ -152,7 +152,7 @@ export function InlineTaggingLine({
     const centerRow = centerRowRef.current;
     if (relativeProgress === 0) {
       setIsValid(true);
-      if (timelinesRef.current[index]) {
+      if (timelinesRef.current?.[index]) {
         timelinesRef.current[index].kill();
       }
       const tags =
@@ -204,7 +204,7 @@ export function InlineTaggingLine({
       timelinesRef.current[index] = tl;
     } else if (relativeProgress === 1) {
       centerRow.style.backgroundSize = "0px 100%";
-      if (timelinesRef.current[index]) {
+      if (timelinesRef.current?.[index]) {
         timelinesRef.current[index].kill();
         timelinesRef.current[index] = undefined;
       }
@@ -218,7 +218,7 @@ export function InlineTaggingLine({
         idx === 0 ? true : x > arr[idx - 1]
       );
       setIsValid(areTagsIncreasing);
-      if (timelinesRef.current[index]) {
+      if (timelinesRef.current?.[index]) {
         timelinesRef.current[index].kill();
         timelinesRef.current[index] = undefined;
       }

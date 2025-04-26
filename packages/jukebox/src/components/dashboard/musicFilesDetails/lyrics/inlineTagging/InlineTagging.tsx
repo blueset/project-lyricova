@@ -302,14 +302,14 @@ export default function InlineTagging({ fileId }: Props) {
     if (timelinesRef.current) {
       const progress = getProgress();
       if (playerStatus.state === "playing") {
-        timelinesRef.current.map((t) => t?.play(progress));
+        timelinesRef.current?.map((t) => t?.play(progress));
       } else if (playerStatus.state === "paused") {
-        timelinesRef.current.map((t) => t?.pause(progress));
+        timelinesRef.current?.map((t) => t?.pause(progress));
       }
     }
     return () => {
       isMounted.current = false;
-      timelinesRef.current.map((t) => t?.kill());
+      timelinesRef.current?.map((t) => t?.kill());
     };
   }, [getProgress, onFrame, playerStatus]);
 
