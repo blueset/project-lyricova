@@ -347,7 +347,7 @@ export const createInlineTaggingSlice: StateCreator<
             } else {
               tags.push({
                 index: column,
-                timeTag: time + KEY_PRESS_OFFSET_SEC,
+                timeTag: time + KEY_PRESS_OFFSET_SEC - line.position,
               });
               if (tags.length > 1 && tags.at(-2).index > tags.at(-1).index) {
                 tags.sort((a, b) => a.index - b.index);
