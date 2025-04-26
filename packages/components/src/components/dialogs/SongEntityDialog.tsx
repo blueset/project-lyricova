@@ -89,7 +89,7 @@ const formSchema = z.object({
         .refine((val) => val !== null, "Artist entity must be selected"),
       artistRoles: z.array(z.string()),
       categories: z.array(z.string()),
-      customName: z.string().optional().or(z.literal("")).or(z.null()),
+      customName: z.string().optional().or(z.literal("")),
       isSupport: z.boolean(),
     })
   ),
@@ -99,13 +99,7 @@ const formSchema = z.object({
         .any()
         .refine((val) => val !== null, "Album entity must be selected"),
       diskNumber: z.number().positive().int().optional(),
-      trackNumber: z
-        .number()
-        .positive()
-        .int()
-        .optional()
-        .or(z.literal(""))
-        .or(z.null()),
+      trackNumber: z.number().positive().int().optional().or(z.literal("")),
       name: z.string().min(1, "Required"),
     })
   ),
@@ -177,6 +171,7 @@ export function SongEntityDialog({
           artists:
             songToEdit.artists?.map((v) => ({
               ...v.ArtistOfSong,
+              customName: v.ArtistOfSong.customName ?? "",
               artist: v,
             })) ?? [],
           albums:
