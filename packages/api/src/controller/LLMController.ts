@@ -40,7 +40,10 @@ export class LLMController {
     //   apiKey: OPENAI_API_KEY,
     // });
 
-    const client = openrouter(model || OPENAI_MODEL || "gpt-4o");
+    const effectiveModel = model || OPENAI_MODEL || "gpt-4o";
+    const client = effectiveModel.includes("/")
+      ? openrouter(effectiveModel)
+      : azure(effectiveModel);
     const abortController = new AbortController();
     const { signal } = abortController;
 

@@ -204,6 +204,8 @@ export default function LyricsTools() {
           {[
             "deepseek/deepseek-chat:free",
             "google/gemini-2.5-pro-exp-03-25:free",
+            "o4-mini",
+            "o3-mini",
             "openai/o4-mini",
             "openai/o3-mini",
             "openai/o1-mini",
