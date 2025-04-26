@@ -405,7 +405,7 @@ export const createInlineTaggingSlice: StateCreator<
           const time =
             lyrics?.lines[newRow].attachments?.[TAGS]?.values?.[newCol]?.[0];
           if (time) {
-            seek(Math.max(0, time));
+            seek(Math.max(0, time - 3));
           }
         }
         get().debouncedGenerate();
