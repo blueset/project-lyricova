@@ -42,10 +42,18 @@ export function useWebAudio(mediaUrl: string) {
     return () => {
       active = false;
       const ps = playerStatusRef.current;
+      console.log("unmount: %o", ps, ps.state);
       if (ps.state === "playing" && ps.bufferSource) {
         ps.bufferSource?.stop();
         ps.bufferSource?.disconnect();
+        playerStatusRef.current = {
+          state: "paused",
+          rate: ps.rate,
+          progress: 0,
+        };
       }
+      bufferSourceRef.current?.stop();
+      bufferSourceRef.current?.disconnect();
     };
 
     async function load() {

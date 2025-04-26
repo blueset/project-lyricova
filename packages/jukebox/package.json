@@ -98,6 +98,7 @@
     "graphql-type-json": "^0.3.1",
     "gsap": "^3.5.1",
     "hasha": "^5.1.0",
+    "immer": "^10.1.1",
     "jsonwebtoken": "^9.0.0",
     "jss": "^10.10.0",
     "jss-preset-default": "^10.10.0",
@@ -156,7 +157,8 @@
     "youtube-dl-wrap": "^2.1.1",
     "yt-dlp-wrap": "^2.3.11",
     "yup": "^1.4.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",

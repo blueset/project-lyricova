@@ -451,7 +451,9 @@ Output:
 
           return isEditing && meta.editFormData ? (
             <EditableCell
-              initialValue={meta.editFormData.segmentedText}
+              initialValue={
+                meta.editFormData.segmentedText || meta.editFormData.text
+              }
               onSave={meta.handleValueChange}
               field="segmentedText"
               error={meta.validationErrors.segmentedText}
@@ -474,7 +476,10 @@ Output:
 
           return isEditing && meta.editFormData ? (
             <EditableCell
-              initialValue={meta.editFormData.segmentedFurigana}
+              initialValue={
+                meta.editFormData.segmentedFurigana ||
+                meta.editFormData.furigana
+              }
               onSave={meta.handleValueChange}
               field="segmentedFurigana"
               error={meta.validationErrors.segmentedFurigana}

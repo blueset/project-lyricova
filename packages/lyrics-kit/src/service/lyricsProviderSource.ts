@@ -6,7 +6,6 @@ import { XiamiProvider } from "./provider/xiami";
 import { GecimiProvider } from "./provider/gecimi";
 import { ViewLyricsProvider } from "./provider/viewLyrics";
 import { SyairProvider } from "./provider/syair";
-import { MarumaruProvider } from "./provider/marumaru";
 import { MusixMatchProvider } from "./provider/musixmatch";
 import { YouTubeProvider } from "./provider/youtube";
 import { SpotifyProvider } from "./provider/spotify";
@@ -24,7 +23,6 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
   static gecimi = new LyricsProviderSource(GecimiProvider);
   static viewLyrics = new LyricsProviderSource(ViewLyricsProvider);
   static syair = new LyricsProviderSource(SyairProvider);
-  static marumaru = new LyricsProviderSource(MarumaruProvider);
   static musixmatch = new LyricsProviderSource(MusixMatchProvider);
   static youtube = new LyricsProviderSource(YouTubeProvider);
   static spotify = new LyricsProviderSource(SpotifyProvider);
@@ -40,7 +38,6 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     // LyricsProviderSource.gecimi,
     LyricsProviderSource.viewLyrics,
     LyricsProviderSource.syair,
-    // LyricsProviderSource.marumaru,
     LyricsProviderSource.musixmatch,
     LyricsProviderSource.youtube,
     // LyricsProviderSource.spotify,

@@ -6,6 +6,8 @@ import { useNamedState } from "../../../../../hooks/useNamedState";
 import VocaDBLyricsDialog from "./VocaDBLyricsDialog";
 import HMikuWikiSearchDialog from "./HMikuWikiSearchDialog";
 import DiffEditorDialog from "./diffEditor/DiffEditorDialog";
+import { useShallow } from "zustand/shallow";
+import { useLyricsStore } from "../state/editorState";
 
 function replaceWithPattern(
   lines: [string, string][],
@@ -50,18 +52,18 @@ function smartTranslationSeparation(text: string): string {
 }
 
 interface Props {
-  lyrics: string;
   songId?: number;
   title?: string;
-  setLyrics: (lyrics: string) => void;
 }
 
-export default function EditLyrics({
-  lyrics,
-  setLyrics,
-  songId,
-  title,
-}: Props) {
+export default function EditLyrics({ songId, title }: Props) {
+  const { lyrics, setLyrics } = useLyricsStore(
+    useShallow((s) => ({
+      lyrics: s.lrcx,
+      setLyrics: s.setLrcx,
+    }))
+  );
+
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setLyrics(event.target.value);
@@ -95,9 +97,9 @@ export default function EditLyrics({
   return (
     <>
       <div className="flex flex-col gap-2 h-full">
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex md:flex-row flex-col gap-4">
           <div>
-            <span className="text-xs uppercase tracking-wider text-muted-foreground block mb-2">
+            <span className="block mb-2 text-muted-foreground text-xs uppercase tracking-wider">
               Load plain text
             </span>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -119,7 +121,7 @@ export default function EditLyrics({
             </div>
           </div>
           <div>
-            <span className="text-xs uppercase tracking-wider text-muted-foreground block mb-2">
+            <span className="block mb-2 text-muted-foreground text-xs uppercase tracking-wider">
               Common operations
             </span>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -152,7 +154,7 @@ export default function EditLyrics({
         </div>
         <Textarea
           id="lyrics-source"
-          className="font-mono h-full grow resize-none"
+          className="h-full font-mono resize-none grow"
           placeholder="Lyrics source"
           value={lyrics || ""}
           onChange={handleChange}

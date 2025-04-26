@@ -150,7 +150,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 @6xl/dashboard:grid-cols-[auto_30ch] @7xl/dashboard:grid-cols-[auto_40ch] gap-4">
+      <div className="gap-4 grid grid-cols-1 @6xl/dashboard:grid-cols-[auto_30ch] @7xl/dashboard:grid-cols-[auto_40ch]">
         <Tabs defaultValue="info" className="gap-4">
           <TabsList>
             <TabsTrigger value="info">Info</TabsTrigger>
@@ -228,7 +228,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
         <div className="flex flex-col gap-4">
           <Collapsible defaultOpen asChild className="gap-0">
             <Card className="py-2">
-              <CardHeader className="px-6 items-center">
+              <CardHeader className="items-center px-6">
                 <CardTitle>Playlists</CardTitle>
                 <CardAction>
                   <CollapsibleToggleButton />
@@ -248,7 +248,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
           </Collapsible>
           <Collapsible defaultOpen asChild className="gap-0">
             <Card className="py-2">
-              <CardHeader className="px-6 items-center">
+              <CardHeader className="items-center px-6">
                 <CardTitle>Stats</CardTitle>
                 <CardAction>
                   <CollapsibleToggleButton />

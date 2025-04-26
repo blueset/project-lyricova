@@ -1,17 +1,5 @@
 import { CopyCheck } from "lucide-react";
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
-import {
-  FURIGANA,
-  LyricsLine,
-  RangeAttribute,
-  RangeAttributeLabel,
-} from "lyrics-kit/core";
+import { useCallback, useMemo, useState } from "react";
 
 import { Button } from "@lyricova/components/components/ui/button";
 import { Input } from "@lyricova/components/components/ui/input";
@@ -28,68 +16,11 @@ import {
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 import { useNamedState } from "../../../../../hooks/useNamedState";
+import { useLyricsStore } from "../state/editorState";
+import { useShallow } from "zustand/shallow";
+import { codeToFuriganaGroups } from "../state/furiganaSlice";
 
 type FuriganaGroup = string | [string, string];
-
-/**
- * @example
- * baseText: "VOCALOIDが大好き"
- * furiganaText: "ボー;,カ;,ロ;,イ,ド,,だい,す,"
- * result: [["VO", "ボー"], ["CA", "カ"], ["LO", "ロ"], ["I", "イ"], ["D", "ド"], "が", ["大", "だい"], ["好", "す"], "き"]
- *
- * Constraints:
- * furiganaText matches /^.*(;*,.*)*$/
- * furiganaText.count(";") + furiganaText.count(",") == [...baseText].length - 1
- */
-export function codeToFuriganaGroups(
-  baseText: string,
-  furiganaText: string
-): FuriganaGroup[] {
-  const result: FuriganaGroup[] = [];
-
-  if (baseText && furiganaText) {
-    // Split the furiganaText into segments by commas
-    const segments = furiganaText.split(",");
-
-    let baseIndex = 0;
-
-    for (let i = 0; i < segments.length && baseIndex < baseText.length; i++) {
-      const segment = segments[i];
-
-      if (segment === "") {
-        // Empty segment means no furigana for this character
-        result.push(baseText[baseIndex]);
-        baseIndex++;
-      } else {
-        // Count semicolons to determine group size
-        const semicolonCount = (segment.match(/;/g) || []).length;
-        // Remove semicolons to get the actual furigana
-        const furigana = segment.replace(/;/g, "");
-
-        // Calculate how many characters to group together
-        const groupSize = semicolonCount + 1; // +1 for the current character
-
-        // Extract the base group from baseText
-        const baseGroup = baseText.substring(baseIndex, baseIndex + groupSize);
-
-        // Add the [baseGroup, furigana] pair to the result
-        result.push([baseGroup, furigana]);
-
-        // Move index forward by the group size
-        baseIndex += groupSize;
-      }
-    }
-
-    // Add any remaining characters from baseText
-    if (baseIndex < baseText.length) {
-      result.push(baseText.substring(baseIndex));
-    }
-  } else if (baseText) {
-    result.push(baseText);
-  }
-
-  return result;
-}
 
 function furiganaGroupsToCode(furiganaGroups: FuriganaGroup[]): {
   baseText: string;
@@ -174,11 +105,12 @@ function furiganaFromDom(elm: Node): FuriganaGroup[] {
   });
 }
 
-export function ApplyAllFurigana({
-  setLines,
-}: {
-  setLines: Dispatch<SetStateAction<LyricsLine[]>>;
-}) {
+export function ApplyAllFurigana() {
+  const { applyPatternToAllLines } = useLyricsStore(
+    useShallow((state) => ({
+      applyPatternToAllLines: state.furigana.applyPatternToAllLines,
+    }))
+  );
   const [baseText, setBaseText] = useNamedState<string>("", "baseText");
   const [furiganaText, setFuriganaText] = useNamedState<string>(
     "",
@@ -208,93 +140,8 @@ export function ApplyAllFurigana({
   );
 
   const handleApply = useCallback(() => {
-    if (!baseText || !furiganaText) return;
-    const groups = codeToFuriganaGroups(baseText, furiganaText);
-    setLines((lines) =>
-      lines.map((line) => {
-        const matches: number[] = [];
-        let matchIdx = line.content.indexOf(baseText);
-        while (matchIdx !== -1) {
-          matches.push(matchIdx);
-          matchIdx = line.content.indexOf(baseText, matchIdx + 1);
-        }
-        if (matches.length < 1) return line;
-        let furiganaAttribute =
-          line?.attachments?.content?.[FURIGANA]?.attachment || [];
-
-        // Filter and adjust existing ranges
-        furiganaAttribute = furiganaAttribute.filter((label) => {
-          const [labelStart, labelEnd] = label.range;
-
-          // Check against all match ranges
-          for (const matchStart of matches) {
-            const matchEnd = matchStart + [...baseText].length;
-            // Full overlap - remove the label
-            if (matchStart <= labelStart && matchEnd >= labelEnd) {
-              return false;
-            }
-
-            // Partial overlap from left - adjust start
-            if (
-              matchStart <= labelStart &&
-              matchEnd > labelStart &&
-              matchEnd < labelEnd
-            ) {
-              label.range[0] = matchEnd;
-              return true;
-            }
-
-            // Partial overlap from right - adjust end
-            if (
-              matchStart > labelStart &&
-              matchStart < labelEnd &&
-              matchEnd >= labelEnd
-            ) {
-              label.range[1] = matchStart;
-              return true;
-            }
-          }
-          return true;
-        });
-
-        // Add new furigana ranges for each match
-        matches.forEach((start) => {
-          let pos = start;
-          groups.forEach((group) => {
-            if (Array.isArray(group)) {
-              furiganaAttribute.push(
-                new RangeAttributeLabel(group[1], [
-                  pos,
-                  pos + [...group[0]].length,
-                ])
-              );
-              pos += [...group[0]].length;
-            } else {
-              pos += [...group].length;
-            }
-          });
-        });
-
-        if (furiganaAttribute.length > 0) {
-          furiganaAttribute.sort((a, b) => {
-            const [aStart] = a.range;
-            const [bStart] = b.range;
-            return aStart - bStart;
-          });
-          line.attachments.content[FURIGANA] = new RangeAttribute(
-            furiganaAttribute.map((l): [string, [number, number]] => [
-              l.content,
-              l.range,
-            ])
-          );
-        } else {
-          delete line.attachments.content[FURIGANA];
-        }
-        return line;
-      })
-    );
-    setIsOpen(false);
-  }, [baseText, furiganaText, setLines]);
+    applyPatternToAllLines(baseText, furiganaText);
+  }, [applyPatternToAllLines, baseText, furiganaText]);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

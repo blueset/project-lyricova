@@ -5,7 +5,7 @@ import type { Artist } from "@lyricova/api/graphql/types";
 import type { Song } from "@lyricova/api/graphql/types";
 import { Fragment, useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
-import { useSnackbar } from "notistack";
+import { toast } from "sonner";
 import { Plus, X, Disc3, Music, Trash, RefreshCw } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -160,7 +160,6 @@ export function AlbumEntityDialog({
   albumToEdit,
 }: Props) {
   const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
@@ -234,20 +233,13 @@ export function AlbumEntityDialog({
             })) ?? [],
         });
 
-        snackbar.enqueueSnackbar(`Successfully refreshing album #${albumId}.`, {
-          variant: "success",
-        });
+        toast.success(`Successfully refreshing album #${albumId}.`);
       }
     } catch (e) {
       console.error(`Error occurred refreshing album #${albumId}.`, e);
-      snackbar.enqueueSnackbar(
-        `Error occurred refreshing album #${albumId}. (${e})`,
-        {
-          variant: "error",
-        }
-      );
+      toast.error(`Error occurred refreshing album #${albumId}. (${e})`);
     }
-  }, [albumId, apolloClient, form, snackbar]);
+  }, [albumId, apolloClient, form]);
 
   async function onSubmit(values: FormValues) {
     try {
@@ -279,11 +271,8 @@ export function AlbumEntityDialog({
 
         if (result.data) {
           setAlbum(result.data.newAlbum);
-          snackbar.enqueueSnackbar(
-            `Album "${result.data.newAlbum.name}" is successfully created.`,
-            {
-              variant: "success",
-            }
+          toast.success(
+            `Album "${result.data.newAlbum.name}" is successfully created.`
           );
           handleClose();
         }
@@ -297,11 +286,8 @@ export function AlbumEntityDialog({
 
         if (result.data) {
           setAlbum(result.data.updateAlbum);
-          snackbar.enqueueSnackbar(
-            `Album "${result.data.updateAlbum.name}" is successfully updated.`,
-            {
-              variant: "success",
-            }
+          toast.success(
+            `Album "${result.data.updateAlbum.name}" is successfully updated.`
           );
           apolloClient.cache.evict({ id: `Album:${albumId}` });
           handleClose();
@@ -314,13 +300,10 @@ export function AlbumEntityDialog({
         }.`,
         e
       );
-      snackbar.enqueueSnackbar(
+      toast.error(
         `Error occurred while ${create ? "creating" : "updating"} album ${
           values.name
-        }. (${e})`,
-        {
-          variant: "error",
-        }
+        }. (${e})`
       );
     }
   }

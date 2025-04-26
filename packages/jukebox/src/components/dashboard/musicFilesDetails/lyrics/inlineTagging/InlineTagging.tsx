@@ -5,57 +5,36 @@
  * http://suwa.pupu.jp/RhythmicaLyrics.html
  */
 
-import React, {
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  memo,
-} from "react";
+import React, { useCallback, useEffect, useRef, memo } from "react";
 import type { WebAudioPlayerState } from "../../../../../hooks/types";
 import { useNamedState } from "../../../../../hooks/useNamedState";
 import { useWebAudio } from "../../../../../hooks/useWebAudio";
 import DismissibleAlert from "../../../DismissibleAlert";
 import { InlineTaggingLineMemo } from "./InlineTaggingLine";
-import {
-  Lyrics,
-  LyricsLine,
-  WordTimeTag,
-  WordTimeTagLabel,
-} from "lyrics-kit/core";
-import {
-  MoveCursorUp,
-  MoveCursorDown,
-  MoveCursorLeft,
-  MoveCursorRight,
-  setDot,
-  setHoldDot,
-  setDropDot,
-  MoveDotCursorDown,
-  MoveDotCursorLeft,
-  MoveDotCursorRight,
-  MoveDotCursorUp,
-  setMark,
-  setDropMark,
-} from "./InlineTaggingKeyPresses";
+import { DOTS, TAGS } from "lyrics-kit/core";
 import { populateDots } from "./InlineTaggingDots";
 import { WebAudioControls } from "../WebAudioControls";
-import { isNaN } from "lodash";
 import { populateDotsEn } from "./InlineTaggingEnSyllables";
-import { useNamedStateWithRef } from "@/hooks/useNamedStateWithRef";
 import { AlertDescription } from "@lyricova/components/components/ui/alert";
 import { Button } from "@lyricova/components/components/ui/button";
-import { toast } from "sonner";
+import { useLyricsStore } from "../state/editorState";
+import { useShallow } from "zustand/shallow";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
+import { Toggle } from "@lyricova/components/components/ui/toggle";
+import { CheckSquare } from "lucide-react";
 
 function Instructions() {
   return (
     <DismissibleAlert variant="info" className="grow">
       <AlertDescription>
-        Switch to another tab to save changes. Arrow keys: Navigate; Space: Tag;
-        Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter: play/pause,
-        ←/→: +/-5 seconds).
+        Arrow keys: Navigate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed;
+        R: reset speed; Enter: play/pause, ←/→: +/-5 seconds).
       </AlertDescription>
     </DismissibleAlert>
   );
@@ -69,257 +48,116 @@ interface CurrentLineState {
   borderIndex: number;
 }
 
-const BLANK_LINE: CurrentLineState = {
-  indices: [],
-  start: Infinity,
-  end: -Infinity,
-  borderIndex: -Infinity,
-};
-
 interface Props {
-  lyrics: string;
-  setLyrics: (lyrics: string) => void;
   fileId: number;
 }
 
-export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
+export default function InlineTagging({ fileId }: Props) {
   const { playerStatus, play, pause, seek, setRate, getProgress, audioBuffer } =
     useWebAudio(`/api/files/${fileId}/file`);
   const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
   playerStatusRef.current = playerStatus;
+
+  const { linesCount, autoApplyIdentical, setAutoApplyIdentical } =
+    useLyricsStore(
+      useShallow((state) => ({
+        linesCount: state.lyrics?.lines.length ?? 0,
+        autoApplyIdentical: state.inlineTagging.autoApplyIdentical,
+        setAutoApplyIdentical: state.inlineTagging.setAutoApplyIdentical,
+      }))
+    );
+
+  useEffect(() => {
+    useLyricsStore.getState().inlineTagging.populateDotsAndMarks();
+  }, []);
 
   const [playbackProgress, setPlaybackProgress] = useNamedState(
     0,
     "playbackProgress"
   );
   const section = playerStatus.state === "playing" ? "tag" : "mark";
-  const [dots, setDots, dotsRef] = useNamedStateWithRef<number[][]>([], "dots");
-  const [tags, setTags, tagsRef] = useNamedStateWithRef<number[][][]>(
-    [],
-    "tags"
-  );
 
   const taggingAreaRef = useRef<HTMLDivElement>(null);
 
-  // Parse lyrics
-  const parsedLyrics = useMemo<Lyrics | null>(() => {
-    if (!lyrics) return null;
-
-    try {
-      console.log("Inline tagging: Parsing lyrics", lyrics);
-      return new Lyrics(lyrics);
-    } catch (e) {
-      console.error(`Error occurred while loading lyrics text: ${e}`, e);
-      toast.error(`Error occurred while loading lyrics text: ${e}`);
-      return null;
-    }
-  }, [lyrics]);
-
-  // Parse and set `lines`.
-  const [lines, setLines, linesRef] = useNamedStateWithRef<LyricsLine[]>(
-    [],
-    "lines"
-  );
-
-  useEffect(() => {
-    if (parsedLyrics !== null) {
-      console.log("Inline tagging: Parsing lyrics for tags", parsedLyrics);
-      const timeTagLines = parsedLyrics.lines.map((l) => {
-        const tags = l.attachments.timeTag;
-        if (!tags) return null;
-        const tagValues: (number | undefined)[] = [];
-        tags.tags.forEach((t) => {
-          tagValues[t.index] = t.timeTag + l.position;
-        });
-        return [...tagValues];
-      });
-      setLines([...parsedLyrics.lines]);
-      setDots(
-        parsedLyrics.lines.map<number[]>((l, idx) => {
-          const dots = l.attachments.getTag("dots");
-          const out = dots
-            ? dots?.split(",").map((v) => parseInt(v))
-            : timeTagLines[idx]
-            ? timeTagLines[idx].map((v) => (v ? 1 : 0))
-            : Array(l.content.length + 1).fill(0);
-          // force array to have size l.content.length + 1
-          return [
-            ...out.slice(0, l.content.length + 1),
-            ...Array(Math.max(0, l.content.length - out.length + 1)).fill(0),
-          ];
-        })
-      );
-      setTags(
-        parsedLyrics.lines.map<number[][]>((l, idx) => {
-          const out =
-            l.attachments
-              .getTag("tags")
-              ?.split(",")
-              .map((v) =>
-                v
-                  ? v
-                      .split("/")
-                      .map((t) => (t ? parseInt(t) / 1000 : undefined))
-                  : []
-              ) ??
-            timeTagLines[idx]?.map((v) => (v ? [v] : [])) ??
-            Array(l.content.length + 1)
-              .fill(null)
-              .map((): number[] => []);
-          // force array to have size l.content.length + 1
-          return [
-            ...out.slice(0, l.content.length + 1),
-            ...Array(Math.max(0, l.content.length - out.length + 1))
-              .fill(null)
-              .map((): number[] => []),
-          ];
-        })
-      );
-
-      return () => {
-        console.log(
-          "Inline tagging: Saving lyrics for lines",
-          linesRef.current
-        );
-        const lines = linesRef.current.map((l, idx) => {
-          const prevTags = tagsRef.current?.[idx - 1]?.flat();
-          const prevEndTime = prevTags?.length ? Math.max(...prevTags) : null;
-          const nextTags = tagsRef.current?.[idx + 1]?.flat();
-          const nextStartTime = nextTags?.length
-            ? Math.min(...nextTags) - 0.001
-            : null;
-          const fallbackStartTime =
-            isNaN(l.position) && !prevEndTime
-              ? NaN
-              : isNaN(l.position)
-              ? prevEndTime
-              : !prevEndTime
-              ? l.position
-              : l.content
-              ? Math.max(isNaN(l.position) ? 0 : l.position, prevEndTime ?? 0)
-              : // Force empty line to use prevEndTime or nextStartTime whichever is earlier
-                (prevEndTime &&
-                  nextStartTime &&
-                  Math.min(prevEndTime, nextStartTime)) ??
-                nextStartTime ??
-                prevEndTime;
-          const firstTag = tagsRef.current[idx]?.find((t) => t?.[0])?.[0];
-          const startTime = firstTag || fallbackStartTime;
-          l.position = startTime;
-          l.attachments.setTag("dots", dotsRef.current[idx].join(","));
-          l.attachments.setTag(
-            "tags",
-            tagsRef.current[idx]
-              .map((t) =>
-                t.map((t) => (t ? Math.floor(t * 1000) : t)).join("/")
-              )
-              .join(",")
-          );
-          if (tagsRef.current[idx]?.length) {
-            const wttls = tagsRef.current[idx].reduce<WordTimeTagLabel[]>(
-              (acc, cur, idx) => {
-                if (cur?.length > 0) {
-                  acc.push(new WordTimeTagLabel(cur[0] - startTime, idx));
-                }
-                return acc;
-              },
-              []
-            );
-            if (wttls.length > 0)
-              l.attachments.timeTag = new WordTimeTag(wttls);
-          }
-          return l;
-        });
-        parsedLyrics.lines = lines;
-        console.log("Inline tagging: Saving lyrics", parsedLyrics.toString());
-        setLyrics(parsedLyrics.toString());
-      };
-    }
-    // dropping dependency [parsedLyrics] to prevent loop with parsedLyrics.
-  }, [setLines, setLyrics]);
-
-  const [cursorPos, setCursorPos] = useState<[number, number]>([0, 0]);
-  const [dotCursorPos, setDotCursorPos] = useState<[number, number, number]>([
-    0, 0, 0,
-  ]);
-
   // Switching between mark and tag mode
   useEffect(() => {
-    // console.log("useEffect switchMode");
-    // console.log("section", section);
     if (section === "tag") {
-      let [lineIdx, charIdx] = cursorPos;
+      const {
+        lyrics,
+        inlineTagging: { cursorPosition, setDotCursorPosition },
+      } = useLyricsStore.getState();
+      let [lineIdx, charIdx] = cursorPosition;
+      let lineDots = lyrics?.lines?.[lineIdx]?.attachments?.[DOTS]?.values;
       while (
-        dots.length &&
-        lineIdx < dots.length &&
-        charIdx < dots[lineIdx]?.length
+        lineDots?.length &&
+        lineIdx < lyrics.lines.length &&
+        charIdx < lineDots?.length
       ) {
-        if (dots[lineIdx][charIdx]) {
-          // console.log("set dot cursor pos", lineIdx, charIdx, 0);
-          setDotCursorPos([lineIdx, charIdx, 0]);
+        if (lineDots?.[charIdx]) {
+          setDotCursorPosition([lineIdx, charIdx, 0]);
           return;
-        } else if (charIdx === dots[lineIdx]?.length - 1) {
+        } else if (lineDots && charIdx === lineDots.length - 1) {
           lineIdx++;
           charIdx = 0;
         } else {
           charIdx++;
         }
+        lineDots = lyrics?.lines?.[lineIdx]?.attachments?.[DOTS]?.values;
       }
       if (
-        !dots.length ||
-        charIdx >= dots[lineIdx]?.length ||
-        lineIdx >= dots.length
+        !lyrics?.lines.length ||
+        charIdx >= (lineDots?.length ?? 0) ||
+        lineIdx >= lyrics.lines.length
       ) {
-        // console.log("set dot cursor pos (fallback)", 0, 0, 0);
-        setDotCursorPos([0, 0, 0]);
+        setDotCursorPosition([0, 0, 0]);
       }
     } else if (section === "mark") {
-      setCursorPos([dotCursorPos[0], dotCursorPos[1]]);
+      const {
+        inlineTagging: { dotCursorPosition, setCursorPosition },
+      } = useLyricsStore.getState();
+      setCursorPosition([dotCursorPosition[0], dotCursorPosition[1]]);
     }
-    // explicitly only depend on `section` to reduce unnecessary re-renders.
   }, [section]);
 
   // Register arrow key press events
   useEffect(() => {
-    // console.log("useEffect arrowKeys");
-    const dots = dotsRef.current;
     const handleCursorKeyPress = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (section === "mark") {
         if (event.key === "ArrowUp") {
           event.preventDefault();
           event.stopPropagation();
-          setCursorPos(MoveCursorUp(lines));
+          useLyricsStore.getState().inlineTagging.moveCursorUp();
         } else if (event.key === "ArrowDown") {
           event.preventDefault();
           event.stopPropagation();
-          setCursorPos(MoveCursorDown(lines));
+          useLyricsStore.getState().inlineTagging.moveCursorDown();
         } else if (event.key === "ArrowLeft") {
           event.preventDefault();
           event.stopPropagation();
-          setCursorPos(MoveCursorLeft(lines));
+          useLyricsStore.getState().inlineTagging.moveCursorLeft();
         } else if (event.key === "ArrowRight") {
           event.preventDefault();
           event.stopPropagation();
-          setCursorPos(MoveCursorRight(lines));
+          useLyricsStore.getState().inlineTagging.moveCursorRight();
         }
       } else if (section === "tag") {
         if (event.key === "ArrowUp") {
           event.preventDefault();
           event.stopPropagation();
-          setDotCursorPos(MoveDotCursorUp(dots));
+          useLyricsStore.getState().inlineTagging.moveDotCursorUp();
         } else if (event.key === "ArrowDown") {
           event.preventDefault();
           event.stopPropagation();
-          setDotCursorPos(MoveDotCursorDown(dots));
+          useLyricsStore.getState().inlineTagging.moveDotCursorDown();
         } else if (event.key === "ArrowLeft") {
           event.preventDefault();
           event.stopPropagation();
-          setDotCursorPos(MoveDotCursorLeft(dots));
+          useLyricsStore.getState().inlineTagging.moveDotCursorLeft();
         } else if (event.key === "ArrowRight") {
           event.preventDefault();
           event.stopPropagation();
-          setDotCursorPos(MoveDotCursorRight(dots));
+          useLyricsStore.getState().inlineTagging.moveDotCursorRight();
         }
       }
     };
@@ -328,12 +166,10 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     return () => {
       window.removeEventListener("keydown", handleCursorKeyPress);
     };
-  }, [setCursorPos, lines, section]);
+  }, [section]);
 
   // Register space and backspace key press events
   useEffect(() => {
-    // console.log("useEffect spaceBackspace");
-    const dots = dotsRef.current;
     if (section === "mark") {
       const handleLabelKeyDown = (event: KeyboardEvent) => {
         if (event.metaKey || event.ctrlKey || event.altKey) return;
@@ -341,14 +177,14 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
           event.preventDefault();
           event.stopPropagation();
           if (!event.repeat) {
-            setDot(setDots, setCursorPos);
+            useLyricsStore.getState().inlineTagging.setDot();
           } else {
-            setHoldDot(setDots, setCursorPos);
+            useLyricsStore.getState().inlineTagging.setHoldDot();
           }
         } else if (event.key === "Backspace") {
           event.preventDefault();
           event.stopPropagation();
-          setDropDot(lines, setDots, setCursorPos);
+          useLyricsStore.getState().inlineTagging.dropDot();
         }
       };
 
@@ -363,12 +199,12 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         if (event.key === " ") {
           event.preventDefault();
           event.stopPropagation();
-          setMark(getProgress(), setTags, setDotCursorPos);
-          setDotCursorPos(MoveDotCursorRight(dots));
+          useLyricsStore.getState().inlineTagging.setMark(getProgress());
+          useLyricsStore.getState().inlineTagging.moveDotCursorRight();
         } else if (event.key === "Backspace") {
           event.preventDefault();
           event.stopPropagation();
-          setDropMark(dots, setTags, setDotCursorPos, seek);
+          useLyricsStore.getState().inlineTagging.dropMark(seek);
         }
       };
 
@@ -377,16 +213,18 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         if (event.key === " ") {
           event.preventDefault();
           event.stopPropagation();
-          setDotCursorPos((prev) => {
-            if (dots[prev[0]][prev[1]] === -1) {
-              const _setDotCursorPos = (
-                putPos: SetStateAction<[number, number, number]>
-              ) => typeof putPos === "function" && putPos(prev);
-              setMark(getProgress(), setTags, _setDotCursorPos);
-              return MoveDotCursorRight(dots)(prev);
-            }
-            return prev;
-          });
+          const {
+            lyrics,
+            inlineTagging: {
+              dotCursorPosition: [row, col],
+              setMark,
+              moveDotCursorRight,
+            },
+          } = useLyricsStore.getState();
+          if (lyrics?.lines[row]?.attachments?.[DOTS]?.values?.[col] === -1) {
+            setMark(getProgress());
+            moveDotCursorRight();
+          }
         }
       };
 
@@ -398,32 +236,23 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         window.removeEventListener("keyup", handleLabelKeyUp);
       };
     }
-  }, [
-    setCursorPos,
-    lines,
-    setLines,
-    cursorPos,
-    setDots,
-    setTags,
-    section,
-    getProgress,
-    seek,
-  ]);
-
-  const [currentLine, setCurrentLine, currentLineRef] =
-    useNamedStateWithRef<CurrentLineState>(BLANK_LINE, "currentLine");
+  }, [getProgress, section, seek]);
 
   const timelinesRef = useRef<gsap.core.Timeline[]>([]);
+  const isMounted = useRef(true);
 
   // Update time tags
   const onFrame = useCallback(() => {
     const playerStatus = playerStatusRef.current;
-    // console.log("onFrame", playerStatus.state);
-    const currentLine = currentLineRef.current;
-    const tags = tagsRef.current;
-    const startPerLine = tags.map((t) => {
-      const tf = t.flat();
-      if (tf.length) {
+    const {
+      inlineTagging: { currentLine, setCurrentLine },
+      lyrics,
+    } = useLyricsStore.getState();
+    const lines = lyrics?.lines;
+    if (!lines) return;
+    const startPerLine = lines.map((t) => {
+      const tf = t.attachments?.[TAGS]?.values.flat();
+      if (tf?.length) {
         return { start: Math.min(...tf), end: Math.max(...tf) };
       }
       return null;
@@ -437,7 +266,6 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         startPerLine.length > 0) ||
       playerStatus.state === "paused"
     ) {
-      // console.log("set current line", startPerLine, time);
       const record = startPerLine.reduce<CurrentLineState>(
         (p, c, i) => {
           if (c) {
@@ -460,34 +288,29 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         },
         { indices: [], start: -Infinity, end: Infinity, borderIndex: -Infinity }
       );
-      // console.log("set current line", record);
       setCurrentLine(record);
     }
 
-    if (playerStatus.state === "playing") {
+    if (playerStatus.state === "playing" && isMounted.current) {
       requestAnimationFrame(onFrame);
     }
-  }, [
-    getProgress,
-    setCurrentLine,
-    setPlaybackProgress,
-    playerStatusRef,
-    currentLineRef,
-  ]);
+  }, [getProgress, setPlaybackProgress]);
 
   useEffect(() => {
-    // console.log("useEffect playPauseTimeline");
+    isMounted.current = true;
     requestAnimationFrame(onFrame);
     if (timelinesRef.current) {
       const progress = getProgress();
       if (playerStatus.state === "playing") {
-        // console.log("play", progress);
         timelinesRef.current.map((t) => t?.play(progress));
       } else if (playerStatus.state === "paused") {
-        // console.log("pause", progress);
         timelinesRef.current.map((t) => t?.pause(progress));
       }
     }
+    return () => {
+      isMounted.current = false;
+      timelinesRef.current.map((t) => t?.kill());
+    };
   }, [getProgress, onFrame, playerStatus]);
 
   // Register playback control listener
@@ -549,28 +372,6 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     };
   }, [audioBuffer, getProgress, pause, play, seek, setRate]);
 
-  // Apply marks to all identical lines
-  const applyMarksToAll = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      const lineIdx = parseInt(event.currentTarget.dataset.rowIndex);
-      setLines((lines) => {
-        const line = lines[lineIdx];
-        if (!line?.content) return lines;
-        setDots((prevDots) => {
-          const newDots = [...prevDots];
-          lines.forEach((l, i) => {
-            if (l.content === line.content) {
-              newDots[i] = [...prevDots[lineIdx]];
-            }
-          });
-          return newDots;
-        });
-        return lines;
-      });
-    },
-    [setLines, setDots]
-  );
-
   const preventSpaceScrollerCallback = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (event.key === " ") {
@@ -580,38 +381,60 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
     []
   );
 
-  const onUpdateCursorHandler = useCallback(
-    (event: React.MouseEvent<HTMLElement>, cursorIdx: number) => {
-      const idx = parseInt(event.currentTarget.dataset.rowIndex);
-      if (section === "mark") {
-        setCursorPos([idx, cursorIdx]);
-      } else {
-        setDotCursorPos([idx, cursorIdx, 0]);
-      }
-    },
-    [section, setCursorPos, setDotCursorPos]
-  );
+  const handlePopulateMarksJa = useCallback(() => {
+    const {
+      lyrics,
+      inlineTagging: { setDots },
+    } = useLyricsStore.getState();
+    const lines = lyrics?.lines;
+    if (!lines) return;
+    const dots = populateDots(lines);
+    setDots(dots);
+  }, []);
+
+  const handlePopulateMarksEn = useCallback(() => {
+    const {
+      lyrics,
+      inlineTagging: { setDots },
+    } = useLyricsStore.getState();
+    const lines = lyrics?.lines;
+    if (!lines) return;
+    populateDotsEn(lines).then((dots) => setDots(dots));
+  }, []);
 
   return (
     <div className="flex h-full flex-col" ref={taggingAreaRef}>
       <div className="sticky top-0 left-0 z-10 bg-background/80 py-4 space-y-2 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setDots(populateDots(lines))}
-          >
+          <Button variant="outline" onClick={handlePopulateMarksJa}>
             Marks&nbsp;(ja)
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => populateDotsEn(lines).then((dots) => setDots(dots))}
-          >
+          <Button variant="outline" onClick={handlePopulateMarksEn}>
             Marks&nbsp;(en)
           </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Toggle
+                    variant="default"
+                    pressed={autoApplyIdentical}
+                    onPressedChange={setAutoApplyIdentical}
+                  >
+                    <CheckSquare />{" "}
+                    <span className="hidden md:inline">Auto apply</span>
+                  </Toggle>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                Auto-apply furigana to identical lines
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <InstructionsMemo />
         </div>
         <div className="flex items-center">
-          {audioBuffer && (
+          {audioBuffer ? (
             <WebAudioControls
               audioBuffer={audioBuffer}
               seek={seek}
@@ -622,6 +445,8 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
               playerStatus={playerStatus}
               playbackProgress={playbackProgress}
             />
+          ) : (
+            <Skeleton className="h-8 w-full" />
           )}
         </div>
       </div>
@@ -629,38 +454,18 @@ export default function InlineTagging({ lyrics, setLyrics, fileId }: Props) {
         className="h-0 flex-grow overflow-auto px-4"
         onKeyDown={preventSpaceScrollerCallback}
       >
-        {lines.map((l, idx) => (
-          <InlineTaggingLineMemo
-            key={`${idx}-${l.content}`}
-            index={idx}
-            line={l}
-            tags={tags[idx]}
-            dots={dots[idx]}
-            timelinesRef={timelinesRef}
-            playerStatusRef={playerStatusRef}
-            getProgress={getProgress}
-            applyMarksToAll={applyMarksToAll}
-            relativeProgress={
-              currentLine.indices.includes(idx) ||
-              currentLine.borderIndex == idx
-                ? 0
-                : currentLine.borderIndex >= idx
-                ? -1
-                : 1
-            }
-            cursorIdx={
-              section === "mark" && cursorPos[0] === idx
-                ? cursorPos[1]
-                : undefined
-            }
-            dotCursorIdx={
-              section === "tag" && dotCursorPos[0] === idx
-                ? [dotCursorPos[1], dotCursorPos[2]]
-                : undefined
-            }
-            onUpdateCursor={onUpdateCursorHandler}
-          />
-        ))}
+        {Array(linesCount)
+          .fill(null)
+          .map((_, idx) => (
+            <InlineTaggingLineMemo
+              key={idx}
+              index={idx}
+              timelinesRef={timelinesRef}
+              playerStatusRef={playerStatusRef}
+              getProgress={getProgress}
+              section={section}
+            />
+          ))}
       </div>
     </div>
   );

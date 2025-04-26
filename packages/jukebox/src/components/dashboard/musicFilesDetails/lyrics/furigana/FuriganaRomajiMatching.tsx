@@ -1,8 +1,9 @@
-import { ApolloClient, gql } from "@apollo/client";
+import { ApolloClient, gql, useQuery } from "@apollo/client";
 import { kanaToHira, romaToHira } from "@lyricova/components";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
 import { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
 import diff from "fast-diff";
+import { useMemo } from "react";
 
 const VOCADB_LYRICS_QUERY = gql`
   query ($id: Int!) {
@@ -17,55 +18,36 @@ const VOCADB_LYRICS_QUERY = gql`
   }
 `;
 
-export async function furiganaRomajiMatching({
-  apolloClient,
-  lines,
-  songId,
-}: {
-  apolloClient: ApolloClient<object>;
-  lines: LyricsLine[];
-  songId: number;
-}): Promise<[number, string][][]> {
-  const kanaLines = lines.map((line) => {
-    const kanaLine: string[] = [];
-    let ptr = 0;
-    const base = line.content;
-    const furigana = line?.attachments?.content?.[FURIGANA]?.attachment ?? [];
-    furigana.forEach(({ content, range: [start, end] }) => {
-      if (start > ptr) {
-        kanaLine.push(base.substring(ptr, start));
-      }
-      kanaLine.push(content);
-      ptr = end;
-    });
-    if (ptr < base.length) kanaLine.push(base.substring(ptr));
-
-    return kanaToHira(kanaLine.join("").trimEnd());
-  });
-
-  // console.log("kanaLines", kanaLines);
-
-  const vocaDBLyrics = await apolloClient.query<{
+export function useVocaDBFurigana(songId: number) {
+  const { data } = useQuery<{
     vocaDBLyrics: VocaDBLyricsEntry[];
-  }>({
-    query: VOCADB_LYRICS_QUERY,
+  }>(VOCADB_LYRICS_QUERY, {
     variables: { id: songId },
+    skip: songId === 0,
   });
-  const romajiLines =
-    vocaDBLyrics.data.vocaDBLyrics
-      .find((v) => v.translationType === "Romanized")
-      ?.value?.split("\n") ?? [];
+  const furigana = useMemo(() => {
+    if (!data) return [];
+    const romajiLines =
+      data.vocaDBLyrics
+        .find((v) => v.translationType === "Romanized")
+        ?.value?.split("\n") ?? [];
 
-  if (!romajiLines.length) {
-    return [];
-  }
-  const romajiHiraLines = romajiLines.map((line) => romaToHira(line));
+    if (!romajiLines.length) {
+      return [];
+    }
+    return romajiLines.map((line) => romaToHira(line));
+  }, [data]);
+  return furigana;
+}
 
-  // console.log("kanaLines.join", kanaLines.join("\n"));
+export function generateDiffLines(
+  kanaLines: string[],
+  romajiHiraLines: string[]
+): [number, string][][] {
   const diffs: [number, string][] = diff(
     kanaLines.join("\n"),
     romajiHiraLines.join("").replaceAll(" ", "")
-  ).reduce<[number, string][]>((acc, [type, text], idx) => {
+  ).reduce<[number, string][]>((acc, [type, text]) => {
     acc.push([type, text]);
     if (
       type === 1 &&
@@ -124,6 +106,51 @@ export async function furiganaRomajiMatching({
   );
 
   return diffLines;
+}
+
+export async function furiganaRomajiMatching({
+  apolloClient,
+  lines,
+  songId,
+}: {
+  apolloClient: ApolloClient<object>;
+  lines: LyricsLine[];
+  songId: number;
+}): Promise<[number, string][][]> {
+  const kanaLines = lines.map((line) => {
+    const kanaLine: string[] = [];
+    let ptr = 0;
+    const base = line.content;
+    const furigana = line?.attachments?.content?.[FURIGANA]?.attachment ?? [];
+    furigana.forEach(({ content, range: [start, end] }) => {
+      if (start > ptr) {
+        kanaLine.push(base.substring(ptr, start));
+      }
+      kanaLine.push(content);
+      ptr = end;
+    });
+    if (ptr < base.length) kanaLine.push(base.substring(ptr));
+
+    return kanaToHira(kanaLine.join("").trimEnd());
+  });
+
+  const vocaDBLyrics = await apolloClient.query<{
+    vocaDBLyrics: VocaDBLyricsEntry[];
+  }>({
+    query: VOCADB_LYRICS_QUERY,
+    variables: { id: songId },
+  });
+  const romajiLines =
+    vocaDBLyrics.data.vocaDBLyrics
+      .find((v) => v.translationType === "Romanized")
+      ?.value?.split("\n") ?? [];
+
+  if (!romajiLines.length) {
+    return [];
+  }
+  const romajiHiraLines = romajiLines.map((line) => romaToHira(line));
+
+  return generateDiffLines(kanaLines, romajiHiraLines);
 }
 
 const oneCharMapping = {

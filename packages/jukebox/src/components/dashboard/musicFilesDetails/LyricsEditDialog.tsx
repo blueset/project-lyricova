@@ -2,12 +2,11 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useNamedState } from "../../../hooks/useNamedState";
 import LyricsPreview from "./LyricsPreview";
 import { Lyrics } from "lyrics-kit/core";
-import { useSnackbar } from "notistack";
 import EditLyrics from "./lyrics/edit/EditLyrics";
 import SearchLyrics from "./lyrics/SearchLyrics";
 import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
-import EditTranslations from "./lyrics/EditTranslations";
+import EditTranslations from "./lyrics/translation/EditTranslations";
 import EditFurigana from "./lyrics/furigana/EditFurigana";
 import { gql, useApolloClient } from "@apollo/client";
 import type { DocumentNode } from "graphql";
@@ -28,6 +27,9 @@ import {
   TabsContent,
 } from "@lyricova/components/components/ui/tabs";
 import { Button } from "@lyricova/components/components/ui/button";
+import { useLyricsStore } from "./lyrics/state/editorState";
+import { useShallow } from "zustand/shallow";
+import { toast } from "sonner";
 
 const WRITE_LYRICS_MUTATION = gql`
   mutation ($fileId: Int!, $lyrics: String!, $ext: String!) {
@@ -35,26 +37,24 @@ const WRITE_LYRICS_MUTATION = gql`
   }
 ` as DocumentNode;
 
-function PreviewPanel({
-  lyricsString,
-  fileId,
-}: {
-  lyricsString: string;
-  fileId: number;
-}) {
-  const snackbar = useSnackbar();
+function PreviewPanel({ fileId }: { fileId: number }) {
+  const { lrcx, lrc } = useLyricsStore(
+    useShallow((s) => ({
+      lrcx: s.lrcx,
+      lrc: s.lrc,
+    }))
+  );
+  const lyricsString = lrcx || lrc;
   const lyricsObj = useMemo(() => {
     if (!lyricsString) return null;
     try {
       return new Lyrics(lyricsString);
     } catch (e) {
       console.error("Error while parsing lyrics", e);
-      snackbar.enqueueSnackbar(`Error while parsing lyrics: ${e}`, {
-        variant: "error",
-      });
+      toast.error(`Error while parsing lyrics: ${e}`);
       return null;
     }
-  }, [lyricsString, snackbar]);
+  }, [lyricsString]);
   return (
     <LyricsPreview lyrics={lyricsObj} fileId={fileId} className="h-full" />
   );
@@ -86,38 +86,42 @@ export default function LyricsEditDialog({
   duration,
   songId,
 }: Props) {
-  const [lrc, setLrc] = useNamedState(initialLrc || "", "lrc");
-  const [lrcx, setLrcx] = useNamedState(initialLrcx || "", "lrcx");
-  const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
+  const { hasLrc, hasLrcx } = useLyricsStore(
+    useShallow((s) => ({
+      hasLrc: !!s.lrc,
+      hasLrcx: !!s.lrcx,
+    }))
+  );
 
-  const effectiveLyrics = lrcx || lrc;
+  const apolloClient = useApolloClient();
 
   const [submitting, toggleSubmitting] = useNamedState(false, "submitting");
   useEffect(() => {
-    setLrc(initialLrc);
-    setLrcx(initialLrcx || initialLrc);
-  }, [isOpen, initialLrc, initialLrcx, setLrc, setLrcx]);
+    const { setLrc, setLrcx, parse } = useLyricsStore.getState();
+    if (isOpen) {
+      setLrc(initialLrc);
+      setLrcx(initialLrcx || initialLrc);
+      parse();
+    } else {
+      setLrc("");
+      setLrcx("");
+    }
+  }, [isOpen, initialLrc, initialLrcx]);
 
   // Tab status
   const [tabIndex, setTabIndex] = useNamedState("webvttPreview", "tabIndex");
 
-  const needsCommit =
-    tabIndex === "webAudioTagging" ||
-    tabIndex === "tagging" ||
-    tabIndex === "translation" ||
-    tabIndex === "furigana" ||
-    tabIndex === "inline" ||
-    tabIndex === "roles";
-
   const handleClose = useCallback(() => {
+    const { setLrc, setLrcx } = useLyricsStore.getState();
     toggleOpen(false);
     setLrc("");
     setLrcx("");
-  }, [toggleOpen, setLrc, setLrcx]);
+  }, [toggleOpen]);
 
   const handleSubmit = useCallback(async () => {
     toggleSubmitting(true);
+    const { lrc, generate } = useLyricsStore.getState();
+    const lrcx = generate();
     const promises: Promise<unknown>[] = [];
     if (lrc) {
       promises.push(
@@ -137,31 +141,20 @@ export default function LyricsEditDialog({
     }
     try {
       await Promise.all(promises);
-      snackbar.enqueueSnackbar("Lyrics saved.", { variant: "success" });
+      toast.success("Lyrics saved.");
       handleClose();
       await refresh();
     } catch (e) {
       console.error(`Error occurred while saving: ${e}`, e);
-      snackbar.enqueueSnackbar(`Error occurred while saving: ${e}`, {
-        variant: "error",
-      });
+      toast.error(`Error occurred while saving: ${e}`);
     }
     toggleSubmitting(false);
-  }, [
-    apolloClient,
-    fileId,
-    handleClose,
-    lrc,
-    lrcx,
-    refresh,
-    snackbar,
-    toggleSubmitting,
-  ]);
+  }, [apolloClient, fileId, handleClose, refresh, toggleSubmitting]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="w-full h-full max-w-dvw sm:max-w-dvw rounded-none p-0 flex flex-col gap-0"
+        className="flex flex-col gap-0 p-0 rounded-none w-full max-w-dvw sm:max-w-dvw h-full"
         onPointerDownOutside={(e) => e.preventDefault()}
         onFocusOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
@@ -171,11 +164,11 @@ export default function LyricsEditDialog({
         <Tabs
           value={tabIndex}
           onValueChange={setTabIndex}
-          className="m-4 mb-0 xl:flex-row grow h-0 gap-2 xl:gap-4"
+          className="xl:flex-row gap-2 xl:gap-4 m-4 mb-0 h-0 grow"
         >
           <TabsList
             aria-label="Lyrics edit dialog tabs"
-            className="xl:flex-col xl:h-auto xl:self-start xl:items-stretch max-w-full overflow-auto justify-center-safe no-scrollbar shrink-0"
+            className="xl:flex-col justify-center-safe xl:items-stretch xl:self-start max-w-full xl:h-auto overflow-auto no-scrollbar shrink-0"
           >
             <TabsTrigger className="xl:justify-start" value="webvttPreview">
               WebVTT Preview
@@ -192,58 +185,31 @@ export default function LyricsEditDialog({
             <TabsTrigger className="xl:justify-start" value="editLrc">
               Edit Plain
             </TabsTrigger>
-            <TabsTrigger
-              className="xl:justify-start"
-              disabled={needsCommit}
-              value="webAudioTagging"
-            >
+            <TabsTrigger className="xl:justify-start" value="webAudioTagging">
               WebAudioAPI Tagging
             </TabsTrigger>
-            <TabsTrigger
-              className="xl:justify-start"
-              disabled={needsCommit}
-              value="translation"
-            >
+            <TabsTrigger className="xl:justify-start" value="translation">
               Translation
             </TabsTrigger>
-            <TabsTrigger
-              className="xl:justify-start"
-              disabled={needsCommit}
-              value="furigana"
-            >
+            <TabsTrigger className="xl:justify-start" value="furigana">
               Furigana
             </TabsTrigger>
-            <TabsTrigger
-              className="xl:justify-start"
-              disabled={needsCommit}
-              value="inline"
-            >
+            <TabsTrigger className="xl:justify-start" value="inline">
               Inline Tagging
             </TabsTrigger>
-            <TabsTrigger
-              className="xl:justify-start"
-              disabled={needsCommit}
-              value="roles"
-            >
+            <TabsTrigger className="xl:justify-start" value="roles">
               Roles
             </TabsTrigger>
-            <TabsTrigger
-              className="xl:justify-start"
-              disabled={needsCommit}
-              value="tagging"
-            >
+            <TabsTrigger className="xl:justify-start" value="tagging">
               * Tagging
             </TabsTrigger>
           </TabsList>
-          <div className="p-0 grow flex overflow-auto pr-4 -mr-4">
+          <div className="flex -mr-4 p-0 pr-4 overflow-auto grow">
             <TabsContent value="preview">
-              <PreviewPanel lyricsString={effectiveLyrics} fileId={fileId} />
+              <PreviewPanel fileId={fileId} />
             </TabsContent>
             <TabsContent value="webvttPreview">
-              <LyricsPreviewPanel
-                lyricsString={effectiveLyrics}
-                fileId={fileId}
-              />
+              <LyricsPreviewPanel fileId={fileId} />
             </TabsContent>
             <TabsContent value="download">
               <SearchLyrics
@@ -253,63 +219,37 @@ export default function LyricsEditDialog({
               />
             </TabsContent>
             <TabsContent value="edit">
-              <EditLyrics
-                lyrics={lrcx}
-                setLyrics={setLrcx}
-                songId={songId}
-                title={title}
-              />
+              <EditLyrics songId={songId} title={title} />
             </TabsContent>
             <TabsContent value="editLrc">
-              <EditPlainLyrics lyrics={lrc} lrcx={lrcx} setLyrics={setLrc} />
+              <EditPlainLyrics />
             </TabsContent>
             <TabsContent value="webAudioTagging">
-              <WebAudioTaggingLyrics
-                lyrics={lrcx}
-                setLyrics={setLrcx}
-                fileId={fileId}
-              />
+              <WebAudioTaggingLyrics fileId={fileId} />
             </TabsContent>
             <TabsContent value="tagging">
-              <TaggingLyrics
-                lyrics={lrcx}
-                setLyrics={setLrcx}
-                fileId={fileId}
-              />
+              <TaggingLyrics fileId={fileId} />
             </TabsContent>
             <TabsContent value="translation">
-              <EditTranslations
-                lyrics={lrcx}
-                setLyrics={setLrcx}
-                songId={songId}
-              />
+              <EditTranslations songId={songId} />
             </TabsContent>
             <TabsContent value="furigana">
-              <EditFurigana
-                lyrics={lrcx}
-                setLyrics={setLrcx}
-                fileId={fileId}
-                songId={songId}
-              />
+              <EditFurigana fileId={fileId} songId={songId} />
             </TabsContent>
             <TabsContent value="inline">
-              <InlineTagging
-                lyrics={lrcx}
-                setLyrics={setLrcx}
-                fileId={fileId}
-              />
+              <InlineTagging fileId={fileId} />
             </TabsContent>
             <TabsContent value="roles">
-              <Roles lyrics={lrcx} setLyrics={setLrcx} fileId={fileId} />
+              <Roles fileId={fileId} />
             </TabsContent>
           </div>
         </Tabs>
-        <DialogFooter className="m-4 flex-row justify-end">
+        <DialogFooter className="flex-row justify-end m-4">
           <Button onClick={handleClose} variant="secondary">
             Cancel
           </Button>
           <Button
-            disabled={submitting || !lrcx || !lrc || needsCommit}
+            disabled={submitting || !hasLrc || !hasLrcx}
             onClick={handleSubmit}
             variant="default"
           >

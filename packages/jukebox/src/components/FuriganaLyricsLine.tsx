@@ -1,10 +1,11 @@
-import type { LyricsLine } from "lyrics-kit/core";
+import type { LyricsLine, LyricsLineJSON } from "lyrics-kit/core";
 import { FURIGANA } from "lyrics-kit/core";
 import type { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
 import { CSSProperties } from "react";
 
 interface Props {
   lyricsKitLine?: LyricsLine;
+  lyricsKitJsonLine?: LyricsLineJSON;
   graphQLSourceLine?: LyricsKitLyricsLine;
   transliterationLine?: [string, string][];
   rubyStyles?: (
@@ -15,15 +16,28 @@ interface Props {
 }
 
 export default function FuriganaLyricsLine({
+  lyricsKitJsonLine,
   lyricsKitLine,
   graphQLSourceLine,
   transliterationLine,
   rubyStyles,
 }: Props) {
-  if (lyricsKitLine || graphQLSourceLine) {
+  if (lyricsKitJsonLine || lyricsKitLine || graphQLSourceLine) {
     const groupings: (string | [string, string])[] = [];
     let ptr = 0;
-    if (lyricsKitLine) {
+    if (lyricsKitJsonLine) {
+      const base = lyricsKitJsonLine.content;
+      const furigana =
+        lyricsKitJsonLine.attachments?.[FURIGANA]?.attachment ?? [];
+      furigana.forEach(({ content, range: [start, end] }) => {
+        if (start > ptr) {
+          groupings.push(base.substring(ptr, start));
+        }
+        groupings.push([base.substring(start, end), content]);
+        ptr = end;
+      });
+      if (ptr < base.length) groupings.push(base.substring(ptr));
+    } else if (lyricsKitLine) {
       const base = lyricsKitLine.content;
       const furigana =
         lyricsKitLine?.attachments?.content?.[FURIGANA]?.attachment ?? [];

@@ -1,4 +1,9 @@
-import { FURIGANA, LyricsLine, RangeAttributeLabel } from "lyrics-kit/core";
+import {
+  FURIGANA,
+  LyricsLine,
+  LyricsLineJSON,
+  RangeAttributeLabel,
+} from "lyrics-kit/core";
 
 /**
  * @author nlp-compromise <https://github.com/nlp-compromise/nlp-syllables/blob/master/src/syllables.js>
@@ -194,13 +199,17 @@ export function syllables(str: string): string[] {
   return all;
 }
 
-const syllableOverrides = import("./enSyllableOverrides").then(m => m.enSyllableOverrides) as Promise<{[word: string]: number[]}>;
+const syllableOverrides = import("./enSyllableOverrides").then(
+  (m) => m.enSyllableOverrides
+) as Promise<{ [word: string]: number[] }>;
 
-export async function populateDotsEn(lines: LyricsLine[]) {
+export async function populateDotsEn(lines: LyricsLineJSON[]) {
   const syllableOverridesData = await syllableOverrides;
   return lines.map((line) => {
     if (!line.content) return [0];
-    const matches = line.content.matchAll(/(\p{sc=Latin}+(?:['’]\p{sc=Latin}{1,2})?)/gu);
+    const matches = line.content.matchAll(
+      /(\p{sc=Latin}+(?:['’]\p{sc=Latin}{1,2})?)/gu
+    );
     const dots = Array(line.content.length + 1).fill(0);
     dots[line.content.length] = -1;
     for (const match of matches) {

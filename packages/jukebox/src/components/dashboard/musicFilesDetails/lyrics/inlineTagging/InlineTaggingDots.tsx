@@ -1,17 +1,22 @@
-import { FURIGANA, LyricsLine, RangeAttributeLabel } from "lyrics-kit/core";
+import {
+  FURIGANA,
+  LyricsLine,
+  LyricsLineJSON,
+  RangeAttributeLabel,
+} from "lyrics-kit/core";
 
 const pattern =
   "(([あいうえおアイウエオゕゖヵヶてでテデんン]|[かがさざただなはばぱまやらわカガサザタダナハバパマヤラワヷ]|[きぎしじちぢにひびぴみりゐキギシジチヂニヒビピミリヰヸ]([ゃャ]|[ゅょュョ][うウ]?)*|[くぐすずつづぬふぶぷむゆるゔクグスズツヅヌフブプムユルヴ][うウ]*|[けげせぜねへべぺめれゑケゲセゼネヘベペメレヱヹ][いイ]*|[こごそぞとどのほぼぽもよろをコゴソゾトドノホボポモヨロヲヺ][うウ]*)[ぁぃぅぇぉっァィゥェォッーんン]*|\\p{sc=Han}|[\\p{sc=Latin}\\p{sc=Cyrillic}\\p{sc=Greek}\\p{Nd}]+(['’]\\p{sc=Latin}{1,2})?)";
 const beginPattern = new RegExp(pattern, "u");
 const countPattern = new RegExp(pattern, "gu");
 
-export const populateDots = (lines: LyricsLine[]) =>
+export const populateDots = (lines: LyricsLineJSON[]) =>
   lines.map((line) => {
     if (!line.content) return [0];
     let ptr = 0;
     const dots = Array(line.content.length + 1).fill(0);
     const furiganaMapping =
-      line.attachments?.content?.[FURIGANA]?.attachment.reduce<
+      line.attachments?.[FURIGANA]?.attachment.reduce<
         Record<number, RangeAttributeLabel>
       >((prev, curr) => {
         prev[curr.range[0]] = curr;

@@ -1,14 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { LyricsLine } from "lyrics-kit/core";
-import { Lyrics, RangeAttribute, FURIGANA } from "lyrics-kit/core";
+import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import { useNamedState } from "../../../../../hooks/useNamedState";
 import { gql, useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";
 import { FuriganaLineButton } from "./FuriganaLineButton";
 import type { DocumentNode } from "graphql";
-import { CheckSquare, Wand2, FileDiff } from "lucide-react";
-import { furiganaRomajiMatching } from "./FuriganaRomajiMatching";
+import { CheckSquare, Wand2 } from "lucide-react";
+import { useVocaDBFurigana } from "./FuriganaRomajiMatching";
 import { ApplyAllFurigana } from "./ApplyAllFurigana";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Toggle } from "@lyricova/components/components/ui/toggle";
@@ -18,7 +15,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
-import { cn } from "@lyricova/components/utils";
+import { useLyricsStore } from "../state/editorState";
+import { useShallow } from "zustand/shallow";
 
 const KARAOKE_TRANSLITERATION_QUERY = gql`
   query ($text: String!) {
@@ -29,73 +27,38 @@ const KARAOKE_TRANSLITERATION_QUERY = gql`
 ` as DocumentNode;
 
 interface Props {
-  lyrics: string;
-  setLyrics: (lyrics: string) => void;
   fileId: number;
   songId: number;
 }
 
-export default function EditFurigana({
-  lyrics,
-  setLyrics,
-  fileId,
-  songId,
-}: Props) {
+export default function EditFurigana({ fileId, songId }: Props) {
+  const {
+    lyricsLineCount,
+    setFurigana,
+    selectedLine,
+    autoApplyIdentical,
+    setAutoApplyIdentical,
+    setVocaDbFuriganaLines,
+  } = useLyricsStore(
+    useShallow((state) => ({
+      lyricsLineCount: state.lyrics?.lines.length || 0,
+      setFurigana: state.furigana.setFurigana,
+      selectedLine: state.furigana.selectedLine,
+      autoApplyIdentical: state.furigana.autoApplyIdentical,
+      setAutoApplyIdentical: state.furigana.setAutoApplyIdentical,
+      setVocaDbFuriganaLines: state.furigana.setVocaDbFuriganaLines,
+    }))
+  );
   const apolloClient = useApolloClient();
-
-  const [selectedLine, setSelectedLine] = useNamedState(null, "selectedLine");
-  const [autoApplyIdentical, setAutoApplyIdentical] = useNamedState(
-    true,
-    "autoApplyIdentical"
-  );
-
-  // Parse lyrics
-  const parsedLyrics = useMemo<Lyrics | null>(() => {
-    if (!lyrics) return null;
-
-    try {
-      return new Lyrics(lyrics);
-    } catch (e) {
-      console.error(`Error occurred while loading lyrics text: ${e}`, e);
-      toast.error(`Error occurred while loading lyrics text: ${e}`);
-      return null;
-    }
-  }, [lyrics]);
-
-  // Parse and set `lines`.
-  const [lines, setLines] = useNamedState<LyricsLine[]>([], "lines");
-  const [linesInitialized, setLinesInitialized] = useNamedState(
-    false,
-    "linesInitialized"
-  );
-  const linesInitializedRef = useRef(false);
-  const linesRef = useRef<LyricsLine[]>(lines);
-  linesRef.current = lines;
-  linesInitializedRef.current = linesInitialized;
+  const vocaDBFuriganaLines = useVocaDBFurigana(songId);
   useEffect(() => {
-    if (parsedLyrics !== null) {
-      setLines(parsedLyrics.lines);
-      setLinesInitialized(true);
-
-      return () => {
-        if (linesInitializedRef.current) {
-          parsedLyrics.lines = linesRef.current;
-          setLyrics(parsedLyrics.toString());
-        }
-      };
-    }
-    // dropping dependency [parsedLyrics] to prevent loop with parsedLyrics.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Romaji matching from VocaDB
-  const [romajiMatching, setRomajiMatching] = useNamedState<
-    [number, string][][]
-  >([], "romajiMatching");
+    setVocaDbFuriganaLines(vocaDBFuriganaLines);
+  }, [vocaDBFuriganaLines, setVocaDbFuriganaLines]);
 
   // Generate furigana
   const overwriteFurigana = useCallback(async () => {
     try {
+      const lines = useLyricsStore.getState().lyrics?.lines ?? [];
       const result = await apolloClient.query<{
         transliterate: { karaoke: [string, string][][] };
       }>({
@@ -104,99 +67,21 @@ export default function EditFurigana({
         fetchPolicy: "network-only",
       });
       if (result.data) {
-        // Copy `lines` for React to recognize it as a new state
-        const newLines = [...lines];
-        result.data.transliterate.karaoke.forEach((v, idx) => {
-          const line = newLines[idx];
-          if (!line) return;
-          if (v.length < 1) {
-            delete line.attachments.content[FURIGANA];
-          } else {
-            const { tags, content } = v.reduce<{
-              len: number;
-              content: string;
-              tags: [string, [number, number]][];
-            }>(
-              ({ len, tags, content }, [base, furigana]) => {
-                if (base === furigana)
-                  return {
-                    len: len + base.length,
-                    tags,
-                    content: content + base,
-                  };
-                else {
-                  tags.push([furigana, [len, len + base.length]]);
-                  return {
-                    len: len + base.length,
-                    tags,
-                    content: content + base,
-                  };
-                }
-              },
-              { len: 0, tags: [], content: "" }
-            );
-
-            if (tags.length < 1) delete line.attachments.content[FURIGANA];
-            else {
-              line.attachments.content[FURIGANA] = new RangeAttribute(tags);
-              line.content = content;
-            }
-          }
-        });
-        setLines(newLines);
+        setFurigana(result.data.transliterate.karaoke);
       }
     } catch (e) {
       console.error(`Error occurred while generating furigana: ${e}`, e);
       toast.error(`Error occurred while generating furigana: ${e}`);
     }
-  }, [apolloClient, lines, setLines]);
-
-  // Apply furigana to all identical lines
-  const applyFuriganaToAll = useCallback(
-    (idx: number) => () => {
-      const line = lines[idx];
-      if (!line?.content) return;
-      const furigana = line.attachments.content[FURIGANA];
-      setLines((l) => {
-        const newLines = [...l];
-        newLines.forEach((v, i) => {
-          if (i === idx) return;
-          if (v.content === line.content) {
-            if (furigana) v.attachments.content[FURIGANA] = furigana;
-            else delete v.attachments.content[FURIGANA];
-          }
-        });
-        return newLines;
-      });
-    },
-    [lines, setLines]
-  );
-
-  // Save current line furigana
-  const saveCurrentLine = useCallback(
-    (idx: number) => (line: LyricsLine) => {
-      // Copy `lines` for React to recognize it as a new state
-      setLines((l) => {
-        const newLines = [...l];
-        newLines[idx] = line;
-        return newLines;
-      });
-
-      // Auto apply furigana to identical lines if enabled
-      if (autoApplyIdentical) {
-        setTimeout(() => applyFuriganaToAll(idx)(), 0);
-      }
-    },
-    [setLines, autoApplyIdentical, applyFuriganaToAll]
-  );
+  }, [apolloClient, setFurigana]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-      <div className="col-span-full sticky top-0 left-0 z-10">
+    <div className="gap-4 grid grid-cols-1 sm:grid-cols-12">
+      <div className="top-0 left-0 z-10 sticky col-span-full">
         <audio className="w-full" src={`/api/files/${fileId}/file`} controls />
       </div>
-      <div className="col-span-full sm:col-span-5 sticky top-18 left-0 h-fit z-10 bg-background/50 backdrop-blur-lg">
-        <div className="flex items-center flex-wrap">
+      <div className="top-18 left-0 z-10 sticky col-span-full sm:col-span-5 bg-background/50 backdrop-blur-lg h-fit">
+        <div className="flex flex-wrap items-center">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -207,25 +92,7 @@ export default function EditFurigana({
               <TooltipContent>Overwrite with generated furigana</TooltipContent>
             </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  onClick={() =>
-                    furiganaRomajiMatching({
-                      apolloClient,
-                      lines,
-                      songId,
-                    }).then((result) => setRomajiMatching(result))
-                  }
-                >
-                  <FileDiff /> <span className="hidden md:inline">Diff</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Match with VocaDB Romanization</TooltipContent>
-            </Tooltip>
-
-            <ApplyAllFurigana setLines={setLines} />
+            <ApplyAllFurigana />
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -248,27 +115,18 @@ export default function EditFurigana({
         </div>
 
         <div className="mt-4 mb-4">
-          {selectedLine != null && selectedLine < lines.length && (
-            <EditFuriganaLine
-              line={lines[selectedLine]}
-              setLine={saveCurrentLine(selectedLine)}
-            />
+          {selectedLine != null && selectedLine < lyricsLineCount && (
+            <EditFuriganaLine />
           )}
         </div>
       </div>
       <div className="col-span-full sm:col-span-7">
         <div className="space-y-1">
-          {lines.map((line, idx) => (
-            <FuriganaLineButton
-              key={idx}
-              line={line}
-              idx={idx}
-              selectedLine={selectedLine}
-              setSelectedLine={setSelectedLine}
-              romajiMatching={romajiMatching}
-              applyFuriganaToAll={applyFuriganaToAll}
-            />
-          ))}
+          {Array(lyricsLineCount)
+            .fill(null)
+            .map((_, idx) => (
+              <FuriganaLineButton key={idx} idx={idx} />
+            ))}
         </div>
       </div>
     </div>

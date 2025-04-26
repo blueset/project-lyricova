@@ -1,14 +1,20 @@
 import { useEffect, useMemo, useRef } from "react";
-import type { LyricsLine } from "lyrics-kit/core";
-import { Lyrics, FURIGANA, buildTimeTag } from "lyrics-kit/core";
+import type { LyricsLineJSON } from "lyrics-kit/core";
+import {
+  FURIGANA,
+  buildTimeTag,
+  TIME_TAG,
+  METADATA_ROLE,
+  Attachments,
+} from "lyrics-kit/core";
 import _ from "lodash";
+import { useLyricsStore } from "./state/editorState";
 
 interface Props {
-  lyricsString: string;
   fileId: number;
 }
 
-function convertLine(line: LyricsLine): string {
+function convertLine(line: LyricsLineJSON): string {
   const base = line.content;
   if (!base) return "";
 
@@ -27,7 +33,7 @@ function convertLine(line: LyricsLine): string {
   //   base = result;
   // }
 
-  const furigana = line?.attachments?.content?.[FURIGANA]?.attachment ?? [];
+  const furigana = line?.attachments?.[FURIGANA]?.attachment ?? [];
   let result = "";
   let ptr = 0;
   furigana.forEach(({ content, range: [start, end] }) => {
@@ -42,17 +48,9 @@ function convertLine(line: LyricsLine): string {
   return result;
 }
 
-export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
+export default function LyricsPreviewPanel({ fileId }: Props) {
   const playerRef = useRef<HTMLVideoElement>(null);
-  const lyrics = useMemo(() => {
-    if (!lyricsString) return null;
-    try {
-      return new Lyrics(lyricsString);
-    } catch (e) {
-      console.error("Error while parsing lyrics", e);
-      return null;
-    }
-  }, [lyricsString]);
+  const lyrics = useLyricsStore((s) => s.lyrics);
   const trackDataUrl = useMemo<string | null>(() => {
     if (!lyrics) return null;
     const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
@@ -74,8 +72,8 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
         {
           idx,
           time: _.round(
-            line.attachments?.timeTag?.tags?.at(-1)?.timeTag
-              ? line.attachments.timeTag.tags.at(-1)?.timeTag + line.position
+            line.attachments?.[TIME_TAG]?.tags?.at(-1)?.timeTag
+              ? line.attachments[TIME_TAG].tags.at(-1)?.timeTag + line.position
               : arr[idx + 1]?.position ?? line.position + 10,
             3
           ),
@@ -110,21 +108,24 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
     let lineCounter = 0;
     webvtt += lyrics.lines
       .map((v, idx) => {
-        if (!v.timeTag) return "";
-        const start = v.timeTag.substring(0, 10);
+        if (Number.isNaN(v.position)) return "";
+        const timeTag = buildTimeTag(v.position);
+        const start = timeTag.substring(0, 10);
         const startTime = v.position;
-        const end =
-          lyrics.lines[idx + 1]?.timeTag?.substring(0, 10) ?? "99:59.999";
+        const nextPosition = lyrics.lines[idx + 1]?.position ?? NaN;
+        const end = !Number.isNaN(nextPosition)
+          ? buildTimeTag(nextPosition).substring(0, 10)
+          : "99:59.999";
         const vttOffsiteLine = (trackNumbers[idx] ?? 0) * 4;
-        const role = (v.attachments.role ?? 0) % 3;
+        const role = parseInt(v.attachments?.[METADATA_ROLE]?.text ?? "0") % 3;
         const align = role === 0 ? "start" : role === 1 ? "end" : "middle";
         const minor = v.attachments.minor ? ".min" : "";
         const metadata = `#${idx}${
           vttOffsiteLine !== 0 ? "&" + vttOffsiteLine : ""
         }${role !== 0 ? "R" + role : ""}${v.attachments.minor ? "Min" : ""}`;
-        if (v.attachments.timeTag?.tags) {
+        if (v.attachments?.[TIME_TAG]?.tags) {
           const base = v.content;
-          const timeTags = v.attachments.timeTag?.tags;
+          const timeTags = v.attachments[TIME_TAG]?.tags;
           let ptrTime = start;
           let result = "";
           timeTags.forEach(({ index, timeTag }) => {
@@ -132,13 +133,15 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
             const formattedSection = `${convertLine({
               ...v,
               content: section,
-            } as LyricsLine)}`;
+            } as LyricsLineJSON)}`;
             const endTimeTag = buildTimeTag(startTime + timeTag);
             lineCounter++;
             result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:${vttOffsiteLine} align:${align}\n<c.tt${minor}>[${start}] (@ ${ptrTime} ${metadata})</c>\n${formattedSection}<c.pndg>${divider}${base.substring(
               index
             )}</c>`;
-            const translations = v.attachments.translations;
+            const translations = Attachments.fromJSON(
+              v.attachments
+            ).translations;
             for (const lang in translations) {
               result += `\n<c.lang>${lang || "-"}:</c> ${translations[lang]}`;
             }
@@ -153,8 +156,9 @@ export default function LyricsPreviewPanel({ lyricsString, fileId }: Props) {
           return result.trimEnd();
         } else {
           let text = `${convertLine(v)}`;
-          if (v.attachments.translation()) {
-            text += `\n${v.attachments.translation()}`;
+          const translations = Attachments.fromJSON(v.attachments).translations;
+          for (const lang in translations) {
+            text += `\n<c.lang>${lang || "-"}:</c> ${translations[lang]}`;
           }
           lineCounter++;
           return `${lineCounter}\n${start} --> ${end} line:${vttOffsiteLine} align:${align}\n<c.tt${minor}>[${start}] (${metadata})</c>\n${text}`;

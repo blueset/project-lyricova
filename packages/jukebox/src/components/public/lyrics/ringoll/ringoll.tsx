@@ -11,7 +11,7 @@ const RingollContainerDiv = (props: ComponentProps<"div">) => (
     // Keep complex mask and transition properties as inline styles
     // Attempt hover effect using arbitrary variants (may need adjustment)
     className={cn(
-      "size-full relative overflow-clip p-4 px-8 transition-[mask-border-image-width,mask-box-image-width,-webkit-mask-box-image-width] duration-500 ",
+      "relative p-4 px-8 size-full overflow-clip transition-[mask-border-image-width,mask-box-image-width,-webkit-mask-box-image-width] duration-0",
       "[mask-border-image-width:5rem_0_30%] [mask-box-image-width:5rem_0_30%] [-webkit-mask-box-image-width:5rem_0_30%]",
       "hover:[mask-border-image-width:5rem_0] hover:[mask-box-image-width:5rem_0] hover:[-webkit-mask-box-image-width:5rem_0]"
     )}

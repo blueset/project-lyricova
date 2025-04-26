@@ -7,8 +7,10 @@ import {
 import type { ChangeEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { FURIGANA, Lyrics } from "lyrics-kit/core";
-import { useSnackbar } from "notistack";
+import { toast } from "sonner";
 import { gql, useApolloClient } from "@apollo/client";
+import { useLyricsStore } from "./state/editorState";
+import { useShallow } from "zustand/shallow";
 
 const KARAOKE_TRANSLITERATION_QUERY = gql`
   query ($text: String!) {
@@ -18,13 +20,17 @@ const KARAOKE_TRANSLITERATION_QUERY = gql`
   }
 `;
 
-interface Props {
-  lyrics: string;
-  lrcx: string;
-  setLyrics: (lyrics: string) => void;
-}
+interface Props {}
 
-export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
+export default function EditPlainLyrics({}: Props) {
+  const { lyrics, setLyrics, lrcx } = useLyricsStore(
+    useShallow((s) => ({
+      lrcx: s.lrcx,
+      lyrics: s.lrc,
+      setLyrics: s.setLrc,
+    }))
+  );
+
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setLyrics(event.target.value);
@@ -36,8 +42,6 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
     return lrcx ? new Lyrics(lrcx).translationLanguages : [];
   }, [lrcx]);
   const [selectedLanguageIdx, setSelectedLanguageIdx] = useState(0);
-
-  const snackbar = useSnackbar();
   const apolloClient = useApolloClient();
 
   const copyFromLRCX = useCallback(
@@ -53,12 +57,10 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
           })
         );
       } catch (e) {
-        snackbar.enqueueSnackbar(`Error while copying: ${e}`, {
-          variant: "error",
-        });
+        toast.error(`Error while copying: ${e}`);
       }
     },
-    [lrcx, setLyrics, snackbar, languages, selectedLanguageIdx]
+    [lrcx, setLyrics, languages, selectedLanguageIdx]
   );
 
   const copyFromLRCXWithSmartFurigana = useCallback(async () => {
@@ -110,18 +112,16 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
         );
       }
     } catch (e) {
-      snackbar.enqueueSnackbar(`Error while copying: ${e}`, {
-        variant: "error",
-      });
+      toast.error(`Error while copying: ${e}`);
     }
-  }, [apolloClient, languages, lrcx, selectedLanguageIdx, setLyrics, snackbar]);
+  }, [apolloClient, languages, lrcx, selectedLanguageIdx, setLyrics]);
 
   return (
     <>
       <div className="flex flex-col gap-4 h-full">
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex md:flex-row flex-col gap-4">
           <div>
-            <span className="text-xs uppercase tracking-wider text-muted-foreground block mb-2">
+            <span className="block mb-2 text-muted-foreground text-xs uppercase tracking-wider">
               Copy from
             </span>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -153,7 +153,7 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
           </div>
           {languages.length ? (
             <div>
-              <span className="text-xs uppercase tracking-wider text-muted-foreground block mb-2">
+              <span className="block mb-2 text-muted-foreground text-xs uppercase tracking-wider">
                 Translation Language
               </span>
               <ToggleGroup type="single" value={`${selectedLanguageIdx}`}>
@@ -172,7 +172,7 @@ export default function EditPlainLyrics({ lyrics, lrcx, setLyrics }: Props) {
         </div>
         <Textarea
           id="lyrics-source"
-          className="font-mono h-full grow resize-none"
+          className="h-full font-mono resize-none grow"
           placeholder="Lyrics source"
           value={lyrics || ""}
           onChange={handleChange}

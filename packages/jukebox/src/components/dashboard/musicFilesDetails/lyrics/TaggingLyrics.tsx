@@ -1,5 +1,5 @@
 /**
- * Some code in this file is adapted from “LRC Maker”.
+ * Some code in this file is adapted from "LRC Maker".
  *
  * LRC Maker (https://github.com/magic-akari/lrc-maker)
  * Copyright (c) 阿卡琳 licensed under MIT License
@@ -8,35 +8,46 @@ import type { PlayerState } from "../../../../hooks/types";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import { usePlayerState } from "../../../../hooks/usePlayerState";
 import type { MouseEvent, MouseEventHandler } from "react";
-import { useCallback, useEffect, useRef, useMemo, memo, useId } from "react";
+import { useCallback, useEffect, useRef, useMemo, memo } from "react";
 import { Pencil } from "lucide-react";
 import _ from "lodash";
-import { buildTimeTag, resolveTimeTag } from "lyrics-kit/core";
-import { linearRegression } from "simple-statistics";
+import { buildTimeTag, LyricsLine } from "lyrics-kit/core";
 import DismissibleAlert from "../../DismissibleAlert";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Switch } from "@lyricova/components/components/ui/switch";
 import { Label } from "@lyricova/components/components/ui/label";
 import { AlertDescription } from "@lyricova/components/components/ui/alert";
 import { cn } from "@lyricova/components/utils";
+import { useLyricsStore } from "./state/editorState";
+import { useShallow } from "zustand/shallow";
 
 interface LineListItemProps {
-  isCurrent: boolean;
-  isCursorOn: boolean;
+  lineIdx: number;
   onClickCapture?: MouseEventHandler<HTMLLIElement>;
   onDoubleClickCapture?: MouseEventHandler<HTMLLIElement>;
-  extrapolateTag: number | undefined;
-  line: [number, string[]];
 }
 
 const LineListItem = ({
-  isCurrent,
-  isCursorOn,
   onClickCapture,
   onDoubleClickCapture,
-  extrapolateTag,
-  line,
+  lineIdx,
 }: LineListItemProps) => {
+  const line = useLyricsStore((s) => s.lyrics?.lines[lineIdx]);
+
+  const { isCurrent, isCursorOn, extrapolateTag } = useLyricsStore(
+    useShallow((s) => ({
+      isCurrent: s.tagging.currentLine.index === lineIdx,
+      isCursorOn: s.tagging.cursor === lineIdx,
+      extrapolateTag: s.tagging.extrapolateTags?.[lineIdx],
+    }))
+  );
+
+  const lineText = useMemo(() => {
+    return LyricsLine.fromJSON(line)
+      .toString()
+      .replace(/^\[[\d:\.]+\]/gm, "");
+  }, [line]);
+
   return (
     <li
       className={cn(
@@ -53,14 +64,14 @@ const LineListItem = ({
       </span>
       <div className="flex flex-row items-start flex-grow gap-2">
         <span className="block tabular-nums w-max flex-shrink-0">
-          {line[0] != undefined ? `[${buildTimeTag(line[0])}]` : ""}
+          {!Number.isNaN(line?.position)
+            ? `[${buildTimeTag(line.position)}]`
+            : ""}
         </span>
         <div className="flex-grow">
-          {line[1].map((l, lidx) => (
-            <span key={lidx} className="block text-muted-foreground">
-              {l}
-            </span>
-          ))}
+          <span className="block text-muted-foreground whitespace-pre-wrap">
+            {lineText}
+          </span>
         </div>
       </div>
       <span className="ml-auto tabular-nums text-xs text-muted-foreground">
@@ -71,28 +82,12 @@ const LineListItem = ({
 };
 
 const MemoLineListItem = memo(LineListItem, (prev, next) => {
-  return (
-    prev.isCurrent === next.isCurrent &&
-    prev.isCursorOn === next.isCursorOn &&
-    prev.extrapolateTag === next.extrapolateTag &&
-    prev.line[0] === next.line[0] &&
-    prev.line[1].join("") === next.line[1].join("")
-  );
+  return prev.lineIdx === next.lineIdx;
 });
-
-type LinesPerTag = [number, string[]][];
 
 const BLANK_LINE = { index: Infinity, start: Infinity, end: -Infinity };
 
-interface CurrentLineState {
-  index: number;
-  start: number;
-  end: number;
-}
-
 interface Props {
-  lyrics: string;
-  setLyrics: (v: string) => void;
   fileId: number;
 }
 
@@ -101,10 +96,9 @@ function Instructions() {
     <div className="flex items-center gap-2 p-1 mb-1">
       <DismissibleAlert variant="info" className="flex-grow">
         <AlertDescription>
-          Switch to another tab to save changes. ↑WJ/↓RK: Navigate; Home/End:
-          First/Last; PgUp/PgDn: +/-10 lines; ←AH/→RL: +/-5 seconds; Space: Tag;
-          Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed; R: reset speed; Enter:
-          play/pause).
+          ↑WJ/↓RK: Navigate; Home/End: First/Last; PgUp/PgDn: +/-10 lines;
+          ←AH/→RL: +/-5 seconds; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K:
+          speed; R: reset speed; Enter: play/pause).
         </AlertDescription>
       </DismissibleAlert>
     </div>
@@ -131,122 +125,55 @@ function ExtrapolateModeToggle({
 }
 const ExtrapolateModeToggleMemo = memo(ExtrapolateModeToggle);
 
-export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
-  const [linesPerTag, setLinesPerTag] = useNamedState<LinesPerTag>(
-    [],
-    "linesPerTag"
-  );
-  const linesPerTagRef = useRef<LinesPerTag>(linesPerTag);
-  linesPerTagRef.current = linesPerTag;
-
-  const playerRef = useRef<HTMLAudioElement>(null);
+export default function TaggingLyrics({ fileId }: Props) {
   const [playbackRate, setPlaybackRate] = useNamedState(1, "playbackRate");
 
-  const listRef = useRef<HTMLUListElement>(null);
-
-  const [cursor, setCursor] = useNamedState<number>(0, "cursor");
-  const cursorRef = useRef<number | null>(cursor);
-  cursorRef.current = cursor;
-
-  const [currentLine, setCurrentLine] = useNamedState<CurrentLineState>(
-    BLANK_LINE,
-    "currentLine"
+  const {
+    linesLength,
+    setCursor,
+    setCurrentLine,
+    isInExtrapolateMode,
+    setIsInExtrapolateMode,
+    extrapolateTags,
+    setTimestampAtCursor,
+    setExtrapolateTagsAtCursor,
+    linearRegressionResult,
+    applyExtrapolation,
+    reset,
+  } = useLyricsStore(
+    useShallow((s) => ({
+      linesLength: s.lyrics?.lines?.length ?? 0,
+      setCursor: s.tagging.setCursor,
+      setCurrentLine: s.tagging.setCurrentLine,
+      isInExtrapolateMode: s.tagging.isInExtrapolateMode,
+      setIsInExtrapolateMode: s.tagging.setIsInExtrapolateMode,
+      extrapolateTags: s.tagging.extrapolateTags,
+      setTimestampAtCursor: s.tagging.setTimestampAtCursor,
+      setExtrapolateTagsAtCursor: s.tagging.setExtrapolateTagsAtCursor,
+      linearRegressionResult: s.tagging.linearRegressionResult,
+      applyExtrapolation: s.tagging.applyExtrapolation,
+      reset: s.tagging.reset,
+    }))
   );
-  const currentLineRef = useRef<CurrentLineState>(currentLine);
-  currentLineRef.current = currentLine;
+
+  const playerRef = useRef<HTMLAudioElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
   const playerState = usePlayerState(playerRef);
   const playerStateRef = useRef<PlayerState>(playerState);
   playerStateRef.current = playerState;
 
-  const [isInExtrapolateMode, toggleExtrapolateMode] = useNamedState<boolean>(
-    false,
-    "isInExtrapolateMode"
-  );
-  const isInExtrapolateModeRef = useRef<boolean>(isInExtrapolateMode);
-  isInExtrapolateModeRef.current = isInExtrapolateMode;
-  const [extrapolateTags, setExtrapolateTags] = useNamedState<
-    (number | null)[]
-  >([], "extrapolateTags");
-  const extrapolateTagsRef = useRef<(number | null)[]>(extrapolateTags);
-  extrapolateTagsRef.current = extrapolateTags;
-
-  const linearRegressionResult = useMemo<{
-    m: number;
-    b: number;
-  } | null>(() => {
-    const points: [number, number][] = [];
-    for (
-      let i = 0;
-      i < Math.min(linesPerTag.length, extrapolateTags.length);
-      i++
-    ) {
-      if (extrapolateTags[i] != null && linesPerTag[i]?.[0] != null) {
-        points.push([linesPerTag[i]?.[0], extrapolateTags[i]]);
-      }
-    }
-    if (points.length < 1) return null;
-    return linearRegression(points);
-  }, [linesPerTag, extrapolateTags]);
-
-  // Build `linesPerTag`.
+  // Reset tagging state on component mount
   useEffect(() => {
-    // Do nothing when no lyrics is found
-    if (!lyrics) {
-      setLinesPerTag([]);
-      return () => {
-        /* No-op */
-      };
-    }
-
-    const mapping: { [key: string]: string[] } = {};
-    const lpt: [string, string[]][] = [];
-    const splitLines = lyrics.split("\n").map((v) => {
-      const matches = v.match(/^(\[[0-9:.]+\])?(.*)$/);
-      if (matches) {
-        return [matches[1], matches[2]];
-      }
-      return ["", v];
-    });
-
-    splitLines.forEach(([tag, content]) => {
-      if (mapping[tag] !== undefined) {
-        mapping[tag].push(content);
-      } else {
-        const contents = [content];
-        if (!tag && lpt.length && content.match(/^\[.+\]/)) {
-          lpt[lpt.length - 1][1].push(content);
-        } else {
-          lpt.push([tag, contents]);
-        }
-        if (tag) {
-          mapping[tag] = contents;
-        }
-      }
-    });
-
-    setLinesPerTag(
-      lpt.map(([tag, lines]) => [resolveTimeTag(tag || "")?.[0] ?? null, lines])
-    );
-
-    return () => {
-      const result: string[] = [];
-      linesPerTagRef.current.forEach(([tag, lines]) =>
-        lines.forEach((line) =>
-          result.push((tag !== null ? `[${buildTimeTag(tag)}]` : "") + line)
-        )
-      );
-      setLyrics(result.join("\n"));
-    };
-    // Dropping dependency [lyrics] to prevent loop caused during tear down of itself.
-  }, [setLinesPerTag, setLyrics]);
+    reset();
+  }, [reset]);
 
   // Update time tags
   const onFrame = useCallback(
     (timestamp: number) => {
       const playerState = playerStateRef.current;
-      const currentLine = currentLineRef.current;
-      const linesPerTag = linesPerTagRef.current;
+      const currentLine = useLyricsStore.getState().tagging.currentLine;
+      const lines = useLyricsStore.getState().lyrics.lines;
 
       let time: number;
       if (playerState.state === "paused") {
@@ -257,16 +184,16 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
 
       if (
         (time < currentLine.start || time > currentLine.end) &&
-        linesPerTag.length > 0
+        lines.length > 0
       ) {
-        const record = linesPerTag.reduce(
+        const record = lines.reduce(
           (p, c, i) => {
-            if (c[0]) {
-              if (c[0] < p.end && c[0] > time) {
-                p.end = c[0];
+            if (c.position) {
+              if (c.position < p.end && c.position > time) {
+                p.end = c.position;
               }
-              if (c[0] > p.start && c[0] <= time) {
-                p.start = c[0];
+              if (c.position > p.start && c.position <= time) {
+                p.start = c.position;
                 p.index = i;
               }
             }
@@ -294,39 +221,27 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
 
   const handleExtrapolateModeToggle = useCallback(
     (checked: boolean) => {
-      toggleExtrapolateMode(checked);
-      if (!checked) {
-        setExtrapolateTags([]);
-      }
+      setIsInExtrapolateMode(checked);
     },
-    [toggleExtrapolateMode, setExtrapolateTags]
+    [setIsInExtrapolateMode]
   );
-
-  const applyExtrapolation = useCallback(() => {
-    if (linearRegressionResult == null) return;
-    const linesPerTag = [...linesPerTagRef.current];
-    const extrapolated = linesPerTag.map(([v, l]) => {
-      if (v == null) return [v, l] as [number, string[]];
-      return [
-        Math.max(0, linearRegressionResult.m * v + linearRegressionResult.b),
-        l,
-      ] as [number, string[]];
-    });
-    setLinesPerTag(extrapolated);
-  }, [linearRegressionResult, setLinesPerTag]);
 
   const moveCursor = useCallback(
     (idx: number | ((orig: number) => number)) => {
-      setCursor((orig) => {
-        let nidx = typeof idx !== "number" ? idx(orig) : idx;
-        nidx = _.clamp(nidx, 0, linesPerTagRef.current.length);
-        if (linesPerTagRef.current.length > 0 && listRef.current) {
-          const item = listRef.current.children[nidx] as HTMLElement;
-          if (!item) return nidx;
-          item.scrollIntoView({ block: "center", behavior: "smooth" });
+      const orig = useLyricsStore.getState().tagging.cursor;
+      const length = useLyricsStore.getState().lyrics.lines.length;
+      let nidx = typeof idx !== "number" ? idx(orig) : idx;
+      nidx = _.clamp(nidx, 0, length);
+      if (length > 0 && listRef.current) {
+        const item = listRef.current.children[nidx] as HTMLElement;
+        if (!item) {
+          setCursor(nidx);
+          return;
         }
-        return nidx;
-      });
+        item.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+      setCursor(nidx);
+      return;
     },
     [setCursor]
   );
@@ -348,9 +263,9 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       }
 
       moveCursor(idx);
-      const line = linesPerTagRef.current[idx];
+      const line = useLyricsStore.getState().lyrics?.lines[idx];
       if (!line) return;
-      playerRef.current.currentTime = line[0];
+      playerRef.current.currentTime = line.position;
       if (playerStateRef.current.state !== "playing") {
         requestAnimationFrame(onFrame);
       }
@@ -365,6 +280,8 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
 
       const codeOrKey = code || key;
 
+      const isInExtrapolateMode =
+        useLyricsStore.getState().tagging.isInExtrapolateMode;
       // Skip events targeted to an input.
       if (target !== null) {
         const type = (target as HTMLInputElement | HTMLTextAreaElement).type;
@@ -378,19 +295,11 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       ) {
         ev.preventDefault();
 
-        if (!isInExtrapolateModeRef.current) {
-          const linesPerTag = [...linesPerTagRef.current];
-          const line = linesPerTag[cursorRef.current];
-          if (!line) return;
-
-          line[0] = null;
-          setLinesPerTag(linesPerTag);
+        if (!isInExtrapolateMode) {
+          setTimestampAtCursor(NaN);
           setCurrentLine(BLANK_LINE);
         } else {
-          setExtrapolateTags((extrapolateTags) => {
-            extrapolateTags[cursorRef.current] = null;
-            return [...extrapolateTags];
-          });
+          setExtrapolateTagsAtCursor(null);
         }
         return;
       }
@@ -435,20 +344,12 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
             ? ((perfNow - playerStateRef.current.startingAt) / 1000) *
               playerStateRef.current.rate
             : playerStateRef.current.progress;
-        const cursor = cursorRef.current;
-        if (!isInExtrapolateModeRef.current) {
-          setLinesPerTag((linesPerTag) => {
-            const line = linesPerTag[cursor];
-            if (!line) return linesPerTag;
-            line[0] = time;
-            setCurrentLine(BLANK_LINE);
-            return linesPerTag;
-          });
+
+        if (!isInExtrapolateMode) {
+          setTimestampAtCursor(time);
+          setCurrentLine(BLANK_LINE);
         } else {
-          setExtrapolateTags((extrapolateTags) => {
-            extrapolateTags[cursor] = time;
-            return [...extrapolateTags];
-          });
+          setExtrapolateTagsAtCursor(time);
         }
         moveCursor((cursor) => cursor + 1);
       } else if (
@@ -470,7 +371,8 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
         moveCursor(0);
       } else if (codeOrKey === "End") {
         ev.preventDefault();
-        moveCursor((linesPerTagRef.current?.length ?? 1) - 1);
+        const length = useLyricsStore.getState().lyrics?.lines?.length ?? 1;
+        moveCursor(length - 1);
       } else if (codeOrKey === "PageUp") {
         ev.preventDefault();
         moveCursor((cursor) => (cursor || 10) - 10);
@@ -504,12 +406,11 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       document.removeEventListener("keydown", listener);
     };
   }, [
-    linesPerTag,
     moveCursor,
     setCurrentLine,
-    setExtrapolateTags,
-    setLinesPerTag,
+    setExtrapolateTagsAtCursor,
     setPlaybackRate,
+    setTimestampAtCursor,
   ]);
 
   return (
@@ -560,17 +461,16 @@ export default function TaggingLyrics({ lyrics, setLyrics, fileId }: Props) {
       </div>
 
       <ul ref={listRef} className="space-y-0.5">
-        {linesPerTag.map((v, idx) => (
-          <MemoLineListItem
-            line={v}
-            extrapolateTag={extrapolateTags[idx]}
-            isCurrent={idx === currentLine.index}
-            isCursorOn={idx === cursor}
-            onClickCapture={onLineClick(idx)}
-            onDoubleClickCapture={onLineDoubleClick(idx)}
-            key={idx}
-          />
-        ))}
+        {Array(linesLength)
+          .fill(null)
+          .map((_, idx) => (
+            <MemoLineListItem
+              lineIdx={idx}
+              key={idx}
+              onClickCapture={onLineClick(idx)}
+              onDoubleClickCapture={onLineDoubleClick(idx)}
+            />
+          ))}
       </ul>
     </div>
   );

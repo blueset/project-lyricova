@@ -1,11 +1,16 @@
-export { Lyrics } from "./lyrics";
-export { LyricsLine } from "./lyricsLine";
+export { Lyrics, LyricsJSON } from "./lyrics";
+export { LyricsLine, LyricsLineJSON } from "./lyricsLine";
+export * from "./attachmentTypes";
 export {
   Range,
   TRANSLATION,
   TIME_TAG,
   FURIGANA,
   ROMAJI,
+  METADATA_ROLE,
+  METADATA_MINOR,
+  DOTS,
+  TAGS,
   Attachments,
   isTranslationTag,
   PlainText,
@@ -25,13 +30,5 @@ export {
   ARTWORK_URL,
   PROVIDER_TOKEN,
 } from "./lyricsMetadata";
-export {
-  TITLE,
-  ALBUM,
-  ARTIST,
-  AUTHOR,
-  LRC_BY,
-  OFFSET,
-  LENGTH,
-} from "./idTagKey";
+export { TITLE, ALBUM, ARTIST, AUTHOR, LRC_BY, OFFSET, LENGTH } from "./idTagKey";
 export { buildTimeTag, resolveTimeTag } from "../utils/regexPattern";

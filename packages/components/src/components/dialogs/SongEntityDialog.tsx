@@ -3,8 +3,8 @@
 import type { Song } from "@lyricova/api/graphql/types";
 import { Fragment, useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
-import { useSnackbar } from "notistack";
-import { Plus, X, Disc3, Music, Trash } from "lucide-react";
+import { toast } from "sonner";
+import { Plus, Disc3, Music, Trash } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -147,7 +147,6 @@ export function SongEntityDialog({
   create,
 }: Props) {
   const apolloClient = useApolloClient();
-  const snackbar = useSnackbar();
 
   const handleClose = useCallback(() => {
     toggleOpen(false);
@@ -229,11 +228,8 @@ export function SongEntityDialog({
 
         if (result.data) {
           setSong(result.data.newSong);
-          snackbar.enqueueSnackbar(
-            `Song "${result.data.newSong.name}" is successfully created.`,
-            {
-              variant: "success",
-            }
+          toast.success(
+            `Song "${result.data.newSong.name}" is successfully created.`
           );
           handleClose();
         }
@@ -250,11 +246,8 @@ export function SongEntityDialog({
 
         if (result.data) {
           setSong(result.data.updateSong);
-          snackbar.enqueueSnackbar(
-            `Song "${result.data.updateSong.name}" is successfully updated.`,
-            {
-              variant: "success",
-            }
+          toast.success(
+            `Song "${result.data.updateSong.name}" is successfully updated.`
           );
           apolloClient.cache.evict({ id: `Song:${songId}` });
           handleClose();
@@ -267,13 +260,10 @@ export function SongEntityDialog({
         }.`,
         e
       );
-      snackbar.enqueueSnackbar(
+      toast.error(
         `Error occurred while ${create ? "creating" : "updating"} song ${
           values?.name
-        }. (${e})`,
-        {
-          variant: "error",
-        }
+        }. (${e})`
       );
     }
   }

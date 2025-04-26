@@ -1,4 +1,9 @@
-import { Lyrics, LyricsLine } from "lyrics-kit/core";
+import {
+  Lyrics,
+  LyricsLine,
+  METADATA_MINOR,
+  METADATA_ROLE,
+} from "lyrics-kit/core";
 import { toast } from "sonner";
 import { useMemo, useEffect, memo, useCallback } from "react";
 import { Button } from "@lyricova/components/components/ui/button";
@@ -9,59 +14,124 @@ import {
 import { cn } from "@lyricova/components/utils";
 import { useNamedStateWithRef } from "@/hooks/useNamedStateWithRef";
 import { Toggle } from "@lyricova/components/components/ui/toggle";
+import { useLyricsStore } from "./state/editorState";
+import { useShallow } from "zustand/shallow";
 
-const RowItem = memo(function RowItem({
-  line,
-  idx,
-  selected,
-  onClick,
-  onRoleChange,
-  onMinorChange,
-}: {
-  line: LyricsLine;
-  idx: number;
-  selected: boolean;
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  onRoleChange?: (value: string) => void;
-  onMinorChange?: (pressed: boolean) => void;
-}) {
+const RowItem = memo(function RowItem({ idx }: { idx: number }) {
+  const {
+    lineContent,
+    lineRole,
+    lineMinor,
+    selected,
+    setSelectedLines,
+    setRoleByIndex,
+    setMinorByIndex,
+    setRoleOfSelectedLines,
+    setMinorOfSelectedLines,
+  } = useLyricsStore(
+    useShallow((state) => ({
+      lineContent: state.lyrics?.lines[idx].content,
+      lineRole: state.lyrics?.lines[idx].attachments[METADATA_ROLE]?.text,
+      lineMinor: state.lyrics?.lines[idx].attachments[METADATA_MINOR]?.text,
+      selected: state.role.selectedLines.includes(idx),
+      setSelectedLines: state.role.setSelectedLines,
+      setRoleByIndex: state.role.setRoleByIndex,
+      setMinorByIndex: state.role.setMinorByIndex,
+      setMinorOfSelectedLines: state.role.setMinorOfSelectedLines,
+      setRoleOfSelectedLines: state.role.setRoleOfSelectedLines,
+    }))
+  );
+
+  const onClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const index = parseInt(
+        event.currentTarget.getAttribute("data-index") ?? "-1"
+      );
+      const shiftKey = event.shiftKey;
+      const ctrlCmdKey = event.ctrlKey || event.metaKey;
+      const prevSelectedLines = useLyricsStore.getState().role.selectedLines;
+      let newSelectedLines: number[] = [];
+      if (ctrlCmdKey) {
+        if (prevSelectedLines.includes(index)) {
+          newSelectedLines = prevSelectedLines.filter((i) => i !== index);
+        } else {
+          newSelectedLines = [...prevSelectedLines, index].sort(
+            (a, b) => a - b
+          );
+        }
+      } else if (shiftKey) {
+        if (prevSelectedLines.length === 0) {
+          newSelectedLines = [index];
+        } else {
+          const start = prevSelectedLines.at(-1);
+          const end = index;
+          const rangeStart = Math.min(start ?? end, end);
+          const rangeEnd = Math.max(start ?? end, end);
+          newSelectedLines = [
+            ...prevSelectedLines.filter((i) => i < rangeStart || i > rangeEnd),
+            ...Array.from(
+              { length: rangeEnd - rangeStart + 1 },
+              (_, i) => i + rangeStart
+            ),
+          ];
+        }
+      } else {
+        newSelectedLines = [index];
+      }
+      setSelectedLines(newSelectedLines);
+    },
+    [setSelectedLines]
+  );
+
   const handleRoleChangeInternal = useCallback(
     (value: string) => {
-      if (value && onRoleChange) {
-        onRoleChange(value);
+      const selected = useLyricsStore
+        .getState()
+        .role.selectedLines.includes(idx);
+      if (selected) {
+        setRoleOfSelectedLines(parseInt(value) || 0);
+      } else {
+        setRoleByIndex(idx, parseInt(value) || 0);
       }
     },
-    [onRoleChange]
+    [idx, setRoleByIndex, setRoleOfSelectedLines]
   );
 
-  const handleMinorChangeInternal = useCallback(
-    (pressed: boolean) => {
-      if (onMinorChange) {
-        onMinorChange(pressed);
-      }
-    },
-    [onMinorChange]
-  );
+  const handleMinorChangeInternal = useCallback(() => {
+    const pressed =
+      useLyricsStore.getState().lyrics?.lines[idx].attachments[METADATA_MINOR]
+        ?.text === "1";
+    const selected = useLyricsStore.getState().role.selectedLines.includes(idx);
+    if (selected) {
+      setMinorOfSelectedLines(!pressed);
+    } else {
+      setMinorByIndex(idx, !pressed);
+    }
+  }, [idx, setMinorOfSelectedLines, setMinorByIndex]);
 
   return (
-    <Button
-      variant="ghost"
-      className={cn(
-        "w-full justify-start h-auto py-1 px-2 data-[selected=true]:bg-info data-[selected=true]:text-accent-foreground rounded-none",
-        selected && "bg-accent text-accent-foreground"
-      )}
-      data-index={idx}
-      data-selected={selected}
-      onClick={onClick}
-    >
-      <div className="flex items-center gap-2">
+    <div className="relative">
+      <Button
+        variant="ghost"
+        className={cn(
+          "w-full justify-start h-auto py-1 px-2 data-[selected=true]:bg-info data-[selected=true]:text-accent-foreground rounded-none pl-36",
+          selected && "bg-accent text-accent-foreground"
+        )}
+        data-index={idx}
+        data-selected={selected}
+        onClick={onClick}
+      >
+        <div className="flex items-center gap-2">
+          <span>{lineContent}</span>
+        </div>
+      </Button>
+      <div className="absolute top-0 left-2 bottom-0 flex items-center gap-2">
         <ToggleGroup
           type="single"
           variant="outline"
-          value={String(line.attachments.role ?? 0)}
+          value={lineRole || "0"}
           onValueChange={handleRoleChangeInternal}
           size="sm"
-          onClick={(e) => e.stopPropagation()} // Prevent row click when clicking toggle group
         >
           <ToggleGroupItem value="0" className="py-0 px-2 h-auto">
             0
@@ -78,144 +148,27 @@ const RowItem = memo(function RowItem({
           size="sm"
           className={cn(
             "py-0 px-2 h-auto",
-            line.attachments.minor && "bg-secondary text-secondary-foreground"
+            lineMinor && "bg-secondary text-secondary-foreground"
           )}
-          pressed={line.attachments.minor}
-          onClick={(e) => {
-            e.stopPropagation(); // Prevent row click
-            handleMinorChangeInternal(!line.attachments.minor);
-          }}
+          pressed={lineMinor === "1"}
+          onClick={handleMinorChangeInternal}
         >
-          {line.attachments.minor ? "Min" : "Maj"}
+          {lineMinor ? "Min" : "Maj"}
         </Toggle>
-        <span>{line.content}</span>
       </div>
-    </Button>
+    </div>
   );
 });
 
-function getTargetLines(
-  event: React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>,
-  selectedLines: number[]
-) {
-  const eventLine = parseInt(
-    event.currentTarget.closest("[data-index]")?.getAttribute("data-index") ??
-      "-1"
-  );
-  if (selectedLines.includes(eventLine)) {
-    return selectedLines;
-  }
-  return [eventLine];
-}
-
 interface Props {
-  lyrics: string;
-  setLyrics: (lyrics: string) => void;
   fileId: number;
 }
 
-export default function Roles({ lyrics, setLyrics, fileId }: Props) {
-  // Parse lyrics
-  const parsedLyrics = useMemo<Lyrics | null>(() => {
-    if (!lyrics) return null;
-
-    try {
-      return new Lyrics(lyrics);
-    } catch (e) {
-      console.error(`Error occurred while loading lyrics text: ${e}`, e);
-      toast.error(`Error occurred while loading lyrics text: ${e}`);
-      return null;
-    }
-  }, [lyrics]);
-
-  // Parse and set `lines`.
-  const [lines, setLines, linesRef] = useNamedStateWithRef<LyricsLine[]>(
-    [],
-    "lines"
-  );
-  useEffect(() => {
-    if (parsedLyrics !== null) {
-      setLines(parsedLyrics.lines);
-
-      return () => {
-        parsedLyrics.lines = linesRef.current;
-        setLyrics(parsedLyrics.toString());
-      };
-    }
-    // dropping dependency [parsedLyrics] to prevent loop with parsedLyrics.
-  }, [setLines, setLyrics]);
-
-  const [selectedLines, setSelectedLines, selectedLinesRef] =
-    useNamedStateWithRef<number[]>([], "selectedLines");
-
-  const handleListItemClick = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      const index = parseInt(
-        event.currentTarget.getAttribute("data-index") ?? "-1"
-      );
-      const shiftKey = event.shiftKey;
-      const ctrlCmdKey = event.ctrlKey || event.metaKey;
-      if (ctrlCmdKey) {
-        setSelectedLines((prevSelectedLines) => {
-          if (prevSelectedLines.includes(index)) {
-            return prevSelectedLines.filter((i) => i !== index);
-          } else {
-            return [...prevSelectedLines, index].sort((a, b) => a - b);
-          }
-        });
-      } else if (shiftKey) {
-        setSelectedLines((prevSelectedLines) => {
-          if (prevSelectedLines.length === 0) {
-            return [index];
-          } else {
-            const start = prevSelectedLines.at(0); // Use first selected as start
-            const end = index;
-            const rangeStart = Math.min(start ?? end, end);
-            const rangeEnd = Math.max(start ?? end, end);
-            return [
-              ...Array.from(
-                { length: rangeEnd - rangeStart + 1 },
-                (_, i) => i + rangeStart
-              ),
-            ];
-          }
-        });
-      } else {
-        setSelectedLines([index]);
-      }
-    },
-    [setSelectedLines]
-  );
-
-  const handleRoleChangeForRow = useCallback(
-    (value: string) => {
-      const role = parseInt(value);
-      setLines((prevLines) =>
-        prevLines.map((line, i) => {
-          if (selectedLinesRef.current.includes(i)) {
-            line = Object.assign(Object.create(line), line);
-            line.attachments.role = role;
-          }
-          return line;
-        })
-      );
-    },
-    [setLines, selectedLinesRef]
-  );
-
-  const handleMinorChangeForRow = useCallback(
-    (pressed: boolean) => {
-      setLines((prevLines) =>
-        prevLines.map((line, i) => {
-          if (selectedLinesRef.current.includes(i)) {
-            line = Object.assign(Object.create(line), line);
-            line.attachments.minor = pressed;
-          }
-          return line;
-        })
-      );
-    },
-    [selectedLinesRef, setLines]
+export default function Roles({ fileId }: Props) {
+  const { linesCount } = useLyricsStore(
+    useShallow((state) => ({
+      linesCount: state.lyrics?.lines.length ?? 0,
+    }))
   );
 
   return (
@@ -227,17 +180,11 @@ export default function Roles({ lyrics, setLyrics, fileId }: Props) {
       </div>
       <div>
         <div className="flex flex-col">
-          {lines.map((line, idx) => (
-            <RowItem
-              key={idx}
-              line={line}
-              idx={idx}
-              selected={selectedLines.includes(idx)}
-              onClick={handleListItemClick}
-              onRoleChange={handleRoleChangeForRow}
-              onMinorChange={handleMinorChangeForRow}
-            />
-          ))}
+          {Array(linesCount)
+            .fill(null)
+            .map((_, idx) => (
+              <RowItem key={idx} idx={idx} />
+            ))}
         </div>
       </div>
     </div>

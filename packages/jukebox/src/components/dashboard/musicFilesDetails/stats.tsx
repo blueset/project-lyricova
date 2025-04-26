@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { parseISO } from "date-fns";
 
 import {
   Form,
@@ -40,7 +39,7 @@ type FormSchema = z.infer<typeof formSchema>;
 interface Props {
   fileId: number;
   playCount?: number;
-  lastPlayed?: string | Date;
+  lastPlayed?: Date;
   refresh: () => unknown | Promise<unknown>;
 }
 
@@ -55,7 +54,7 @@ export default function StatsPanel({
     resolver: zodResolver(formSchema),
     values: {
       playCount: playCount ?? 0,
-      lastPlayed: lastPlayed ? parseISO(lastPlayed.toString()) : undefined,
+      lastPlayed: lastPlayed ? new Date(lastPlayed) : undefined,
     },
     resetOptions: {
       keepDefaultValues: true,

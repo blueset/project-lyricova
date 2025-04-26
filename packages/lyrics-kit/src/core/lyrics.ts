@@ -1,3 +1,12 @@
+import type { LyricsLineJSON } from "./lyricsLine";
+import type { LyricsMetadataJSON } from "./lyricsMetadata";
+
+export interface LyricsJSON {
+  lines: LyricsLineJSON[];
+  idTags: { [key: string]: string };
+  metadata: LyricsMetadataJSON;
+}
+
 import {
   id3TagRegex,
   lyricsLineRegex,
@@ -450,5 +459,25 @@ export class Lyrics {
     const result = [...new Set(this.lines.flatMap(v => Object.keys(v.attachments.translations)))];
     result.sort();
     return result;
+  }
+
+  public toJSON(): LyricsJSON {
+    return {
+      lines: this.lines.map(line => line.toJSON()),
+      idTags: { ...this.idTags },
+      metadata: this.metadata.toJSON(),
+    };
+  }
+
+  public static fromJSON(json: LyricsJSON): Lyrics {
+    const lyrics = new Lyrics();
+    lyrics.lines = json.lines.map(line => {
+      const lyricsLine = LyricsLine.fromJSON(line);
+      lyricsLine.lyrics = lyrics;
+      return lyricsLine;
+    });
+    lyrics.idTags = { ...json.idTags };
+    lyrics.metadata = LyricsMetadata.fromJSON(json.metadata);
+    return lyrics;
   }
 }
