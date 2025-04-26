@@ -190,6 +190,7 @@ export const createFuriganaSlice: StateCreator<
             }
           });
         });
+        get().generate();
         get().furigana.refreshRomajiMatching();
       },
       applyIdenticalFurigana(sourceIndex) {
@@ -212,6 +213,7 @@ export const createFuriganaSlice: StateCreator<
             });
           }
         });
+        get().debouncedGenerate();
       },
       addFuriganaToSelectedLine(start, end, furigana) {
         set((state) => {
@@ -265,6 +267,7 @@ export const createFuriganaSlice: StateCreator<
         if (get().furigana.autoApplyIdentical) {
           get().furigana.applyIdenticalFurigana(get().furigana.selectedLine);
         }
+        get().debouncedGenerate();
         get().furigana.refreshRomajiMatching();
       },
       removeFuriganaFromSelectedLine(start, end) {
@@ -286,6 +289,7 @@ export const createFuriganaSlice: StateCreator<
         if (get().furigana.autoApplyIdentical) {
           get().furigana.applyIdenticalFurigana(get().furigana.selectedLine);
         }
+        get().debouncedGenerate();
         get().furigana.refreshRomajiMatching();
       },
       applyPatternToAllLines(baseText, furiganaText) {
@@ -346,10 +350,9 @@ export const createFuriganaSlice: StateCreator<
               groups.forEach((group) => {
                 if (Array.isArray(group)) {
                   furiganaAttribute.push({
-                    "content": group[1],
-                    "range": [pos, pos + [...group[0]].length],
-                  }
-                  );
+                    content: group[1],
+                    range: [pos, pos + [...group[0]].length],
+                  });
                   pos += [...group[0]].length;
                 } else {
                   pos += [...group].length;
@@ -372,6 +375,7 @@ export const createFuriganaSlice: StateCreator<
             }
           });
         });
+        get().generate();
         get().furigana.refreshRomajiMatching();
       },
     },
