@@ -341,11 +341,10 @@ export const createInlineTaggingSlice: StateCreator<
             const timeTags = line.attachments[TIME_TAG].tags;
 
             const existingTag = timeTags.find((tag) => tag.index === column);
+            const offset = line.position || tags?.flat().find((s) => !!s) || 0;
             if (existingTag) {
-              existingTag.timeTag = time + KEY_PRESS_OFFSET_SEC;
+              existingTag.timeTag = time + KEY_PRESS_OFFSET_SEC - offset;
             } else {
-              const offset =
-                line.position || tags?.flat().find((s) => !!s) || 0;
               timeTags.push({
                 index: column,
                 timeTag: time + KEY_PRESS_OFFSET_SEC - offset,

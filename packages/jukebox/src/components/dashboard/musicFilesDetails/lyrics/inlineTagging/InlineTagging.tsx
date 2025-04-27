@@ -23,7 +23,6 @@ import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 import { Toggle } from "@lyricova/components/components/ui/toggle";
