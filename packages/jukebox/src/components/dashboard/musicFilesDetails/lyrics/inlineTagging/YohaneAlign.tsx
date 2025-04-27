@@ -301,6 +301,10 @@ export function YohaneAlign({ fileId }: { fileId: number }) {
               } else if (data.type === "result") {
                 result = data.result;
                 setProgress(null);
+              } else if (data.type === "error") {
+                setProgress({ status: data.error });
+                toast.error(`Error while aligning: ${data.error}`);
+                setIsAlignmentLoading(false);
               }
             } catch (error) {
               console.error("Error processing message:", error);
