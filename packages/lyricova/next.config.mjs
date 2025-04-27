@@ -36,6 +36,9 @@ const config = withBundleAnalyzer({
       },
     ];
   },
+  experimental: {
+    proxyTimeout: 3600_000,
+  },
 });
 
 export default config;

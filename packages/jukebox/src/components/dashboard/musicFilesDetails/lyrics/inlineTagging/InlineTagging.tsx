@@ -69,6 +69,9 @@ export default function InlineTagging({ fileId }: Props) {
 
   useEffect(() => {
     useLyricsStore.getState().inlineTagging.populateDotsAndMarks();
+    return () => {
+      useLyricsStore.getState().generate();
+    };
   }, []);
 
   const [playbackProgress, setPlaybackProgress] = useNamedState(

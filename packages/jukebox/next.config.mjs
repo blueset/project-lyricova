@@ -19,4 +19,7 @@ export default withBundleAnalyzer({
       },
     ];
   },
+  experimental: {
+    proxyTimeout: 3600_000,
+  },
 });
