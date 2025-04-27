@@ -113,9 +113,6 @@ export class WordTimeTag extends LyricsLineAttachment {
       const tags = [...description.matchAll(timeLineAttachmentRegex)].map(
         v => new WordTimeTagLabel(v[1])
       );
-      if (tags.length === 0) {
-        throw new Error(`Word time tag attribute has no attachment: ${description}`);
-      }
       this.tags = tags;
 
       const match = description.match(timeLineAttachmentDurationRegex);
@@ -205,9 +202,6 @@ export class RangeAttribute extends LyricsLineAttachment {
       for (const [content, range] of value) {
         this.attachment.push(new RangeAttributeLabel(content, range));
       }
-    }
-    if (this.attachment.length === 0) {
-      throw new Error(`Range attribute has no attachment: ${value}`);
     }
   }
 

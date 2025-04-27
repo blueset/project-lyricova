@@ -148,7 +148,7 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
             result += "\n\n";
             ptrTime = endTimeTag;
           });
-          if (timeTags[timeTags.length - 1].index < base.length) {
+          if (timeTags[timeTags.length - 1]?.index < base?.length) {
             const formattedSection = `${convertLine(v)}`;
             lineCounter++;
             result += `${lineCounter}\n${ptrTime} --> ${end} line:${vttOffsiteLine} align:${align}\n<c.tt${minor}>[${start}] (@ ${ptrTime} ${metadata})</c>\n${formattedSection}`;

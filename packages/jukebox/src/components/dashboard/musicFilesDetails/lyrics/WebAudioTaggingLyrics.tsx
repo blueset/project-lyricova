@@ -103,7 +103,7 @@ const LineListItem = ({
             ? `[${buildTimeTag(line.position)}]`
             : ""}
         </span>
-        <div className="flex-grow">
+        <div className="flex-grow w-0">
           <span className="block text-muted-foreground whitespace-pre-wrap">
             {lineText}
           </span>
