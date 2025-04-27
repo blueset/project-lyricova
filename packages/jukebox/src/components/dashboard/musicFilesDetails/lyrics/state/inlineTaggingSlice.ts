@@ -5,7 +5,6 @@ import {
   LyricsState,
 } from "./sliceTypes";
 import { DOTS, TAGS, TIME_TAG } from "lyrics-kit/core";
-import { TIME } from "sequelize";
 
 /** Apply -200ms offset to all keypresses to compensate reflection time. */
 const KEY_PRESS_OFFSET_SEC = -0.2;
@@ -339,18 +338,23 @@ export const createInlineTaggingSlice: StateCreator<
                 tags: [],
               };
             }
-            const tags = line.attachments[TIME_TAG].tags;
+            const timeTags = line.attachments[TIME_TAG].tags;
 
-            const existingTag = tags.find((tag) => tag.index === column);
+            const existingTag = timeTags.find((tag) => tag.index === column);
             if (existingTag) {
               existingTag.timeTag = time + KEY_PRESS_OFFSET_SEC;
             } else {
-              tags.push({
+              const offset =
+                line.position || tags?.flat().find((s) => !!s) || 0;
+              timeTags.push({
                 index: column,
-                timeTag: time + KEY_PRESS_OFFSET_SEC - line.position,
+                timeTag: time + KEY_PRESS_OFFSET_SEC - offset,
               });
-              if (tags.length > 1 && tags.at(-2).index > tags.at(-1).index) {
-                tags.sort((a, b) => a.index - b.index);
+              if (
+                timeTags.length > 1 &&
+                timeTags.at(-2).index > timeTags.at(-1).index
+              ) {
+                timeTags.sort((a, b) => a.index - b.index);
               }
             }
           }
@@ -525,9 +529,10 @@ export const createInlineTaggingSlice: StateCreator<
                   .map((tags, idx) => {
                     const timeTag = tags[0];
                     if (timeTag !== null && timeTag !== undefined) {
+                      const offset = line.position || 0;
                       return {
                         index: idx,
-                        timeTag: timeTag - line.position,
+                        timeTag: timeTag - offset,
                       };
                     }
                     return null;
