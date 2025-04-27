@@ -28,6 +28,7 @@ import {
 } from "@lyricova/components/components/ui/tooltip";
 import { Toggle } from "@lyricova/components/components/ui/toggle";
 import { CheckSquare } from "lucide-react";
+import { YohaneAlign } from "./YohaneAlign";
 
 function Instructions() {
   return (
@@ -409,31 +410,29 @@ export default function InlineTagging({ fileId }: Props) {
     <div className="flex h-full flex-col" ref={taggingAreaRef}>
       <div className="sticky top-0 left-0 z-10 bg-background/80 py-4 space-y-2 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handlePopulateMarksJa}>
+          <Button variant="outline" onClick={handlePopulateMarksJa} size="sm">
             Marks&nbsp;(ja)
           </Button>
-          <Button variant="outline" onClick={handlePopulateMarksEn}>
+          <Button variant="outline" onClick={handlePopulateMarksEn} size="sm">
             Marks&nbsp;(en)
           </Button>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <Toggle
-                    variant="default"
-                    pressed={autoApplyIdentical}
-                    onPressedChange={setAutoApplyIdentical}
-                  >
-                    <CheckSquare />{" "}
-                    <span className="hidden md:inline">Auto apply</span>
-                  </Toggle>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                Auto-apply furigana to identical lines
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <Toggle
+                  variant="default"
+                  pressed={autoApplyIdentical}
+                  onPressedChange={setAutoApplyIdentical}
+                  size="sm"
+                >
+                  <CheckSquare />{" "}
+                  <span className="hidden md:inline">Auto apply</span>
+                </Toggle>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>Auto-apply dots to identical lines</TooltipContent>
+          </Tooltip>
+          <YohaneAlign fileId={fileId} />
           <InstructionsMemo />
         </div>
         <div className="flex items-center">

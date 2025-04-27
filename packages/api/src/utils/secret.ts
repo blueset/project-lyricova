@@ -61,3 +61,4 @@ export const OPENAI_MODEL = process.env["OPENAI_MODEL"] ?? "";
 // export const AZURE_OPENAI_ENDPOINT = process.env["AZURE_OPENAI_ENDPOINT"]!;
 // export const AZURE_OPENAI_API_KEY = process.env["AZURE_OPENAI_API_KEY"]!;
 // export const AZURE_OPENAI_DEPLOYMENT_ID = process.env["AZURE_OPENAI_DEPLOYMENT_ID"]!;
+export const YOHANE_SERVER_URL = process.env["YOHANE_SERVER_URL"] ?? "";

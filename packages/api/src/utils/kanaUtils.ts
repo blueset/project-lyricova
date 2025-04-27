@@ -3,12 +3,15 @@
  * @param str katakana
  */
 export function kanaToHira(str: string): string {
-  return (str && str.replace(/[\u30a1-\u30f6]/g, (match) =>
-    String.fromCharCode(match.charCodeAt(0) - 0x60)
-  ));
+  return (
+    str &&
+    str.replace(/[\u30a1-\u30f6]/g, (match) =>
+      String.fromCharCode(match.charCodeAt(0) - 0x60)
+    )
+  );
 }
 
-// Romaji to hiragana
+// Romaji to hiragana, hiragana to romaji
 // @author marmooo https://github.com/marmooo/hiraroma
 // @license MIT
 
@@ -409,7 +412,12 @@ export function romaToHira(roma: string): string {
   let index = 0;
   let node = tree;
   roma = roma.toLowerCase().replace(/[āīūēō]/g, (match) => {
-    return match.replace(/ā/g, "a-").replace(/ī/g, "i-").replace(/ū/g, "u-").replace(/ē/g, "e-").replace(/ō/g, "o-");
+    return match
+      .replace(/ā/g, "a-")
+      .replace(/ī/g, "i-")
+      .replace(/ū/g, "u-")
+      .replace(/ē/g, "e-")
+      .replace(/ō/g, "o-");
   });
   const len = roma.length;
 
@@ -441,7 +449,10 @@ export function romaToHira(roma: string): string {
       }
       // const next = roma.charAt(index + 1);
       // console.log("prev", prev, "char", char, "roma", roma, "index", index);
-      if (prev && (prev === "n" || prev === char || (prev === "t" && char === "c"))) {
+      if (
+        prev &&
+        (prev === "n" || prev === char || (prev === "t" && char === "c"))
+      ) {
         // console.log("push", prev === "n" ? "ん" : "っ", false);
         push(prev === "n" ? "ん" : "っ", false);
       }
