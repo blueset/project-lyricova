@@ -28,6 +28,7 @@ import {
 import { Toggle } from "@lyricova/components/components/ui/toggle";
 import { CheckSquare } from "lucide-react";
 import { YohaneAlign } from "./YohaneAlign";
+import { CustomAlign } from "./CustomAlign";
 
 function Instructions() {
   return (
@@ -432,6 +433,7 @@ export default function InlineTagging({ fileId }: Props) {
             <TooltipContent>Auto-apply dots to identical lines</TooltipContent>
           </Tooltip>
           <YohaneAlign fileId={fileId} />
+          <CustomAlign fileId={fileId} />
           <InstructionsMemo />
         </div>
         <div className="flex items-center">
