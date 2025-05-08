@@ -11,7 +11,6 @@ const rowContainerClasses = cn(
   "will-change-[transform,opacity,filter]",
   "min-h-[0.5em]",
   "max-w-[calc(100%-4rem)]",
-  "transition-filter duration-500",
   "hover:!blur-none hover:bg-current/20", // filter: blur(0), backgroundColor: color-mix(...)
 
   // role % 3 === 0
