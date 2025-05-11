@@ -36,6 +36,7 @@ export const createRoleSlice: StateCreator<
             }
           });
         });
+        get().generate();
       },
       setRoleOfSelectedLines: (role: number) => {
         const state = get();
@@ -66,6 +67,7 @@ export const createRoleSlice: StateCreator<
             }
           });
         });
+        get().generate();
       },
       setMinorOfSelectedLines: (minor: boolean) => {
         const state = get();
@@ -74,7 +76,7 @@ export const createRoleSlice: StateCreator<
         const { lyrics } = state;
         if (!lyrics) return;
         state.role.setMinorByIndex(selectedLines, minor);
-      }
-    }
+      },
+    },
   };
 };

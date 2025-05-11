@@ -29,7 +29,7 @@ export const createTaggingSlice: StateCreator<
           state.tagging.isInExtrapolateMode = isInExtrapolateMode;
           state.tagging.extrapolateTags = [];
         }),
-      setTimestampAtCursor: (timestamp: number) =>
+      setTimestampAtCursor: (timestamp: number) => {
         set((state) => {
           const { cursor } = state.tagging;
           const { lyrics } = state;
@@ -41,7 +41,9 @@ export const createTaggingSlice: StateCreator<
             return;
           }
           line.position = timestamp;
-        }),
+        });
+        get().debouncedGenerate();
+      },
       setExtrapolateTagsAtCursor: (value: number | null) => {
         set((state) => {
           const { cursor, extrapolateTags } = state.tagging;
@@ -94,6 +96,7 @@ export const createTaggingSlice: StateCreator<
               b: 0,
             };
           });
+          get().generate();
         });
       },
       reset: () =>

@@ -564,6 +564,7 @@ export const createInlineTaggingSlice: StateCreator<
             }
           }
         });
+        get().generate();
       },
       setDots(dots) {
         set((state) => {
