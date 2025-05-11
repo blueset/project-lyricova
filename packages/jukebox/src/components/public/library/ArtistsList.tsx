@@ -97,7 +97,7 @@ export default function ArtistsList({ types, typeName }: Props) {
                   <AvatarImage
                     src={v.mainPictureUrl}
                     alt={v.name}
-                    className="object-top"
+                    className="object-top object-cover"
                     loading="lazy"
                   />
                   <AvatarFallback className="text-lg rounded-md">

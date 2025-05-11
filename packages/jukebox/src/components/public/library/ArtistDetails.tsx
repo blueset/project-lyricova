@@ -140,7 +140,10 @@ export default function ArtistDetails({ id, type }: Props) {
               className="h-18 w-18 rounded-md"
               style={{ objectPosition: "top center" }}
             >
-              <AvatarImage src={artist.mainPictureUrl} />
+              <AvatarImage
+                src={artist.mainPictureUrl}
+                className="object-top object-cover"
+              />
               <AvatarFallback className="rounded-md">
                 <Users className="h-8 w-8" />
               </AvatarFallback>

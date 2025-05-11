@@ -91,6 +91,7 @@ export default function ArtistInfoLayout({ children }: Props) {
           <Avatar className="h-10 w-10 rounded-md border-border border">
             <AvatarImage
               src={row.original.mainPictureUrl}
+              className="object-cover object-top"
               alt={row.getValue("name") as string}
             />
             <AvatarFallback className="rounded-md">
