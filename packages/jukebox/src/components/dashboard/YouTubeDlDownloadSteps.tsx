@@ -242,7 +242,10 @@ export default function YouTubeDlDownloadSteps({
           action: {
             label: "Review file",
             onClick: () =>
-              (window.location.href = `/dashboard/review/${scanOutcome.data.scanByPath.id}`),
+              window.open(
+                `/dashboard/review/${scanOutcome.data.scanByPath.id}`,
+                "_blank"
+              ),
           },
         }
       );
@@ -415,7 +418,11 @@ export default function YouTubeDlDownloadSteps({
           )}
           <div className="flex gap-2 mt-4">
             <Button
-              disabled={downloadState === null || downloadState < 0}
+              disabled={
+                downloadState === null ||
+                downloadState === undefined ||
+                downloadState < 0
+              }
               variant="default"
               asChild
             >
