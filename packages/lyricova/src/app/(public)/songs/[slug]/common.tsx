@@ -13,7 +13,7 @@ export async function generateMetadataData(
   songId: string,
   page: string
 ): Promise<Metadata> {
-  const response = await fetch(`${apiBaseUrl}/song/${songId}`, {
+  const response = await fetch(`${apiBaseUrl}/songs/${songId}`, {
     cache: "no-store",
   });
   const { tag }: { tag: Tag } = await response.json();
@@ -44,7 +44,7 @@ export async function SongArchivePageComponent({
   page: string;
 }) {
   const response = await fetch(
-    `${apiBaseUrl}/song/${songId}/entries?page=${page}`,
+    `${apiBaseUrl}/songs/${songId}/entries?page=${page}`,
     { cache: "no-store" }
   );
   const { entries, song, totalPages }: SongArchivePageProps =
