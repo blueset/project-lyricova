@@ -5,7 +5,7 @@ import { Paginator } from "@/components/public/listing/Paginator";
 import { SingleEntry } from "@/components/public/listing/SingleEntry";
 import { SubArchiveHeader } from "@/components/public/listing/SubArchiveHeader";
 import { apiBaseUrl, host, siteName, tagLine1, tagLine2 } from "@/utils/consts";
-import { Entry, Song, Tag } from "@lyricova/api/graphql/types";
+import { Artist, Entry, Song } from "@lyricova/api/graphql/types";
 import { Metadata } from "next";
 import classes from "./SongListings.module.scss";
 
@@ -16,14 +16,14 @@ export async function generateMetadataData(
   const response = await fetch(`${apiBaseUrl}/songs/${songId}`, {
     cache: "no-store",
   });
-  const { tag }: { tag: Tag } = await response.json();
+  const artist: Artist = await response.json();
 
   return {
-    title: `Song Archive of ${tag.name} – Page ${page}`,
-    description: `Song Archive of ${tag.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`,
+    title: `Song Archive of ${artist.name} – Page ${page}`,
+    description: `Song Archive of ${artist.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`,
     openGraph: {
-      title: `Song Archive of ${tag.name} – Page ${page} – ${siteName}`,
-      description: `Song Archive of ${tag.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`,
+      title: `Song Archive of ${artist.name} – Page ${page} – ${siteName}`,
+      description: `Song Archive of ${artist.name} – Page ${page} – ${siteName}: ${tagLine1} ${tagLine2}`,
       images: [`${host}/images/og-cover.png`],
     },
   };

@@ -1,12 +1,10 @@
-import { siteName, tagLine1, tagLine2 } from "../../../utils/consts";
+import { siteName } from "../../../utils/consts";
 import classes from "./SubArchiveHeader.module.scss";
 import { NavPanel } from "../nav/NavPanel";
 import { Search } from "../nav/Search";
 import type { ReactNode } from "react";
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import _ from "lodash";
 import { Link } from "../Link";
-import Balancer from "react-wrap-balancer";
 
 // const resizer = _.debounce((elm: HTMLElement) => {
 //   // console.time("resizer");
