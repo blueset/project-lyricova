@@ -211,8 +211,9 @@ export default function LyricsTools() {
 
         <DropdownMenuContent>
           {[
-            "deepseek/deepseek-chat:free",
-            "google/gemini-2.5-pro-exp-03-25:free",
+            "deepseek/deepseek-chat-v3-0324:free",
+            "google/gemini-2.5-flash-preview-05-20",
+            "google/gemini-2.5-flash-preview-05-20:thinking",
             "o4-mini",
             "o3-mini",
             "openai/o4-mini",
@@ -224,9 +225,10 @@ export default function LyricsTools() {
             "openai/gpt-4.1",
             "openai/gpt-4o",
             "google/gemma-3-27b-it:free",
-            "meta-llama/llama-3.1-70b-instruct:free",
             "qwen/qwq-32b:free",
-            "qwen/qwen-2.5-72b-instruct:free",
+            "qwen/qwen2.5-vl-72b-instruct:free",
+            "meta-llama/llama-4-maverick:free",
+            "meta-llama/llama-4-scout:free",
             "meta-llama/llama-3.3-70b-instruct:free",
           ].map((model) => (
             <DropdownMenuItem
