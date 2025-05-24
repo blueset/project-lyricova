@@ -91,32 +91,58 @@ export function SelectArtistEntityBox<
 
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [options, setOptions] = useState<ExtendedArtist[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Separate states for different data sources
+  const [apolloResults, setApolloResults] = useState<ExtendedArtist[]>([]);
+  const [vocaDBResults, setVocaDBResults] = useState<ExtendedArtist[]>([]);
+  const [isApolloLoading, setIsApolloLoading] = useState(false);
+  const [isVocaDBLoading, setIsVocaDBLoading] = useState(false);
 
   const [importDialogKeyword, setImportDialogKeyword] = useState("");
   const [isImportDialogOpen, toggleImportDialogOpen] = useState(false);
   const [isManualDialogOpen, toggleManualDialogOpen] = useState(false);
   const [isManualDialogForCreate, toggleManualDialogForCreate] = useState(true);
 
-  const fetchOptions = useCallback(
-    _.debounce(
-      async (searchText: string, currentValue: ExtendedArtist | null) => {
-        if (searchText === "") {
-          setOptions(currentValue ? [currentValue] : []);
-          setIsLoading(false);
-          return;
-        }
+  const fetchApolloResults = useCallback(
+    _.debounce(async (searchText: string) => {
+      if (searchText === "") {
+        setApolloResults([]);
+        setIsApolloLoading(false);
+        return;
+      }
 
-        setIsLoading(true);
-        let result: ExtendedArtist[] = [];
-
-        const apolloPromise = apolloClient.query<{ searchArtists: Artist[] }>({
+      setIsApolloLoading(true);
+      try {
+        const apolloResult = await apolloClient.query<{
+          searchArtists: Artist[];
+        }>({
           query: LOCAL_ARTIST_ENTITY_QUERY,
           variables: { text: searchText },
         });
 
-        const vocaDBPromise = axios.get<string[]>(
+        if (apolloResult.data?.searchArtists) {
+          setApolloResults(apolloResult.data.searchArtists);
+        }
+      } catch (e) {
+        setApolloResults([]);
+      } finally {
+        setIsApolloLoading(false);
+      }
+    }, 300),
+    [apolloClient]
+  );
+
+  const fetchVocaDBResults = useCallback(
+    _.debounce(async (searchText: string) => {
+      if (searchText === "") {
+        setVocaDBResults([]);
+        setIsVocaDBLoading(false);
+        return;
+      }
+
+      setIsVocaDBLoading(true);
+      try {
+        const vocaDBResult = await axios.get<string[]>(
           "https://vocadb.net/api/artists/names",
           {
             params: {
@@ -126,65 +152,30 @@ export function SelectArtistEntityBox<
           }
         );
 
-        try {
-          const apolloResult = await apolloPromise;
-          if (apolloResult.data?.searchArtists) {
-            result = result.concat(apolloResult.data?.searchArtists);
-          }
-        } catch (e) {
-          /* No-Op. */
+        if (vocaDBResult.status === 200 && vocaDBResult.data) {
+          setVocaDBResults(
+            vocaDBResult.data.map((v) => ({
+              id: undefined,
+              name: v,
+              sortOrder: `"${v}"`,
+              vocaDBSuggestion: true,
+            }))
+          );
         }
-
-        try {
-          const vocaDBResult = await vocaDBPromise;
-          if (vocaDBResult.status === 200 && vocaDBResult.data) {
-            result = result.concat(
-              vocaDBResult.data.map((v) => ({
-                id: undefined,
-                name: v,
-                sortOrder: `"${v}"`,
-                vocaDBSuggestion: true,
-                isAction: true, // Mark as action
-              }))
-            );
-          }
-        } catch (e) {
-          /* No-Op. */
-        }
-
-        // Ensure current value is in options if it exists and isn't already there
-        if (currentValue && !result.some((opt) => opt.id === currentValue.id)) {
-          result = [currentValue, ...result];
-        }
-
-        // Add special options
-        result.push({
-          id: undefined,
-          name: `Search VocaDB for “${searchText}”`,
-          sortOrder: searchText,
-          vocaDBSuggestion: true,
-          isAction: true, // Mark as action
-        });
-        result.push({
-          id: undefined,
-          name: `Manually add “${searchText}”`,
-          sortOrder: searchText,
-          manual: true,
-          isAction: true, // Mark as action
-        });
-
-        setOptions(result);
-        setIsLoading(false);
-      },
-      300
-    ),
-    [apolloClient]
+      } catch (e) {
+        setVocaDBResults([]);
+      } finally {
+        setIsVocaDBLoading(false);
+      }
+    }, 300),
+    []
   );
 
   useEffect(() => {
-    // Fetch options when input value changes
-    fetchOptions(inputValue, value);
-  }, [inputValue, fetchOptions, value]);
+    // Run both requests in parallel
+    fetchApolloResults(inputValue);
+    fetchVocaDBResults(inputValue);
+  }, [inputValue, fetchApolloResults, fetchVocaDBResults]);
 
   useEffect(() => {
     // Pre-populate input text if value exists when opening
@@ -197,33 +188,48 @@ export function SelectArtistEntityBox<
   }, [open, value]);
 
   const handleSelect = (selectedOptionValue: string) => {
-    const selectedOption = options.find(
+    const allOptions = [...apolloResults, ...vocaDBResults];
+    const selectedOption = allOptions.find(
       (option) => `${option.name}-${option.id}` === selectedOptionValue
     );
 
-    if (!selectedOption) return;
+    if (!selectedOption) {
+      // Handle action items
+      if (selectedOptionValue === `search-vocadb-${inputValue}`) {
+        setImportDialogKeyword(inputValue);
+        toggleImportDialogOpen(true);
+        setOpen(false);
+        setInputValue("");
+        return;
+      }
+      if (selectedOptionValue === `manual-add-${inputValue}`) {
+        setImportDialogKeyword(inputValue);
+        toggleManualDialogForCreate(true);
+        toggleManualDialogOpen(true);
+        setOpen(false);
+        setInputValue("");
+        form.setValue(fieldName, null as any);
+        return;
+      }
+      return;
+    }
 
-    if (selectedOption.vocaDBSuggestion && selectedOption.isAction) {
+    if (selectedOption.vocaDBSuggestion) {
       setImportDialogKeyword(selectedOption?.sortOrder ?? "");
       toggleImportDialogOpen(true);
       setOpen(false);
       setInputValue("");
-    } else if (selectedOption.manual && selectedOption.isAction) {
-      setImportDialogKeyword(selectedOption?.sortOrder ?? "");
-      toggleManualDialogForCreate(true);
-      toggleManualDialogOpen(true);
-      setOpen(false);
-      setInputValue("");
-      form.setValue(fieldName, null as any); // Clear selection
     } else {
       form.setValue(fieldName, selectedOption as any, {
         shouldValidate: true,
         shouldDirty: true,
       });
       setOpen(false);
-      setInputValue(""); // Clear search text after selection
+      setInputValue("");
     }
   };
+
+  const isLoading = isApolloLoading || isVocaDBLoading;
 
   return (
     <>
@@ -255,26 +261,54 @@ export function SelectArtistEntityBox<
                 />
                 <ScrollArea>
                   <CommandList>
-                    {isLoading && (
-                      <CommandItem disabled>
-                        <Skeleton className="h-8 w-full" />
-                      </CommandItem>
-                    )}
                     <CommandEmpty>Enter keywords to search.</CommandEmpty>
-                    {!isLoading && (
-                      <CommandGroup>
-                        {options.map((option) => {
-                          const optionValue = `${option.name}-${option.id}`;
-                          let icon = (
-                            <Music className="text-muted-foreground" />
-                          );
-                          if (option.vocaDBSuggestion && option.isAction)
-                            icon = <Search className="text-muted-foreground" />;
-                          else if (option.manual && option.isAction)
-                            icon = (
-                              <PlusCircle className="text-muted-foreground" />
-                            );
 
+                    {/* Loading skeleton */}
+                    {isLoading && (
+                      <CommandGroup heading="Loading…">
+                        <CommandItem disabled>
+                          <Skeleton className="h-8 w-full" />
+                        </CommandItem>
+                      </CommandGroup>
+                    )}
+
+                    {/* Apollo results */}
+                    {(apolloResults.length > 0 ||
+                      (value &&
+                        !apolloResults.some(
+                          (option) => option.id === value.id
+                        ))) && (
+                      <CommandGroup heading="Local artists">
+                        {/* Current value if not found in Apollo results */}
+                        {value &&
+                          !apolloResults.some(
+                            (option) => option.id === value.id
+                          ) && (
+                            <CommandItem
+                              key={value.id ?? value.name}
+                              value={`${value.name}-${value.id}`}
+                              onSelect={handleSelect}
+                              className="flex items-center cursor-pointer"
+                            >
+                              <div className="flex items-center flex-shrink-0">
+                                <Music className="text-muted-foreground" />
+                              </div>
+                              <div className="flex flex-col flex-grow ml-2">
+                                <span className="text-sm">
+                                  {value.name}
+                                  {value.id ? ` (#${value.id})` : ""}
+                                </span>
+                                {value.type && (
+                                  <span className="text-xs text-muted-foreground leading-tight">
+                                    {value.type}
+                                  </span>
+                                )}
+                              </div>
+                              <Check className="ml-auto opacity-100" />
+                            </CommandItem>
+                          )}
+                        {apolloResults.map((option) => {
+                          const optionValue = `${option.name}-${option.id}`;
                           return (
                             <CommandItem
                               key={option.id ?? option.name}
@@ -283,20 +317,20 @@ export function SelectArtistEntityBox<
                               className="flex items-center cursor-pointer"
                             >
                               <div className="flex items-center flex-shrink-0">
-                                {icon}
+                                <Music className="text-muted-foreground" />
                               </div>
                               <div className="flex flex-col flex-grow ml-2">
                                 <span className="text-sm">
                                   {option.name}
                                   {option.id ? ` (#${option.id})` : ""}
                                 </span>
-                                {option.type && !option.isAction && (
+                                {option.type && (
                                   <span className="text-xs text-muted-foreground leading-tight">
                                     {option.type}
                                   </span>
                                 )}
                               </div>
-                              {value?.id === option.id && !option.isAction && (
+                              {value?.id === option.id && (
                                 <Check
                                   className={cn(
                                     "ml-auto h-4 w-4",
@@ -311,6 +345,67 @@ export function SelectArtistEntityBox<
                         })}
                       </CommandGroup>
                     )}
+
+                    {/* VocaDB suggestions */}
+                    {vocaDBResults.length > 0 && (
+                      <CommandGroup heading="VocaDB suggestions">
+                        {vocaDBResults.map((option) => {
+                          const optionValue = `${option.name}-${option.id}`;
+                          return (
+                            <CommandItem
+                              key={option.name}
+                              value={optionValue}
+                              onSelect={handleSelect}
+                              className="flex items-center cursor-pointer"
+                            >
+                              <div className="flex items-center flex-shrink-0">
+                                <ExternalLink className="text-muted-foreground" />
+                              </div>
+                              <div className="flex flex-col flex-grow ml-2">
+                                <span className="text-sm">{option.name}</span>
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    )}
+
+                    <CommandSeparator />
+
+                    {/* Action items - always visible when there's input */}
+                    {inputValue && (
+                      <CommandGroup heading="Actions">
+                        <CommandItem
+                          value={`search-vocadb-${inputValue}`}
+                          onSelect={handleSelect}
+                          className="flex items-center cursor-pointer"
+                        >
+                          <div className="flex items-center flex-shrink-0">
+                            <Search className="text-muted-foreground" />
+                          </div>
+                          <div className="flex flex-col flex-grow ml-2">
+                            <span className="text-sm">
+                              Search VocaDB for "{inputValue}"
+                            </span>
+                          </div>
+                        </CommandItem>
+                        <CommandItem
+                          value={`manual-add-${inputValue}`}
+                          onSelect={handleSelect}
+                          className="flex items-center cursor-pointer"
+                        >
+                          <div className="flex items-center flex-shrink-0">
+                            <PlusCircle className="text-muted-foreground" />
+                          </div>
+                          <div className="flex flex-col flex-grow ml-2">
+                            <span className="text-sm">
+                              Manually add "{inputValue}"
+                            </span>
+                          </div>
+                        </CommandItem>
+                      </CommandGroup>
+                    )}
+
                     <CommandSeparator />
                     <CommandGroup>
                       <CommandItem
