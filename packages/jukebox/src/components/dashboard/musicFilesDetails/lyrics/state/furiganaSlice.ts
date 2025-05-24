@@ -101,12 +101,7 @@ export const createFuriganaSlice: StateCreator<
           set((state) => {
             const lines = state.lyrics?.lines ?? [];
             if (!lines.length || !state.furigana.vocaDbFuriganaLines) {
-              console.log(
-                "lines.length",
-                lines.length,
-                "vocaDbFuriganaLines",
-                state.furigana.vocaDbFuriganaLines.length
-              );
+              state.furigana.romajiMatching = [];
               return;
             }
             const kanaLines = lines.map((line) => {
