@@ -1,6 +1,6 @@
 import { MusicFile } from "./MusicFile";
 import { VideoFile } from "./VideoFile";
-import type { SongForApiContract } from "../types/vocadb";
+import type { ArtistForApiContract, SongForApiContract } from "../types/vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { SongInAlbum } from "./SongInAlbum";
 import { Entry } from "./Entry";
@@ -26,6 +26,7 @@ import { SongOfEntry } from "./SongOfEntry";
 import { Field, Int, ObjectType } from "type-graphql";
 import { GraphQLJSONObject } from "graphql-type-json";
 import _ from "lodash";
+import { processUtaiteDbAlbum, processUtaiteDbArtist } from "../utils/vocadb";
 
 @ObjectType()
 @Table({ modelName: "Song" })
@@ -75,6 +76,11 @@ export class Song extends Model<Song, Partial<Song>> {
   @AllowNull
   @Column({ type: DataTypes.JSON })
   vocaDbJson!: SongForApiContract | null;
+
+  @Field({ nullable: true })
+  @AllowNull
+  @Column({ type: DataTypes.INTEGER })
+  utaiteDbId: number | null;
 
   @HasMany(() => VideoFile)
   videos: VideoFile[];
@@ -151,6 +157,88 @@ export class Song extends Model<Song, Partial<Song>> {
       albums = await Promise.all(
         (entity.albums ?? []).map((x) => SongInAlbum.albumFromVocaDB(entity, x))
       );
+    await song?.$set("artists", artists);
+    await song?.$set("albums", albums);
+    return song;
+  }
+
+  static async saveFromUtaiteDBEntity(
+    entity: SongForApiContract,
+    original: Song | null,
+    intermediate = false
+  ): Promise<Song | null> {
+    const { transliterate } = await import("../utils/transliterate.js");
+
+    let dbId =
+      (await Song.findOne({ where: { utaiteDbId: entity.id } }))?.id ??
+      undefined;
+    if (dbId === undefined) {
+      while (true) {
+        dbId = _.random(-2147483648, -1, false);
+        const existing = await Song.findByPk(dbId);
+        if (existing === null) break; // found an unused ID
+      }
+    }
+
+    await Song.upsert({
+      id: dbId,
+      name: entity.name,
+      sortOrder: await transliterate(entity.name), // prompt user to check this upon import
+      vocaDbJson: entity,
+      coverUrl: Song.selectPreferredThumbUrl(entity),
+      utaiteDbId: entity.id,
+      incomplete: intermediate,
+    });
+
+    const song = await Song.findByPk(dbId);
+    if (original !== null) {
+      await song?.$set("original", original);
+    }
+
+    const artists = (
+      await Promise.all(
+        (entity.artists ?? [])
+          .filter((x) => x.artist)
+          .map(async (x) => {
+            const { artist, type, isNew } = await processUtaiteDbArtist(
+              x.artist
+            );
+            let result: Artist | null = null;
+            if (type === "vocaDb") {
+              result = await ArtistOfSong.artistFromVocaDB({ ...x, artist });
+              if (isNew) {
+                await Artist.update(
+                  { utaiteDbId: x.artist.id },
+                  { where: { id: result.id } }
+                );
+              }
+            } else {
+              result = await ArtistOfSong.artistFromUtaiteDB({ ...x, artist });
+            }
+            return result;
+          })
+      )
+    ).filter((x): x is Artist => x !== null);
+
+    const albums = await Promise.all(
+      (entity.albums ?? []).map(async (x) => {
+        const { album, type, isNew } = await processUtaiteDbAlbum(x);
+        let result: Album | null = null;
+        if (type === "vocaDb") {
+          result = await SongInAlbum.albumFromVocaDB(entity, album);
+          if (isNew) {
+            await Album.update(
+              { utaiteDbId: x.id },
+              { where: { id: result.id } }
+            );
+          }
+        } else {
+          result = await SongInAlbum.albumFromUtaiteDB(entity, album);
+        }
+        return result;
+      })
+    );
+
     await song?.$set("artists", artists);
     await song?.$set("albums", albums);
     return song;

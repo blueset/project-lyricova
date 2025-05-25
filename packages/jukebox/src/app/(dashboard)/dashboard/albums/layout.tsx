@@ -32,6 +32,7 @@ const ALBUM_INFO_LIST_QUERY = gql`
   query {
     albums {
       id
+      utaiteDbId
       name
       sortOrder
       artists {
@@ -53,6 +54,7 @@ interface Props {
 
 type AlbumTableData = {
   id: number;
+  utaiteDbId?: number;
   name: string;
   sortOrder: string;
   artists: Album["artists"];
@@ -138,6 +140,7 @@ export default function AlbumInfoLayout({ children }: Props) {
       cell: ({ row }) => {
         const albumId = row.getValue("id") as number;
         const isValidId = albumId > 0;
+        const utaiteDbId = row.original.utaiteDbId;
 
         return (
           <div className="flex">
@@ -155,27 +158,44 @@ export default function AlbumInfoLayout({ children }: Props) {
                 <p>Edit Album</p>
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={!isValidId}
-                  asChild
-                >
-                  <a
-                    href={`https://vocadb.net/Al/${albumId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <ExternalLink />
-                  </a>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>View on VocaDB</p>
-              </TooltipContent>
-            </Tooltip>
+            {isValidId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <a
+                      href={`https://vocadb.net/Al/${albumId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-teal-300"
+                    >
+                      <ExternalLink />
+                    </a>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View on VocaDB</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {!!utaiteDbId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <a
+                      href={`https://utaitedb.net/Al/${utaiteDbId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-pink-300"
+                    >
+                      <ExternalLink />
+                    </a>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View on UtaiteDB</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         );
       },

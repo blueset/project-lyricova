@@ -124,4 +124,22 @@ export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
     }
     return artist;
   }
+
+  /** Incomplete build. */
+  static async artistFromUtaiteDB(
+    entity: ArtistForAlbumForApiContract
+  ): Promise<Artist> {
+    const artist = await Artist.fromUtaiteDBArtistContract(entity.artist);
+    const artistOfAlbumAttrs = {
+      effectiveRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
+      roles: entity.roles.split(", ") as VDBArtistRoleType[],
+      categories: entity.categories.split(", ")[0] as VDBArtistCategoryType,
+    };
+    if (artist.ArtistOfAlbum === undefined) {
+      artist.ArtistOfAlbum = artistOfAlbumAttrs;
+    } else if (artist.ArtistOfAlbum.set) {
+      artist.ArtistOfAlbum.set(artistOfAlbumAttrs);
+    }
+    return artist;
+  }
 }

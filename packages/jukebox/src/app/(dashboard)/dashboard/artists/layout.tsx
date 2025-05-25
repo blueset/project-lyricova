@@ -31,6 +31,7 @@ const ARTIST_INFO_LIST_QUERY = gql`
   query {
     artists {
       id
+      utaiteDbId
       name
       sortOrder
       incomplete
@@ -57,6 +58,7 @@ interface Props {
 
 type ArtistTableData = {
   id: number;
+  utaiteDbId?: number;
   name: string;
   sortOrder: string;
   incomplete: boolean;
@@ -132,6 +134,7 @@ export default function ArtistInfoLayout({ children }: Props) {
       cell: ({ row }) => {
         const artistId = row.getValue("id") as number;
         const isValidId = artistId > 0;
+        const utaiteDbId = row.original.utaiteDbId;
 
         const handleOverwrite = async () => {
           const result = await apolloClient.mutate<{
@@ -178,6 +181,7 @@ export default function ArtistInfoLayout({ children }: Props) {
                     href={`https://vocadb.net/Ar/${artistId}`}
                     target="_blank"
                     rel="noreferrer"
+                    className="text-teal-300"
                   >
                     <ExternalLink />
                   </a>
@@ -187,6 +191,25 @@ export default function ArtistInfoLayout({ children }: Props) {
                 <p>View on VocaDB</p>
               </TooltipContent>
             </Tooltip>
+            {!!utaiteDbId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <a
+                      href={`https://utaitedb.net/Ar/${utaiteDbId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-pink-300"
+                    >
+                      <ExternalLink />
+                    </a>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View on UtaiteDB</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

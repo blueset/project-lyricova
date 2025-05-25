@@ -168,6 +168,17 @@ export default function LibrarySingleSong() {
                     </NextComposedLink>
                   </Button>
                 )}
+                {!!song.utaiteDbId && (
+                  <Button variant="outline" size="sm" asChild>
+                    <NextComposedLink
+                      href={`https://utaitedb.net/S/${song.utaiteDbId}`}
+                      target="_blank"
+                    >
+                      <TextSearch />
+                      UtaiteDB
+                    </NextComposedLink>
+                  </Button>
+                )}
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

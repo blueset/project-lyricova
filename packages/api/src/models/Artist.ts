@@ -2,7 +2,6 @@ import type {
   ArtistForApiContract,
   ArtistContract,
   VDBArtistType,
-  SongForApiContract,
 } from "../types/vocadb";
 import { ArtistOfSong } from "./ArtistOfSong";
 import { ArtistOfAlbum } from "./ArtistOfAlbum";
@@ -27,7 +26,7 @@ import { Song } from "./Song";
 import { Album } from "./Album";
 import { Field, Int, ObjectType } from "type-graphql";
 import { GraphQLJSONObject } from "graphql-type-json";
-import { SongInAlbum } from "./SongInAlbum";
+import { random } from "lodash";
 
 @ObjectType()
 @Table({ modelName: "Artist" })
@@ -121,6 +120,11 @@ export class Artist extends Model<Artist, Partial<Artist>> {
   @Column({ type: DataTypes.BOOLEAN })
   incomplete: boolean;
 
+  @Field({ nullable: true })
+  @AllowNull
+  @Column({ type: DataTypes.INTEGER })
+  utaiteDbId: number | null;
+
   @Field()
   @CreatedAt
   creationDate: Date;
@@ -144,7 +148,6 @@ export class Artist extends Model<Artist, Partial<Artist>> {
   static async fromVocaDBArtistContract(
     artist: ArtistContract
   ): Promise<Artist> {
-    // import { transliterate } from "../utils/transliterate";
     const { transliterate } = await import("../utils/transliterate.js");
     const obj = (
       await Artist.findOrCreate({
@@ -176,6 +179,75 @@ export class Artist extends Model<Artist, Partial<Artist>> {
     });
 
     const artist = await Artist.findByPk(entity.id);
+    if (baseVoiceBank !== null) {
+      await artist?.$set("baseVoiceBank", baseVoiceBank);
+    }
+
+    return artist;
+  }
+
+  /** incomplete entity */
+  static async fromUtaiteDBArtistContract(
+    entity: ArtistContract
+  ): Promise<Artist | null> {
+    const { transliterate } = await import("../utils/transliterate.js");
+
+    let dbId =
+      (await Artist.findOne({ where: { utaiteDbId: entity.id } }))?.id ??
+      undefined;
+    if (dbId === undefined) {
+      while (true) {
+        dbId = random(-2147483648, -1, false);
+        const existing = await Artist.findByPk(dbId);
+        if (existing === null) break; // found an unused ID
+      }
+    }
+
+    const obj = (
+      await Artist.findOrCreate({
+        where: { utaiteDbId: dbId },
+        defaults: {
+          id: dbId,
+          name: entity.name,
+          sortOrder: await transliterate(entity.name),
+          type: entity.artistType as VDBArtistType,
+          utaiteDbId: entity.id,
+          incomplete: true,
+        },
+      })
+    )[0];
+    return obj;
+  }
+
+  static async saveFromUtaiteDBEntity(
+    entity: ArtistForApiContract,
+    baseVoiceBank: Artist | null
+  ) {
+    const { transliterate } = await import("../utils/transliterate.js");
+
+    let dbId =
+      (await Artist.findOne({ where: { utaiteDbId: entity.id } }))?.id ??
+      undefined;
+    if (dbId === undefined) {
+      while (true) {
+        dbId = random(-2147483648, -1, false);
+        const existing = await Artist.findByPk(dbId);
+        if (existing === null) break; // found an unused ID
+      }
+    }
+
+    await Artist.upsert({
+      id: dbId,
+      name: entity.name,
+      sortOrder: await transliterate(entity.name), // prompt user to check this upon import
+      vocaDbJson: entity,
+      mainPictureUrl: entity.mainPicture?.urlOriginal,
+      type: entity.artistType as VDBArtistType,
+      utaiteDbId: entity.id,
+      incomplete: false,
+    });
+
+    const artist = await Artist.findByPk(dbId);
     if (baseVoiceBank !== null) {
       await artist?.$set("baseVoiceBank", baseVoiceBank);
     }

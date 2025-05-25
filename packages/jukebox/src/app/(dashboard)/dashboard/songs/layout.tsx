@@ -32,6 +32,7 @@ const SONG_INFO_LIST_QUERY = gql`
   query {
     songs {
       id
+      utaiteDbId
       name
       sortOrder
       artists {
@@ -73,6 +74,7 @@ interface Props {
 
 type SongTableData = {
   id: number;
+  utaiteDbId?: number;
   name: string;
   sortOrder: string;
   artists: Song["artists"];
@@ -159,6 +161,7 @@ export default function SongInfoLayout({ children }: Props) {
       cell: ({ row }) => {
         const songId = row.getValue("id") as number;
         const isValidId = songId > 0;
+        const utaiteDbId = row.original.utaiteDbId;
 
         const handleOverwrite = async () => {
           const result = await apolloClient.mutate<{
@@ -205,6 +208,7 @@ export default function SongInfoLayout({ children }: Props) {
                     href={`https://vocadb.net/S/${songId}`}
                     target="_blank"
                     rel="noreferrer"
+                    className="text-teal-300"
                   >
                     <ExternalLink />
                   </a>
@@ -214,6 +218,30 @@ export default function SongInfoLayout({ children }: Props) {
                 <p>View on VocaDB</p>
               </TooltipContent>
             </Tooltip>
+            {!!utaiteDbId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="icon"
+                    disabled={!isValidId}
+                  >
+                    <a
+                      href={`https://utaitedb.net/S/${utaiteDbId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-pink-300"
+                    >
+                      <ExternalLink />
+                    </a>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View on UtaiteDB</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

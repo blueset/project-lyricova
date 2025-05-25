@@ -36,6 +36,7 @@ const SINGLE_FILE_SONG_QUERY = gql`
 
       song {
         id
+        utaiteDbId
         name
         artists {
           id
@@ -275,6 +276,24 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                   >
                     <ExternalLink />
                     VocaDB
+                  </NextComposedLink>
+                </Button>
+              </TableRow>
+            )}
+            {file.song?.utaiteDbId && (
+              <TableRow heading="UtaiteDB">
+                <Button
+                  variant="ghostBright"
+                  size="sm"
+                  className="-mx-3 -my-2"
+                  asChild
+                >
+                  <NextComposedLink
+                    target="_blank"
+                    href={`https://utaitedb.net/S/${file.song.utaiteDbId}`}
+                  >
+                    <ExternalLink />
+                    UtaiteDB
                   </NextComposedLink>
                 </Button>
               </TableRow>

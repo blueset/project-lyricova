@@ -95,6 +95,25 @@ export class SongInAlbum extends Model<SongInAlbum> {
   }
 
   /**
+   * Import a song-in-album relationship from an “song” query from UtaiteDB.
+   */
+  static async albumFromUtaiteDB(
+    song: SongForApiContract,
+    entity: AlbumContract
+  ): Promise<Album> {
+    const album = await Album.fromUtaiteDBAlbumContract(entity);
+    const songInAlbumAttrs = {
+      name: song.name,
+    };
+    if (album.SongInAlbum === undefined) {
+      album.SongInAlbum = songInAlbumAttrs;
+    } else if (album.SongInAlbum?.update) {
+      album.SongInAlbum.set?.(songInAlbumAttrs);
+    }
+    return album;
+  }
+
+  /**
    * Import a song-in-album relationship from an “album” query from VocaDB.
    *
    * Complete build.
@@ -108,6 +127,31 @@ export class SongInAlbum extends Model<SongInAlbum> {
       diskNumber: entity.discNumber,
       trackNumber: entity.trackNumber,
       vocaDbId: entity.id,
+    };
+    if (song && song?.SongInAlbum === undefined) {
+      song.SongInAlbum = songInAlbumAttrs;
+    } else if (song?.SongInAlbum?.update) {
+      song?.SongInAlbum.set?.(songInAlbumAttrs);
+    }
+    return song;
+  }
+
+  /**
+   * Import a song-in-album relationship from an “album” query from UtaiteDB.
+   *
+   * Complete build.
+   */
+  static async songFromUtaiteDB(
+    entity: SongInAlbumForApiContract,
+    song?: Song
+  ): Promise<Song | null> {
+    if (!song) {
+      return null;
+    }
+    const songInAlbumAttrs = {
+      name: entity.name,
+      diskNumber: entity.discNumber,
+      trackNumber: entity.trackNumber,
     };
     if (song && song?.SongInAlbum === undefined) {
       song.SongInAlbum = songInAlbumAttrs;

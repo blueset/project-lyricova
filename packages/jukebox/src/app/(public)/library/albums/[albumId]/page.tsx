@@ -215,6 +215,17 @@ export default function LibrarySingleAlbum() {
                     </NextComposedLink>
                   </Button>
                 )}
+                {!!album.utaiteDbId && (
+                  <Button variant="outline" size="sm" asChild>
+                    <NextComposedLink
+                      href={`https://utaitedb.net/Al/${album.utaiteDbId}`}
+                      target="_blank"
+                    >
+                      <TextSearch />
+                      UtaiteDB
+                    </NextComposedLink>
+                  </Button>
+                )}
               </div>
 
               <DropdownMenu>

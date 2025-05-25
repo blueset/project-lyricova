@@ -49,6 +49,7 @@ const ARTIST_DETAILS_QUERY = gql`
   query ($id: Int!) {
     artist(id: $id) {
       id
+      utaiteDbId
       name
       sortOrder
       type
@@ -182,6 +183,21 @@ export default function ArtistDetails({ id, type }: Props) {
                   <TextSearch />
                   VocaDB
                 </NextComposedLink>
+              </Button>
+            )}
+            {!!artist.utaiteDbId && (
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                onClick={() =>
+                  router.push(
+                    `/dashboard/utaite-db/artists/${artist.utaiteDbId}`
+                  )
+                }
+              >
+                <TextSearch />
+                UtaiteDB
               </Button>
             )}
             <DropdownMenu>

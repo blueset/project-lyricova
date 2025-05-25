@@ -135,4 +135,25 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
     }
     return artist;
   }
+
+  /** Incomplete build. */
+  static async artistFromUtaiteDB(
+    entity: ArtistForSongContract
+  ): Promise<Artist | null> {
+    // Ignore cases where an artist entity is not found.
+    if (entity.artist === undefined) return null;
+    const artist = await Artist.fromUtaiteDBArtistContract(entity.artist);
+    const artistOfSongAttrs = {
+      artistRoles: entity.effectiveRoles.split(", ") as VDBArtistRoleType[],
+      categories: entity.categories.split(", ") as VDBArtistCategoryType[],
+      customName: entity.isCustomName ? entity.name : undefined,
+      isSupport: entity.isSupport,
+    };
+    if (artist.ArtistOfSong === undefined) {
+      artist.ArtistOfSong = artistOfSongAttrs;
+    } else if (artist.ArtistOfSong.set) {
+      artist.ArtistOfSong.set(artistOfSongAttrs);
+    }
+    return artist;
+  }
 }

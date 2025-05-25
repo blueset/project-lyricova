@@ -46,7 +46,7 @@ export const FuriganaLineButton = memo(
           onClick={() => setSelectedLine(idx)}
         >
           <div lang="ja" className="mr-8 min-h-12 text-3xl">
-            <div className="flex flex-row flex-wrap items-end-safe">
+            <div className="flex flex-row flex-wrap items-end-safe whitespace-pre-wrap">
               <FuriganaLyricsLine
                 lyricsKitJsonLine={line}
                 rubyStyles={furiganaHighlighter}

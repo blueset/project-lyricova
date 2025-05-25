@@ -37,7 +37,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@lyricova/components/components/ui/avatar";
-import { Music, Download, X } from "lucide-react";
+import { Music, Download, X, DiscAlbum } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -412,6 +412,20 @@ export default function InfoPanel({
                             {v.name}
                           </SelectItem>
                         ))}
+                        {!!field.value?.toString() &&
+                          !form
+                            .watch("song")
+                            ?.albums?.some(
+                              (v: { id: number }) => v.id === field.value
+                            ) && (
+                            <SelectItem
+                              value={field.value?.toString() ?? ""}
+                              className="text-muted-foreground"
+                            >
+                              <DiscAlbum />
+                              {`Album #${field.value}`}
+                            </SelectItem>
+                          )}
                       </SelectContent>
                     </Select>
                   </FormItem>

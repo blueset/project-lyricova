@@ -16,6 +16,7 @@ type Album {
   songs: [Song!]
   sortOrder: String!
   updatedOn: Timestamp!
+  utaiteDbId: Float
 }
 
 input AlbumInput {
@@ -52,6 +53,7 @@ type Artist {
   sortOrder: String!
   type: String!
   updatedOn: Timestamp!
+  utaiteDbId: Float
   vocaDbJson: JSONObject!
 }
 
@@ -424,17 +426,35 @@ type Mutation {
   deleteEntry(id: Int!): Boolean!
   deleteTag(slug: String!): Boolean!
 
+  """Insert or update an album from UtaiteDB."""
+  enrolAlbumFromUtaiteDB(
+    """Album ID in UtaiteDB"""
+    albumId: Int!
+  ): Album!
+
   """Insert or update an album from VocaDB."""
   enrolAlbumFromVocaDB(
     """Album ID in VocaDB"""
     albumId: Int!
   ): Album!
 
+  """Insert or update an artist from UtaiteDB."""
+  enrolArtistFromUtaiteDB(
+    """Artist ID in UtaiteDB"""
+    artistId: Int!
+  ): Artist!
+
   """Insert or update an artist from VocaDB."""
   enrolArtistFromVocaDB(
     """Artist ID in VocaDB"""
     artistId: Int!
   ): Artist!
+
+  """Insert or update a song from UtaiteDB."""
+  enrolSongFromUtaiteDB(
+    """Song ID in UtaiteDB"""
+    songId: Int!
+  ): Song!
 
   """Insert or update a song from VocaDB."""
   enrolSongFromVocaDB(
@@ -648,6 +668,7 @@ type Song {
   originalId: Int
   sortOrder: String!
   updatedOn: Timestamp!
+  utaiteDbId: Float
   videos: [VideoFile!]
   vocaDbJson: JSONObject!
 }

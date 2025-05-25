@@ -4,6 +4,7 @@ export const SongFragments = {
   SelectSongEntry: gql`
     fragment SelectSongEntry on Song {
       id
+      utaiteDbId
       name
       sortOrder
       coverUrl
@@ -46,6 +47,7 @@ export const ArtistFragments = {
   SelectArtistEntry: gql`
     fragment SelectArtistEntry on Artist {
       id
+      utaiteDbId
       name
       sortOrder
       type
@@ -58,6 +60,7 @@ export const AlbumFragments = {
   SelectAlbumEntry: gql`
     fragment SelectAlbumEntry on Album {
       id
+      utaiteDbId
       name
       sortOrder
       coverUrl
@@ -66,18 +69,21 @@ export const AlbumFragments = {
   FullAlbumEntry: gql`
     fragment FullAlbumEntry on Album {
       id
+      utaiteDbId
       name
       sortOrder
       coverUrl
 
       songs {
         id
+        utaiteDbId
         name
         sortOrder
         coverUrl
 
         artists {
           id
+          utaiteDbId
           name
           sortOrder
           type
@@ -98,6 +104,7 @@ export const AlbumFragments = {
 
       artists {
         id
+        utaiteDbId
         name
         sortOrder
         type

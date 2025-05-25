@@ -25,6 +25,12 @@ import { FormItem, FormLabel } from "@lyricova/components/components/ui/form";
 import { Badge } from "@lyricova/components/components/ui/badge";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 import { ScrollArea } from "@lyricova/components/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
 import { cn } from "@lyricova/components/utils";
 import {
   Music,
@@ -42,6 +48,7 @@ import _ from "lodash";
 import axios from "axios";
 import { gql, useApolloClient } from "@apollo/client";
 import { VocaDBSearchSongDialog } from "../dialogs/VocaDBSearchSongDialog";
+import { UtaiteDBSearchSongDialog } from "../dialogs/UtaiteDBSearchSongDialog";
 import { SongFragments } from "../../utils/fragments";
 import { SongEntityDialog } from "../dialogs/SongEntityDialog";
 import { formatArtists, formatArtistsPlainText } from "../../utils/artists";
@@ -55,6 +62,7 @@ import {
 
 export type ExtendedSong = Partial<Song> & {
   vocaDBSuggestion?: boolean;
+  utaiteDBSuggestion?: boolean;
   manual?: boolean;
   /** Internal flag for action items */
   isAction?: boolean;
@@ -97,11 +105,15 @@ export function SelectSongEntityBox<
   // Separate states for different data sources
   const [apolloResults, setApolloResults] = useState<ExtendedSong[]>([]);
   const [vocaDBResults, setVocaDBResults] = useState<ExtendedSong[]>([]);
+  const [utaiteDBResults, setUtaiteDBResults] = useState<ExtendedSong[]>([]);
   const [isApolloLoading, setIsApolloLoading] = useState(false);
   const [isVocaDBLoading, setIsVocaDBLoading] = useState(false);
+  const [isUtaiteDBLoading, setIsUtaiteDBLoading] = useState(false);
 
   const [importDialogKeyword, setImportDialogKeyword] = useState("");
   const [isImportDialogOpen, toggleImportDialogOpen] = useState(false);
+  const [utaiteDBDialogKeyword, setUtaiteDBDialogKeyword] = useState("");
+  const [isUtaiteDBDialogOpen, toggleUtaiteDBDialogOpen] = useState(false);
   const [isManualDialogOpen, toggleManualDialogOpen] = useState(false);
   const [isManualDialogForCreate, toggleManualDialogForCreate] = useState(true);
 
@@ -171,11 +183,56 @@ export function SelectSongEntityBox<
     []
   );
 
+  const fetchUtaiteDBResults = useCallback(
+    _.debounce(async (searchText: string) => {
+      if (searchText === "") {
+        setUtaiteDBResults([]);
+        setIsUtaiteDBLoading(false);
+        return;
+      }
+
+      setIsUtaiteDBLoading(true);
+      try {
+        const utaiteDBResult = await axios.get<string[]>(
+          "https://utaitedb.net/api/songs/names",
+          {
+            params: {
+              query: searchText,
+              nameMatchMode: "Auto",
+            },
+          }
+        );
+
+        if (utaiteDBResult.status === 200 && utaiteDBResult.data) {
+          setUtaiteDBResults(
+            utaiteDBResult.data.map((v) => ({
+              id: undefined,
+              name: v,
+              sortOrder: `"${v}"`,
+              utaiteDBSuggestion: true,
+            }))
+          );
+        }
+      } catch (e) {
+        setUtaiteDBResults([]);
+      } finally {
+        setIsUtaiteDBLoading(false);
+      }
+    }, 300),
+    []
+  );
+
   useEffect(() => {
-    // Run both requests in parallel
+    // Run all requests in parallel
     fetchApolloResults(inputValue);
     fetchVocaDBResults(inputValue);
-  }, [inputValue, fetchApolloResults, fetchVocaDBResults]);
+    fetchUtaiteDBResults(inputValue);
+  }, [
+    inputValue,
+    fetchApolloResults,
+    fetchVocaDBResults,
+    fetchUtaiteDBResults,
+  ]);
 
   useEffect(() => {
     // Pre-populate input text if value exists when opening
@@ -188,9 +245,16 @@ export function SelectSongEntityBox<
   }, [open, value]);
 
   const handleSelect = (selectedOptionValue: string) => {
-    const allOptions = [...apolloResults, ...vocaDBResults];
+    const allOptions = [...apolloResults, ...vocaDBResults, ...utaiteDBResults];
     const selectedOption = allOptions.find(
-      (option) => `${option.name}-${option.id}` === selectedOptionValue
+      (option) =>
+        `${option.name}-${
+          option.vocaDBSuggestion
+            ? "v"
+            : option.utaiteDBSuggestion
+            ? "u"
+            : option.id
+        }` === selectedOptionValue
     );
 
     if (!selectedOption) {
@@ -198,6 +262,13 @@ export function SelectSongEntityBox<
       if (selectedOptionValue === `search-vocadb-${inputValue}`) {
         setImportDialogKeyword(inputValue);
         toggleImportDialogOpen(true);
+        setOpen(false);
+        setInputValue("");
+        return;
+      }
+      if (selectedOptionValue === `search-utaitedb-${inputValue}`) {
+        setUtaiteDBDialogKeyword(inputValue);
+        toggleUtaiteDBDialogOpen(true);
         setOpen(false);
         setInputValue("");
         return;
@@ -214,7 +285,12 @@ export function SelectSongEntityBox<
       return;
     }
 
-    if (selectedOption.vocaDBSuggestion) {
+    if (selectedOption.utaiteDBSuggestion) {
+      setUtaiteDBDialogKeyword(selectedOption?.sortOrder ?? "");
+      toggleUtaiteDBDialogOpen(true);
+      setOpen(false);
+      setInputValue("");
+    } else if (selectedOption.vocaDBSuggestion) {
       setImportDialogKeyword(selectedOption?.sortOrder ?? "");
       toggleImportDialogOpen(true);
       setOpen(false);
@@ -229,7 +305,7 @@ export function SelectSongEntityBox<
     }
   };
 
-  const isLoading = isApolloLoading || isVocaDBLoading;
+  const isLoading = isApolloLoading || isVocaDBLoading || isUtaiteDBLoading;
 
   return (
     <>
@@ -352,7 +428,31 @@ export function SelectSongEntityBox<
                       {vocaDBResults.length > 0 && (
                         <CommandGroup heading="VocaDB suggestions">
                           {vocaDBResults.map((option) => {
-                            const optionValue = `${option.name}-${option.id}`;
+                            const optionValue = `${option.name}-v`;
+                            return (
+                              <CommandItem
+                                key={option.name}
+                                value={optionValue}
+                                onSelect={handleSelect}
+                                className="flex items-center cursor-pointer"
+                              >
+                                <div className="flex items-center flex-shrink-0">
+                                  <ExternalLink className="text-muted-foreground" />
+                                </div>
+                                <div className="flex flex-col flex-grow">
+                                  <span className="text-sm">{option.name}</span>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      )}
+
+                      {/* UtaiteDB suggestions */}
+                      {utaiteDBResults.length > 0 && (
+                        <CommandGroup heading="UtaiteDB suggestions">
+                          {utaiteDBResults.map((option) => {
+                            const optionValue = `${option.name}-u`;
                             return (
                               <CommandItem
                                 key={option.name}
@@ -387,7 +487,21 @@ export function SelectSongEntityBox<
                             </div>
                             <div className="flex flex-col flex-grow">
                               <span className="text-sm">
-                                Search VocaDB for "{inputValue}"
+                                Search VocaDB for “{inputValue}”
+                              </span>
+                            </div>
+                          </CommandItem>
+                          <CommandItem
+                            value={`search-utaitedb-${inputValue}`}
+                            onSelect={handleSelect}
+                            className="flex items-center cursor-pointer"
+                          >
+                            <div className="flex items-center flex-shrink-0">
+                              <Search className="text-muted-foreground" />
+                            </div>
+                            <div className="flex flex-col flex-grow">
+                              <span className="text-sm">
+                                Search UtaiteDB for “{inputValue}”
                               </span>
                             </div>
                           </CommandItem>
@@ -401,7 +515,7 @@ export function SelectSongEntityBox<
                             </div>
                             <div className="flex flex-col flex-grow">
                               <span className="text-sm">
-                                Manually add "{inputValue}"
+                                Manually add “{inputValue}”
                               </span>
                             </div>
                           </CommandItem>
@@ -469,17 +583,46 @@ export function SelectSongEntityBox<
                 )}
               </div>
               <div className="flex items-center">
-                {value.id >= 0 && (
-                  <Button variant="ghost" size="icon" asChild>
-                    <a
-                      href={`https://vocadb.net/S/${value.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink />
-                    </a>
-                  </Button>
-                )}
+                <TooltipProvider>
+                  {value.id >= 0 && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" asChild>
+                          <a
+                            href={`https://vocadb.net/S/${value.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-teal-300"
+                          >
+                            <ExternalLink />
+                          </a>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>View on VocaDB</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  {!!value.utaiteDbId && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" asChild>
+                          <a
+                            href={`https://utaitedb.net/S/${value.utaiteDbId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-pink-300"
+                          >
+                            <ExternalLink />
+                          </a>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>View on UtaiteDB</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </TooltipProvider>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -503,6 +646,20 @@ export function SelectSongEntityBox<
           toggleOpen={toggleImportDialogOpen}
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
+          setSong={(v) =>
+            form.setValue(fieldName, v as any, {
+              shouldValidate: true,
+              shouldDirty: true,
+            })
+          }
+        />
+      )}
+      {isUtaiteDBDialogOpen && (
+        <UtaiteDBSearchSongDialog
+          isOpen={isUtaiteDBDialogOpen}
+          toggleOpen={toggleUtaiteDBDialogOpen}
+          keyword={utaiteDBDialogKeyword}
+          setKeyword={setUtaiteDBDialogKeyword}
           setSong={(v) =>
             form.setValue(fieldName, v as any, {
               shouldValidate: true,
