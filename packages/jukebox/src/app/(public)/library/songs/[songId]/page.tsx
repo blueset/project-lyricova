@@ -57,10 +57,6 @@ const SONG_QUERY = gql`
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
 ` as DocumentNode;
 
-type ConvertedTrack = Song & {
-  foundFile: MusicFile | null;
-};
-
 export default function LibrarySingleSong() {
   const { user } = useAuthContext();
   const { songId: songIdString } = useParams<{ songId: string }>();

@@ -55,17 +55,16 @@ const SINGLE_FILE_SONG_QUERY = gql`
 ` as DocumentNode;
 
 interface Props {
-  partialFile: Partial<MusicFile>;
-  fileId: number | null;
+  partialFile?: Partial<MusicFile>;
+  fileId?: number;
 }
 
 export default function FileSongInfo({ partialFile, fileId }: Props) {
-  const idToQuery = fileId ?? partialFile.id;
+  const idToQuery = fileId ?? partialFile?.id;
 
   const query = useQuery<{ musicFile: MusicFile }>(SINGLE_FILE_SONG_QUERY, {
     variables: { id: idToQuery },
   });
-  const router = useRouter();
 
   let banner: ReactNode = null;
   if (query.loading)

@@ -28,6 +28,7 @@ import { setTextureUrl } from "@/redux/public/display";
 import { BackgroundCanvas } from "@/components/public/BackgroundCanvas/BackgroundCanvas";
 import { cn } from "@lyricova/components/utils";
 import { Card } from "@lyricova/components/components/ui/card";
+import { Toaster } from "@lyricova/components/components/ui/sonner";
 
 interface Props {
   children: ReactNode;
@@ -315,6 +316,12 @@ function IndexLayout({ children }: Props) {
   return (
     <>
       <audio ref={playerRef} />
+      <Toaster
+        closeButton
+        richColors
+        position="bottom-left"
+        visibleToasts={4}
+      />
       <AppContext playerRef={playerRef}>
         <AuthContext noRedirect>
           <div
