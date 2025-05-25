@@ -282,6 +282,7 @@ export default function SongInfoLayout({ children }: Props) {
   } else if (query.data) {
     const rows = query.data.songs.map((v) => ({
       id: v.id,
+      utaiteDbId: v.utaiteDbId,
       name: v.name,
       sortOrder: v.sortOrder,
       artists: v.artists,

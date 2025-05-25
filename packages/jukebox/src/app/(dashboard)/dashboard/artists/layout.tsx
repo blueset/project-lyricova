@@ -250,6 +250,7 @@ export default function ArtistInfoLayout({ children }: Props) {
   } else if (query.data) {
     const rows = query.data.artists.map((v) => ({
       id: v.id,
+      utaiteDbId: v.utaiteDbId,
       name: v.name,
       sortOrder: v.sortOrder,
       incomplete: v.incomplete,

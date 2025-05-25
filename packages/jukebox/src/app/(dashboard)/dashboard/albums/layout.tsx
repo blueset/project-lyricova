@@ -221,6 +221,7 @@ export default function AlbumInfoLayout({ children }: Props) {
   } else if (query.data) {
     const rows = query.data.albums.map((v) => ({
       id: v.id,
+      utaiteDbId: v.utaiteDbId,
       name: v.name,
       sortOrder: v.sortOrder,
       artists: v.artists,
