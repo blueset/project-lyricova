@@ -196,28 +196,30 @@ export default function SongInfoLayout({ children }: Props) {
                 <p>Edit Song</p>
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="icon"
-                  disabled={!isValidId}
-                >
-                  <a
-                    href={`https://vocadb.net/S/${songId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-teal-300"
+            {isValidId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="icon"
+                    disabled={!isValidId}
                   >
-                    <ExternalLink />
-                  </a>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>View on VocaDB</p>
-              </TooltipContent>
-            </Tooltip>
+                    <a
+                      href={`https://vocadb.net/S/${songId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-teal-300"
+                    >
+                      <ExternalLink />
+                    </a>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View on VocaDB</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
             {!!utaiteDbId && (
               <Tooltip>
                 <TooltipTrigger asChild>

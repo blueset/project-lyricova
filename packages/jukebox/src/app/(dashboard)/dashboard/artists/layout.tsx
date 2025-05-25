@@ -169,28 +169,30 @@ export default function ArtistInfoLayout({ children }: Props) {
                 <p>Edit Artist</p>
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={!isValidId}
-                  asChild
-                >
-                  <a
-                    href={`https://vocadb.net/Ar/${artistId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-teal-300"
+            {isValidId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={!isValidId}
+                    asChild
                   >
-                    <ExternalLink />
-                  </a>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>View on VocaDB</p>
-              </TooltipContent>
-            </Tooltip>
+                    <a
+                      href={`https://vocadb.net/Ar/${artistId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-teal-300"
+                    >
+                      <ExternalLink />
+                    </a>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View on VocaDB</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
             {!!utaiteDbId && (
               <Tooltip>
                 <TooltipTrigger asChild>
