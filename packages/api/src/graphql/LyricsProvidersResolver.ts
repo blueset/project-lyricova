@@ -265,7 +265,7 @@ export class LyricsProvidersResolver {
       } else if (elm?.utaiteDbId) {
         // If the song is from UtaiteDB, we can try to get lyrics from there.
         const resp = await axios.get<SongForApiContract>(
-          `https://utaitedb.net/api/songs/${elm.utaitedbId}`,
+          `https://utaitedb.net/api/songs/${elm.utaiteDbId}`,
           {
             params: { fields: "Lyrics" },
           }
