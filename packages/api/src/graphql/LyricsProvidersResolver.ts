@@ -57,7 +57,10 @@ export class VocaDBLyricsEntry implements LyricsForSongContract {
   @Field((type) => Int, { description: "Lyrics entry ID." })
   id: number;
 
-  @Field((type) => [String], { description: "Language/culture codes.", nullable: true })
+  @Field((type) => [String], {
+    description: "Language/culture codes.",
+    nullable: true,
+  })
   cultureCodes: string[];
 
   @Field({ description: "Source of lyrics.", nullable: true })
@@ -235,25 +238,41 @@ export class LyricsProvidersResolver {
         if (elm.vocaDbJson.lyrics && elm.vocaDbJson.lyrics.length) {
           return elm.vocaDbJson.lyrics;
         } else {
-          if (elm.vocaDbJson.originalVersionId) {
-            return this.vocaDBLyrics(elm.vocaDbJson.originalVersionId);
+          if (elm.originalId) {
+            const original = await this.vocaDBLyrics(elm.originalId);
+            if (original?.length) {
+              return original;
+            }
+          }
+        }
+      }
+
+      if (id > 0) {
+        const resp = await axios.get<SongForApiContract>(
+          `https://vocadb.net/api/songs/${id}`,
+          {
+            params: { fields: "Lyrics" },
+          }
+        );
+        if (resp.data.lyrics && resp.data.lyrics.length) {
+          return resp.data.lyrics;
+        } else {
+          if (resp.data.originalVersionId) {
+            return this.vocaDBLyrics(resp.data.originalVersionId);
           }
           return [];
         }
-      }
-      const resp = await axios.get<SongForApiContract>(
-        `https://vocadb.net/api/songs/${id}`,
-        {
-          params: { fields: "Lyrics" },
+      } else if (elm?.utaiteDbId) {
+        // If the song is from UtaiteDB, we can try to get lyrics from there.
+        const resp = await axios.get<SongForApiContract>(
+          `https://utaitedb.net/api/songs/${elm.utaitedbId}`,
+          {
+            params: { fields: "Lyrics" },
+          }
+        );
+        if (resp.data.lyrics && resp.data.lyrics.length) {
+          return resp.data.lyrics;
         }
-      );
-      if (resp.data.lyrics && resp.data.lyrics.length) {
-        return resp.data.lyrics;
-      } else {
-        if (resp.data.originalVersionId) {
-          return this.vocaDBLyrics(resp.data.originalVersionId);
-        }
-        return [];
       }
     } catch (e) {
       if (e.response && e.response.status === 404) {
@@ -283,8 +302,11 @@ export class LyricsProvidersResolver {
     const results = await Promise.all(
       this.lyricsProvider.providers.map(async (v) => {
         try {
-          const result = await timeoutPromise(v.getLyrics(request), v.constructor.name);
-          
+          const result = await timeoutPromise(
+            v.getLyrics(request),
+            v.constructor.name
+          );
+
           const converted = result.map((lrc: Lyrics) => {
             return {
               lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
