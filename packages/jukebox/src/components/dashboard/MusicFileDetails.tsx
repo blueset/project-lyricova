@@ -55,6 +55,7 @@ const SINGLE_FILE_DATA = gql`
       }
       album {
         id
+        utaiteDbId
         coverUrl
       }
 

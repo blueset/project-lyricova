@@ -16,6 +16,7 @@ export const SongFragments = {
       }
       artists {
         id
+        utaiteDbId
         name
         sortOrder
         mainPictureUrl
@@ -30,6 +31,7 @@ export const SongFragments = {
       }
       albums {
         id
+        utaiteDbId
         name
         sortOrder
         coverUrl

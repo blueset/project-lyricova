@@ -62,10 +62,20 @@ const IMPORT_ALBUM_MUTATION = gql`
   ${AlbumFragments.SelectAlbumEntry}
 ` as DocumentNode;
 
+const IMPORT_ALBUM_UTAITE_DB_MUTATION = gql`
+  mutation ($id: Int!) {
+    enrolAlbumFromUtaiteDB(albumId: $id) {
+      ...SelectAlbumEntry
+    }
+  }
+
+  ${AlbumFragments.SelectAlbumEntry}
+` as DocumentNode;
+
 type Song = Pick<SongModel, "id" | "name" | "sortOrder"> & {
   albums: Pick<
     SongModel["albums"][number],
-    "id" | "name" | "sortOrder" | "coverUrl"
+    "id" | "utaiteDbId" | "name" | "sortOrder" | "coverUrl"
   >[];
   artists: (Pick<SongModel["artists"][number], "name" | "sortOrder"> & {
     ArtistOfSong: Pick<
@@ -177,6 +187,43 @@ export default function InfoPanel({
       if (result.data) {
         toast.success(
           `Album "${result.data.enrolAlbumFromVocaDB.name}" is successfully enrolled.`
+        );
+      }
+      toggleImporting(false);
+    } catch (e) {
+      console.error(`Error occurred while importing album #${albumId}.`, e);
+      toast.error(`Error occurred while importing album #${albumId}. (${e})`);
+      toggleImporting(false);
+    }
+  };
+  const handleRefreshAlbumUtaiteDb = async () => {
+    const albumId = form.getValues("albumId");
+    if (!albumId) {
+      toast.error("Please choose an album to import.");
+      return;
+    }
+    const utaiteDbId = form
+      .getValues("song")
+      ?.albums.find((a) => a.id === albumId)?.utaiteDbId;
+    if (!utaiteDbId) {
+      toast.error("This album does not have UtaiteDB ID.");
+      return;
+    }
+
+    toggleImporting(true);
+    try {
+      const result = await apolloClient.mutate<{
+        enrolAlbumFromUtaiteDB: Partial<Album>;
+      }>({
+        mutation: IMPORT_ALBUM_UTAITE_DB_MUTATION,
+        variables: {
+          id: albumId,
+        },
+      });
+
+      if (result.data) {
+        toast.success(
+          `Album "${result.data.enrolAlbumFromUtaiteDB.name}" is successfully enrolled.`
         );
       }
       toggleImporting(false);
@@ -375,25 +422,50 @@ export default function InfoPanel({
                             />
                           </SelectTrigger>
                         </FormControl>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              disabled={
-                                !form.getValues("albumId") || isImporting
-                              }
-                              onClick={handleRefreshAlbum}
-                            >
-                              <Download />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {isImporting
-                              ? "Importing..."
-                              : "Import album from VocaDB"}
-                          </TooltipContent>
-                        </Tooltip>
+                        {form.getValues("albumId") &&
+                          form.getValues("albumId") > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  disabled={isImporting}
+                                  className="text-teal-300 dark:border-teal-300 dark:disabled:border-teal-400"
+                                  onClick={handleRefreshAlbum}
+                                >
+                                  <Download />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {isImporting
+                                  ? "Importing..."
+                                  : "Import album from VocaDB"}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        {(form
+                          .watch("song")
+                          ?.albums.find((a) => a.id === form.watch("albumId"))
+                          ?.utaiteDbId ?? 0) > 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                disabled={isImporting}
+                                className="text-pink-300 dark:border-pink-300 dark:disabled:border-pink-400"
+                                onClick={handleRefreshAlbumUtaiteDb}
+                              >
+                                <Download />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {isImporting
+                                ? "Importing..."
+                                : "Import album from UtaiteDB"}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
                       <SelectContent>
                         <SelectItem value="-">No album</SelectItem>
