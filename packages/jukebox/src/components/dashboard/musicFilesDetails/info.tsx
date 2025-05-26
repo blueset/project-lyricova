@@ -186,7 +186,7 @@ export default function InfoPanel({
 
       if (result.data) {
         toast.success(
-          `Album "${result.data.enrolAlbumFromVocaDB.name}" is successfully enrolled.`
+          `Album “${result.data.enrolAlbumFromVocaDB.name}” is successfully enrolled.`
         );
       }
       toggleImporting(false);
@@ -223,13 +223,18 @@ export default function InfoPanel({
 
       if (result.data) {
         toast.success(
-          `Album "${result.data.enrolAlbumFromUtaiteDB.name}" is successfully enrolled.`
+          `Album “${result.data.enrolAlbumFromUtaiteDB.name}” is successfully enrolled.`
         );
       }
       toggleImporting(false);
     } catch (e) {
-      console.error(`Error occurred while importing album #${albumId}.`, e);
-      toast.error(`Error occurred while importing album #${albumId}. (${e})`);
+      console.error(
+        `Error occurred while importing album #${utaiteDbId} (${albumId}).`,
+        e
+      );
+      toast.error(
+        `Error occurred while importing album #${utaiteDbId} (${albumId}). (${e})`
+      );
       toggleImporting(false);
     }
   };
