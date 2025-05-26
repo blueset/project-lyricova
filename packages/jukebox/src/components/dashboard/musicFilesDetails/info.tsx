@@ -217,7 +217,7 @@ export default function InfoPanel({
       }>({
         mutation: IMPORT_ALBUM_UTAITE_DB_MUTATION,
         variables: {
-          id: albumId,
+          id: utaiteDbId,
         },
       });
 
