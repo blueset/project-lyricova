@@ -183,9 +183,9 @@ export class VocaDBImportResolver {
 
     const tracks = (
       await Promise.all(
-        album.tracks?.map((track) =>
-          this.enrolSongFromUtaiteDB(track.song.id)
-        ) ?? []
+        album.tracks
+          ?.filter((track) => !!track?.song?.id)
+          ?.map((track) => this.enrolSongFromUtaiteDB(track.song.id)) ?? []
       )
     ).filter((t): t is Song => !!t);
 
