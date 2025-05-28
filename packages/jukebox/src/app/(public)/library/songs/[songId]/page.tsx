@@ -39,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@lyricova/components/components/ui/dropdown-menu";
 import { Separator } from "@lyricova/components/components/ui/separator";
+import { cn } from "@lyricova/components/utils";
 
 const SONG_QUERY = gql`
   query ($id: Int!) {
@@ -109,92 +110,104 @@ export default function LibrarySingleSong() {
 
   return (
     <div className="p-4">
-      <div className="mt-2 grid grid-cols-1 @3xl/details:grid-cols-[1fr_2fr] gap-6">
-        <div>
+      <div
+        className={cn(
+          "mt-2 grid grid-cols-1 gap-6",
+          song.coverUrl && "@3xl/details:grid-cols-[1fr_2fr]"
+        )}
+      >
+        {song.coverUrl && (
           <div className="md:sticky md:top-2 mb-4">
-            {song.coverUrl && (
-              <Avatar className="h-auto rounded-md w-full overflow-hidden">
-                <AvatarImage
-                  src={song.coverUrl}
-                  className="w-full h-auto object-cover aspect-square rounded-md max-w-72 @3xl/details:max-w-none"
-                />
-              </Avatar>
-            )}
+            <Avatar className="h-auto rounded-md w-full overflow-hidden">
+              <AvatarImage
+                src={song.coverUrl}
+                className="w-full h-auto object-cover aspect-square rounded-md max-w-72 @3xl/details:max-w-none"
+              />
+            </Avatar>
           </div>
-        </div>
+        )}
         <div>
-          <div className="ml-2">
-            <h1 className="text-2xl font-semibold" lang="ja">
-              {song.name}
-            </h1>
-            <h2 className="text-lg text-muted-foreground" lang="ja">
-              {formatArtists(song.artists, (v, isProd) =>
-                v.map((artist, idx) => (
-                  <Fragment key={artist.id}>
-                    {idx > 0 && ", "}
-                    <Link
-                      href={`/library/${isProd ? "producers" : "vocalists"}/${
-                        artist.id
-                      }`}
-                    >
-                      {artist.name}
-                    </Link>
-                  </Fragment>
-                ))
-              )}
-            </h2>
-            <div className="flex items-center mt-2">
-              <div className="flex-grow flex flex-wrap gap-2">
-                {canPlay && (
-                  <Button variant="outline" size="sm" onClick={playAll}>
-                    <Play />
-                    Play
-                  </Button>
-                )}
-                {canPlay && (
-                  <Button variant="outline" size="sm" onClick={shuffleAll}>
-                    <Shuffle />
-                    Shuffle
-                  </Button>
-                )}
-                {song.id >= 0 && (
-                  <Button variant="outline" size="sm" asChild>
-                    <NextComposedLink
-                      href={`https://vocadb.net/S/${song.id}`}
-                      target="_blank"
-                    >
-                      <TextSearch />
-                      VocaDB
-                    </NextComposedLink>
-                  </Button>
-                )}
-                {!!song.utaiteDbId && (
-                  <Button variant="outline" size="sm" asChild>
-                    <NextComposedLink
-                      href={`https://utaitedb.net/S/${song.utaiteDbId}`}
-                      target="_blank"
-                    >
-                      <TextSearch />
-                      UtaiteDB
-                    </NextComposedLink>
-                  </Button>
-                )}
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild disabled={!user}>
-                    <NextComposedLink href={`/dashboard/songs/${song.id}`}>
-                      Edit song entity
-                    </NextComposedLink>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          <h1 className="text-2xl font-semibold" lang="ja">
+            {song.name}
+          </h1>
+          <h2 className="text-lg text-muted-foreground" lang="ja">
+            {formatArtists(song.artists, (v, isProd) =>
+              v.map((artist, idx) => (
+                <Fragment key={artist.id}>
+                  {idx > 0 && ", "}
+                  <Link
+                    href={`/library/${isProd ? "producers" : "vocalists"}/${
+                      artist.id
+                    }`}
+                  >
+                    {artist.name}
+                  </Link>
+                </Fragment>
+              ))
+            )}
+          </h2>
+          {song.originalId && (
+            <div className="text-sm text-muted-foreground">
+              Original:{" "}
+              <NextComposedLink
+                href={`/library/songs/${song.originalId}`}
+                className="underline"
+              >
+                {song.original?.name || "Unknown"}
+              </NextComposedLink>
             </div>
+          )}
+          <div className="flex items-center mt-2">
+            <div className="flex-grow flex flex-wrap gap-2">
+              {canPlay && (
+                <Button variant="outline" size="sm" onClick={playAll}>
+                  <Play />
+                  Play
+                </Button>
+              )}
+              {canPlay && (
+                <Button variant="outline" size="sm" onClick={shuffleAll}>
+                  <Shuffle />
+                  Shuffle
+                </Button>
+              )}
+              {song.id >= 0 && (
+                <Button variant="outline" size="sm" asChild>
+                  <NextComposedLink
+                    href={`https://vocadb.net/S/${song.id}`}
+                    target="_blank"
+                  >
+                    <TextSearch />
+                    VocaDB
+                  </NextComposedLink>
+                </Button>
+              )}
+              {!!song.utaiteDbId && (
+                <Button variant="outline" size="sm" asChild>
+                  <NextComposedLink
+                    href={`https://utaitedb.net/S/${song.utaiteDbId}`}
+                    target="_blank"
+                  >
+                    <TextSearch />
+                    UtaiteDB
+                  </NextComposedLink>
+                </Button>
+              )}
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild disabled={!user}>
+                  <NextComposedLink href={`/dashboard/songs/${song.id}`}>
+                    Edit song entity
+                  </NextComposedLink>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className="mt-4">

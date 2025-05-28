@@ -136,6 +136,9 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
     return [producers, vocalists];
   }, [file.song]);
 
+  const vocaDbId = (file.song?.id ?? 0) > 0 ? file.song.id : null;
+  const utaiteDbId = file.song?.utaiteDbId ?? null;
+
   return (
     <>
       {fileId !== null && (
@@ -262,40 +265,42 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
             )}
             <TableRow heading="Duration">{formatTime(file.duration)}</TableRow>
             <TableRow heading="File size">{filesize(file.fileSize)}</TableRow>
-            {file.song?.id >= 0 && (
+            {(vocaDbId || utaiteDbId) && (
               <TableRow heading="External links">
-                <Button
-                  variant="ghostBright"
-                  size="sm"
-                  className="-mx-3 -my-2"
-                  asChild
-                >
-                  <NextComposedLink
-                    target="_blank"
-                    href={`https://vocadb.net/S/${file.song.id}`}
-                  >
-                    <ExternalLink />
-                    VocaDB
-                  </NextComposedLink>
-                </Button>
-              </TableRow>
-            )}
-            {file.song?.utaiteDbId && (
-              <TableRow heading="UtaiteDB">
-                <Button
-                  variant="ghostBright"
-                  size="sm"
-                  className="-mx-3 -my-2"
-                  asChild
-                >
-                  <NextComposedLink
-                    target="_blank"
-                    href={`https://utaitedb.net/S/${file.song.utaiteDbId}`}
-                  >
-                    <ExternalLink />
-                    UtaiteDB
-                  </NextComposedLink>
-                </Button>
+                <div className="flex flex-wrap gap-6">
+                  {vocaDbId && (
+                    <Button
+                      variant="ghostBright"
+                      size="sm"
+                      className="-mx-3 -my-2"
+                      asChild
+                    >
+                      <NextComposedLink
+                        target="_blank"
+                        href={`https://vocadb.net/S/${vocaDbId}`}
+                      >
+                        <ExternalLink />
+                        VocaDB
+                      </NextComposedLink>
+                    </Button>
+                  )}
+                  {utaiteDbId && (
+                    <Button
+                      variant="ghostBright"
+                      size="sm"
+                      className="-mx-3 -my-2"
+                      asChild
+                    >
+                      <NextComposedLink
+                        target="_blank"
+                        href={`https://utaitedb.net/S/${utaiteDbId}`}
+                      >
+                        <ExternalLink />
+                        UtaiteDB
+                      </NextComposedLink>
+                    </Button>
+                  )}
+                </div>
               </TableRow>
             )}
           </div>

@@ -15,28 +15,38 @@ export default function Information() {
   return (
     <div className="px-4 pb-4">
       {currentSong && <FileSongInfo partialFile={currentSong} fileId={null} />}
-      {user && (
-        <div className="flex flex-row gap-2 flex-wrap">
-          {currentSong && (
-            <Button asChild variant="outline" size="sm">
-              <Link
-                href={`/dashboard/review/${currentSong.id}`}
-                target="_blank"
-              >
-                Edit music file
-              </Link>
-            </Button>
-          )}
+
+      <div className="flex flex-row gap-2 flex-wrap">
+        {currentSong?.id && (
           <Button asChild variant="outline" size="sm">
-            <Link href="login" target="_blank">
-              Admin panel
+            <Link href={`/info/${currentSong?.id ?? ""}`} target="_blank">
+              Permalink
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href="logout">Log out</Link>
-          </Button>
-        </div>
-      )}
+        )}
+        {user && (
+          <>
+            {currentSong && (
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  href={`/dashboard/review/${currentSong.id}`}
+                  target="_blank"
+                >
+                  Edit music file
+                </Link>
+              </Button>
+            )}
+            <Button asChild variant="outline" size="sm">
+              <Link href="login" target="_blank">
+                Admin panel
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="logout">Log out</Link>
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
