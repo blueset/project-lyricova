@@ -246,6 +246,11 @@ export function InlineTaggingLine({
               left: coords[t.range[0] - 1] ?? 0,
               width: coords[t.range[1] - 1] - (coords[t.range[0] - 1] ?? 0),
             }}
+            ref={(el) => {
+              if (el && el.scrollWidth > el.clientWidth) {
+                el.style.scale = `${el.clientWidth / el.scrollWidth} 1`;
+              }
+            }}
           >
             {t.content}
           </span>
