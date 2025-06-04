@@ -13,6 +13,7 @@ import {
 import { Button } from "@lyricova/components/components/ui/button";
 import { cn } from "@lyricova/components/utils";
 import { Loader2 } from "lucide-react";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
 const ALBUMS_QUERY = gql`
   query {
@@ -36,15 +37,23 @@ export default function LibraryAlbums() {
 
   if (query.loading)
     return (
-      <Alert variant="info">
-        <Loader2 className="animate-spin" />
-        <AlertDescription>Loading...</AlertDescription>
-      </Alert>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 p-4">
+        {[...Array(6)].map((_, index) => (
+          <div
+            key={index}
+            className="w-auto p-2 -m-2 box-content h-auto flex flex-col items-start space-y-2"
+          >
+            <Skeleton className="aspect-square w-full rounded-sm" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        ))}
+      </div>
     );
 
   if (query.error)
     return (
-      <Alert variant="destructive">
+      <Alert variant="error" className="m-4 w-auto">
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>{`${query.error}`}</AlertDescription>
       </Alert>
@@ -67,9 +76,7 @@ export default function LibraryAlbums() {
               src={val.coverUrl || "/images/disk-512.jpg"}
               alt={val.name}
               loading="lazy"
-              className={cn(
-                "object-cover aspect-square w-full rounded-sm group-hover:brightness-110 transition-filter duration-200"
-              )}
+              className="object-cover aspect-square w-full rounded-sm group-hover:brightness-110 transition-filter duration-200"
             />
             <div className="w-full text-left">
               <p className="text-sm truncate font-medium" lang="ja">

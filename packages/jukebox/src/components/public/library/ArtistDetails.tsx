@@ -7,7 +7,6 @@ import {
   NextComposedLink,
 } from "@lyricova/components";
 import React from "react";
-import { useRouter } from "next/navigation";
 import type { Artist } from "@lyricova/api/graphql/types";
 import _ from "lodash";
 import filesize from "filesize";
@@ -27,6 +26,7 @@ import { Button } from "@lyricova/components/components/ui/button";
 import {
   Alert,
   AlertDescription,
+  AlertTitle,
 } from "@lyricova/components/components/ui/alert";
 import {
   DropdownMenu,
@@ -35,7 +35,6 @@ import {
   DropdownMenuTrigger,
 } from "@lyricova/components/components/ui/dropdown-menu";
 import {
-  AlertCircle,
   ChevronLeft,
   MoreVertical,
   Shuffle,
@@ -44,6 +43,7 @@ import {
   Play,
 } from "lucide-react";
 import TrackListRow from "./TrackListRow";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
 const ARTIST_DETAILS_QUERY = gql`
   query ($id: Int!) {
@@ -91,7 +91,6 @@ interface Props {
 }
 
 export default function ArtistDetails({ id, type }: Props) {
-  const router = useRouter();
   const { user } = useAuthContext();
   const dispatch = useAppDispatch();
 
@@ -100,18 +99,36 @@ export default function ArtistDetails({ id, type }: Props) {
   });
   let content;
 
-  if (query.loading) content = <Alert>Loading...</Alert>;
+  if (query.loading)
+    content = (
+      <div className="p-4 space-y-4">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-18 w-18 rounded-md" />
+          <div className="flex-grow min-w-0">
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          {[...Array(5)].map((_, index) => (
+            <div className="flex justify-between items-center my-6" key={index}>
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-4 w-12" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   else if (query.error)
     content = (
-      <Alert variant="destructive">
-        <AlertCircle />
-        <AlertDescription>Error: {`${query.error}`}</AlertDescription>
+      <Alert variant="error">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{`${query.error}`}</AlertDescription>
       </Alert>
     );
   else if (query.data.artist === null)
     content = (
-      <Alert variant="destructive">
-        <AlertCircle />
+      <Alert variant="error">
         <AlertDescription>Error: Artist #{id} was not found.</AlertDescription>
       </Alert>
     );
@@ -186,18 +203,14 @@ export default function ArtistDetails({ id, type }: Props) {
               </Button>
             )}
             {!!artist.utaiteDbId && (
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                onClick={() =>
-                  router.push(
-                    `/dashboard/utaite-db/artists/${artist.utaiteDbId}`
-                  )
-                }
-              >
-                <TextSearch />
-                UtaiteDB
+              <Button variant="outline" size="sm" asChild>
+                <NextComposedLink
+                  href={`https://utaitedb.net/Ar/${artist.utaiteDbId}`}
+                  target="_blank"
+                >
+                  <TextSearch />
+                  UtaiteDB
+                </NextComposedLink>
               </Button>
             )}
             <DropdownMenu>
@@ -238,8 +251,8 @@ export default function ArtistDetails({ id, type }: Props) {
   }
 
   return (
-    <div className="mt-2 mb-2 mx-4">
-      <Button variant="outline" size="sm" className="my-2 capitalize" asChild>
+    <div className="mt-4 mb-2 mx-4 space-y-4">
+      <Button variant="outline" size="sm" className="capitalize" asChild>
         <NextComposedLink href={`/library/${type}`}>
           <ChevronLeft />
           {type}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { gql, useQuery } from "@apollo/client";
 import {
@@ -23,12 +22,9 @@ import { loadTracks, playTrack, toggleShuffle } from "@/redux/public/playlist";
 import {
   Alert,
   AlertDescription,
+  AlertTitle,
 } from "@lyricova/components/components/ui/alert";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@lyricova/components/components/ui/avatar";
+import { Avatar, AvatarImage } from "@lyricova/components/components/ui/avatar";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
   DropdownMenu,
@@ -42,11 +38,10 @@ import {
   Shuffle,
   TextSearch,
   MoreVertical,
-  AlertCircle,
-  Disc,
 } from "lucide-react";
 
 import TrackListRow from "@/components/public/library/TrackListRow";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
 const ALBUM_QUERY = gql`
   query ($id: Int!) {
@@ -70,7 +65,6 @@ type ConvertedTrack = Song & {
 };
 
 export default function LibrarySingleAlbum() {
-  const router = useRouter();
   const { user } = useAuthContext();
   const { albumId: albumIdString } = useParams<{ albumId: string }>();
   const albumId = albumIdString ? parseInt(albumIdString as string) : null;
@@ -82,16 +76,35 @@ export default function LibrarySingleAlbum() {
 
   if (query.loading)
     return (
-      <Alert>
-        <AlertDescription>Loading...</AlertDescription>
-      </Alert>
+      <div className="p-4 mt-2 grid grid-cols-1 @3xl/details:grid-cols-[1fr_2fr] gap-6">
+        <div>
+          <Skeleton className="rounded-md w-full h-auto aspect-square max-w-72 @3xl/details:max-w-none" />
+          <Skeleton className="h-4 w-48 mt-2" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-6 w-64" />
+          <div className="flex-grow flex flex-wrap gap-2">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+          </div>
+
+          {[...Array(10)].map((_, index) => (
+            <div className="flex justify-between items-center my-6" key={index}>
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-4 w-12" />
+            </div>
+          ))}
+        </div>
+      </div>
     );
 
   if (query.error)
     return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>Error: {`${query.error}`}</AlertDescription>
+      <Alert variant="error" className="m-4 w-auto">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{`${query.error}`}</AlertDescription>
       </Alert>
     );
 

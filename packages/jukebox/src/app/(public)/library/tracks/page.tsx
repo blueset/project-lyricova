@@ -45,6 +45,7 @@ import {
   Alert,
   AlertDescription,
 } from "@lyricova/components/components/ui/alert";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
 const MUSIC_FILES_COUNT_QUERY = gql`
   query GetMusicFiles {
@@ -260,11 +261,24 @@ export default function LibraryTracks() {
     return indexes;
   }, [entries]);
 
-  if (query.loading) return <Alert variant="info">Loading...</Alert>;
+  if (query.loading)
+    return (
+      <div className="m-4 space-y-4">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-8 w-24" />
+        </div>
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+      </div>
+    );
 
   if (query.error)
     return (
-      <Alert variant="error">
+      <Alert variant="error" className="m-4 w-auto">
         <AlertCircle />
         <AlertDescription>Error: {`${query.error}`}</AlertDescription>
       </Alert>

@@ -28,6 +28,7 @@ import { Button } from "@lyricova/components/components/ui/button";
 import {
   Alert,
   AlertDescription,
+  AlertTitle,
 } from "@lyricova/components/components/ui/alert";
 import TrackListRow from "@/components/public/library/TrackListRow";
 import {
@@ -43,6 +44,7 @@ import {
   Play,
   FilePenLine,
 } from "lucide-react";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
 const PLAYLIST_DETAILS_QUERY = gql`
   query ($slug: String!) {
@@ -136,18 +138,36 @@ export default function PlaylistDetails() {
 
   let content;
 
-  if (query.loading) content = <Alert>Loading...</Alert>;
+  if (query.loading)
+    content = (
+      <div className="p-4 space-y-4">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-18 w-18 rounded-md" />
+          <div className="flex-grow min-w-0">
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          {[...Array(5)].map((_, index) => (
+            <div className="flex justify-between items-center my-6" key={index}>
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-4 w-12" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   else if (query.error)
     content = (
       <Alert variant="error">
-        <AlertCircle />
-        <AlertDescription>Error: {`${query.error}`}</AlertDescription>
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{`${query.error}`}</AlertDescription>
       </Alert>
     );
   else if (query.data.playlist === null)
     content = (
       <Alert variant="error">
-        <AlertCircle />
         <AlertDescription>
           Error: Playlist #{slug} was not found.
         </AlertDescription>
@@ -300,8 +320,8 @@ export default function PlaylistDetails() {
   }
 
   return (
-    <div className="mt-2 mb-2 mx-4">
-      <Button variant="outline" size="sm" className="my-2" asChild>
+    <div className="mt-4 mb-2 mx-4 space-y-4">
+      <Button variant="outline" size="sm" className="capitalize" asChild>
         <NextComposedLink href="/library/playlists">
           <ChevronLeft />
           Playlists

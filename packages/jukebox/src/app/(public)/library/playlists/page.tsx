@@ -4,6 +4,7 @@ import { gql, useQuery } from "@apollo/client";
 import {
   Alert,
   AlertDescription,
+  AlertTitle,
 } from "@lyricova/components/components/ui/alert";
 import { cn } from "@lyricova/components/utils";
 import { NextComposedLink } from "@lyricova/components";
@@ -12,6 +13,7 @@ import type { Playlist } from "@lyricova/api/graphql/types";
 import PlaylistAvatar, { gradients } from "@/components/PlaylistAvatar";
 import type { DocumentNode } from "graphql";
 import { Sparkles, Play, Flame, FilePenLine } from "lucide-react";
+import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
 const PLAYLISTS_LIST_QUERY = gql`
   query {
@@ -28,18 +30,24 @@ export default function PlaylistsList() {
 
   if (query.loading)
     return (
-      <Alert
-        variant="info"
-        className="bg-blue-50 text-blue-800 border-blue-200"
-      >
-        <AlertDescription>Loading...</AlertDescription>
-      </Alert>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-2 p-4">
+        {[...Array(8)].map((_, index) => (
+          <div
+            className="flex flex-row items-center hover:bg-accent/50 rounded-md"
+            key={index}
+          >
+            <Skeleton className="aspect-square size-16 mr-4 rounded-md" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        ))}
+      </div>
     );
 
   if (query.error)
     return (
-      <Alert variant="error">
-        <AlertDescription>Error: {`${query.error}`}</AlertDescription>
+      <Alert variant="error" className="m-4 w-auto">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{`${query.error}`}</AlertDescription>
       </Alert>
     );
 
