@@ -235,7 +235,7 @@ export class LyricsProvidersResolver {
     try {
       const elm = await Song.findByPk(id);
       if (elm) {
-        if (elm.vocaDbJson.lyrics && elm.vocaDbJson.lyrics.length) {
+        if (elm.vocaDbJson?.lyrics && elm.vocaDbJson.lyrics.length) {
           return elm.vocaDbJson.lyrics;
         } else {
           if (elm.originalId) {
@@ -254,7 +254,7 @@ export class LyricsProvidersResolver {
             params: { fields: "Lyrics" },
           }
         );
-        if (resp.data.lyrics && resp.data.lyrics.length) {
+        if (resp.data?.lyrics && resp.data.lyrics.length) {
           return resp.data.lyrics;
         } else {
           if (resp.data.originalVersionId) {
@@ -270,7 +270,7 @@ export class LyricsProvidersResolver {
             params: { fields: "Lyrics" },
           }
         );
-        if (resp.data.lyrics && resp.data.lyrics.length) {
+        if (resp.data?.lyrics && resp.data.lyrics.length) {
           return resp.data.lyrics;
         }
       }
