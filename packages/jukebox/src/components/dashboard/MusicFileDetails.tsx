@@ -24,6 +24,7 @@ import {
   CardFooter,
 } from "@lyricova/components/components/ui/card";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Separator } from "@lyricova/components/components/ui/separator";
 import {
   Tabs,
@@ -207,8 +208,9 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
             <Separator />
             <CardFooter>
               <CardAction>
-                <Button
-                  disabled={!fileData.data || submittingReview}
+                <ProgressButton
+                  disabled={!fileData.data}
+                  progress={submittingReview}
                   variant={
                     fileData.data?.musicFile.needReview ?? false
                       ? "default"
@@ -221,7 +223,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
                       ? "Mark as reviewed"
                       : "Mark as need review"
                   }`}
-                </Button>
+                </ProgressButton>
               </CardAction>
             </CardFooter>
           </Card>

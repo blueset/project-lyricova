@@ -1,10 +1,5 @@
-import {
-  hiraToRoma,
-  kanaToHira,
-  romaToHira,
-  useAuthContext,
-} from "@lyricova/components";
-import { Button } from "@lyricova/components/components/ui/button";
+import { kanaToHira, useAuthContext } from "@lyricova/components";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
   TooltipTrigger,
   TooltipContent,
@@ -358,14 +353,14 @@ export function CustomAlign({ fileId }: { fileId: number }) {
       <Tooltip>
         <HoverCardTrigger>
           <TooltipTrigger asChild>
-            <Button
+            <ProgressButton
               size="sm"
               variant="outline"
               onClick={handleGenerateTagging}
-              disabled={isAlignmentLoading}
+              progress={isAlignmentLoading ? progress.progress ?? true : false}
             >
               Custom
-            </Button>
+            </ProgressButton>
           </TooltipTrigger>
         </HoverCardTrigger>
         <TooltipContent>

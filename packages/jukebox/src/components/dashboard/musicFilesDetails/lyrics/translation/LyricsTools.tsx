@@ -1,4 +1,5 @@
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -163,10 +164,10 @@ export default function LyricsTools() {
           <HoverCardTrigger asChild>
             <div className="flex flex-row gap-2">
               <DropdownMenuTrigger asChild>
-                <Button
+                <ProgressButton
                   variant="ghost"
                   size="sm"
-                  disabled={isAlignmentLoading}
+                  progress={isAlignmentLoading ? progressValue ?? true : false}
                   className="flex items-center gap-2"
                 >
                   LLM Alignment
@@ -178,7 +179,7 @@ export default function LyricsTools() {
                   ) : (
                     <ChevronDownIcon />
                   )}
-                </Button>
+                </ProgressButton>
               </DropdownMenuTrigger>
               {isAlignmentLoading && (
                 <Button

@@ -164,6 +164,18 @@ body {
   --font-sans: var(--font-sans);
   --font-markers: Iosevka, "Segoe UI Symbol", sans-serif;
   --font-serif: var(--font-source-han-serif, "font-source-han-serif"), "Source Han Serif", "Noto Serif CJK", "Noto Serif JP", serif;
+
+  --animate-indefinite-progress: indefinite-progress 2s linear infinite;
+
+  @keyframes indefinite-progress {
+    0% {
+      translate: calc(-64px) 0;
+    }
+
+    100% {
+      translate: calc(100% + 64px) 0;
+    }
+  }
 }
 
 @layer base {

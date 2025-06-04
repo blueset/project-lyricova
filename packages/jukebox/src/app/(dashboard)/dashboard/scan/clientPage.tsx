@@ -1,7 +1,7 @@
 "use client";
 
 import { Progress } from "@lyricova/components/components/ui/progress";
-import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { gql, useApolloClient, useMutation } from "@apollo/client";
 import { useCallback } from "react";
 import type { MusicFilesScanOutcome } from "@lyricova/api/graphql/types";
@@ -137,9 +137,9 @@ export default function Scan() {
       />
       <div className="h-full mx-4 flex flex-col gap-4 mb-2">
         <h2 className="text-xl font-semibold">Perform scan?</h2>
-        <Button onClick={clickScan} disabled={scanning}>
+        <ProgressButton onClick={clickScan} progress={scanning}>
           Start scanning
-        </Button>
+        </ProgressButton>
         {resultNode}
       </div>
     </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { gql, useApolloClient } from "@apollo/client";
 import { useNamedState } from "@/hooks/useNamedState";
 import { toast } from "sonner";
@@ -32,7 +32,7 @@ export default function Imports() {
       />
       <div className="h-full mx-4 flex flex-col gap-4 mb-2">
         <h2 className="text-xl font-semibold">Batch imports from VocaDB</h2>
-        <Button
+        <ProgressButton
           onClick={async () => {
             setImporting(true);
             const data = await apolloClient.query<{
@@ -74,10 +74,10 @@ export default function Imports() {
             }
             setImporting(false);
           }}
-          disabled={importing}
+          progress={importing}
         >
           Import incomplete artist entries
-        </Button>
+        </ProgressButton>
         {artistImportOutcomes.length > 0 && (
           <div className="mt-4">
             <h3 className="font-medium mb-2">Imported artists</h3>

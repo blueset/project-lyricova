@@ -18,6 +18,7 @@ import {
   AvatarImage,
 } from "@lyricova/components/components/ui/avatar";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
   Dialog,
   DialogContent,
@@ -236,12 +237,12 @@ export function VocaDBSearchSongDialog({
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button
-            disabled={selectedSong === null || isImporting}
+          <ProgressButton
+            progress={selectedSong === null || isImporting}
             onClick={handleSubmit}
           >
             Import
-          </Button>
+          </ProgressButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

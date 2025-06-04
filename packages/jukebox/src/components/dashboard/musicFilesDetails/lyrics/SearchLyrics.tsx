@@ -8,6 +8,7 @@ import {
 } from "@lyricova/components/components/ui/avatar";
 import { Badge } from "@lyricova/components/components/ui/badge";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Input } from "@lyricova/components/components/ui/input";
 import {
   Form,
@@ -433,14 +434,14 @@ export default function SearchLyrics({
               </FormItem>
             )}
           />
-          <Button
+          <ProgressButton
             type="submit"
-            disabled={isSubmitting}
+            progress={isSubmitting}
             className="w-full shrink-0 lg:w-auto"
           >
             {isSubmitting && <Loader2 className="animate-spin" />}
             Search
-          </Button>
+          </ProgressButton>
         </form>
       </Form>
       <div className="mt-4 space-y-2 w-full">

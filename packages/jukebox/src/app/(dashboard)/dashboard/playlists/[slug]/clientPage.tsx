@@ -6,6 +6,7 @@ import PlaylistAvatar from "@/components/PlaylistAvatar";
 import { NavHeader } from "../../NavHeader";
 import { Alert } from "@lyricova/components/components/ui/alert";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Input } from "@lyricova/components/components/ui/input";
 import {
   Dialog,
@@ -466,9 +467,9 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
             </div>
           </div>
 
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+          <ProgressButton type="submit" progress={form.formState.isSubmitting}>
             Save
-          </Button>
+          </ProgressButton>
         </form>
       </Form>
 

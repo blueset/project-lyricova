@@ -27,6 +27,7 @@ import {
   TabsContent,
 } from "@lyricova/components/components/ui/tabs";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { useLyricsStore } from "./lyrics/state/editorState";
 import { useShallow } from "zustand/shallow";
 import { toast } from "sonner";
@@ -248,13 +249,14 @@ export default function LyricsEditDialog({
           <Button onClick={handleClose} variant="secondary">
             Cancel
           </Button>
-          <Button
-            disabled={submitting || !hasLrc || !hasLrcx}
+          <ProgressButton
+            disabled={!hasLrc || !hasLrcx}
+            progress={submitting}
             onClick={handleSubmit}
             variant="default"
           >
             Save
-          </Button>
+          </ProgressButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

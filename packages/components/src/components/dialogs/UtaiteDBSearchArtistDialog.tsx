@@ -18,6 +18,7 @@ import {
   AvatarImage,
 } from "@lyricova/components/components/ui/avatar";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
   Dialog,
   DialogContent,
@@ -241,12 +242,12 @@ export function UtaiteDBSearchArtistDialog({
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button
-            disabled={selectedArtist === null || isImporting}
+          <ProgressButton
+            progress={selectedArtist === null || isImporting}
             onClick={handleSubmit}
           >
             Import
-          </Button>
+          </ProgressButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

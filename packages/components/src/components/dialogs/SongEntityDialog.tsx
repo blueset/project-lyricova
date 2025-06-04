@@ -26,6 +26,7 @@ import {
 } from "@lyricova/components/components/ui/form";
 import { Input } from "@lyricova/components/components/ui/input";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Separator } from "@lyricova/components/components/ui/separator";
 import { Checkbox } from "@lyricova/components/components/ui/checkbox";
 import { MultiSelect } from "@lyricova/components/components/ui/multi-select";
@@ -695,9 +696,12 @@ export function SongEntityDialog({
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
+              <ProgressButton
+                type="submit"
+                progress={form.formState.isSubmitting}
+              >
                 {create ? "Create" : "Update"}
-              </Button>
+              </ProgressButton>
             </SheetFooter>
           </form>
         </Form>

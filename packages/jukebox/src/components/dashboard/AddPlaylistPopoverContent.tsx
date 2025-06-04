@@ -14,6 +14,7 @@ import {
 } from "@lyricova/components/components/ui/form";
 import { Input } from "@lyricova/components/components/ui/input";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Check, X } from "lucide-react";
 
 const NEW_PLAYLIST_MUTATION = gql`
@@ -103,13 +104,13 @@ export default function AddPlaylistPopoverContent({ refresh, dismiss }: Props) {
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Button
+          <ProgressButton
             type="submit"
             size="icon"
-            disabled={form.formState.isSubmitting}
+            progress={form.formState.isSubmitting}
           >
             <Check />
-          </Button>
+          </ProgressButton>
           <Button type="button" size="icon" variant="outline" onClick={dismiss}>
             <X />
           </Button>

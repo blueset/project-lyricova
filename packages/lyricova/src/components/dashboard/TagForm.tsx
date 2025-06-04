@@ -13,6 +13,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
   Form,
   FormControl,
@@ -183,13 +184,13 @@ export function TagForm({ slug = null, onSubmit }: TagFormProps) {
             </FormItem>
           )}
         />
-        <Button
+        <ProgressButton
           type="submit"
-          disabled={form.formState.isSubmitting}
+          progress={form.formState.isSubmitting}
           variant="default"
         >
           Submit
-        </Button>
+        </ProgressButton>
       </form>
     </Form>
   );

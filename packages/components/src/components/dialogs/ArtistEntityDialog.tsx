@@ -9,6 +9,7 @@ import { z } from "zod";
 import { ArtistFragments } from "../../utils/fragments";
 import { DocumentNode } from "graphql";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
   Form,
   FormControl,
@@ -300,9 +301,12 @@ export function ArtistEntityDialog({
               <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
+              <ProgressButton
+                type="submit"
+                progress={form.formState.isSubmitting}
+              >
                 {create ? "Create" : "Update"}
-              </Button>
+              </ProgressButton>
             </SheetFooter>
           </form>
         </Form>

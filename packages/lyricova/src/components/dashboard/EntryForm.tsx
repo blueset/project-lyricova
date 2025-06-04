@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@lyricova/components/components/ui/textarea";
 import { Input } from "@lyricova/components/components/ui/input";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
   Alert,
   AlertDescription,
@@ -937,13 +938,13 @@ export function EntryForm({ id }: EntityFormProps) {
               )}
             />
           </div>
-          <Button
+          <ProgressButton
             type="submit"
-            disabled={form.formState.isSubmitting}
+            progress={form.formState.isSubmitting}
             className="col-span-full"
           >
             {!id ? "Create" : "Update"}
-          </Button>
+          </ProgressButton>
         </form>
       </Form>
     </>

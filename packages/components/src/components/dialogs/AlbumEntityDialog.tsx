@@ -1,8 +1,6 @@
 "use client";
 
 import type { Album } from "@lyricova/api/graphql/types";
-import type { Artist } from "@lyricova/api/graphql/types";
-import type { Song } from "@lyricova/api/graphql/types";
 import { Fragment, useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import { toast } from "sonner";
@@ -28,6 +26,7 @@ import {
 } from "@lyricova/components/components/ui/form";
 import { Input } from "@lyricova/components/components/ui/input";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Separator } from "@lyricova/components/components/ui/separator";
 import { MultiSelect } from "@lyricova/components/components/ui/multi-select";
 import {
@@ -702,9 +701,12 @@ export function AlbumEntityDialog({
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
+              <ProgressButton
+                type="submit"
+                progress={form.formState.isSubmitting}
+              >
                 {create ? "Create" : "Update"}
-              </Button>
+              </ProgressButton>
             </SheetFooter>
           </form>
         </Form>

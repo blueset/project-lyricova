@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
   Dialog,
   DialogContent,
@@ -128,13 +129,13 @@ export default function HMikuWikiSearchDialog({
                   </FormItem>
                 )}
               />
-              <Button
+              <ProgressButton
                 type="submit"
                 variant="secondary"
-                disabled={form.formState.isSubmitting}
+                progress={form.formState.isSubmitting}
               >
                 Search
-              </Button>
+              </ProgressButton>
             </form>
           </Form>
           <div className="overflow-auto max-h-[400px] -mr-6 pr-6">

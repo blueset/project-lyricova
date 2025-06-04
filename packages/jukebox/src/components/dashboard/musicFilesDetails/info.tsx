@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@lyricova/components/components/ui/input";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Separator } from "@lyricova/components/components/ui/separator";
 import {
   Select,
@@ -431,15 +432,15 @@ export default function InfoPanel({
                           form.getValues("albumId") > 0 && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button
+                                <ProgressButton
                                   variant="outline"
                                   size="icon"
-                                  disabled={isImporting}
+                                  progress={isImporting}
                                   className="text-teal-300 dark:border-teal-300 dark:disabled:border-teal-400"
                                   onClick={handleRefreshAlbum}
                                 >
                                   <Download />
-                                </Button>
+                                </ProgressButton>
                               </TooltipTrigger>
                               <TooltipContent>
                                 {isImporting
@@ -454,15 +455,15 @@ export default function InfoPanel({
                           ?.utaiteDbId ?? 0) > 0 && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button
+                              <ProgressButton
                                 variant="outline"
                                 size="icon"
-                                disabled={isImporting}
+                                progress={isImporting}
                                 className="text-pink-300 dark:border-pink-300 dark:disabled:border-pink-400"
                                 onClick={handleRefreshAlbumUtaiteDb}
                               >
                                 <Download />
-                              </Button>
+                              </ProgressButton>
                             </TooltipTrigger>
                             <TooltipContent>
                               {isImporting

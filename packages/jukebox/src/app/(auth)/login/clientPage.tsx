@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Card, CardContent } from "@lyricova/components/components/ui/card";
 import { Input } from "@lyricova/components/components/ui/input";
 import { Label } from "@lyricova/components/components/ui/label";
@@ -256,23 +257,23 @@ export default function Login() {
                       )}
                   </div>
                   <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                    <Button
+                    <ProgressButton
                       type="submit"
                       className="w-full sm:flex-1"
-                      disabled={isSubmitting}
+                      progress={isSubmitting}
                     >
                       {isSubmitting ? "Logging in..." : "Login"}
-                    </Button>
+                    </ProgressButton>
                     {webAuthnSupported && (
-                      <Button
+                      <ProgressButton
                         variant="outline"
                         type="button"
                         className="w-full sm:flex-1 flex items-center gap-2"
                         onClick={webauthnLogin}
-                        disabled={isSubmitting}
+                        progress={isSubmitting}
                       >
                         <Fingerprint /> Passkey
-                      </Button>
+                      </ProgressButton>
                     )}
                   </div>
                 </form>

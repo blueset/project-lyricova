@@ -23,6 +23,7 @@ import {
 } from "@lyricova/components/components/ui/stepper";
 import { Badge } from "@lyricova/components/components/ui/badge";
 import { Button } from "@lyricova/components/components/ui/button";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Input } from "@lyricova/components/components/ui/input";
 import { Switch } from "@lyricova/components/components/ui/switch";
 import {
@@ -292,13 +293,13 @@ export default function YouTubeDlDownloadSteps({
               />
             </div>
             <div className="flex gap-2">
-              <Button
-                disabled={fetchInfoQuery.loading}
+              <ProgressButton
+                progress={fetchInfoQuery.loading}
                 type="submit"
                 variant="default"
               >
                 Verify
-              </Button>
+              </ProgressButton>
               <Button
                 disabled={fetchInfoQuery.loading}
                 variant="outline"
@@ -384,13 +385,13 @@ export default function YouTubeDlDownloadSteps({
               </Label>
             </div>
             <div className="flex gap-2">
-              <Button
+              <ProgressButton
                 variant="default"
                 onClick={downloadFile}
-                disabled={!fetchInfoQuery.data}
+                progress={!fetchInfoQuery.data}
               >
                 Download
-              </Button>
+              </ProgressButton>
               <Button variant="outline" onClick={() => setStep((v) => v - 1)}>
                 Back
               </Button>
