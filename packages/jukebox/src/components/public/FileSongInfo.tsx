@@ -189,7 +189,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                     <Button
                       variant="ghostBright"
                       size="sm"
-                      className="-mx-3 -my-2"
+                      className="-mx-3 -my-2 whitespace-normal max-w-full min-h-8 h-auto py-1"
                       key={v.id}
                       asChild
                     >
@@ -208,7 +208,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                     <Button
                       variant="ghostBright"
                       size="sm"
-                      className="-mx-3 -my-2"
+                      className="-mx-3 -my-2 whitespace-normal max-w-full min-h-8 h-auto py-1"
                       key={v.id}
                       asChild
                     >
@@ -225,7 +225,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                 <Button
                   variant="ghostBright"
                   size="sm"
-                  className="-mx-3 -my-2"
+                  className="-mx-3 -my-2 whitespace-normal max-w-full min-h-8 h-auto py-1"
                   asChild
                 >
                   <NextComposedLink href={`/library/albums/${file.album.id}`}>
@@ -239,7 +239,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                 <Button
                   variant="ghostBright"
                   size="sm"
-                  className="-mx-3 -my-2"
+                  className="-mx-3 -my-2 whitespace-normal max-w-full min-h-8 h-auto py-1"
                   asChild
                 >
                   <NextComposedLink href={`/library/songs/${file.song.id}`}>
@@ -272,7 +272,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                     <Button
                       variant="ghostBright"
                       size="sm"
-                      className="-mx-3 -my-2"
+                      className="-mx-3 -my-2 whitespace-normal max-w-full min-h-8 h-auto py-1"
                       asChild
                     >
                       <NextComposedLink
@@ -288,7 +288,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                     <Button
                       variant="ghostBright"
                       size="sm"
-                      className="-mx-3 -my-2"
+                      className="-mx-3 -my-2 whitespace-normal max-w-full min-h-8 h-auto py-1"
                       asChild
                     >
                       <NextComposedLink
