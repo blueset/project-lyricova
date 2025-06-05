@@ -58,6 +58,7 @@ interface Process {
 declare var process: Process;
 
 const link = (() => {
+  const baseLink = errorLink.concat(authLink).concat(httpLink);
   // return authLink.concat(httpLink);
   if (process.browser) {
     const protocol = location.protocol === "http:" ? "ws:" : "wss:";
@@ -85,12 +86,12 @@ const link = (() => {
         );
       },
       wsLink,
-      authLink.concat(httpLink)
+      baseLink
     );
 
     return splitLink;
   } else {
-    return authLink.concat(httpLink);
+    return baseLink;
   }
 })();
 
