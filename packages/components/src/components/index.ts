@@ -8,4 +8,5 @@ export * from "./CountCard";
 export * from "./CountUpCard";
 export * from "./Link";
 export * from "./PercentageCard";
+export * from "./TelemetryProvider";
 export * from "./WebAuthnCredManager";

@@ -42,6 +42,7 @@ import { UserResolver } from "./UserResolver";
 import { VocaDBImportResolver } from "./VocaDBImportResolver";
 import { EntryResolver } from "./EntryResolver";
 import { TagResolver } from "./TagResolver";
+import { postHog } from "../utils/posthog";
 
 export interface PubSubSessionPayload<T> {
   sessionId: string;
@@ -201,6 +202,33 @@ export async function applyApollo(app: Application): Promise<Server> {
           return {
             async drainServer() {
               await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+
+      // Telemetry
+      {
+        async requestDidStart() {
+          return {
+            async didResolveOperation(requestContext) {
+              const { operation } = requestContext;
+              if (operation) {
+                operation?.selectionSet?.selections?.forEach((element) => {
+                  if (element.kind !== "Field") return;
+                  postHog?.capture({
+                    distinctId:
+                      requestContext.contextValue?.user?.id.toString() ??
+                      "unknown",
+                    event: `graphql ${operation.operation} requested`,
+                    properties: {
+                      operationType: operation.operation,
+                      operationName: operation.name?.value ?? undefined,
+                      operationField: element.name.value,
+                    },
+                  });
+                });
+              }
             },
           };
         },

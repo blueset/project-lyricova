@@ -6,6 +6,7 @@ import { useQuery, gql } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { LS_JWT_KEY } from "../utils/localStorage";
 import React from "react";
+import { usePostHog } from "posthog-js/react";
 
 interface AuthContextProps {
   /**
@@ -52,6 +53,7 @@ export function AuthContext({
   );
 
   const router = useRouter();
+  const postHog = usePostHog();
 
   useEffect(() => {
     if (noRedirect) return;
@@ -76,6 +78,18 @@ export function AuthContext({
       router?.push("/login");
     }
   }, [loading, error, data, noRedirect, authRedirect, router]);
+
+  useEffect(() => {
+    if (postHog && data?.currentUser) {
+      postHog.identify(`${data.currentUser.id}`, {
+        username: data.currentUser.username,
+        displayName: data.currentUser.displayName,
+        role: data.currentUser.role,
+        creationDate: data.currentUser.creationDate,
+        emailMD5: data.currentUser.emailMD5,
+      });
+    }
+  }, [postHog, data]);
 
   const value = {
     user: data?.currentUser ?? undefined,

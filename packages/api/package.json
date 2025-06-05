@@ -103,6 +103,7 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pinyin": "^4.0.0-alpha.2",
+    "posthog-node": "^4.18.0",
     "prop-types": "^15.7.2",
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",

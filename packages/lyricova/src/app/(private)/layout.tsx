@@ -8,7 +8,7 @@ import clsx from "clsx";
 import "../../styles/global.scss";
 import * as React from "react";
 import type { Metadata, Viewport } from "next";
-import { palette } from "@lyricova/components";
+import { palette, TelemetryProvider } from "@lyricova/components";
 import "@lyricova/components/styles/tailwindGlobal.css";
 import { siteName } from "@/utils/consts";
 import { Inter } from "next/font/google";
@@ -60,7 +60,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           SourceHanSansPunct.variable
         )}
       >
-        {children}
+        <TelemetryProvider
+          clarityProjectId={process.env.NEXT_PUBLIC_CLARITY_ID}
+          postHogKey={process.env.NEXT_PUBLIC_POSTHOG_KEY}
+          postHogHost={process.env.NEXT_PUBLIC_POSTHOG_HOST}
+        >
+          {children}
+        </TelemetryProvider>
       </body>
     </html>
   );
