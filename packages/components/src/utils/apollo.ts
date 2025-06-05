@@ -7,11 +7,13 @@ import {
   split,
   HttpLink,
 } from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
 import { setContext } from "@apollo/client/link/context";
 import { LS_JWT_KEY } from "./localStorage";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from "graphql-ws";
+import posthog from "posthog-js";
 
 const httpLink = createHttpLink({
   uri: "/graphql",
@@ -27,6 +29,26 @@ const authLink = setContext((_, { headers }) => {
       authorization: token ? `Bearer ${token}` : "",
     },
   };
+});
+
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message, locations, path }) => {
+      console.error(
+        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+      );
+      posthog?.captureException(new Error(message), {
+        extra: {
+          locations,
+          path,
+        },
+      });
+    });
+  }
+  if (networkError) {
+    console.error(`[Network error]: ${networkError}`);
+    posthog?.captureException(networkError);
+  }
 });
 
 interface Process {
