@@ -29,6 +29,7 @@ export function TelemetryProvider({
     if (postHogKey) {
       posthog.init(postHogKey, {
         api_host: postHogHost || "https://us.i.posthog.com",
+        ui_host: "https://us.posthog.com",
         loaded: (posthog) => {
           if (process.env.NODE_ENV === "development") {
             posthog.debug();
