@@ -5,8 +5,8 @@ export function shiftinPuncts(
   end: string
 ): RegExpMatchArray | null {
   if (match && line.match(new RegExp(`${start}.*${end}`, "g"))) {
-    const front = match[1].split(start);
-    const back = match[3].split(end);
+    const front = match[1]?.split(start) ?? [];
+    const back = match[3]?.split(end) ?? [];
     match[2] = `${start.repeat(front.length - 1)}${match[2]}${end.repeat(
       back.length - 1
     )}`;
