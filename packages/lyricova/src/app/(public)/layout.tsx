@@ -44,7 +44,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         )}
       >
         <TelemetryProvider
-          clarityProjectId={process.env.NEXT_PUBLIC_CLARITY_ID}
+          clarityProjectId={process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID}
           postHogKey={process.env.NEXT_PUBLIC_POSTHOG_KEY}
           postHogHost={process.env.NEXT_PUBLIC_POSTHOG_HOST}
         >
