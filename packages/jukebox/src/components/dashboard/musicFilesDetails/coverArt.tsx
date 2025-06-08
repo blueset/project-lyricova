@@ -219,7 +219,7 @@ export default function CoverArtPanel({
       <div>
         <h2 className="text-lg font-semibold mb-3">From album entity</h2>
         <div className="relative w-full pt-[100%] mb-2 bg-secondary rounded-lg overflow-hidden">
-          {hasAlbum ? (
+          {hasAlbum && !!albumCoverUrl ? (
             <img
               src={albumCoverUrl}
               alt="Album cover art"
