@@ -100,7 +100,7 @@ export const createFuriganaSlice: StateCreator<
         requestAnimationFrame(() => {
           set((state) => {
             const lines = state.lyrics?.lines ?? [];
-            if (!lines.length || !state.furigana.vocaDbFuriganaLines) {
+            if (!lines.length || !state.furigana.vocaDbFuriganaLines?.length) {
               state.furigana.romajiMatching = [];
               return;
             }
