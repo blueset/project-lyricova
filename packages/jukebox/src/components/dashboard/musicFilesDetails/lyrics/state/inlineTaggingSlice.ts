@@ -295,7 +295,7 @@ export const createInlineTaggingSlice: StateCreator<
           if (!Array.isArray(dots)) {
             line.attachments[DOTS].values = [];
           }
-          dots[column] = 0;
+          dots[column] = Math.max((dots[column] ?? 1) - 1, 0);
         });
         const state = get();
         if (state.inlineTagging.autoApplyIdentical) {

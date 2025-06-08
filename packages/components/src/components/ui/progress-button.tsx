@@ -19,7 +19,9 @@ function ProgressButton({
       disabled={disabled || progress !== false}
       {...props}
     >
-      <div className="z-10">{children}</div>
+      <div className="z-10 inline-flex items-center justify-center gap-2">
+        {children}
+      </div>
       {typeof progress === "number" && (
         <div
           className="absolute bg-gradient-to-r from-info-foreground/0 to-info-foreground/20 z-0 top-0 left-0 bottom-0 border-r-[0.5px] border-info-foreground"
