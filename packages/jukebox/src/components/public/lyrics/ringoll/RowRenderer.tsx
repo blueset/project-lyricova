@@ -10,7 +10,7 @@ const rowContainerClasses = cn(
   "text-4xl", // fontSize: "2em"
   "will-change-[transform,opacity,filter]",
   "min-h-[0.5em]",
-  "max-w-[calc(100%-4rem)]",
+  "max-w-full",
   "hover:!blur-none hover:bg-current/20", // filter: blur(0), backgroundColor: color-mix(...)
 
   // role % 3 === 0
@@ -85,7 +85,7 @@ const InnerRowRenderer = forwardRef<
         <div
           className={cn(
             "text-[0.625em] text-balance", // fontSize, textWrap
-            absoluteIndex > 0 && !isActive && "opacity-50" // dim opacity
+            absoluteIndex > 0 && !isActive && "opacity-40" // dim opacity
           )}
           // @ts-expect-error TypeScript doesn't know about the `wordBreak` property
           style={{ wordBreak: "auto-phrase" }} // wordBreak
