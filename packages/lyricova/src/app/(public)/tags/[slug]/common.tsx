@@ -12,7 +12,7 @@ export async function generateMetadataData(
   tagSlug: string,
   page: string
 ): Promise<Metadata> {
-  const response = await fetch(`${apiBaseUrl}/tag/${tagSlug}`, {
+  const response = await fetch(`${apiBaseUrl}/tags/${tagSlug}`, {
     cache: "no-store",
   });
   const { tag }: { tag: Tag } = await response.json();
@@ -42,10 +42,9 @@ export async function TagArchivePageComponent({
   tagSlug: string;
   page: string;
 }) {
-  const response = await fetch(
-    `${apiBaseUrl}/tags/${tagSlug}/artists?page=${page}`,
-    { cache: "no-store" }
-  );
+  const response = await fetch(`${apiBaseUrl}/tags/${tagSlug}?page=${page}`, {
+    cache: "no-store",
+  });
   const { entries, tag, totalPages }: TagArchivePageProps =
     await response.json();
   const pageNumber = parseInt(page);

@@ -3,18 +3,18 @@ import { TagArchivePageComponent, generateMetadataData } from "./common";
 
 interface TagArchivePageProps {
   params: Promise<{
-    tagSlug: string;
+    slug: string;
   }>;
 }
 
 export async function generateMetadata({
   params,
 }: TagArchivePageProps): Promise<Metadata> {
-  const { tagSlug } = await params;
-  return generateMetadataData(tagSlug, "1");
+  const { slug } = await params;
+  return generateMetadataData(slug, "1");
 }
 
 export default async function TagArchivePage({ params }: TagArchivePageProps) {
-  const { tagSlug } = await params;
-  return <TagArchivePageComponent tagSlug={tagSlug} page="1" />;
+  const { slug } = await params;
+  return <TagArchivePageComponent tagSlug={slug} page="1" />;
 }

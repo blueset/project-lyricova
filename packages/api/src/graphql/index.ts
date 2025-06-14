@@ -216,17 +216,21 @@ export async function applyApollo(app: Application): Promise<Server> {
               if (operation) {
                 operation?.selectionSet?.selections?.forEach((element) => {
                   if (element.kind !== "Field") return;
-                  postHog?.capture({
-                    distinctId:
-                      requestContext.contextValue?.user?.id.toString() ??
-                      "unknown",
-                    event: `graphql ${operation.operation} requested`,
-                    properties: {
-                      operationType: operation.operation,
-                      operationName: operation.name?.value ?? undefined,
-                      operationField: element.name.value,
-                    },
-                  });
+                  try {
+                    postHog?.capture({
+                      distinctId:
+                        requestContext.contextValue?.user?.id.toString() ??
+                        "unknown",
+                      event: `graphql ${operation.operation} requested`,
+                      properties: {
+                        operationType: operation.operation,
+                        operationName: operation.name?.value ?? undefined,
+                        operationField: element.name.value,
+                      },
+                    });
+                  } catch (error) {
+                    console.error("Error capturing PostHog event:", error);
+                  }
                 });
               }
             },

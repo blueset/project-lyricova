@@ -4,7 +4,7 @@ import { permanentRedirect } from "next/navigation";
 
 interface TagArchivePageProps {
   params: Promise<{
-    tagSlug: string;
+    slug: string;
     page: string;
   }>;
 }
@@ -12,15 +12,15 @@ interface TagArchivePageProps {
 export async function generateMetadata({
   params,
 }: TagArchivePageProps): Promise<Metadata> {
-  const { tagSlug, page } = await params;
-  return generateMetadataData(tagSlug, page);
+  const { slug, page } = await params;
+  return generateMetadataData(slug, page);
 }
 
 export default async function TagArchivePage({ params }: TagArchivePageProps) {
-  const { tagSlug, page } = await params;
+  const { slug, page } = await params;
   if (page === "1") {
-    permanentRedirect(`/tags/${tagSlug}`);
+    permanentRedirect(`/tags/${slug}`);
   }
 
-  return <TagArchivePageComponent tagSlug={tagSlug} page={page} />;
+  return <TagArchivePageComponent tagSlug={slug} page={page} />;
 }
