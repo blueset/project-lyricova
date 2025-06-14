@@ -117,7 +117,13 @@ export class SongController {
         offset: (page - 1) * entriesPerPage,
       })) as Entry[];
 
-      res.json({ totalEntries, entries, song, page });
+      res.json({
+        totalEntries,
+        entries,
+        song,
+        page,
+        totalPages: Math.ceil(totalEntries / entriesPerPage),
+      });
     } catch (e) {
       console.error(e);
       next(e);

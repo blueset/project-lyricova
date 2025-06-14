@@ -52,6 +52,12 @@ export class TagsController {
       offset: (page - 1) * entriesPerPage,
     });
 
-    res.json({ tag: tag.toJSON(), entries, totalEntries, page });
+    res.json({
+      tag: tag.toJSON(),
+      entries,
+      totalEntries,
+      page,
+      totalPages: Math.ceil(totalEntries / entriesPerPage),
+    });
   }
 }

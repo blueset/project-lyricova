@@ -47,9 +47,12 @@ export class EntriesController {
       offset: (page - 1) * entriesPerPage,
     })) as Entry[];
 
+    const totalEntries = await sequelize.models.Entry.count();
+
     res.json({
       entries: entries.map((entry) => entry.toJSON()),
-      count: await sequelize.models.Entry.count(),
+      count: totalEntries,
+      totalPages: Math.ceil(totalEntries / entriesPerPage),
     });
   }
 
