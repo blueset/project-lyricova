@@ -2,7 +2,12 @@ import * as React from "react";
 import type { Metadata, Viewport } from "next";
 import { ClientProviders } from "./clientProviders";
 import { palette } from "@lyricova/components";
-import { Inter, SourceHanSans, SourceHanSansPunct } from "@/fonts";
+import {
+  Inter,
+  SourceHanSans,
+  SourceHanSansPunct,
+  SourceHanSerif,
+} from "@/fonts";
 import clsx from "clsx";
 import "@lyricova/components/styles/tailwindGlobal.css";
 
@@ -32,7 +37,8 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           "dark",
           Inter.variable,
           SourceHanSans.variable,
-          SourceHanSansPunct.variable
+          SourceHanSansPunct.variable,
+          SourceHanSerif.variable
         )}
       >
         <ClientProviders>{props.children}</ClientProviders>
