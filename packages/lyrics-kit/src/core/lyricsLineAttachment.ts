@@ -236,14 +236,14 @@ export class NumberArray extends LyricsLineAttachment {
   constructor(value: string | number[]) {
     super();
     if (typeof value === "string") {
-      this.attachment = value.split(",").map(v => parseInt(v));
+      this.attachment = value.split(",").map(v => (v ? parseInt(v) : 0));
     } else {
       this.attachment = value;
     }
   }
 
   public toString(): string {
-    return this.attachment.join(",");
+    return this.attachment.map(v => (v !== undefined ? v.toString() : "0")).join(",");
   }
 
   public toJSON(): NumberArrayJson {

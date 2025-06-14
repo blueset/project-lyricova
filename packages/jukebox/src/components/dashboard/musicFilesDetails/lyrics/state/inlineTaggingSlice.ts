@@ -508,7 +508,7 @@ export const createInlineTaggingSlice: StateCreator<
                 : // Force empty line to use prevEndTime or NextStartTime, whichever is earlier
                   (prevEndTime &&
                     nextStartTime &&
-                    Math.min(prevEndTime, nextStartTime)) ??
+                    Math.min(prevEndTime, nextStartTime - 0.001)) ??
                   nextStartTime ??
                   prevEndTime;
             const newTime = firstTag || fallbackStartTime;

@@ -142,6 +142,10 @@ function applyDiff(source: string, edited: string): string {
           }
         } else if (op === 1 && text !== "\n") {
           resultLine.content += text;
+          for (let i = 0; i < text.length; i++) {
+            resultDots.push("0");
+            resultTags.push("");
+          }
         } else if (op === 1 && text === "\n") {
           finalizeLine();
           resultLine.position =

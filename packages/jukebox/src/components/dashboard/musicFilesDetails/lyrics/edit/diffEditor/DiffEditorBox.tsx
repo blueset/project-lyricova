@@ -1,8 +1,4 @@
 import { Textarea } from "@lyricova/components/components/ui/textarea";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@lyricova/components/components/ui/toggle-group";
 import { Button } from "@lyricova/components/components/ui/button";
 import { CornerDownLeft } from "lucide-react";
 import { createRef, useMemo, useState } from "react";
