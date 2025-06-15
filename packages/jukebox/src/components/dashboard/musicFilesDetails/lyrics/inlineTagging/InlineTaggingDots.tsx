@@ -1,12 +1,7 @@
-import {
-  FURIGANA,
-  LyricsLine,
-  LyricsLineJSON,
-  RangeAttributeLabel,
-} from "lyrics-kit/core";
+import { FURIGANA, LyricsLineJSON, RangeAttributeLabel } from "lyrics-kit/core";
 
 const pattern =
-  "(([あいうえおアイウエオゕゖヵヶてでテデんン]|[かがさざただなはばぱまやらわカガサザタダナハバパマヤラワヷ]|[きぎしじちぢにひびぴみりゐキギシジチヂニヒビピミリヰヸ]([ゃャ]|[ゅょュョ][うウ]?)*|[くぐすずつづぬふぶぷむゆるゔクグスズツヅヌフブプムユルヴ][うウ]*|[けげせぜねへべぺめれゑケゲセゼネヘベペメレヱヹ][いイ]*|[こごそぞとどのほぼぽもよろをコゴソゾトドノホボポモヨロヲヺ][うウ]*)[ぁぃぅぇぉっァィゥェォッーんン]*|\\p{sc=Han}|[\\p{sc=Latin}\\p{sc=Cyrillic}\\p{sc=Greek}\\p{Nd}]+(['’]\\p{sc=Latin}{1,2})?)";
+  "(([あいうえおアイウエオゕゖヵヶてでテデんン]|[かがさざただなはばぱまやらわカガサザタダナハバパマヤラワヷ]|[きぎしじちぢにひびぴみりゐキギシジチヂニヒビピミリヰヸ]([ゃャ]|[ゅょュョ][うウ]?)*|[くぐすずつづぬふぶぷむゆるゔクグスズツヅヌフブプムユルヴ][うウ]*|[けげせぜねへべぺめれゑケゲセゼネヘベペメレヱヹ][いイ]*|[こごそぞとどのほぼぽもよろをコゴソゾトドノホボポモヨロヲヺ][うウ]*)[ぁぃぅぇぉっァィゥェォッーんン—–・…\\.]*|\\p{sc=Han}|[\\p{sc=Latin}\\p{sc=Cyrillic}\\p{sc=Greek}\\p{Nd}]+(['’]\\p{sc=Latin}{1,2})?)";
 const beginPattern = new RegExp(pattern, "u");
 const countPattern = new RegExp(pattern, "gu");
 
