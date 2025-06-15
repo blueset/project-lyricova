@@ -3,6 +3,7 @@
 .container {
   padding-inline-start: $horizontal-gutter;
   padding-inline-end: $horizontal-gutter;
+  margin-inline: auto;
 }
 .verticalPadding {
   padding-block-start: $vertical-gutter;
