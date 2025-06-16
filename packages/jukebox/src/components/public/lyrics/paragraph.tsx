@@ -37,23 +37,8 @@ export function ParagraphLyrics({ lyrics }: Props) {
     }
   }, [currentLine, line, lyrics.lines]);
 
-  const containerStyle: React.CSSProperties = {
-    // @ts-expect-error Non-standard properties
-    maskBorderImageSource:
-      "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-    maskBorderImageSlice: "49% 0 fill",
-    maskBorderImageWidth: "40% 0",
-    WebkitMaskBoxImageSource:
-      "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-    WebkitMaskBoxImageSlice: "49% 0 fill",
-    WebkitMaskBoxImageWidth: "40% 0",
-  };
-
   return (
-    <div
-      className="p-1 w-full h-full overflow-hidden text-justify"
-      style={containerStyle}
-    >
+    <div className="p-1 w-full h-full overflow-hidden text-justify mask-y-from-60% mask-y-to-100%">
       <div className="h-1/2" />
       {lyrics.lines.map((v, idx) => {
         const offset = line !== null ? Math.abs(line - idx) : idx;

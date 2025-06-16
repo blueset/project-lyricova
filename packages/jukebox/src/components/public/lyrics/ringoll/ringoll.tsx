@@ -11,23 +11,11 @@ const RingollContainerDiv = (props: ComponentProps<"div">) => (
     // Keep complex mask and transition properties as inline styles
     // Attempt hover effect using arbitrary variants (may need adjustment)
     className={cn(
-      "relative p-4 px-8 size-full overflow-clip transition-[mask-border-image-width,mask-box-image-width,-webkit-mask-box-image-width] duration-0",
-      "[mask-border-image-width:5rem_0_30%] [mask-box-image-width:5rem_0_30%] [-webkit-mask-box-image-width:5rem_0_30%]",
-      "hover:[mask-border-image-width:5rem_0] hover:[mask-box-image-width:5rem_0] hover:[-webkit-mask-box-image-width:5rem_0]"
+      "relative p-4 px-8 size-full overflow-clip transition-[mask-image,var(--tw-mask-bottom-from-position)] duration-0",
+      "mask-t-from-[calc(100%_-_5em)] mask-t-to-100% mask-b-from-70% mask-b-to-100%",
+      "hover:mask-b-from-100%"
     )}
-    style={{
-      // @ts-expect-error TypeScript doesn't recognize these properties
-      maskBorderImageSource:
-        "linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 49%, rgba(0, 0, 0, 1) 51%, rgba(0, 0, 0, 0) 100%)",
-      maskBorderImageSlice: "49% 0 fill",
-      maskBoxImageSource:
-        "linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 49%, rgba(0, 0, 0, 1) 51%, rgba(0, 0, 0, 0) 100%)",
-      maskBoxImageSlice: "49% 0 fill",
-      // Note: Property name changed for React style object
-      WebkitMaskBoxImageSource:
-        "linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 49%, rgba(0, 0, 0, 1) 51%, rgba(0, 0, 0, 0) 100%)",
-      WebkitMaskBoxImageSlice: "49% 0 fill",
-    }}
+    style={{}}
   />
 );
 

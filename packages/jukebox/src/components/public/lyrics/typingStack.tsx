@@ -41,23 +41,7 @@ export function TypingStackedLyrics({ lyrics }: Props) {
 
   return (
     <div
-      className="size-full overflow-hidden flex justify-start flex-col px-8"
-      style={
-        {
-          maskBorderImageSource:
-            "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          maskBorderImageSlice: "0 49% fill",
-          maskBorderImageWidth: "0 40px",
-          maskBoxImageSource:
-            "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          maskBoxImageSlice: "0 49% fill",
-          maskBoxImageWidth: "0 40px",
-          WebkitMaskBoxImageSource:
-            "linear-gradient(180deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          WebkitMaskBoxImageSlice: "49% 0 fill",
-          WebkitMaskBoxImageWidth: "0 0 40px",
-        } as unknown as CSSProperties
-      }
+      className="size-full overflow-hidden flex justify-start flex-col px-8 mask-b-from-[calc(100%_-_40px)] mask-b-to-100%"
       lang="ja"
     >
       {node}

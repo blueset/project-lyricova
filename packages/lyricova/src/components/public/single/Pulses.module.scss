@@ -32,25 +32,11 @@
     align-self: stretch;
     overflow: auto;
     flex-direction: column;
-    -webkit-mask-box-image-source: linear-gradient(0deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%);
-    -webkit-mask-box-image-slice: 49% 0 fill;
-    -webkit-mask-box-image-width: 0 0 1em 0;
+    mask: linear-gradient(to bottom, rgba(0, 0, 0, 1) calc(100% - 1rem), rgba(0, 0, 0, 0) 100%) no-repeat;
 
     scrollbar-width: none;
     &::-webkit-scrollbar{
       display: none;
-    }
-  
-    @supports not (-webkit-mask-box-image-width: 0 2rem 0 0) {
-      &::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0), var(--background-color));
-        height: 1rem;
-      }
     }
 
     .pulsesListingInner {

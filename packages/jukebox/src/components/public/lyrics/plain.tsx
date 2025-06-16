@@ -160,28 +160,6 @@ const RowRenderer = memo(
     prev.isActiveScroll === next.isActiveScroll
 );
 
-const containerStyle: React.CSSProperties = {
-  // @ts-expect-error -webkit-mask-box-image is not standard
-  maskBorderImageSource: `linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 1) 49%,
-    rgba(0, 0, 0, 1) 51%,
-    rgba(0, 0, 0, 0) 100%
-  )`,
-  maskBorderImageSlice: "49% 0 fill",
-  maskBorderImageWidth: "30% 0",
-  WebkitMaskBoxImageSource: `linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 1) 49%,
-    rgba(0, 0, 0, 1) 51%,
-    rgba(0, 0, 0, 0) 100%
-  )`,
-  WebkitMaskBoxImageSlice: "49% 0 fill",
-  WebkitMaskBoxImageWidth: "30% 0",
-};
-
 interface Props {
   lyrics: LyricsKitLyrics;
   transLangIdx: number;
@@ -195,8 +173,8 @@ export function PlainLyrics({ lyrics, transLangIdx }: Props) {
       estimatedRowHeight={20}
       containerAs="div"
       containerProps={{
-        className: "p-4 w-full h-full overflow-hidden relative text-justify",
-        style: containerStyle,
+        className:
+          "p-4 w-full h-full overflow-hidden relative text-justify mask-y-from-70% mask-y-to-100%",
       }}
       align="center"
       alignAnchor={0.5}

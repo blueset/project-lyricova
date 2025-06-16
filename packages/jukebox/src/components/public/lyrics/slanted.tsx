@@ -96,25 +96,7 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
   useTrackwiseTimelineControl(playerState, timeline);
 
   return (
-    <div
-      className="size-full overflow-hidden flex justify-center flex-col"
-      style={
-        {
-          maskBorderImageSource:
-            "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          maskBorderImageSlice: "0 49% fill",
-          maskBorderImageWidth: "0 40px",
-          maskBoxImageSource:
-            "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          maskBoxImageSlice: "0 49% fill",
-          maskBoxImageWidth: "0 40px",
-          WebkitMaskBoxImageSource:
-            "linear-gradient(90deg, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 49%, rgba(0,0,0,1) 51%, rgba(0,0,0,0) 100%)",
-          WebkitMaskBoxImageSlice: "0 49% fill",
-          WebkitMaskBoxImageWidth: "0 40px",
-        } as unknown as CSSProperties
-      }
-    >
+    <div className="size-full overflow-hidden flex justify-center flex-col mask-x-from-[calc(100%_-_40px)] mask-x-to-100%">
       <div
         className="whitespace-nowrap overflow-hidden text-3xl"
         style={{ transform: "skew(-5deg, -5deg)" }}
