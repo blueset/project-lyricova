@@ -796,8 +796,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           className={cn(
             "p-16 size-full flex flex-col justify-end text-white",
             "lg:text-6xl sm:text-4xl text-3xl", // Font sizes
-            "[&_rt]:text-[max(0.35em,1.125rem)]", // Ruby text styles
-            "supports-[-moz-appearance:none]:[&_rt]:-mb-2" // Firefox fix
+            "[&_rt]:text-[max(0.35em,1.125rem)]" // Ruby text styles
           )}
           // Add group/page for conditional countdown styles based on parent state
           data-done={
