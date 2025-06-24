@@ -8,7 +8,7 @@ export function shiftinPuncts(
     const front = match[1]?.split(start) ?? [];
     const back = match[3]?.split(end) ?? [];
     match[2] = `${start.repeat(front.length - 1)}${match[2]}${end.repeat(
-      back.length - 1
+      Math.max(back.length - 1, 0)
     )}`;
     match[1] = front.join("");
     match[3] = back.join("");

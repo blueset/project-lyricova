@@ -160,7 +160,7 @@ export function InlineTaggingLine({
           ?.values ?? [];
       const startingTags = tags.map((x) => x?.[0] ?? null);
       if (startingTags.every((x) => !x)) {
-        timelinesRef.current = null;
+        timelinesRef.current = [];
         return;
       }
       const tl = gsap.timeline();
