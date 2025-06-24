@@ -346,7 +346,7 @@ export function YohaneAlign({ fileId }: { fileId: number }) {
               size="sm"
               variant="outline"
               onClick={handleGenerateTagging}
-              progress={isAlignmentLoading ? progress.progress ?? true : false}
+              progress={isAlignmentLoading ? progress?.progress ?? true : false}
             >
               Yohane
             </ProgressButton>
@@ -359,10 +359,10 @@ export function YohaneAlign({ fileId }: { fileId: number }) {
           className="p-4 w-auto max-w-[80ch] overflow-y-auto max-h-(--radix-hover-card-content-available-height)"
           side="bottom"
         >
-          <p className="font-mono whitespace-pre-wrap">{progress.status}</p>
-          {progress.progress !== undefined && (
+          <p className="font-mono whitespace-pre-wrap">{progress?.status}</p>
+          {progress?.progress !== undefined && (
             <Progress
-              value={progress.progress}
+              value={progress?.progress}
               max={100}
               className="w-full mt-2"
             />

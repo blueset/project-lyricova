@@ -357,7 +357,7 @@ export function CustomAlign({ fileId }: { fileId: number }) {
               size="sm"
               variant="outline"
               onClick={handleGenerateTagging}
-              progress={isAlignmentLoading ? progress.progress ?? true : false}
+              progress={isAlignmentLoading ? progress?.progress ?? true : false}
             >
               Custom
             </ProgressButton>
@@ -373,9 +373,9 @@ export function CustomAlign({ fileId }: { fileId: number }) {
           side="bottom"
         >
           <p className="font-mono whitespace-pre-wrap">{progress.status}</p>
-          {progress.progress !== undefined && (
+          {progress?.progress !== undefined && (
             <Progress
-              value={progress.progress}
+              value={progress?.progress}
               max={100}
               className="w-full mt-2"
             />
