@@ -1,5 +1,5 @@
 import express from "express";
-import type {Request, Response} from "express";
+import type { Request, Response } from "express";
 import compression from "compression";
 import bodyParser from "body-parser";
 import flash from "express-flash";
@@ -10,6 +10,8 @@ import registerRoutes from "./routes";
 import { SESSION_SECRET } from "./utils/secret";
 import sequelize from "./db";
 import SequelizeStoreConstructor from "connect-session-sequelize";
+import { postHog } from "./utils/posthog";
+import { setupExpressErrorHandler } from "posthog-node";
 
 const SequelizeStore = SequelizeStoreConstructor(session.Store);
 
@@ -37,6 +39,7 @@ export default () => {
   app.use(flash());
 
   registerRoutes(app);
+  setupExpressErrorHandler(postHog, app);
 
   app.get("/", async (req: Request, res: Response) => {
     res.send("Hello world!");

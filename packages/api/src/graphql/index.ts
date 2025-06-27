@@ -236,6 +236,20 @@ export async function applyApollo(app: Application): Promise<Server> {
             },
           };
         },
+        async unexpectedErrorProcessingRequest({ requestContext, error }) {
+          console.error("Unexpected error in GraphQL request:", error);
+          postHog?.captureException(
+            error,
+            requestContext.contextValue?.user?.id.toString() ?? "unknown",
+            {
+              properties: {
+                operationName: requestContext.request?.operationName,
+                query: requestContext.request?.query,
+                variables: requestContext.request?.variables,
+              },
+            }
+          );
+        },
       },
     ],
     cache: "bounded",
