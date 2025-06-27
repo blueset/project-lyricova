@@ -55,6 +55,7 @@
     "@pixi/filter-bulge-pinch": "^5.1.1",
     "@pixi/filter-color-matrix": "^7.4.3",
     "@pixi/sprite": "^7.4.3",
+    "@posthog/nextjs-config": "^1.0.0",
     "@react-spring/web": "^9.7.3",
     "@reduxjs/toolkit": "^1.9.2",
     "@tailwindcss/postcss": "^4.1.3",

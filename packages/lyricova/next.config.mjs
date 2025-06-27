@@ -1,58 +1,69 @@
 import analyzer from "@next/bundle-analyzer";
+import { withPostHogConfig } from "@posthog/nextjs-config";
 
 const withBundleAnalyzer = analyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-const config = withBundleAnalyzer({
-  transpilePackages: ["@lyricova/components"],
-  async redirects() {
-    return [
-      {
-        source: "/pages/1",
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/tags/:slug/pages/1",
-        destination: "/tags/:slug",
-        permanent: true,
-      },
-    ];
-  },
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "http://localhost:8083/api/:path*",
-      },
-      {
-        source: "/graphql",
-        destination: "http://localhost:8083/graphql",
-      },
-      {
-        source: "/feed",
-        destination: "http://localhost:8083/feed",
-      },
-      {
-        source: "/ingest/static/:path*",
-        destination: "https://us-assets.i.posthog.com/static/:path*",
-      },
-      {
-        source: "/ingest/:path*",
-        destination: "https://us.i.posthog.com/:path*",
-      },
-      {
-        source: "/ingest/decide",
-        destination: "https://us.i.posthog.com/decide",
-      },
-    ];
-  },
-  // This is required to support PostHog trailing slash API requests
-  skipTrailingSlashRedirect: true,
-  experimental: {
-    proxyTimeout: 3600_000,
-  },
-});
+const config = withPostHogConfig(
+  withBundleAnalyzer({
+    transpilePackages: ["@lyricova/components"],
+    async redirects() {
+      return [
+        {
+          source: "/pages/1",
+          destination: "/",
+          permanent: true,
+        },
+        {
+          source: "/tags/:slug/pages/1",
+          destination: "/tags/:slug",
+          permanent: true,
+        },
+      ];
+    },
+    async rewrites() {
+      return [
+        {
+          source: "/api/:path*",
+          destination: "http://localhost:8083/api/:path*",
+        },
+        {
+          source: "/graphql",
+          destination: "http://localhost:8083/graphql",
+        },
+        {
+          source: "/feed",
+          destination: "http://localhost:8083/feed",
+        },
+        {
+          source: "/ingest/static/:path*",
+          destination: "https://us-assets.i.posthog.com/static/:path*",
+        },
+        {
+          source: "/ingest/:path*",
+          destination: "https://us.i.posthog.com/:path*",
+        },
+        {
+          source: "/ingest/decide",
+          destination: "https://us.i.posthog.com/decide",
+        },
+      ];
+    },
+    // This is required to support PostHog trailing slash API requests
+    skipTrailingSlashRedirect: true,
+    experimental: {
+      proxyTimeout: 3600_000,
+    },
+  }),
+  {
+    personalApiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    envId: process.env.NEXT_PUBLIC_POSTHOG_ENV_ID,
+    sourcemaps: {
+      project: "lyricova-jukebox",
+      deleteAfterUpload: true,
+    },
+  }
+);
 
 export default config;
