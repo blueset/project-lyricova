@@ -57,8 +57,8 @@ const config = withPostHogConfig(
     },
   }),
   {
-    personalApiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-    envId: process.env.NEXT_PUBLIC_POSTHOG_ENV_ID,
+    personalApiKey: process.env.POSTHOG_API_KEY,
+    envId: process.env.POSTHOG_ENV_ID,
     sourcemaps: {
       project: "lyricova-jukebox",
       deleteAfterUpload: true,
