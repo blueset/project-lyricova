@@ -632,7 +632,7 @@ export class MusicFileResolver {
     const file = await MusicFile.findByPk(fileId);
     if (file === null) return 0;
     const playCount = file.playCount + 1;
-    await file.update({ playCount, lastPlayed: new Date() });
+    await file.update({ playCount, lastPlayed: new Date() }, { silent: true });
     return playCount;
   }
 
