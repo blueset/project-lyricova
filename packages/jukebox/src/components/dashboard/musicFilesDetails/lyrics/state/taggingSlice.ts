@@ -96,8 +96,8 @@ export const createTaggingSlice: StateCreator<
               b: 0,
             };
           });
-          get().generate();
         });
+        get().generate();
       },
       reset: () =>
         set((state) => {
