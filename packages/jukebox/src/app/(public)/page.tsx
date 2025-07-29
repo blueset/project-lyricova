@@ -105,9 +105,8 @@ export default function Index() {
   const lyricsQuery = useQuery<{ musicFile?: { lyrics: LyricsKitLyrics } }>(
     LYRICS_QUERY,
     {
-      variables: {
-        id: currentSong?.id,
-      },
+      variables: currentSong?.id ? { id: currentSong.id } : undefined,
+      skip: !currentSong?.id,
     }
   );
 
