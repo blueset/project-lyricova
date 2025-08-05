@@ -8,7 +8,6 @@ import {
   apolloClient,
 } from "@lyricova/components";
 import { useRouter, usePathname } from "next/navigation";
-import { SnackbarProvider } from "notistack";
 import { usePopupState } from "material-ui-popup-state/hooks";
 import { ApolloProvider } from "@apollo/client";
 import {
@@ -44,6 +43,7 @@ import {
   Download,
   FileDown,
   FileType2,
+  Settings,
 } from "lucide-react";
 import { Toaster } from "@lyricova/components/components/ui/sonner";
 
@@ -234,6 +234,18 @@ export default function DashboardLayout({ children }: Props) {
                             text="Download"
                             href="/dashboard/download"
                             icon={<Download />}
+                          />
+                        </SidebarMenu>
+                      </SidebarGroupContent>
+                    </SidebarGroup>
+                    <SidebarGroup>
+                      <SidebarGroupLabel>Site</SidebarGroupLabel>
+                      <SidebarGroupContent>
+                        <SidebarMenu>
+                          <SideNavMenuItem
+                            text="Site meta"
+                            href="/dashboard/meta"
+                            icon={<Settings />}
                           />
                         </SidebarMenu>
                       </SidebarGroupContent>

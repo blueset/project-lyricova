@@ -494,6 +494,7 @@ type Mutation {
     """Playlists to set"""
     playlistSlugs: [String!]!
   ): MusicFile!
+  setSiteMeta(key: String!, value: String!): Boolean!
 
   """Write lyrics to music file as a tag"""
   toggleMusicFileReviewStatus(
@@ -605,6 +606,7 @@ type Query {
   foo: Foo!
   foos: [Foo!]!
   furiganaMappings: [FuriganaMapping!]!
+  getSiteMeta(default: String!, key: String!): String!
   hash(plaintext: String!): String!
   hmikuLyrics(id: String!): HmikuAtWikiEntry
   hmikuLyricsSearch(keyword: String!): [HmikuAtWikiSearchResultEntry!]!

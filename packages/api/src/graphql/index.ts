@@ -25,7 +25,6 @@ import { ServerOptions, WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
 import cors from "cors";
 import bodyParser from "body-parser";
-import passport from "passport";
 import { DownloadResolver } from "./DownloadResolver";
 import { AlbumResolver } from "./AlbumResolver";
 import { ArtistResolver } from "./ArtistResolver";
@@ -33,6 +32,7 @@ import { LLMResolver } from "./LLMResolver";
 import { LyricsProvidersResolver } from "./LyricsProvidersResolver";
 import { MusicFileResolver } from "./MusicFileResolver";
 import { PlaylistResolver } from "./PlaylistResolver";
+import { SiteMetaResolver } from "./SiteMetaResolver";
 import { SongResolver } from "./SongResolver";
 import { StatsResolver } from "./StatsResolver";
 import { TextureResolver } from "./TextureResolver";
@@ -149,6 +149,7 @@ export async function applyApollo(app: Application): Promise<Server> {
       LyricsProvidersResolver,
       MusicFileResolver,
       PlaylistResolver,
+      SiteMetaResolver,
       SongResolver,
       StatsResolver,
       TextureResolver,

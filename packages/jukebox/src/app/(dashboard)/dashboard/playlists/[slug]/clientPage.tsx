@@ -511,11 +511,11 @@ export default function PlaylistDetails() {
       />
       <div className="h-full mx-4 flex flex-col gap-4 mb-2">
         {playlistQuery.error ? (
-          <Alert variant="destructive">
+          <Alert variant="error">
             Playlist with slug <code>{slug}</code> is not found.
           </Alert>
         ) : !playlistQuery.data ? (
-          <Alert>Loading...</Alert>
+          <Alert variant="info">Loading...</Alert>
         ) : (
           <PlaylistForm initialData={playlistQuery.data.playlist} />
         )}

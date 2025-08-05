@@ -13,12 +13,34 @@ import {
 } from "@lyricova/components/components/ui/hover-card";
 import { CircularProgress } from "@lyricova/components/components/ui/circular-progress";
 import { ChevronDownIcon, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLyricsStore } from "../state/editorState";
 import { useShallow } from "zustand/shallow";
 import { useAuthContext } from "@lyricova/components";
 import { fetchEventData } from "fetch-sse";
 import { toast } from "sonner";
+import { gql, useQuery } from "@apollo/client";
+
+const GET_LLM_MODELS_QUERY = gql`
+  query GetLLMModels($key: String!, $default: String!) {
+    getSiteMeta(key: $key, default: $default)
+  }
+`;
+
+// Fallback models in case the site meta is empty or invalid
+const FALLBACK_LLM_MODELS = [
+  "o4-mini",
+  "o3-mini",
+  "openai/o4-mini",
+  "openai/o3-mini",
+  "openai/o1-mini",
+  "google/gemma-3-27b-it:free",
+  "qwen/qwq-32b:free",
+  "qwen/qwen2.5-vl-72b-instruct:free",
+  "meta-llama/llama-4-maverick:free",
+  "meta-llama/llama-4-scout:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+];
 
 export default function LyricsTools() {
   const authContext = useAuthContext();
@@ -28,6 +50,47 @@ export default function LyricsTools() {
       setTextareaValue: state.translations.setTextareaValue,
     }))
   );
+
+  // Fetch LLM models from site meta
+  const { data: llmModelsData, error: llmModelsError } = useQuery(
+    GET_LLM_MODELS_QUERY,
+    {
+      variables: {
+        key: "llmModels",
+        default: JSON.stringify(FALLBACK_LLM_MODELS),
+      },
+      errorPolicy: "all", // Continue even if there's an error
+    }
+  );
+
+  // Parse LLM models with fallback handling
+  const llmModels = useMemo(() => {
+    try {
+      if (llmModelsData?.getSiteMeta) {
+        const parsed = JSON.parse(llmModelsData.getSiteMeta);
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0 &&
+          parsed.every((item) => typeof item === "string")
+        ) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to parse LLM models from site meta, using fallback:",
+        error
+      );
+    }
+
+    // If there was an error fetching from GraphQL, log it but gracefully fall back
+    if (llmModelsError) {
+      console.warn("Error fetching LLM models from site meta:", llmModelsError);
+    }
+
+    // Return fallback models if site meta is empty, invalid, or failed to load
+    return FALLBACK_LLM_MODELS;
+  }, [llmModelsData, llmModelsError]);
 
   const [isAlignmentLoading, setIsAlignmentLoading] = useState(false);
   const [chunkBuffer, setChunkBuffer] = useState<string>("");
@@ -211,27 +274,7 @@ export default function LyricsTools() {
         </HoverCard>
 
         <DropdownMenuContent>
-          {[
-            "deepseek/deepseek-chat-v3-0324:free",
-            "google/gemini-2.5-flash-preview-05-20",
-            "google/gemini-2.5-flash-preview-05-20:thinking",
-            "o4-mini",
-            "o3-mini",
-            "openai/o4-mini",
-            "openai/o3-mini",
-            "openai/o1-mini",
-            "openai/o1",
-            "openai/gpt-4.1-nano",
-            "openai/gpt-4.1-mini",
-            "openai/gpt-4.1",
-            "openai/gpt-4o",
-            "google/gemma-3-27b-it:free",
-            "qwen/qwq-32b:free",
-            "qwen/qwen2.5-vl-72b-instruct:free",
-            "meta-llama/llama-4-maverick:free",
-            "meta-llama/llama-4-scout:free",
-            "meta-llama/llama-3.3-70b-instruct:free",
-          ].map((model) => (
+          {llmModels.map((model) => (
             <DropdownMenuItem
               key={model}
               disabled={isAlignmentLoading}
