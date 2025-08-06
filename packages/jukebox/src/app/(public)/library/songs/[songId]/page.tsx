@@ -51,6 +51,22 @@ const SONG_QUERY = gql`
         songId
       }
       ...SelectSongEntry
+      derivedSongs {
+        id
+        name
+        coverUrl
+        artists {
+          id
+          name
+          sortOrder
+          type
+          ArtistOfSong {
+            customName
+            artistRoles
+            categories
+          }
+        }
+      }
     }
   }
 
@@ -146,17 +162,6 @@ export default function LibrarySingleSong() {
               ))
             )}
           </h2>
-          {song.originalId && (
-            <div className="text-sm text-muted-foreground">
-              Original:{" "}
-              <NextComposedLink
-                href={`/library/songs/${song.originalId}`}
-                className="underline"
-              >
-                {song.original?.name || "Unknown"}
-              </NextComposedLink>
-            </div>
-          )}
           <div className="flex items-center mt-2">
             <div className="flex-grow flex flex-wrap gap-2">
               {canPlay && (
@@ -211,10 +216,39 @@ export default function LibrarySingleSong() {
           </div>
 
           <div className="mt-4">
-            <div className="py-2 uppercase tracking-wider font-medium text-xs text-muted-foreground mt-4">
-              {filesCount} {filesCount < 2 ? "file" : "files"}, {totalMinutes}{" "}
-              {totalMinutes < 2 ? "minute" : "minutes"}, {filesize(totalSize)}
-            </div>
+            {song.original?.id && (
+              <>
+                <div className="py-2 uppercase tracking-wider font-medium text-xs text-muted-foreground mt-4">
+                  Original
+                </div>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start p-2 h-auto"
+                  asChild
+                >
+                  <NextComposedLink href={`/library/songs/${song.original.id}`}>
+                    <div className="flex items-center w-full">
+                      {!!song.original.coverUrl && (
+                        <Avatar className="mr-2 h-10 w-10 rounded-md">
+                          <AvatarImage src={song.original.coverUrl} />
+                        </Avatar>
+                      )}
+                      <div className={!song.original.coverUrl ? "ml-12" : ""}>
+                        {song.original.name}
+                      </div>
+                    </div>
+                  </NextComposedLink>
+                </Button>
+                <Separator />
+              </>
+            )}
+            {filesCount > 0 && (
+              <div className="py-2 uppercase tracking-wider font-medium text-xs text-muted-foreground mt-4">
+                {filesCount} {filesCount < 2 ? "file" : "files"}, {totalMinutes}{" "}
+                {totalMinutes < 2 ? "minute" : "minutes"}, {filesize(totalSize)}
+              </div>
+            )}
 
             {files.map((v) => (
               <TrackListRow
@@ -260,6 +294,51 @@ export default function LibrarySingleSong() {
                               ]
                                 .filter(Boolean)
                                 .join(", ") || "Unknown disk"}
+                            </div>
+                          </div>
+                        </div>
+                      </NextComposedLink>
+                    </Button>
+                    <Separator />
+                  </Fragment>
+                ))}
+              </>
+            )}
+
+            {song.derivedSongs.length > 0 && (
+              <>
+                <div className="py-2 uppercase tracking-wider font-medium text-xs text-muted-foreground mt-4">
+                  {song.derivedSongs.length}{" "}
+                  {song.derivedSongs.length < 2
+                    ? "derived song"
+                    : "derived songs"}
+                </div>
+
+                {song.derivedSongs.map((v) => (
+                  <Fragment key={v.id}>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start p-2 h-auto"
+                      asChild
+                    >
+                      <NextComposedLink href={`/library/songs/${v.id}`}>
+                        <div className="flex items-center w-full">
+                          {!!v.coverUrl && (
+                            <Avatar className="mr-2 h-10 w-10 rounded-md">
+                              <AvatarImage src={v.coverUrl} />
+                            </Avatar>
+                          )}
+                          <div className={!v.coverUrl ? "ml-12" : ""}>
+                            {v.name}
+                            <div className="text-sm text-muted-foreground">
+                              {formatArtists(v.artists, (a) =>
+                                a.map((artist) => (
+                                  <Fragment key={artist.id}>
+                                    {artist.ArtistOfSong.customName ||
+                                      artist.name}
+                                  </Fragment>
+                                ))
+                              )}
                             </div>
                           </div>
                         </div>
