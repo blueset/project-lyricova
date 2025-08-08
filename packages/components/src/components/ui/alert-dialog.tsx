@@ -1,5 +1,5 @@
 import * as React from "react"
-import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
+import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
 import { cn } from "@lyricova/components/utils"
 import { buttonVariants } from "@lyricova/components/components/ui/button"

@@ -1,4 +1,4 @@
-import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
+import { Collapsible as CollapsiblePrimitive } from "radix-ui";
 import { Button } from "@lyricova/components/components/ui/button";
 import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 
