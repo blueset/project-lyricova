@@ -29,6 +29,7 @@ import { BackgroundCanvas } from "@/components/public/BackgroundCanvas/Backgroun
 import { cn } from "@lyricova/components/utils";
 import { Card } from "@lyricova/components/components/ui/card";
 import { Toaster } from "@lyricova/components/components/ui/sonner";
+import { shallowEqual } from "react-redux";
 
 interface Props {
   children: ReactNode;
@@ -80,11 +81,16 @@ function IndexLayout({ children }: Props) {
   const apolloClient = useApolloClient();
 
   const dispatch = useAppDispatch();
-  const { nowPlaying, loopMode, isCollapsed, playNow } = useAppSelector(
-    (s) => s.playlist
+  const { loopMode, isCollapsed, playNow, isFullscreen } = useAppSelector(
+    (s) => ({
+      loopMode: s.playlist.loopMode,
+      isCollapsed: s.playlist.isCollapsed,
+      playNow: s.playlist.playNow,
+      isFullscreen: s.display.isFullscreen,
+    }),
+    shallowEqual
   );
   const currentSong = useAppSelector(currentSongSelector);
-  const isFullscreen = useAppSelector((s) => s.display.isFullscreen);
 
   // Reflect nowPlaying change to player
   useEffect(() => {
@@ -105,7 +111,7 @@ function IndexLayout({ children }: Props) {
     } else {
       console.error("PlayerRef is lost!", playerRef);
     }
-  }, [currentSong, nowPlaying, playNow]);
+  }, [currentSong, playNow]);
 
   const onPlayEnded = useCallback(() => {
     if (!playerRef.current) return;

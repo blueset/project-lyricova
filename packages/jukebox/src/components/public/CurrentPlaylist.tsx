@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@lyricova/components/components/ui/dropdown-menu";
 import { Button } from "@lyricova/components/components/ui/button";
+import { shallowEqual } from "react-redux";
 
 function CurrentPlaylistItem({
   provided,
@@ -156,8 +157,8 @@ Row.displayName = "Row";
 
 export default function CurrentPlaylist() {
   const dispatch = useAppDispatch();
-  const { nowPlaying } = useAppSelector((s) => s.playlist);
-  const tracks = useAppSelector(visualPlaylistSelector);
+  const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
+  const tracks = useAppSelector(visualPlaylistSelector, shallowEqual);
 
   function onDragEnd(result: DropResult) {
     if (!result.destination) {

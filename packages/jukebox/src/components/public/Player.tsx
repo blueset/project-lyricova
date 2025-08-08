@@ -15,6 +15,7 @@ import { useAppContext } from "./AppContext";
 import { TimeSlider } from "./TimeSlider";
 import { PlayButton } from "./PlayButton";
 import { useAppDispatch, useAppSelector } from "../../redux/public/store";
+import { shallowEqual } from "react-redux";
 import {
   currentSongSelector,
   playNext,
@@ -48,8 +49,22 @@ function generateBackgroundStyle(track: Track): CSSProperties {
 
 export default function Player() {
   const dispatch = useAppDispatch();
-  const { nowPlaying, loopMode, shuffleMapping, isCollapsed, tracks } =
-    useAppSelector((s) => s.playlist);
+  const {
+    nowPlayingDefined,
+    loopMode,
+    shuffleMappingDefined,
+    isCollapsed,
+    tracksLength,
+  } = useAppSelector(
+    (s) => ({
+      nowPlayingDefined: s.playlist.nowPlaying !== null,
+      loopMode: s.playlist.loopMode,
+      shuffleMappingDefined: !!s.playlist.shuffleMapping,
+      isCollapsed: s.playlist.isCollapsed,
+      tracksLength: s.playlist.tracks.length,
+    }),
+    shallowEqual
+  );
   const currentSong = useAppSelector(currentSongSelector);
   const { playerRef } = useAppContext();
 
@@ -130,7 +145,7 @@ export default function Player() {
         <TimeSlider
           className="mt-2 group-data-[collapsed]/player:md:mt-0 group-data-[collapsed]/player:md:mx-2"
           playerRef={playerRef}
-          disabled={nowPlaying === null}
+          disabled={!nowPlayingDefined}
           isCollapsed={isCollapsed}
         />
         <Button
@@ -138,10 +153,10 @@ export default function Player() {
           variant="ghost"
           size="icon"
           aria-label="Shuffle"
-          disabled={tracks.length < 2}
+          disabled={tracksLength < 2}
           onClick={toggleShuffleHandler}
         >
-          <Shuffle className={shuffleMapping ? "" : "opacity-50"} />
+          <Shuffle className={shuffleMappingDefined ? "" : "opacity-50"} />
         </Button>
         <Button
           id="player-previous"

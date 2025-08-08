@@ -8,6 +8,7 @@ import { Button } from "@lyricova/components/components/ui/button";
 import { CircularProgress } from "@lyricova/components/components/ui/circular-progress";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { Play, Pause } from "lucide-react";
+import { shallowEqual } from "react-redux";
 
 interface Props {
   playerRef: RefObject<HTMLAudioElement>;
@@ -16,7 +17,14 @@ interface Props {
 
 export function PlayButton({ playerRef, className }: Props) {
   const dispatch = useAppDispatch();
-  const { nowPlaying, tracks, isCollapsed } = useAppSelector((s) => s.playlist);
+  const { nowPlayingDefined, tracksHaveContent, isCollapsed } = useAppSelector(
+    (s) => ({
+      nowPlayingDefined: s.playlist.nowPlaying !== null,
+      tracksHaveContent: s.playlist.tracks.length > 0,
+      isCollapsed: s.playlist.isCollapsed,
+    }),
+    shallowEqual
+  );
   const isFlatPlayer = useMediaQuery("(min-width: 640px)") && isCollapsed;
 
   // Using state to keep this button rerendered on state change.
@@ -46,7 +54,7 @@ export function PlayButton({ playerRef, className }: Props) {
   }, [playerRef, setIsLoading, setLoadProgress]);
 
   const clickPlay = useCallback(() => {
-    if (nowPlaying === null && tracks.length > 0) {
+    if (!nowPlayingDefined && tracksHaveContent) {
       dispatch(playTrack({ track: 0, playNow: true }));
       return;
     }
@@ -55,7 +63,7 @@ export function PlayButton({ playerRef, className }: Props) {
     } else {
       playerRef.current.pause();
     }
-  }, [dispatch, nowPlaying, playerRef, tracks.length]);
+  }, [dispatch, nowPlayingDefined, playerRef, tracksHaveContent]);
 
   const onPlay = useCallback(() => {
     setIsPlaying(true);
