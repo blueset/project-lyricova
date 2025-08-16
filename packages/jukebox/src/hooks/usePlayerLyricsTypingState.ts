@@ -2,7 +2,10 @@ import { gql, QueryResult, useQuery } from "@apollo/client";
 import _ from "lodash";
 import { RefObject, useMemo } from "react";
 import { useTrackwiseTimelineControl } from "./useTrackwiseTimelineControl";
-import { LyricsKitLyricsLine, LyricsKitLyrics } from "@lyricova/api/graphql/types";
+import {
+  LyricsKitLyricsLine,
+  LyricsKitLyrics,
+} from "@lyricova/api/graphql/types";
 import { AnimatedWord } from "@lyricova/api/graphql/types";
 import { PlayerLyricsState } from "./types";
 import { usePlainPlayerLyricsState } from "./usePlainPlayerLyricsState";
@@ -137,8 +140,8 @@ export function usePlayerLyricsTypingState(
     perLineThreshold,
     sequenceQuery.data,
     startTimes,
-    doneElementRef.current,
-    typingElementRef.current,
+    doneElementRef,
+    typingElementRef,
   ]);
 
   useTrackwiseTimelineControl(playerState, timeline);

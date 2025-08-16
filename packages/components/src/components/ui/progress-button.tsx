@@ -15,7 +15,7 @@ function ProgressButton({
   return (
     <Button
       data-slot="button"
-      className={cn("relative overflow-x-hidden", className)}
+      className={cn("relative overflow-hidden", className)}
       disabled={disabled || progress !== false}
       {...props}
     >

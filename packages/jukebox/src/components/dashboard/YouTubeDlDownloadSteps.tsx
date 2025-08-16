@@ -14,7 +14,7 @@ import { ExternalLink } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";
 import { swapExt } from "@/frontendUtils/path";
 import type { DocumentNode } from "graphql";
-import { YouTubeDlProgressType } from "@lyricova/api/graphql/types";
+import { MusicFile, YouTubeDlProgressType } from "@lyricova/api/graphql/types";
 import {
   Step,
   StepContent,
@@ -33,6 +33,7 @@ import {
 import { Progress } from "@lyricova/components/components/ui/progress";
 import { Label } from "@lyricova/components/components/ui/label";
 import { cn } from "@lyricova/components/utils";
+import { PVContract, SongForApiContract } from "@/types/vocadb";
 
 const YOUTUBE_DL_INFO_QUERY = gql`
   query ($url: String!) {
@@ -83,6 +84,48 @@ const YOUTUBE_DL_DOWNLOAD_PROGRESS_SUBSCRIPTION = gql`
 const SINGLE_FILE_SCAN_MUTATION = gql`
   mutation ($path: String!) {
     scanByPath(path: $path) {
+      id
+    }
+  }
+` as DocumentNode;
+
+// Fetch song by internal DB id (used optimistically with VocaDB id; if not found we'll enrol)
+const SONG_QUERY = gql`
+  query ($id: Int!) {
+    song(id: $id) {
+      id
+    }
+  }
+` as DocumentNode;
+
+// Enrol a song from VocaDB
+const ENROL_SONG_FROM_VOCADB_MUTATION = gql`
+  mutation ($songId: Int!) {
+    enrolSongFromVocaDB(songId: $songId) {
+      id
+    }
+  }
+` as DocumentNode;
+
+// Get existing tag fields for a music file
+const MUSIC_FILE_FIELDS_QUERY = gql`
+  query ($id: Int!) {
+    musicFile(id: $id) {
+      id
+      trackName
+      trackSortOrder
+      albumName
+      albumSortOrder
+      artistName
+      artistSortOrder
+    }
+  }
+` as DocumentNode;
+
+// Write tags to a music file (attach songId while preserving other fields)
+const WRITE_TAGS_TO_MUSIC_FILE_MUTATION = gql`
+  mutation ($id: Int!, $data: MusicFileInput!) {
+    writeTagsToMusicFile(id: $id, data: $data) {
       id
     }
   }
@@ -163,7 +206,7 @@ export default function YouTubeDlDownloadSteps({
       }
       return false;
     },
-    [fetchInfo, videoURL, setStep]
+    [fetchInfo, videoURL, setStep, setFilename]
   );
 
   /** Download state. Null = no result. >= 0, -1: Fail */
@@ -237,6 +280,112 @@ export default function YouTubeDlDownloadSteps({
         variables: { path: filePath },
       });
       setDownloadState(scanOutcome.data.scanByPath.id);
+
+      // Try to enrich metadata via VocaDB if possible.
+      try {
+        setDownloadProgress(null);
+        setDownloadInfo("Resolving PV on VocaDB…");
+        // 1) Resolve PV service/id from the original video URL
+        const pvResolveResp = await fetch(
+          `https://vocadb.net/api/pvs/?pvUrl=${encodeURIComponent(videoURL)}`
+        );
+        if (!pvResolveResp.ok) throw new Error("PV resolve failed");
+        const pvResolveJson: PVContract = await pvResolveResp.json();
+        const pvService: string | undefined = pvResolveJson.service;
+        const pvId: string | undefined = pvResolveJson.pvId;
+        if (!pvService || !pvId) throw new Error("PV service/id not found");
+        setDownloadProgress(null);
+        setDownloadInfo(
+          `Resolved PV: service=${pvService}, id=${pvId}. Fetching song…`
+        );
+
+        // 2) Get song by PV to obtain VocaDB song id
+        const songByPvResp = await fetch(
+          `https://vocadb.net/api/songs/byPv?pvService=${encodeURIComponent(
+            pvService
+          )}&pvId=${encodeURIComponent(pvId)}`
+        );
+        if (!songByPvResp.ok) throw new Error("Song by PV fetch failed");
+        const songByPvJson: SongForApiContract = await songByPvResp.json();
+        const vocaSongId: number | undefined = songByPvJson.id;
+        if (!vocaSongId) throw new Error("VocaDB song id not found");
+        setDownloadProgress(null);
+        setDownloadInfo(
+          `VocaDB song #${vocaSongId} found. Checking local database…`
+        );
+
+        // 3) Check if the song already exists in our DB; if not, enrol it
+        let internalSongId: number | undefined;
+        try {
+          const existing = await apolloClient.query<{
+            song: { id: number } | null;
+          }>({
+            query: SONG_QUERY,
+            variables: { id: vocaSongId },
+            fetchPolicy: "no-cache",
+          });
+          internalSongId = existing?.data?.song?.id ?? undefined;
+        } catch {
+          // Ignore errors; proceed to enrol
+        }
+        if (!internalSongId) {
+          setDownloadProgress(null);
+          setDownloadInfo(
+            `Song not found locally. Enrolling from VocaDB (#${vocaSongId})…`
+          );
+          const enrol = await apolloClient.mutate<{
+            enrolSongFromVocaDB: { id: number };
+          }>({
+            mutation: ENROL_SONG_FROM_VOCADB_MUTATION,
+            variables: { songId: vocaSongId },
+          });
+          internalSongId = enrol.data?.enrolSongFromVocaDB?.id;
+        }
+
+        // If still no internal song id, skip subsequent steps silently
+        if (!internalSongId) throw new Error("Internal song id unavailable");
+        setDownloadProgress(null);
+        setDownloadInfo(`Using song #${internalSongId}. Reading file tags…`);
+
+        // 4) Read existing tag fields of the music file
+        const fileId = scanOutcome.data.scanByPath.id;
+        const fileData = await apolloClient.query<{
+          musicFile: MusicFile | null;
+        }>({
+          query: MUSIC_FILE_FIELDS_QUERY,
+          variables: { id: fileId },
+          fetchPolicy: "no-cache",
+        });
+        const mf = fileData.data.musicFile;
+        if (!mf) throw new Error("Music file not found after scan");
+        setDownloadProgress(null);
+        setDownloadInfo("Writing tags to file…");
+
+        // 5) Write tags: set songId and preserve existing fields
+        await apolloClient.mutate({
+          mutation: WRITE_TAGS_TO_MUSIC_FILE_MUTATION,
+          variables: {
+            id: fileId,
+            data: {
+              songId: internalSongId,
+              trackName: mf.trackName ?? undefined,
+              trackSortOrder: mf.trackSortOrder ?? undefined,
+              albumName: mf.albumName ?? undefined,
+              albumSortOrder: mf.albumSortOrder ?? undefined,
+              artistName: mf.artistName ?? undefined,
+              artistSortOrder: mf.artistSortOrder ?? undefined,
+            },
+          },
+        });
+        setDownloadProgress(null);
+        setDownloadInfo("Tags updated.");
+      } catch (err) {
+        // Skip everything below on failure; just log and continue
+        console.debug("VocaDB enrichment skipped:", err);
+        setDownloadProgress(null);
+        setDownloadInfo("Skipped VocaDB enrichment.");
+      }
+
       toast.success(
         `File downloaded with database ID ${scanOutcome.data.scanByPath.id} and path ${filePath}.`,
         {
