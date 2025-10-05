@@ -17,6 +17,7 @@ import { Button } from "@lyricova/components/components/ui/button";
 import { Switch } from "@lyricova/components/components/ui/switch";
 import { Label } from "@lyricova/components/components/ui/label";
 import { AlertDescription } from "@lyricova/components/components/ui/alert";
+import { Kbd } from "@lyricova/components/components/ui/kbd";
 import { cn } from "@lyricova/components/utils";
 import { useLyricsStore } from "./state/editorState";
 import { useShallow } from "zustand/shallow";
@@ -96,9 +97,23 @@ function Instructions() {
     <div className="flex items-center gap-2 p-1 mb-1">
       <DismissibleAlert variant="info" className="flex-grow">
         <AlertDescription>
-          ↑WJ/↓RK: Navigate; Home/End: First/Last; PgUp/PgDn: +/-10 lines;
-          ←AH/→RL: +/-5 seconds; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K:
-          speed; R: reset speed; Enter: play/pause).
+          <p>
+            <Kbd>↑</Kbd>
+            <Kbd>W</Kbd>
+            <Kbd>J</Kbd>/<Kbd>↓</Kbd>
+            <Kbd>R</Kbd>
+            <Kbd>K</Kbd>: Navigate; <Kbd>Home</Kbd>/<Kbd>End</Kbd>: First/Last;{" "}
+            <Kbd>PgUp</Kbd>/<Kbd>PgDn</Kbd>: +/-10 lines;
+            <Kbd>←</Kbd>
+            <Kbd>A</Kbd>
+            <Kbd>H</Kbd>/<Kbd>→</Kbd>
+            <Kbd>R</Kbd>
+            <Kbd>L</Kbd>: +/-5 seconds; <Kbd>␣</Kbd>: Tag; <Kbd>⌫</Kbd>: Remove;{" "}
+            <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd>+(<Kbd>↑</Kbd>
+            <Kbd>J</Kbd>/<Kbd>↓</Kbd>
+            <Kbd>K</Kbd>: speed; <Kbd>R</Kbd>: reset speed; <Kbd>⮠</Kbd>:
+            play/pause).
+          </p>
         </AlertDescription>
       </DismissibleAlert>
     </div>

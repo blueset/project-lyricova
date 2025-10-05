@@ -20,6 +20,7 @@ import { Button } from "@lyricova/components/components/ui/button";
 import { useLyricsStore } from "../state/editorState";
 import { useShallow } from "zustand/shallow";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
+import { Kbd } from "@lyricova/components/components/ui/kbd";
 import {
   Tooltip,
   TooltipContent,
@@ -34,8 +35,16 @@ function Instructions() {
   return (
     <DismissibleAlert variant="info" className="grow">
       <AlertDescription>
-        Arrow keys: Navigate; Space: Tag; Bksp: Remove; Cmd/Ctrl+(↑J/↓K: speed;
-        R: reset speed; Enter: play/pause, ←/→: +/-5 seconds).
+        <p>
+          <Kbd>↑</Kbd>
+          <Kbd>↓</Kbd>
+          <Kbd>←</Kbd>
+          <Kbd>→</Kbd> Navigate; <Kbd>␣</Kbd> Tag; <Kbd>⌫</Kbd> Remove;
+          <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd>+(<Kbd>↑</Kbd>
+          <Kbd>J</Kbd>/<Kbd>↓</Kbd>
+          <Kbd>K</Kbd>: speed; <Kbd>R</Kbd>: reset speed; <Kbd>⮠</Kbd>:
+          play/pause, <Kbd>←</Kbd>/<Kbd>→</Kbd>: +/-5 seconds).
+        </p>
       </AlertDescription>
     </DismissibleAlert>
   );
