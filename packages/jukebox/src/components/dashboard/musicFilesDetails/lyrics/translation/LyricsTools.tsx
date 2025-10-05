@@ -12,6 +12,7 @@ import {
   HoverCardTrigger,
 } from "@lyricova/components/components/ui/hover-card";
 import { CircularProgress } from "@lyricova/components/components/ui/circular-progress";
+import { ButtonGroup } from "@lyricova/components/components/ui/button-group";
 import { ChevronDownIcon, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLyricsStore } from "../state/editorState";
@@ -218,7 +219,7 @@ export default function LyricsTools() {
     : undefined;
 
   return (
-    <div className="flex flex-row">
+    <ButtonGroup className="flex flex-row">
       <Button variant="ghost" size="sm" onClick={fixQuotes}>
         Fix quotes
       </Button>
@@ -285,6 +286,6 @@ export default function LyricsTools() {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-    </div>
+    </ButtonGroup>
   );
 }

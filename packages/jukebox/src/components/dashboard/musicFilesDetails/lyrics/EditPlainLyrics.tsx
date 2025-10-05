@@ -4,6 +4,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@lyricova/components/components/ui/toggle-group";
+import { ButtonGroup } from "@lyricova/components/components/ui/button-group";
 import type { ChangeEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { FURIGANA, Lyrics } from "lyrics-kit/core";
@@ -124,7 +125,7 @@ export default function EditPlainLyrics({}: Props) {
             <span className="block mb-2 text-muted-foreground text-xs uppercase tracking-wider">
               Copy from
             </span>
-            <div className="flex flex-wrap gap-2 mb-2">
+            <ButtonGroup className="mb-2">
               <Button
                 variant="outline"
                 disabled={!lrcx}
@@ -149,7 +150,7 @@ export default function EditPlainLyrics({}: Props) {
               >
                 LRCX with Smart Furigana
               </Button>
-            </div>
+            </ButtonGroup>
           </div>
           {languages.length ? (
             <div>

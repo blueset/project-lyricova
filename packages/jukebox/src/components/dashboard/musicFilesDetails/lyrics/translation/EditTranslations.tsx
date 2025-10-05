@@ -43,8 +43,14 @@ export default function EditTranslations({ songId }: Props) {
             <div className="flex flex-row">
               <LyricsTools />
             </div>
-            <span>VocaDB:</span>
-            <VocaDBTranslationImport vocaDBTranslations={vocaDBTranslations} />
+            {vocaDBTranslations?.length > 0 && (
+              <>
+                <span>VocaDB:</span>
+                <VocaDBTranslationImport
+                  vocaDBTranslations={vocaDBTranslations}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -50,6 +50,7 @@ import {
 } from "@lyricova/components/components/ui/tooltip";
 import * as z from "zod";
 import { SlugifyAdornment } from "@lyricova/components";
+import { ButtonGroup } from "@lyricova/components/components/ui/button-group";
 
 // GraphQL queries remain unchanged...
 const PLAYLIST_QUERY = gql`
@@ -186,8 +187,11 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
 
   const sortFiles = (key: keyof MusicFile) => {
     const sorted = [...watchFiles].sort((a, b) => {
-      const aVal = a[key] as string;
-      const bVal = b[key] as string;
+      const aVal = a[key] as string | null | undefined;
+      const bVal = b[key] as string | null | undefined;
+      if (aVal === bVal) return 0;
+      if (aVal === null || aVal === undefined) return 1;
+      if (bVal === null || bVal === undefined) return -1;
       return aVal.localeCompare(bVal);
     });
     setValue("files", sorted);
@@ -246,30 +250,32 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
             </div>
           </div>
 
-          <div className="flex gap-2 justify-between">
-            <div className="flex gap-2 items-center">
+          <div className="flex gap-2 justify-between flex-wrap">
+            <div className="flex gap-2 items-center flex-wrap">
               Sort by:
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => sortFiles("trackSortOrder")}
-              >
-                Track name
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => sortFiles("artistSortOrder")}
-              >
-                Artists name
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => sortFiles("albumSortOrder")}
-              >
-                Album name
-              </Button>
+              <ButtonGroup>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => sortFiles("trackSortOrder")}
+                >
+                  Track
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => sortFiles("artistSortOrder")}
+                >
+                  Artists
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => sortFiles("albumSortOrder")}
+                >
+                  Album
+                </Button>
+              </ButtonGroup>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" asChild className="gap-2">
@@ -350,11 +356,11 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                                           </AvatarFallback>
                                         )}
                                       </Avatar>
-                                      <div className="flex-1 min-w-0">
+                                      <div className="grow-1 w-0">
                                         <TooltipProvider>
                                           <Tooltip>
                                             <TooltipTrigger asChild>
-                                              <div className="truncate font-medium">
+                                              <div className="truncate font-medium w-fit max-w-full">
                                                 {v.trackName}
                                               </div>
                                             </TooltipTrigger>

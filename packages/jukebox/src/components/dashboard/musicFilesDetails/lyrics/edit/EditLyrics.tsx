@@ -1,5 +1,6 @@
 import { Button } from "@lyricova/components/components/ui/button";
 import { Textarea } from "@lyricova/components/components/ui/textarea";
+import { ButtonGroup } from "@lyricova/components/components/ui/button-group";
 import type { ChangeEvent } from "react";
 import { useCallback } from "react";
 import { useNamedState } from "../../../../../hooks/useNamedState";
@@ -102,7 +103,7 @@ export default function EditLyrics({ songId, title }: Props) {
             <span className="block mb-2 text-muted-foreground text-xs uppercase tracking-wider">
               Load plain text
             </span>
-            <div className="flex flex-wrap gap-2 mb-2">
+            <ButtonGroup className="mb-2">
               <Button
                 variant="outline"
                 disabled={songId == null}
@@ -118,13 +119,13 @@ export default function EditLyrics({ songId, title }: Props) {
               >
                 Search from 初音ミク@wiki
               </Button>
-            </div>
+            </ButtonGroup>
           </div>
           <div>
             <span className="block mb-2 text-muted-foreground text-xs uppercase tracking-wider">
               Common operations
             </span>
-            <div className="flex flex-wrap gap-2 mb-2">
+            <ButtonGroup className="mb-2">
               <Button variant="outline" onClick={trimSpaces} type="button">
                 Trim spaces
               </Button>
@@ -149,7 +150,7 @@ export default function EditLyrics({ songId, title }: Props) {
               >
                 Diff editor
               </Button>
-            </div>
+            </ButtonGroup>
           </div>
         </div>
         <Textarea
