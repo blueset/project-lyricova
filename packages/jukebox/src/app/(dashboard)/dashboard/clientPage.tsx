@@ -9,6 +9,14 @@ import { ClipboardEdit, Download, RefreshCw } from "lucide-react";
 import type { DocumentNode } from "graphql";
 import { CountCard, CountUpCard, PercentageCard } from "@lyricova/components";
 import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemTitle,
+} from "@lyricova/components/components/ui/item";
 import { NavHeader } from "./NavHeader";
 
 const DASHBOARD_STATS_QUERY = gql`
@@ -111,53 +119,41 @@ export default function DashboardIndex() {
           </div>
         </div>
         <h2 className="text-2xl font-semibold mb-4">Actions</h2>
-        <div className="grid grid-cols-1 @3xl/dashboard:grid-cols-3 gap-4 mb-8">
-          <Button
-            asChild
-            variant="default"
-            className="w-full h-auto flex flex-row items-center gap-3"
-          >
+        <ItemGroup className="grid grid-cols-1 @3xl/dashboard:grid-cols-3 gap-4 mb-8">
+          <Item asChild variant="primary">
             <Link href="/dashboard/review">
-              <ClipboardEdit className="size-8" />
-              <div className="flex flex-col leading-tight text-lg">
-                <span>Review</span>
-                <span className="opacity-80 font-normal text-sm">
-                  Review music files
-                </span>
-              </div>
+              <ItemMedia variant="icon">
+                <ClipboardEdit />
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle>Review</ItemTitle>
+                <ItemDescription>Review music files</ItemDescription>
+              </ItemContent>
             </Link>
-          </Button>
-          <Button
-            asChild
-            variant="secondary"
-            className="w-full h-auto flex flex-row items-center gap-3"
-          >
+          </Item>
+          <Item asChild variant="outline">
             <Link href="/dashboard/download">
-              <Download className="size-8" />
-              <div className="flex flex-col leading-tight text-lg">
-                <span>Download</span>
-                <span className="opacity-80 font-normal text-sm">
-                  Download with YT-DLP, etc.
-                </span>
-              </div>
+              <ItemMedia variant="icon">
+                <Download />
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle>Download</ItemTitle>
+                <ItemDescription>Download with YT-DLP, etc.</ItemDescription>
+              </ItemContent>
             </Link>
-          </Button>
-          <Button
-            asChild
-            variant="secondary"
-            className="w-full h-auto flex flex-row items-center gap-3"
-          >
+          </Item>
+          <Item asChild variant="outline">
             <Link href="/dashboard/scan">
-              <RefreshCw className="size-8" />
-              <div className="flex flex-col leading-tight text-lg">
-                <span>Scan</span>
-                <span className="opacity-80 font-normal text-sm">
-                  Rescan local music files
-                </span>
-              </div>
+              <ItemMedia variant="icon">
+                <RefreshCw />
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle>Scan</ItemTitle>
+                <ItemDescription>Rescan local music files</ItemDescription>
+              </ItemContent>
             </Link>
-          </Button>
-        </div>
+          </Item>
+        </ItemGroup>
       </div>
     </>
   );

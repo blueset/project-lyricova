@@ -13,6 +13,13 @@ import {
   AlertTitle,
 } from "@lyricova/components/components/ui/alert";
 import { CircleCheck, CircleX } from "lucide-react";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from "@lyricova/components/components/ui/item";
 
 const SCAN_MUTATION = gql`
   mutation ($sessionId: String!) {
@@ -136,10 +143,23 @@ export default function Scan() {
         ]}
       />
       <div className="h-full mx-4 flex flex-col gap-4 mb-2">
-        <h2 className="text-xl font-semibold">Perform scan?</h2>
-        <ProgressButton onClick={clickScan} progress={scanning}>
-          Start scanning
-        </ProgressButton>
+        <Item variant="outline">
+          <ItemContent>
+            <ItemTitle>Perform scan</ItemTitle>
+            <ItemDescription>
+              Scan local music files and update the database
+            </ItemDescription>
+          </ItemContent>
+          <ItemActions>
+            <ProgressButton
+              onClick={clickScan}
+              progress={scanning}
+              variant="outline"
+            >
+              Scan
+            </ProgressButton>
+          </ItemActions>
+        </Item>
         {resultNode}
       </div>
     </>
