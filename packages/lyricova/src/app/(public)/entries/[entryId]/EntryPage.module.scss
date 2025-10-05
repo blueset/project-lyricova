@@ -109,7 +109,7 @@
   @include media-breakpoint-down(tablet) {
     flex-direction: column;
     & > div {
-      width: auto;
+      width: 100%;
 
       &:not(:last-child) {
         border-right: none;
