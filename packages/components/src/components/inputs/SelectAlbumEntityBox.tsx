@@ -585,6 +585,7 @@ export function SelectAlbumEntityBox<
                   toggleManualDialogForCreate(false);
                   toggleManualDialogOpen(true);
                 }}
+                type="button"
               >
                 <Pencil />
               </Button>

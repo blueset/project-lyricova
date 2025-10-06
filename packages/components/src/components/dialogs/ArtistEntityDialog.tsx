@@ -20,6 +20,11 @@ import {
 } from "@lyricova/components/components/ui/form";
 import { Input } from "@lyricova/components/components/ui/input";
 import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@lyricova/components/components/ui/input-group";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -206,16 +211,18 @@ export function ArtistEntityDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Sort order</FormLabel>
-                    <div className="flex items-center gap-2">
+                    <InputGroup>
                       <FormControl>
-                        <Input {...field} />
+                        <InputGroupInput {...field} />
                       </FormControl>
-                      <TransliterationAdornment
-                        form={form}
-                        sourceName="name"
-                        destinationName="sortOrder"
-                      />
-                    </div>
+                      <InputGroupAddon align="inline-end">
+                        <TransliterationAdornment
+                          form={form}
+                          sourceName="name"
+                          destinationName="sortOrder"
+                        />
+                      </InputGroupAddon>
+                    </InputGroup>
                     <FormMessage />
                   </FormItem>
                 )}

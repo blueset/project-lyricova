@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
-import { Button } from "@lyricova/components/components/ui/button";
+import { InputGroupButton } from "@lyricova/components/components/ui/input-group";
 import {
   FieldPath,
   FieldValues,
@@ -62,14 +62,13 @@ export function TrackNameAdornment<
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
+        <InputGroupButton
+          size="icon-xs"
           type="button"
           onClick={trackNameButtonCallback}
         >
           {!value ? <Copy /> : <X />}
-        </Button>
+        </InputGroupButton>
       </TooltipTrigger>
       <TooltipContent side="left">
         {!value ? "Copy from track name" : "Clear"}

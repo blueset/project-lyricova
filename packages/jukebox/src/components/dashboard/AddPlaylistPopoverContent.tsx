@@ -13,6 +13,11 @@ import {
   FormItem,
 } from "@lyricova/components/components/ui/form";
 import { Input } from "@lyricova/components/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@lyricova/components/components/ui/input-group";
 import { Button } from "@lyricova/components/components/ui/button";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Check, X } from "lucide-react";
@@ -89,16 +94,18 @@ export default function AddPlaylistPopoverContent({ refresh, dismiss }: Props) {
             name="slug"
             render={({ field }) => (
               <FormItem>
-                <div className="flex items-center gap-2">
+                <InputGroup>
                   <FormControl>
-                    <Input placeholder="Slug" required {...field} />
+                    <InputGroupInput placeholder="Slug" required {...field} />
                   </FormControl>
-                  <SlugifyAdornment
-                    form={form}
-                    sourceName="name"
-                    destinationName="slug"
-                  />
-                </div>
+                  <InputGroupAddon align="inline-end">
+                    <SlugifyAdornment
+                      form={form}
+                      sourceName="name"
+                      destinationName="slug"
+                    />
+                  </InputGroupAddon>
+                </InputGroup>
               </FormItem>
             )}
           />

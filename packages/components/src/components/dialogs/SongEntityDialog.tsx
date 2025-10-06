@@ -25,6 +25,11 @@ import {
   FormMessage,
 } from "@lyricova/components/components/ui/form";
 import { Input } from "@lyricova/components/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@lyricova/components/components/ui/input-group";
 import { Button } from "@lyricova/components/components/ui/button";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Separator } from "@lyricova/components/components/ui/separator";
@@ -310,14 +315,16 @@ export function SongEntityDialog({
                     <FormItem>
                       <FormLabel>Sort order</FormLabel>
                       <FormControl>
-                        <div className="flex items-center gap-2">
-                          <Input {...field} />
-                          <TransliterationAdornment
-                            form={form}
-                            sourceName="name"
-                            destinationName="sortOrder"
-                          />
-                        </div>
+                        <InputGroup>
+                          <InputGroupInput {...field} />
+                          <InputGroupAddon align="inline-end">
+                            <TransliterationAdornment
+                              form={form}
+                              sourceName="name"
+                              destinationName="sortOrder"
+                            />
+                          </InputGroupAddon>
+                        </InputGroup>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -337,13 +344,15 @@ export function SongEntityDialog({
                           className="size-12"
                         />
                         <FormControl>
-                          <div className="flex items-center gap-2 flex-1">
-                            <Input {...field} />
-                            <VideoThumbnailAdornment
-                              name="coverUrl"
-                              form={form}
-                            />
-                          </div>
+                          <InputGroup className="flex-1">
+                            <InputGroupInput {...field} />
+                            <InputGroupAddon align="inline-end">
+                              <VideoThumbnailAdornment
+                                name="coverUrl"
+                                form={form}
+                              />
+                            </InputGroupAddon>
+                          </InputGroup>
                         </FormControl>
                       </div>
                       <FormMessage />
@@ -653,14 +662,16 @@ export function SongEntityDialog({
                               <FormItem className="flex-1">
                                 <FormLabel>Track name</FormLabel>
                                 <FormControl>
-                                  <div className="flex items-center gap-2">
-                                    <Input {...field} />
-                                    <TrackNameAdornment
-                                      form={form}
-                                      sourceName="name"
-                                      destinationName={`albums.${index}.name`}
-                                    />
-                                  </div>
+                                  <InputGroup>
+                                    <InputGroupInput {...field} />
+                                    <InputGroupAddon align="inline-end">
+                                      <TrackNameAdornment
+                                        form={form}
+                                        sourceName="name"
+                                        destinationName={`albums.${index}.name`}
+                                      />
+                                    </InputGroupAddon>
+                                  </InputGroup>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

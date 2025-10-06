@@ -9,6 +9,11 @@ import { Button } from "@lyricova/components/components/ui/button";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Input } from "@lyricova/components/components/ui/input";
 import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@lyricova/components/components/ui/input-group";
+import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -233,16 +238,21 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Slug</FormLabel>
-                    <div className="flex items-center gap-2">
+                    <InputGroup>
                       <FormControl>
-                        <Input {...field} placeholder="playlist-slug" />
+                        <InputGroupInput
+                          {...field}
+                          placeholder="playlist-slug"
+                        />
                       </FormControl>
-                      <SlugifyAdornment
-                        form={form}
-                        sourceName="name"
-                        destinationName="slug"
-                      />
-                    </div>
+                      <InputGroupAddon align="inline-end">
+                        <SlugifyAdornment
+                          form={form}
+                          sourceName="name"
+                          destinationName="slug"
+                        />
+                      </InputGroupAddon>
+                    </InputGroup>
                     <FormMessage />
                   </FormItem>
                 )}

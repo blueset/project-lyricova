@@ -19,6 +19,11 @@ import { Button } from "@lyricova/components/components/ui/button";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Separator } from "@lyricova/components/components/ui/separator";
 import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@lyricova/components/components/ui/input-group";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -302,16 +307,18 @@ export default function InfoPanel({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Track sort order</FormLabel>
-                  <div className="flex items-center gap-2">
+                  <InputGroup>
                     <FormControl>
-                      <Input {...field} />
+                      <InputGroupInput {...field} />
                     </FormControl>
-                    <TransliterationAdornment
-                      form={form}
-                      sourceName="trackName"
-                      destinationName="trackSortOrder"
-                    />
-                  </div>
+                    <InputGroupAddon align="inline-end">
+                      <TransliterationAdornment
+                        form={form}
+                        sourceName="trackName"
+                        destinationName="trackSortOrder"
+                      />
+                    </InputGroupAddon>
+                  </InputGroup>
                   <FormMessage />
                 </FormItem>
               )}
@@ -337,16 +344,18 @@ export default function InfoPanel({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Artist sort order</FormLabel>
-                  <div className="flex items-center gap-2">
+                  <InputGroup>
                     <FormControl>
-                      <Input {...field} />
+                      <InputGroupInput {...field} />
                     </FormControl>
-                    <TransliterationAdornment
-                      form={form}
-                      sourceName="artistName"
-                      destinationName="artistSortOrder"
-                    />
-                  </div>
+                    <InputGroupAddon align="inline-end">
+                      <TransliterationAdornment
+                        form={form}
+                        sourceName="artistName"
+                        destinationName="artistSortOrder"
+                      />
+                    </InputGroupAddon>
+                  </InputGroup>
                   <FormMessage />
                 </FormItem>
               )}
@@ -372,16 +381,18 @@ export default function InfoPanel({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Album sort order</FormLabel>
-                  <div className="flex items-center gap-2">
+                  <InputGroup>
                     <FormControl>
-                      <Input {...field} />
+                      <InputGroupInput {...field} />
                     </FormControl>
-                    <TransliterationAdornment
-                      form={form}
-                      sourceName="albumName"
-                      destinationName="albumSortOrder"
-                    />
-                  </div>
+                    <InputGroupAddon align="inline-end">
+                      <TransliterationAdornment
+                        form={form}
+                        sourceName="albumName"
+                        destinationName="albumSortOrder"
+                      />
+                    </InputGroupAddon>
+                  </InputGroup>
                   <FormMessage />
                 </FormItem>
               )}

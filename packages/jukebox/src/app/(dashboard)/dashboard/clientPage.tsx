@@ -8,7 +8,6 @@ import Link from "next/link";
 import { ClipboardEdit, Download, RefreshCw } from "lucide-react";
 import type { DocumentNode } from "graphql";
 import { CountCard, CountUpCard, PercentageCard } from "@lyricova/components";
-import { Button } from "@lyricova/components/components/ui/button";
 import {
   Item,
   ItemContent,

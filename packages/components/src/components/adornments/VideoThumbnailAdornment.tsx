@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
-import { Button } from "@lyricova/components/components/ui/button";
+import { InputGroupButton } from "@lyricova/components/components/ui/input-group";
 import { RefreshCw } from "lucide-react";
 import {
   FieldPath,
@@ -83,6 +83,22 @@ export function VideoThumbnailAdornment<
         }
       );
       return;
+    } else if (
+      value.match(/(i\.ytimg\.com|img\.youtube\.com).+\/maxresdefault.jpg$/g)
+    ) {
+      form.setValue(
+        name,
+        value.replace(/\/maxresdefault\.jpg$/, "/hqdefault.jpg") as PathValue<
+          TFieldValues,
+          TName
+        >,
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        }
+      );
+      return;
     }
 
     toast.info("URL is not from a known site, no thumbnail is converted.");
@@ -91,14 +107,9 @@ export function VideoThumbnailAdornment<
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          type="button"
-          onClick={convertUrl}
-        >
+        <InputGroupButton size="icon-xs" type="button" onClick={convertUrl}>
           <RefreshCw />
-        </Button>
+        </InputGroupButton>
       </TooltipTrigger>
       <TooltipContent side="left">Convert from video site link</TooltipContent>
     </Tooltip>

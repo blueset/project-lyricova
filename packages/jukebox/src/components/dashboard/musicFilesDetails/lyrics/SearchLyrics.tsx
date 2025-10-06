@@ -36,6 +36,12 @@ import {
 import type { DocumentNode } from "graphql";
 import type { Subscription } from "zen-observable-ts";
 import { cn } from "@lyricova/components/utils";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@lyricova/components/components/ui/input-group";
 
 const SEARCH_LYRICS_QUERY = gql`
   query (
@@ -154,16 +160,17 @@ function InlineAnalysisResult({
         Simplified Japanese
       </AnalysisBadge>
     );
-    const lastTimestamp =
-      result.lastTimestamp < duration ? (
-        <AnalysisBadge variant="success">
-          Last line: {result.lastTimestamp} seconds
-        </AnalysisBadge>
-      ) : (
-        <AnalysisBadge variant="outline">
-          Last line: {result.lastTimestamp} seconds
-        </AnalysisBadge>
-      );
+    const lastTimestamp = Number.isNaN(result.lastTimestamp) ? (
+      <AnalysisBadge variant="outline">Last line: N/A</AnalysisBadge>
+    ) : result.lastTimestamp < duration ? (
+      <AnalysisBadge variant="success">
+        Last line: {result.lastTimestamp.toFixed(2)} seconds
+      </AnalysisBadge>
+    ) : (
+      <AnalysisBadge variant="outline">
+        Last line: {result.lastTimestamp.toFixed(2)} seconds
+      </AnalysisBadge>
+    );
 
     return (
       <div className="mt-1 flex flex-wrap items-center">
@@ -417,18 +424,18 @@ export default function SearchLyrics({
               <FormItem className="w-full lg:w-36">
                 <FormLabel>Duration</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input
+                  <InputGroup>
+                    <InputGroupInput
                       type="number"
                       readOnly
                       disabled
                       {...field}
                       value={field.value || 0} // Ensure value is controlled
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">
-                      sec
-                    </span>
-                  </div>
+                    <InputGroupAddon align="inline-end">
+                      <InputGroupText>sec</InputGroupText>
+                    </InputGroupAddon>
+                  </InputGroup>
                 </FormControl>
                 <FormMessage />
               </FormItem>

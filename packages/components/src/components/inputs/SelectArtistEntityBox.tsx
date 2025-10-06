@@ -623,6 +623,7 @@ export function SelectArtistEntityBox<
                   toggleManualDialogForCreate(false);
                   toggleManualDialogOpen(true);
                 }}
+                type="button"
               >
                 <Pencil />
               </Button>

@@ -64,7 +64,7 @@ function MultiSelect<
         ),
         ClearIndicator: (props) => (
           <Button
-            size="xsIcon"
+            size="icon-xs"
             variant="ghost"
             className="hover:bg-accent dark:hover:bg-accent"
             {...(props.innerProps as unknown as React.JSX.IntrinsicElements["button"])}
@@ -74,7 +74,7 @@ function MultiSelect<
         ),
         MultiValueRemove: (props) => (
           <Button
-            size="xsIcon"
+            size="icon-xs"
             variant="ghost"
             className="hover:bg-accent dark:hover:bg-accent"
             {...(props.innerProps as unknown as React.JSX.IntrinsicElements["button"])}

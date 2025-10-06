@@ -321,6 +321,7 @@ export function SelectSongEntityBox<
                   role="combobox"
                   aria-expanded={open}
                   className="w-full justify-between text-muted-foreground"
+                  type="button"
                 >
                   <span className="truncate">
                     {value
@@ -631,6 +632,7 @@ export function SelectSongEntityBox<
                     toggleManualDialogForCreate(false); // Set to edit mode
                     toggleManualDialogOpen(true);
                   }}
+                  type="button"
                 >
                   <Pencil />
                 </Button>

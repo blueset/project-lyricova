@@ -24,6 +24,11 @@ import {
 } from "@lyricova/components/components/ui/form";
 import { Input } from "@lyricova/components/components/ui/input";
 import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@lyricova/components/components/ui/input-group";
+import {
   Alert,
   AlertDescription,
 } from "@lyricova/components/components/ui/alert";
@@ -149,16 +154,18 @@ export function TagForm({ slug = null, onSubmit }: TagFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Slug</FormLabel>
-              <div className="flex items-center gap-2">
+              <InputGroup>
                 <FormControl>
-                  <Input {...field} />
+                  <InputGroupInput {...field} />
                 </FormControl>
-                <SlugifyAdornment
-                  form={form}
-                  sourceName="name"
-                  destinationName="slug"
-                />
-              </div>
+                <InputGroupAddon align="inline-end">
+                  <SlugifyAdornment
+                    form={form}
+                    sourceName="name"
+                    destinationName="slug"
+                  />
+                </InputGroupAddon>
+              </InputGroup>
               <FormMessage />
             </FormItem>
           )}

@@ -9,13 +9,13 @@ import {
   PathValue,
   UseFormReturn,
 } from "react-hook-form";
-import { Button } from "@lyricova/components/components/ui/button";
 import { ListRestart } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
+import { InputGroupButton } from "@lyricova/components/components/ui/input-group";
 
 type Props<
   TFieldValues extends FieldValues = FieldValues,
@@ -58,14 +58,9 @@ export function SlugifyAdornment<
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={convertUrl}
-          type="button"
-        >
+        <InputGroupButton size="icon-xs" onClick={convertUrl} type="button">
           <ListRestart />
-        </Button>
+        </InputGroupButton>
       </TooltipTrigger>
       <TooltipContent>Reset slug</TooltipContent>
     </Tooltip>

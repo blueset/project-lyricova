@@ -25,6 +25,11 @@ import {
   FormMessage,
 } from "@lyricova/components/components/ui/form";
 import { Input } from "@lyricova/components/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@lyricova/components/components/ui/input-group";
 import { Button } from "@lyricova/components/components/ui/button";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Separator } from "@lyricova/components/components/ui/separator";
@@ -361,16 +366,18 @@ export function AlbumEntityDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Sort order</FormLabel>
-                      <div className="flex items-center gap-2">
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <TransliterationAdornment
-                          form={form}
-                          sourceName="name"
-                          destinationName="sortOrder"
-                        />
-                      </div>
+                      <FormControl>
+                        <InputGroup>
+                          <InputGroupInput {...field} />
+                          <InputGroupAddon align="inline-end">
+                            <TransliterationAdornment
+                              form={form}
+                              sourceName="name"
+                              destinationName="sortOrder"
+                            />
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -389,13 +396,15 @@ export function AlbumEntityDialog({
                           className="size-12"
                         />
                         <FormControl>
-                          <div className="flex items-center gap-2 flex-1">
-                            <Input {...field} />
-                            <VideoThumbnailAdornment
-                              name="coverUrl"
-                              form={form}
-                            />
-                          </div>
+                          <InputGroup className="flex-1">
+                            <InputGroupInput {...field} />
+                            <InputGroupAddon align="inline-end">
+                              <VideoThumbnailAdornment
+                                name="coverUrl"
+                                form={form}
+                              />
+                            </InputGroupAddon>
+                          </InputGroup>
                         </FormControl>
                       </div>
                       <FormMessage />
@@ -634,16 +643,18 @@ export function AlbumEntityDialog({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Track name</FormLabel>
-                              <div className="flex items-center gap-2">
+                              <InputGroup>
                                 <FormControl>
-                                  <Input {...field} />
+                                  <InputGroupInput {...field} />
                                 </FormControl>
-                                <TrackNameAdornment
-                                  form={form}
-                                  sourceName="name"
-                                  destinationName={`songs.${index}.name`}
-                                />
-                              </div>
+                                <InputGroupAddon align="inline-end">
+                                  <TrackNameAdornment
+                                    form={form}
+                                    sourceName="name"
+                                    destinationName={`songs.${index}.name`}
+                                  />
+                                </InputGroupAddon>
+                              </InputGroup>
                               <FormMessage />
                             </FormItem>
                           )}

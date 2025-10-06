@@ -15,13 +15,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@lyricova/components/components/ui/dropdown-menu";
-import { Button as ShadcnButton } from "@lyricova/components/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
+import { InputGroupButton } from "@lyricova/components/components/ui/input-group";
 
 const TRANSLITRATION_QUERY = gql`
   query ($text: String!, $language: String) {
@@ -81,13 +81,11 @@ export function TransliterationAdornment<
     <Tooltip>
       <DropdownMenu>
         <TooltipTrigger asChild>
-          <div>
-            <DropdownMenuTrigger asChild>
-              <ShadcnButton variant="outline" size="icon" type="button">
-                <RefreshCw />
-              </ShadcnButton>
-            </DropdownMenuTrigger>
-          </div>
+          <DropdownMenuTrigger asChild>
+            <InputGroupButton size="icon-xs" type="button">
+              <RefreshCw />
+            </InputGroupButton>
+          </DropdownMenuTrigger>
         </TooltipTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem lang="zh" onClick={transliterateCallback("zh")}>
