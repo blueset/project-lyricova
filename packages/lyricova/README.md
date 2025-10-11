@@ -19,6 +19,9 @@ See `../jukebox/README.md` for details.
   - `languages` _(optional)_  
     Possible values: `ja`, `en`, `zh`, `fr`, `es`, `08n`, etc.  
     Limit the result to the verses in specified languages.
+  - `tags` _(optional)_  
+    Possible values: `core`, `light`, `dark`, `soft`, `vivid`, etc. Limit the
+    result to the entries with specified tags.
 - Response: JSON object
   ```typescript
   {

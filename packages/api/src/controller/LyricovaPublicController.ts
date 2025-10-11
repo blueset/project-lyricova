@@ -102,14 +102,14 @@ export class LyricovaPublicApiController {
     const languages = Array.isArray(req.query.languages)
       ? req.query.languages
       : (req.query.languages as string)?.split(",");
-    // const tags = Array.isArray(req.query.tags)
-    //   ? req.query.tags
-    //   : (req.query.tags as string)?.split(",");
+    const tags = Array.isArray(req.query.tags)
+      ? req.query.tags
+      : (req.query.tags as string)?.split(",");
 
     const verseCondition: any = { [Op.and]: [] };
     if (type === "original") verseCondition[Op.and].push({ isOriginal: true });
     else if (type === "main") verseCondition[Op.and].push({ isMain: true });
-    if (languages)
+    if (languages?.length)
       verseCondition[Op.and].push({
         [Op.or]: languages.map((l) => ({ language: { [Op.startsWith]: l } })),
       });
@@ -138,7 +138,9 @@ export class LyricovaPublicApiController {
                 association: "tags",
                 attributes: ["name", "slug", "color"],
                 through: { attributes: [] },
-                // where: tags ? { slug: tags } : undefined,
+                where: tags?.length
+                  ? { [Op.or]: tags.map((tag) => ({ slug: tag })) }
+                  : undefined,
               },
             ],
           },
