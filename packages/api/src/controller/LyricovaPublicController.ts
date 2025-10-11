@@ -128,16 +128,17 @@ export class LyricovaPublicApiController {
         ],
         where: verseCondition[Op.and].length > 0 ? verseCondition : undefined,
         order: fn("RAND"),
-        limit: 1,
         include: [
           {
             association: "entry",
             attributes: ["id", "title", "producersName", "vocalistsName"],
+            required: tags?.length ? true : false,
             include: [
               {
                 association: "tags",
                 attributes: ["name", "slug", "color"],
                 through: { attributes: [] },
+                required: tags?.length ? true : false,
                 where: tags?.length
                   ? { [Op.or]: tags.map((tag) => ({ slug: tag })) }
                   : undefined,
@@ -147,6 +148,11 @@ export class LyricovaPublicApiController {
         ],
       })
     )?.toJSON();
+
+    if (!verse) {
+      res.status(404).json({ message: "No verse found" });
+      return;
+    }
 
     res.status(200).header("Access-Control-Allow-Origin", "*").json(verse);
   };
