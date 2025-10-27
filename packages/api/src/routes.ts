@@ -17,6 +17,7 @@ import { TagsController } from "./controller/TagsController";
 import generateRssFeed from "./utils/rss";
 import { ArtistsController } from "./controller/ArtistsController";
 import { AlignmentController } from "./controller/AlignmentController";
+import { DocsController } from "./controller/DocsController";
 
 export default (app: express.Express) => {
   const apiRouter = express.Router();
@@ -49,6 +50,9 @@ export default (app: express.Express) => {
 
   const alignmentController = new AlignmentController();
   apiRouter.use("/alignment", alignmentController.router);
+
+  const docsController = new DocsController();
+  apiRouter.use("/", docsController.router);
 
   const authController = new AuthController();
   apiRouter.use("/", authController.router);

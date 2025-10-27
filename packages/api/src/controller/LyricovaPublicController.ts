@@ -61,6 +61,45 @@ export class LyricovaPublicApiController {
     this.router.get("/og/:entryId(\\d+)", this.og);
   }
 
+  /**
+   * @openapi
+   * /search:
+   *   get:
+   *     summary: Search entries
+   *     tags:
+   *       - Lyricova public API
+   *     parameters:
+   *       - in: query
+   *         name: query
+   *         schema:
+   *           type: string
+   *         required: true
+   *         description: Search query
+   *     responses:
+   *       200:
+   *         description: List of entries matching the search query
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 allOf:
+   *                   - $ref: '#/components/schemas/Entry'
+   *                   - type: object
+   *                     properties:
+   *                       verses:
+   *                         type: array
+   *                         items:
+   *                           $ref: '#/components/schemas/Verse'
+   *                       tags:
+   *                         type: array
+   *                         items:
+   *                           $ref: '#/components/schemas/Tag'
+   *                       pulses:
+   *                         type: array
+   *                         items:
+   *                           $ref: '#/components/schemas/Pulse'
+   */
   public search = async (req: Request, res: Response) => {
     const query = Array.isArray(req.query.query)
       ? req.query.query[0]
@@ -97,6 +136,62 @@ export class LyricovaPublicApiController {
     res.status(200).json(result);
   };
 
+  /**
+   * @openapi
+   * /verse:
+   *   get:
+   *     summary: Get a random verse
+   *     tags:
+   *       - Lyricova public API
+   *     parameters:
+   *       - in: query
+   *         name: type
+   *         schema:
+   *           type: string
+   *           enum: [original, main]
+   *         required: false
+   *         description: Type of verse to filter by (original or main)
+   *       - in: query
+   *         name: languages
+   *         schema:
+   *           type: string
+   *         required: false
+   *         description: Comma-separated list of language codes to filter by
+   *       - in: query
+   *         name: tags
+   *         schema:
+   *           type: string
+   *         required: false
+   *         description: Comma-separated list of tag slugs to filter by
+   *     responses:
+   *       200:
+   *         description: A random verse matching the specified criteria
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/Verse'
+   *                 - type: object
+   *                   properties:
+   *                     entry:
+   *                       allOf:
+   *                         - $ref: '#/components/schemas/Entry'
+   *                         - type: object
+   *                           properties:
+   *                             tags:
+   *                               type: array
+   *                               items:
+   *                                 $ref: '#/components/schemas/Tag'
+   *       404:
+   *         description: No verse found matching the criteria
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   const: "No verse found"
+   */
   public verse = async (req: Request, res: Response) => {
     const type = String(req.query.type);
     const languages = Array.isArray(req.query.languages)
@@ -157,6 +252,45 @@ export class LyricovaPublicApiController {
     res.status(200).header("Access-Control-Allow-Origin", "*").json(verse);
   };
 
+  /**
+   * @openapi
+   * /versesBySong:
+   *   get:
+   *     summary: Get verses by song ID
+   *     tags:
+   *       - Lyricova public API
+   *     parameters:
+   *       - in: query
+   *         name: songId
+   *         schema:
+   *           type: string
+   *         required: true
+   *         description: ID of the song to get verses for
+   *     responses:
+   *       200:
+   *         description: List of entries associated with the specified song
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 allOf:
+   *                   - $ref: '#/components/schemas/Entry'
+   *                   - type: object
+   *                     properties:
+   *                       verses:
+   *                         type: array
+   *                         items:
+   *                           $ref: '#/components/schemas/Verse'
+   *                       tags:
+   *                         type: array
+   *                         items:
+   *                           $ref: '#/components/schemas/Tag'
+   *                       pulses:
+   *                         type: array
+   *                         items:
+   *                           $ref: '#/components/schemas/Pulse'
+   */
   public versesBySong = async (req: Request, res: Response) => {
     const songId = Array.isArray(req.query.songId)
       ? req.query.songId[0]
@@ -181,6 +315,36 @@ export class LyricovaPublicApiController {
       .json(result.map((e) => e.toJSON()));
   };
 
+  /**
+   * @openapi
+   * /og/{entryId}:
+   *   get:
+   *     summary: Get Open Graph image for an entry
+   *     tags:
+   *       - Lyricova public API
+   *     parameters:
+   *       - in: path
+   *         name: entryId
+   *         schema:
+   *           type: integer
+   *         required: true
+   *         description: ID of the entry to generate Open Graph image for
+   *     responses:
+   *       200:
+   *         description: Open Graph image in PNG format
+   *         content:
+   *           image/png: {}
+   *       404:
+   *         description: Entry not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   *                   example: "123 is not found."
+   */
   public og = async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.entryId);
 
@@ -453,6 +617,5 @@ export class LyricovaPublicApiController {
     res.statusCode = 200;
     res.statusMessage = "OK";
     pngStream.pipe(res);
-    // res.send(svg);
   };
 }

@@ -22,8 +22,59 @@ import { DataTypes } from "sequelize";
 import { SongOfEntry } from "./SongOfEntry";
 import { TagOfEntry } from "./TagOfEntry";
 import { Pulse } from "./Pulse";
-import { ObjectType, Field, ID } from "type-graphql";
+import { ObjectType, Field } from "type-graphql";
 
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     Entry:
+ *       type: object
+ *       description: A Lyricova blog entry.
+ *       properties:
+ *         id:
+ *           type: integer
+ *           format: int64
+ *         title:
+ *           type: string
+ *           maxLength: 512
+ *           example: "初音ミクの消失 -DEAD END-"
+ *         producersName:
+ *           type: string
+ *           maxLength: 1024
+ *           example: "cosMo@暴走P"
+ *         vocalistsName:
+ *           type: string
+ *           maxLength: 1024
+ *           example: "初音ミク"
+ *         authorId:
+ *           type: integer
+ *           format: int64
+ *         comment:
+ *           oneOf:
+ *             - type: string
+ *               maxLength: 2048
+ *             - type: 'null'
+ *         recentActionDate:
+ *           type: string
+ *           format: date-time
+ *         creationDate:
+ *           type: string
+ *           format: date-time
+ *         updatedOn:
+ *           type: string
+ *           format: date-time
+ *         deletionDate:
+ *           oneOf:
+ *             - type: string
+ *               format: date-time
+ *             - type: 'null'
+ *       required:
+ *         - title
+ *         - producersName
+ *         - vocalistsName
+ *         - authorId
+ */
 @ObjectType({ description: "A Lyricova entry." })
 @Table({ modelName: "Entry" })
 export class Entry extends Model<Entry> {

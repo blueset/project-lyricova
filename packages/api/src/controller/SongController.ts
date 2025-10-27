@@ -22,6 +22,61 @@ export class SongController {
     this.router.get("/:songId(\\d+)/entries", this.getSongEntries);
   }
 
+  /**
+   * @openapi
+   * /songs/{songId}:
+   *   get:
+   *     summary: Get a song by ID
+   *     tags:
+   *       - Songs
+   *     parameters:
+   *       - in: path
+   *         name: songId
+   *         schema:
+   *           type: integer
+   *         required: true
+   *         description: ID of the song to retrieve
+   *     responses:
+   *       200:
+   *         description: Song details
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/Song'
+   *                 - type: object
+   *                   properties:
+   *                     artists:
+   *                       type: array
+   *                       items:
+   *                         allOf:
+   *                           - $ref: '#/components/schemas/Artist'
+   *                           - type: object
+   *                             properties:
+   *                               ArtistOfSong:
+   *                                 $ref: '#/components/schemas/ArtistOfSong'
+   *                     albums:
+   *                       type: array
+   *                       items:
+   *                         allOf:
+   *                           - $ref: '#/components/schemas/Album'
+   *                           - type: object
+   *                             properties:
+   *                               SongInAlbum:
+   *                                 $ref: '#/components/schemas/SongInAlbum'
+   *                     files:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/MusicFile'
+   *       404:
+   *         description: Song not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 status: 404
+   *                 message: "Song not found"
+   */
   public getSong = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const song = await Song.findByPk(parseInt(req.params.songId), {
@@ -54,6 +109,48 @@ export class SongController {
     }
   };
 
+  /**
+   * @openapi
+   * /songs/{songId}/lyrics:
+   *   get:
+   *     summary: Get lyrics for a song
+   *     tags:
+   *       - Songs
+   *     parameters:
+   *       - in: path
+   *         name: songId
+   *         schema:
+   *           type: integer
+   *         required: true
+   *         description: ID of the song to retrieve lyrics for
+   *     responses:
+   *       200:
+   *         description: List of lyrics files for the song
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: object
+   *                 properties:
+   *                   text:
+   *                     type: string
+   *                     description: Raw lyrics text in LRC or LRCX format
+   *                     example: "[02:00.082]＜最高速の別れの歌＞\n[02:00.082][fu]\u003Cさい,1,2\u003E\u003Cこう,2,3\u003E\u003Cそく,3,4\u003E\u003Cわか,5,6\u003E\u003Cうた,8,9\u003E\n[02:00.082][dots]0,2,2,2,1,2,1,1,2,-1,0\n[02:00.082][tags],119849/120111,120365/120813,121145/121376,121649,121906/122127,122242,122601,122851/123112,123153,\n[02:00.082][tt]\u003C0,1\u003E\u003C515,2\u003E\u003C1295,3\u003E\u003C1799,4\u003E\u003C2057,5\u003E\u003C2393,6\u003E\u003C2751,7\u003E\u003C3001,8\u003E\u003C3304,9\u003E\n[02:00.082][tr:en]\u003CA farewell song at my highest speed\u003E\n[02:00.082][tr:zh]＜最高速的離別之歌＞"
+   *                   parsed:
+   *                     $ref: '#/components/schemas/LyricsKitLyrics'
+   *                 required:
+   *                   - text
+   *                   - parsed
+   *       404:
+   *         description: Song not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 status: 404
+   *                 message: "Song not found"
+   */
   public getSongLyrics = async (
     req: Request,
     res: Response,
@@ -90,6 +187,64 @@ export class SongController {
     }
   };
 
+  /**
+   * @openapi
+   * /songs/{songId}/entries:
+   *   get:
+   *     summary: Get Lyricova entries that reference a song
+   *     tags:
+   *       - Songs
+   *     parameters:
+   *       - in: path
+   *         name: songId
+   *         schema:
+   *           type: integer
+   *         required: true
+   *         description: ID of the song
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *         required: false
+   *         description: Page number for pagination
+   *     responses:
+   *       200:
+   *         description: Paginated list of entries referencing the song
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 totalEntries:
+   *                   type: integer
+   *                   description: Total number of entries for this song
+   *                 entries:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Entry'
+   *                 song:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       $ref: '#/components/schemas/Song/properties/id'
+   *                     name:
+   *                       $ref: '#/components/schemas/Song/properties/name'
+   *                 page:
+   *                   type: integer
+   *                   description: Current page number
+   *                 totalPages:
+   *                   type: integer
+   *                   description: Total number of pages
+   *       404:
+   *         description: Song not found or song has no entries
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 status: 404
+   *                 message: "Song not found"
+   */
   public getSongEntries = async (
     req: Request,
     res: Response,

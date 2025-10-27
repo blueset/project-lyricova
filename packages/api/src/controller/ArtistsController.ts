@@ -14,6 +14,42 @@ export class ArtistsController {
     this.router.get("/:artistId(\\d+)/entries", this.getArtistEntries);
   }
 
+  /**
+   * @openapi
+   * /artists/{artistId}:
+   *   get:
+   *     summary: Get artist details by ID
+   *     tags:
+   *       - Artists
+   *     parameters:
+   *       - in: path
+   *         name: artistId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the artist to retrieve
+   *     responses:
+   *       200:
+   *         description: Artist details
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 id:
+   *                   $ref: '#/components/schemas/Artist/properties/id'
+   *                 name:
+   *                   $ref: '#/components/schemas/Artist/properties/name'
+   *                 type:
+   *                   $ref: '#/components/schemas/Artist/properties/type'
+   *       404:
+   *         description: Artist not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 message: "Artist not found"
+   */
   private getArtist = async (req: Request, res: Response) => {
     const artistId = parseInt(req.params.artistId);
     const artist = (await sequelize.models.Artist.findByPk(artistId, {
@@ -51,6 +87,96 @@ export class ArtistsController {
     ],
   };
 
+  /**
+   * @openapi
+   * /artists/{artistId}/entries:
+   *   get:
+   *     summary: Get entries associated with an artist
+   *     tags:
+   *       - Artists
+   *     parameters:
+   *       - in: path
+   *         name: artistId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the artist
+   *       - in: query
+   *         name: page
+   *         required: false
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *         description: Page number for pagination
+   *     responses:
+   *       200:
+   *         description: List of entries for the artist with pagination
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 entries:
+   *                   type: array
+   *                   items:
+   *                     allOf:
+   *                       - $ref: '#/components/schemas/Entry'
+   *                       - type: object
+   *                         properties:
+   *                           verses:
+   *                             type: array
+   *                             items:
+   *                               type: object
+   *                               properties:
+   *                                 text:
+   *                                   $ref: '#/components/schemas/Verse/properties/text'
+   *                                 isMain:
+   *                                   $ref: '#/components/schemas/Verse/properties/isMain'
+   *                                 isOriginal:
+   *                                   $ref: '#/components/schemas/Verse/properties/isOriginal'
+   *                                 language:
+   *                                   $ref: '#/components/schemas/Verse/properties/language'
+   *                           tags:
+   *                             type: array
+   *                             items:
+   *                               type: object
+   *                               properties:
+   *                                 name:
+   *                                   $ref: '#/components/schemas/Tag/properties/name'
+   *                                 slug:
+   *                                   $ref: '#/components/schemas/Tag/properties/slug'
+   *                                 color:
+   *                                   $ref: '#/components/schemas/Tag/properties/color'
+   *                           pulses:
+   *                             type: array
+   *                             items:
+   *                               type: object
+   *                               properties:
+   *                                 creationDate:
+   *                                   $ref: '#/components/schemas/Pulse/properties/creationDate'
+   *                 page:
+   *                   type: integer
+   *                   description: Current page number
+   *                 totalPages:
+   *                   type: integer
+   *                   description: Total number of pages
+   *                 artist:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       $ref: '#/components/schemas/Artist/properties/id'
+   *                     name:
+   *                       $ref: '#/components/schemas/Artist/properties/name'
+   *                     type:
+   *                       $ref: '#/components/schemas/Artist/properties/type'
+   *       404:
+   *         description: Artist not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 message: "Artist not found"
+   */
   private getArtistEntries = async (req: Request, res: Response) => {
     const artistId = parseInt(req.params.artistId);
     const page = parseInt(req.query.page as string) || 1;

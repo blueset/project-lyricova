@@ -2,6 +2,17 @@ import type { Request, Response, NextFunction } from "express";
 import passport from "passport";
 import type { User } from "../models/User";
 
+/**
+ * @openapi
+ * components:
+ *   responses:
+ *     Unauthorized:
+ *       description: Unauthorized access
+ *       content:
+ *         text/plain:
+ *           schema:
+ *             const: "Unauthorized"
+ */
 export function adminOnlyMiddleware(
   req: Request,
   res: Response,

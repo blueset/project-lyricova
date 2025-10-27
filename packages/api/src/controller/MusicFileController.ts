@@ -1,5 +1,5 @@
 import { MusicFile } from "../models/MusicFile";
-import type { Request, Response, NextFunction} from "express";
+import type { Request, Response, NextFunction } from "express";
 import { Router } from "express";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";
@@ -95,6 +95,48 @@ export class MusicFileController {
     this.router.patch("/:id(\\d+)", adminOnlyMiddleware, this.writeToSong);
   }
 
+  /**
+   * @openapi
+   * /files/scan:
+   *   get:
+   *     summary: Scan music files directory and sync with database
+   *     description: Scans the music files directory, adds new files, updates existing ones, and removes records for deleted files
+   *     tags:
+   *       - Music Files
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Scan completed successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   const: "ok"
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     added:
+   *                       type: integer
+   *                       description: Number of new files added to database
+   *                       example: 5
+   *                     deleted:
+   *                       type: integer
+   *                       description: Number of database records removed
+   *                       example: 2
+   *                     updated:
+   *                       type: integer
+   *                       description: Number of files with updated metadata
+   *                       example: 3
+   *                     unchanged:
+   *                       type: integer
+   *                       description: Number of files without changes
+   *                       example: 100
+   *       401:
+   *         $ref: '#/components/responses/Unauthorized'
+   */
   /** Get metadata of a song via ffprobe */
   private async getSongMetadata(path: string): Promise<GenericMetadata> {
     const metadata = await ffprobe(path);
@@ -192,6 +234,48 @@ export class MusicFileController {
     );
   }
 
+  /**
+   * @openapi
+   * /files/scan:
+   *   get:
+   *     summary: Scan music files directory and sync with database
+   *     description: Scans the music files directory, adds new files, updates existing ones, and removes records for deleted files
+   *     tags:
+   *       - Music Files
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Scan completed successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   const: "ok"
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     added:
+   *                       type: integer
+   *                       description: Number of new files added to database
+   *                       example: 5
+   *                     deleted:
+   *                       type: integer
+   *                       description: Number of database records removed
+   *                       example: 2
+   *                     updated:
+   *                       type: integer
+   *                       description: Number of files with updated metadata
+   *                       example: 3
+   *                     unchanged:
+   *                       type: integer
+   *                       description: Number of files without changes
+   *                       example: 100
+   *       401:
+   *         $ref: '#/components/responses/Unauthorized'
+   */
   public scan = async (req: Request, res: Response, next: NextFunction) => {
     const dryRun = false;
     try {
@@ -265,7 +349,7 @@ export class MusicFileController {
       const updatedCount = updateResults.reduce(
         (prev: number, curr) => prev + (curr === null ? 0 : 1),
         0
-      ) ;
+      );
       res.send({
         status: "ok",
         data: {
@@ -280,6 +364,23 @@ export class MusicFileController {
     }
   };
 
+  /**
+   * @openapi
+   * /files:
+   *   get:
+   *     summary: Get all music files
+   *     tags:
+   *       - Music Files
+   *     responses:
+   *       200:
+   *         description: List of all music files
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/MusicFile'
+   */
   public getSongs = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const songs = await MusicFile.findAll();
@@ -289,6 +390,36 @@ export class MusicFileController {
     }
   };
 
+  /**
+   * @openapi
+   * /files/{id}:
+   *   get:
+   *     summary: Get a music file by ID
+   *     tags:
+   *       - Music Files
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the music file
+   *     responses:
+   *       200:
+   *         description: Music file details
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/MusicFile'
+   *       404:
+   *         description: Music file not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 status: 404
+   *                 message: "Not found"
+   */
   public getSong = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const song = await MusicFile.findByPk(parseInt(req.params.id));
@@ -301,6 +432,47 @@ export class MusicFileController {
     }
   };
 
+  /**
+   * @openapi
+   * /files/{id}/file:
+   *   get:
+   *     summary: Download music file
+   *     description: Streams the actual music file (audio file)
+   *     tags:
+   *       - Music Files
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the music file
+   *       - in: query
+   *         name: download
+   *         required: false
+   *         schema:
+   *           type: boolean
+   *         description: If present, triggers download with Content-Disposition header
+   *     responses:
+   *       200:
+   *         description: The music file
+   *         content:
+   *           audio/mpeg: {}
+   *           audio/flac: {}
+   *           audio/aiff: {}
+   *       404:
+   *         description: Music file entry or physical file not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   const: 404
+   *                 message:
+   *                   type: string
+   *                   enum: ["Entry not found", "File not found"]
+   */
   public getSongFile = async (
     req: Request,
     res: Response,
@@ -327,6 +499,45 @@ export class MusicFileController {
     }
   };
 
+  /**
+   * @openapi
+   * /files/{id}/lrc:
+   *   get:
+   *     summary: Download LRC lyrics file
+   *     description: Retrieves the LRC lyrics file associated with the music file
+   *     tags:
+   *       - Music Files
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the music file
+   *       - in: query
+   *         name: download
+   *         required: false
+   *         schema:
+   *           type: boolean
+   *         description: If present, triggers download with Content-Disposition header
+   *     responses:
+   *       200:
+   *         description: The LRC lyrics file
+   *         content:
+   *           text/lrc: {}
+   *       404:
+   *         description: Music file entry or lyrics file not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   const: 404
+   *                 message:
+   *                   type: string
+   *                   enum: ["Entry not found", "File not found"]
+   */
   public getSongLRC = async (
     req: Request,
     res: Response,
@@ -353,6 +564,45 @@ export class MusicFileController {
     }
   };
 
+  /**
+   * @openapi
+   * /files/{id}/lrcx:
+   *   get:
+   *     summary: Download LRCX lyrics file
+   *     description: Retrieves the LRCX lyrics file associated with the music file
+   *     tags:
+   *       - Music Files
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the music file
+   *       - in: query
+   *         name: download
+   *         required: false
+   *         schema:
+   *           type: boolean
+   *         description: If present, triggers download with Content-Disposition header
+   *     responses:
+   *       200:
+   *         description: The LRCX lyrics file
+   *         content:
+   *           text/lrcx: {}
+   *       404:
+   *         description: Music file entry or lyrics file not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   const: 404
+   *                 message:
+   *                   type: string
+   *                   enum: ["Entry not found", "File not found"]
+   */
   public getSongLRCX = async (
     req: Request,
     res: Response,
@@ -379,6 +629,64 @@ export class MusicFileController {
     }
   };
 
+  /**
+   * @openapi
+   * /files/{id}:
+   *   patch:
+   *     summary: Update music file metadata
+   *     description: Updates metadata for a music file and writes changes to the physical file
+   *     tags:
+   *       - Music Files
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the music file
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               songId:
+   *                 $ref: '#/components/schemas/MusicFile/properties/songId'
+   *               albumId:
+   *                 $ref: '#/components/schemas/MusicFile/properties/albumId'
+   *               trackName:
+   *                 $ref: '#/components/schemas/MusicFile/properties/trackName'
+   *               trackSortOrder:
+   *                 $ref: '#/components/schemas/MusicFile/properties/trackSortOrder'
+   *               albumName:
+   *                 $ref: '#/components/schemas/MusicFile/properties/albumName'
+   *               albumSortOrder:
+   *                 $ref: '#/components/schemas/MusicFile/properties/albumSortOrder'
+   *               artistName:
+   *                 $ref: '#/components/schemas/MusicFile/properties/artistName'
+   *               artistSortOrder:
+   *                 $ref: '#/components/schemas/MusicFile/properties/artistSortOrder'
+   *     responses:
+   *       200:
+   *         description: Updated music file
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/MusicFile'
+   *       404:
+   *         description: Music file not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 status: 404
+   *                 message: "Not found"
+   *       401:
+   *         $ref: '#/components/responses/Unauthorized'
+   */
   public writeToSong = async (
     req: Request,
     res: Response,
@@ -416,6 +724,53 @@ export class MusicFileController {
    * Retrieve cover art of a music file. Should return a file or nothing.
    *
    * Not in GraphQL.
+   *
+   * @openapi
+   * /files/{id}/cover:
+   *   get:
+   *     summary: Get cover art for music file
+   *     description: Extracts and returns the embedded cover art from the music file
+   *     tags:
+   *       - Music Files
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the music file
+   *     responses:
+   *       200:
+   *         description: Cover art image
+   *         content:
+   *           image/png: {}
+   *       404:
+   *         description: Music file not found or has no cover art
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   const: 404
+   *                 message:
+   *                   type: string
+   *                   enum:
+   *                     - "Music file entry not found."
+   *                     - "Music file has no cover (via database)."
+   *                     - "Music file has no cover (via file)."
+   *       500:
+   *         description: Error extracting cover art
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   const: 500
+   *                 message:
+   *                   type: string
+   *                   description: Error message
    */
   public getCoverArt = async (req: Request, res: Response) => {
     const musicFile = await MusicFile.findByPk(parseInt(req.params.id));
@@ -464,6 +819,111 @@ export class MusicFileController {
    *
    * Note:
    *   Either cover or url must be supplied.
+   *
+   * @openapi
+   * /files/{id}/cover:
+   *   patch:
+   *     summary: Upload cover art for music file
+   *     description: Uploads and embeds cover art into a music file from either a file upload or a remote URL
+   *     tags:
+   *       - Music Files
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the music file
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             oneOf:
+   *               - type: object
+   *                 title: Cover art file
+   *                 description: Image file to use as cover art
+   *                 required: [cover]
+   *                 properties:
+   *                   cover:
+   *                     type: string
+   *                     format: binary
+   *               - type: object
+   *                 title: URL
+   *                 description: URL to download cover art from
+   *                 required: [url]
+   *                 properties:
+   *                   url:
+   *                     type: string
+   *                     format: uri
+   *     responses:
+   *       200:
+   *         description: Cover art uploaded successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 status: 200
+   *                 message: "Done."
+   *       404:
+   *         description: Music file entry not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 status: 404
+   *                 message: "Music file entry not found."
+   *       415:
+   *         description: Unsupported media type
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: integer
+   *                   example: 415
+   *                 message:
+   *                   type: string
+   *                   example: "image/svg+xml is not an acceptable MIME type."
+   *       422:
+   *         description: Neither cover nor url was provided
+   *         content:
+   *           application/json:
+   *             schema:
+   *               const:
+   *                 status: 422
+   *                 message: "Either `cover` or `url` must be provided."
+   *       500:
+   *         description: Error saving cover art to file
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: integer
+   *                   example: 500
+   *                 message:
+   *                   type: string
+   *                   example: "Error saving cover art to file"
+   *       504:
+   *         description: Error downloading cover from remote URL
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: integer
+   *                   example: 504
+   *                 message:
+   *                   type: string
+   *                   example: "Request to download the cover has returned a 404 error."
+   *       401:
+   *         $ref: '#/components/responses/Unauthorized'
    */
   public uploadCoverArt = async (req: Request, res: Response) => {
     let coverPath = "";
@@ -483,7 +943,7 @@ export class MusicFileController {
           });
           if (response.status !== 200) {
             return res.status(504).json({
-              status: 594,
+              status: 504,
               message: `Request to download the cover has returned a ${response.status} error.`,
             });
           }

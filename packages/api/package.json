@@ -51,6 +51,7 @@
     "@graphql-tools/schema": "^8.5.1",
     "@openrouter/ai-sdk-provider": "^0.4.3",
     "@posthog/cli": "^0.3.1",
+    "@scalar/express-api-reference": "^0.8.21",
     "ai": "^4.3.10",
     "autosuggest-highlight": "^3.1.1",
     "axios": "^1.12.0",
@@ -116,6 +117,7 @@
     "split": "^1.0.1",
     "stream-combiner": "^0.2.2",
     "stream-filter": "^2.1.0",
+    "swagger-jsdoc": "^6.2.8",
     "tempy": "^1.0.1",
     "through": "^2.3.8",
     "type-graphql": "^2.0.0-beta.1",
@@ -123,7 +125,7 @@
     "winston": "^3.2.1",
     "ws": "^8.17.1",
     "yt-dlp-wrap": "^2.3.11",
-    "zod": "^3.23.8"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",
@@ -150,6 +152,7 @@
     "@types/passport-local": "^1.0.33",
     "@types/pinyin": "^2.10.2",
     "@types/split": "^1.0.0",
+    "@types/swagger-jsdoc": "^6.0.4",
     "@types/through": "0.0.30",
     "@types/validator": "^13.7.0",
     "@types/ws": "^8.5.4",

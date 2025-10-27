@@ -28,6 +28,71 @@ import { GraphQLJSONObject } from "graphql-type-json";
 import _ from "lodash";
 import { processUtaiteDbAlbum, processUtaiteDbArtist } from "../utils/vocadb";
 
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     Song:
+ *       type: object
+ *       description: A song entry from VocaDB or UtaiteDB.
+ *       properties:
+ *         id:
+ *           type: integer
+ *           format: int64
+ *           description: VocaDB song ID for values greater than 0 or internal song ID otherwise.
+ *         name:
+ *           type: string
+ *           maxLength: 4096
+ *           example: "初音ミクの消失 -DEAD END-"
+ *         sortOrder:
+ *           type: string
+ *           maxLength: 4096
+ *           description: Sort order name
+ *           example: "はつねみくのしょうしつ -DEAD END-"
+ *         originalId:
+ *           oneOf:
+ *             - type: integer
+ *               format: int64
+ *             - type: 'null'
+ *           description: ID of the original song if this is a derived version
+ *         vocaDbJson:
+ *           type: object
+ *           description: Full VocaDB or UtaiteDB API response
+ *           $ref: 'https://vocadb.net/swagger/v1/swagger.json#/components/schemas/SongForApiContract'
+ *         utaiteDbId:
+ *           oneOf:
+ *             - type: integer
+ *               format: int64
+ *             - type: 'null'
+ *           description: UtaiteDB ID if from UtaiteDB
+ *         coverUrl:
+ *           oneOf:
+ *             - type: string
+ *               maxLength: 4096
+ *               format: uri
+ *               example: "https://example.com/cover.jpg"
+ *             - type: 'null'
+ *           description: URL to the song’s cover image
+ *         incomplete:
+ *           type: boolean
+ *           description: Whether this entry is incomplete and needs more data
+ *         creationDate:
+ *           type: string
+ *           format: date-time
+ *         updatedOn:
+ *           type: string
+ *           format: date-time
+ *         deletionDate:
+ *           oneOf:
+ *             - type: string
+ *               format: date-time
+ *             - type: 'null'
+ *       required:
+ *         - id
+ *         - name
+ *         - sortOrder
+ *         - incomplete
+ */
 @ObjectType()
 @Table({ modelName: "Song" })
 export class Song extends Model<Song, Partial<Song>> {

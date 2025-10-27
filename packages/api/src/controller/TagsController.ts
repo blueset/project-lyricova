@@ -15,6 +15,30 @@ export class TagsController {
     this.router.get("/:slug", this.getTag);
   }
 
+  /**
+   * @openapi
+   * /tags:
+   *   get:
+   *     summary: Get all tags with entry counts
+   *     tags:
+   *       - Tags
+   *     responses:
+   *       200:
+   *         description: List of all tags with their entry counts
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 allOf:
+   *                   - $ref: '#/components/schemas/Tag'
+   *                   - type: object
+   *                     properties:
+   *                       entryCount:
+   *                         type: integer
+   *                         description: Number of entries associated with this tag
+   *                         example: 42
+   */
   private async getTags(req: Request, res: Response) {
     let tags = (await sequelize.models.Tag.findAll({
       attributes: {
@@ -33,17 +57,84 @@ export class TagsController {
     res.json(tags);
   }
 
+  /**
+   * @openapi
+   * /tags/{slug}:
+   *   get:
+   *     summary: Get a tag by slug with its associated entries
+   *     tags:
+   *       - Tags
+   *     parameters:
+   *       - in: path
+   *         name: slug
+   *         schema:
+   *           type: string
+   *         required: true
+   *         description: URL-friendly slug identifier of the tag
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *         required: false
+   *         description: Page number for pagination
+   *     responses:
+   *       200:
+   *         description: Tag details with paginated entries
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 tag:
+   *                   $ref: '#/components/schemas/Tag'
+   *                 entries:
+   *                   type: array
+   *                   items:
+   *                     allOf:
+   *                       - $ref: '#/components/schemas/Entry'
+   *                       - type: object
+   *                         properties:
+   *                           verses:
+   *                             type: array
+   *                             items:
+   *                               $ref: '#/components/schemas/Verse'
+   *                           tags:
+   *                             type: array
+   *                             items:
+   *                               $ref: '#/components/schemas/Tag'
+   *                           pulses:
+   *                             type: array
+   *                             items:
+   *                               $ref: '#/components/schemas/Pulse'
+   *                 totalEntries:
+   *                   type: integer
+   *                   description: Total number of entries for this tag
+   *                 page:
+   *                   type: integer
+   *                   description: Current page number
+   *                 totalPages:
+   *                   type: integer
+   *                   description: Total number of pages
+   *       404:
+   *         description: Tag not found
+   *         content:
+   *           text/plain:
+   *             schema:
+   *               type: string
+   *               example: "Tag not found"
+   */
   private async getTag(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
     const tag = (await sequelize.models.Tag.findByPk(req.params.slug)) as Tag;
+
+    if (!tag) return res.status(404).send("Tag not found");
 
     const totalEntries = await TagOfEntry.count({
       where: {
         tagId: tag.slug,
       },
     });
-
-    if (!tag) return res.status(404).send("Tag not found");
 
     const entries = await tag.$get("entries", {
       ...entryListingCondition,

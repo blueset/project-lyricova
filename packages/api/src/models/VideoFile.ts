@@ -16,6 +16,65 @@ import {
 import { DataTypes } from "sequelize";
 import { Field, Int, ObjectType } from "type-graphql";
 
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     VideoFile:
+ *       type: object
+ *       description: A video file associated with a song.
+ *       properties:
+ *         id:
+ *           type: integer
+ *           format: int64
+ *         path:
+ *           type: string
+ *           maxLength: 768
+ *           description: Local path to the video file
+ *         songId:
+ *           type: integer
+ *           format: int64
+ *           description: ID of the associated song
+ *         title:
+ *           type: string
+ *           maxLength: 1024
+ *           description: Title of the video
+ *         sourceUrl:
+ *           oneOf:
+ *             - type: string
+ *               maxLength: 2048
+ *               format: uri
+ *             - type: 'null'
+ *           description: Original URL of the video source
+ *         type:
+ *           type: string
+ *           enum:
+ *             - Original
+ *             - PV
+ *             - Derived
+ *             - Subtitled
+ *             - OnVocal
+ *             - OffVocal
+ *             - Other
+ *           description: Type of video content
+ *         creationDate:
+ *           type: string
+ *           format: date-time
+ *         updatedOn:
+ *           type: string
+ *           format: date-time
+ *         deletionDate:
+ *           oneOf:
+ *             - type: string
+ *               format: date-time
+ *             - type: 'null'
+ *       required:
+ *         - id
+ *         - path
+ *         - songId
+ *         - title
+ *         - type
+ */
 @ObjectType()
 @Table({ modelName: "VideoFile" })
 export class VideoFile extends Model<VideoFile> {
