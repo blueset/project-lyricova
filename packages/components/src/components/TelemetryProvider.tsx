@@ -23,6 +23,10 @@ export function TelemetryProvider({
     // Initialize Microsoft Clarity if project ID is provided
     if (clarityProjectId) {
       clarity.init(clarityProjectId);
+      (window as any).clarity("consentv2", {
+        ad_Storage: "granted",
+        analytics_Storage: "granted",
+      });
     }
 
     // Initialize PostHog if API key is provided
