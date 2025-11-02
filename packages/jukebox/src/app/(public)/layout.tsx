@@ -30,6 +30,7 @@ import { cn } from "@lyricova/components/utils";
 import { Card } from "@lyricova/components/components/ui/card";
 import { Toaster } from "@lyricova/components/components/ui/sonner";
 import { shallowEqual } from "react-redux";
+import { usePlaybackTracking } from "@/hooks/usePlaybackTracking";
 
 interface Props {
   children: ReactNode;
@@ -43,12 +44,6 @@ const TEXTURE_QUERY = gql`
       authorUrl
       url
     }
-  }
-` as DocumentNode;
-
-const BUMP_PLAY_COUNT_MUTATION = gql`
-  mutation bumpPlayCount($id: Int!) {
-    bumpPlayCount(fileId: $id)
   }
 ` as DocumentNode;
 
@@ -92,6 +87,13 @@ function IndexLayout({ children }: Props) {
   );
   const currentSong = useAppSelector(currentSongSelector);
 
+  // Initialize playback tracking hook
+  usePlaybackTracking({
+    playerRef,
+    currentTrack: currentSong,
+    apolloClient,
+  });
+
   // Reflect nowPlaying change to player
   useEffect(() => {
     if (!playerRef.current) return;
@@ -122,20 +124,7 @@ function IndexLayout({ children }: Props) {
       // Play next
       dispatch(playNext(true));
     }
-    try {
-      if (currentSong?.id) {
-        apolloClient.mutate({
-          mutation: BUMP_PLAY_COUNT_MUTATION,
-          variables: {
-            id: currentSong.id,
-          },
-          errorPolicy: "ignore",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }, [loopMode, dispatch, currentSong?.id, apolloClient]);
+  }, [loopMode, dispatch]);
 
   // Add onEnded listener
   useEffect(() => {
