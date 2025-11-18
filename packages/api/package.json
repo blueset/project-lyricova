@@ -52,7 +52,7 @@
     "@openrouter/ai-sdk-provider": "^0.4.3",
     "@posthog/cli": "^0.3.1",
     "@scalar/express-api-reference": "^0.8.21",
-    "ai": "^4.3.10",
+    "ai": "^5.0.52",
     "autosuggest-highlight": "^3.1.1",
     "axios": "^1.12.0",
     "bcryptjs": "^2.4.3",
