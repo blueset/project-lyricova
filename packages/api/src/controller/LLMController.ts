@@ -1,11 +1,9 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
-import { OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL } from "../utils/secret";
-import OpenAI from "openai";
+import { OPENAI_MODEL } from "../utils/secret";
 import { getTranslationAlignmentLLMPrompt } from "../utils/llmPrompt";
-import { CoreMessage, streamText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { ModelMessage, streamText } from "ai";
 import { createAzure } from "@ai-sdk/azure";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 
@@ -48,7 +46,7 @@ export class LLMController {
     const messages = getTranslationAlignmentLLMPrompt(
       original,
       translation
-    ) as CoreMessage[];
+    ) as ModelMessage[];
 
     try {
       const result = await streamText({
@@ -82,18 +80,16 @@ export class LLMController {
 
       for await (const chunk of result.fullStream) {
         console.log("incoming chunk", chunk);
-        if (chunk.type === "step-start") {
+        if (chunk.type === "start-step") {
           res.write(
             `data: ${JSON.stringify({ reasoning: chunk.request.body })}\n\n`
           );
           res.flush();
         } else if (chunk.type === "text-delta") {
-          res.write(`data: ${JSON.stringify({ chunk: chunk.textDelta })}\n\n`);
+          res.write(`data: ${JSON.stringify({ chunk: chunk.text })}\n\n`);
           res.flush();
-        } else if (chunk.type === "reasoning") {
-          res.write(
-            `data: ${JSON.stringify({ reasoning: chunk.textDelta })}\n\n`
-          );
+        } else if (chunk.type === "reasoning-delta") {
+          res.write(`data: ${JSON.stringify({ reasoning: chunk.text })}\n\n`);
           res.flush();
         } else {
           res.write(`: unknown chunk: ${JSON.stringify(chunk)}\n\n`);
