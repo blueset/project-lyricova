@@ -102,7 +102,7 @@
     "jsonwebtoken": "^9.0.0",
     "jss": "^10.10.0",
     "jss-preset-default": "^10.10.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.23",
     "lusca": "^1.6.1",
     "lyrics-kit": "file:../lyrics-kit",
     "material-ui-popup-state": "^5.3.4",
