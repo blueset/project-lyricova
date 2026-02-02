@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "A public jukebox and a music library manager for Project Lyricova.",
   "scripts": {
-    "dev": "cross-env PORT=8082 next dev --turbopack",
+    "dev": "cross-env PORT=8082 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
