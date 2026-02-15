@@ -1,4 +1,3 @@
-import { defineConfig, globalIgnores } from "eslint/config";
 import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import reactHooks from "eslint-plugin-react-hooks";
 import tsParser from "@typescript-eslint/parser";
@@ -15,16 +14,17 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-export default defineConfig([
-    globalIgnores(["dist/*", "coverage/*", "**/*.d.ts", "src/public/", "src/types/"]),
+export default [
     {
-        extends: fixupConfigRules(compat.extends(
-            "plugin:@typescript-eslint/recommended",
-            "plugin:react/recommended",
-            "plugin:react-hooks/recommended",
-            "plugin:@next/next/recommended",
-        )),
-
+        ignores: ["dist/*", "coverage/*", "**/*.d.ts", "src/public/", "src/types/"],
+    },
+    ...fixupConfigRules(compat.extends(
+        "plugin:@typescript-eslint/recommended",
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
+        "plugin:@next/next/recommended",
+    )),
+    {
         plugins: {
             "react-hooks": fixupPluginRules(reactHooks),
         },
@@ -62,4 +62,4 @@ export default defineConfig([
             "react/display-name": "warn",
         },
     },
-]);
+];

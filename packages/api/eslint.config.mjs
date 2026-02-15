@@ -1,4 +1,3 @@
-import { defineConfig } from "eslint/config";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,29 +12,30 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-export default defineConfig([{
-    extends: compat.extends("plugin:@typescript-eslint/recommended"),
+export default [
+    ...compat.extends("plugin:@typescript-eslint/recommended"),
+    {
+        languageOptions: {
+            parser: tsParser,
+            ecmaVersion: 2024,
+            sourceType: "module",
+        },
 
-    languageOptions: {
-        parser: tsParser,
-        ecmaVersion: 2024,
-        sourceType: "module",
+        rules: {
+            semi: ["error", "always"],
+
+            quotes: ["error", "double", {
+                avoidEscape: true,
+            }],
+
+            "@typescript-eslint/explicit-function-return-type": "off",
+            "@typescript-eslint/no-explicit-any": 1,
+
+            "@typescript-eslint/no-inferrable-types": ["warn", {
+                ignoreParameters: true,
+            }],
+
+            "@typescript-eslint/no-unused-vars": "warn",
+        },
     },
-
-    rules: {
-        semi: ["error", "always"],
-
-        quotes: ["error", "double", {
-            avoidEscape: true,
-        }],
-
-        "@typescript-eslint/explicit-function-return-type": "off",
-        "@typescript-eslint/no-explicit-any": 1,
-
-        "@typescript-eslint/no-inferrable-types": ["warn", {
-            ignoreParameters: true,
-        }],
-
-        "@typescript-eslint/no-unused-vars": "warn",
-    },
-}]);
+];
