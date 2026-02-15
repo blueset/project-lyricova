@@ -68,7 +68,7 @@
     "dayjs": "^1.9.1",
     "dotenv": "^10.0.0",
     "errorhandler": "^1.5.1",
-    "eslint": "^8.3.0",
+    "eslint": "^9.26.0",
     "eslint-config-next": "^15.0.3",
     "esm": "^3.2.25",
     "express": "^4.20.0",
@@ -129,6 +129,8 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.26.0",
     "@jest/globals": "^29.5.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/bluebird": "^3.5.29",
