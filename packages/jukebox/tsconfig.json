@@ -1,7 +1,13 @@
 {
   "compilerOptions": {
-    "jsx": "preserve",
-    "lib": ["ESNext.Array", "es5", "es6", "ESNext", "DOM"],
+    "jsx": "react-jsx",
+    "lib": [
+      "ESNext.Array",
+      "es5",
+      "es6",
+      "ESNext",
+      "DOM"
+    ],
     "module": "esnext",
     "esModuleInterop": true,
     "target": "ES2024",
@@ -15,8 +21,13 @@
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "paths": {
-      "*": ["node_modules/*", "src/types"],
-      "@/*": ["src/*"]
+      "*": [
+        "node_modules/*",
+        "src/types"
+      ],
+      "@/*": [
+        "src/*"
+      ]
     },
     "allowJs": true,
     "strict": false,
@@ -32,6 +43,12 @@
     ],
     "strictNullChecks": false
   },
-  "include": ["src/**/*", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
