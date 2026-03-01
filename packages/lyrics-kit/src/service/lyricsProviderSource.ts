@@ -15,35 +15,57 @@ import { NetEaseVercelProvider } from "./provider/neteaseVercel";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class LyricsProviderSource<T extends LyricsProvider<any>> {
-  static netease = new LyricsProviderSource(NetEaseProvider);
-  static neteaseVercel = new LyricsProviderSource(NetEaseVercelProvider);
-  static qq = new LyricsProviderSource(QQMusicProvider);
-  static kugou = new LyricsProviderSource(KugouProvider);
-  static xiami = new LyricsProviderSource(XiamiProvider);
-  static gecimi = new LyricsProviderSource(GecimiProvider);
-  static viewLyrics = new LyricsProviderSource(ViewLyricsProvider);
-  static syair = new LyricsProviderSource(SyairProvider);
-  static musixmatch = new LyricsProviderSource(MusixMatchProvider);
-  static youtube = new LyricsProviderSource(YouTubeProvider);
-  static spotify = new LyricsProviderSource(SpotifyProvider);
-  static songle = new LyricsProviderSource(SongleProvider);
-  static LrcLib = new LyricsProviderSource(LrcLibProvider);
+  static netease: LyricsProviderSource<NetEaseProvider>;
+  static neteaseVercel: LyricsProviderSource<NetEaseVercelProvider>;
+  static qq: LyricsProviderSource<QQMusicProvider>;
+  static kugou: LyricsProviderSource<KugouProvider>;
+  static xiami: LyricsProviderSource<XiamiProvider>;
+  static gecimi: LyricsProviderSource<GecimiProvider>;
+  static viewLyrics: LyricsProviderSource<ViewLyricsProvider>;
+  static syair: LyricsProviderSource<SyairProvider>;
+  static musixmatch: LyricsProviderSource<MusixMatchProvider>;
+  static youtube: LyricsProviderSource<YouTubeProvider>;
+  static spotify: LyricsProviderSource<SpotifyProvider>;
+  static songle: LyricsProviderSource<SongleProvider>;
+  static LrcLib: LyricsProviderSource<LrcLibProvider>;
 
-  static allCases = [
-    LyricsProviderSource.netease,
-    // LyricsProviderSource.neteaseVercel,
-    LyricsProviderSource.qq,
-    LyricsProviderSource.kugou,
-    // LyricsProviderSource.xiami,
-    // LyricsProviderSource.gecimi,
-    LyricsProviderSource.viewLyrics,
-    LyricsProviderSource.syair,
-    LyricsProviderSource.musixmatch,
-    LyricsProviderSource.youtube,
-    // LyricsProviderSource.spotify,
-    LyricsProviderSource.songle,
-    LyricsProviderSource.LrcLib,
-  ];
+  static allCases: LyricsProviderSource<any>[] = [];
+
+  static {
+    try {
+      LyricsProviderSource.netease = new LyricsProviderSource(NetEaseProvider);
+      LyricsProviderSource.neteaseVercel = new LyricsProviderSource(NetEaseVercelProvider);
+      LyricsProviderSource.qq = new LyricsProviderSource(QQMusicProvider);
+      LyricsProviderSource.kugou = new LyricsProviderSource(KugouProvider);
+      LyricsProviderSource.xiami = new LyricsProviderSource(XiamiProvider);
+      LyricsProviderSource.gecimi = new LyricsProviderSource(GecimiProvider);
+      LyricsProviderSource.viewLyrics = new LyricsProviderSource(ViewLyricsProvider);
+      LyricsProviderSource.syair = new LyricsProviderSource(SyairProvider);
+      LyricsProviderSource.musixmatch = new LyricsProviderSource(MusixMatchProvider);
+      LyricsProviderSource.youtube = new LyricsProviderSource(YouTubeProvider);
+      LyricsProviderSource.spotify = new LyricsProviderSource(SpotifyProvider);
+      LyricsProviderSource.songle = new LyricsProviderSource(SongleProvider);
+      LyricsProviderSource.LrcLib = new LyricsProviderSource(LrcLibProvider);
+
+      LyricsProviderSource.allCases = [
+        LyricsProviderSource.netease,
+        // LyricsProviderSource.neteaseVercel,
+        LyricsProviderSource.qq,
+        LyricsProviderSource.kugou,
+        // LyricsProviderSource.xiami,
+        // LyricsProviderSource.gecimi,
+        LyricsProviderSource.viewLyrics,
+        LyricsProviderSource.syair,
+        LyricsProviderSource.musixmatch,
+        LyricsProviderSource.youtube,
+        // LyricsProviderSource.spotify,
+        LyricsProviderSource.songle,
+        LyricsProviderSource.LrcLib,
+      ];
+    } catch (e) {
+      console.error("Error initializing LyricsProviderSource:", e);
+    }
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cls: new (...args: any[]) => T;
