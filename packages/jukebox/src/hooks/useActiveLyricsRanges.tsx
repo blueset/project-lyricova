@@ -20,7 +20,7 @@ interface LyricsKeyframeInfo {
 
 /** Convert lyrics to time segments, and sort by start the end time. */
 export function lyricsToSegments(
-  lines: LyricsKitLyricsLine[] | LyricsLine[]
+  lines: LyricsKitLyricsLine[] | LyricsLine[],
 ): LyricsSegment[] {
   const segments: LyricsSegment[] = lines
     .toSorted((a, b) => a.position - b.position)
@@ -32,7 +32,7 @@ export function lyricsToSegments(
           : index + 1 < lines.length
           ? lines[index + 1].position
           : start + 1,
-        start
+        start,
       );
       return {
         lineIndex: index,
@@ -41,14 +41,14 @@ export function lyricsToSegments(
       };
     });
   segments.sort((a, b) =>
-    a.start !== b.start ? a.start - b.start : a.end - b.end
+    a.start !== b.start ? a.start - b.start : a.end - b.end,
   );
   return segments;
 }
 
 /** convert segments to a list of keyframes where the data is the array of line IDs in the keyframe. */
 export function segmentsToKeyframes(
-  segments: LyricsSegment[]
+  segments: LyricsSegment[],
 ): PlayerLyricsKeyframe<LyricsKeyframeInfo>[] {
   const START = 0,
     END = 1;
@@ -72,11 +72,11 @@ export function segmentsToKeyframes(
       } else {
         lastKeyFrame.data.activeSegments =
           lastKeyFrame.data.activeSegments.filter(
-            (index) => index !== lineIndex
+            (index) => index !== lineIndex,
           );
         lastKeyFrame.data.rangeStart = Math.max(
           lastKeyFrame.data.rangeStart,
-          lastKeyFrame.data.activeSegments?.[0] ?? lineIndex + 1
+          lastKeyFrame.data.activeSegments?.[0] ?? lineIndex + 1,
         );
       }
     } else {
@@ -92,13 +92,16 @@ export function segmentsToKeyframes(
         rangeEnd = Math.max(rangeEnd, lineIndex + 1);
       } else {
         lastKeyframeIndexes = lastKeyframeIndexes.filter(
-          (index) => index !== lineIndex
+          (index) => index !== lineIndex,
         );
-        // rangeStart = Math.max(rangeStart, (lastKeyframeIndexes[0] ?? lineIndex + 1));
+        rangeStart = Math.max(
+          rangeStart,
+          lastKeyframeIndexes[0] ?? lineIndex + 1,
+        );
         rangeEnd = Math.max(
           rangeEnd,
           (lastKeyframeIndexes.at(-1) ?? 0) + 1,
-          rangeStart + 1
+          rangeStart + 1,
         );
       }
       keyframes.push({
@@ -117,7 +120,7 @@ export function segmentsToKeyframes(
 
 export function useActiveLyrcsRanges(
   lines: LyricsKitLyricsLine[] | LyricsLine[],
-  playerRef: RefObject<HTMLAudioElement>
+  playerRef: RefObject<HTMLAudioElement>,
 ): PlayerLyricsState<LyricsKeyframeInfo> & { segments: LyricsSegment[] } {
   const { segments, keyframes } = useMemo(() => {
     const segments = lyricsToSegments(lines);
