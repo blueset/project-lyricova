@@ -45,7 +45,7 @@ export function Gallery({ entryIds }: CommentProps) {
   }
   return (
     <>
-      <div className={`container verticalPadding ${classes.gallery}`}>
+      <div className={`lyricova-container verticalPadding ${classes.gallery}`}>
         <h2 className={classes.gallery}>Gallery</h2>
         <div className={classes.galleryEntries}>
           {galleryUrls.map(({ title, url, image }) => (

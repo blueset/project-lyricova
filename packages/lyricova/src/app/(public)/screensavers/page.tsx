@@ -12,7 +12,7 @@ export const metadata = {
 
 export default function ScreensaversDirectory() {
   return (
-    <div className={`container ${classes.container}`}>
+    <div className={`lyricova-container ${classes.container}`}>
       <div className={classes.top}>
         <NavPanel />
       </div>

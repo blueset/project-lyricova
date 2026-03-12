@@ -13,13 +13,15 @@ export function Pulses({ pulses, creationDate }: PulsesProps) {
   const pulsesObj = pulses
     .sort(
       (a, b) =>
-        new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime()
+        new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime(),
     )
     .map((pulse) => new Date(pulse.creationDate));
   if (!pulses || pulses.length === 0) {
     return (
       <>
-        <div className={`container verticalPadding ${classes.pulsesIsolated}`}>
+        <div
+          className={`lyricova-container verticalPadding ${classes.pulsesIsolated}`}
+        >
           <h2 className={classes.pulsesTitle}>Pulses</h2>
           <div className={classes.pulsesListing}>
             <div className={classes.pulseEntry}>
@@ -41,7 +43,9 @@ export function Pulses({ pulses, creationDate }: PulsesProps) {
   if (pulses?.length === 1) {
     return (
       <>
-        <div className={`container verticalPadding ${classes.pulsesIsolated}`}>
+        <div
+          className={`lyricova-container verticalPadding ${classes.pulsesIsolated}`}
+        >
           <h2 className={classes.pulsesTitle}>Pulses</h2>
           <div className={classes.pulsesListing}>
             <div className={classes.pulseEntry}>
@@ -71,7 +75,9 @@ export function Pulses({ pulses, creationDate }: PulsesProps) {
   }
   return (
     <>
-      <div className={`container verticalPadding ${classes.pulsesCounter}`}>
+      <div
+        className={`lyricova-container verticalPadding ${classes.pulsesCounter}`}
+      >
         <div className={classes.pulsesCountContainer}>
           <h2 className={classes.pulsesTitle}>Pulses</h2>
           <div className={classes.pulsesCount}>{pulses.length}</div>

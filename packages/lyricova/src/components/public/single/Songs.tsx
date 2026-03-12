@@ -31,7 +31,7 @@ function ArtistMeta({ song }: ArtistMetaProps) {
               {a.ArtistOfSong?.customName || a.name}
             </Link>
           </Fragment>
-        ))
+        )),
       )}
     </>
   );
@@ -47,7 +47,7 @@ export function Songs({ songs }: SongsProps) {
   }
   return (
     <>
-      <div className={`container verticalPadding ${classes.songs}`}>
+      <div className={`lyricova-container verticalPadding ${classes.songs}`}>
         <h2 className={classes.songsTitle}>Song{songs.length > 1 && "s"}</h2>
         {songs.map((song) => (
           <div className={classes.song} key={song.id}>

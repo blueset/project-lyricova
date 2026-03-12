@@ -21,7 +21,7 @@ export default async function ScreensaverDocs() {
   const response = await fetch(`${apiBaseUrl}/tags`, { cache: "no-store" });
   const tags: Tag[] = await response.json();
   return (
-    <div className={`container ${classes.container}`}>
+    <div className={`lyricova-container ${classes.container}`}>
       <div className={classes.top}>
         <div className={classes.title}>
           <h1>

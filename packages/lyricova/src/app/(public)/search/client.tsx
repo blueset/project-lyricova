@@ -81,9 +81,9 @@ export default function SearchClient() {
         }
       },
       500,
-      { leading: false, trailing: true }
+      { leading: false, trailing: true },
     ),
-    []
+    [],
   );
 
   const query = searchParams.get("q") as string;
@@ -106,7 +106,7 @@ export default function SearchClient() {
     <>
       <IndexHeader />
       <Divider />
-      <div className="container verticalPadding">
+      <div className="lyricova-container verticalPadding">
         <div className={classes.inputGroup}>
           <input
             type="text"
@@ -137,7 +137,7 @@ export default function SearchClient() {
           : results !== null && (
               <motion.div key={-1} variants={variants} custom={0}>
                 <div
-                  className={`container verticalPadding ${classes.noResult}`}
+                  className={`lyricova-container verticalPadding ${classes.noResult}`}
                 >
                   No result found.
                 </div>

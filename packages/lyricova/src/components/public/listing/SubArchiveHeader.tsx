@@ -65,7 +65,9 @@ export function SubArchiveHeader({
   keywords,
 }: SubArchiveHeaderProps) {
   return (
-    <header className={`container verticalPadding ${classes.headerRow}`}>
+    <header
+      className={`lyricova-container verticalPadding ${classes.headerRow}`}
+    >
       <Search />
       <div className={classes.headerMain}>
         <div className={classes.typeTitleLeft}>

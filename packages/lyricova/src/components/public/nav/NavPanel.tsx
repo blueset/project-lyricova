@@ -82,7 +82,7 @@ export function NavPanel() {
         enableBodyScroll(document.body);
       }
     },
-    [setIsPanelOpen]
+    [setIsPanelOpen],
   );
 
   useEffect(() => {
@@ -118,12 +118,12 @@ export function NavPanel() {
             duration: 0.3,
             stagger: 0.025,
           },
-          "<+0.05"
+          "<+0.05",
         );
       });
       timelineRef.current = tl;
     },
-    [timelineRef]
+    [timelineRef],
   );
 
   useEffect(() => {
@@ -146,7 +146,10 @@ export function NavPanel() {
           onClick={() => togglePanel(false)}
         >
           <header
-            className={clsx("container verticalPadding", classes.navPanel)}
+            className={clsx(
+              "lyricova-container verticalPadding",
+              classes.navPanel,
+            )}
             onClick={(e) => e.stopPropagation()}
           >
             <Tooltip>

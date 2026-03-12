@@ -2,7 +2,7 @@ import classes from "./Footer.module.scss";
 
 export function Footer() {
   return (
-    <footer className={`container ${classes.footer}`}>
+    <footer className={`lyricova-container ${classes.footer}`}>
       <a href="https://1A23.com" className={classes.label}>
         1A23 Studio
       </a>

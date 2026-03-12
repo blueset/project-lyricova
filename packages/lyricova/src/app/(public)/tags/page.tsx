@@ -24,7 +24,7 @@ export default async function Tags() {
     <>
       <IndexHeader />
       <Divider />
-      <div className={`container verticalPadding ${classes.tags}`}>
+      <div className={`lyricova-container verticalPadding ${classes.tags}`}>
         {tags?.map((tag, idx) => (
           <TagNode key={idx} tag={tag} />
         ))}

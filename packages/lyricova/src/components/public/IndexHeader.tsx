@@ -8,7 +8,9 @@ import { Title } from "./nav/Title";
 
 export function IndexHeader({ isHome }: { isHome?: boolean }) {
   return (
-    <header className={`container verticalPadding ${classes.headerRow}`}>
+    <header
+      className={`lyricova-container verticalPadding ${classes.headerRow}`}
+    >
       <div>
         {isHome ? (
           <Title />

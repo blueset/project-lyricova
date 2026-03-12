@@ -17,7 +17,10 @@ export function MainVerse({ entry }: MainVerseProps) {
     : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
   return (
-    <section className={`container ${classes.entryMain}`} lang={verse.language}>
+    <section
+      className={`lyricova-container ${classes.entryMain}`}
+      lang={verse.language}
+    >
       <TagRow tags={entry.tags} />
       <div className={classes.meta}>
         <div className={classes.title}>{entry.title}</div>

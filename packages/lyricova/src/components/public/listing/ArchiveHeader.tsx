@@ -16,7 +16,9 @@ export function ArchiveHeader({ page }: ArchiveHeaderProps) {
     .join(" ");
   const siteNamePost = siteNameWords[siteNameWords.length - 1];
   return (
-    <header className={`container verticalPadding ${classes.headerRows}`}>
+    <header
+      className={`lyricova-container verticalPadding ${classes.headerRows}`}
+    >
       <div className={classes.headerRow}>
         <Search />
         <div className={classes.headerMain}>

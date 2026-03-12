@@ -11,7 +11,7 @@ export function Comment({ children }: CommentProps) {
   }
   return (
     <>
-      <div className={`container verticalPadding ${classes.comment}`}>
+      <div className={`lyricova-container verticalPadding ${classes.comment}`}>
         <h2 className={classes.commentTitle}>Notes</h2>
         <div
           className={classes.commentText}

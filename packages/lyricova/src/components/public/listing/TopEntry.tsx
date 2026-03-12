@@ -31,7 +31,7 @@ export function TopEntry({ entry }: TopEntryProps) {
 
   const tagsGradient = useMemo(
     () => generateColorGradient(entry.tags, true),
-    [entry.tags]
+    [entry.tags],
   );
 
   const entryRef = useRef<HTMLElement>(null);
@@ -46,7 +46,7 @@ export function TopEntry({ entry }: TopEntryProps) {
       const tl = gsap.timeline();
       const stepDuration = 1 / 40;
       const sequence = mainVerse.typingSequence.map((i) =>
-        buildAnimationSequence(i, mainVerse.language)
+        buildAnimationSequence(i, mainVerse.language),
       );
       let i = 0;
       for (let lineIdx = 0; lineIdx < sequence.length; lineIdx++) {
@@ -76,7 +76,7 @@ export function TopEntry({ entry }: TopEntryProps) {
               tl.set(
                 committedEl,
                 { text: committed + frame },
-                i * stepDuration
+                i * stepDuration,
               );
               i++;
             }
@@ -93,12 +93,12 @@ export function TopEntry({ entry }: TopEntryProps) {
         tl.kill();
       };
     },
-    [mainVerse.typingSequence, mainVerse.language]
+    [mainVerse.typingSequence, mainVerse.language],
   );
 
   return (
     <section
-      className={`container verticalPadding ${classes.container}`}
+      className={`lyricova-container verticalPadding ${classes.container}`}
       ref={entryRef}
       style={
         {

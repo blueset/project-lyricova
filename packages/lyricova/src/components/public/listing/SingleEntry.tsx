@@ -34,7 +34,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
 
   const tagsGradient = useMemo(
     () => generateColorGradient(entry.tags, true),
-    [entry.tags]
+    [entry.tags],
   );
 
   const applyMask = useCallback((elm: HTMLElement) => {
@@ -62,10 +62,10 @@ export function SingleEntry({ entry }: SingleEntryProps) {
   const mouseMoveCallback = useCallback((e: MouseEvent) => {
     const target = e.currentTarget as HTMLDivElement;
     const cyclingVerse = target.querySelector(
-      "[data-cyclingverse]"
+      "[data-cyclingverse]",
     ) as HTMLDivElement;
     const gutter = convertRemToPixels(
-      getComputedStyle(target).getPropertyValue("--horizontal-gutter")
+      getComputedStyle(target).getPropertyValue("--horizontal-gutter"),
     );
     const cycleWidth = cyclingVerse.scrollWidth / 5;
     const ratio = e.clientX / target.clientWidth;
@@ -103,7 +103,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
         } as CSSProperties
       }
     >
-      <div className={`container ${classes.meta}`}>
+      <div className={`lyricova-container w-full ${classes.meta}`}>
         <div className={classes.metaLeft}>
           <span className={classes.title}>{entry.title}</span>
           <span className={classes.artists}>{artistString}</span>
@@ -111,7 +111,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
         <TagRow tags={entry.tags} />
       </div>
       <div className={classes.verseContainer} lang={mainVerse.language}>
-        <div className="container">
+        <div className="lyricova-container w-full">
           <div className={classes.verse} ref={verseRef}>
             {text}
           </div>
@@ -127,7 +127,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
         </div>
       </div>
       <Link
-        className={`container ${classes.pulse}`}
+        className={`lyricova-container w-full ${classes.pulse}`}
         href={`/entries/${entry.id}`}
       >
         <PulseStatus entry={entry} />

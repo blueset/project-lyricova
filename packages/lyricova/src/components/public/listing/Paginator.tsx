@@ -50,7 +50,7 @@ export function Paginator({ currentPage, totalPages, prefix }: PaginatorProps) {
     return null;
   }
   return (
-    <div className={`container ${classes.paginator}`}>
+    <div className={`lyricova-container ${classes.paginator}`}>
       {currentPage <= 1 ? (
         <PreviousArrow className={classes.disabledLink} />
       ) : (

@@ -16,7 +16,7 @@ interface OtherVerseProps {
 export function OtherVerse({ verse }: OtherVerseProps) {
   return (
     <div
-      className={`container verticalPadding ${classes.verse}`}
+      className={`lyricova-container verticalPadding ${classes.verse}`}
       lang={verse.language}
     >
       <h2 className={classes.verseTitle}>

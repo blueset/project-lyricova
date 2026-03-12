@@ -17,7 +17,7 @@ export function AdminLinks({ id }: AdminLinksProps) {
     const jwtKey = localStorage?.getItem(LS_JWT_KEY);
     if (jwtKey) {
       const expiryDate = new Date(
-        JSON.parse(atob(jwtKey.split(".")[1])).exp * 1000
+        JSON.parse(atob(jwtKey.split(".")[1])).exp * 1000,
       );
       setIsAdmin(expiryDate > new Date());
     } else {
@@ -29,7 +29,9 @@ export function AdminLinks({ id }: AdminLinksProps) {
 
   return (
     <>
-      <div className={`container verticalPadding ${classes.container}`}>
+      <div
+        className={`lyricova-container verticalPadding ${classes.container}`}
+      >
         <h2 className={classes.title}>Admin</h2>
         <div className={classes.content}>
           <Button variant="ghostBright" asChild>
