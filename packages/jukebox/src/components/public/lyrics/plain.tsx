@@ -40,11 +40,11 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
               duration: duration * 1000,
               fill: "both",
               id: `static-mask-${startTime}-${endTime}-${children}`,
-            }
+            },
           );
         }
       },
-      [children, startTime, endTime]
+      [children, startTime, endTime],
     );
     useImperativeHandle(ref, () => ({
       resume(time?: number) {
@@ -64,7 +64,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
       },
     }));
     return <span ref={refCallback}>{children}</span>;
-  }
+  },
 );
 
 export const MemoedLineRenderer = memo(
@@ -82,7 +82,7 @@ export const MemoedLineRenderer = memo(
         ref={ref}
       />
     );
-  })
+  }),
 );
 
 MemoedLineRenderer.displayName = "LineRenderer";
@@ -93,7 +93,7 @@ const lineClasses = cn(
   "data-[past=true]:opacity-50",
   "data-[minor=true]:text-[1em]",
   "data-[role='1']:text-end",
-  "data-[role='2']:text-center"
+  "data-[role='2']:text-center",
 );
 
 const InnerRowRenderer = forwardRef<
@@ -111,7 +111,7 @@ const InnerRowRenderer = forwardRef<
       transLang,
       absoluteIndex,
     },
-    ref
+    ref,
   ) => {
     const [springs, api] = useSpring(() => ({
       from: { y: top },
@@ -146,7 +146,7 @@ const InnerRowRenderer = forwardRef<
         </div>
       </animated.div>
     );
-  }
+  },
 );
 
 InnerRowRenderer.displayName = "InnerRowRenderer";
@@ -157,7 +157,8 @@ const RowRenderer = memo(
     prev.top === next.top &&
     prev.transLang === next.transLang &&
     prev.isActive === next.isActive &&
-    prev.isActiveScroll === next.isActiveScroll
+    prev.absoluteIndex === next.absoluteIndex &&
+    prev.isActiveScroll === next.isActiveScroll,
 );
 
 interface Props {

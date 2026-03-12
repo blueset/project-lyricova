@@ -21,7 +21,7 @@ const rowContainerClasses = cn(
   "data-[role='2']:text-center data-[role='2']:py-4 data-[role='2']:w-full data-[role='2']:rounded-[0.75rem]",
 
   // minor
-  "data-[minor='true']:text-xl"
+  "data-[minor='true']:text-xl",
 );
 
 const InnerRowRenderer = forwardRef<
@@ -40,7 +40,7 @@ const InnerRowRenderer = forwardRef<
       onClick,
       transLang,
     },
-    ref
+    ref,
   ) => {
     const [springs, api] = useSpring(() => ({
       from: { y: top, opacity: 1, filter: "blur(0)" },
@@ -85,7 +85,7 @@ const InnerRowRenderer = forwardRef<
         <div
           className={cn(
             "text-[0.625em] text-balance", // fontSize, textWrap
-            absoluteIndex > 0 && !isActive && "opacity-40" // dim opacity
+            absoluteIndex > 0 && !isActive && "opacity-40", // dim opacity
           )}
           // @ts-expect-error TypeScript doesn't know about the `wordBreak` property
           style={{ wordBreak: "auto-phrase" }} // wordBreak
@@ -95,7 +95,7 @@ const InnerRowRenderer = forwardRef<
         </div>
       </animated.div>
     );
-  }
+  },
 );
 
 InnerRowRenderer.displayName = "InnerRowRenderer";
@@ -106,5 +106,6 @@ export const RowRenderer = memo(
     prev.top === next.top &&
     prev.transLang === next.transLang &&
     prev.isActive === next.isActive &&
-    prev.isActiveScroll === next.isActiveScroll
+    prev.absoluteIndex === next.absoluteIndex &&
+    prev.isActiveScroll === next.isActiveScroll,
 );
