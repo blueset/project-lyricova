@@ -111,7 +111,7 @@
     "prop-types": "^15.7.2",
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
-    "sequelize": "^6.29.0",
+    "sequelize": "^6.37.8",
     "sequelize-typescript": "^2.1.6",
     "simple-statistics": "^7.3.0",
     "slugify": "^1.4.5",
