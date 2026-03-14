@@ -130,10 +130,25 @@ export class TransliterationResult {
     });
     return lines.map((line) =>
       line
-        .map(([, reading]) =>
-          hiraToRoma(kanaToHira(reading)).replace(/^\s+|\s+$/gu, ""),
-        )
-        .join(" "),
+        .reduce<string[]>((acc, [base, reading]) => {
+          const roma = hiraToRoma(kanaToHira(reading));
+          if (
+            base === reading &&
+            !base.match(/^[\s\p{Script=Hiragana}\p{Script=Katakana}ー]+$/gu)
+          ) {
+            // Non-transliterated segment: append directly without space
+            if (acc.length > 0) {
+              acc[acc.length - 1] += roma;
+            } else {
+              acc.push(roma);
+            }
+          } else {
+            acc.push(roma);
+          }
+          return acc;
+        }, [])
+        .join(" ")
+        .replaceAll(/\s+/gu, " "),
     );
   }
 

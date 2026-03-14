@@ -23,20 +23,22 @@ interface MecabParsedResult {
   kanji: string;
   reading: string;
   alphaForwardLogRate: number;
-
   isLineBreak: boolean;
+  partOfSpeech: string;
 }
 
 const mecab = new MeCab<MecabParsedResult>();
 mecab.command =
-  'mecab --node-format="%M\u200C%f[7]\u200C%pA\n" --unk-format="%M\u200C%M\u200C%pA\n" --marginal';
+  'mecab --node-format="%M\u200C%f[7]\u200C%pA\u200C%f[0],%f[1],%f[2],%f[3],%f[4],%f[5]\n" --unk-format="%M\u200C%M\u200C%pA\u200C%f[0],%f[1],%f[2],%f[3],%f[4],%f[5]\n" --marginal';
 mecab.parser = function (data): MecabParsedResult {
-  const [kanji, reading, alphaForwardLogRateStr] = data[0].split("\u200C");
+  const [kanji, reading, alphaForwardLogRateStr, partOfSpeech] =
+    data[0].split("\u200C");
   return {
     kanji,
     reading,
     alphaForwardLogRate: parseFloat(alphaForwardLogRateStr),
     isLineBreak: reading === undefined,
+    partOfSpeech,
   };
 };
 
@@ -427,14 +429,41 @@ export async function segmentedTransliteration(
             }
             const wordEntries: WordEntry[] = [];
             let charPos = 0;
+            // POS prefixes that should be merged with the preceding word
+            const mergePOSPrefixes = [
+              "助詞,接続助詞",
+              "助詞,終助詞",
+              "助詞,格助詞,連語",
+              "助動詞",
+              "動詞,接尾",
+              "動詞,非自立",
+              "名詞,非自立",
+            ];
             for (const x of words) {
               const len = [...x.kanji].length;
-              wordEntries.push({
-                kanji: x.kanji,
-                reading: x.reading,
-                charStart: charPos,
-                charEnd: charPos + len,
-              });
+              const shouldMerge =
+                wordEntries.length > 0 &&
+                mergePOSPrefixes.some((prefix) =>
+                  x.partOfSpeech?.startsWith(prefix),
+                );
+              if (shouldMerge) {
+                const prev = wordEntries[wordEntries.length - 1];
+                prev.kanji += x.kanji;
+                prev.reading =
+                  prev.reading === "*"
+                    ? x.reading
+                    : x.reading === "*"
+                    ? prev.reading
+                    : prev.reading + x.reading;
+                prev.charEnd = charPos + len;
+              } else {
+                wordEntries.push({
+                  kanji: x.kanji,
+                  reading: x.reading,
+                  charStart: charPos,
+                  charEnd: charPos + len,
+                });
+              }
               charPos += len;
             }
 
