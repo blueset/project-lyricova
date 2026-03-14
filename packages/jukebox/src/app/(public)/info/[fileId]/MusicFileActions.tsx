@@ -101,8 +101,8 @@ export function MusicFileActions({ fileId }: { fileId: number }) {
   const handleCopyRomanization = async () => {
     const lyrics = query.data?.musicFile?.lyrics;
     if (!lyrics) return;
-    try {
-      const { data } = await fetchRomaji({
+    toast.promise(
+      fetchRomaji({
         variables: {
           text: lyrics.lines.map((v) => v.content).join("\n"),
           furigana: lyrics.lines.map(
@@ -116,14 +116,17 @@ export function MusicFileActions({ fileId }: { fileId: number }) {
               ) ?? [],
           ),
         },
-      });
-      if (data?.transliterate?.romaji) {
-        navigator.clipboard.writeText(data.transliterate.romaji.join("\n"));
-        toast.success("Romanization copied to clipboard");
-      }
-    } catch {
-      toast.error("Failed to fetch romanization");
-    }
+      }).then(({ data }) => {
+        if (data?.transliterate?.romaji) {
+          navigator.clipboard.writeText(data.transliterate.romaji.join("\n"));
+        }
+      }),
+      {
+        loading: "Fetching romanization…",
+        success: "Romanization copied to clipboard",
+        error: "Failed to fetch romanization",
+      },
+    );
   };
   const handleCopyTranslations = (lang: string) => {
     if (query.data?.musicFile?.lyrics) {
