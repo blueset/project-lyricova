@@ -25,7 +25,7 @@ export function lyricsToSegments(
   const segments: LyricsSegment[] = lines
     .toSorted((a, b) => a.position - b.position)
     .map((line, index, lines) => {
-      const start = line.position;
+      const start = Number.isNaN(line.position) ? 0 : line.position;
       const end = Math.max(
         line.attachments?.timeTag?.tags?.length
           ? start + line.attachments.timeTag.tags.at(-1).timeTag
@@ -125,10 +125,8 @@ export function useActiveLyrcsRanges(
   const { segments, keyframes } = useMemo(() => {
     const segments = lyricsToSegments(lines);
     const keyframes = segmentsToKeyframes(segments);
-    // console.log("segments:", segments, ", keyframes:", keyframes);
     return { segments, keyframes };
   }, [lines]);
   const result = usePlayerLyricsState(keyframes, playerRef);
-  // console.log("useActiveLyrcsRange result:", result.currentFrame?.data?.activeSegments, ", rangeStart:", result.currentFrame?.data?.rangeStart, ", rangeEnd:", result.currentFrame?.data?.rangeEnd);
   return { segments, ...result };
 }
