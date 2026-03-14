@@ -2,18 +2,18 @@ function matchContexualFurigana(
   base: string,
   ruby: string,
   groupings: (string | [string, string])[],
-  matchGroups: [string, string][]
+  matchGroups: [string, string][],
 ) {
   if (matchGroups.length < 1) return false;
   const currentMatchingIndex = matchGroups.findIndex(
-    (v) => base === v[0] && ruby === v[1]
+    (v) => base === v[0] && ruby === v[1],
   );
   if (currentMatchingIndex >= 0) {
     const matchingGroupIndex = groupings.findIndex(
       (v) =>
         typeof v !== "string" &&
         v[0] === matchGroups[0][0] &&
-        v[1] === matchGroups[0][1]
+        v[1] === matchGroups[0][1],
     );
     if (
       matchingGroupIndex >= 0 &&
@@ -24,7 +24,7 @@ function matchContexualFurigana(
           i >= matchingGroupIndex + matchGroups.length ||
           (typeof v !== "string" &&
             v[0] === matchGroups[i - matchingGroupIndex][0] &&
-            v[1] === matchGroups[i - matchingGroupIndex][1])
+            v[1] === matchGroups[i - matchingGroupIndex][1]),
       )
     )
       return true;
@@ -32,10 +32,35 @@ function matchContexualFurigana(
   return false;
 }
 
+export function kanjiHighlight(): (
+  text: string,
+) => [string, string | undefined][] {
+  const errorText = "text-error-foreground";
+  const hanRegex = /\p{sc=Han}+/gu;
+  return (text: string) => {
+    const result: [string, string | undefined][] = [];
+    let lastIndex = 0;
+    for (const match of text.matchAll(hanRegex)) {
+      if (match.index > lastIndex) {
+        result.push([text.substring(lastIndex, match.index), undefined]);
+      }
+      result.push([match[0], errorText]);
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      result.push([text.substring(lastIndex), undefined]);
+    }
+    if (result.length === 0) {
+      result.push([text, undefined]);
+    }
+    return result;
+  };
+}
+
 export function furiganaHighlight(): (
   base: string,
   ruby: string,
-  groupings: (string | [string, string])[]
+  groupings: (string | [string, string])[],
 ) => string | undefined {
   const primaryText = "text-error-foreground";
   const secondaryText = "text-info-foreground";

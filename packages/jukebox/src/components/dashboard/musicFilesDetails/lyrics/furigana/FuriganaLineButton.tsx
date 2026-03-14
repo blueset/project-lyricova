@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 import { cn } from "@lyricova/components/utils";
-import { furiganaHighlight } from "./furiganaHighlights";
+import { furiganaHighlight, kanjiHighlight } from "./furiganaHighlights";
 import { useLyricsStore } from "../state/editorState";
 import { useShallow } from "zustand/shallow";
 
@@ -17,6 +17,7 @@ interface FuriganaLineButtonProps {
 }
 
 const furiganaHighlighter = furiganaHighlight();
+const kanjiHighlighter = kanjiHighlight();
 
 export const FuriganaLineButton = memo(
   function FuriganaLineButton({ idx }: FuriganaLineButtonProps) {
@@ -33,7 +34,7 @@ export const FuriganaLineButton = memo(
         isSelected: state.furigana.selectedLine == idx,
         setSelectedLine: state.furigana.setSelectedLine,
         applyIdenticalFurigana: state.furigana.applyIdenticalFurigana,
-      }))
+      })),
     );
     // console.log("romajiMatchingLine", romajiMatchingLine);
     return (
@@ -41,7 +42,7 @@ export const FuriganaLineButton = memo(
         <button
           className={cn(
             "hover:bg-muted/50 px-3 py-2 rounded-md w-full text-left transition-colors",
-            isSelected && "bg-muted"
+            isSelected && "bg-muted",
           )}
           onClick={() => setSelectedLine(idx)}
         >
@@ -50,6 +51,7 @@ export const FuriganaLineButton = memo(
               <FuriganaLyricsLine
                 lyricsKitJsonLine={line}
                 rubyStyles={furiganaHighlighter}
+                textStyles={kanjiHighlighter}
               />
             </div>
             {romajiMatchingLine && (
@@ -61,7 +63,7 @@ export const FuriganaLineButton = memo(
                     className={cn(
                       i < 0 && "line-through text-error-foreground",
                       i === 0 && "text-muted-foreground",
-                      i > 0 && "text-success-foreground"
+                      i > 0 && "text-success-foreground",
                     )}
                   >
                     {text}
@@ -92,7 +94,7 @@ export const FuriganaLineButton = memo(
   },
   (prevProps, nextProps) => {
     return prevProps.idx === nextProps.idx;
-  }
+  },
 );
 
 export default FuriganaLineButton;

@@ -10,8 +10,9 @@ interface Props {
   rubyStyles?: (
     base: string,
     ruby: string,
-    groupings: (string | [string, string])[]
+    groupings: (string | [string, string])[],
   ) => string | undefined;
+  textStyles?: (text: string) => [string, string | undefined][];
 }
 
 export default function FuriganaLyricsLine({
@@ -20,6 +21,7 @@ export default function FuriganaLyricsLine({
   graphQLSourceLine,
   transliterationLine,
   rubyStyles,
+  textStyles,
 }: Props) {
   if (lyricsKitJsonLine || lyricsKitLine || graphQLSourceLine) {
     const groupings: (string | [string, string])[] = [];
@@ -64,6 +66,17 @@ export default function FuriganaLyricsLine({
       <>
         {groupings.map((v, k) => {
           if (typeof v === "string") {
+            if (textStyles) {
+              return (
+                <span key={k}>
+                  {textStyles(v).map(([seg, cls], i) => (
+                    <span key={i} className={cls}>
+                      {seg}
+                    </span>
+                  ))}
+                </span>
+              );
+            }
             return <span key={k}>{v}</span>;
           } else {
             return (
