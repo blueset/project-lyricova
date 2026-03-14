@@ -9,6 +9,7 @@ import {
 import type { Lyrics, LyricsLine } from "lyrics-kit/core";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import { measureTextWidths } from "../../../frontendUtils/measure";
+import { safeDuration } from "../../../frontendUtils/safeDuration";
 import { useActiveLyrcsRanges } from "../../../hooks/useActiveLyricsRanges";
 import { cn } from "@lyricova/components/utils";
 
@@ -77,13 +78,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
           const lengths = measureTextWidths(target);
           const length = lengths.at(-1);
           const percentages = lengths.map((v) => (v / length) * 100);
-          if (end <= start) {
-            console.error(
-              "Invalid duration for lyrics line: end time should be greater than start time",
-              { start, end, line },
-            );
-          }
-          const duration = Math.max(end - start, 1);
+          const duration = safeDuration(start, end, 1, { line });
           const keyframes = tags.map((v) => ({
             offset: Math.min(1, Math.max(v.timeTag / duration, 0)),
             backgroundSize: `${percentages[v.index - 1] ?? 0}% 100%`,

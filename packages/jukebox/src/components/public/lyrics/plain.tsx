@@ -10,14 +10,13 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import clsx from "clsx";
-import React from "react";
 import { cn } from "@lyricova/components/utils";
 import {
   LyricsVirtualizer,
   RowRendererProps,
 } from "./components/LyricsVirtualizer";
 import { LineRenderer, TimedSpanProps } from "./components/RubyLineRenderer";
+import { safeDuration } from "../../../frontendUtils/safeDuration";
 import type { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { useSpring, animated } from "@react-spring/web";
 
@@ -28,7 +27,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
       (node?: HTMLSpanElement) => {
         if (node && node.style.opacity !== "1") {
           node.style.opacity = "1";
-          const duration = Math.max(0.1, endTime - startTime);
+          const duration = safeDuration(startTime, endTime, 0.1, { children });
           webAnimationRef.current = node.animate(
             [
               { opacity: "0.5" },

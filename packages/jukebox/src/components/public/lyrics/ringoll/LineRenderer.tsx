@@ -8,6 +8,7 @@ import {
 import { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
 import { LyricsAnimationRef } from "../components/AnimationRef.type";
 import { LineRenderer, TimedSpanProps } from "../components/RubyLineRenderer";
+import { safeDuration } from "../../../../frontendUtils/safeDuration";
 
 const FILLED_OPACITY = 100;
 const BLANK_OPACITY = 50;
@@ -22,13 +23,9 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
         if (isStatic) {
           if (node && node.style.opacity !== "1") {
             node.style.opacity = "1";
-            if (endTime <= startTime) {
-              console.error(
-                "Invalid timing for TimedSpan: endTime should be greater than startTime",
-                { startTime, endTime, children },
-              );
-            }
-            const duration = Math.max(0.1, endTime - startTime);
+            const duration = safeDuration(startTime, endTime, 0.1, {
+              children,
+            });
             webAnimationRefs.current = [
               node.animate(
                 [
@@ -56,13 +53,9 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
             node.style.maskSize = "200% 100%";
             node.style.maskRepeat = "no-repeat";
             node.style.maskOrigin = "left";
-            if (endTime <= startTime) {
-              console.error(
-                "Invalid timing for TimedSpan: endTime should be greater than startTime",
-                { startTime, endTime, children },
-              );
-            }
-            const duration = Math.max(0.1, endTime - startTime);
+            const duration = safeDuration(startTime, endTime, 0.1, {
+              children,
+            });
             webAnimationRefs.current = [
               node.animate(
                 [{ maskPosition: "100% 0" }, { maskPosition: "0 0" }],

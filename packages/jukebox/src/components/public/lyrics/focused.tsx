@@ -16,6 +16,7 @@ import {
 import { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { LineRenderer, TimedSpanProps } from "./components/RubyLineRenderer";
 import { cn } from "@lyricova/components/utils";
+import { safeDuration } from "../../../frontendUtils/safeDuration";
 
 const TRANSITION: Transition = {
   duration: 0.2,
@@ -32,13 +33,7 @@ const TimedSpanGenerator = (full: boolean) =>
       (node?: HTMLSpanElement) => {
         if (node && node.style.opacity !== "1") {
           node.style.opacity = "1";
-          if (endTime <= startTime) {
-            console.error(
-              "Invalid timing for TimedSpan: endTime should be greater than startTime",
-              { startTime, endTime, children },
-            );
-          }
-          const duration = Math.max(0.1, endTime - startTime);
+          const duration = safeDuration(startTime, endTime, 0.1, { children });
           webAnimationRef.current = node.animate(
             full
               ? [
