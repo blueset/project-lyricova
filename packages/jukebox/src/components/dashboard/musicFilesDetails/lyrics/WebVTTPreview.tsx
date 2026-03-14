@@ -6,6 +6,7 @@ import {
   TIME_TAG,
   METADATA_ROLE,
   Attachments,
+  METADATA_MINOR,
 } from "lyrics-kit/core";
 import _ from "lodash";
 import { useLyricsStore } from "./state/editorState";
@@ -75,7 +76,7 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
             line.attachments?.[TIME_TAG]?.tags?.at(-1)?.timeTag
               ? line.attachments[TIME_TAG].tags.at(-1)?.timeTag + line.position
               : arr[idx + 1]?.position ?? line.position + 10,
-            3
+            3,
           ),
           offset: -1,
         },
@@ -102,7 +103,7 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
           }
           return acc;
         },
-        { layers: [], idxToTrack: {}, trackToIdx: {} }
+        { layers: [], idxToTrack: {}, trackToIdx: {} },
       ).layers;
 
     let lineCounter = 0;
@@ -119,10 +120,12 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
         const vttOffsiteLine = (trackNumbers[idx] ?? 0) * 4;
         const role = parseInt(v.attachments?.[METADATA_ROLE]?.text ?? "0") % 3;
         const align = role === 0 ? "start" : role === 1 ? "end" : "middle";
-        const minor = v.attachments.minor ? ".min" : "";
+        const minor = v.attachments?.[METADATA_MINOR] ? ".min" : "";
         const metadata = `#${idx}${
           vttOffsiteLine !== 0 ? "&" + vttOffsiteLine : ""
-        }${role !== 0 ? "R" + role : ""}${v.attachments.minor ? "Min" : ""}`;
+        }${role !== 0 ? "R" + role : ""}${
+          v.attachments?.[METADATA_MINOR] ? "Min" : ""
+        }`;
         if (v.attachments?.[TIME_TAG]?.tags) {
           const base = v.content;
           const timeTags = v.attachments[TIME_TAG]?.tags;
@@ -137,10 +140,10 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
             const endTimeTag = buildTimeTag(startTime + timeTag);
             lineCounter++;
             result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:${vttOffsiteLine} align:${align}\n<c.tt${minor}>[${start}] (@ ${ptrTime} ${metadata})</c>\n${formattedSection}<c.pndg>${divider}${base.substring(
-              index
+              index,
             )}</c>`;
             const translations = Attachments.fromJSON(
-              v.attachments
+              v.attachments,
             ).translations;
             for (const lang in translations) {
               result += `\n<c.lang>${lang || "-"}:</c> ${translations[lang]}`;

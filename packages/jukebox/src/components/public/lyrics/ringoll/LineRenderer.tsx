@@ -22,6 +22,12 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
         if (isStatic) {
           if (node && node.style.opacity !== "1") {
             node.style.opacity = "1";
+            if (endTime <= startTime) {
+              console.error(
+                "Invalid timing for TimedSpan: endTime should be greater than startTime",
+                { startTime, endTime, children },
+              );
+            }
             const duration = Math.max(0.1, endTime - startTime);
             webAnimationRefs.current = [
               node.animate(
@@ -36,7 +42,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
                   duration: duration * 1000,
                   fill: "both",
                   id: `static-mask-${startTime}-${endTime}-${children}`,
-                }
+                },
               ),
             ];
           }
@@ -50,8 +56,13 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
             node.style.maskSize = "200% 100%";
             node.style.maskRepeat = "no-repeat";
             node.style.maskOrigin = "left";
+            if (endTime <= startTime) {
+              console.error(
+                "Invalid timing for TimedSpan: endTime should be greater than startTime",
+                { startTime, endTime, children },
+              );
+            }
             const duration = Math.max(0.1, endTime - startTime);
-            // console.log("duration: %o, startTime: %o, endTime: %o", duration, startTime, endTime);
             webAnimationRefs.current = [
               node.animate(
                 [{ maskPosition: "100% 0" }, { maskPosition: "0 0" }],
@@ -60,13 +71,13 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
                   duration: duration * 1000,
                   fill: "both",
                   id: `mask-${startTime}-${endTime}-${children}`,
-                }
+                },
               ),
             ];
           }
         }
       },
-      [children, endTime, isStatic, startTime]
+      [children, endTime, isStatic, startTime],
     );
     useImperativeHandle(ref, () => ({
       resume(time?: number) {
@@ -86,7 +97,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
       },
     }));
     return <span ref={refCallback}>{children}</span>;
-  }
+  },
 );
 
 export const RingollLineRenderer = memo(
@@ -108,7 +119,7 @@ export const RingollLineRenderer = memo(
         ref={ref}
       />
     );
-  })
+  }),
 );
 
 RingollLineRenderer.displayName = "RingollLineRenderer";

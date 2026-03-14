@@ -28,7 +28,7 @@ type LyricsRowProps = {
 
 const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
   { line, isActive, start = 0, end = 1e100 },
-  ref
+  ref,
 ) {
   const boxRef = useRef<HTMLDivElement>(null);
   const webAnimationRef = useRef<Animation>(null);
@@ -53,7 +53,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
         boxRef.current.scrollIntoView({
           block: "center",
           behavior: "smooth",
-        })
+        }),
       );
     },
   }));
@@ -66,7 +66,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
         isActive && "text-foreground font-medium",
         line.attachments.role % 3 === 1 && "text-end",
         line.attachments.role % 3 === 2 && "text-center",
-        line.attachments.minor && "text-base opacity-75"
+        line.attachments.minor && "text-base opacity-75",
       )}
       ref={(elm: HTMLDivElement) => {
         if (!elm || boxRef.current === elm) return;
@@ -85,8 +85,14 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
           }));
           keyframes.sort((a, b) => a.offset - b.offset);
 
+          if (duration <= 0) {
+            console.error(
+              "Invalid duration for lyrics line: end time should be greater than start time",
+              { start, end, line },
+            );
+          }
           webAnimationRef.current = target.animate(keyframes, {
-            duration: duration * 1000,
+            duration: Math.max(0.1, duration * 1000),
             fill: "forwards",
             id: `background-size-${line.position}`,
           });
@@ -135,7 +141,7 @@ export default function LyricsPreview({ lyrics, fileId, className }: Props) {
 
   const { playerState, currentFrame, segments } = useActiveLyrcsRanges(
     lyrics?.lines ?? [],
-    playerRef
+    playerRef,
   );
   const currentFrameRef = useRef(currentFrame);
   currentFrameRef.current = currentFrame;

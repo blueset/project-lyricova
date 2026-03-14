@@ -25,13 +25,19 @@ const TRANSITION: Transition = {
 const TimedSpanGenerator = (full: boolean) =>
   forwardRef<LyricsAnimationRef, TimedSpanProps>(function TimedSpan(
     { startTime, endTime, children },
-    ref
+    ref,
   ) {
     const webAnimationRef = useRef<Animation | null>(null);
     const refCallback = useCallback(
       (node?: HTMLSpanElement) => {
         if (node && node.style.opacity !== "1") {
           node.style.opacity = "1";
+          if (endTime <= startTime) {
+            console.error(
+              "Invalid timing for TimedSpan: endTime should be greater than startTime",
+              { startTime, endTime, children },
+            );
+          }
           const duration = Math.max(0.1, endTime - startTime);
           webAnimationRef.current = node.animate(
             full
@@ -51,11 +57,11 @@ const TimedSpanGenerator = (full: boolean) =>
               duration: duration * 1000,
               fill: "both",
               id: `static-mask-${startTime}-${endTime}-${children}`,
-            }
+            },
           );
         }
       },
-      [children, startTime, endTime]
+      [children, startTime, endTime],
     );
     useImperativeHandle(ref, () => ({
       resume(time?: number) {
@@ -95,7 +101,7 @@ interface LyricsLineElementProps {
 const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
   function PlainLineElement(
     { className, line, start, end, transLang, idx },
-    ref
+    ref,
   ) {
     if (!line) return null;
 
@@ -105,7 +111,7 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
         layout
         className={cn(
           "font-semibold leading-tight text-white/80 data-[role='1']:text-end data-[role='2']:text-center text-7xl data-[minor='true']:text-4xl",
-          className
+          className,
         )}
         transition={TRANSITION}
         initial={{
@@ -139,7 +145,7 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
         )}
       </motion.div>
     );
-  }
+  },
 );
 
 // #endregion
@@ -223,7 +229,7 @@ const GlowLineElementGenerator = (full: boolean) =>
           </motion.div>
         </>
       );
-    }
+    },
   );
 
 const GlowLineElement = GlowLineElementGenerator(true);
@@ -245,7 +251,7 @@ export function FocusedLyrics({
   const { playerRef } = useAppContext();
   const { currentFrame, segments, playerState } = useActiveLyrcsRanges(
     lyrics.lines,
-    playerRef
+    playerRef,
   );
   const playerStateRef = useRef(playerState);
   playerStateRef.current = playerState;
@@ -294,7 +300,7 @@ export function FocusedLyrics({
         }
       }
     },
-    []
+    [],
   );
 
   return (
