@@ -26,7 +26,10 @@ type Timeline = gsap.core.Timeline;
 const COUNTDOWN_DURATION = 3;
 
 const SEQUENCE_QUERY = gql`
-  query TypingSequence($text: String!, $furigana: [[FuriganaLabel!]!]! = []) {
+  query KaraokeTransliteration(
+    $text: String!
+    $furigana: [[FuriganaLabel!]!]! = []
+  ) {
     transliterate(text: $text, furigana: $furigana) {
       text
       karaoke
@@ -97,7 +100,7 @@ function buildPages(lyrics: LyricsKitLyrics, duration: number): KaraokePage[] {
   const lineLengths = lyrics.lines.map((v, idx, arr) =>
     idx + 1 !== arr.length
       ? arr[idx + 1].position - v.position
-      : duration - v.position
+      : duration - v.position,
   );
   const secPerChar = lyrics.lines.map((v, idx) => {
     const t = v.content.trim().length;
@@ -157,7 +160,7 @@ export type KaraokeJaFrameCallback = (
   lyrics: LyricsKitLyrics,
   player: HTMLAudioElement,
   lineStart: number | null,
-  lineEnd: number | null
+  lineEnd: number | null,
 ) => void;
 
 type KaraokeJaState =
@@ -184,7 +187,7 @@ type KaraokeJaState =
 function useNicokaraLyricsState(
   lyrics: LyricsKitLyrics,
   playerRef: RefObject<HTMLAudioElement>,
-  pages: KaraokePage[]
+  pages: KaraokePage[],
 ): PlayerLyricsState<KaraokeJaState> {
   const keyframes = useMemo<PlayerLyricsKeyframe<KaraokeJaState>[]>(() => {
     const frames: PlayerLyricsKeyframe<KaraokeJaState>[] = [];
@@ -264,7 +267,7 @@ function Countdown({ activeRef, className }: CountdownProps) {
     <div
       className={cn(
         "relative w-0 tracking-widest -translate-y-16 text-[max(0.5em,1.5rem)]",
-        className
+        className,
       )}
     >
       <span className="before absolute top-0 left-0 color-white [filter:url(#nicokaraBefore)]">
@@ -356,7 +359,7 @@ function buildPageClasses(
   lines: number[],
   lyrics: LyricsKitLyrics,
   furigana: [string, string][][] | null,
-  containerWidth: number
+  containerWidth: number,
 ) {
   const lineWidths = lines.map(
     (v) =>
@@ -364,12 +367,12 @@ function buildPageClasses(
         LyricsLineHTML({
           textLine: lyrics.lines[v].content,
           furiganaLine: furigana && furigana[v],
-        })
-      ).width
+        }),
+      ).width,
   );
 
   const classes: string[] = lines.map(
-    (v, idx) => `line-${lines.length}-${idx + 1}`
+    (v, idx) => `line-${lines.length}-${idx + 1}`,
   );
 
   const result: (PageClassInfo | null)[] = [];
@@ -447,17 +450,17 @@ function LyricsScreen({
       thisPage.lines,
       lyrics,
       furigana,
-      containerWidth
+      containerWidth,
     );
     if (showNext) {
       const nextPageLines = buildPageClasses(
         nextPage.lines,
         lyrics,
         furigana,
-        containerWidth
+        containerWidth,
       );
       linesToShow = linesToShow.concat(
-        nextPageLines.slice(0, nextPageLines.length - 1)
+        nextPageLines.slice(0, nextPageLines.length - 1),
       );
       linesToShow.push(thisPageWithClass[thisPageWithClass.length - 1]);
     } else {
@@ -479,7 +482,7 @@ function LyricsScreen({
     ) : null;
   const firstNotNull = linesToShow.reduce<number | null>(
     (prev, curr, idx) => (prev === null && curr !== null ? idx : prev),
-    null
+    null,
   );
 
   return (
@@ -487,7 +490,7 @@ function LyricsScreen({
       <div
         className={cn(
           "h-36 flex flex-row relative items-end" /* row */,
-          "row-4"
+          "row-4",
         )}
       >
         {linesToShow[0] !== null && (
@@ -511,7 +514,7 @@ function LyricsScreen({
       <div
         className={cn(
           "h-36 flex flex-row relative items-end" /* row */,
-          "row-3"
+          "row-3",
         )}
       >
         {linesToShow[1] !== null && (
@@ -535,7 +538,7 @@ function LyricsScreen({
       <div
         className={cn(
           "h-36 flex flex-row relative items-end" /* row */,
-          "row-2"
+          "row-2",
         )}
       >
         {linesToShow[2] !== null && (
@@ -559,7 +562,7 @@ function LyricsScreen({
       <div
         className={cn(
           "h-36 flex flex-row relative items-end" /* row */,
-          "row-1"
+          "row-1",
         )}
       >
         {linesToShow[3] !== null && (
@@ -596,14 +599,14 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pages = useMemo(
     () => buildPages(lyrics, playerRef.current.duration),
-    [lyrics, playerRef.current.duration]
+    [lyrics, playerRef.current.duration],
   );
   const activeRef = useRef<HTMLSpanElement>(null);
 
   const { currentFrame, playerState } = useNicokaraLyricsState(
     lyrics,
     playerRef,
-    pages
+    pages,
   );
   const pageIdx = currentFrame?.data.pageIdx ?? null;
   const lineIdx = currentFrame?.data.lineIdx ?? null;
@@ -649,8 +652,8 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
               content,
               leftIndex,
               rightIndex,
-            })
-          ) ?? []
+            }),
+          ) ?? [],
       ),
     },
   });
@@ -691,7 +694,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             {
               clipPath: "inset(-50% 102% -10% -2%)",
             },
-            0
+            0,
           );
           tags.forEach((v, idx) => {
             const duration =
@@ -707,7 +710,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
                 ease: "none",
                 duration,
               },
-              start
+              start,
             );
           });
           if (
@@ -721,7 +724,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
                 ease: "none",
                 duration: nextLineStart - currentLineEnd,
               },
-              currentLineEnd
+              currentLineEnd,
             );
           }
         } else {
@@ -736,7 +739,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
                 ease: "none",
                 duration,
               },
-              0
+              0,
             );
           } else {
             // Countdown
@@ -750,7 +753,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
                 ease: "none",
                 duration,
               },
-              0
+              0,
             );
           }
         }
@@ -796,7 +799,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           className={cn(
             "p-16 size-full flex flex-col justify-end text-white",
             "lg:text-6xl sm:text-4xl text-3xl", // Font sizes
-            "[&_rt]:text-[max(0.35em,1.125rem)]" // Ruby text styles
+            "[&_rt]:text-[max(0.35em,1.125rem)]", // Ruby text styles
           )}
           // Add group/page for conditional countdown styles based on parent state
           data-done={

@@ -21,22 +21,20 @@ const KARAOKE_TRANSLITERATION_QUERY = gql`
   }
 `;
 
-interface Props {}
-
-export default function EditPlainLyrics({}: Props) {
+export default function EditPlainLyrics() {
   const { lyrics, setLyrics, lrcx } = useLyricsStore(
     useShallow((s) => ({
       lrcx: s.lrcx,
       lyrics: s.lrc,
       setLyrics: s.setLrc,
-    }))
+    })),
   );
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setLyrics(event.target.value);
     },
-    [setLyrics]
+    [setLyrics],
   );
 
   const languages = useMemo(() => {
@@ -55,13 +53,13 @@ export default function EditPlainLyrics({}: Props) {
               useFurigana,
               translationLanguage: languages[selectedLanguageIdx],
             },
-          })
+          }),
         );
       } catch (e) {
         toast.error(`Error while copying: ${e}`);
       }
     },
-    [lrcx, setLyrics, languages, selectedLanguageIdx]
+    [lrcx, setLyrics, languages, selectedLanguageIdx],
   );
 
   const copyFromLRCXWithSmartFurigana = useCallback(async () => {
@@ -88,7 +86,7 @@ export default function EditPlainLyrics({}: Props) {
                 return { len: len + base.length, tags };
               }
             },
-            { len: 0, tags: [] }
+            { len: 0, tags: [] },
           );
           if (line.attachments?.content?.[FURIGANA]?.attachment?.length) {
             line.attachments.content[FURIGANA].attachment =
@@ -98,8 +96,8 @@ export default function EditPlainLyrics({}: Props) {
                     (tag) =>
                       tag[0] === label.content &&
                       tag[1][0] === label.range[0] &&
-                      tag[1][1] === label.range[1]
-                  ) < 0
+                      tag[1][1] === label.range[1],
+                  ) < 0,
               );
           }
         });
@@ -109,7 +107,7 @@ export default function EditPlainLyrics({}: Props) {
               useFurigana: true,
               translationLanguage: languages[selectedLanguageIdx],
             },
-          })
+          }),
         );
       }
     } catch (e) {

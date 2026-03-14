@@ -16,6 +16,7 @@ import {
 import { buildAnimationSequence } from "../utils/typingSequence";
 import { FuriganaMapping } from "../models/FuriganaMapping";
 import { convertMonoruby } from "../utils/monoruby";
+import { kanaToHira, hiraToRoma } from "../utils/kanaUtils";
 
 @ObjectType({ description: "Describes the animation sequence for a word." })
 export class AnimatedWord {
@@ -118,6 +119,25 @@ export class TransliterationResult {
       furigana: this.furigana,
       convertMonoruby,
     });
+  }
+
+  @Field((type) => [String])
+  async romaji(
+    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
+  ): Promise<string[]> {
+    const lines = await segmentedTransliteration(this.text, {
+      language,
+      type: "romaji",
+      furigana: this.furigana,
+      convertMonoruby,
+    });
+    return lines.map((line) =>
+      line
+        .map(([, reading]) =>
+          hiraToRoma(kanaToHira(reading)).replace(/^\s+|\s+$/gu, "")
+        )
+        .join(" ")
+    );
   }
 
   @Field((type) => [[AnimatedWord]])

@@ -1,6 +1,6 @@
 import { addTrackToNext } from "@/redux/public/playlist";
 import { useAppDispatch } from "@/redux/public/store";
-import { DocumentNode, gql, useQuery } from "@apollo/client";
+import { DocumentNode, gql, useLazyQuery, useQuery } from "@apollo/client";
 import { LyricsKitLyrics, MusicFile } from "@lyricova/api/graphql/types";
 import { MusicFileFragments } from "@lyricova/components";
 import { Button } from "@lyricova/components/components/ui/button";
@@ -28,6 +28,11 @@ const SINGLE_FILE_SONG_QUERY = gql`
           content
           attachments {
             translations
+            furigana {
+              content
+              leftIndex
+              rightIndex
+            }
           }
         }
       }
@@ -36,6 +41,17 @@ const SINGLE_FILE_SONG_QUERY = gql`
 
   ${MusicFileFragments.MusicFileForPlaylistAttributes}
 ` as DocumentNode;
+
+const ROMAJI_QUERY = gql`
+  query RomajiTransliteration(
+    $text: String!
+    $furigana: [[FuriganaLabel!]!]! = []
+  ) {
+    transliterate(text: $text, furigana: $furigana) {
+      romaji
+    }
+  }
+`;
 
 type MusicFileWithLyrics = MusicFile & {
   lrcxLyrics?: string;
@@ -48,9 +64,12 @@ export function MusicFileActions({ fileId }: { fileId: number }) {
     SINGLE_FILE_SONG_QUERY,
     {
       variables: { id: fileId },
-    }
+    },
   );
   const dispatch = useAppDispatch();
+  const [fetchRomaji] = useLazyQuery<{
+    transliterate: { romaji: string[] };
+  }>(ROMAJI_QUERY);
 
   const handlePlayNext = () => {
     if (query.data?.musicFile) {
@@ -79,6 +98,33 @@ export function MusicFileActions({ fileId }: { fileId: number }) {
       toast.success("Original lyrics copied to clipboard");
     }
   };
+  const handleCopyRomanization = async () => {
+    const lyrics = query.data?.musicFile?.lyrics;
+    if (!lyrics) return;
+    try {
+      const { data } = await fetchRomaji({
+        variables: {
+          text: lyrics.lines.map((v) => v.content).join("\n"),
+          furigana: lyrics.lines.map(
+            (v) =>
+              v.attachments?.furigana?.map(
+                ({ content, leftIndex, rightIndex }) => ({
+                  content,
+                  leftIndex,
+                  rightIndex,
+                }),
+              ) ?? [],
+          ),
+        },
+      });
+      if (data?.transliterate?.romaji) {
+        navigator.clipboard.writeText(data.transliterate.romaji.join("\n"));
+        toast.success("Romanization copied to clipboard");
+      }
+    } catch {
+      toast.error("Failed to fetch romanization");
+    }
+  };
   const handleCopyTranslations = (lang: string) => {
     if (query.data?.musicFile?.lyrics) {
       const translations = query.data.musicFile.lyrics.lines
@@ -92,7 +138,7 @@ export function MusicFileActions({ fileId }: { fileId: number }) {
         .join("\n");
       navigator.clipboard.writeText(translations);
       toast.success(
-        `Translation${lang ? ` in ${lang}` : ""} copied to clipboard`
+        `Translation${lang ? ` in ${lang}` : ""} copied to clipboard`,
       );
     }
   };
@@ -139,6 +185,11 @@ export function MusicFileActions({ fileId }: { fileId: number }) {
                 Copy original lyrics
               </DropdownMenuItem>
             )}
+            {query.data?.musicFile?.lyrics && (
+              <DropdownMenuItem onSelect={handleCopyRomanization}>
+                Copy romanization (beta)
+              </DropdownMenuItem>
+            )}
             {query.data?.musicFile?.lyrics?.translationLanguages?.map(
               (lang) => (
                 <DropdownMenuItem
@@ -147,7 +198,7 @@ export function MusicFileActions({ fileId }: { fileId: number }) {
                 >
                   Copy translations {lang ? `in ${lang}` : ""}
                 </DropdownMenuItem>
-              )
+              ),
             )}
           </DropdownMenuContent>
         </DropdownMenu>

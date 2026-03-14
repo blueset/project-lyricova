@@ -46,7 +46,10 @@ segment.useDefault();
 const dom = new JSDOM();
 const budouxJa = loadDefaultJapaneseParser();
 
-function budouSegmenterWithRuby(input: [string, string][], budoux: HTMLProcessingParser): [string, string][] {
+function budouSegmenterWithRuby(
+  input: [string, string][],
+  budoux: HTMLProcessingParser,
+): [string, string][] {
   // convert input into HTML via JSDOM
   let container = dom.window.document.createElement("span");
   input.forEach(([text, ruby]) => {
@@ -78,13 +81,19 @@ function budouSegmenterWithRuby(input: [string, string][], budoux: HTMLProcessin
     } else if (node instanceof dom.window.HTMLElement) {
       if (!node.textContent?.startsWith("\u200B")) {
         if (result.length === 0) {
-          result.push([(node.textContent ?? "").replaceAll("\u200B", ""), node.dataset.ruby ?? ""]);
+          result.push([
+            (node.textContent ?? "").replaceAll("\u200B", ""),
+            node.dataset.ruby ?? "",
+          ]);
         } else {
           result[result.length - 1][0] += node.textContent;
           result[result.length - 1][1] += node.dataset.ruby ?? "";
         }
       } else {
-        result.push([(node.textContent ?? "").replaceAll("\u200B", ""), node.dataset.ruby ?? ""]);
+        result.push([
+          (node.textContent ?? "").replaceAll("\u200B", ""),
+          node.dataset.ruby ?? "",
+        ]);
       }
     }
   }
@@ -96,7 +105,7 @@ interface TransliterateOptions {
 }
 
 export interface SegmentedTransliterationOptions extends TransliterateOptions {
-  type?: "typing" | "karaoke" | "plain";
+  type?: "typing" | "karaoke" | "plain" | "romaji";
   /**
    * Explicitly define furigana, will not go through machine furigana generation.
    * Only honored in Japanese language mode.
@@ -124,14 +133,14 @@ interface LevenshteinCellState {
  */
 function furiganaSeparator(
   mixed: string,
-  kana: string
+  kana: string,
 ): (string | [string, string])[] {
   const [_, pre, post] = mixed.match(/^(\s*).+?(\s*)$/)!;
   kana = `${pre}${kana}${post}`;
   // 正規表現文 /(\p{sc=Hiragana}+)うさ(\p{sc=Hiragana}+)るさ/u のようなものを作る
   const pattern = new RegExp(
     kanaToHira(mixed).replace(/(\p{sc=Han}+)/gu, "(\\p{sc=Hiragana}+)"),
-    "u"
+    "u",
   );
 
   // 作った正規表現文で仮名表記をマッチさせて、「お」「き」を取得する
@@ -156,12 +165,15 @@ function furiganaSeparator(
   });
 }
 
-type FuriganaDatabaseCache = Record<string, Record<string, ([string, string] | string)[]>>;
+type FuriganaDatabaseCache = Record<
+  string,
+  Record<string, ([string, string] | string)[]>
+>;
 /** Apply per-char furigana based on database info. */
 async function applyFuriganaMapping(
   v: string | [string, string],
   cache?: FuriganaDatabaseCache,
-  convertMonoruby?: (text: string, furigana: string) => [string[], string[]]
+  convertMonoruby?: (text: string, furigana: string) => [string[], string[]],
 ): Promise<(string | [string, string])[]> {
   if (typeof v === "string" || v[0].length < 2) {
     return [v];
@@ -179,7 +191,10 @@ async function applyFuriganaMapping(
     if (textGroups.length > 1 && furiganaGroups.length > 1) {
       segmentedText = textGroups.join(",");
       segmentedFurigana = furiganaGroups.join(",");
-      await FuriganaMapping.update({ segmentedText, segmentedFurigana }, { where: { text, furigana } });
+      await FuriganaMapping.update(
+        { segmentedText, segmentedFurigana },
+        { where: { text, furigana } },
+      );
       created = false;
     }
   }
@@ -191,12 +206,10 @@ async function applyFuriganaMapping(
   if (segTexts.length !== segFurigana.length) {
     return [v];
   }
-  const result = segTexts.map<[string, string] | string>((text, idx) => 
-    (kanaToHira(text) === segFurigana[idx] || !segFurigana[idx]) ? 
-    text : [
-      text,
-      segFurigana[idx],
-    ]
+  const result = segTexts.map<[string, string] | string>((text, idx) =>
+    kanaToHira(text) === segFurigana[idx] || !segFurigana[idx]
+      ? text
+      : [text, segFurigana[idx]],
   );
   if (cache) {
     cache[text] = cache[text] ?? {};
@@ -206,14 +219,51 @@ async function applyFuriganaMapping(
 }
 
 /**
- * Transliterate text with fragmentations.
- * @param text Text to transliterate
- * @param options Options to adjust fragmentation strategy
- * @returns Array (lines) of arrays (words) of [original, transliterated]
+ * Transliterate text into phonetic readings, segmented into fragments for
+ * display as ruby/furigana, typing guides, or karaoke-style highlights.
+ *
+ * The function auto-detects the language (Japanese, Chinese, or other) unless
+ * explicitly specified, then applies language-specific transliteration:
+ *
+ * **Japanese (`ja`):**
+ * 1. If explicit `furigana` labels are provided, groupings are built directly
+ *    from them (no machine analysis). In `typing` mode, adjacent plain text is
+ *    merged with the following furigana entry; in `karaoke`/`plain` mode each
+ *    grouping is returned as-is.
+ * 2. Otherwise, inline furigana notation (e.g. `漢字(かんじ)`) is extracted and
+ *    replaced with private-use-area tokens, then MeCab parses the text into
+ *    morphemes with readings. Results vary by `type`:
+ *    - `plain` — one `[kanji, reading]` pair per MeCab word.
+ *    - `typing` — words are accumulated into pending pairs and then re-segmented
+ *      with BudouX for natural phrase boundaries.
+ *    - `karaoke` — per-character furigana is separated via regex matching
+ *      (`furiganaSeparator`), refined by database-backed monoruby mappings
+ *      (`applyFuriganaMapping`), and whitespace around ruby items is normalized.
+ *    - `romaji` — always uses MeCab for word boundaries (even when explicit
+ *      furigana is present). Inline furigana notation is stripped (not replaced
+ *      with PUA tokens) so MeCab sees real text. Per-word reading is resolved
+ *      with fallback priority: explicit furigana → inline furigana → MeCab
+ *      reading. If an explicit label overlaps multiple MeCab words, those words
+ *      are merged into one segment. Output is hiragana; romaji conversion is
+ *      the caller's responsibility.
+ *
+ * **Chinese (`zh`):**
+ * Text is word-segmented with `novel-segment`, then each word is converted to
+ * pinyin. `plain`/`romaji` joins pinyin per word, `typing` uses tone-stripped pinyin
+ * separated by apostrophes, and `karaoke` produces per-character pinyin with
+ * adjacent identical pairs merged.
+ *
+ * **Other languages:**
+ * Lines are returned as identity pairs `[[text, text]]` with no transliteration.
+ *
+ * @param text Text to transliterate (may contain newlines for multi-line input)
+ * @param options Options to adjust language, fragmentation strategy (`type`),
+ *   explicit furigana labels, and monoruby lookup
+ * @returns Array (lines) of arrays (segments) of `[original, transliterated]`
  */
 export async function segmentedTransliteration(
   text: string,
-  options?: SegmentedTransliterationOptions
+  options?: SegmentedTransliterationOptions,
 ): Promise<[string, string][][]> {
   const type = options?.type ?? "plain";
   if (
@@ -223,10 +273,10 @@ export async function segmentedTransliteration(
     // transliterate as ja
 
     const hasFurigana = _.some(
-      options?.furigana?.map((v) => v.length > 0) ?? [false]
+      options?.furigana?.map((v) => v.length > 0) ?? [false],
     );
 
-    if (hasFurigana) {
+    if (hasFurigana && type !== "romaji") {
       return text.split("\n").map((base, idx) => {
         // Build groupings from explicit furigana
         const groupings: (string | [string, string])[] = [];
@@ -272,7 +322,7 @@ export async function segmentedTransliteration(
                 }
                 return prev;
               },
-              []
+              [],
             );
           case "karaoke":
           case "plain":
@@ -287,7 +337,41 @@ export async function segmentedTransliteration(
 
     // Convert inline furigana to tokens. Skip if explicit furigana presents.
     const tokenMapping: { [token: string]: [string, string, string] } = {};
-    if (!hasFurigana) {
+    // For "romaji" mode: extract inline furigana as position-mapped records
+    // instead of PUA tokens, so MeCab sees clean text with real word boundaries.
+    interface InlineFuriganaRecord {
+      startInCleaned: number;
+      endInCleaned: number;
+      kanji: string;
+      reading: string;
+    }
+    const inlineFuriganaRecords: InlineFuriganaRecord[] = [];
+    if (!hasFurigana && type === "romaji") {
+      // Strip inline furigana notation, keep kanji+okurigana, record positions
+      const inlineRegex = /(\p{Script=Hani}+)[\(（]([\p{Script=Kana}ー]+|[\p{Script=Hira}ー]+)[\)）](\p{Script=Hira}*)/gu;
+      let cleaned = "";
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = inlineRegex.exec(text)) !== null) {
+        // Append everything before this match
+        cleaned += text.substring(lastIndex, match.index);
+        const kanji = match[1];
+        const reading = match[2];
+        const okuri = match[3];
+        const startInCleaned = [...cleaned].length;
+        cleaned += kanji + okuri;
+        const endInCleaned = [...cleaned].length;
+        inlineFuriganaRecords.push({
+          startInCleaned,
+          endInCleaned,
+          kanji,
+          reading: reading + okuri,
+        });
+        lastIndex = match.index + match[0].length;
+      }
+      cleaned += text.substring(lastIndex);
+      text = cleaned;
+    } else if (!hasFurigana) {
       let nextToken = 0xe000;
       text = text.replace(
         /(\p{Script=Hani}+)[\(（]([\p{Script=Kana}ー]+|[\p{Script=Hira}ー]+)[\)）](\p{Script=Hira}*)/gu,
@@ -296,7 +380,7 @@ export async function segmentedTransliteration(
           tokenMapping[answer] = [p1, p2, p3];
           nextToken++;
           return answer;
-        }
+        },
       );
     }
     const words = mecab.parseSyncFormat(text);
@@ -310,17 +394,140 @@ export async function segmentedTransliteration(
         }
         return prev;
       },
-      [[]]
+      [[]],
     );
 
     const furiganaMappingCache: FuriganaDatabaseCache = {};
 
+    // Per-line character offset tracking for explicit furigana in romaji mode
+    const lineCharOffsets: number[] = [];
+    if (type === "romaji") {
+      let offset = 0;
+      const textLines = text.split("\n");
+      for (const line of textLines) {
+        lineCharOffsets.push(offset);
+        offset += [...line].length + 1; // +1 for \n
+      }
+    }
+
     return await Promise.all(
-      lines.map(async (words) => {
+      lines.map(async (words, lineIdx) => {
         const result: [string, string][] = [];
         let pending: [string, string] = ["", ""];
 
         switch (type) {
+          case "romaji": {
+            // Build word entries with character positions
+            interface WordEntry {
+              kanji: string;
+              reading: string;
+              charStart: number;
+              charEnd: number;
+            }
+            const wordEntries: WordEntry[] = [];
+            let charPos = 0;
+            for (const x of words) {
+              const len = [...x.kanji].length;
+              wordEntries.push({
+                kanji: x.kanji,
+                reading: x.reading,
+                charStart: charPos,
+                charEnd: charPos + len,
+              });
+              charPos += len;
+            }
+
+            // Merge MeCab words that overlap with explicit furigana labels
+            const lineOffset = lineCharOffsets[lineIdx] ?? 0;
+            const lineFurigana = hasFurigana ? (options?.furigana?.[lineIdx] ?? []) : [];
+
+            const mergedEntries: WordEntry[] = [];
+            let i = 0;
+            while (i < wordEntries.length) {
+              const entry = wordEntries[i];
+              // Check if any explicit furigana label overlaps this word
+              const overlapping = lineFurigana.find(
+                (f) => f.leftIndex < entry.charEnd && f.rightIndex > entry.charStart
+              );
+              if (overlapping) {
+                // Merge all words that this furigana label overlaps
+                let merged = { ...entry };
+                let j = i + 1;
+                while (j < wordEntries.length && overlapping.rightIndex > wordEntries[j].charStart) {
+                  merged = {
+                    kanji: merged.kanji + wordEntries[j].kanji,
+                    reading: merged.reading === "*" ? wordEntries[j].reading : 
+                             wordEntries[j].reading === "*" ? merged.reading :
+                             merged.reading + wordEntries[j].reading,
+                    charStart: merged.charStart,
+                    charEnd: wordEntries[j].charEnd,
+                  };
+                  j++;
+                }
+                mergedEntries.push(merged);
+                i = j;
+              } else {
+                mergedEntries.push(entry);
+                i++;
+              }
+            }
+
+            // Resolve furigana for each (possibly merged) word
+            for (const entry of mergedEntries) {
+              const { kanji, reading, charStart, charEnd } = entry;
+
+              // 1. Explicit furigana: find a label that covers this word range
+              const explicitLabel = lineFurigana.find(
+                (f) => f.leftIndex <= charStart && f.rightIndex >= charEnd
+              );
+              if (explicitLabel) {
+                result.push([kanji, explicitLabel.content]);
+                continue;
+              }
+
+              // 2. Inline furigana: check if inline records cover this word
+              // (line-local positions — inline records are global, adjust by lineOffset)
+              const globalStart = lineOffset + charStart;
+              const globalEnd = lineOffset + charEnd;
+              const inlineMatches = inlineFuriganaRecords.filter(
+                (r) => r.startInCleaned >= globalStart && r.endInCleaned <= globalEnd
+              );
+              if (inlineMatches.length > 0) {
+                // Reconstruct reading from inline matches covering portions of the word
+                let inlineReading = "";
+                let pos = globalStart;
+                for (const m of inlineMatches) {
+                  // Any gap before this inline match uses MeCab reading (approximate)
+                  if (m.startInCleaned > pos) {
+                    const gapText = [...kanji].slice(pos - globalStart, m.startInCleaned - globalStart).join("");
+                    inlineReading += kanaToHira(gapText);
+                  }
+                  inlineReading += m.reading;
+                  pos = m.endInCleaned;
+                }
+                // Any trailing gap
+                if (pos < globalEnd) {
+                  const gapText = [...kanji].slice(pos - globalStart).join("");
+                  inlineReading += kanaToHira(gapText);
+                }
+                result.push([kanji, inlineReading]);
+                continue;
+              }
+
+              // 3. MeCab fallback
+              if (jaOnly.test(kanji) || isHan.test(kanji)) {
+                const leadingSpaces = /^\s+/.exec(kanji);
+                let mecabReading = reading;
+                if (leadingSpaces && !/^\s+/.exec(mecabReading)) {
+                  mecabReading = leadingSpaces[0] + mecabReading;
+                }
+                result.push([kanji, kanaToHira(mecabReading === "*" ? kanji : mecabReading)]);
+              } else {
+                result.push([kanji, kanji]);
+              }
+            }
+            return result;
+          }
           case "typing":
             if (words.length < 1) return [];
             words.forEach((x) => {
@@ -337,7 +544,9 @@ export async function segmentedTransliteration(
                     result.push([okuri, okuri]);
                   } else {
                     console.error(
-                      `key ${v.charCodeAt(0)} is not found in the mapping list.`
+                      `key ${v.charCodeAt(
+                        0,
+                      )} is not found in the mapping list.`,
                     );
                   }
                 });
@@ -348,7 +557,7 @@ export async function segmentedTransliteration(
                 }
                 pending[0] += x.kanji;
                 pending[1] += kanaToHira(
-                  x.reading === "*" ? x.kanji : x.reading
+                  x.reading === "*" ? x.kanji : x.reading,
                 );
               }
             });
@@ -371,7 +580,7 @@ export async function segmentedTransliteration(
                         result.push(okuri);
                       } else {
                         console.error(
-                          `key ${v.charCodeAt(0)} is not found in the mapping.`
+                          `key ${v.charCodeAt(0)} is not found in the mapping.`,
                         );
                       }
                     });
@@ -382,11 +591,15 @@ export async function segmentedTransliteration(
                     } else {
                       const separatedFuriganas = furiganaSeparator(
                         x.kanji,
-                        hira
+                        hira,
                       );
                       for (const frgn of separatedFuriganas) {
                         (
-                          await applyFuriganaMapping(frgn, furiganaMappingCache, options?.convertMonoruby)
+                          await applyFuriganaMapping(
+                            frgn,
+                            furiganaMappingCache,
+                            options?.convertMonoruby,
+                          )
                         ).forEach((v) => result.push(v));
                       }
                     }
@@ -396,7 +609,7 @@ export async function segmentedTransliteration(
                   return result;
                   // For each word from MeCab, a list of str or str pair is built
                   // pair is for substitution, single string is for plain text
-                })
+                }),
               )
             )
               .reduce<[string, string][]>((prev, curr) => {
@@ -459,7 +672,7 @@ export async function segmentedTransliteration(
                       return [`${kanji}${okuri}`, `${kana}${okuri}`];
                     } else {
                       console.error(
-                        `key ${v.charCodeAt(0)} is not found in the mapping.`
+                        `key ${v.charCodeAt(0)} is not found in the mapping.`,
                       );
                       return ["", ""];
                     }
@@ -470,7 +683,7 @@ export async function segmentedTransliteration(
                       prev[1] += curr[1];
                       return prev;
                     },
-                    ["", ""]
+                    ["", ""],
                   );
               } else if (jaOnly.test(x.kanji) || isHan.test(x.kanji)) {
                 // Solve problem where output maybe like [" 初音ミク", "はつねみく"]
@@ -483,7 +696,7 @@ export async function segmentedTransliteration(
               return [x.kanji, x.kanji];
             });
         }
-      })
+      }),
     );
   } else if (
     options?.language === "zh" ||
@@ -500,7 +713,7 @@ export async function segmentedTransliteration(
         }
         return prev;
       },
-      [[]]
+      [[]],
     );
 
     return lines.map((words) => {
@@ -509,7 +722,7 @@ export async function segmentedTransliteration(
           return words
             .map<[string, string][]>((word) => {
               const py = pinyin(word, { segment: true, heteronym: true }).map(
-                (x) => x[0]
+                (x) => x[0],
               );
               const chars = [...word];
               if (py.length === chars.length) {
@@ -542,6 +755,7 @@ export async function segmentedTransliteration(
               .map((x) => x[0])
               .join("'"),
           ]);
+        case "romaji":
         case "plain":
         default:
           return words.map((word) => [
@@ -566,7 +780,7 @@ export function getLanguage(text: string): "ja" | "zh" | "en" {
 
 export async function transliterate(
   text: string,
-  options?: TransliterateOptions
+  options?: TransliterateOptions,
 ): Promise<string> {
   const language = options?.language ?? getLanguage(text);
   if (language === "ja") {

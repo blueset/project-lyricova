@@ -763,6 +763,12 @@ type TransliterationResult {
     """
     language: String
   ): [[[String!]!]!]!
+  romaji(
+    """
+    Language of the query, choose from "ja", "zh", and "en". Leave blank for auto detection.
+    """
+    language: String
+  ): [String!]!
 
   """Original text."""
   text: String!
