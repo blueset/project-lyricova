@@ -25,7 +25,7 @@ export const createInlineTaggingSlice: StateCreator<
   // Helper to get the dots array for a given row
   function getRowDots(
     lines: any[] | undefined,
-    row: number
+    row: number,
   ): number[] | undefined {
     return lines?.[row]?.attachments?.[DOTS]?.values;
   }
@@ -236,7 +236,7 @@ export const createInlineTaggingSlice: StateCreator<
         const state = get();
         if (state.inlineTagging.autoApplyIdentical) {
           state.inlineTagging.applyMarksToIdenticalLines(
-            state.inlineTagging.cursorPosition[0]
+            state.inlineTagging.cursorPosition[0],
           );
         }
         state.generate();
@@ -268,7 +268,7 @@ export const createInlineTaggingSlice: StateCreator<
         const state = get();
         if (state.inlineTagging.autoApplyIdentical) {
           state.inlineTagging.applyMarksToIdenticalLines(
-            state.inlineTagging.cursorPosition[0]
+            state.inlineTagging.cursorPosition[0],
           );
         }
         state.generate();
@@ -300,7 +300,7 @@ export const createInlineTaggingSlice: StateCreator<
         const state = get();
         if (state.inlineTagging.autoApplyIdentical) {
           state.inlineTagging.applyMarksToIdenticalLines(
-            state.inlineTagging.cursorPosition[0]
+            state.inlineTagging.cursorPosition[0],
           );
         }
         state.generate();
@@ -420,7 +420,7 @@ export const createInlineTaggingSlice: StateCreator<
               line.attachments?.[TIME_TAG]?.tags?.length &&
               (!line.attachments?.[DOTS]?.values.some((v) => v) ||
                 !line.attachments?.[TAGS]?.values.some((v) =>
-                  v?.some((t) => t)
+                  v?.some((t) => t),
                 ))
             ) {
               const timeTags = line.attachments[TIME_TAG].tags;
@@ -436,12 +436,12 @@ export const createInlineTaggingSlice: StateCreator<
               }
               if (!line.attachments[DOTS].values.some((v) => v)) {
                 line.attachments[DOTS].values = new Array(contentSize + 1).fill(
-                  0
+                  0,
                 );
                 timeTags.forEach((tag, idx) => {
                   const index = Math.min(
                     Math.max(0, tag.index),
-                    line.attachments[DOTS].values.length
+                    line.attachments[DOTS].values.length,
                   );
                   line.attachments[DOTS].values[index] =
                     idx < timeTags.length - 1 ? 1 : -1;
@@ -465,7 +465,7 @@ export const createInlineTaggingSlice: StateCreator<
                 timeTags.forEach((tag) => {
                   const index = Math.min(
                     Math.max(0, tag.index),
-                    line.attachments[TAGS].values.length
+                    line.attachments[TAGS].values.length,
                   );
                   line.attachments[TAGS].values[index][0] =
                     (isNaN(line.position) ? 0 : line.position) + tag.timeTag;
@@ -503,7 +503,7 @@ export const createInlineTaggingSlice: StateCreator<
                 : line.content
                 ? Math.max(
                     isNaN(line.position) ? 0 : line.position,
-                    prevEndTime ?? 0
+                    prevEndTime ?? 0,
                   )
                 : // Force empty line to use prevEndTime or NextStartTime, whichever is earlier
                   (prevEndTime &&
@@ -554,11 +554,13 @@ export const createInlineTaggingSlice: StateCreator<
             const nextLine = lyrics.lines[i];
             if (
               nextLine.content === line.content &&
-              !(
-                nextLine.attachments?.[DOTS]?.values?.every(
-                  (v, idx) => v === dots?.values[idx]
-                ) ?? false
-              )
+              (nextLine.attachments?.[DOTS]?.values?.length !==
+                dots?.values?.length ||
+                !(
+                  dots?.values?.every(
+                    (v, idx) => v === nextLine.attachments?.[DOTS]?.values[idx],
+                  ) ?? false
+                ))
             ) {
               nextLine.attachments[DOTS] = dots;
             }
