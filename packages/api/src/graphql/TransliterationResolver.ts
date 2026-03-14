@@ -9,10 +9,7 @@ import {
   Authorized,
   Mutation,
 } from "type-graphql";
-import {
-  segmentedTransliteration,
-  getLanguage,
-} from "../utils/transliterate";
+import { segmentedTransliteration, getLanguage } from "../utils/transliterate";
 import { buildAnimationSequence } from "../utils/typingSequence";
 import { FuriganaMapping } from "../models/FuriganaMapping";
 import { convertMonoruby } from "../utils/monoruby";
@@ -67,7 +64,7 @@ export class TransliterationResult {
 
   @Field((type) => String)
   async plain(
-    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
+    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en",
   ): Promise<string> {
     return (
       await segmentedTransliteration(this.text, {
@@ -80,14 +77,14 @@ export class TransliterationResult {
       .map((v) =>
         v.reduce((prev, curr) => {
           return prev + curr[1];
-        }, "")
+        }, ""),
       )
       .join("\n");
   }
 
   @Field((type) => [[[String]]])
   plainSegmented(
-    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
+    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en",
   ): Promise<[string, string][][]> {
     return segmentedTransliteration(this.text, {
       language,
@@ -99,7 +96,7 @@ export class TransliterationResult {
 
   @Field((type) => [[[String]]])
   karaoke(
-    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
+    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en",
   ): Promise<[string, string][][]> {
     return segmentedTransliteration(this.text, {
       language,
@@ -111,7 +108,7 @@ export class TransliterationResult {
 
   @Field((type) => [[[String]]])
   typing(
-    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
+    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en",
   ): Promise<[string, string][][]> {
     return segmentedTransliteration(this.text, {
       language,
@@ -123,7 +120,7 @@ export class TransliterationResult {
 
   @Field((type) => [String])
   async romaji(
-    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
+    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en",
   ): Promise<string[]> {
     const lines = await segmentedTransliteration(this.text, {
       language,
@@ -134,15 +131,15 @@ export class TransliterationResult {
     return lines.map((line) =>
       line
         .map(([, reading]) =>
-          hiraToRoma(kanaToHira(reading)).replace(/^\s+|\s+$/gu, "")
+          hiraToRoma(kanaToHira(reading)).replace(/^\s+|\s+$/gu, ""),
         )
-        .join(" ")
+        .join(" "),
     );
   }
 
   @Field((type) => [[AnimatedWord]])
   async typingSequence(
-    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en"
+    @Arg("language", LanguageArgOptions) language?: "zh" | "ja" | "en",
   ): Promise<AnimatedWord[][]> {
     language = language ?? getLanguage(this.text);
     const lines = await segmentedTransliteration(this.text, {
@@ -189,7 +186,7 @@ export class TransliterationResolver {
   transliterate(
     @Arg("text") text: string,
     @Arg("furigana", (type) => [[FuriganaLabel]], { defaultValue: [] })
-    furigana: FuriganaLabel[][]
+    furigana: FuriganaLabel[][],
   ): TransliterationResult {
     return new TransliterationResult(text, furigana);
   }
@@ -201,25 +198,28 @@ export class TransliterationResolver {
 
   @Query((returns) => [FuriganaMapping])
   computeFuriganaMappings(
-    @Arg("mapping", (type) => [FuriganaMappingInput]) input: [FuriganaMappingInput]
+    @Arg("mapping", (type) => [FuriganaMappingInput])
+    input: [FuriganaMappingInput],
   ): Partial<FuriganaMapping>[] {
-    return input.map(({text, furigana}) => {
-      const [textGroups, furiganaGroups] = convertMonoruby(text, furigana);
-      if (textGroups.length === 1 && furiganaGroups.length === 1) return null;
-      return {
-        text,
-        furigana,
-        segmentedText: textGroups.join(","),
-        segmentedFurigana: furiganaGroups.join(","),
-      };
-    }).filter(a => !!a);
+    return input
+      .map(({ text, furigana }) => {
+        const [textGroups, furiganaGroups] = convertMonoruby(text, furigana);
+        if (textGroups.length === 1 && furiganaGroups.length === 1) return null;
+        return {
+          text,
+          furigana,
+          segmentedText: textGroups.join(","),
+          segmentedFurigana: furiganaGroups.join(","),
+        };
+      })
+      .filter((a) => !!a);
   }
 
   @Authorized("ADMIN")
   @Mutation((returns) => Boolean)
   async updateFuriganaMappings(
     @Arg("mappings", (type) => [FuriganaMappingInput])
-    mappings: FuriganaMappingInput[]
+    mappings: FuriganaMappingInput[],
   ): Promise<boolean> {
     let errors = "";
     for (const mapping of mappings) {

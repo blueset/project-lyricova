@@ -348,7 +348,8 @@ export async function segmentedTransliteration(
     const inlineFuriganaRecords: InlineFuriganaRecord[] = [];
     if (!hasFurigana && type === "romaji") {
       // Strip inline furigana notation, keep kanji+okurigana, record positions
-      const inlineRegex = /(\p{Script=Hani}+)[\(（]([\p{Script=Kana}ー]+|[\p{Script=Hira}ー]+)[\)）](\p{Script=Hira}*)/gu;
+      const inlineRegex =
+        /(\p{Script=Hani}+)[\(（]([\p{Script=Kana}ー]+|[\p{Script=Hira}ー]+)[\)）](\p{Script=Hira}*)/gu;
       let cleaned = "";
       let lastIndex = 0;
       let match: RegExpExecArray | null;
@@ -439,7 +440,9 @@ export async function segmentedTransliteration(
 
             // Merge MeCab words that overlap with explicit furigana labels
             const lineOffset = lineCharOffsets[lineIdx] ?? 0;
-            const lineFurigana = hasFurigana ? (options?.furigana?.[lineIdx] ?? []) : [];
+            const lineFurigana = hasFurigana
+              ? options?.furigana?.[lineIdx] ?? []
+              : [];
 
             const mergedEntries: WordEntry[] = [];
             let i = 0;
@@ -447,18 +450,25 @@ export async function segmentedTransliteration(
               const entry = wordEntries[i];
               // Check if any explicit furigana label overlaps this word
               const overlapping = lineFurigana.find(
-                (f) => f.leftIndex < entry.charEnd && f.rightIndex > entry.charStart
+                (f) =>
+                  f.leftIndex < entry.charEnd && f.rightIndex > entry.charStart,
               );
               if (overlapping) {
                 // Merge all words that this furigana label overlaps
                 let merged = { ...entry };
                 let j = i + 1;
-                while (j < wordEntries.length && overlapping.rightIndex > wordEntries[j].charStart) {
+                while (
+                  j < wordEntries.length &&
+                  overlapping.rightIndex > wordEntries[j].charStart
+                ) {
                   merged = {
                     kanji: merged.kanji + wordEntries[j].kanji,
-                    reading: merged.reading === "*" ? wordEntries[j].reading : 
-                             wordEntries[j].reading === "*" ? merged.reading :
-                             merged.reading + wordEntries[j].reading,
+                    reading:
+                      merged.reading === "*"
+                        ? wordEntries[j].reading
+                        : wordEntries[j].reading === "*"
+                        ? merged.reading
+                        : merged.reading + wordEntries[j].reading,
                     charStart: merged.charStart,
                     charEnd: wordEntries[j].charEnd,
                   };
@@ -478,7 +488,7 @@ export async function segmentedTransliteration(
 
               // 1. Explicit furigana: find a label that covers this word range
               const explicitLabel = lineFurigana.find(
-                (f) => f.leftIndex <= charStart && f.rightIndex >= charEnd
+                (f) => f.leftIndex <= charStart && f.rightIndex >= charEnd,
               );
               if (explicitLabel) {
                 result.push([kanji, explicitLabel.content]);
@@ -490,7 +500,9 @@ export async function segmentedTransliteration(
               const globalStart = lineOffset + charStart;
               const globalEnd = lineOffset + charEnd;
               const inlineMatches = inlineFuriganaRecords.filter(
-                (r) => r.startInCleaned >= globalStart && r.endInCleaned <= globalEnd
+                (r) =>
+                  r.startInCleaned >= globalStart &&
+                  r.endInCleaned <= globalEnd,
               );
               if (inlineMatches.length > 0) {
                 // Reconstruct reading from inline matches covering portions of the word
@@ -499,7 +511,9 @@ export async function segmentedTransliteration(
                 for (const m of inlineMatches) {
                   // Any gap before this inline match uses MeCab reading (approximate)
                   if (m.startInCleaned > pos) {
-                    const gapText = [...kanji].slice(pos - globalStart, m.startInCleaned - globalStart).join("");
+                    const gapText = [...kanji]
+                      .slice(pos - globalStart, m.startInCleaned - globalStart)
+                      .join("");
                     inlineReading += kanaToHira(gapText);
                   }
                   inlineReading += m.reading;
@@ -521,7 +535,10 @@ export async function segmentedTransliteration(
                 if (leadingSpaces && !/^\s+/.exec(mecabReading)) {
                   mecabReading = leadingSpaces[0] + mecabReading;
                 }
-                result.push([kanji, kanaToHira(mecabReading === "*" ? kanji : mecabReading)]);
+                result.push([
+                  kanji,
+                  kanaToHira(mecabReading === "*" ? kanji : mecabReading),
+                ]);
               } else {
                 result.push([kanji, kanji]);
               }

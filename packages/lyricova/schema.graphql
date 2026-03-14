@@ -15,14 +15,18 @@ type Album {
   updatedOn: Timestamp!
 }
 
-"""Describes the animation sequence for a word."""
+"""
+Describes the animation sequence for a word.
+"""
 type AnimatedWord {
   """
   True if the word shows a conversion-type of animation. False if it is just typing.
   """
   convert: Boolean!
 
-  """Actual sequence to show, one frame at a time."""
+  """
+  Actual sequence to show, one frame at a time.
+  """
   sequence: [String!]!
 }
 
@@ -74,7 +78,9 @@ type DashboardStats {
   tagsCount: Int!
 }
 
-"""A Lyricova entry."""
+"""
+A Lyricova entry.
+"""
 type Entry {
   author: User!
   authorId: Float!
@@ -111,24 +117,38 @@ type FileInPlaylist {
   updatedOn: Timestamp!
 }
 
-"""Foo is not foolish."""
+"""
+Foo is not foolish.
+"""
 type Foo {
-  """Not a value to drink."""
+  """
+  Not a value to drink.
+  """
   bar: Int!
 
-  """Name of the foo."""
+  """
+  Name of the foo.
+  """
   name: String!
 }
 
-"""Furigana/romaji to words in a lyrics line."""
+"""
+Furigana/romaji to words in a lyrics line.
+"""
 input FuriganaLabel {
-  """Furigana/romaji content"""
+  """
+  Furigana/romaji content
+  """
   content: String!
 
-  """Starting character per Extended Grapheme Cluster (including)"""
+  """
+  Starting character per Extended Grapheme Cluster (including)
+  """
   leftIndex: Int!
 
-  """Ending character per Extended Grapheme Cluster (excluding)"""
+  """
+  Ending character per Extended Grapheme Cluster (excluding)
+  """
   rightIndex: Int!
 }
 
@@ -137,63 +157,101 @@ The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](
 """
 scalar JSONObject
 
-"""A music file in the jukebox."""
+"""
+A music file in the jukebox.
+"""
 type MusicFile {
   FileInPlaylist: FileInPlaylist
 
-  """ID of corresponding album in database."""
+  """
+  ID of corresponding album in database.
+  """
   albumId: Int
 
-  """Album of the track stored in file."""
+  """
+  Album of the track stored in file.
+  """
   albumName: String
 
-  """Sort order key of album of the track stored in file."""
+  """
+  Sort order key of album of the track stored in file.
+  """
   albumSortOrder: String
 
-  """Artist of the track stored in file."""
+  """
+  Artist of the track stored in file.
+  """
   artistName: String
 
-  """Sort order key of artist of the track stored in file."""
+  """
+  Sort order key of artist of the track stored in file.
+  """
   artistSortOrder: String
   creationDate: Timestamp!
 
-  """Duration of the song in seconds."""
+  """
+  Duration of the song in seconds.
+  """
   duration: Float!
 
-  """Size of file in bytes."""
+  """
+  Size of file in bytes.
+  """
   fileSize: Int!
 
-  """If the file has an embedded cover art."""
+  """
+  If the file has an embedded cover art.
+  """
   hasCover: Boolean!
 
-  """If the file is accompanied with a lyrics file."""
+  """
+  If the file is accompanied with a lyrics file.
+  """
   hasLyrics: Boolean!
 
-  """MD5 of the file."""
+  """
+  MD5 of the file.
+  """
   hash: String!
 
-  """File ID in database."""
+  """
+  File ID in database.
+  """
   id: Int!
 
-  """Date when the file was last played."""
+  """
+  Date when the file was last played.
+  """
   lastPlayed: Timestamp
 
-  """If this entry needs review."""
+  """
+  If this entry needs review.
+  """
   needReview: Boolean!
 
-  """Local path to the song."""
+  """
+  Local path to the song.
+  """
   path: String!
 
-  """Number of times the file has been played."""
+  """
+  Number of times the file has been played.
+  """
   playCount: Int!
 
-  """ID of corresponding song in database."""
+  """
+  ID of corresponding song in database.
+  """
   songId: Int
 
-  """Name of the track stored in file."""
+  """
+  Name of the track stored in file.
+  """
   trackName: String
 
-  """Sort order key of name of the track stored in file."""
+  """
+  Sort order key of name of the track stored in file.
+  """
   trackSortOrder: String
   updatedOn: Timestamp!
 }
@@ -204,21 +262,33 @@ type Mutation {
   deleteEntry(id: Int!): Boolean!
   deleteTag(slug: String!): Boolean!
 
-  """Insert or update an album from VocaDB."""
+  """
+  Insert or update an album from VocaDB.
+  """
   enrolAlbumFromVocaDB(
-    """Album ID in VocaDB"""
+    """
+    Album ID in VocaDB
+    """
     albumId: Int!
   ): Album!
 
-  """Insert or update an artist from VocaDB."""
+  """
+  Insert or update an artist from VocaDB.
+  """
   enrolArtistFromVocaDB(
-    """Artist ID in VocaDB"""
+    """
+    Artist ID in VocaDB
+    """
     artistId: Int!
   ): Artist!
 
-  """Insert or update a song from VocaDB."""
+  """
+  Insert or update a song from VocaDB.
+  """
   enrolSongFromVocaDB(
-    """Song ID in VocaDB"""
+    """
+    Song ID in VocaDB
+    """
     songId: Int!
   ): Song!
   newEntry(data: EntryInput!): Entry!
@@ -262,7 +332,10 @@ type Query {
   startALengthyTask(sessionId: String!): [String!]!
   tag(slug: String!): Tag
   tags: [Tag!]!
-  transliterate(furigana: [[FuriganaLabel!]!]! = [], text: String!): TransliterationResult!
+  transliterate(
+    furigana: [[FuriganaLabel!]!]! = []
+    text: String!
+  ): TransliterationResult!
 }
 
 type Song {
@@ -325,7 +398,9 @@ The javascript `Date` as integer. Type represents date and time as number of mil
 """
 scalar Timestamp
 
-"""Result of a transliteration request."""
+"""
+Result of a transliteration request.
+"""
 type TransliterationResult {
   karaoke(
     """
@@ -352,7 +427,9 @@ type TransliterationResult {
     language: String
   ): [[[String!]!]!]!
 
-  """Original text."""
+  """
+  Original text.
+  """
   text: String!
   typing(
     """

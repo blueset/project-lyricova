@@ -6,7 +6,7 @@ export function kanaToHira(str: string): string {
   return (
     str &&
     str.replace(/[\u30a1-\u30f6]/g, (match) =>
-      String.fromCharCode(match.charCodeAt(0) - 0x60)
+      String.fromCharCode(match.charCodeAt(0) - 0x60),
     )
   );
 }
@@ -696,10 +696,12 @@ export function hiraToRoma(str: string): string {
     const twoChars = str.substring(index, index + 2);
     const oneChar = str.substring(index, index + 1);
     if (twoChars in hiraToRomaTable) {
-      char = hiraToRomaTable[twoChars as keyof typeof hiraToRomaTable] || twoChars;
+      char =
+        hiraToRomaTable[twoChars as keyof typeof hiraToRomaTable] || twoChars;
       index += 2;
     } else {
-      char = hiraToRomaTable[oneChar as keyof typeof hiraToRomaTable] || oneChar;
+      char =
+        hiraToRomaTable[oneChar as keyof typeof hiraToRomaTable] || oneChar;
       index += 1;
     }
     roma += char;
