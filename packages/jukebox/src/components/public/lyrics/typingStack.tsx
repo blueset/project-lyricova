@@ -18,24 +18,19 @@ export function TypingStackedLyrics({ lyrics }: Props) {
     playerRef,
     0.75,
     doneRef,
-    typingRef
+    typingRef,
   );
 
-  let node = (
-    <span>
-      {lyrics.lines.length} lines, starting at {lyrics.lines[0].position}{" "}
-      second.
-    </span>
-  );
-  if (sequenceQuery.loading) node = <span>loading</span>;
+  let statusNode: React.ReactNode = null;
+  if (sequenceQuery.loading) statusNode = <span>loading</span>;
   else if (sequenceQuery.error)
-    node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
-  else if (sequenceQuery.data) {
-    node = (
-      <div className="text-5xl font-semibold mb-2">
-        <span ref={doneRef} />
-        <span ref={typingRef} className="bg-white/50" />
-      </div>
+    statusNode = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
+  else if (!sequenceQuery.data) {
+    statusNode = (
+      <span>
+        {lyrics.lines.length} lines, starting at {lyrics.lines[0].position}{" "}
+        second.
+      </span>
     );
   }
 
@@ -44,7 +39,11 @@ export function TypingStackedLyrics({ lyrics }: Props) {
       className="size-full overflow-hidden flex justify-start flex-col px-8 mask-b-from-[calc(100%_-_40px)] mask-b-to-100%"
       lang="ja"
     >
-      {node}
+      {statusNode}
+      <div className="text-5xl font-semibold mb-2" hidden={!sequenceQuery.data}>
+        <span ref={doneRef} />
+        <span ref={typingRef} className="bg-white/50" />
+      </div>
       {sequenceQuery.data &&
         sequenceQuery.data.transliterate.typingSequence
           .map((v, idx) => {
@@ -55,7 +54,7 @@ export function TypingStackedLyrics({ lyrics }: Props) {
                   .map((vv) =>
                     vv.sequence.length > 0
                       ? vv.sequence[vv.sequence.length - 1]
-                      : ""
+                      : "",
                   )
                   .join("")}
               </div>

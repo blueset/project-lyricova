@@ -18,30 +18,29 @@ export function TypingFocusedLyrics({ lyrics }: Props) {
     playerRef,
     0.75,
     doneRef,
-    typingRef
+    typingRef,
   );
 
-  let node = (
-    <span>
-      {lyrics.lines.length} lines, starting at {lyrics.lines[0].position}{" "}
-      second.
-    </span>
-  );
-  if (sequenceQuery.loading) node = <span>loading</span>;
+  let statusNode: React.ReactNode = null;
+  if (sequenceQuery.loading) statusNode = <span>loading</span>;
   else if (sequenceQuery.error)
-    node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
-  else if (sequenceQuery.data) {
-    node = (
-      <div className="text-7xl font-semibold">
-        <span ref={doneRef} />
-        <span ref={typingRef} className="text-foreground/50" />
-      </div>
+    statusNode = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
+  else if (!sequenceQuery.data) {
+    statusNode = (
+      <span>
+        {lyrics.lines.length} lines, starting at {lyrics.lines[0].position}{" "}
+        second.
+      </span>
     );
   }
 
   return (
     <div className="p-8 size-full flex flex-col justify-center" lang="ja">
-      {node}
+      {statusNode}
+      <div className="text-7xl font-semibold" hidden={!sequenceQuery.data}>
+        <span ref={doneRef} />
+        <span ref={typingRef} className="text-foreground/50" />
+      </div>
     </div>
   );
 }

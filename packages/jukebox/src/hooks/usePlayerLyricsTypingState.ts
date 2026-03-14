@@ -1,6 +1,5 @@
 import { gql, QueryResult, useQuery } from "@apollo/client";
-import _ from "lodash";
-import { RefObject, useMemo } from "react";
+import { RefObject, useEffect, useMemo, useState } from "react";
 import { useTrackwiseTimelineControl } from "./useTrackwiseTimelineControl";
 import {
   LyricsKitLyricsLine,
@@ -39,7 +38,7 @@ const LONGEST_STEP_SECONDS = 1;
 interface PlayerLyricsTypingState
   extends PlayerLyricsState<LyricsKitLyricsLine> {
   sequenceQuery: QueryResult<SequenceQueryResult>;
-  timeline: Timeline;
+  timeline: Timeline | null;
 }
 
 /**
@@ -55,46 +54,62 @@ export function usePlayerLyricsTypingState(
   playerRef: RefObject<HTMLAudioElement>,
   perLineThreshold: number,
   doneElementRef: RefObject<HTMLElement>,
-  typingElementRef: RefObject<HTMLElement>
+  typingElementRef: RefObject<HTMLElement>,
 ): PlayerLyricsTypingState {
   const state = usePlainPlayerLyricsState(lyrics, playerRef);
   const { playerState, startTimes, endTimes } = state;
 
-  const sequenceQuery = useQuery<SequenceQueryResult>(SEQUENCE_QUERY, {
-    variables: {
-      text: useMemo(
-        () => lyrics.lines.map((v) => v.content).join("\n"),
-        [lyrics.lines]
-      ),
-      furigana: lyrics.lines.map(
+  const text = useMemo(
+    () => lyrics.lines.map((v) => v.content).join("\n"),
+    [lyrics.lines],
+  );
+  const furigana = useMemo(
+    () =>
+      lyrics.lines.map(
         (v) =>
           v.attachments?.furigana?.map(
             ({ content, leftIndex, rightIndex }) => ({
               content,
               leftIndex,
               rightIndex,
-            })
-          ) ?? []
+            }),
+          ) ?? [],
       ),
-    },
+    [lyrics.lines],
+  );
+
+  const sequenceQuery = useQuery<SequenceQueryResult>(SEQUENCE_QUERY, {
+    variables: { text, furigana },
   });
 
-  const timeline = useMemo<Timeline>(() => {
-    if (!sequenceQuery.data) return null;
+  const [timeline, setTimeline] = useState<Timeline | null>(null);
+
+  useEffect(() => {
+    if (!sequenceQuery.data) {
+      setTimeline(null);
+      return;
+    }
     gsap.registerPlugin(TextPlugin);
-    if (!doneElementRef.current || !typingElementRef.current) return null;
-    const tl = gsap.timeline();
+    if (!doneElementRef.current || !typingElementRef.current) {
+      setTimeline(null);
+      return;
+    }
+    const tl = gsap.timeline({ paused: true });
     sequenceQuery.data.transliterate.typingSequence.forEach((v, idx) => {
       const start = startTimes[idx],
         lineEnd = endTimes[idx + 1];
       if (start === undefined || lineEnd === undefined) return;
       const duration = Math.min(
         (lineEnd - start) * perLineThreshold,
-        v.length * LONGEST_STEP_SECONDS
+        v.length * LONGEST_STEP_SECONDS,
       );
 
       const stepDuration =
-        duration / Math.max(1, _.sum(v.map((w) => w.sequence.length)));
+        duration /
+        Math.max(
+          1,
+          v.reduce((acc, w) => acc + w.sequence.length, 0),
+        );
       let typed = "",
         i = 0;
       for (const word of v) {
@@ -103,12 +118,12 @@ export function usePlayerLyricsTypingState(
             tl.set(
               doneElementRef.current,
               { text: typed },
-              start + i * stepDuration
+              start + i * stepDuration,
             );
             tl.set(
               typingElementRef.current,
               { text: step },
-              start + i * stepDuration
+              start + i * stepDuration,
             );
             i++;
           }
@@ -117,24 +132,29 @@ export function usePlayerLyricsTypingState(
             tl.set(
               doneElementRef.current,
               { text: typed + step },
-              start + i * stepDuration
+              start + i * stepDuration,
             );
             tl.set(
               typingElementRef.current,
               { text: "" },
-              start + i * stepDuration
+              start + i * stepDuration,
             );
             i++;
           }
         }
-        typed += word.sequence[word.sequence.length - 1];
+        if (word.sequence.length > 0) {
+          typed += word.sequence[word.sequence.length - 1];
+        }
       }
       tl.set(doneElementRef.current, { text: typed }, start + duration);
       tl.set(typingElementRef.current, { text: "" }, start + duration);
     });
 
-    return tl;
-    // Keeping doneElementRef.current and typingElementRef.current to ensure the timeline is updated accordingly
+    setTimeline(tl);
+
+    return () => {
+      tl.kill();
+    };
   }, [
     endTimes,
     perLineThreshold,

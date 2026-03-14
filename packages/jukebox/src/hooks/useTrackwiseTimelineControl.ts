@@ -8,7 +8,7 @@ type Timeline = gsap.core.Timeline;
  */
 export function useTrackwiseTimelineControl(
   playerState: PlayerState,
-  timeline: Timeline
+  timeline: Timeline | null,
 ) {
   // Controls the progress of timeline
   useEffect(() => {
