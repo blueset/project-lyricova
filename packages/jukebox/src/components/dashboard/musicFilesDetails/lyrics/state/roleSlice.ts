@@ -4,7 +4,7 @@ import { METADATA_MINOR, METADATA_ROLE } from "lyrics-kit/core";
 
 export const createRoleSlice: StateCreator<
   LyricsState,
-  [["zustand/immer", never]],
+  [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   RoleSlice
 > = (set, get, api) => {
@@ -12,30 +12,38 @@ export const createRoleSlice: StateCreator<
     role: {
       selectedLines: [],
       setSelectedLines: (lines: number[]) => {
-        set((state) => {
-          state.role.selectedLines = lines;
-        });
+        set(
+          (state) => {
+            state.role.selectedLines = lines;
+          },
+          false,
+          "role/setSelectedLines",
+        );
       },
       setRoleByIndex(index, role) {
-        set((state) => {
-          const { lyrics } = state;
-          if (!lyrics) return;
-          if (!Array.isArray(index)) {
-            index = [index];
-          }
-          index.forEach((index) => {
-            const line = lyrics.lines[index];
-            if (!line) return;
-            if (role) {
-              line.attachments[METADATA_ROLE] = {
-                type: "plain_text",
-                text: role.toString(),
-              };
-            } else {
-              delete line.attachments[METADATA_ROLE];
+        set(
+          (state) => {
+            const { lyrics } = state;
+            if (!lyrics) return;
+            if (!Array.isArray(index)) {
+              index = [index];
             }
-          });
-        });
+            index.forEach((index) => {
+              const line = lyrics.lines[index];
+              if (!line) return;
+              if (role) {
+                line.attachments[METADATA_ROLE] = {
+                  type: "plain_text",
+                  text: role.toString(),
+                };
+              } else {
+                delete line.attachments[METADATA_ROLE];
+              }
+            });
+          },
+          false,
+          "role/setRoleByIndex",
+        );
         get().generate();
       },
       setRoleOfSelectedLines: (role: number) => {
@@ -48,25 +56,29 @@ export const createRoleSlice: StateCreator<
         state.role.setRoleByIndex(selectedLines, role);
       },
       setMinorByIndex(index, minor) {
-        set((state) => {
-          const { lyrics } = state;
-          if (!lyrics) return;
-          if (!Array.isArray(index)) {
-            index = [index];
-          }
-          index.forEach((index) => {
-            const line = lyrics.lines[index];
-            if (!line) return;
-            if (minor) {
-              line.attachments[METADATA_MINOR] = {
-                type: "plain_text",
-                text: "1",
-              };
-            } else {
-              delete line.attachments[METADATA_MINOR];
+        set(
+          (state) => {
+            const { lyrics } = state;
+            if (!lyrics) return;
+            if (!Array.isArray(index)) {
+              index = [index];
             }
-          });
-        });
+            index.forEach((index) => {
+              const line = lyrics.lines[index];
+              if (!line) return;
+              if (minor) {
+                line.attachments[METADATA_MINOR] = {
+                  type: "plain_text",
+                  text: "1",
+                };
+              } else {
+                delete line.attachments[METADATA_MINOR];
+              }
+            });
+          },
+          false,
+          "role/setMinorByIndex",
+        );
         get().generate();
       },
       setMinorOfSelectedLines: (minor: boolean) => {

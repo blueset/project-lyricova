@@ -6,7 +6,7 @@ import { linearRegression } from "simple-statistics";
 
 export const createTaggingSlice: StateCreator<
   LyricsState,
-  [["zustand/immer", never]],
+  [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   TaggingSlice
 > = (set, get, api) => {
@@ -17,55 +17,75 @@ export const createTaggingSlice: StateCreator<
       isInExtrapolateMode: false,
       extrapolateTags: [],
       setCursor: (cursor: number) =>
-        set((state) => {
-          state.tagging.cursor = cursor;
-        }),
+        set(
+          (state) => {
+            state.tagging.cursor = cursor;
+          },
+          false,
+          "tagging/setCursor",
+        ),
       setCurrentLine: (line: TaggingSlice["tagging"]["currentLine"]) =>
-        set((state) => {
-          state.tagging.currentLine = line;
-        }),
+        set(
+          (state) => {
+            state.tagging.currentLine = line;
+          },
+          false,
+          "tagging/setCurrentLine",
+        ),
       setIsInExtrapolateMode: (isInExtrapolateMode: boolean) =>
-        set((state) => {
-          state.tagging.isInExtrapolateMode = isInExtrapolateMode;
-          state.tagging.extrapolateTags = [];
-        }),
+        set(
+          (state) => {
+            state.tagging.isInExtrapolateMode = isInExtrapolateMode;
+            state.tagging.extrapolateTags = [];
+          },
+          false,
+          "tagging/setIsInExtrapolateMode",
+        ),
       setTimestampAtCursor: (timestamp: number) => {
-        set((state) => {
-          const { cursor } = state.tagging;
-          const { lyrics } = state;
-          if (cursor < 0) {
-            return;
-          }
-          const line = lyrics?.lines[cursor];
-          if (!line) {
-            return;
-          }
-          line.position = timestamp;
-        });
+        set(
+          (state) => {
+            const { cursor } = state.tagging;
+            const { lyrics } = state;
+            if (cursor < 0) {
+              return;
+            }
+            const line = lyrics?.lines[cursor];
+            if (!line) {
+              return;
+            }
+            line.position = timestamp;
+          },
+          false,
+          "tagging/setTimestampAtCursor",
+        );
         get().debouncedGenerate();
       },
       setExtrapolateTagsAtCursor: (value: number | null) => {
-        set((state) => {
-          const { cursor, extrapolateTags } = state.tagging;
-          if (cursor < 0) {
-            return;
-          }
-          extrapolateTags[cursor] = value;
-
-          const lines = state.lyrics?.lines ?? [];
-          const points: [number, number][] = [];
-          for (
-            let i = 0;
-            i < Math.min(state.lyrics.lines.length, extrapolateTags.length);
-            i++
-          ) {
-            if (extrapolateTags[i] != null && lines[i]?.position != null) {
-              points.push([lines[i].position, extrapolateTags[i]]);
+        set(
+          (state) => {
+            const { cursor, extrapolateTags } = state.tagging;
+            if (cursor < 0) {
+              return;
             }
-          }
-          if (points.length < 1) return;
-          state.tagging.linearRegressionResult = linearRegression(points);
-        });
+            extrapolateTags[cursor] = value;
+
+            const lines = state.lyrics?.lines ?? [];
+            const points: [number, number][] = [];
+            for (
+              let i = 0;
+              i < Math.min(state.lyrics.lines.length, extrapolateTags.length);
+              i++
+            ) {
+              if (extrapolateTags[i] != null && lines[i]?.position != null) {
+                points.push([lines[i].position, extrapolateTags[i]]);
+              }
+            }
+            if (points.length < 1) return;
+            state.tagging.linearRegressionResult = linearRegression(points);
+          },
+          false,
+          "tagging/setExtrapolateTagsAtCursor",
+        );
       },
       applyExtrapolation: () => {
         const { linearRegressionResult } = get().tagging;
@@ -73,44 +93,52 @@ export const createTaggingSlice: StateCreator<
           return;
         }
         const { m, b } = linearRegressionResult;
-        set((state) => {
-          state.lyrics?.lines.forEach((line, index) => {
-            line.position = Math.max(0, m * line.position + b);
-            if (line?.attachments?.[TIME_TAG]) {
-              line.attachments[TIME_TAG].tags = line.attachments[
-                TIME_TAG
-              ].tags.map((tag) => {
-                tag.timeTag = Math.max(0, m * tag.timeTag);
-                return tag;
-              });
-            }
-            if (line?.attachments?.[TAGS]) {
-              line.attachments[TAGS].values = line.attachments[TAGS].values.map(
-                (tag) => {
+        set(
+          (state) => {
+            state.lyrics?.lines.forEach((line, index) => {
+              line.position = Math.max(0, m * line.position + b);
+              if (line?.attachments?.[TIME_TAG]) {
+                line.attachments[TIME_TAG].tags = line.attachments[
+                  TIME_TAG
+                ].tags.map((tag) => {
+                  tag.timeTag = Math.max(0, m * tag.timeTag);
+                  return tag;
+                });
+              }
+              if (line?.attachments?.[TAGS]) {
+                line.attachments[TAGS].values = line.attachments[
+                  TAGS
+                ].values.map((tag) => {
                   return tag.map((t) => Math.max(0, m * t + b));
-                }
-              );
-            }
-            state.tagging.linearRegressionResult = {
-              m: 1,
-              b: 0,
-            };
-          });
-        });
+                });
+              }
+              state.tagging.linearRegressionResult = {
+                m: 1,
+                b: 0,
+              };
+            });
+          },
+          false,
+          "tagging/applyExtrapolation",
+        );
         get().generate();
       },
       reset: () =>
-        set((state) => {
-          state.tagging.cursor = 0;
-          state.tagging.currentLine = {
-            index: Infinity,
-            start: Infinity,
-            end: -Infinity,
-          };
-          state.tagging.isInExtrapolateMode = false;
-          state.tagging.extrapolateTags = [];
-          delete state.tagging.linearRegressionResult;
-        }),
+        set(
+          (state) => {
+            state.tagging.cursor = 0;
+            state.tagging.currentLine = {
+              index: Infinity,
+              start: Infinity,
+              end: -Infinity,
+            };
+            state.tagging.isInExtrapolateMode = false;
+            state.tagging.extrapolateTags = [];
+            delete state.tagging.linearRegressionResult;
+          },
+          false,
+          "tagging/reset",
+        ),
     },
   };
 };

@@ -18,7 +18,7 @@ type FuriganaGroup = string | [string, string];
  */
 export function codeToFuriganaGroups(
   baseText: string,
-  furiganaText: string
+  furiganaText: string,
 ): FuriganaGroup[] {
   const result: FuriganaGroup[] = [];
 
@@ -68,7 +68,7 @@ export function codeToFuriganaGroups(
 
 export const createFuriganaSlice: StateCreator<
   LyricsState,
-  [["zustand/immer", never]],
+  [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   FuriganaSlice
 > = (set, get, api) => {
@@ -78,186 +78,218 @@ export const createFuriganaSlice: StateCreator<
       romajiMatching: [],
       vocaDbFuriganaLines: [],
       setSelectedLine(line) {
-        set((state) => {
-          state.furigana.selectedLine = line;
-          if (line < 0) {
-            return;
-          }
-        });
+        set(
+          (state) => {
+            state.furigana.selectedLine = line;
+            if (line < 0) {
+              return;
+            }
+          },
+          false,
+          "furigana/setSelectedLine",
+        );
       },
       setAutoApplyIdentical(value) {
-        set((state) => {
-          state.furigana.autoApplyIdentical = value;
-        });
+        set(
+          (state) => {
+            state.furigana.autoApplyIdentical = value;
+          },
+          false,
+          "furigana/setAutoApplyIdentical",
+        );
       },
       setVocaDbFuriganaLines(lines) {
-        set((state) => {
-          state.furigana.vocaDbFuriganaLines = lines;
-        });
+        set(
+          (state) => {
+            state.furigana.vocaDbFuriganaLines = lines;
+          },
+          false,
+          "furigana/setVocaDbFuriganaLines",
+        );
         get().furigana.refreshRomajiMatching();
       },
       refreshRomajiMatching() {
         requestAnimationFrame(() => {
-          set((state) => {
-            const lines = state.lyrics?.lines ?? [];
-            if (!lines.length || !state.furigana.vocaDbFuriganaLines?.length) {
-              state.furigana.romajiMatching = [];
-              return;
-            }
-            const kanaLines = lines.map((line) => {
-              const kanaLine: string[] = [];
-              let ptr = 0;
-              const base = line.content;
-              const furigana = line?.attachments?.[FURIGANA]?.attachment ?? [];
-              furigana.forEach(({ content, range: [start, end] }) => {
-                if (start > ptr) {
-                  kanaLine.push(base.substring(ptr, start));
-                }
-                kanaLine.push(content);
-                ptr = end;
-              });
-              if (ptr < base.length) kanaLine.push(base.substring(ptr));
-
-              return kanaToHira(kanaLine.join("").trimEnd());
-            });
-
-            const newMatching = generateDiffLines(
-              kanaLines,
-              state.furigana.vocaDbFuriganaLines
-            );
-            for (let i = 0; i < newMatching.length; i++) {
+          set(
+            (state) => {
+              const lines = state.lyrics?.lines ?? [];
               if (
-                JSON.stringify(state.furigana.romajiMatching[i]) !==
-                JSON.stringify(newMatching[i])
+                !lines.length ||
+                !state.furigana.vocaDbFuriganaLines?.length
               ) {
-                state.furigana.romajiMatching[i] = newMatching[i];
+                state.furigana.romajiMatching = [];
+                return;
               }
-            }
-          });
+              const kanaLines = lines.map((line) => {
+                const kanaLine: string[] = [];
+                let ptr = 0;
+                const base = line.content;
+                const furigana =
+                  line?.attachments?.[FURIGANA]?.attachment ?? [];
+                furigana.forEach(({ content, range: [start, end] }) => {
+                  if (start > ptr) {
+                    kanaLine.push(base.substring(ptr, start));
+                  }
+                  kanaLine.push(content);
+                  ptr = end;
+                });
+                if (ptr < base.length) kanaLine.push(base.substring(ptr));
+
+                return kanaToHira(kanaLine.join("").trimEnd());
+              });
+
+              const newMatching = generateDiffLines(
+                kanaLines,
+                state.furigana.vocaDbFuriganaLines,
+              );
+              for (let i = 0; i < newMatching.length; i++) {
+                if (
+                  JSON.stringify(state.furigana.romajiMatching[i]) !==
+                  JSON.stringify(newMatching[i])
+                ) {
+                  state.furigana.romajiMatching[i] = newMatching[i];
+                }
+              }
+            },
+            false,
+            "furigana/refreshRomajiMatching",
+          );
         });
       },
       setFurigana(data) {
-        set((state) => {
-          if (!state.lyrics) {
-            return;
-          }
-          data.forEach((v, index) => {
-            const line = state.lyrics.lines[index];
-            if (!line) return;
-            if (v.length < 1) {
-              delete line.attachments[FURIGANA];
-            } else {
-              const { tags, content } = v.reduce<{
-                len: number;
-                content: string;
-                tags: RangeAttributeLabelJSON[];
-              }>(
-                ({ len, tags, content }, [base, furigana]) => {
-                  if (base === furigana)
-                    return {
-                      len: len + base.length,
-                      tags,
-                      content: content + base,
-                    };
-                  else {
-                    tags.push({
-                      content: furigana,
-                      range: [len, len + base.length],
-                    });
-                    return {
-                      len: len + base.length,
-                      tags,
-                      content: content + base,
-                    };
-                  }
-                },
-                { len: 0, tags: [], content: "" }
-              );
-
-              if (tags.length < 1) delete line.attachments[FURIGANA];
-              else {
-                line.attachments[FURIGANA] = {
-                  type: "range",
-                  attachment: tags,
-                };
-                line.content = content;
-              }
+        set(
+          (state) => {
+            if (!state.lyrics) {
+              return;
             }
-          });
-        });
+            data.forEach((v, index) => {
+              const line = state.lyrics.lines[index];
+              if (!line) return;
+              if (v.length < 1) {
+                delete line.attachments[FURIGANA];
+              } else {
+                const { tags, content } = v.reduce<{
+                  len: number;
+                  content: string;
+                  tags: RangeAttributeLabelJSON[];
+                }>(
+                  ({ len, tags, content }, [base, furigana]) => {
+                    if (base === furigana)
+                      return {
+                        len: len + base.length,
+                        tags,
+                        content: content + base,
+                      };
+                    else {
+                      tags.push({
+                        content: furigana,
+                        range: [len, len + base.length],
+                      });
+                      return {
+                        len: len + base.length,
+                        tags,
+                        content: content + base,
+                      };
+                    }
+                  },
+                  { len: 0, tags: [], content: "" },
+                );
+
+                if (tags.length < 1) delete line.attachments[FURIGANA];
+                else {
+                  line.attachments[FURIGANA] = {
+                    type: "range",
+                    attachment: tags,
+                  };
+                  line.content = content;
+                }
+              }
+            });
+          },
+          false,
+          "furigana/setFurigana",
+        );
         get().generate();
         get().furigana.refreshRomajiMatching();
       },
       applyIdenticalFurigana(sourceIndex) {
-        set((state) => {
-          const lines = state.lyrics?.lines ?? [];
-          const sourceLine = lines[sourceIndex];
-          if (!sourceLine) return;
-          const sourceFurigana = sourceLine.attachments?.[FURIGANA];
-          if (!sourceFurigana) {
-            lines.forEach((line) => {
-              if (line.content === sourceLine.content) {
-                delete line.attachments[FURIGANA];
-              }
-            });
-          } else {
-            lines.forEach((line) => {
-              if (line.content === sourceLine.content) {
-                line.attachments[FURIGANA] = sourceFurigana;
-              }
-            });
-          }
-        });
+        set(
+          (state) => {
+            const lines = state.lyrics?.lines ?? [];
+            const sourceLine = lines[sourceIndex];
+            if (!sourceLine) return;
+            const sourceFurigana = sourceLine.attachments?.[FURIGANA];
+            if (!sourceFurigana) {
+              lines.forEach((line) => {
+                if (line.content === sourceLine.content) {
+                  delete line.attachments[FURIGANA];
+                }
+              });
+            } else {
+              lines.forEach((line) => {
+                if (line.content === sourceLine.content) {
+                  line.attachments[FURIGANA] = sourceFurigana;
+                }
+              });
+            }
+          },
+          false,
+          "furigana/applyIdenticalFurigana",
+        );
         get().debouncedGenerate();
       },
       addFuriganaToSelectedLine(start, end, furigana) {
-        set((state) => {
-          const lines = state.lyrics?.lines ?? [];
-          const line = lines[state.furigana.selectedLine];
-          if (!line) return;
-          if (!line.attachments) {
-            line.attachments = {};
-          }
-          if (!line.attachments[FURIGANA]) {
-            line.attachments[FURIGANA] = {
-              type: "range",
-              attachment: [],
-            };
-          }
-
-          const base = line.content.substring(start, end);
-          if (
-            base.length > 1 &&
-            (furigana.includes(",") || furigana.includes(";"))
-          ) {
-            const processedSequence = codeToFuriganaGroups(base, furigana);
-            processedSequence.reduce((acc, value) => {
-              if (typeof value === "string") {
-                acc += value.length;
-              } else {
-                const [base, furigana] = value;
-                line.attachments[FURIGANA].attachment.push({
-                  content: furigana,
-                  range: [acc, acc + base.length],
-                });
-                acc += base.length;
-              }
-              return acc;
-            }, start);
-          } else {
-            line.attachments[FURIGANA].attachment.push({
-              content: furigana,
-              range: [start, end],
-            });
-          }
-
-          line.attachments[FURIGANA].attachment.sort((a, b) => {
-            if (a.range[0] === b.range[0]) {
-              return a.range[1] - b.range[1];
+        set(
+          (state) => {
+            const lines = state.lyrics?.lines ?? [];
+            const line = lines[state.furigana.selectedLine];
+            if (!line) return;
+            if (!line.attachments) {
+              line.attachments = {};
             }
-            return a.range[0] - b.range[0];
-          });
-        });
+            if (!line.attachments[FURIGANA]) {
+              line.attachments[FURIGANA] = {
+                type: "range",
+                attachment: [],
+              };
+            }
+
+            const base = line.content.substring(start, end);
+            if (
+              base.length > 1 &&
+              (furigana.includes(",") || furigana.includes(";"))
+            ) {
+              const processedSequence = codeToFuriganaGroups(base, furigana);
+              processedSequence.reduce((acc, value) => {
+                if (typeof value === "string") {
+                  acc += value.length;
+                } else {
+                  const [base, furigana] = value;
+                  line.attachments[FURIGANA].attachment.push({
+                    content: furigana,
+                    range: [acc, acc + base.length],
+                  });
+                  acc += base.length;
+                }
+                return acc;
+              }, start);
+            } else {
+              line.attachments[FURIGANA].attachment.push({
+                content: furigana,
+                range: [start, end],
+              });
+            }
+
+            line.attachments[FURIGANA].attachment.sort((a, b) => {
+              if (a.range[0] === b.range[0]) {
+                return a.range[1] - b.range[1];
+              }
+              return a.range[0] - b.range[0];
+            });
+          },
+          false,
+          "furigana/addFuriganaToSelectedLine",
+        );
 
         if (get().furigana.autoApplyIdentical) {
           get().furigana.applyIdenticalFurigana(get().furigana.selectedLine);
@@ -266,20 +298,24 @@ export const createFuriganaSlice: StateCreator<
         get().furigana.refreshRomajiMatching();
       },
       removeFuriganaFromSelectedLine(start, end) {
-        set((state) => {
-          const lines = state.lyrics?.lines ?? [];
-          const line = lines[state.furigana.selectedLine];
-          if (!line) return;
-          if (!line.attachments || !line.attachments[FURIGANA]) return;
-          line.attachments[FURIGANA].attachment = line.attachments[
-            FURIGANA
-          ].attachment.filter(
-            (v) => v.range[0] !== start || v.range[1] !== end
-          );
-          if (line.attachments[FURIGANA].attachment.length < 1) {
-            delete line.attachments[FURIGANA];
-          }
-        });
+        set(
+          (state) => {
+            const lines = state.lyrics?.lines ?? [];
+            const line = lines[state.furigana.selectedLine];
+            if (!line) return;
+            if (!line.attachments || !line.attachments[FURIGANA]) return;
+            line.attachments[FURIGANA].attachment = line.attachments[
+              FURIGANA
+            ].attachment.filter(
+              (v) => v.range[0] !== start || v.range[1] !== end,
+            );
+            if (line.attachments[FURIGANA].attachment.length < 1) {
+              delete line.attachments[FURIGANA];
+            }
+          },
+          false,
+          "furigana/removeFuriganaFromSelectedLine",
+        );
 
         if (get().furigana.autoApplyIdentical) {
           get().furigana.applyIdenticalFurigana(get().furigana.selectedLine);
@@ -288,88 +324,92 @@ export const createFuriganaSlice: StateCreator<
         get().furigana.refreshRomajiMatching();
       },
       applyPatternToAllLines(baseText, furiganaText) {
-        set((state) => {
-          const lines = state.lyrics?.lines;
-          if (!baseText || !furiganaText || !lines.length) return;
-          const groups = codeToFuriganaGroups(baseText, furiganaText);
+        set(
+          (state) => {
+            const lines = state.lyrics?.lines;
+            if (!baseText || !furiganaText || !lines.length) return;
+            const groups = codeToFuriganaGroups(baseText, furiganaText);
 
-          lines.forEach((line) => {
-            const matches: number[] = [];
-            let matchIdx = line.content.indexOf(baseText);
-            while (matchIdx !== -1) {
-              matches.push(matchIdx);
-              matchIdx = line.content.indexOf(baseText, matchIdx + 1);
-            }
-            if (matches.length < 1) return line;
-            let furiganaAttribute =
-              line?.attachments?.[FURIGANA]?.attachment || [];
-
-            // Filter and adjust existing ranges
-            furiganaAttribute = furiganaAttribute.filter((label) => {
-              const [labelStart, labelEnd] = label.range;
-
-              // Check against all match ranges
-              for (const matchStart of matches) {
-                const matchEnd = matchStart + [...baseText].length;
-                // Full overlap - remove the label
-                if (matchStart <= labelStart && matchEnd >= labelEnd) {
-                  return false;
-                }
-
-                // Partial overlap from left - adjust start
-                if (
-                  matchStart <= labelStart &&
-                  matchEnd > labelStart &&
-                  matchEnd < labelEnd
-                ) {
-                  label.range[0] = matchEnd;
-                  return true;
-                }
-
-                // Partial overlap from right - adjust end
-                if (
-                  matchStart > labelStart &&
-                  matchStart < labelEnd &&
-                  matchEnd >= labelEnd
-                ) {
-                  label.range[1] = matchStart;
-                  return true;
-                }
+            lines.forEach((line) => {
+              const matches: number[] = [];
+              let matchIdx = line.content.indexOf(baseText);
+              while (matchIdx !== -1) {
+                matches.push(matchIdx);
+                matchIdx = line.content.indexOf(baseText, matchIdx + 1);
               }
-              return true;
-            });
+              if (matches.length < 1) return line;
+              let furiganaAttribute =
+                line?.attachments?.[FURIGANA]?.attachment || [];
 
-            // Add new furigana ranges for each match
-            matches.forEach((start) => {
-              let pos = start;
-              groups.forEach((group) => {
-                if (Array.isArray(group)) {
-                  furiganaAttribute.push({
-                    content: group[1],
-                    range: [pos, pos + [...group[0]].length],
-                  });
-                  pos += [...group[0]].length;
-                } else {
-                  pos += [...group].length;
+              // Filter and adjust existing ranges
+              furiganaAttribute = furiganaAttribute.filter((label) => {
+                const [labelStart, labelEnd] = label.range;
+
+                // Check against all match ranges
+                for (const matchStart of matches) {
+                  const matchEnd = matchStart + [...baseText].length;
+                  // Full overlap - remove the label
+                  if (matchStart <= labelStart && matchEnd >= labelEnd) {
+                    return false;
+                  }
+
+                  // Partial overlap from left - adjust start
+                  if (
+                    matchStart <= labelStart &&
+                    matchEnd > labelStart &&
+                    matchEnd < labelEnd
+                  ) {
+                    label.range[0] = matchEnd;
+                    return true;
+                  }
+
+                  // Partial overlap from right - adjust end
+                  if (
+                    matchStart > labelStart &&
+                    matchStart < labelEnd &&
+                    matchEnd >= labelEnd
+                  ) {
+                    label.range[1] = matchStart;
+                    return true;
+                  }
                 }
+                return true;
               });
-            });
 
-            if (furiganaAttribute.length > 0) {
-              furiganaAttribute.sort((a, b) => {
-                const [aStart] = a.range;
-                const [bStart] = b.range;
-                return aStart - bStart;
+              // Add new furigana ranges for each match
+              matches.forEach((start) => {
+                let pos = start;
+                groups.forEach((group) => {
+                  if (Array.isArray(group)) {
+                    furiganaAttribute.push({
+                      content: group[1],
+                      range: [pos, pos + [...group[0]].length],
+                    });
+                    pos += [...group[0]].length;
+                  } else {
+                    pos += [...group].length;
+                  }
+                });
               });
-              line.attachments[FURIGANA] = {
-                type: "range",
-                attachment: furiganaAttribute,
-              };
-            } else {
-              delete line.attachments[FURIGANA];
-            }
-          });
-        });
+
+              if (furiganaAttribute.length > 0) {
+                furiganaAttribute.sort((a, b) => {
+                  const [aStart] = a.range;
+                  const [bStart] = b.range;
+                  return aStart - bStart;
+                });
+                line.attachments[FURIGANA] = {
+                  type: "range",
+                  attachment: furiganaAttribute,
+                };
+              } else {
+                delete line.attachments[FURIGANA];
+              }
+            });
+          },
+          false,
+          "furigana/applyPatternToAllLines",
+        );
         get().generate();
         get().furigana.refreshRomajiMatching();
       },

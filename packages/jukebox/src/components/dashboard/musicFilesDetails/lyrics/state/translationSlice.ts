@@ -4,7 +4,7 @@ import { TRANSLATION } from "../../../../../../../lyrics-kit/build/module/core/l
 import { smartypantsu } from "smartypants";
 
 export function languageToTag(
-  language?: string
+  language?: string,
 ): typeof TRANSLATION | `${typeof TRANSLATION}:${string}` {
   if (!language) return TRANSLATION;
   return `${TRANSLATION}:${language}`;
@@ -12,7 +12,7 @@ export function languageToTag(
 
 export const createTranslationSlice: StateCreator<
   LyricsState,
-  [["zustand/immer", never]],
+  [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   TranslationSlice
 > = (set, get, api) => {
@@ -22,70 +22,82 @@ export const createTranslationSlice: StateCreator<
       textareaValue: "",
       languages: [],
       setSelectedLanguage(language) {
-        set((state) => {
-          state.translations.selectedLanguage = language;
-          if (!state.translations.languages.includes(language)) {
-            state.translations.languages.push(language);
-          }
-          state.translations.selectedLanguageIndex =
-            state.translations.languages.indexOf(language);
-          if (!state.lyrics) {
-            state.translations.textareaValue = "";
-          } else {
-            const selectedLanguage = languageToTag(language);
-            state.translations.textareaValue = state.lyrics?.lines
-              .map((l) => l.attachments[selectedLanguage]?.text || "")
-              .join("\n");
-          }
-        });
+        set(
+          (state) => {
+            state.translations.selectedLanguage = language;
+            if (!state.translations.languages.includes(language)) {
+              state.translations.languages.push(language);
+            }
+            state.translations.selectedLanguageIndex =
+              state.translations.languages.indexOf(language);
+            if (!state.lyrics) {
+              state.translations.textareaValue = "";
+            } else {
+              const selectedLanguage = languageToTag(language);
+              state.translations.textareaValue = state.lyrics?.lines
+                .map((l) => l.attachments[selectedLanguage]?.text || "")
+                .join("\n");
+            }
+          },
+          false,
+          "translations/setSelectedLanguage",
+        );
       },
       renameSelectedLanguage(newName) {
-        set((state) => {
-          const selectedLanguageIndex =
-            state.translations.selectedLanguageIndex;
-          if (
-            selectedLanguageIndex < 0 ||
-            selectedLanguageIndex >= state.translations.languages.length
-          ) {
-            return;
-          }
-
-          const selectedLanguage =
-            state.translations.languages[selectedLanguageIndex];
-          const selectedLanguageTag = languageToTag(selectedLanguage);
-          const newLanguageTag = languageToTag(newName);
-          state.translations.languages[selectedLanguageIndex] = newName;
-          state.translations.selectedLanguage = newName;
-          state.lyrics?.lines.forEach((line) => {
-            if (line.attachments[selectedLanguageTag]) {
-              line.attachments[newLanguageTag] =
-                line.attachments[selectedLanguageTag];
-              delete line.attachments[selectedLanguageTag];
+        set(
+          (state) => {
+            const selectedLanguageIndex =
+              state.translations.selectedLanguageIndex;
+            if (
+              selectedLanguageIndex < 0 ||
+              selectedLanguageIndex >= state.translations.languages.length
+            ) {
+              return;
             }
-          });
-          state.debouncedGenerate();
-        });
+
+            const selectedLanguage =
+              state.translations.languages[selectedLanguageIndex];
+            const selectedLanguageTag = languageToTag(selectedLanguage);
+            const newLanguageTag = languageToTag(newName);
+            state.translations.languages[selectedLanguageIndex] = newName;
+            state.translations.selectedLanguage = newName;
+            state.lyrics?.lines.forEach((line) => {
+              if (line.attachments[selectedLanguageTag]) {
+                line.attachments[newLanguageTag] =
+                  line.attachments[selectedLanguageTag];
+                delete line.attachments[selectedLanguageTag];
+              }
+            });
+            state.debouncedGenerate();
+          },
+          false,
+          "translations/renameSelectedLanguage",
+        );
       },
       removeLanguageByIndex(index) {
-        set((state) => {
-          if (index < 0 || index >= state.translations.languages.length) {
-            return;
-          }
-          console.log(
-            `Removing language ${state.translations.languages[index]} at index ${index}`
-          );
-          const language = state.translations.languages[index];
-          const languageTag = languageToTag(language);
-          state.lyrics?.lines.forEach((line) => {
-            if (line.attachments[languageTag]) {
-              delete line.attachments[languageTag];
+        set(
+          (state) => {
+            if (index < 0 || index >= state.translations.languages.length) {
+              return;
             }
-          });
-          state.translations.languages.splice(index, 1);
-          console.log(
-            `Removed language ${language} at index ${index}, new languages: ${state.translations.languages}`
-          );
-        });
+            console.log(
+              `Removing language ${state.translations.languages[index]} at index ${index}`,
+            );
+            const language = state.translations.languages[index];
+            const languageTag = languageToTag(language);
+            state.lyrics?.lines.forEach((line) => {
+              if (line.attachments[languageTag]) {
+                delete line.attachments[languageTag];
+              }
+            });
+            state.translations.languages.splice(index, 1);
+            console.log(
+              `Removed language ${language} at index ${index}, new languages: ${state.translations.languages}`,
+            );
+          },
+          false,
+          "translations/removeLanguageByIndex",
+        );
         const state = get();
         const newLanguageToSelect =
           state.translations.languages[Math.max(0, index - 1)];
@@ -93,32 +105,40 @@ export const createTranslationSlice: StateCreator<
         state.generate();
       },
       setTextareaValue(value) {
-        set((state) => {
-          state.translations.textareaValue = value;
-          const lines = value.split("\n");
-          const selectedLanguage = languageToTag(
-            state.translations.selectedLanguage
-          );
-          state.lyrics?.lines.forEach((line, index) => {
-            if (lines[index]) {
-              line.attachments[selectedLanguage] = {
-                type: "plain_text",
-                text: lines[index],
-              };
-            } else {
-              delete line.attachments[selectedLanguage];
-            }
-          });
-          state.debouncedGenerate();
-        });
+        set(
+          (state) => {
+            state.translations.textareaValue = value;
+            const lines = value.split("\n");
+            const selectedLanguage = languageToTag(
+              state.translations.selectedLanguage,
+            );
+            state.lyrics?.lines.forEach((line, index) => {
+              if (lines[index]) {
+                line.attachments[selectedLanguage] = {
+                  type: "plain_text",
+                  text: lines[index],
+                };
+              } else {
+                delete line.attachments[selectedLanguage];
+              }
+            });
+            state.debouncedGenerate();
+          },
+          false,
+          "translations/setTextareaValue",
+        );
       },
       fixQuotes() {
-        set((state) => {
-          state.translations.textareaValue = smartypantsu(
-            state.translations.textareaValue ?? ""
-          );
-          state.generate();
-        });
+        set(
+          (state) => {
+            state.translations.textareaValue = smartypantsu(
+              state.translations.textareaValue ?? "",
+            );
+            state.generate();
+          },
+          false,
+          "translations/fixQuotes",
+        );
       },
     },
   };

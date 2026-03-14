@@ -5,7 +5,7 @@ import { LyricsState, MainSlice } from "./sliceTypes";
 
 export const createMainSlice: StateCreator<
   LyricsState,
-  [["zustand/immer", never]],
+  [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   MainSlice
 > = (set, get, api) => {
@@ -16,69 +16,85 @@ export const createMainSlice: StateCreator<
     lrcx: "",
     lrc: "",
     setLrcx: (lrcx: string) => {
-      set((state) => {
-        state.lrcx = lrcx;
-      });
+      set(
+        (state) => {
+          state.lrcx = lrcx;
+        },
+        false,
+        "setLrcx",
+      );
       debouncedParse();
     },
     setLrc: (lrc: string) =>
-      set((state) => {
-        state.lrc = lrc;
-      }),
+      set(
+        (state) => {
+          state.lrc = lrc;
+        },
+        false,
+        "setLrc",
+      ),
   };
 
-  set(initialState);
+  set(initialState, false, "initMainSlice");
 
   const parseImpl = () => {
-    set((state) => {
-      const { lrcx, lrc } = state;
-      try {
-        const lyrics = new Lyrics(lrcx || lrc);
-        state.lyrics = lyrics.toJSON();
-        state.parseError = undefined;
+    set(
+      (state) => {
+        const { lrcx, lrc } = state;
+        try {
+          const lyrics = new Lyrics(lrcx || lrc);
+          state.lyrics = lyrics.toJSON();
+          state.parseError = undefined;
 
-        // Set translation states.
-        const languages = lyrics.translationLanguages;
-        state.translations.languages = languages;
-        if (languages.length === 0) {
+          // Set translation states.
+          const languages = lyrics.translationLanguages;
+          state.translations.languages = languages;
+          if (languages.length === 0) {
+            state.translations.selectedLanguage = undefined;
+            state.translations.selectedLanguageIndex = 0;
+            state.translations.textareaValue = "";
+          } else if (languages.includes(state.translations.selectedLanguage)) {
+            state.translations.selectedLanguageIndex = languages.indexOf(
+              state.translations.selectedLanguage,
+            );
+            state.translations.textareaValue = lyrics.lines
+              .map((l) =>
+                l.attachments.translation(state.translations.selectedLanguage),
+              )
+              .join("\n");
+          } else {
+            state.translations.selectedLanguage = languages[0];
+            state.translations.selectedLanguageIndex = 0;
+            state.translations.textareaValue = lyrics.lines
+              .map((l) => l.attachments.translation(languages[0]))
+              .join("\n");
+          }
+        } catch (error) {
+          state.parseError = (error as Error).message;
+          state.lyrics = undefined;
           state.translations.selectedLanguage = undefined;
-          state.translations.selectedLanguageIndex = 0;
           state.translations.textareaValue = "";
-        } else if (languages.includes(state.translations.selectedLanguage)) {
-          state.translations.selectedLanguageIndex = languages.indexOf(
-            state.translations.selectedLanguage
-          );
-          state.translations.textareaValue = lyrics.lines
-            .map((l) =>
-              l.attachments.translation(state.translations.selectedLanguage)
-            )
-            .join("\n");
-        } else {
-          state.translations.selectedLanguage = languages[0];
-          state.translations.selectedLanguageIndex = 0;
-          state.translations.textareaValue = lyrics.lines
-            .map((l) => l.attachments.translation(languages[0]))
-            .join("\n");
         }
-      } catch (error) {
-        state.parseError = (error as Error).message;
-        state.lyrics = undefined;
-        state.translations.selectedLanguage = undefined;
-        state.translations.textareaValue = "";
-      }
-    });
+      },
+      false,
+      "parse",
+    );
   };
   const generateImpl = () => {
     // update timetags
     get().inlineTagging.updateTimeTags();
 
-    set((state) => {
-      const { lyrics } = state;
-      if (!lyrics) return;
+    set(
+      (state) => {
+        const { lyrics } = state;
+        if (!lyrics) return;
 
-      const lrcx = Lyrics.fromJSON(lyrics).toString();
-      state.lrcx = lrcx;
-    });
+        const lrcx = Lyrics.fromJSON(lyrics).toString();
+        state.lrcx = lrcx;
+      },
+      false,
+      "generate",
+    );
     return get().lrcx;
   };
 
