@@ -89,7 +89,7 @@
     "hasha": "^5.1.0",
     "jsdom": "^26.0.0",
     "jsonwebtoken": "^9.0.0",
-    "lodash": "^4.17.23",
+    "lodash": "^4.18.1",
     "lusca": "^1.6.1",
     "lyrics-kit": "file:../lyrics-kit",
     "mecab-async": "^0.1.2",
