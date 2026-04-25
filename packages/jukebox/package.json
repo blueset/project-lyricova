@@ -121,7 +121,7 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "postcss": "^8.5.3",
+    "postcss": "^8.5.10",
     "prop-types": "^15.7.2",
     "python-bridge": "^1.1.0",
     "react-beautiful-dnd": "^13.1.1",
