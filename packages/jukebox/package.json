@@ -152,7 +152,7 @@
     "through": "^2.3.8",
     "type-graphql": "^2.0.0-beta.1",
     "winston": "^3.2.1",
-    "ws": "^8.20.1",
+    "ws": "^8.21.0",
     "youtube-dl-wrap": "^2.1.1",
     "yt-dlp-wrap": "^2.3.11",
     "yup": "^1.4.0",
