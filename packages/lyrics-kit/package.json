@@ -42,9 +42,9 @@
     "node": ">=8.9"
   },
   "dependencies": {
-    "axios": "^1.13.5",
+    "axios": "^1.16.0",
     "cheerio": "^1.0.0-rc.3",
-    "lodash": "^4.17.23",
+    "lodash": "^4.18.1",
     "sha.js": "^2.4.12",
     "tough-cookie": "^4.1.3"
   },
