@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { useState } from "react";
-import { gql, useQuery, useApolloClient } from "@apollo/client";
-import type { Tag } from "@lyricova/api/graphql/types";
+import { useQuery, useApolloClient } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { toast } from "sonner";
 import { SlugifyAdornment } from "@lyricova/components";
 import {
@@ -33,7 +33,7 @@ import {
   AlertDescription,
 } from "@lyricova/components/components/ui/alert";
 
-const TAG_QUERY = gql`
+const TAG_QUERY = graphql(`
   query Tag($slug: String!) {
     tag(slug: $slug) {
       color
@@ -41,9 +41,9 @@ const TAG_QUERY = gql`
       slug
     }
   }
-`;
+`);
 
-const NEW_TAG_MUTATION = gql`
+const NEW_TAG_MUTATION = graphql(`
   mutation NewTag($data: NewTagInput!) {
     newTag(data: $data) {
       color
@@ -51,9 +51,9 @@ const NEW_TAG_MUTATION = gql`
       slug
     }
   }
-`;
+`);
 
-const UPDATE_TAG_MUTATION = gql`
+const UPDATE_TAG_MUTATION = graphql(`
   mutation UpdateTag($slug: String!, $data: UpdateTagInput!) {
     updateTag(slug: $slug, data: $data) {
       color
@@ -61,7 +61,7 @@ const UPDATE_TAG_MUTATION = gql`
       slug
     }
   }
-`;
+`);
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -76,7 +76,7 @@ export interface TagFormProps {
 
 export function TagForm({ slug = null, onSubmit }: TagFormProps) {
   const apolloClient = useApolloClient();
-  const { data, loading, refetch } = useQuery<{ tag: Tag }>(TAG_QUERY, {
+  const { data, loading, refetch } = useQuery(TAG_QUERY, {
     variables: { slug },
   });
 

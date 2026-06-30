@@ -1,6 +1,6 @@
 "use client";
 
-import { gql, useQuery, useApolloClient } from "@apollo/client";
+import { useQuery, useApolloClient } from "@apollo/client";
 import {
   Alert,
   AlertDescription,
@@ -13,9 +13,10 @@ import {
   PopoverTrigger,
 } from "@lyricova/components/components/ui/popover";
 import { DataTable } from "@lyricova/components";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
-import type { Tag } from "@lyricova/api/graphql/types";
+import { graphql } from "@lyricova/components/gql";
+import type { TagsQuery } from "@lyricova/components/gql/graphql";
 import { DataTableColumnHeader } from "@lyricova/components";
 import { Pencil, Plus, Trash, XCircle } from "lucide-react";
 import React from "react";
@@ -28,7 +29,7 @@ import {
 import { TagFormPopup } from "@/components/dashboard/TagForm";
 import { NavHeader } from "../NavHeader";
 
-const TAGS_QUERY = gql`
+const TAGS_QUERY = graphql(`
   query Tags {
     tags {
       color
@@ -39,16 +40,18 @@ const TAGS_QUERY = gql`
       }
     }
   }
-`;
+`);
 
-const DELETE_TAG_MUTATION = gql`
+const DELETE_TAG_MUTATION = graphql(`
   mutation DeleteTag($slug: String!) {
     deleteTag(slug: $slug)
   }
-`;
+`);
+
+type TagRow = NonNullable<TagsQuery["tags"]>[number];
 
 export default function Tags() {
-  const tagsQuery = useQuery<{ tags: Tag[] }>(TAGS_QUERY);
+  const tagsQuery = useQuery(TAGS_QUERY);
   const apolloClient = useApolloClient();
   const rows = tagsQuery.data?.tags ?? [];
 
@@ -63,7 +66,7 @@ export default function Tags() {
     await tagsQuery.refetch();
   };
 
-  const columns: ColumnDef<Tag>[] = [
+  const columns: ColumnDef<TagRow>[] = [
     {
       id: "slug",
       accessorKey: "slug",

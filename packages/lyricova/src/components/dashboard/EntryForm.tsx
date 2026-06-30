@@ -1,9 +1,13 @@
 "use client";
 
-import type { Artist, Entry, Song, Tag } from "@lyricova/api/graphql/types";
-import { gql, useQuery, useApolloClient } from "@apollo/client";
+import { useQuery, useApolloClient } from "@apollo/client";
 import { toast } from "sonner";
-import { SelectSongEntityBox, SongFragments } from "@lyricova/components";
+import { SelectSongEntityBox } from "@lyricova/components";
+import { graphql } from "@lyricova/components/gql";
+import type {
+  EntryQuery,
+  SelectSongEntryFragment,
+} from "@lyricova/components/gql/graphql";
 import { MultiSelect } from "@lyricova/components/components/ui/multi-select";
 import {
   Form,
@@ -47,7 +51,10 @@ import { formatDistanceToNow } from "date-fns";
 const monospacedFont =
   '"Rec Mono Casual", "Cascadia Code", "Fira Code", monospace';
 
-const ENTRY_FRAGMENT = gql`
+/** Artist as embedded under a selected song (form `songs` are loosely typed). */
+type SongArtist = NonNullable<SelectSongEntryFragment["artists"]>[number];
+
+const ENTRY_FRAGMENT = graphql(`
   fragment EntryFragment on Entry {
     id
     title
@@ -79,11 +86,9 @@ const ENTRY_FRAGMENT = gql`
       creationDate
     }
   }
+`);
 
-  ${SongFragments.SelectSongEntry}
-`;
-
-const ENTRY_QUERY = gql`
+const ENTRY_QUERY = graphql(`
   query Entry($id: Int!, $hasEntry: Boolean!) {
     entry(id: $id) @include(if: $hasEntry) {
       ...EntryFragment
@@ -94,37 +99,31 @@ const ENTRY_QUERY = gql`
       slug
     }
   }
+`);
 
-  ${ENTRY_FRAGMENT}
-`;
-
-const NEW_ENTRY_MUTATION = gql`
+const NEW_ENTRY_MUTATION = graphql(`
   mutation NewEntry($data: EntryInput!) {
     newEntry(data: $data) {
       ...EntryFragment
     }
   }
+`);
 
-  ${ENTRY_FRAGMENT}
-`;
-
-const UPDATE_ENTRY_MUTATION = gql`
+const UPDATE_ENTRY_MUTATION = graphql(`
   mutation UpdateEntry($id: Int!, $data: EntryInput!) {
     updateEntry(data: $data, id: $id) {
       ...EntryFragment
     }
   }
+`);
 
-  ${ENTRY_FRAGMENT}
-`;
-
-const TRANSLITRATION_QUERY = gql`
-  query ($text: String!, $language: String) {
+const TRANSLITRATION_QUERY = graphql(`
+  query EntryFormTransliterate($text: String!, $language: String) {
     transliterate(text: $text) {
       typing(language: $language)
     }
   }
-`;
+`);
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -166,7 +165,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const initialFormValues = (data: { entry?: Entry }): FormValues => ({
+const initialFormValues = (data: EntryQuery): FormValues => ({
   ...data.entry,
   title: data.entry.title || "",
   producersName: data.entry.producersName || "",
@@ -193,10 +192,7 @@ export function EntryForm({ id }: EntityFormProps) {
   const apolloClient = useApolloClient();
   const router = useRouter();
 
-  const { data, loading, refetch } = useQuery<{
-    entry?: Entry;
-    tags: Tag[];
-  }>(ENTRY_QUERY, {
+  const { data, loading, refetch } = useQuery(ENTRY_QUERY, {
     variables: { id: id || -1, hasEntry: !!id },
   });
 
@@ -301,9 +297,7 @@ export function EntryForm({ id }: EntityFormProps) {
 
       if (!id) {
         // create
-        const result = await apolloClient.mutate<{
-          newEntry: Partial<Entry>;
-        }>({
+        const result = await apolloClient.mutate({
           mutation: NEW_ENTRY_MUTATION,
           variables: { data: submitData },
         });
@@ -315,9 +309,7 @@ export function EntryForm({ id }: EntityFormProps) {
         }
       } else {
         // update
-        const result = await apolloClient.mutate<{
-          updateEntry: Partial<Entry>;
-        }>({
+        const result = await apolloClient.mutate({
           mutation: UPDATE_ENTRY_MUTATION,
           variables: { id, data: submitData },
         });
@@ -504,11 +496,12 @@ export function EntryForm({ id }: EntityFormProps) {
                       songs
                         .map((s) =>
                           (s.artists || [])
-                            .filter((a: Artist) =>
+                            .filter((a: SongArtist) =>
                               a.ArtistOfSong.categories.includes("Producer")
                             )
                             .map(
-                              (a: Artist) => a.ArtistOfSong.customName || a.name
+                              (a: SongArtist) =>
+                                a.ArtistOfSong.customName || a.name
                             )
                         )
                         .flat()
@@ -520,13 +513,14 @@ export function EntryForm({ id }: EntityFormProps) {
                         .map((s) =>
                           (s.artists || [])
                             .filter(
-                              (a: Artist) =>
+                              (a: SongArtist) =>
                                 a.ArtistOfSong.categories.includes(
                                   "Vocalist"
                                 ) && !a.ArtistOfSong.isSupport
                             )
                             .map(
-                              (a: Artist) => a.ArtistOfSong.customName || a.name
+                              (a: SongArtist) =>
+                                a.ArtistOfSong.customName || a.name
                             )
                         )
                         .flat()
@@ -881,11 +875,7 @@ export function EntryForm({ id }: EntityFormProps) {
                           className="mt-2"
                           onClick={async () => {
                             try {
-                              const result = await apolloClient.query<{
-                                transliterate: {
-                                  typing: string[][][];
-                                };
-                              }>({
+                              const result = await apolloClient.query({
                                 query: TRANSLITRATION_QUERY,
                                 variables: {
                                   text: form.getValues(`verses.${index}.text`),

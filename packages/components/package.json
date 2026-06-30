@@ -89,6 +89,7 @@
     },
     "./utils": "./src/utils/index.ts",
     "./gql": "./src/gql/index.ts",
+    "./gql/graphql": "./src/gql/graphql.ts",
     "./gql/*": "./src/gql/*",
     "./hooks/*": {
       "import": "./build/hooks/*.js",
