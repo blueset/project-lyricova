@@ -27,7 +27,35 @@ sequelizeAdditions(Sequelize);
 
 // const dirName = __dirname.endsWith();
 
-const sequelize = new Sequelize(DB_URI, {
+// Normalize the connection URI for Sequelize's mysql2 dialect. A `ssl=false`
+// query param (used to disable TLS) is misread by mysql2 as an SSL *profile*
+// named "false" and throws; strip TLS/auth hints from the URI and translate
+// them into explicit dialectOptions instead. The Drizzle mysql2 pool parses the
+// same URI directly without this normalization.
+function buildSequelizeConfig(uri: string): {
+  uri: string;
+  dialectOptions: Record<string, unknown>;
+} {
+  try {
+    const url = new URL(uri);
+    const dialectOptions: Record<string, unknown> = {};
+    const ssl = url.searchParams.get("ssl");
+    if (ssl !== null) {
+      url.searchParams.delete("ssl");
+      if (ssl === "false" || ssl === "0") dialectOptions.ssl = undefined;
+    }
+    if (url.searchParams.has("allowPublicKeyRetrieval")) {
+      url.searchParams.delete("allowPublicKeyRetrieval");
+    }
+    return { uri: url.toString(), dialectOptions };
+  } catch {
+    return { uri, dialectOptions: {} };
+  }
+}
+
+const { uri: sequelizeUri, dialectOptions } = buildSequelizeConfig(DB_URI);
+
+const sequelize = new Sequelize(sequelizeUri, {
   models: [
     // __dirname + "/models/*",
     Album,
@@ -51,6 +79,7 @@ const sequelize = new Sequelize(DB_URI, {
     Verse,
     VideoFile,
   ],
+  dialectOptions,
   logging: (sql, timing) => logger.debug(sql, timing),
   benchmark: ENVIRONMENT !== "production",
 });
