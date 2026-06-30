@@ -42,13 +42,12 @@ import {
 import { useEffect, useState, useCallback } from "react";
 import _ from "lodash";
 import axios from "axios";
-import { gql, useApolloClient } from "@apollo/client";
-import type { Album } from "@lyricova/api/graphql/types";
+import { useApolloClient } from "@apollo/client";
 import { VocaDBSearchAlbumDialog } from "../dialogs/VocaDBSearchAlbumDialog";
 import { UtaiteDBSearchAlbumDialog } from "../dialogs/UtaiteDBSearchAlbumDialog";
 import { AlbumEntityDialog } from "../dialogs/AlbumEntityDialog";
-import { AlbumFragments } from "../../utils/fragments";
-import { DocumentNode } from "graphql";
+import { graphql } from "../../gql";
+import type { SelectAlbumEntryFragment } from "../../gql/graphql";
 import {
   FieldValues,
   FieldPath,
@@ -56,7 +55,7 @@ import {
   useController,
 } from "react-hook-form";
 
-export type ExtendedAlbum = Partial<Album> & {
+export type ExtendedAlbum = Partial<SelectAlbumEntryFragment> & {
   vocaDBSuggestion?: boolean;
   utaiteDBSuggestion?: boolean;
   manual?: boolean;
@@ -64,15 +63,13 @@ export type ExtendedAlbum = Partial<Album> & {
   isAction?: boolean;
 };
 
-const LOCAL_ALBUM_ENTITY_QUERY = gql`
-  query ($text: String!) {
+const LOCAL_ALBUM_ENTITY_QUERY = graphql(`
+  query LocalAlbumEntity($text: String!) {
     searchAlbums(keywords: $text) {
       ...SelectAlbumEntry
     }
   }
-
-  ${AlbumFragments.SelectAlbumEntry}
-` as DocumentNode;
+`);
 
 interface Props<
   TFieldValues extends FieldValues = FieldValues,
@@ -123,9 +120,7 @@ export function SelectAlbumEntityBox<
 
       setIsApolloLoading(true);
       try {
-        const apolloResult = await apolloClient.query<{
-          searchAlbums: Album[];
-        }>({
+        const apolloResult = await apolloClient.query({
           query: LOCAL_ALBUM_ENTITY_QUERY,
           variables: { text: searchText },
         });

@@ -1,16 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Album } from "@lyricova/api/graphql/types";
 import axios from "axios";
 import type {
   PartialFindResult,
   AlbumForApiContract,
 } from "@lyricova/api/graphql/types";
 import _ from "lodash";
-import { gql, useApolloClient } from "@apollo/client";
-import { AlbumFragments } from "../../utils/fragments";
-import { DocumentNode } from "graphql";
+import { useApolloClient } from "@apollo/client";
+import { graphql } from "../../gql";
+import type { SelectAlbumEntryFragment } from "../../gql/graphql";
 import { toast } from "sonner";
 import {
   Avatar,
@@ -34,22 +33,20 @@ import { Music, ExternalLink } from "lucide-react";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 import { Label } from "@lyricova/components/components/ui/label";
 
-const IMPORT_ALBUM_MUTATION = gql`
-  mutation ($id: Int!) {
+const IMPORT_ALBUM_MUTATION = graphql(`
+  mutation ImportAlbumFromUtaiteDB($id: Int!) {
     enrolAlbumFromUtaiteDB(albumId: $id) {
       ...SelectAlbumEntry
     }
   }
-
-  ${AlbumFragments.SelectAlbumEntry}
-` as DocumentNode;
+`);
 
 interface Props {
   isOpen: boolean;
   toggleOpen: (value: boolean) => void;
   keyword: string;
   setKeyword: (value: string) => void;
-  setAlbum: (value: Partial<Album>) => void;
+  setAlbum: (value: Partial<SelectAlbumEntryFragment>) => void;
 }
 
 export function UtaiteDBSearchAlbumDialog({
@@ -90,9 +87,7 @@ export function UtaiteDBSearchAlbumDialog({
 
     toggleImporting(true);
     try {
-      const result = await apolloClient.mutate<{
-        enrolAlbumFromUtaiteDB: Partial<Album>;
-      }>({
+      const result = await apolloClient.mutate({
         mutation: IMPORT_ALBUM_MUTATION,
         variables: {
           id: selectedAlbum,
