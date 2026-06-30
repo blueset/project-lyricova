@@ -1,6 +1,9 @@
 import fs from "fs";
 import { builder } from "../builder";
 import { swapExt } from "../../../utils/path";
+import { Lyrics } from "lyrics-kit/core";
+import { LyricsKitLyrics } from "../../LyricsKitObjects";
+import { LyricsKitLyricsRef } from "./lyricsKit";
 import {
   MusicFileRef,
   AlbumRef,
@@ -9,8 +12,6 @@ import {
   FileInPlaylistRef,
 } from "./refs";
 
-// NOTE: the `lyrics: LyricsKitLyrics` field is added with the LyricsKit domain
-// (it depends on the LyricsKitLyrics object type).
 MusicFileRef.implement({
   fields: (t) => ({
     FileInPlaylist: t.field({
@@ -74,6 +75,49 @@ MusicFileRef.implement({
         const lyricsPath = swapExt(m.fullPath, ext);
         try {
           return fs.readFileSync(lyricsPath).toString();
+        } catch (e) {
+          console.error("Error while reading lyrics file:", e);
+          return null;
+        }
+      },
+    }),
+    lyrics: t.field({
+      type: LyricsKitLyricsRef,
+      nullable: true,
+      resolve: (m) => {
+        const filePath = m.fullPath;
+        const lrcPath = swapExt(filePath, "lrc");
+        const lrcxPath = swapExt(filePath, "lrcx");
+        let path: string | null = null;
+        let usedType: "lrc" | "lrcx";
+        if (fs.existsSync(lrcxPath)) {
+          path = lrcxPath;
+          usedType = "lrcx";
+        } else if (fs.existsSync(lrcPath)) {
+          path = lrcPath;
+          usedType = "lrc";
+        } else {
+          console.log("no file is found");
+          return null;
+        }
+        try {
+          const buffer = fs.readFileSync(path);
+          let content = buffer.toString();
+
+          if (usedType === "lrc") {
+            content = content.replace(
+              /^((?:\[[0-9:.-]+])+)(.+?) \/ (.+)$/gm,
+              "$1$2\n$1[tr]$3"
+            );
+            content = content.replace(
+              /^((?:\[[0-9:.-]+])+)(.+?)[\/／](.+)$/gm,
+              "$1$2\n$1[tr]〝$3〟"
+            );
+          }
+
+          const lrcs = new LyricsKitLyrics(new Lyrics(content));
+          lrcs.lines = lrcs.lines.filter((l) => isFinite(l.position));
+          return lrcs;
         } catch (e) {
           console.error("Error while reading lyrics file:", e);
           return null;
