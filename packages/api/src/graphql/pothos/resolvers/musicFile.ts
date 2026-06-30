@@ -7,9 +7,10 @@ import hasha from "hasha";
 import pLimit from "p-limit";
 import type { WhereOptions } from "sequelize";
 import { literal, Op } from "sequelize";
-import { and, desc, eq, gt, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
 import { db } from "../../../drizzle/client";
-import { MusicFiles } from "../../../drizzle/schema";
+import { MusicFiles, Playlists, FileInPlaylists } from "../../../drizzle/schema";
+import { updatePlaylistsOfFileAsTags } from "../../../utils/musicFileTags";
 import Path from "path";
 import _ from "lodash";
 import { GraphQLError } from "graphql";
@@ -371,13 +372,18 @@ builder.mutationField("writeLyrics", (t) =>
       }),
     },
     resolve: async (_root, { fileId, lyrics, ext }) => {
-      const file = await MusicFile.findByPk(fileId);
-      if (file === null) return false;
-      const lyricsPath = swapExt(file.fullPath, ext);
+      const file = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, fileId),
+      });
+      if (!file) return false;
+      const lyricsPath = swapExt(Path.resolve(MUSIC_FILES_PATH, file.path), ext);
 
       try {
         fs.writeFileSync(lyricsPath, lyrics);
-        await file.update({ hasLyrics: true });
+        await db
+          .update(MusicFiles)
+          .set({ hasLyrics: true, updatedOn: new Date() })
+          .where(eq(MusicFiles.id, fileId));
       } catch (e) {
         console.error("Error while writing lyrics file:", e);
         return false;
@@ -441,27 +447,35 @@ builder.mutationField("setPlaylistsOfFile", (t) =>
       playlistSlugs: t.arg.stringList({ description: "Playlists to set" }),
     },
     resolve: async (_root, { fileId, playlistSlugs }) => {
-      let file: MusicFile, playlists: Playlist[];
-      try {
-        file = await MusicFile.findByPk(fileId, { rejectOnEmpty: true });
-      } catch {
+      const file = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, fileId),
+      });
+      if (!file) {
         throw new Error("Music file is not found.");
       }
-      try {
-        playlists = await Promise.all(
-          playlistSlugs.map((val) =>
-            Playlist.findByPk(val, { rejectOnEmpty: true })
-          )
-        );
-      } catch (e) {
-        console.log("playlist lookup error", e);
+      const playlists = await db.query.Playlists.findMany({
+        where: inArray(Playlists.slug, playlistSlugs),
+      });
+      if (playlists.length !== playlistSlugs.length) {
         throw new Error("Some or all playlist slugs are not found in database.");
       }
 
-      await file.$set("playlists", playlists);
-      const result = await MusicFile.findByPk(fileId);
-      await result.updatePlaylistsOfFileAsTags();
-      return result as any;
+      // Replace the file's playlist memberships (mirrors Sequelize $set).
+      const now = new Date();
+      await db.delete(FileInPlaylists).where(eq(FileInPlaylists.fileId, fileId));
+      for (const slug of playlistSlugs) {
+        await db.insert(FileInPlaylists).values({
+          fileId,
+          playlistId: slug,
+          sortOrder: 0,
+          creationDate: now,
+          updatedOn: now,
+        });
+      }
+      await updatePlaylistsOfFileAsTags(fileId);
+      return (await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, fileId),
+      })) as any;
     },
   })
 );
