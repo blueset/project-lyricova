@@ -2,11 +2,13 @@ import { builder } from "./builder";
 
 // Type modules (register object/input/enum types on the builder).
 import "./types/Texture";
+import "./types/User";
 
 // Resolver modules (attach query/mutation/subscription fields).
 import "./resolvers/texture";
 import "./resolvers/stats";
 import "./resolvers/siteMeta";
+import "./resolvers/user";
 
 /**
  * Builds the Pothos `GraphQLSchema`. As the Phase 2 port progresses, importing
