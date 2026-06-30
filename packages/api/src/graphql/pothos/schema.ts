@@ -10,6 +10,7 @@ import "./types/MusicFile";
 import "./types/Playlist";
 import "./types/Entry";
 import "./types/Tag";
+import "./types/pagination";
 
 // Resolver modules (attach query/mutation/subscription fields).
 import "./resolvers/texture";
@@ -24,6 +25,7 @@ import "./resolvers/vocadbImport";
 import "./resolvers/album";
 import "./resolvers/song";
 import "./resolvers/entry";
+import "./resolvers/musicFile";
 
 /**
  * Builds the Pothos `GraphQLSchema`. As the Phase 2 port progresses, importing

@@ -1,4 +1,6 @@
+import fs from "fs";
 import { builder } from "../builder";
+import { swapExt } from "../../../utils/path";
 import {
   MusicFileRef,
   AlbumRef,
@@ -7,8 +9,8 @@ import {
   FileInPlaylistRef,
 } from "./refs";
 
-// NOTE: the `lyrics: LyricsKitLyrics` and `lyricsText(ext): String` fields are
-// added with the LyricsKit domain (they depend on LyricsKitLyrics + file I/O).
+// NOTE: the `lyrics: LyricsKitLyrics` field is added with the LyricsKit domain
+// (it depends on the LyricsKitLyrics object type).
 MusicFileRef.implement({
   fields: (t) => ({
     FileInPlaylist: t.field({
@@ -64,6 +66,19 @@ MusicFileRef.implement({
       nullable: true,
       description: "Date when the file was last played.",
       resolve: (m) => m.lastPlayed,
+    }),
+    lyricsText: t.string({
+      nullable: true,
+      args: { ext: t.arg.string({ defaultValue: "lrc" }) },
+      resolve: (m, { ext }) => {
+        const lyricsPath = swapExt(m.fullPath, ext);
+        try {
+          return fs.readFileSync(lyricsPath).toString();
+        } catch (e) {
+          console.error("Error while reading lyrics file:", e);
+          return null;
+        }
+      },
     }),
     needReview: t.exposeBoolean("needReview", {
       description: "If this entry needs review.",
