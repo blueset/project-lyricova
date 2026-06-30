@@ -23,7 +23,9 @@
     "openapi": "node scripts/emit-openapi.mjs && openapi-typescript openapi.json -o src/openapi/schema.ts",
     "pothos:emit": "tsc ; node scripts/emit-pothos-schema.mjs",
     "pothos:check": "npm run pothos:emit && node scripts/schema-parity.mjs schema.graphql.golden schema.pothos.graphql",
-    "test": "jest"
+    "test": "jest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "repository": {
     "type": "git",
@@ -76,6 +78,7 @@
     "connect-session-sequelize": "^7.0.2",
     "dayjs": "^1.9.1",
     "dotenv": "^10.0.0",
+    "drizzle-orm": "^0.45.2",
     "errorhandler": "^1.5.1",
     "eslint": "^9.26.0",
     "eslint-config-next": "^15.0.3",
@@ -177,6 +180,7 @@
     "openapi-typescript": "^7.13.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.4.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "drizzle-kit": "^0.31.10"
   }
 }

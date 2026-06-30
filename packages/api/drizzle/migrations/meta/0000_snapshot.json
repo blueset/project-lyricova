@@ -1,0 +1,2051 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "id": "d90ca4a4-c385-490b-a10a-9583aad2e827",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "Albums": {
+      "name": "Albums",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sortOrder": {
+          "name": "sortOrder",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coverUrl": {
+          "name": "coverUrl",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "utaiteDbId": {
+          "name": "utaiteDbId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vocaDbJson": {
+          "name": "vocaDbJson",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "incomplete": {
+          "name": "incomplete",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
+        },
+        "deletionDate": {
+          "name": "deletionDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "Album_sortOredr_index": {
+          "name": "Album_sortOredr_index",
+          "columns": [
+            "sortOrder"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "Albums_id": {
+          "name": "Albums_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "ArtistOfAlbums": {
+      "name": "ArtistOfAlbums",
+      "columns": {
+        "artistOfAlbumId": {
+          "name": "artistOfAlbumId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "roles": {
+          "name": "roles",
+          "type": "varchar(174)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "effectiveRoles": {
+          "name": "effectiveRoles",
+          "type": "varchar(174)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "categories": {
+          "name": "categories",
+          "type": "enum('Nothing','Vocalist','Producer','Animator','Label','Circle','Other','Band','Illustrator','Subject')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Nothing'"
+        },
+        "albumId": {
+          "name": "albumId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "artistId": {
+          "name": "artistId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "ArtistOfAlbums_artistId_albumId_unique": {
+          "name": "ArtistOfAlbums_artistId_albumId_unique",
+          "columns": [
+            "albumId",
+            "artistId"
+          ],
+          "isUnique": true
+        },
+        "artistId": {
+          "name": "artistId",
+          "columns": [
+            "artistId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "ArtistOfAlbums_albumId_Albums_id_fk": {
+          "name": "ArtistOfAlbums_albumId_Albums_id_fk",
+          "tableFrom": "ArtistOfAlbums",
+          "tableTo": "Albums",
+          "columnsFrom": [
+            "albumId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "ArtistOfAlbums_artistId_Artists_id_fk": {
+          "name": "ArtistOfAlbums_artistId_Artists_id_fk",
+          "tableFrom": "ArtistOfAlbums",
+          "tableTo": "Artists",
+          "columnsFrom": [
+            "artistId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "ArtistOfAlbums_artistOfAlbumId": {
+          "name": "ArtistOfAlbums_artistOfAlbumId",
+          "columns": [
+            "artistOfAlbumId"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "ArtistOfSongs": {
+      "name": "ArtistOfSongs",
+      "columns": {
+        "artistOfSongId": {
+          "name": "artistOfSongId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "vocaDbId": {
+          "name": "vocaDbId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "artistRoles": {
+          "name": "artistRoles",
+          "type": "varchar(174)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "categories": {
+          "name": "categories",
+          "type": "varchar(174)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "customName": {
+          "name": "customName",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "isSupport": {
+          "name": "isSupport",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "songId": {
+          "name": "songId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "artistId": {
+          "name": "artistId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "vocaDbId": {
+          "name": "vocaDbId",
+          "columns": [
+            "vocaDbId"
+          ],
+          "isUnique": true
+        },
+        "ArtistOfSongs_songId_artistId_unique": {
+          "name": "ArtistOfSongs_songId_artistId_unique",
+          "columns": [
+            "songId",
+            "artistId"
+          ],
+          "isUnique": true
+        },
+        "artistId": {
+          "name": "artistId",
+          "columns": [
+            "artistId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "ArtistOfSongs_songId_Songs_id_fk": {
+          "name": "ArtistOfSongs_songId_Songs_id_fk",
+          "tableFrom": "ArtistOfSongs",
+          "tableTo": "Songs",
+          "columnsFrom": [
+            "songId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "ArtistOfSongs_artistId_Artists_id_fk": {
+          "name": "ArtistOfSongs_artistId_Artists_id_fk",
+          "tableFrom": "ArtistOfSongs",
+          "tableTo": "Artists",
+          "columnsFrom": [
+            "artistId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "ArtistOfSongs_artistOfSongId": {
+          "name": "ArtistOfSongs_artistOfSongId",
+          "columns": [
+            "artistOfSongId"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Artists": {
+      "name": "Artists",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sortOrder": {
+          "name": "sortOrder",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "mainPictureUrl": {
+          "name": "mainPictureUrl",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "enum('Unknown','Circle','Label','Producer','Animator','Illustrator','Lyricist','Vocaloid','UTAU','CeVIO','OtherVoiceSynthesizer','OtherVocalist','OtherGroup','OtherIndividual','Utaite','Band','Vocalist','Character','SynthesizerV','CoverArtist','NEUTRINO','VoiSona','NewType','Voiceroid','Instrumentalist','Designer')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "baseVoiceBankId": {
+          "name": "baseVoiceBankId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "utaiteDbId": {
+          "name": "utaiteDbId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vocaDbJson": {
+          "name": "vocaDbJson",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "incomplete": {
+          "name": "incomplete",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deletionDate": {
+          "name": "deletionDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "baseVoiceBankId": {
+          "name": "baseVoiceBankId",
+          "columns": [
+            "baseVoiceBankId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Artists_baseVoiceBankId_Artists_id_fk": {
+          "name": "Artists_baseVoiceBankId_Artists_id_fk",
+          "tableFrom": "Artists",
+          "tableTo": "Artists",
+          "columnsFrom": [
+            "baseVoiceBankId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "Artists_id": {
+          "name": "Artists_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Entries": {
+      "name": "Entries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "producersName": {
+          "name": "producersName",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vocalistsName": {
+          "name": "vocalistsName",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "authorId": {
+          "name": "authorId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "recentActionDate": {
+          "name": "recentActionDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deletionDate": {
+          "name": "deletionDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "authorId": {
+          "name": "authorId",
+          "columns": [
+            "authorId"
+          ],
+          "isUnique": false
+        },
+        "recentActionDateIndex": {
+          "name": "recentActionDateIndex",
+          "columns": [
+            "recentActionDate"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Entries_authorId_Users_id_fk": {
+          "name": "Entries_authorId_Users_id_fk",
+          "tableFrom": "Entries",
+          "tableTo": "Users",
+          "columnsFrom": [
+            "authorId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "Entries_id": {
+          "name": "Entries_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "FileInPlaylists": {
+      "name": "FileInPlaylists",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "fileId": {
+          "name": "fileId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "playlistId": {
+          "name": "playlistId",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sortOrder": {
+          "name": "sortOrder",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "FileInPlaylists_playlistId_fileId_unique": {
+          "name": "FileInPlaylists_playlistId_fileId_unique",
+          "columns": [
+            "fileId",
+            "playlistId"
+          ],
+          "isUnique": true
+        },
+        "playlistId": {
+          "name": "playlistId",
+          "columns": [
+            "playlistId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "FileInPlaylists_fileId_MusicFiles_id_fk": {
+          "name": "FileInPlaylists_fileId_MusicFiles_id_fk",
+          "tableFrom": "FileInPlaylists",
+          "tableTo": "MusicFiles",
+          "columnsFrom": [
+            "fileId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "FileInPlaylists_playlistId_Playlists_slug_fk": {
+          "name": "FileInPlaylists_playlistId_Playlists_slug_fk",
+          "tableFrom": "FileInPlaylists",
+          "tableTo": "Playlists",
+          "columnsFrom": [
+            "playlistId"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "FileInPlaylists_id": {
+          "name": "FileInPlaylists_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "FuriganaMappings": {
+      "name": "FuriganaMappings",
+      "columns": {
+        "text": {
+          "name": "text",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "furigana": {
+          "name": "furigana",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "segmentedText": {
+          "name": "segmentedText",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "segmentedFurigana": {
+          "name": "segmentedFurigana",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "FuriganaMappings_text_furigana_pk": {
+          "name": "FuriganaMappings_text_furigana_pk",
+          "columns": [
+            "text",
+            "furigana"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "MusicFiles": {
+      "name": "MusicFiles",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "path": {
+          "name": "path",
+          "type": "varchar(768)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fileSize": {
+          "name": "fileSize",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "songId": {
+          "name": "songId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "albumId": {
+          "name": "albumId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "trackName": {
+          "name": "trackName",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "trackSortOrder": {
+          "name": "trackSortOrder",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "albumName": {
+          "name": "albumName",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "albumSortOrder": {
+          "name": "albumSortOrder",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "artistName": {
+          "name": "artistName",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "artistSortOrder": {
+          "name": "artistSortOrder",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "hasLyrics": {
+          "name": "hasLyrics",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "hasCover": {
+          "name": "hasCover",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "needReview": {
+          "name": "needReview",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "duration": {
+          "name": "duration",
+          "type": "float",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": -1
+        },
+        "hash": {
+          "name": "hash",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "playCount": {
+          "name": "playCount",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "lastPlayed": {
+          "name": "lastPlayed",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "path": {
+          "name": "path",
+          "columns": [
+            "path"
+          ],
+          "isUnique": true
+        },
+        "songId": {
+          "name": "songId",
+          "columns": [
+            "songId"
+          ],
+          "isUnique": false
+        },
+        "albumId": {
+          "name": "albumId",
+          "columns": [
+            "albumId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "MusicFiles_songId_Songs_id_fk": {
+          "name": "MusicFiles_songId_Songs_id_fk",
+          "tableFrom": "MusicFiles",
+          "tableTo": "Songs",
+          "columnsFrom": [
+            "songId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "MusicFiles_albumId_Albums_id_fk": {
+          "name": "MusicFiles_albumId_Albums_id_fk",
+          "tableFrom": "MusicFiles",
+          "tableTo": "Albums",
+          "columnsFrom": [
+            "albumId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "MusicFiles_id": {
+          "name": "MusicFiles_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Playlists": {
+      "name": "Playlists",
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "Playlists_slug": {
+          "name": "Playlists_slug",
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Pulses": {
+      "name": "Pulses",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "entryId": {
+          "name": "entryId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "pulses_ibfk_1": {
+          "name": "pulses_ibfk_1",
+          "columns": [
+            "entryId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Pulses_entryId_Entries_id_fk": {
+          "name": "Pulses_entryId_Entries_id_fk",
+          "tableFrom": "Pulses",
+          "tableTo": "Entries",
+          "columnsFrom": [
+            "entryId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "Pulses_id": {
+          "name": "Pulses_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "SiteMeta": {
+      "name": "SiteMeta",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "varchar(768)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "SiteMeta_key": {
+          "name": "SiteMeta_key",
+          "columns": [
+            "key"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "SongInAlbums": {
+      "name": "SongInAlbums",
+      "columns": {
+        "songInAlbumId": {
+          "name": "songInAlbumId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "vocaDbId": {
+          "name": "vocaDbId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "diskNumber": {
+          "name": "diskNumber",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "trackNumber": {
+          "name": "trackNumber",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(2048)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "songId": {
+          "name": "songId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "albumId": {
+          "name": "albumId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "vocaDbId": {
+          "name": "vocaDbId",
+          "columns": [
+            "vocaDbId"
+          ],
+          "isUnique": true
+        },
+        "SongInAlbums_songId_albumId_unique": {
+          "name": "SongInAlbums_songId_albumId_unique",
+          "columns": [
+            "songId",
+            "albumId"
+          ],
+          "isUnique": true
+        },
+        "albumId": {
+          "name": "albumId",
+          "columns": [
+            "albumId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "SongInAlbums_songId_Songs_id_fk": {
+          "name": "SongInAlbums_songId_Songs_id_fk",
+          "tableFrom": "SongInAlbums",
+          "tableTo": "Songs",
+          "columnsFrom": [
+            "songId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "SongInAlbums_albumId_Albums_id_fk": {
+          "name": "SongInAlbums_albumId_Albums_id_fk",
+          "tableFrom": "SongInAlbums",
+          "tableTo": "Albums",
+          "columnsFrom": [
+            "albumId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "SongInAlbums_songInAlbumId": {
+          "name": "SongInAlbums_songInAlbumId",
+          "columns": [
+            "songInAlbumId"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "SongOfEntries": {
+      "name": "SongOfEntries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "songId": {
+          "name": "songId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "entryId": {
+          "name": "entryId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "SongOfEntries_songId_entryId_unique": {
+          "name": "SongOfEntries_songId_entryId_unique",
+          "columns": [
+            "songId",
+            "entryId"
+          ],
+          "isUnique": true
+        },
+        "entryId": {
+          "name": "entryId",
+          "columns": [
+            "entryId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "SongOfEntries_songId_Songs_id_fk": {
+          "name": "SongOfEntries_songId_Songs_id_fk",
+          "tableFrom": "SongOfEntries",
+          "tableTo": "Songs",
+          "columnsFrom": [
+            "songId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "SongOfEntries_entryId_Entries_id_fk": {
+          "name": "SongOfEntries_entryId_Entries_id_fk",
+          "tableFrom": "SongOfEntries",
+          "tableTo": "Entries",
+          "columnsFrom": [
+            "entryId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "SongOfEntries_id": {
+          "name": "SongOfEntries_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Songs": {
+      "name": "Songs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sortOrder": {
+          "name": "sortOrder",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "originalId": {
+          "name": "originalId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vocaDbJson": {
+          "name": "vocaDbJson",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coverUrl": {
+          "name": "coverUrl",
+          "type": "varchar(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "utaiteDbId": {
+          "name": "utaiteDbId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "incomplete": {
+          "name": "incomplete",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deletionDate": {
+          "name": "deletionDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "originalId": {
+          "name": "originalId",
+          "columns": [
+            "originalId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Songs_originalId_Songs_id_fk": {
+          "name": "Songs_originalId_Songs_id_fk",
+          "tableFrom": "Songs",
+          "tableTo": "Songs",
+          "columnsFrom": [
+            "originalId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "Songs_id": {
+          "name": "Songs_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "TagOfEntries": {
+      "name": "TagOfEntries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tagId": {
+          "name": "tagId",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "entryId": {
+          "name": "entryId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "TagOfEntries_tagId_entryId_unique": {
+          "name": "TagOfEntries_tagId_entryId_unique",
+          "columns": [
+            "tagId",
+            "entryId"
+          ],
+          "isUnique": true
+        },
+        "entryId": {
+          "name": "entryId",
+          "columns": [
+            "entryId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "TagOfEntries_tagId_Tags_slug_fk": {
+          "name": "TagOfEntries_tagId_Tags_slug_fk",
+          "tableFrom": "TagOfEntries",
+          "tableTo": "Tags",
+          "columnsFrom": [
+            "tagId"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "TagOfEntries_entryId_Entries_id_fk": {
+          "name": "TagOfEntries_entryId_Entries_id_fk",
+          "tableFrom": "TagOfEntries",
+          "tableTo": "Entries",
+          "columnsFrom": [
+            "entryId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "TagOfEntries_id": {
+          "name": "TagOfEntries_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Tags": {
+      "name": "Tags",
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "Tags_slug": {
+          "name": "Tags_slug",
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "UserPublicKeyCredentials": {
+      "name": "UserPublicKeyCredentials",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "externalId": {
+          "name": "externalId",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "publicKey": {
+          "name": "publicKey",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "externalId": {
+          "name": "externalId",
+          "columns": [
+            "externalId"
+          ],
+          "isUnique": true
+        },
+        "userId": {
+          "name": "userId",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "UserPublicKeyCredentials_userId_Users_id_fk": {
+          "name": "UserPublicKeyCredentials_userId_Users_id_fk",
+          "tableFrom": "UserPublicKeyCredentials",
+          "tableTo": "Users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "UserPublicKeyCredentials_id": {
+          "name": "UserPublicKeyCredentials_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Users": {
+      "name": "Users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "displayName": {
+          "name": "displayName",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "password": {
+          "name": "password",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "enum('admin','guest')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'guest'"
+        },
+        "provider": {
+          "name": "provider",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deletionDate": {
+          "name": "deletionDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "username": {
+          "name": "username",
+          "columns": [
+            "username"
+          ],
+          "isUnique": true
+        },
+        "email": {
+          "name": "email",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "Users_id": {
+          "name": "Users_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Verses": {
+      "name": "Verses",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "language": {
+          "name": "language",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "isOriginal": {
+          "name": "isOriginal",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "isMain": {
+          "name": "isMain",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "html": {
+          "name": "html",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stylizedText": {
+          "name": "stylizedText",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "translator": {
+          "name": "translator",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "typingSequence": {
+          "name": "typingSequence",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "entryId": {
+          "name": "entryId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deletionDate": {
+          "name": "deletionDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "entryId": {
+          "name": "entryId",
+          "columns": [
+            "entryId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Verses_entryId_Entries_id_fk": {
+          "name": "Verses_entryId_Entries_id_fk",
+          "tableFrom": "Verses",
+          "tableTo": "Entries",
+          "columnsFrom": [
+            "entryId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "Verses_id": {
+          "name": "Verses_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "VideoFiles": {
+      "name": "VideoFiles",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "path": {
+          "name": "path",
+          "type": "varchar(768)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "songId": {
+          "name": "songId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sourceUrl": {
+          "name": "sourceUrl",
+          "type": "varchar(2048)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "enum('Original','PV','Derived','Subtitled','OnVocal','OffVocal','Other')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Other'"
+        },
+        "creationDate": {
+          "name": "creationDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedOn": {
+          "name": "updatedOn",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deletionDate": {
+          "name": "deletionDate",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "path": {
+          "name": "path",
+          "columns": [
+            "path"
+          ],
+          "isUnique": true
+        },
+        "songId": {
+          "name": "songId",
+          "columns": [
+            "songId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "VideoFiles_songId_Songs_id_fk": {
+          "name": "VideoFiles_songId_Songs_id_fk",
+          "tableFrom": "VideoFiles",
+          "tableTo": "Songs",
+          "columnsFrom": [
+            "songId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "VideoFiles_id": {
+          "name": "VideoFiles_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {},
+    "indexes": {}
+  }
+}
