@@ -5,6 +5,8 @@ import "./types/Texture";
 
 // Resolver modules (attach query/mutation/subscription fields).
 import "./resolvers/texture";
+import "./resolvers/stats";
+import "./resolvers/siteMeta";
 
 /**
  * Builds the Pothos `GraphQLSchema`. As the Phase 2 port progresses, importing

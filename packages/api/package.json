@@ -21,7 +21,7 @@
     "posthog": "posthog-cli sourcemap inject --directory dist && posthog-cli sourcemap upload --directory dist",
     "schema:check": "node scripts/schema-parity.mjs",
     "openapi": "node scripts/emit-openapi.mjs && openapi-typescript openapi.json -o src/openapi/schema.ts",
-    "pothos:emit": "ts-node --transpile-only scripts/emit-pothos-schema.ts",
+    "pothos:emit": "tsc ; node scripts/emit-pothos-schema.mjs",
     "pothos:check": "npm run pothos:emit && node scripts/schema-parity.mjs schema.graphql.golden schema.pothos.graphql",
     "test": "jest"
   },

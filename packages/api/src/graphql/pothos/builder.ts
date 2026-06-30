@@ -20,6 +20,8 @@ export interface Context {
 
 export const builder = new SchemaBuilder<{
   Context: Context;
+  DefaultFieldNullability: false;
+  DefaultInputFieldRequiredness: true;
   Scalars: {
     Timestamp: { Input: Date; Output: Date | number };
     JSONObject: { Input: unknown; Output: unknown };
@@ -32,6 +34,9 @@ export const builder = new SchemaBuilder<{
   };
 }>({
   plugins: [ScopeAuthPlugin],
+  // The api tsconfig has `strict: false`; Pothos requires acknowledging this.
+  notStrict:
+    "Pothos may not work correctly when strict mode is not enabled in tsconfig.json",
   // Match TypeGraphQL defaults so the emitted schema stays parity-compatible
   // without per-field annotations: output fields non-null, input fields required.
   defaultFieldNullability: false,
