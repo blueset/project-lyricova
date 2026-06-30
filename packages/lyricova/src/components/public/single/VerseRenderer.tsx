@@ -1,4 +1,4 @@
-import type { Verse } from "@lyricova/api/graphql/types";
+import type { Verse } from "@/frontendUtils/restTypes";
 import { BlockVerseRenderer } from "./BlockVerseRenderer";
 import { LineVerseRenderer } from "./LineVerseRenderer";
 

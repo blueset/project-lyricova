@@ -1,6 +1,6 @@
 "use client";
 
-import type { Entry } from "@lyricova/api/graphql/types";
+import type { Entry } from "@/frontendUtils/restTypes";
 import { buildAnimationSequence } from "@/utils/typingSequence";
 import type { CSSProperties } from "react";
 import { useCallback, useMemo, useRef } from "react";

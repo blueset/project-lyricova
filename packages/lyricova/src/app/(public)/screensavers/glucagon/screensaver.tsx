@@ -1,6 +1,6 @@
 "use client";
 
-import type { Entry, Verse } from "@lyricova/api/graphql/types";
+import type { Entry, Verse } from "@/frontendUtils/restTypes";
 import { useEffect, useRef, useState } from "react";
 import { TagRow } from "@/components/public/TagRow";
 import { generateColorGradientFunction } from "@/frontendUtils/colors";

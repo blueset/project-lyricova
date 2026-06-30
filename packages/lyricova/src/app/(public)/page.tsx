@@ -14,7 +14,7 @@ import {
   apiBaseUrl,
 } from "@/utils/consts";
 import type { Metadata } from "next";
-import type { Entry } from "@lyricova/api/graphql/types";
+import type { Entry } from "@/frontendUtils/restTypes";
 
 export const metadata: Metadata = {
   title: siteName,

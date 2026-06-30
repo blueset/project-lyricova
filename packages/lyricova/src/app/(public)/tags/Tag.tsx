@@ -1,6 +1,6 @@
 "use client";
 
-import type { Tag } from "@lyricova/api/graphql/types";
+import type { Tag } from "@/frontendUtils/restTypes";
 import React, { useRef } from "react";
 import gsap from "gsap";
 import { Link } from "@/components/public/Link";

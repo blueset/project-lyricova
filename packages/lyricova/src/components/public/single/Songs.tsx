@@ -1,4 +1,4 @@
-import type { Song } from "@lyricova/api/graphql/types";
+import type { Song } from "@/frontendUtils/restTypes";
 import { Divider } from "../Divider";
 import classes from "./Songs.module.scss";
 import { formatArtists } from "@lyricova/components";

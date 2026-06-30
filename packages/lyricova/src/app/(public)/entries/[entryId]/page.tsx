@@ -8,7 +8,7 @@ import { IndexHeader } from "@/components/public/IndexHeader";
 import { Songs } from "@/components/public/single/Songs";
 import { generateColorGradient } from "@/frontendUtils/colors";
 import { OtherVerse } from "@/components/public/single/OtherVerse";
-import type { Entry, Song } from "@lyricova/api/graphql/types";
+import type { Entry, Song } from "@/frontendUtils/restTypes";
 import { MainVerse } from "@/components/public/single/MainVerse";
 import { apiBaseUrl, host, siteName } from "@/utils/consts";
 import { AdminLinks } from "@/components/public/single/AdminLinks";

@@ -1,4 +1,4 @@
-import type { Verse } from "@lyricova/api/graphql/types";
+import type { Verse } from "@/frontendUtils/restTypes";
 import classes from "./OtherVerse.module.scss";
 import { VerseRenderer } from "./VerseRenderer";
 import { Star } from "lucide-react";
