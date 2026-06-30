@@ -5,7 +5,7 @@ import axios from "axios";
 import type {
   PartialFindResult,
   AlbumForApiContract,
-} from "@lyricova/api/graphql/types";
+} from "@lyricova/api/vocadb";
 import _ from "lodash";
 import { useApolloClient } from "@apollo/client";
 import { graphql } from "../../gql";

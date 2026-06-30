@@ -38,7 +38,10 @@
     "./graphql/types": {
       "types": "./dist/graphql/types.d.ts"
     },
-    "./openapi": "./src/openapi/index.ts"
+    "./openapi": "./src/openapi/index.ts",
+    "./vocadb": {
+      "types": "./src/types/vocadb.d.ts"
+    }
   },
   "dependencies": {
     "@ai-sdk/azure": "^2.0.79",
