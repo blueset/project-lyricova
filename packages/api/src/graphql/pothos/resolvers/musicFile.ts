@@ -478,15 +478,19 @@ builder.mutationField("toggleMusicFileReviewStatus", (t) =>
       }),
     },
     resolve: async (_root, { fileId, needReview }) => {
-      let file: MusicFile;
-      try {
-        file = await MusicFile.findByPk(fileId, { rejectOnEmpty: true });
-      } catch {
+      const file = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, fileId),
+      });
+      if (!file) {
         throw new Error("Music file is not found.");
       }
-      await file.update({ needReview });
-
-      return file as any;
+      await db
+        .update(MusicFiles)
+        .set({ needReview, updatedOn: new Date() })
+        .where(eq(MusicFiles.id, fileId));
+      return (await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, fileId),
+      })) as any;
     },
   })
 );
@@ -497,13 +501,16 @@ builder.mutationField("bumpPlayCount", (t) =>
     description: "Bump play count of a file",
     args: { fileId: t.arg.int({ description: "Music file ID" }) },
     resolve: async (_root, { fileId }) => {
-      const file = await MusicFile.findByPk(fileId);
-      if (file === null) return 0;
+      const file = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, fileId),
+      });
+      if (!file) return 0;
       const playCount = file.playCount + 1;
-      await file.update(
-        { playCount, lastPlayed: new Date() },
-        { silent: true }
-      );
+      // silent: preserve updatedOn.
+      await db
+        .update(MusicFiles)
+        .set({ playCount, lastPlayed: new Date() })
+        .where(eq(MusicFiles.id, fileId));
       return playCount;
     },
   })
@@ -523,10 +530,17 @@ builder.mutationField("updateMusicFileStats", (t) =>
       }),
     },
     resolve: async (_root, { fileId, playCount, lastPlayed }) => {
-      const file = await MusicFile.findByPk(fileId);
-      if (file === null) throw new Error("Music file is not found.");
-      await file.update({ playCount, lastPlayed });
-      return file as any;
+      const file = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, fileId),
+      });
+      if (!file) throw new Error("Music file is not found.");
+      await db
+        .update(MusicFiles)
+        .set({ playCount, lastPlayed: lastPlayed ?? null, updatedOn: new Date() })
+        .where(eq(MusicFiles.id, fileId));
+      return (await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, fileId),
+      })) as any;
     },
   })
 );
