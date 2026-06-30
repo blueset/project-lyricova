@@ -1,33 +1,31 @@
 "use client";
 
-import { gql, useQuery, useApolloClient } from "@apollo/client";
+import { useQuery, useApolloClient } from "@apollo/client";
 import { Button } from "@lyricova/components/components/ui/button";
-import type { UserPublicKeyCredential } from "@lyricova/api/graphql/types";
+import { graphql } from "../gql";
 import { MouseEvent, useCallback, useEffect, useState } from "react";
 import base64url from "base64url";
 import { LS_JWT_KEY } from "../utils/localStorage";
 import { Trash2 } from "lucide-react";
 
-const GET_CREDENTIALS_QUERY = gql`
-  query {
+const GET_CREDENTIALS_QUERY = graphql(`
+  query CurrentCredentials {
     currentCredentials {
       id
       remarks
       creationDate
     }
   }
-`;
+`);
 
-const DELETE_CREDENTIAL_MUTATION = gql`
-  mutation ($id: Int!) {
+const DELETE_CREDENTIAL_MUTATION = graphql(`
+  mutation DeleteCredential($id: Int!) {
     deleteCredential(id: $id)
   }
-`;
+`);
 
 export function WebAuthnCredManager() {
-  const { data, loading, error, refetch } = useQuery<{
-    currentCredentials: UserPublicKeyCredential[];
-  }>(GET_CREDENTIALS_QUERY);
+  const { data, loading, error, refetch } = useQuery(GET_CREDENTIALS_QUERY);
 
   const apolloClient = useApolloClient();
 
