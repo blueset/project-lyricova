@@ -1,6 +1,8 @@
 import axios from "axios";
 import cheerio from "cheerio";
-import { Song } from "../../../models/Song";
+import { eq } from "drizzle-orm";
+import { db } from "../../../drizzle/client";
+import { Songs } from "../../../drizzle/schema";
 import type {
   SongForApiContract,
   LyricsForSongContract,
@@ -140,10 +142,11 @@ function timeoutPromise<T>(promise: Promise<T>, name: string): Promise<T> {
 
 async function vocaDBLyrics(id: number): Promise<LyricsForSongContract[]> {
   try {
-    const elm = await Song.findByPk(id);
+    const elm = await db.query.Songs.findFirst({ where: eq(Songs.id, id) });
     if (elm) {
-      if (elm.vocaDbJson?.lyrics && elm.vocaDbJson.lyrics.length) {
-        return elm.vocaDbJson.lyrics;
+      const vocaDbJson = elm.vocaDbJson as SongForApiContract | null;
+      if (vocaDbJson?.lyrics && vocaDbJson.lyrics.length) {
+        return vocaDbJson.lyrics;
       } else {
         if (elm.originalId) {
           const original = await vocaDBLyrics(elm.originalId);
