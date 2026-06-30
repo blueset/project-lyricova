@@ -95,7 +95,7 @@ interface LyricsKitLyricsEntry {
   tags: Record<string, unknown>;
 }
 
-const LyricsKitLyricsEntryRef =
+export const LyricsKitLyricsEntryRef =
   builder.objectRef<LyricsKitLyricsEntry>("LyricsKitLyricsEntry");
 
 LyricsKitLyricsEntryRef.implement({
