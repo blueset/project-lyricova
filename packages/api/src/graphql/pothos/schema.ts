@@ -4,6 +4,7 @@ import { builder } from "./builder";
 import "./types/Texture";
 import "./types/User";
 import "./types/Transliteration";
+import "./types/leaf";
 
 // Resolver modules (attach query/mutation/subscription fields).
 import "./resolvers/texture";
