@@ -1,7 +1,8 @@
 import { builder } from "../builder";
 import { TransliterationResultRef } from "../types/Transliteration";
 import { FuriganaMappingRef } from "../types/refs";
-import { FuriganaMapping } from "../../../models/FuriganaMapping";
+import { db } from "../../../drizzle/client";
+import { FuriganaMappings } from "../../../drizzle/schema";
 import { convertMonoruby } from "../../../utils/monoruby";
 
 const FuriganaLabelInput = builder.inputType("FuriganaLabel", {
@@ -45,7 +46,7 @@ builder.queryField("transliterate", (t) =>
 builder.queryField("furiganaMappings", (t) =>
   t.field({
     type: [FuriganaMappingRef],
-    resolve: () => FuriganaMapping.findAll(),
+    resolve: async () => db.query.FuriganaMappings.findMany() as any,
   })
 );
 
@@ -100,12 +101,20 @@ builder.mutationField("updateFuriganaMappings", (t) =>
         throw new Error(errors);
       }
       for (const mapping of mappings) {
-        await FuriganaMapping.upsert({
-          text: mapping.text,
-          furigana: mapping.furigana,
-          segmentedText: mapping.segmentedText ?? undefined,
-          segmentedFurigana: mapping.segmentedFurigana ?? undefined,
-        });
+        await db
+          .insert(FuriganaMappings)
+          .values({
+            text: mapping.text,
+            furigana: mapping.furigana,
+            segmentedText: mapping.segmentedText ?? null,
+            segmentedFurigana: mapping.segmentedFurigana ?? null,
+          })
+          .onDuplicateKeyUpdate({
+            set: {
+              segmentedText: mapping.segmentedText ?? null,
+              segmentedFurigana: mapping.segmentedFurigana ?? null,
+            },
+          });
       }
       return true;
     },

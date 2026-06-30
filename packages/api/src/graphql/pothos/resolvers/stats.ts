@@ -1,11 +1,15 @@
+import { eq } from "drizzle-orm";
 import { builder } from "../builder";
-import { MusicFile } from "../../../models/MusicFile";
-import { Song } from "../../../models/Song";
-import { Artist } from "../../../models/Artist";
-import { Album } from "../../../models/Album";
-import { Entry } from "../../../models/Entry";
-import { Pulse } from "../../../models/Pulse";
-import { Tag } from "../../../models/Tag";
+import { db } from "../../../drizzle/client";
+import {
+  MusicFiles,
+  Songs,
+  Artists,
+  Albums,
+  Entries,
+  Pulses,
+  Tags,
+} from "../../../drizzle/schema";
 
 const DashboardStatsRef = builder.objectRef<Record<string, never>>(
   "DashboardStats"
@@ -21,22 +25,22 @@ DashboardStatsRef.implement({
       type: "Timestamp",
       resolve: () => new Date("2013-05-20T23:41:56"),
     }),
-    musicFilesCount: t.int({ resolve: () => MusicFile.count() }),
-    entriesCount: t.int({ resolve: () => Entry.count() }),
-    pulsesCount: t.int({ resolve: () => Pulse.count() }),
-    tagsCount: t.int({ resolve: () => Tag.count() }),
+    musicFilesCount: t.int({ resolve: () => db.$count(MusicFiles) }),
+    entriesCount: t.int({ resolve: () => db.$count(Entries) }),
+    pulsesCount: t.int({ resolve: () => db.$count(Pulses) }),
+    tagsCount: t.int({ resolve: () => db.$count(Tags) }),
     reviewedFilesCount: t.int({
-      resolve: () => MusicFile.count({ where: { needReview: false } }),
+      resolve: () => db.$count(MusicFiles, eq(MusicFiles.needReview, false)),
     }),
     filesHasLyricsCount: t.int({
-      resolve: () => MusicFile.count({ where: { hasLyrics: true } }),
+      resolve: () => db.$count(MusicFiles, eq(MusicFiles.hasLyrics, true)),
     }),
     filesHasCoverCount: t.int({
-      resolve: () => MusicFile.count({ where: { hasCover: true } }),
+      resolve: () => db.$count(MusicFiles, eq(MusicFiles.hasCover, true)),
     }),
-    songCount: t.int({ resolve: () => Song.count() }),
-    artistCount: t.int({ resolve: () => Artist.count() }),
-    albumCount: t.int({ resolve: () => Album.count() }),
+    songCount: t.int({ resolve: () => db.$count(Songs) }),
+    artistCount: t.int({ resolve: () => db.$count(Artists) }),
+    albumCount: t.int({ resolve: () => db.$count(Albums) }),
   }),
 });
 

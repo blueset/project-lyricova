@@ -5,7 +5,7 @@ import type { ArtistOfAlbum } from "../../../models/ArtistOfAlbum";
 import type { ArtistOfSong } from "../../../models/ArtistOfSong";
 import type { Entry } from "../../../models/Entry";
 import type { FileInPlaylist } from "../../../models/FileInPlaylist";
-import type { FuriganaMapping } from "../../../models/FuriganaMapping";
+import type { FuriganaMappings } from "../../../drizzle/schema";
 import type { MusicFile } from "../../../models/MusicFile";
 import type { Playlist } from "../../../models/Playlist";
 import type { Pulse } from "../../../models/Pulse";
@@ -30,7 +30,7 @@ export const ArtistOfAlbumRef = builder.objectRef<ArtistOfAlbum>("ArtistOfAlbum"
 export const ArtistOfSongRef = builder.objectRef<ArtistOfSong>("ArtistOfSong");
 export const EntryRef = builder.objectRef<Entry>("Entry");
 export const FileInPlaylistRef = builder.objectRef<FileInPlaylist>("FileInPlaylist");
-export const FuriganaMappingRef = builder.objectRef<FuriganaMapping>("FuriganaMapping");
+export const FuriganaMappingRef = builder.objectRef<typeof FuriganaMappings.$inferSelect>("FuriganaMapping");
 export const MusicFileRef = builder.objectRef<MusicFile>("MusicFile");
 export const PlaylistRef = builder.objectRef<Playlist>("Playlist");
 export const PulseRef = builder.objectRef<Pulse>("Pulse");
