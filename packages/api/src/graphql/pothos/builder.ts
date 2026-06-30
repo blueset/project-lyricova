@@ -1,16 +1,18 @@
 import SchemaBuilder from "@pothos/core";
 import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
+import DrizzlePlugin from "@pothos/plugin-drizzle";
 import { GraphQLJSONObject } from "graphql-type-json";
 import type { Request } from "express";
 import type { User } from "../../models/User";
+import { db, fullSchema } from "../../drizzle/client";
 
 /**
- * Pothos schema builder for the Sequelize/TypeGraphQL -> Drizzle/Pothos
- * migration (Phase 2: replace TypeGraphQL while keeping Sequelize).
+ * Pothos schema builder for the Sequelize/TypeGraphQL -> Drizzle/Pothos migration.
  *
- * Object types are backed by Sequelize model instances; field resolvers call
- * the existing Sequelize associations/queries. The emitted schema must stay
- * byte-compatible with schema.graphql (guarded by `npm run schema:check`).
+ * Phase 2 replaced TypeGraphQL with Pothos (types backed by Sequelize model
+ * instances). Phase 4 migrates types domain-by-domain to `builder.drizzleObject`
+ * (via `@pothos/plugin-drizzle`); both backings coexist during the strangler. The
+ * emitted schema must stay byte-compatible with schema.graphql (`npm run schema:check`).
  */
 
 export interface Context {
@@ -20,6 +22,7 @@ export interface Context {
 
 export const builder = new SchemaBuilder<{
   Context: Context;
+  DrizzleSchema: typeof fullSchema;
   DefaultFieldNullability: false;
   DefaultInputFieldRequiredness: true;
   Scalars: {
@@ -33,7 +36,10 @@ export const builder = new SchemaBuilder<{
     admin: boolean;
   };
 }>({
-  plugins: [ScopeAuthPlugin],
+  plugins: [ScopeAuthPlugin, DrizzlePlugin],
+  drizzle: {
+    client: db,
+  },
   // The api tsconfig has `strict: false`; Pothos requires acknowledging this.
   notStrict:
     "Pothos may not work correctly when strict mode is not enabled in tsconfig.json",

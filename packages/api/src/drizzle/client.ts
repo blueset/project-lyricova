@@ -14,8 +14,10 @@ import * as relations from "./relations";
  */
 export const pool = mysql.createPool(DB_URI);
 
+export const fullSchema = { ...schema, ...relations };
+
 export const db = drizzle(pool, {
-  schema: { ...schema, ...relations },
+  schema: fullSchema,
   mode: "default",
 });
 
