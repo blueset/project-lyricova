@@ -2,10 +2,8 @@ import { eq, sql } from "drizzle-orm";
 import { builder } from "../builder";
 import { SongRef } from "../types/refs";
 import { db } from "../../../drizzle/client";
-import { Songs } from "../../../drizzle/schema";
-import { Song } from "../../../models/Song";
-import { Album } from "../../../models/Album";
-import { Artist } from "../../../models/Artist";
+import { Songs, ArtistOfSongs, SongInAlbums } from "../../../drizzle/schema";
+import { serializeEnumArray } from "../../../drizzle/enumArray";
 import _ from "lodash";
 
 const ArtistOfSongInput = builder.inputType("ArtistOfSongInput", {
@@ -81,38 +79,43 @@ builder.mutationField("newSong", (t) =>
       const { name, sortOrder, coverUrl, originalId, artistsOfSong, songInAlbums } =
         data;
       const id = _.random(-2147483648, -1, false);
-      const song = await Song.create({
+      const now = new Date();
+      await db.insert(Songs).values({
         id,
         name,
         sortOrder,
         coverUrl,
-        originalId,
+        originalId: originalId ?? null,
         incomplete: false,
-      } as any);
-      await Promise.all(
-        artistsOfSong.map((v) =>
-          song.$add("artist", v.artistId, {
-            through: {
-              categories: v.categories,
-              artistRoles: v.artistRoles,
-              customName: v.customName,
-              isSupport: v.isSupport,
-            },
-          })
-        )
-      );
-      await Promise.all(
-        songInAlbums.map((v) =>
-          song.$add("albums", v.albumId, {
-            through: {
-              name: v.name,
-              diskNumber: v.diskNumber,
-              trackNumber: v.trackNumber,
-            },
-          })
-        )
-      );
-      return song as any;
+        creationDate: now,
+        updatedOn: now,
+      });
+      for (const v of artistsOfSong) {
+        await db.insert(ArtistOfSongs).values({
+          songId: id,
+          artistId: v.artistId,
+          categories: serializeEnumArray(v.categories),
+          artistRoles: serializeEnumArray(v.artistRoles),
+          customName: v.customName ?? null,
+          isSupport: v.isSupport,
+          creationDate: now,
+          updatedOn: now,
+        });
+      }
+      for (const v of songInAlbums) {
+        await db.insert(SongInAlbums).values({
+          songId: id,
+          albumId: v.albumId,
+          name: v.name ?? null,
+          diskNumber: v.diskNumber ?? null,
+          trackNumber: v.trackNumber ?? null,
+          creationDate: now,
+          updatedOn: now,
+        });
+      }
+      return (await db.query.Songs.findFirst({
+        where: eq(Songs.id, id),
+      })) as any;
     },
   })
 );
@@ -125,41 +128,57 @@ builder.mutationField("updateSong", (t) =>
     resolve: async (_root, { id, data }) => {
       const { name, sortOrder, coverUrl, originalId, artistsOfSong, songInAlbums } =
         data;
-      const song = await Song.findByPk(id);
-      if (song === null) {
+      const existing = await db.query.Songs.findFirst({
+        where: eq(Songs.id, id),
+      });
+      if (!existing) {
         throw new Error(`Song entity with id ${id} is not found.`);
       }
+      const now = new Date();
 
-      await song.update({ id, name, sortOrder, coverUrl, originalId } as any);
-
-      await song.$set(
-        "artists",
-        artistsOfSong.map((v) => {
-          const inst = Artist.build({ id: v.artistId }, { isNewRecord: false });
-          inst.ArtistOfSong = {
-            categories: v.categories,
-            artistRoles: v.artistRoles,
-            customName: v.customName,
-            isSupport: v.isSupport,
-          } as any;
-          return inst;
+      await db
+        .update(Songs)
+        .set({
+          name,
+          sortOrder,
+          coverUrl,
+          originalId: originalId ?? null,
+          updatedOn: now,
         })
-      );
+        .where(eq(Songs.id, id));
 
-      await song.$set(
-        "albums",
-        songInAlbums.map((v) => {
-          const inst = Album.build({ id: v.albumId }, { isNewRecord: false });
-          inst.SongInAlbum = {
-            name: v.name,
-            diskNumber: v.diskNumber,
-            trackNumber: v.trackNumber,
-          } as any;
-          return inst;
-        })
-      );
+      // Replace artist associations (mirrors Sequelize $set).
+      await db.delete(ArtistOfSongs).where(eq(ArtistOfSongs.songId, id));
+      for (const v of artistsOfSong) {
+        await db.insert(ArtistOfSongs).values({
+          songId: id,
+          artistId: v.artistId,
+          categories: serializeEnumArray(v.categories),
+          artistRoles: serializeEnumArray(v.artistRoles),
+          customName: v.customName ?? null,
+          isSupport: v.isSupport,
+          creationDate: now,
+          updatedOn: now,
+        });
+      }
 
-      return song as any;
+      // Replace album associations.
+      await db.delete(SongInAlbums).where(eq(SongInAlbums.songId, id));
+      for (const v of songInAlbums) {
+        await db.insert(SongInAlbums).values({
+          songId: id,
+          albumId: v.albumId,
+          name: v.name ?? null,
+          diskNumber: v.diskNumber ?? null,
+          trackNumber: v.trackNumber ?? null,
+          creationDate: now,
+          updatedOn: now,
+        });
+      }
+
+      return (await db.query.Songs.findFirst({
+        where: eq(Songs.id, id),
+      })) as any;
     },
   })
 );

@@ -2,10 +2,12 @@ import { eq, sql } from "drizzle-orm";
 import { builder } from "../builder";
 import { AlbumRef } from "../types/refs";
 import { db } from "../../../drizzle/client";
-import { Albums } from "../../../drizzle/schema";
-import { Album } from "../../../models/Album";
-import { Artist } from "../../../models/Artist";
-import { Song } from "../../../models/Song";
+import {
+  Albums,
+  ArtistOfAlbums,
+  SongInAlbums,
+} from "../../../drizzle/schema";
+import { serializeEnumArray } from "../../../drizzle/enumArray";
 import _ from "lodash";
 
 const ArtistOfAlbumInput = builder.inputType("ArtistOfAlbumInput", {
@@ -96,38 +98,43 @@ builder.mutationField("newAlbum", (t) =>
     resolve: async (_root, { data }) => {
       const { name, sortOrder, coverUrl, artistsOfAlbum, songsInAlbum } = data;
       const id = _.random(-2147483648, -1, false);
-      const album = await Album.create({
+      const now = new Date();
+      await db.insert(Albums).values({
         id,
         name,
         sortOrder,
-        coverUrl,
+        coverUrl: coverUrl ?? null,
         incomplete: false,
-      } as any);
+        creationDate: now,
+        updatedOn: now,
+      });
 
-      await Promise.all(
-        artistsOfAlbum.map((v) =>
-          album.$add("artist", v.artistId, {
-            through: {
-              categories: v.categories,
-              roles: v.roles,
-              effectiveRoles: v.effectiveRoles,
-            },
-          })
-        )
-      );
-      await Promise.all(
-        songsInAlbum.map((v) =>
-          album.$add("song", v.songId, {
-            through: {
-              name: v.name,
-              diskNumber: v.diskNumber,
-              trackNumber: v.trackNumber,
-            },
-          })
-        )
-      );
+      for (const v of artistsOfAlbum) {
+        await db.insert(ArtistOfAlbums).values({
+          albumId: id,
+          artistId: v.artistId,
+          categories: v.categories as any,
+          roles: serializeEnumArray(v.roles),
+          effectiveRoles: serializeEnumArray(v.effectiveRoles),
+          creationDate: now,
+          updatedOn: now,
+        });
+      }
+      for (const v of songsInAlbum) {
+        await db.insert(SongInAlbums).values({
+          albumId: id,
+          songId: v.songId,
+          name: v.name ?? null,
+          diskNumber: v.diskNumber ?? null,
+          trackNumber: v.trackNumber ?? null,
+          creationDate: now,
+          updatedOn: now,
+        });
+      }
 
-      return album as any;
+      return (await db.query.Albums.findFirst({
+        where: eq(Albums.id, id),
+      })) as any;
     },
   })
 );
@@ -139,40 +146,50 @@ builder.mutationField("updateAlbum", (t) =>
     args: { id: t.arg.int(), data: t.arg({ type: AlbumInput }) },
     resolve: async (_root, { id, data }) => {
       const { name, sortOrder, coverUrl, artistsOfAlbum, songsInAlbum } = data;
-      const album = await Album.findByPk(id);
-      if (album === null) {
+      const existing = await db.query.Albums.findFirst({
+        where: eq(Albums.id, id),
+      });
+      if (!existing) {
         throw new Error(`Album entity with id ${id} is not found.`);
       }
+      const now = new Date();
 
-      await album.update({ id, name, sortOrder, coverUrl } as any);
+      await db
+        .update(Albums)
+        .set({ name, sortOrder, coverUrl: coverUrl ?? null, updatedOn: now })
+        .where(eq(Albums.id, id));
 
-      await album.$set(
-        "artists",
-        artistsOfAlbum.map((v) => {
-          const inst = Artist.build({ id: v.artistId }, { isNewRecord: false });
-          inst.ArtistOfAlbum = {
-            categories: v.categories,
-            roles: v.roles,
-            effectiveRoles: v.effectiveRoles,
-          } as any;
-          return inst;
-        })
-      );
+      // Replace artist associations (mirrors Sequelize $set).
+      await db.delete(ArtistOfAlbums).where(eq(ArtistOfAlbums.albumId, id));
+      for (const v of artistsOfAlbum) {
+        await db.insert(ArtistOfAlbums).values({
+          albumId: id,
+          artistId: v.artistId,
+          categories: v.categories as any,
+          roles: serializeEnumArray(v.roles),
+          effectiveRoles: serializeEnumArray(v.effectiveRoles),
+          creationDate: now,
+          updatedOn: now,
+        });
+      }
 
-      await album.$set(
-        "songs",
-        songsInAlbum.map((v) => {
-          const inst = Song.build({ id: v.songId }, { isNewRecord: false });
-          inst.SongInAlbum = {
-            name: v.name,
-            diskNumber: v.diskNumber,
-            trackNumber: v.trackNumber,
-          } as any;
-          return inst;
-        })
-      );
+      // Replace song associations.
+      await db.delete(SongInAlbums).where(eq(SongInAlbums.albumId, id));
+      for (const v of songsInAlbum) {
+        await db.insert(SongInAlbums).values({
+          albumId: id,
+          songId: v.songId,
+          name: v.name ?? null,
+          diskNumber: v.diskNumber ?? null,
+          trackNumber: v.trackNumber ?? null,
+          creationDate: now,
+          updatedOn: now,
+        });
+      }
 
-      return album as any;
+      return (await db.query.Albums.findFirst({
+        where: eq(Albums.id, id),
+      })) as any;
     },
   })
 );

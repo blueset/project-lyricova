@@ -3,7 +3,6 @@ import { builder } from "../builder";
 import { ArtistRef } from "../types/refs";
 import { db } from "../../../drizzle/client";
 import { Artists } from "../../../drizzle/schema";
-import { Artist } from "../../../models/Artist";
 import _ from "lodash";
 
 const ArtistInput = builder.inputType("ArtistInput", {
@@ -123,9 +122,22 @@ builder.mutationField("newArtist", (t) =>
     type: ArtistRef,
     authScopes: { admin: true },
     args: { data: t.arg({ type: ArtistInput }) },
-    resolve: (_root, { data }) => {
+    resolve: async (_root, { data }) => {
       const id = _.random(-2147483648, -1, false);
-      return Artist.create({ id, ...data, incomplete: false } as any) as any;
+      const now = new Date();
+      await db.insert(Artists).values({
+        id,
+        name: data.name,
+        sortOrder: data.sortOrder,
+        mainPictureUrl: data.mainPictureUrl ?? null,
+        type: data.type as any,
+        incomplete: false,
+        creationDate: now,
+        updatedOn: now,
+      });
+      return (await db.query.Artists.findFirst({
+        where: eq(Artists.id, id),
+      })) as any;
     },
   })
 );
@@ -136,12 +148,25 @@ builder.mutationField("updateArtist", (t) =>
     authScopes: { admin: true },
     args: { id: t.arg.int(), data: t.arg({ type: ArtistInput }) },
     resolve: async (_root, { id, data }) => {
-      const artist = await Artist.findByPk(id);
-      if (artist === null) {
+      const existing = await db.query.Artists.findFirst({
+        where: eq(Artists.id, id),
+      });
+      if (!existing) {
         throw new Error(`Artist entity with id ${id} is not found.`);
       }
-      await artist.update({ id, ...data } as any);
-      return artist as any;
+      await db
+        .update(Artists)
+        .set({
+          name: data.name,
+          sortOrder: data.sortOrder,
+          mainPictureUrl: data.mainPictureUrl ?? null,
+          type: data.type as any,
+          updatedOn: new Date(),
+        })
+        .where(eq(Artists.id, id));
+      return (await db.query.Artists.findFirst({
+        where: eq(Artists.id, id),
+      })) as any;
     },
   })
 );
