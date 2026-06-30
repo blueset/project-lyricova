@@ -5,6 +5,11 @@ import "./types/Texture";
 import "./types/User";
 import "./types/Transliteration";
 import "./types/leaf";
+import "./types/entities";
+import "./types/MusicFile";
+import "./types/Playlist";
+import "./types/Entry";
+import "./types/Tag";
 
 // Resolver modules (attach query/mutation/subscription fields).
 import "./resolvers/texture";
