@@ -22,6 +22,7 @@ import "./resolvers/tag";
 import "./resolvers/artist";
 import "./resolvers/vocadbImport";
 import "./resolvers/album";
+import "./resolvers/song";
 
 /**
  * Builds the Pothos `GraphQLSchema`. As the Phase 2 port progresses, importing
