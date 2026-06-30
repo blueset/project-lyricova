@@ -26,6 +26,7 @@ import "./resolvers/album";
 import "./resolvers/song";
 import "./resolvers/entry";
 import "./resolvers/musicFile";
+import "./resolvers/playlist";
 
 /**
  * Builds the Pothos `GraphQLSchema`. As the Phase 2 port progresses, importing
