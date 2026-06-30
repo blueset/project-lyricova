@@ -1,13 +1,29 @@
-import type { Artist } from "@lyricova/api/graphql/types";
 import React from "react";
 import { ReactNode } from "react";
 
-function splitArtists(artists: Artist[]): {
-  producers: Artist[];
-  vocalists: Artist[];
+/**
+ * Minimal structural shape the artist formatters depend on. Kept generic so
+ * callers (GraphQL fragment results, VocaDB-derived objects, …) keep their own
+ * element type through to the `renderer` callback.
+ */
+interface ArtistLike {
+  ArtistOfSong?: {
+    categories?: readonly string[] | null;
+    isSupport?: boolean | null;
+  } | null;
+  ArtistOfAlbum?: {
+    categories?: string | readonly string[] | null;
+  } | null;
+}
+
+function splitArtists<T extends ArtistLike>(
+  artists: T[]
+): {
+  producers: T[];
+  vocalists: T[];
 } {
-  const producers: Artist[] = [],
-    vocalists: Artist[] = [];
+  const producers: T[] = [],
+    vocalists: T[] = [];
 
   for (const i of artists) {
     const categories = i?.ArtistOfSong?.categories || [
@@ -31,9 +47,9 @@ function splitArtists(artists: Artist[]): {
   return { producers, vocalists };
 }
 
-export function formatArtists(
-  artists: Artist[],
-  renderer: (artists: Artist[], isProducer: boolean) => ReactNode
+export function formatArtists<T extends ArtistLike>(
+  artists: T[],
+  renderer: (artists: T[], isProducer: boolean) => ReactNode
 ): ReactNode {
   const { producers, vocalists } = splitArtists(artists);
 
@@ -53,7 +69,9 @@ export function formatArtists(
   }
 }
 
-export function formatArtistsString(artists: Artist[]): string {
+export function formatArtistsString<T extends ArtistLike & { name: string }>(
+  artists: T[]
+): string {
   const { producers, vocalists } = splitArtists(artists);
 
   if (producers.length && vocalists.length) {
@@ -68,6 +86,8 @@ export function formatArtistsString(artists: Artist[]): string {
   }
 }
 
-export function formatArtistsPlainText(artists: Artist[]): ReactNode {
+export function formatArtistsPlainText<T extends ArtistLike & { name: string }>(
+  artists: T[]
+): ReactNode {
   return formatArtists(artists, (v) => v.map((i) => i.name).join(", "));
 }

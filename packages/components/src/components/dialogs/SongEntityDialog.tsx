@@ -1,8 +1,9 @@
 "use client";
 
-import type { Song } from "@lyricova/api/graphql/types";
 import { Fragment, useCallback } from "react";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
+import { graphql } from "../../gql";
+import type { SelectSongEntryFragment } from "../../gql/graphql";
 import { toast } from "sonner";
 import { Plus, Disc3, Music, Trash } from "lucide-react";
 import { z } from "zod";
@@ -43,7 +44,6 @@ import { SelectSongEntityBox } from "../inputs/SelectSongEntityBox";
 import { SelectArtistEntityBox } from "../inputs/SelectArtistEntityBox";
 import { SelectAlbumEntityBox } from "../inputs/SelectAlbumEntityBox";
 import { AvatarField } from "../inputs/AvatarField";
-import { SongFragments } from "../../utils/fragments";
 
 interface MultiSelectOption {
   value: string;
@@ -113,25 +113,21 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const NEW_SONG_MUTATION = gql`
-  mutation ($data: SongInput!) {
+const NEW_SONG_MUTATION = graphql(`
+  mutation NewSong($data: SongInput!) {
     newSong(data: $data) {
       ...SelectSongEntry
     }
   }
+`);
 
-  ${SongFragments.SelectSongEntry}
-`;
-
-const UPDATE_SONG_MUTATION = gql`
-  mutation ($id: Int!, $data: SongInput!) {
+const UPDATE_SONG_MUTATION = graphql(`
+  mutation UpdateSong($id: Int!, $data: SongInput!) {
     updateSong(id: $id, data: $data) {
       ...SelectSongEntry
     }
   }
-
-  ${SongFragments.SelectSongEntry}
-`;
+`);
 
 interface Props {
   isOpen: boolean;
@@ -139,8 +135,8 @@ interface Props {
   toggleOpen: (value: boolean) => void;
   keyword?: string;
   setKeyword: (value: string) => void;
-  setSong: (value: Partial<Song>) => void;
-  songToEdit?: Partial<Song>;
+  setSong: (value: Partial<SelectSongEntryFragment>) => void;
+  songToEdit?: Partial<SelectSongEntryFragment>;
 }
 
 export function SongEntityDialog({
@@ -176,17 +172,18 @@ export function SongEntityDialog({
           originalSong: songToEdit.original ?? undefined,
           artists:
             songToEdit.artists?.map((v) => ({
-              ...v.ArtistOfSong,
-              customName: v.ArtistOfSong.customName ?? "",
               artist: v,
+              artistRoles: v.ArtistOfSong?.artistRoles ?? [],
+              categories: v.ArtistOfSong?.categories ?? [],
+              customName: v.ArtistOfSong?.customName ?? "",
+              isSupport: v.ArtistOfSong?.isSupport ?? false,
             })) ?? [],
           albums:
             songToEdit.albums?.map((v) => ({
-              ...v.SongInAlbum,
-              name: v.SongInAlbum.name ?? "",
-              diskNumber: v.SongInAlbum.diskNumber ?? undefined,
-              trackNumber: v.SongInAlbum.trackNumber ?? undefined,
               album: v,
+              name: v.SongInAlbum?.name ?? "",
+              diskNumber: v.SongInAlbum?.diskNumber ?? undefined,
+              trackNumber: v.SongInAlbum?.trackNumber ?? undefined,
             })) ?? [],
         };
 
@@ -211,7 +208,7 @@ export function SongEntityDialog({
         songInAlbums: values.albums.map((v) => ({
           name: v.name,
           diskNumber: v.diskNumber,
-          trackNumber: v.trackNumber,
+          trackNumber: typeof v.trackNumber === "number" ? v.trackNumber : null,
           albumId: v.album.id,
         })),
         artistsOfSong: values.artists.map((v) => ({
@@ -224,9 +221,7 @@ export function SongEntityDialog({
       };
 
       if (create) {
-        const result = await apolloClient.mutate<{
-          newSong: Partial<Song>;
-        }>({
+        const result = await apolloClient.mutate({
           mutation: NEW_SONG_MUTATION,
           variables: {
             data,
@@ -241,12 +236,10 @@ export function SongEntityDialog({
           handleClose();
         }
       } else {
-        const result = await apolloClient.mutate<{
-          updateSong: Partial<Song>;
-        }>({
+        const result = await apolloClient.mutate({
           mutation: UPDATE_SONG_MUTATION,
           variables: {
-            id: songId,
+            id: songId!,
             data,
           },
         });
