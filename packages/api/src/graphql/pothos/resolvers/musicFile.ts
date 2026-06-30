@@ -7,6 +7,9 @@ import hasha from "hasha";
 import pLimit from "p-limit";
 import type { WhereOptions } from "sequelize";
 import { literal, Op } from "sequelize";
+import { and, desc, eq, gt, gte, sql } from "drizzle-orm";
+import { db } from "../../../drizzle/client";
+import { MusicFiles } from "../../../drizzle/schema";
 import Path from "path";
 import _ from "lodash";
 import { GraphQLError } from "graphql";
@@ -256,7 +259,7 @@ builder.mutationField("scanByPath", (t) =>
         } else {
           file = await file.updateSongEntry();
         }
-        return file;
+        return file as any;
       } else {
         await MusicFile.destroy({ where: { path } });
         return null;
@@ -280,32 +283,29 @@ builder.queryField("musicFiles", (t) =>
 
       const offset = parseInt(after) + 1;
 
-      const where: WhereOptions = {};
-      if (options) {
-        if (options.needReview !== undefined && options.needReview !== null) {
-          (where as any).needReview = options.needReview;
-        }
-      }
+      const whereClause =
+        options && options.needReview !== undefined && options.needReview !== null
+          ? eq(MusicFiles.needReview, options.needReview)
+          : undefined;
 
-      const result = await MusicFile.findAndCountAll({
-        offset: offset,
+      const count = await db.$count(MusicFiles, whereClause);
+      const rows = await db.query.MusicFiles.findMany({
+        offset,
         limit: first < 0 ? undefined : first,
-        where,
+        where: whereClause,
       });
-      const edges: MusicFilesPaginationEdgeShape[] = result.rows.map(
-        (r, idx) => ({
-          cursor: `${offset + idx}`,
-          node: r,
-        })
-      );
+      const edges: MusicFilesPaginationEdgeShape[] = rows.map((r, idx) => ({
+        cursor: `${offset + idx}`,
+        node: r,
+      }));
       const endCursor =
         edges.length > 0 ? edges[edges.length - 1].cursor : after;
       return {
-        totalCount: result.count,
+        totalCount: count,
         edges,
         pageInfo: {
           endCursor: endCursor,
-          hasNextPage: offset + first < result.count,
+          hasNextPage: offset + first < count,
         },
       };
     },
@@ -316,13 +316,10 @@ builder.queryField("searchMusicFiles", (t) =>
   t.field({
     type: [MusicFileRef],
     args: { keywords: t.arg.string() },
-    resolve: (_root, { keywords }) =>
-      MusicFile.findAll({
-        where: literal(
-          "match (path, trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder) against (:keywords in boolean mode)"
-        ),
-        replacements: { keywords },
-      }),
+    resolve: async (_root, { keywords }) =>
+      db.query.MusicFiles.findMany({
+        where: sql`match (path, trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder) against (${keywords} in boolean mode)`,
+      }) as any,
   })
 );
 
@@ -331,7 +328,8 @@ builder.queryField("musicFile", (t) =>
     type: MusicFileRef,
     nullable: true,
     args: { id: t.arg.int() },
-    resolve: (_root, { id }) => MusicFile.findByPk(id),
+    resolve: async (_root, { id }) =>
+      ((await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, id) })) ?? null) as any,
   })
 );
 
@@ -355,7 +353,7 @@ builder.mutationField("writeTagsToMusicFile", (t) =>
       });
 
       await song.save();
-      return song;
+      return song as any;
     },
   })
 );
@@ -463,7 +461,7 @@ builder.mutationField("setPlaylistsOfFile", (t) =>
       await file.$set("playlists", playlists);
       const result = await MusicFile.findByPk(fileId);
       await result.updatePlaylistsOfFileAsTags();
-      return result;
+      return result as any;
     },
   })
 );
@@ -488,7 +486,7 @@ builder.mutationField("toggleMusicFileReviewStatus", (t) =>
       }
       await file.update({ needReview });
 
-      return file;
+      return file as any;
     },
   })
 );
@@ -528,7 +526,7 @@ builder.mutationField("updateMusicFileStats", (t) =>
       const file = await MusicFile.findByPk(fileId);
       if (file === null) throw new Error("Music file is not found.");
       await file.update({ playCount, lastPlayed });
-      return file;
+      return file as any;
     },
   })
 );
@@ -537,13 +535,13 @@ builder.queryField("newMusicFiles", (t) =>
   t.field({
     type: [MusicFileRef],
     description: "Get music files added in 30 days",
-    resolve: () => {
+    resolve: async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return MusicFile.findAll({
-        where: { creationDate: { [Op.gte]: thirtyDaysAgo } },
-        order: [["creationDate", "DESC"]],
-      });
+      return db.query.MusicFiles.findMany({
+        where: gte(MusicFiles.creationDate, thirtyDaysAgo),
+        orderBy: [desc(MusicFiles.creationDate)],
+      }) as any;
     },
   })
 );
@@ -552,13 +550,13 @@ builder.queryField("recentlyReviewedMusicFiles", (t) =>
   t.field({
     type: [MusicFileRef],
     description: "Get music files reviewed in 30 days",
-    resolve: () => {
+    resolve: async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return MusicFile.findAll({
-        where: { updatedOn: { [Op.gte]: thirtyDaysAgo } },
-        order: [["updatedOn", "DESC"]],
-      });
+      return db.query.MusicFiles.findMany({
+        where: gte(MusicFiles.updatedOn, thirtyDaysAgo),
+        orderBy: [desc(MusicFiles.updatedOn)],
+      }) as any;
     },
   })
 );
@@ -567,13 +565,13 @@ builder.queryField("recentMusicFiles", (t) =>
   t.field({
     type: [MusicFileRef],
     description: "Get music files played in 30 days",
-    resolve: () => {
+    resolve: async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return MusicFile.findAll({
-        where: { lastPlayed: { [Op.gte]: thirtyDaysAgo } },
-        order: [["lastPlayed", "DESC"]],
-      });
+      return db.query.MusicFiles.findMany({
+        where: gte(MusicFiles.lastPlayed, thirtyDaysAgo),
+        orderBy: [desc(MusicFiles.lastPlayed)],
+      }) as any;
     },
   })
 );
@@ -583,14 +581,11 @@ builder.queryField("popularMusicFiles", (t) =>
     type: [MusicFileRef],
     description: "Get music files played the most",
     args: { limit: t.arg.int({ description: "Limit of results" }) },
-    resolve: (_root, { limit }) =>
-      MusicFile.findAll({
-        where: { playCount: { [Op.gt]: 0 } },
-        order: [
-          ["playCount", "DESC"],
-          ["lastPlayed", "DESC"],
-        ],
+    resolve: async (_root, { limit }) =>
+      db.query.MusicFiles.findMany({
+        where: gt(MusicFiles.playCount, 0),
+        orderBy: [desc(MusicFiles.playCount), desc(MusicFiles.lastPlayed)],
         limit,
-      }),
+      }) as any,
   })
 );

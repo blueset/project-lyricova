@@ -15,7 +15,7 @@ builder.mutationField("enrolSongFromVocaDB", (t) =>
     description: "Insert or update a song from VocaDB.",
     authScopes: { admin: true },
     args: { songId: t.arg.int({ description: "Song ID in VocaDB" }) },
-    resolve: (_root, { songId }) => enrolSongFromVocaDB(songId),
+    resolve: (_root, { songId }) => enrolSongFromVocaDB(songId) as any,
   })
 );
 
@@ -25,7 +25,7 @@ builder.mutationField("enrolArtistFromVocaDB", (t) =>
     description: "Insert or update an artist from VocaDB.",
     authScopes: { admin: true },
     args: { artistId: t.arg.int({ description: "Artist ID in VocaDB" }) },
-    resolve: (_root, { artistId }) => enrolArtistFromVocaDB(artistId),
+    resolve: (_root, { artistId }) => enrolArtistFromVocaDB(artistId) as any,
   })
 );
 
@@ -35,7 +35,7 @@ builder.mutationField("enrolAlbumFromVocaDB", (t) =>
     description: "Insert or update an album from VocaDB.",
     authScopes: { admin: true },
     args: { albumId: t.arg.int({ description: "Album ID in VocaDB" }) },
-    resolve: (_root, { albumId }) => enrolAlbumFromVocaDB(albumId),
+    resolve: (_root, { albumId }) => enrolAlbumFromVocaDB(albumId) as any,
   })
 );
 
@@ -45,7 +45,7 @@ builder.mutationField("enrolSongFromUtaiteDB", (t) =>
     description: "Insert or update a song from UtaiteDB.",
     authScopes: { admin: true },
     args: { songId: t.arg.int({ description: "Song ID in UtaiteDB" }) },
-    resolve: (_root, { songId }) => enrolSongFromUtaiteDB(songId),
+    resolve: (_root, { songId }) => enrolSongFromUtaiteDB(songId) as any,
   })
 );
 
@@ -55,7 +55,7 @@ builder.mutationField("enrolArtistFromUtaiteDB", (t) =>
     description: "Insert or update an artist from UtaiteDB.",
     authScopes: { admin: true },
     args: { artistId: t.arg.int({ description: "Artist ID in UtaiteDB" }) },
-    resolve: (_root, { artistId }) => enrolArtistFromUtaiteDB(artistId),
+    resolve: (_root, { artistId }) => enrolArtistFromUtaiteDB(artistId) as any,
   })
 );
 
@@ -65,6 +65,6 @@ builder.mutationField("enrolAlbumFromUtaiteDB", (t) =>
     description: "Insert or update an album from UtaiteDB.",
     authScopes: { admin: true },
     args: { albumId: t.arg.int({ description: "Album ID in UtaiteDB" }) },
-    resolve: (_root, { albumId }) => enrolAlbumFromUtaiteDB(albumId),
+    resolve: (_root, { albumId }) => enrolAlbumFromUtaiteDB(albumId) as any,
   })
 );

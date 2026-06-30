@@ -1,4 +1,5 @@
 import { builder } from "../builder";
+import { parseEnumArray } from "../../../drizzle/enumArray";
 import {
   VerseRef,
   PulseRef,
@@ -8,6 +9,8 @@ import {
   ArtistOfAlbumRef,
   SongInAlbumRef,
 } from "./refs";
+
+// --- Blog leaves (Sequelize-backed for now) ---
 
 VerseRef.implement({
   fields: (t) => ({
@@ -36,11 +39,11 @@ PulseRef.implement({
   }),
 });
 
-VideoFileRef.implement({
-  fields: (t) => ({
-    id: t.exposeInt("id"),
-  }),
-});
+// --- Music leaves (Drizzle-backed) ---
+
+builder.drizzleObjectFields("VideoFiles", (t) => ({
+  id: t.exposeInt("id"),
+}));
 
 FileInPlaylistRef.implement({
   fields: (t) => ({
@@ -57,8 +60,14 @@ FileInPlaylistRef.implement({
 ArtistOfSongRef.implement({
   fields: (t) => ({
     artistOfSongId: t.exposeInt("artistOfSongId"),
-    artistRoles: t.exposeStringList("artistRoles"),
-    categories: t.exposeStringList("categories"),
+    artistRoles: t.field({
+      type: ["String"],
+      resolve: (a) => parseEnumArray(a.artistRoles),
+    }),
+    categories: t.field({
+      type: ["String"],
+      resolve: (a) => parseEnumArray(a.categories),
+    }),
     creationDate: t.field({
       type: "Timestamp",
       resolve: (a) => a.creationDate,
@@ -74,8 +83,14 @@ ArtistOfAlbumRef.implement({
   fields: (t) => ({
     artistOfAlbumId: t.exposeInt("artistOfAlbumId"),
     categories: t.exposeString("categories"),
-    effectiveRoles: t.exposeStringList("effectiveRoles"),
-    roles: t.exposeStringList("roles"),
+    effectiveRoles: t.field({
+      type: ["String"],
+      resolve: (a) => parseEnumArray(a.effectiveRoles),
+    }),
+    roles: t.field({
+      type: ["String"],
+      resolve: (a) => parseEnumArray(a.roles),
+    }),
   }),
 });
 

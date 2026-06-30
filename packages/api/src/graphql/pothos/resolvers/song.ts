@@ -1,9 +1,11 @@
+import { eq, sql } from "drizzle-orm";
 import { builder } from "../builder";
 import { SongRef } from "../types/refs";
+import { db } from "../../../drizzle/client";
+import { Songs } from "../../../drizzle/schema";
 import { Song } from "../../../models/Song";
 import { Album } from "../../../models/Album";
 import { Artist } from "../../../models/Artist";
-import { literal } from "sequelize";
 import _ from "lodash";
 
 const ArtistOfSongInput = builder.inputType("ArtistOfSongInput", {
@@ -41,7 +43,8 @@ builder.queryField("song", (t) =>
     type: SongRef,
     nullable: true,
     args: { id: t.arg.int() },
-    resolve: (_root, { id }) => Song.findByPk(id),
+    resolve: async (_root, { id }) =>
+      ((await db.query.Songs.findFirst({ where: eq(Songs.id, id) })) ?? null) as any,
   })
 );
 
@@ -49,23 +52,12 @@ builder.queryField("searchSongs", (t) =>
   t.field({
     type: [SongRef],
     args: { keywords: t.arg.string() },
-    resolve: (_root, { keywords }) => {
-      const whereClause = isNaN(Number(keywords))
-        ? literal(
-            "match (Song.name, Song.sortOrder) against (:keywords in boolean mode)"
-          )
-        : literal(
-            "match (Song.name, Song.sortOrder) against (:keywords in boolean mode) OR Song.id = :numericKeywords"
-          );
-
-      return Song.findAll({
-        where: whereClause,
-        attributes: { exclude: ["vocaDbJson"] },
-        replacements: {
-          keywords,
-          numericKeywords: Number(keywords),
-        },
-      });
+    resolve: async (_root, { keywords }) => {
+      const numericKeywords = Number(keywords);
+      const whereClause = isNaN(numericKeywords)
+        ? sql`match (name, sortOrder) against (${keywords} in boolean mode)`
+        : sql`match (name, sortOrder) against (${keywords} in boolean mode) OR id = ${numericKeywords}`;
+      return db.query.Songs.findMany({ where: whereClause }) as any;
     },
   })
 );
@@ -73,11 +65,10 @@ builder.queryField("searchSongs", (t) =>
 builder.queryField("songs", (t) =>
   t.field({
     type: [SongRef],
-    resolve: () =>
-      Song.findAll({
-        order: ["sortOrder"],
-        attributes: { exclude: ["vocaDbJson"] },
-      }),
+    resolve: async () =>
+      db.query.Songs.findMany({
+        orderBy: (s, { asc }) => [asc(s.sortOrder)],
+      }) as any,
   })
 );
 
@@ -121,7 +112,7 @@ builder.mutationField("newSong", (t) =>
           })
         )
       );
-      return song;
+      return song as any;
     },
   })
 );
@@ -168,7 +159,7 @@ builder.mutationField("updateSong", (t) =>
         })
       );
 
-      return song;
+      return song as any;
     },
   })
 );

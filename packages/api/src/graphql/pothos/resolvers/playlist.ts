@@ -2,6 +2,9 @@ import { Playlist } from "../../../models/Playlist";
 import { MusicFile } from "../../../models/MusicFile";
 import { GraphQLError } from "graphql";
 import pLimit from "p-limit";
+import { eq } from "drizzle-orm";
+import { db } from "../../../drizzle/client";
+import { Playlists } from "../../../drizzle/schema";
 import { builder } from "../builder";
 import { PlaylistRef } from "../types/refs";
 
@@ -22,7 +25,7 @@ const UpdatePlaylistInput = builder.inputType("UpdatePlaylistInput", {
 builder.queryField("playlists", (t) =>
   t.field({
     type: [PlaylistRef],
-    resolve: () => Playlist.findAll(),
+    resolve: async () => db.query.Playlists.findMany() as any,
   })
 );
 
@@ -31,7 +34,8 @@ builder.queryField("playlist", (t) =>
     type: PlaylistRef,
     nullable: true,
     args: { slug: t.arg.string() },
-    resolve: (_root, { slug }) => Playlist.findByPk(slug),
+    resolve: async (_root, { slug }) =>
+      ((await db.query.Playlists.findFirst({ where: eq(Playlists.slug, slug) })) ?? null) as any,
   })
 );
 
@@ -40,7 +44,7 @@ builder.mutationField("newPlaylist", (t) =>
     type: PlaylistRef,
     authScopes: { admin: true },
     args: { data: t.arg({ type: NewPlaylistInput }) },
-    resolve: (_root, { data }) => Playlist.create(data as any),
+    resolve: (_root, { data }) => Playlist.create(data as any) as any,
   })
 );
 
@@ -64,7 +68,7 @@ builder.mutationField("updatePlaylist", (t) =>
           files.map((i) => limit(async () => i.updatePlaylistsOfFileAsTags()))
         );
       }
-      return playlist;
+      return playlist as any;
     },
   })
 );
@@ -95,7 +99,7 @@ builder.mutationField("addFileToPlaylist", (t) =>
       const count = await playlist.$count("files");
       await playlist.$add("file", musicFile, { through: { sortOrder: count } });
       await musicFile.updatePlaylistsOfFileAsTags();
-      return playlist;
+      return playlist as any;
     },
   })
 );
@@ -125,7 +129,7 @@ builder.mutationField("removeFileFromPlaylist", (t) =>
         );
       await playlist.$remove("file", musicFile);
       await musicFile.updatePlaylistsOfFileAsTags();
-      return playlist;
+      return playlist as any;
     },
   })
 );
@@ -148,7 +152,7 @@ builder.mutationField("updatePlaylistSortOrder", (t) =>
         return obj;
       });
       await playlist.$add("files", dummyFileObjs);
-      return playlist;
+      return playlist as any;
     },
   })
 );
@@ -211,7 +215,7 @@ builder.mutationField("updatePlaylistFiles", (t) =>
         toAddObjcts.map((i) => limit(async () => i.updatePlaylistsOfFileAsTags()))
       );
 
-      return playlist;
+      return playlist as any;
     },
   })
 );

@@ -1,7 +1,9 @@
+import { and, gt, inArray, eq, sql } from "drizzle-orm";
 import { builder } from "../builder";
 import { ArtistRef } from "../types/refs";
+import { db } from "../../../drizzle/client";
+import { Artists } from "../../../drizzle/schema";
 import { Artist } from "../../../models/Artist";
-import { literal, Op } from "sequelize";
 import _ from "lodash";
 
 const ArtistInput = builder.inputType("ArtistInput", {
@@ -13,7 +15,7 @@ const ArtistInput = builder.inputType("ArtistInput", {
   }),
 });
 
-const FILES_FOR_ARTIST = literal(`(
+const FILES_FOR_ARTIST = sql`(
             SELECT
               COUNT(MusicFiles.id) 
             FROM ArtistOfSongs 
@@ -22,26 +24,26 @@ const FILES_FOR_ARTIST = literal(`(
             ON
               ArtistOfSongs.songId = MusicFiles.songId
             WHERE 
-              ArtistOfSongs.artistId = Artist.id and ArtistOfSongs.artistId = Artist.id 
-          ) > 0`);
+              ArtistOfSongs.artistId = Artists.id and ArtistOfSongs.artistId = Artists.id 
+          ) > 0`;
 
 builder.queryField("artist", (t) =>
   t.field({
     type: ArtistRef,
     nullable: true,
     args: { id: t.arg.int() },
-    resolve: (_root, { id }) => Artist.findByPk(id),
+    resolve: async (_root, { id }) =>
+      ((await db.query.Artists.findFirst({ where: eq(Artists.id, id) })) ?? null) as any,
   })
 );
 
 builder.queryField("artists", (t) =>
   t.field({
     type: [ArtistRef],
-    resolve: () =>
-      Artist.findAll({
-        order: ["sortOrder"],
-        attributes: { exclude: ["vocaDbJson"] },
-      }),
+    resolve: async () =>
+      db.query.Artists.findMany({
+        orderBy: (a, { asc }) => [asc(a.sortOrder)],
+      }) as any,
   })
 );
 
@@ -78,13 +80,11 @@ builder.queryField("artistsHasFiles", (t) =>
         ],
       }),
     },
-    resolve: (_root, { types }) =>
-      Artist.findAll({
-        order: ["sortOrder"],
-        where: {
-          [Op.and]: [{ type: { [Op.in]: types } }, FILES_FOR_ARTIST],
-        },
-      }),
+    resolve: async (_root, { types }) =>
+      db.query.Artists.findMany({
+        orderBy: (a, { asc }) => [asc(a.sortOrder)],
+        where: and(inArray(Artists.type, types as any), FILES_FOR_ARTIST),
+      }) as any,
   })
 );
 
@@ -92,14 +92,10 @@ builder.queryField("searchArtists", (t) =>
   t.field({
     type: [ArtistRef],
     args: { keywords: t.arg.string() },
-    resolve: (_root, { keywords }) =>
-      Artist.findAll({
-        where: literal(
-          "match (name, sortOrder) against (:keywords in boolean mode)"
-        ),
-        attributes: { exclude: ["vocaDbJson"] },
-        replacements: { keywords },
-      }),
+    resolve: async (_root, { keywords }) =>
+      db.query.Artists.findMany({
+        where: sql`match (name, sortOrder) against (${keywords} in boolean mode)`,
+      }) as any,
   })
 );
 
@@ -108,18 +104,16 @@ builder.queryField("artistsWithFilesNeedEnrol", (t) =>
     type: ["Int"],
     authScopes: { admin: true },
     resolve: async () => {
-      const artistsToEnroll = await Artist.findAll({
-        attributes: ["id"],
-        order: ["sortOrder"],
-        where: {
-          [Op.and]: [
-            { id: { [Op.gt]: 0 } },
-            { incomplete: true },
-            FILES_FOR_ARTIST,
-          ],
-        },
+      const rows = await db.query.Artists.findMany({
+        columns: { id: true },
+        orderBy: (a, { asc }) => [asc(a.sortOrder)],
+        where: and(
+          gt(Artists.id, 0),
+          eq(Artists.incomplete, true),
+          FILES_FOR_ARTIST
+        ),
       });
-      return artistsToEnroll.map((a) => a.id);
+      return rows.map((a) => a.id);
     },
   })
 );
@@ -131,7 +125,7 @@ builder.mutationField("newArtist", (t) =>
     args: { data: t.arg({ type: ArtistInput }) },
     resolve: (_root, { data }) => {
       const id = _.random(-2147483648, -1, false);
-      return Artist.create({ id, ...data, incomplete: false } as any);
+      return Artist.create({ id, ...data, incomplete: false } as any) as any;
     },
   })
 );
@@ -147,7 +141,7 @@ builder.mutationField("updateArtist", (t) =>
         throw new Error(`Artist entity with id ${id} is not found.`);
       }
       await artist.update({ id, ...data } as any);
-      return artist;
+      return artist as any;
     },
   })
 );

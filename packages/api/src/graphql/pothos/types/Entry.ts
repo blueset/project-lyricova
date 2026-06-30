@@ -28,7 +28,8 @@ EntryRef.implement({
     songs: t.field({
       type: [SongRef],
       nullable: true,
-      resolve: (e) => (e.songs === undefined ? e.$get("songs") : e.songs),
+      resolve: (e) =>
+        (e.songs === undefined ? e.$get("songs") : e.songs) as any,
     }),
     tags: t.field({
       type: [TagRef],

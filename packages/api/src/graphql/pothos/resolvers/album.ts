@@ -1,10 +1,11 @@
+import { eq, sql } from "drizzle-orm";
 import { builder } from "../builder";
 import { AlbumRef } from "../types/refs";
+import { db } from "../../../drizzle/client";
+import { Albums } from "../../../drizzle/schema";
 import { Album } from "../../../models/Album";
 import { Artist } from "../../../models/Artist";
 import { Song } from "../../../models/Song";
-import { literal } from "sequelize";
-import sequelize from "sequelize";
 import _ from "lodash";
 
 const ArtistOfAlbumInput = builder.inputType("ArtistOfAlbumInput", {
@@ -40,38 +41,28 @@ builder.queryField("album", (t) =>
     type: AlbumRef,
     nullable: true,
     args: { id: t.arg.int() },
-    resolve: (_root, { id }) => Album.findByPk(id),
+    resolve: async (_root, { id }) =>
+      ((await db.query.Albums.findFirst({ where: eq(Albums.id, id) })) ?? null) as any,
   })
 );
 
 builder.queryField("albums", (t) =>
   t.field({
     type: [AlbumRef],
-    resolve: () =>
-      Album.findAll({
-        order: ["sortOrder"],
-        attributes: { exclude: ["vocaDbJson"] },
-      }),
+    resolve: async () =>
+      db.query.Albums.findMany({
+        orderBy: (a, { asc }) => [asc(a.sortOrder)],
+      }) as any,
   })
 );
 
 builder.queryField("albumsHasFiles", (t) =>
   t.field({
     type: [AlbumRef],
-    resolve: () =>
-      Album.findAll({
-        order: ["sortOrder"],
-        attributes: [
-          "id",
-          "name",
-          "sortOrder",
-          "coverUrl",
-          "incomplete",
-          "creationDate",
-          "updatedOn",
-          "deletionDate",
-        ],
-        where: sequelize.literal(`(
+    resolve: async () =>
+      db.query.Albums.findMany({
+        orderBy: (a, { asc }) => [asc(a.sortOrder)],
+        where: sql`(
         SELECT
           COUNT(MusicFiles.id) 
         FROM SongInAlbums 
@@ -80,9 +71,9 @@ builder.queryField("albumsHasFiles", (t) =>
         ON
           SongInAlbums.songId = MusicFiles.songId
         WHERE 
-          SongInAlbums.albumId = Album.id and MusicFiles.albumId = Album.id 
-      ) > 0`),
-      }),
+          SongInAlbums.albumId = Albums.id and MusicFiles.albumId = Albums.id 
+      ) > 0`,
+      }) as any,
   })
 );
 
@@ -90,14 +81,10 @@ builder.queryField("searchAlbums", (t) =>
   t.field({
     type: [AlbumRef],
     args: { keywords: t.arg.string() },
-    resolve: (_root, { keywords }) =>
-      Album.findAll({
-        where: literal(
-          "match (name, sortOrder) against (:keywords in boolean mode)"
-        ),
-        attributes: { exclude: ["vocaDbJson"] },
-        replacements: { keywords },
-      }),
+    resolve: async (_root, { keywords }) =>
+      db.query.Albums.findMany({
+        where: sql`match (name, sortOrder) against (${keywords} in boolean mode)`,
+      }) as any,
   })
 );
 
@@ -140,7 +127,7 @@ builder.mutationField("newAlbum", (t) =>
         )
       );
 
-      return album;
+      return album as any;
     },
   })
 );
@@ -185,7 +172,7 @@ builder.mutationField("updateAlbum", (t) =>
         })
       );
 
-      return album;
+      return album as any;
     },
   })
 );
