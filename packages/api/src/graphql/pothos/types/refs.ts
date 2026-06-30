@@ -1,10 +1,4 @@
 import { builder } from "../builder";
-import type { Entry } from "../../../models/Entry";
-import type { Pulse } from "../../../models/Pulse";
-import type { Tag } from "../../../models/Tag";
-import type { User } from "../../../models/User";
-import type { UserPublicKeyCredential } from "../../../models/UserPublicKeyCredential";
-import type { Verse } from "../../../models/Verse";
 import type {
   FuriganaMappings,
   ArtistOfSongs,
@@ -58,13 +52,20 @@ export const SongInAlbumRef =
 export const FileInPlaylistRef =
   builder.objectRef<typeof FileInPlaylists.$inferSelect>("FileInPlaylist");
 
-// --- Blog cluster + misc (Sequelize-backed for now) ---
-export const EntryRef = builder.objectRef<Entry>("Entry");
+// --- Blog entity cluster (Drizzle-backed) ---
+export const EntryRef = builder.drizzleObject("Entries", {
+  name: "Entry",
+  description: "A Lyricova entry.",
+});
+export const PulseRef = builder.drizzleObject("Pulses", { name: "Pulse" });
+export const TagRef = builder.drizzleObject("Tags", { name: "Tag" });
+export const VerseRef = builder.drizzleObject("Verses", { name: "Verse" });
+export const UserRef = builder.drizzleObject("Users", { name: "User" });
+export const UserPublicKeyCredentialRef = builder.drizzleObject(
+  "UserPublicKeyCredentials",
+  { name: "UserPublicKeyCredential" }
+);
+
+// --- Misc (Sequelize/Drizzle-row backed) ---
 export const FuriganaMappingRef =
   builder.objectRef<typeof FuriganaMappings.$inferSelect>("FuriganaMapping");
-export const PulseRef = builder.objectRef<Pulse>("Pulse");
-export const TagRef = builder.objectRef<Tag>("Tag");
-export const UserRef = builder.objectRef<User>("User");
-export const UserPublicKeyCredentialRef =
-  builder.objectRef<UserPublicKeyCredential>("UserPublicKeyCredential");
-export const VerseRef = builder.objectRef<Verse>("Verse");

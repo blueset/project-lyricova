@@ -1,11 +1,16 @@
+import { and, eq, isNull, notInArray } from "drizzle-orm";
 import { builder } from "../builder";
 import { EntryRef } from "../types/refs";
-import { Entry } from "../../../models/Entry";
-import { Verse } from "../../../models/Verse";
-import { Pulse } from "../../../models/Pulse";
+import { db } from "../../../drizzle/client";
+import {
+  Entries,
+  Verses,
+  Pulses,
+  SongOfEntries,
+  TagOfEntries,
+} from "../../../drizzle/schema";
 import { GraphQLError } from "graphql";
 import { segmentedTransliteration } from "../../../utils/transliterate";
-import sequelize from "../../../db";
 
 const PulseInput = builder.inputType("PulseInput", {
   fields: (t) => ({
@@ -56,14 +61,26 @@ async function populateVerseTypingSequence(verse: any) {
   return verse;
 }
 
+function verseValues(v: any) {
+  return {
+    language: v.language,
+    isOriginal: v.isOriginal,
+    isMain: v.isMain,
+    text: v.text,
+    html: v.html ?? null,
+    stylizedText: v.stylizedText ?? null,
+    translator: v.translator ?? null,
+    typingSequence: v.typingSequence ?? [],
+  };
+}
+
 builder.queryField("entries", (t) =>
   t.field({
     type: [EntryRef],
-    resolve: () =>
-      Entry.findAll({
-        order: [["recentActionDate", "DESC"]],
-        include: ["verses", "tags", "songs", "pulses"],
-      }),
+    resolve: async () =>
+      db.query.Entries.findMany({
+        orderBy: (e, { desc }) => [desc(e.recentActionDate)],
+      }) as any,
   })
 );
 
@@ -72,7 +89,9 @@ builder.queryField("entry", (t) =>
     type: EntryRef,
     nullable: true,
     args: { id: t.arg.int() },
-    resolve: (_root, { id }) => Entry.findByPk(id),
+    resolve: async (_root, { id }) =>
+      ((await db.query.Entries.findFirst({ where: eq(Entries.id, id) })) ??
+        null) as any,
   })
 );
 
@@ -93,38 +112,58 @@ builder.mutationField("newEntry", (t) =>
         pulses,
       } = data;
       const creationDate = data.creationDate ?? new Date();
-      const tx = await sequelize.transaction();
-      try {
-        const entry = await Entry.create(
-          {
-            title,
-            producersName,
-            vocalistsName,
-            comment,
-            creationDate,
-            recentActionDate: creationDate,
-            authorId: ctx.user.id,
-          } as any,
-          { transaction: tx }
-        );
-        for await (const verse of verses) {
-          const populatedVerse = await populateVerseTypingSequence(verse);
-          await entry.$create("verse", populatedVerse, { transaction: tx });
-        }
-        await entry.$add("song", songIds, { transaction: tx });
-        await entry.$add("tag", tagSlugs, { transaction: tx });
-        await entry.$add(
-          "pulse",
-          (pulses ?? []).map((pi) => Pulse.build(pi as any, { isNewRecord: true })),
-          { transaction: tx }
-        );
+      const now = new Date();
 
-        await tx.commit();
-        return entry;
-      } catch (e) {
-        await tx.rollback();
-        throw e;
-      }
+      const entryId = await db.transaction(async (tx) => {
+        const inserted = await tx.insert(Entries).values({
+          title,
+          producersName: producersName ?? null,
+          vocalistsName: vocalistsName ?? null,
+          comment: comment ?? null,
+          creationDate,
+          recentActionDate: creationDate,
+          updatedOn: now,
+          authorId: ctx.user!.id,
+        });
+        const newId = inserted[0].insertId;
+
+        for (const verse of verses) {
+          const populated = await populateVerseTypingSequence(verse);
+          await tx.insert(Verses).values({
+            ...verseValues(populated),
+            entryId: newId,
+            creationDate: now,
+            updatedOn: now,
+          } as any);
+        }
+        for (const songId of songIds ?? []) {
+          await tx.insert(SongOfEntries).values({
+            entryId: newId,
+            songId,
+            creationDate: now,
+            updatedOn: now,
+          });
+        }
+        for (const tagId of tagSlugs ?? []) {
+          await tx.insert(TagOfEntries).values({
+            entryId: newId,
+            tagId,
+            creationDate: now,
+            updatedOn: now,
+          });
+        }
+        for (const pi of pulses ?? []) {
+          await tx.insert(Pulses).values({
+            entryId: newId,
+            creationDate: pi.creationDate,
+          });
+        }
+        return newId;
+      });
+
+      return (await db.query.Entries.findFirst({
+        where: eq(Entries.id, entryId),
+      })) as any;
     },
   })
 );
@@ -146,73 +185,116 @@ builder.mutationField("updateEntry", (t) =>
         songIds,
         pulses,
       } = data;
-      const entry = await Entry.findByPk(id);
-      if (!entry) {
+      const existing = await db.query.Entries.findFirst({
+        where: eq(Entries.id, id),
+      });
+      if (!existing) {
         throw new GraphQLError("Entry not found");
       }
-      const tx = await sequelize.transaction();
+      const now = new Date();
       const recentActionDate = new Date(
         Math.max(
-          creationDate.valueOf(),
+          creationDate!.valueOf(),
           ...(pulses ?? []).map((p) => p.creationDate.valueOf())
         )
       );
-      try {
-        await entry.update(
-          {
+
+      await db.transaction(async (tx) => {
+        await tx
+          .update(Entries)
+          .set({
             title,
-            producersName,
-            vocalistsName,
-            comment,
+            producersName: producersName ?? null,
+            vocalistsName: vocalistsName ?? null,
+            comment: comment ?? null,
             recentActionDate,
-          },
-          { transaction: tx }
-        );
-        if (creationDate) {
-          entry.changed("creationDate", true);
-          entry.set("creationDate", creationDate, { raw: true });
-          await entry.save({
-            silent: true,
-            fields: ["creationDate"],
-            transaction: tx,
+            creationDate: creationDate ?? existing.creationDate,
+            updatedOn: now,
+          })
+          .where(eq(Entries.id, id));
+
+        // Upsert verses, then orphan any of this entry's verses left out.
+        const verseIds: number[] = [];
+        for (const v of verses) {
+          if (v.id) {
+            await tx
+              .update(Verses)
+              .set({ ...verseValues(v), entryId: id, updatedOn: now } as any)
+              .where(eq(Verses.id, v.id));
+            verseIds.push(v.id);
+          } else {
+            const r = await tx.insert(Verses).values({
+              ...verseValues(v),
+              entryId: id,
+              creationDate: now,
+              updatedOn: now,
+            } as any);
+            verseIds.push(r[0].insertId);
+          }
+        }
+        await tx
+          .update(Verses)
+          .set({ entryId: null })
+          .where(
+            verseIds.length
+              ? and(eq(Verses.entryId, id), notInArray(Verses.id, verseIds))
+              : eq(Verses.entryId, id)
+          );
+
+        // Replace song + tag associations.
+        await tx.delete(SongOfEntries).where(eq(SongOfEntries.entryId, id));
+        for (const songId of songIds ?? []) {
+          await tx.insert(SongOfEntries).values({
+            entryId: id,
+            songId,
+            creationDate: now,
+            updatedOn: now,
           });
         }
-        const verseObjs: Verse[] = [];
-        for await (const v of verses) {
-          const vObj = Verse.build(v as any, { isNewRecord: !v.id });
-          vObj.update(v as any);
-
-          await vObj.save({ transaction: tx });
-
-          verseObjs.push(vObj);
-        }
-        await entry.$set("verses", verseObjs, { transaction: tx });
-        await entry.$set("songs", songIds, { transaction: tx });
-        await entry.$set("tags", tagSlugs, { transaction: tx });
-        const pulseObjs: Pulse[] = [];
-        for await (const pi of pulses ?? []) {
-          const p = Pulse.build(pi as any, { isNewRecord: !pi.id });
-          p.changed("creationDate", true);
-          p.set("creationDate", pi.creationDate, { raw: true });
-          await p.save({
-            silent: true,
-            fields: pi.id ? ["id", "creationDate"] : ["creationDate"],
-            transaction: tx,
+        await tx.delete(TagOfEntries).where(eq(TagOfEntries.entryId, id));
+        for (const tagId of tagSlugs ?? []) {
+          await tx.insert(TagOfEntries).values({
+            entryId: id,
+            tagId,
+            creationDate: now,
+            updatedOn: now,
           });
-          pulseObjs.push(p);
         }
-        await entry.$set("pulses", pulseObjs, { transaction: tx });
 
-        await tx.commit();
+        // Upsert pulses, then orphan any left out.
+        const pulseIds: number[] = [];
+        for (const pi of pulses ?? []) {
+          if (pi.id) {
+            await tx
+              .update(Pulses)
+              .set({ creationDate: pi.creationDate, entryId: id })
+              .where(eq(Pulses.id, pi.id));
+            pulseIds.push(pi.id);
+          } else {
+            const r = await tx.insert(Pulses).values({
+              entryId: id,
+              creationDate: pi.creationDate,
+            });
+            pulseIds.push(r[0].insertId);
+          }
+        }
+        await tx
+          .update(Pulses)
+          .set({ entryId: null })
+          .where(
+            pulseIds.length
+              ? and(eq(Pulses.entryId, id), notInArray(Pulses.id, pulseIds))
+              : eq(Pulses.entryId, id)
+          );
+      });
 
-        await Verse.destroy({ where: { entryId: null } });
-        await Pulse.destroy({ where: { entryId: null } });
+      // Remove rows orphaned above (Sequelize didn't cascade these).
+      await db.delete(Verses).where(isNull(Verses.entryId));
+      await db.delete(Pulses).where(isNull(Pulses.entryId));
 
-        return entry;
-      } catch (e) {
-        await tx.rollback();
-        throw e;
-      }
+      return (await db.query.Entries.findFirst({
+        where: eq(Entries.id, id),
+      })) as any;
     },
   })
 );
@@ -222,11 +304,14 @@ builder.mutationField("deleteEntry", (t) =>
     authScopes: { admin: true },
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) => {
-      const entry = await Entry.findByPk(id);
+      const entry = await db.query.Entries.findFirst({
+        where: eq(Entries.id, id),
+      });
       if (!entry) {
         throw new GraphQLError("Entry not found");
       }
-      await entry.destroy();
+      // Child rows (verses/pulses/song+tag junctions) cascade via FK ON DELETE.
+      await db.delete(Entries).where(eq(Entries.id, id));
       return true;
     },
   })
@@ -237,15 +322,18 @@ builder.mutationField("bumpEntry", (t) =>
     authScopes: { admin: true },
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) => {
-      const entry = await Entry.findByPk(id);
+      const entry = await db.query.Entries.findFirst({
+        where: eq(Entries.id, id),
+      });
       if (!entry) {
         throw new GraphQLError("Entry not found");
       }
       const date = new Date();
-      const pulse = await Pulse.create({ creationDate: date } as any);
-      entry.$add("pulse", pulse);
-      entry.recentActionDate = date;
-      await entry.save();
+      await db.insert(Pulses).values({ entryId: id, creationDate: date });
+      await db
+        .update(Entries)
+        .set({ recentActionDate: date, updatedOn: new Date() })
+        .where(eq(Entries.id, id));
       return true;
     },
   })
@@ -257,12 +345,16 @@ builder.mutationField("pulseEntry", (t) =>
     authScopes: { admin: true },
     args: { id: t.arg.float() },
     resolve: async (_root, { id }) => {
-      const entry = await Entry.findByPk(id);
+      const entry = await db.query.Entries.findFirst({
+        where: eq(Entries.id, id),
+      });
       if (!entry) {
         throw new GraphQLError("Entry not found");
       }
-      await entry.$create("pulse", {});
-      return entry;
+      await db.insert(Pulses).values({ entryId: id, creationDate: new Date() });
+      return (await db.query.Entries.findFirst({
+        where: eq(Entries.id, id),
+      })) as any;
     },
   })
 );
@@ -273,21 +365,33 @@ builder.mutationField("unpulseEntry", (t) =>
     authScopes: { admin: true },
     args: { id: t.arg.float(), pulseId: t.arg.float() },
     resolve: async (_root, { id, pulseId }) => {
-      const entry = await Entry.findByPk(id);
+      const entry = await db.query.Entries.findFirst({
+        where: eq(Entries.id, id),
+      });
       if (!entry) {
         throw new GraphQLError("Entry not found");
       }
-      await entry.$remove("pulse", pulseId);
-      await entry.reload({ include: ["pulses"] });
-      await entry.update({
-        recentActionDate: new Date(
-          Math.max(
-            entry.creationDate.valueOf(),
-            ...entry.pulses.map((p) => p.creationDate.valueOf())
-          )
-        ),
+      // $remove orphans the pulse (sets FK null) rather than deleting it.
+      await db
+        .update(Pulses)
+        .set({ entryId: null })
+        .where(eq(Pulses.id, pulseId));
+      const remaining = await db.query.Pulses.findMany({
+        where: eq(Pulses.entryId, id),
       });
-      return entry;
+      const recentActionDate = new Date(
+        Math.max(
+          entry.creationDate.valueOf(),
+          ...remaining.map((p) => p.creationDate.valueOf())
+        )
+      );
+      await db
+        .update(Entries)
+        .set({ recentActionDate, updatedOn: new Date() })
+        .where(eq(Entries.id, id));
+      return (await db.query.Entries.findFirst({
+        where: eq(Entries.id, id),
+      })) as any;
     },
   })
 );

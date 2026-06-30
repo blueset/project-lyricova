@@ -1,48 +1,49 @@
+import { eq } from "drizzle-orm";
 import { builder } from "../builder";
-import { EntryRef, UserRef, PulseRef, SongRef, TagRef, VerseRef } from "./refs";
+import { db } from "../../../drizzle/client";
+import { SongOfEntries, TagOfEntries } from "../../../drizzle/schema";
+import { UserRef, PulseRef, SongRef, TagRef, VerseRef } from "./refs";
 
-EntryRef.implement({
-  description: "A Lyricova entry.",
-  fields: (t) => ({
-    author: t.field({
-      type: UserRef,
-      resolve: (e) => (e.author === undefined ? e.$get("author") : e.author),
-    }),
-    authorId: t.exposeFloat("authorId"),
-    comment: t.exposeString("comment", { nullable: true }),
-    creationDate: t.field({
-      type: "Timestamp",
-      resolve: (e) => e.creationDate,
-    }),
-    id: t.exposeFloat("id"),
-    producersName: t.exposeString("producersName"),
-    pulses: t.field({
-      type: [PulseRef],
-      nullable: true,
-      resolve: (e) => (e.pulses === undefined ? e.$get("pulses") : e.pulses),
-    }),
+builder.drizzleObjectFields("Entries", (t) => {
+  const col = (type: any, name: string, nullable = false) =>
+    t.field({ type, nullable, resolve: (e: any) => e[name] });
+  return {
+    id: col("Float", "id"),
+    title: col("String", "title"),
+    producersName: col("String", "producersName"),
+    vocalistsName: col("String", "vocalistsName"),
+    authorId: col("Float", "authorId"),
+    comment: col("String", "comment", true),
+    creationDate: t.field({ type: "Timestamp", resolve: (e: any) => e.creationDate }),
     recentActionDate: t.field({
       type: "Timestamp",
-      resolve: (e) => e.recentActionDate,
+      resolve: (e: any) => e.recentActionDate,
     }),
+    updatedOn: t.field({ type: "Timestamp", resolve: (e: any) => e.updatedOn }),
+    author: t.relation("author"),
+    pulses: t.relation("pulses", { nullable: true }),
+    verses: t.relation("verses", { nullable: true }),
     songs: t.field({
       type: [SongRef],
       nullable: true,
-      resolve: (e) =>
-        (e.songs === undefined ? e.$get("songs") : e.songs) as any,
+      resolve: async (e: any) => {
+        const rows = await db.query.SongOfEntries.findMany({
+          where: eq(SongOfEntries.entryId, e.id),
+          with: { song: true },
+        });
+        return rows.map((r) => r.song) as any;
+      },
     }),
     tags: t.field({
       type: [TagRef],
       nullable: true,
-      resolve: (e) => (e.tags === undefined ? e.$get("tags") : e.tags),
+      resolve: async (e: any) => {
+        const rows = await db.query.TagOfEntries.findMany({
+          where: eq(TagOfEntries.entryId, e.id),
+          with: { tag: true },
+        });
+        return rows.map((r) => r.tag) as any;
+      },
     }),
-    title: t.exposeString("title"),
-    updatedOn: t.field({ type: "Timestamp", resolve: (e) => e.updatedOn }),
-    verses: t.field({
-      type: [VerseRef],
-      nullable: true,
-      resolve: (e) => (e.verses === undefined ? e.$get("verses") : e.verses),
-    }),
-    vocalistsName: t.exposeString("vocalistsName"),
-  }),
+  };
 });

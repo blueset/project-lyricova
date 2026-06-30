@@ -1,48 +1,49 @@
 import { builder } from "../builder";
 import { parseEnumArray } from "../../../drizzle/enumArray";
 import {
-  VerseRef,
-  PulseRef,
-  VideoFileRef,
   FileInPlaylistRef,
   ArtistOfSongRef,
   ArtistOfAlbumRef,
   SongInAlbumRef,
 } from "./refs";
 
-// --- Blog leaves (Sequelize-backed for now) ---
+// --- Blog leaves (Drizzle-backed) ---
 
-VerseRef.implement({
-  fields: (t) => ({
-    html: t.exposeString("html", { nullable: true }),
-    id: t.exposeFloat("id"),
-    isMain: t.exposeBoolean("isMain"),
-    isOriginal: t.exposeBoolean("isOriginal"),
-    language: t.exposeString("language"),
-    stylizedText: t.exposeString("stylizedText", { nullable: true }),
-    text: t.exposeString("text"),
-    translator: t.exposeString("translator", { nullable: true }),
-    typingSequence: t.field({
-      type: [[["String"]]] as any,
-      resolve: (v) => v.typingSequence,
-    }),
+builder.drizzleObjectFields("Verses", (t) => ({
+  html: t.field({ type: "String", nullable: true, resolve: (v: any) => v.html }),
+  id: t.field({ type: "Float", resolve: (v: any) => v.id }),
+  isMain: t.field({ type: "Boolean", resolve: (v: any) => v.isMain }),
+  isOriginal: t.field({ type: "Boolean", resolve: (v: any) => v.isOriginal }),
+  language: t.field({ type: "String", resolve: (v: any) => v.language }),
+  stylizedText: t.field({
+    type: "String",
+    nullable: true,
+    resolve: (v: any) => v.stylizedText,
   }),
-});
+  text: t.field({ type: "String", resolve: (v: any) => v.text }),
+  translator: t.field({
+    type: "String",
+    nullable: true,
+    resolve: (v: any) => v.translator,
+  }),
+  typingSequence: t.field({
+    type: [[["String"]]] as any,
+    resolve: (v: any) => v.typingSequence,
+  }),
+}));
 
-PulseRef.implement({
-  fields: (t) => ({
-    creationDate: t.field({
-      type: "Timestamp",
-      resolve: (p) => p.creationDate,
-    }),
-    id: t.exposeInt("id"),
+builder.drizzleObjectFields("Pulses", (t) => ({
+  creationDate: t.field({
+    type: "Timestamp",
+    resolve: (p: any) => p.creationDate,
   }),
-});
+  id: t.field({ type: "Int", resolve: (p: any) => p.id }),
+}));
 
 // --- Music leaves (Drizzle-backed) ---
 
 builder.drizzleObjectFields("VideoFiles", (t) => ({
-  id: t.exposeInt("id"),
+  id: t.field({ type: "Int", resolve: (v: any) => v.id }),
 }));
 
 FileInPlaylistRef.implement({

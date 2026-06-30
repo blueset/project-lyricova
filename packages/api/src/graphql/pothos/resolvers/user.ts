@@ -1,12 +1,14 @@
+import { and, eq } from "drizzle-orm";
 import { builder } from "../builder";
 import { UserRef, UserPublicKeyCredentialRef } from "../types/refs";
-import { UserPublicKeyCredential } from "../../../models/UserPublicKeyCredential";
+import { db } from "../../../drizzle/client";
+import { UserPublicKeyCredentials } from "../../../drizzle/schema";
 
 builder.queryField("currentUser", (t) =>
   t.field({
     type: UserRef,
     nullable: true,
-    resolve: (_root, _args, ctx) => ctx.user ?? null,
+    resolve: (_root, _args, ctx) => (ctx.user ?? null) as any,
   })
 );
 
@@ -15,11 +17,10 @@ builder.queryField("currentCredentials", (t) =>
     type: [UserPublicKeyCredentialRef],
     resolve: async (_root, _args, ctx) => {
       if (!ctx.user) return [];
-      const creds = await UserPublicKeyCredential.findAll({
-        attributes: ["id", "creationDate", "remarks"],
-        where: { userId: ctx.user.id },
-      });
-      return creds.map((i) => i.toJSON());
+      return db.query.UserPublicKeyCredentials.findMany({
+        columns: { id: true, creationDate: true, remarks: true, userId: true },
+        where: eq(UserPublicKeyCredentials.userId, ctx.user.id),
+      }) as any;
     },
   })
 );
@@ -29,11 +30,16 @@ builder.mutationField("deleteCredential", (t) =>
     args: { id: t.arg.int() },
     resolve: async (_root, { id }, ctx) => {
       if (!ctx.user) return false;
-      const cred = await UserPublicKeyCredential.findOne({
-        where: { id, userId: ctx.user.id },
+      const cred = await db.query.UserPublicKeyCredentials.findFirst({
+        where: and(
+          eq(UserPublicKeyCredentials.id, id),
+          eq(UserPublicKeyCredentials.userId, ctx.user.id)
+        ),
       });
       if (!cred) return false;
-      await cred.destroy();
+      await db
+        .delete(UserPublicKeyCredentials)
+        .where(eq(UserPublicKeyCredentials.id, id));
       return true;
     },
   })
