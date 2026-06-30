@@ -1,16 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Artist } from "@lyricova/api/graphql/types";
 import axios from "axios";
 import type {
   PartialFindResult,
   ArtistForApiContract,
 } from "@lyricova/api/graphql/types";
 import _ from "lodash";
-import { gql, useApolloClient } from "@apollo/client";
-import { ArtistFragments } from "../../utils/fragments";
-import type { DocumentNode } from "graphql";
+import { useApolloClient } from "@apollo/client";
+import { graphql } from "../../gql";
+import type { SelectArtistEntryFragment } from "../../gql/graphql";
 import { toast } from "sonner";
 import {
   Avatar,
@@ -34,22 +33,20 @@ import { Music, ExternalLink } from "lucide-react";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 import { Label } from "@lyricova/components/components/ui/label";
 
-const IMPORT_SONG_MUTATION = gql`
-  mutation ($id: Int!) {
+const IMPORT_SONG_MUTATION = graphql(`
+  mutation ImportArtistFromVocaDB($id: Int!) {
     enrolArtistFromVocaDB(artistId: $id) {
       ...SelectArtistEntry
     }
   }
-
-  ${ArtistFragments.SelectArtistEntry}
-` as DocumentNode;
+`);
 
 interface Props {
   isOpen: boolean;
   toggleOpen: (value: boolean) => void;
   keyword: string;
   setKeyword: (value: string) => void;
-  setArtist: (value: Partial<Artist>) => void;
+  setArtist: (value: Partial<SelectArtistEntryFragment>) => void;
 }
 
 export function VocaDBSearchArtistDialog({
@@ -90,9 +87,7 @@ export function VocaDBSearchArtistDialog({
 
     toggleImporting(true);
     try {
-      const result = await apolloClient.mutate<{
-        enrolArtistFromVocaDB: Partial<Artist>;
-      }>({
+      const result = await apolloClient.mutate({
         mutation: IMPORT_SONG_MUTATION,
         variables: {
           id: selectedArtist,

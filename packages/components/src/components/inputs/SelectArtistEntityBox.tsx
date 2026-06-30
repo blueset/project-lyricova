@@ -41,16 +41,15 @@ import {
   Check,
   X,
 } from "lucide-react";
-import type { Artist } from "@lyricova/api/graphql/types";
 import { useEffect, useState, useCallback } from "react";
 import _ from "lodash";
 import axios from "axios";
-import { gql, useApolloClient } from "@apollo/client";
-import { ArtistFragments } from "../../utils/fragments";
+import { useApolloClient } from "@apollo/client";
 import { VocaDBSearchArtistDialog } from "../dialogs/VocaDBSearchArtistDialog";
 import { UtaiteDBSearchArtistDialog } from "../dialogs/UtaiteDBSearchArtistDialog";
 import { ArtistEntityDialog } from "../dialogs/ArtistEntityDialog";
-import { DocumentNode } from "graphql";
+import { graphql } from "../../gql";
+import type { SelectArtistEntryFragment } from "../../gql/graphql";
 import {
   FieldValues,
   FieldPath,
@@ -58,7 +57,7 @@ import {
   useController,
 } from "react-hook-form";
 
-export type ExtendedArtist = Partial<Artist> & {
+export type ExtendedArtist = Partial<SelectArtistEntryFragment> & {
   vocaDBSuggestion?: boolean;
   utaiteDBSuggestion?: boolean;
   manual?: boolean;
@@ -66,15 +65,13 @@ export type ExtendedArtist = Partial<Artist> & {
   isAction?: boolean;
 };
 
-const LOCAL_ARTIST_ENTITY_QUERY = gql`
-  query ($text: String!) {
+const LOCAL_ARTIST_ENTITY_QUERY = graphql(`
+  query LocalArtistEntity($text: String!) {
     searchArtists(keywords: $text) {
       ...SelectArtistEntry
     }
   }
-
-  ${ArtistFragments.SelectArtistEntry}
-` as DocumentNode;
+`);
 
 interface Props<
   TFieldValues extends FieldValues = FieldValues,
@@ -125,9 +122,7 @@ export function SelectArtistEntityBox<
 
       setIsApolloLoading(true);
       try {
-        const apolloResult = await apolloClient.query<{
-          searchArtists: Artist[];
-        }>({
+        const apolloResult = await apolloClient.query({
           query: LOCAL_ARTIST_ENTITY_QUERY,
           variables: { text: searchText },
         });
