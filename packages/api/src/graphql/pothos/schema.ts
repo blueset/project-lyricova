@@ -18,6 +18,7 @@ import "./resolvers/siteMeta";
 import "./resolvers/user";
 import "./resolvers/transliteration";
 import "./resolvers/llm";
+import "./resolvers/tag";
 
 /**
  * Builds the Pothos `GraphQLSchema`. As the Phase 2 port progresses, importing
