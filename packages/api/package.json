@@ -21,6 +21,8 @@
     "posthog": "posthog-cli sourcemap inject --directory dist && posthog-cli sourcemap upload --directory dist",
     "schema:check": "node scripts/schema-parity.mjs",
     "openapi": "node scripts/emit-openapi.mjs && openapi-typescript openapi.json -o src/openapi/schema.ts",
+    "pothos:emit": "ts-node --transpile-only scripts/emit-pothos-schema.ts",
+    "pothos:check": "npm run pothos:emit && node scripts/schema-parity.mjs schema.graphql.golden schema.pothos.graphql",
     "test": "jest"
   },
   "repository": {
@@ -58,6 +60,8 @@
     "@graphql-tools/schema": "^8.5.1",
     "@openrouter/ai-sdk-provider": "^1.4.1",
     "@posthog/cli": "^0.5.16",
+    "@pothos/core": "^4.13.0",
+    "@pothos/plugin-scope-auth": "^4.1.6",
     "@scalar/express-api-reference": "^0.8.21",
     "ai": "^5.0.108",
     "autosuggest-highlight": "^3.1.1",
@@ -90,6 +94,7 @@
     "glob": "^7.1.6",
     "got-cjs": "^12.5.4",
     "graphql": "^16.8.1",
+    "graphql-scalars": "^1.25.0",
     "graphql-type-json": "^0.3.1",
     "graphql-ws": "^6.0.4",
     "hasha": "^5.1.0",

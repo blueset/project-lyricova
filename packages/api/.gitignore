@@ -1,2 +1,3 @@
 dist
 openapi.json
+/schema.pothos.graphql
