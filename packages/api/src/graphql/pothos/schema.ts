@@ -32,6 +32,7 @@ import "./resolvers/playlist";
 import "./resolvers/lyricsProviders";
 import "./resolvers/download";
 import "./resolvers/subscriptions";
+import "./resolvers/foo";
 
 /**
  * Builds the Pothos `GraphQLSchema`. As the Phase 2 port progresses, importing

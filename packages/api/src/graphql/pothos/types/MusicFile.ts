@@ -13,6 +13,7 @@ import {
 } from "./refs";
 
 MusicFileRef.implement({
+  description: "A music file in the jukebox.",
   fields: (t) => ({
     FileInPlaylist: t.field({
       type: FileInPlaylistRef,

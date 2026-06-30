@@ -2,6 +2,7 @@ import { builder } from "../builder";
 import { EntryRef, UserRef, PulseRef, SongRef, TagRef, VerseRef } from "./refs";
 
 EntryRef.implement({
+  description: "A Lyricova entry.",
   fields: (t) => ({
     author: t.field({
       type: UserRef,

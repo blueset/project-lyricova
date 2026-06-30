@@ -3,6 +3,7 @@ import { PlaylistRef, MusicFileRef } from "./refs";
 import { literal } from "sequelize";
 
 PlaylistRef.implement({
+  description: "A playlist of music files.",
   fields: (t) => ({
     files: t.field({
       type: [MusicFileRef],
