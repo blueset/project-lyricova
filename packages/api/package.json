@@ -20,6 +20,7 @@
     "dev:debug": "concurrently -n node,tscr -c green,blue npm:dev:node-debug npm:dev:ts",
     "posthog": "posthog-cli sourcemap inject --directory dist && posthog-cli sourcemap upload --directory dist",
     "schema:check": "node scripts/schema-parity.mjs",
+    "openapi": "node scripts/emit-openapi.mjs && openapi-typescript openapi.json -o src/openapi/schema.ts",
     "test": "jest"
   },
   "repository": {
@@ -36,7 +37,8 @@
   "exports": {
     "./graphql/types": {
       "types": "./dist/graphql/types.d.ts"
-    }
+    },
+    "./openapi": "./src/openapi/index.ts"
   },
   "dependencies": {
     "@ai-sdk/azure": "^2.0.79",
@@ -166,6 +168,7 @@
     "concurrently": "^6.4.0",
     "jest": "^29.7.0",
     "nodemon": "^3.1.7",
+    "openapi-typescript": "^7.13.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.4.0",
     "typescript": "^5.4.5"
