@@ -30,7 +30,7 @@ services:
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
   mysql:
-    image: mysql:5.7
+    image: mysql:9.7
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: lyricova
