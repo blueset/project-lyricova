@@ -14,7 +14,8 @@ import { ExternalLink } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";
 import { swapExt } from "@/frontendUtils/path";
 import type { DocumentNode } from "graphql";
-import { MusicFile, YouTubeDlProgressType } from "@lyricova/api/graphql/types";
+import type { MusicFile } from "@lyricova/components/gql/schema";
+import type { YouTubeDlProgress as YouTubeDlProgressType } from "@lyricova/components/gql/schema";
 import {
   Step,
   StepContent,
@@ -241,15 +242,15 @@ export default function YouTubeDlDownloadSteps({
         },
         next(x) {
           console.log("subscription event", x);
-          if (x.data.youTubeDlDownloadProgress?.type === "progress") {
-            const progress = x.data.youTubeDlDownloadProgress;
+          const progress = x.data.youTubeDlDownloadProgress;
+          if (progress?.__typename === "YouTubeDlProgressValue") {
             setDownloadProgress((progress.current / progress.total) * 100);
             setDownloadInfo(
               `${progress.current}/${progress.total}, ${progress.speed}, ETA: ${progress.eta}`
             );
-          } else if (x.data.youTubeDlDownloadProgress?.type === "message") {
+          } else if (progress?.__typename === "YouTubeDlProgressMessage") {
             setDownloadProgress(null);
-            setDownloadInfo(x.data.youTubeDlDownloadProgress.message);
+            setDownloadInfo(progress.message);
           } else {
             setDownloadProgress(null);
             setDownloadInfo("");

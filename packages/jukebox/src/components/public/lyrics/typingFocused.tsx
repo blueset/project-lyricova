@@ -1,4 +1,4 @@
-import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
+import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { useAppContext } from "../AppContext";
 import { useRef } from "react";
 import { usePlayerLyricsTypingState } from "../../../hooks/usePlayerLyricsTypingState";

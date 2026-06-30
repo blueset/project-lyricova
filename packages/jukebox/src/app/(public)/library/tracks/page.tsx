@@ -25,9 +25,9 @@ import {
   NextComposedLink,
   useAuthContext,
 } from "@lyricova/components";
-import type { MusicFilesPagination } from "@lyricova/api/graphql/types";
+import type { MusicFilesPagination } from "@lyricova/components/gql/schema";
 import React, { useCallback, useMemo, useRef } from "react";
-import type { MusicFile } from "@lyricova/api/graphql/types";
+import type { MusicFile } from "@lyricova/components/gql/schema";
 import _ from "lodash";
 import { useNamedState } from "@/hooks/useNamedState";
 import { useRouter } from "next/navigation";

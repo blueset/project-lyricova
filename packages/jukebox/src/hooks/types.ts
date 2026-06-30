@@ -1,4 +1,4 @@
-import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
+import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 
 export type LyricsFrameCallback = (
   thisLine: number,

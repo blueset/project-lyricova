@@ -1,4 +1,4 @@
-import type { Playlist } from "@lyricova/api/graphql/types";
+import type { Playlist } from "@lyricova/components/gql/schema";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import _ from "lodash";
 import type { ReactNode } from "react";

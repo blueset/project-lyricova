@@ -5,7 +5,7 @@ import { useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { gql, useQuery } from "@apollo/client";
 import type { DocumentNode } from "@apollo/client/core";
-import type { MusicFilesPagination } from "@lyricova/api/graphql/types";
+import type { MusicFilesPagination } from "@lyricova/components/gql/schema";
 import { Alert, AlertTitle } from "@lyricova/components/components/ui/alert";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Badge } from "@lyricova/components/components/ui/badge";

@@ -9,7 +9,7 @@ import {
 import { cn } from "@lyricova/components/utils";
 import { NextComposedLink } from "@lyricova/components";
 import React from "react";
-import type { Playlist } from "@lyricova/api/graphql/types";
+import type { Playlist } from "@lyricova/components/gql/schema";
 import PlaylistAvatar, { gradients } from "@/components/PlaylistAvatar";
 import type { DocumentNode } from "graphql";
 import { Sparkles, Play, Flame, FilePenLine } from "lucide-react";

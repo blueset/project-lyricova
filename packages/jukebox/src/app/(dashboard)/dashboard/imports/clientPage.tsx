@@ -4,7 +4,7 @@ import { ProgressButton } from "@lyricova/components/components/ui/progress-butt
 import { gql, useApolloClient } from "@apollo/client";
 import { useNamedState } from "@/hooks/useNamedState";
 import { toast } from "sonner";
-import type { Artist } from "@lyricova/api/graphql/types";
+import type { Artist } from "@lyricova/components/gql/schema";
 import { NavHeader } from "../NavHeader";
 import {
   Item,

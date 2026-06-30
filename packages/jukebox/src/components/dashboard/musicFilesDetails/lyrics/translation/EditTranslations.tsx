@@ -1,5 +1,5 @@
 import { gql, useQuery } from "@apollo/client";
-import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
+import type { VocaDBLyricsEntry } from "@lyricova/components/gql/schema";
 import LanguagePicker from "./LanguagePicker";
 import LyricsTools from "./LyricsTools";
 import VocaDBTranslationImport from "./VocaDBTranslationImport";

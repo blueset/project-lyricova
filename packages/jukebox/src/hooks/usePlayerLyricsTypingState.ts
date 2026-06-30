@@ -4,8 +4,8 @@ import { useTrackwiseTimelineControl } from "./useTrackwiseTimelineControl";
 import {
   LyricsKitLyricsLine,
   LyricsKitLyrics,
-} from "@lyricova/api/graphql/types";
-import { AnimatedWord } from "@lyricova/api/graphql/types";
+} from "@lyricova/components/gql/schema";
+import { AnimatedWord } from "@lyricova/components/gql/schema";
 import { PlayerLyricsState } from "./types";
 import { usePlainPlayerLyricsState } from "./usePlainPlayerLyricsState";
 import gsap from "gsap";

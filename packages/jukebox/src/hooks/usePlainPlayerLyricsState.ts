@@ -1,5 +1,5 @@
 import { RefObject, useMemo } from "react";
-import { LyricsKitLyrics, LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
+import { LyricsKitLyrics, LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import { PlayerLyricsState, PlayerLyricsKeyframe } from "./types";
 import { usePlayerLyricsState } from "./usePlayerLyricsState";
 

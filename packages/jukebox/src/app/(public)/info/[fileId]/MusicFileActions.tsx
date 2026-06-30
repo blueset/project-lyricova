@@ -1,7 +1,7 @@
 import { addTrackToNext } from "@/redux/public/playlist";
 import { useAppDispatch } from "@/redux/public/store";
 import { DocumentNode, gql, useLazyQuery, useQuery } from "@apollo/client";
-import { LyricsKitLyrics, MusicFile } from "@lyricova/api/graphql/types";
+import { LyricsKitLyrics, MusicFile } from "@lyricova/components/gql/schema";
 import { MusicFileFragments } from "@lyricova/components";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";

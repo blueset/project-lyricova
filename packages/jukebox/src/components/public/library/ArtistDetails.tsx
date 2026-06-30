@@ -7,7 +7,7 @@ import {
   NextComposedLink,
 } from "@lyricova/components";
 import React from "react";
-import type { Artist } from "@lyricova/api/graphql/types";
+import type { Artist } from "@lyricova/components/gql/schema";
 import _ from "lodash";
 import filesize from "filesize";
 import type { DocumentNode } from "graphql";

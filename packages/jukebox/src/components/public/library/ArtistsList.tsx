@@ -2,7 +2,7 @@
 
 import type { VDBArtistType } from "../../../types/vocadb";
 import { gql, useQuery } from "@apollo/client";
-import type { Artist } from "@lyricova/api/graphql/types";
+import type { Artist } from "@lyricova/components/gql/schema";
 import React from "react";
 import { SquareUserRound } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";

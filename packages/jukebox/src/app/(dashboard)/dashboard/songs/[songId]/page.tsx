@@ -2,7 +2,7 @@
 
 import { gql, useQuery } from "@apollo/client";
 import { SongFragments } from "@lyricova/components";
-import type { Song } from "@lyricova/api/graphql/types";
+import type { Song } from "@lyricova/components/gql/schema";
 import { useRouter, useParams } from "next/navigation";
 import { SongEntityDialog } from "@lyricova/components";
 import { useCallback } from "react";

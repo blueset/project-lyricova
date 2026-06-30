@@ -1,7 +1,7 @@
 import { ApolloClient, gql, useQuery } from "@apollo/client";
 import { kanaToHira, romaToHira } from "@lyricova/components";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
-import { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
+import { VocaDBLyricsEntry } from "@lyricova/components/gql/schema";
 import diff from "fast-diff";
 import { useMemo } from "react";
 

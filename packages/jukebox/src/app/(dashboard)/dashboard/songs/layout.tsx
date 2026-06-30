@@ -7,7 +7,7 @@ import {
   Alert,
   AlertDescription,
 } from "@lyricova/components/components/ui/alert";
-import type { Song } from "@lyricova/api/graphql/types";
+import type { Song } from "@lyricova/components/gql/schema";
 import { useRouter } from "next/navigation";
 import {
   Avatar,

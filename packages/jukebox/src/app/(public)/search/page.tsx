@@ -5,7 +5,7 @@ import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import React, { useCallback } from "react";
 import { gql, useLazyQuery } from "@apollo/client";
 import { MusicFileFragments } from "@lyricova/components";
-import type { MusicFile } from "@lyricova/api/graphql/types";
+import type { MusicFile } from "@lyricova/components/gql/schema";
 import TrackListRow from "@/components/public/library/TrackListRow";
 import { Search as SearchIcon } from "lucide-react";
 import { Input } from "@lyricova/components/components/ui/input";

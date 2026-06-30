@@ -1,7 +1,7 @@
 "use client";
 
 import { gql, useQuery } from "@apollo/client";
-import type { Artist } from "@lyricova/api/graphql/types";
+import type { Artist } from "@lyricova/components/gql/schema";
 import { useRouter, useParams } from "next/navigation";
 import { ArtistFragments, ArtistEntityDialog } from "@lyricova/components";
 import { useCallback } from "react";

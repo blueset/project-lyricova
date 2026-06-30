@@ -7,8 +7,8 @@ import {
   NextComposedLink,
 } from "@lyricova/components";
 import { MoreVertical } from "lucide-react";
-import type { MusicFile } from "@lyricova/api/graphql/types";
-import type { Song } from "@lyricova/api/graphql/types";
+import type { MusicFile } from "@lyricova/components/gql/schema";
+import type { Song } from "@lyricova/components/gql/schema";
 import ListItemTextWithTime from "./ListItemTextWithTime";
 import {
   playTrack,

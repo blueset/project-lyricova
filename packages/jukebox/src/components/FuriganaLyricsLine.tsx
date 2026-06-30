@@ -1,6 +1,6 @@
 import type { LyricsLine, LyricsLineJSON } from "lyrics-kit/core";
 import { FURIGANA } from "lyrics-kit/core";
-import type { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
+import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 
 interface Props {
   lyricsKitLine?: LyricsLine;

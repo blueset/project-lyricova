@@ -40,7 +40,7 @@ type FormSchema = z.infer<typeof formSchema>;
 interface Props {
   fileId: number;
   playCount?: number;
-  lastPlayed?: Date;
+  lastPlayed?: number | Date;
   refresh: () => unknown | Promise<unknown>;
 }
 

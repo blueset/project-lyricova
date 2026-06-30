@@ -8,7 +8,7 @@ import {
 } from "./playlist";
 import store from "./store";
 
-const tracks: Track[] = [
+const tracks = [
   { id: 0, fileSize: 0, hasCover: false, duration: 0, hasLyrics: false },
   { id: 1, fileSize: 1, hasCover: false, duration: 1, hasLyrics: false },
   { id: 2, fileSize: 2, hasCover: false, duration: 2, hasLyrics: false },
@@ -16,7 +16,7 @@ const tracks: Track[] = [
   { id: 4, fileSize: 4, hasCover: false, duration: 4, hasLyrics: false },
   { id: 5, fileSize: 5, hasCover: false, duration: 5, hasLyrics: false },
   { id: 6, fileSize: 6, hasCover: false, duration: 6, hasLyrics: false },
-];
+] as unknown as Track[];
 
 describe("Playlist reducer slice", () => {
   it("should delete items properly when shuffled", () => {

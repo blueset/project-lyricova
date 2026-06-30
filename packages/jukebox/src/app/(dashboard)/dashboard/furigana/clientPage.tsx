@@ -1,7 +1,7 @@
 "use client";
 
 import { gql, useApolloClient, useQuery } from "@apollo/client";
-import type { FuriganaMapping } from "@lyricova/api/graphql/types";
+import type { FuriganaMapping } from "@lyricova/components/gql/schema";
 import {
   Alert,
   AlertDescription,

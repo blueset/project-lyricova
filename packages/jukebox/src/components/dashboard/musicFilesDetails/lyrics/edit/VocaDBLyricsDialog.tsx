@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { gql, useQuery } from "@apollo/client";
-import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
+import type { VocaDBLyricsEntry } from "@lyricova/components/gql/schema";
 import { Link } from "@lyricova/components";
 import { Button } from "@lyricova/components/components/ui/button";
 import {

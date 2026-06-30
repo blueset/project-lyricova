@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { gql, useApolloClient } from "@apollo/client";
-import type { HmikuAtWikiSearchResultEntry } from "@lyricova/api/graphql/types";
+import type { HmikuAtWikiSearchResultEntry } from "@lyricova/components/gql/schema";
 import { useNamedState } from "../../../../../hooks/useNamedState";
 import HMikuWikiResultDialog from "./HMikuWikiResultDialog";
 import type { DocumentNode } from "graphql";

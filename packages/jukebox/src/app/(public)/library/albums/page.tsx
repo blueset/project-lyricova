@@ -2,7 +2,7 @@
 
 import { gql, useQuery } from "@apollo/client";
 import React from "react";
-import type { Album } from "@lyricova/api/graphql/types";
+import type { Album } from "@lyricova/components/gql/schema";
 import { NextComposedLink, formatArtistsPlainText } from "@lyricova/components";
 import type { DocumentNode } from "graphql";
 import {

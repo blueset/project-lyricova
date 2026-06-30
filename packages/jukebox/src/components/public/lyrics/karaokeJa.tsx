@@ -1,7 +1,7 @@
 import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
-} from "@lyricova/api/graphql/types";
+} from "@lyricova/components/gql/schema";
 import { useAppContext } from "../AppContext";
 import type {
   PlayerLyricsKeyframe,

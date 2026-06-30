@@ -5,7 +5,7 @@ import { ReactNode, useMemo, useRef, useState } from "react";
 import { FocusedLyrics } from "@/components/public/lyrics/focused";
 import { PlainLyrics } from "@/components/public/lyrics/plain";
 import { LyricsSwitchButton } from "@/components/public/LyricsSwitchButton";
-import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
+import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { SlantedLyrics } from "@/components/public/lyrics/slanted";
 import { ParagraphLyrics } from "@/components/public/lyrics/paragraph";
 import { TypingFocusedLyrics } from "@/components/public/lyrics/typingFocused";

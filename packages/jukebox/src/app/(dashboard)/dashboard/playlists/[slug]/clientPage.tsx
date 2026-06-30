@@ -39,7 +39,7 @@ import type { DocumentNode } from "graphql";
 import type {
   Playlist,
   MusicFile as MusicFileModel,
-} from "@lyricova/api/graphql/types";
+} from "@lyricova/components/gql/schema";
 import type { DropResult } from "@hello-pangea/dnd";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { move } from "@/frontendUtils/arrays";

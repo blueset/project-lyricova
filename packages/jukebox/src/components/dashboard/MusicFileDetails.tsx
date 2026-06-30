@@ -1,5 +1,5 @@
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
-import type { MusicFile } from "@lyricova/api/graphql/types";
+import type { MusicFile } from "@lyricova/components/gql/schema";
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
 import InfoPanel from "./musicFilesDetails/info";

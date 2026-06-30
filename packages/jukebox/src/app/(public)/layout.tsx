@@ -8,7 +8,7 @@ import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
 import type { Track } from "@/components/public/AppContext";
 import { AppContext } from "@/components/public/AppContext";
 import CurrentPlaylist from "@/components/public/CurrentPlaylist";
-import type { Texture } from "@lyricova/api/graphql/types";
+import type { Texture } from "@lyricova/components/gql/schema";
 import { AuthContext } from "@lyricova/components";
 import type { DocumentNode } from "graphql";
 import store, {

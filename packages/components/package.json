@@ -12,7 +12,7 @@
   "scripts": {
     "build": "npm run codegen && tsc && tsc-alias",
     "dev": "concurrently \"npm:codegen:watch\" \"tsc -w\" \"tsc-alias -w\"",
-    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen": "graphql-codegen --config codegen.ts && graphql-codegen --config codegen.schema.ts",
     "codegen:watch": "graphql-codegen --config codegen.ts --watch",
     "clean": "rimraf build"
   },
@@ -90,6 +90,7 @@
     "./utils": "./src/utils/index.ts",
     "./gql": "./src/gql/index.ts",
     "./gql/graphql": "./src/gql/graphql.ts",
+    "./gql/schema": "./src/gql/schema.ts",
     "./gql/*": "./src/gql/*",
     "./hooks/*": {
       "import": "./build/hooks/*.js",

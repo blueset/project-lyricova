@@ -1,11 +1,11 @@
 "use client";
 
 import { gql, useQuery } from "@apollo/client";
-import type { MusicFile } from "@lyricova/api/graphql/types";
+import type { MusicFile } from "@lyricova/components/gql/schema";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import React, { useCallback, useMemo } from "react";
-import type { Artist } from "@lyricova/api/graphql/types";
+import type { Artist } from "@lyricova/components/gql/schema";
 import { NextComposedLink } from "@lyricova/components";
 import { formatTime } from "../../frontendUtils/strings";
 import filesize from "filesize";

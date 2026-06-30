@@ -1,7 +1,7 @@
 "use client";
 
 import { gql, useQuery } from "@apollo/client";
-import type { DashboardStats } from "@lyricova/api/graphql/types";
+import type { DashboardStats } from "@lyricova/components/gql/schema";
 import { useNamedState } from "@/hooks/useNamedState";
 import { useEffect } from "react";
 import Link from "next/link";

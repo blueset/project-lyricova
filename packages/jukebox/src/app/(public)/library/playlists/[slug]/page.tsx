@@ -10,12 +10,12 @@ import { gql, useQuery } from "@apollo/client";
 import _ from "lodash";
 import filesize from "filesize";
 import React from "react";
-import type { Playlist } from "@lyricova/api/graphql/types";
+import type { Playlist } from "@lyricova/components/gql/schema";
 import PlaylistAvatar, { gradients, hash } from "@/components/PlaylistAvatar";
 import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, toggleShuffle } from "@/redux/public/playlist";
-import type { MusicFile } from "@lyricova/api/graphql/types";
+import type { MusicFile } from "@lyricova/components/gql/schema";
 import { cn } from "@lyricova/components/utils";
 import {
   DropdownMenu,

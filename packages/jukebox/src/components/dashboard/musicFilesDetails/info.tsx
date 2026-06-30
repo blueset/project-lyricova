@@ -1,8 +1,8 @@
 "use client";
 
 import { gql, useApolloClient } from "@apollo/client";
-import type { Song as SongModel } from "@lyricova/api/graphql/types";
-import type { Album } from "@lyricova/api/graphql/types";
+import type { Song as SongModel } from "@lyricova/components/gql/schema";
+import type { Album } from "@lyricova/components/gql/schema";
 import {
   SelectSongEntityBox,
   TransliterationAdornment,

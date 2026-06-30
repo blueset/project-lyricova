@@ -4,7 +4,7 @@ import { Progress } from "@lyricova/components/components/ui/progress";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { gql, useApolloClient, useMutation } from "@apollo/client";
 import { useCallback } from "react";
-import type { MusicFilesScanOutcome } from "@lyricova/api/graphql/types";
+import type { MusicFilesScanOutcome } from "@lyricova/components/gql/schema";
 import { useNamedState } from "@/hooks/useNamedState";
 import { NavHeader } from "../NavHeader";
 import {

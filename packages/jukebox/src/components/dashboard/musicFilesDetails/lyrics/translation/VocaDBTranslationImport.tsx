@@ -7,7 +7,7 @@ import {
 import { useCallback } from "react";
 import { useLyricsStore } from "../state/editorState";
 import { useShallow } from "zustand/shallow";
-import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
+import type { VocaDBLyricsEntry } from "@lyricova/components/gql/schema";
 
 interface VocaDBTranslationImportProps {
   vocaDBTranslations: VocaDBLyricsEntry[];

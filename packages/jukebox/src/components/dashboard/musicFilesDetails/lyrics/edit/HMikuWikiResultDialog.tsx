@@ -1,6 +1,6 @@
 import { ReactNode, useCallback } from "react";
 import { gql, useQuery } from "@apollo/client";
-import type { HmikuAtWikiEntry } from "@lyricova/api/graphql/types";
+import type { HmikuAtWikiEntry } from "@lyricova/components/gql/schema";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@lyricova/components";

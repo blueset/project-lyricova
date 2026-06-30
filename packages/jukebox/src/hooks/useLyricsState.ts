@@ -1,5 +1,5 @@
 import { RefObject, useEffect } from "react";
-import { LyricsKitLyrics } from "@lyricova/api/graphql/types";
+import { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { LyricsFrameCallback } from "./types";
 import { useNamedState } from "./useNamedState";
 

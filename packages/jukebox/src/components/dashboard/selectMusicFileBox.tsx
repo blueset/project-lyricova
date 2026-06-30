@@ -2,7 +2,7 @@
 
 import { gql, useApolloClient } from "@apollo/client";
 import type { DocumentNode } from "graphql";
-import type { MusicFile } from "@lyricova/api/graphql/types";
+import type { MusicFile } from "@lyricova/components/gql/schema";
 import {
   Command,
   CommandEmpty,

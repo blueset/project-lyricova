@@ -2,7 +2,7 @@
 
 import { gql, useQuery } from "@apollo/client";
 import { AlbumFragments } from "@lyricova/components";
-import type { Album } from "@lyricova/api/graphql/types";
+import type { Album } from "@lyricova/components/gql/schema";
 import { useRouter, useParams } from "next/navigation";
 import { AlbumEntityDialog } from "@lyricova/components";
 import { useCallback } from "react";

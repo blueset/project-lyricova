@@ -9,7 +9,7 @@ import {
 import type {
   MusicFilesPagination,
   MusicFile,
-} from "@lyricova/api/graphql/types";
+} from "@lyricova/components/gql/schema";
 import React, { useCallback, useMemo } from "react";
 import { useNamedState } from "@/hooks/useNamedState";
 import { DataTableColumnHeader, NextComposedLink } from "@lyricova/components";

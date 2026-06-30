@@ -20,7 +20,7 @@ import {
 } from "@lyricova/components/components/ui/form";
 import { gql, useApolloClient } from "@apollo/client";
 import { useNamedState } from "../../../../hooks/useNamedState";
-import type { LyricsKitLyricsEntry } from "@lyricova/api/graphql/types";
+import type { LyricsKitLyricsEntry } from "@lyricova/components/gql/schema";
 import { toast } from "sonner";
 import { Check, Copy, Images, Loader2, Music, X } from "lucide-react";
 import type { LyricsAnalysisResult } from "@/frontendUtils/lyricsCheck";

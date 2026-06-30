@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { RefObject, useRef, useCallback, useEffect } from "react";
-import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
+import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { useNamedState } from "./useNamedState";
 import { LyricsFrameCallback } from "./types";
 

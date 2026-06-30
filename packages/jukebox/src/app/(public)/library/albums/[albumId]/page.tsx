@@ -11,11 +11,11 @@ import {
   NextComposedLink,
 } from "@lyricova/components";
 import React, { Fragment } from "react";
-import type { Album } from "@lyricova/api/graphql/types";
+import type { Album } from "@lyricova/components/gql/schema";
 import _ from "lodash";
 import filesize from "filesize";
-import type { Song } from "@lyricova/api/graphql/types";
-import type { MusicFile } from "@lyricova/api/graphql/types";
+import type { Song } from "@lyricova/components/gql/schema";
+import type { MusicFile } from "@lyricova/components/gql/schema";
 import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, playTrack, toggleShuffle } from "@/redux/public/playlist";
