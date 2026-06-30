@@ -22,7 +22,6 @@ import { DataTypes } from "sequelize";
 import { SongOfEntry } from "./SongOfEntry";
 import { TagOfEntry } from "./TagOfEntry";
 import { Pulse } from "./Pulse";
-import { ObjectType, Field } from "type-graphql";
 
 /**
  * @openapi
@@ -75,40 +74,32 @@ import { ObjectType, Field } from "type-graphql";
  *         - vocalistsName
  *         - authorId
  */
-@ObjectType({ description: "A Lyricova entry." })
 @Table({ modelName: "Entry" })
 export class Entry extends Model<Entry> {
-  @Field()
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(512) })
   title: string;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(1024) })
   producersName: string;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(1024) })
   vocalistsName: string;
 
   @BelongsToMany(() => Song, () => SongOfEntry)
   songs: Array<Song & { SongOfEntry: SongOfEntry }>;
 
-  @Field()
   @ForeignKey(() => User)
   @Column
   authorId: number;
 
-  @Field()
   @BelongsTo((type) => User, "authorId")
   author: User;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: "text" })
   comment: string;
@@ -122,18 +113,15 @@ export class Entry extends Model<Entry> {
   @HasMany((type) => Pulse)
   pulses: Pulse[];
 
-  @Field()
   @Column({
     type: new DataTypes.DATE(),
     defaultValue: Sequelize.literal("CURRENT_TIMESTAMP()"),
   })
   recentActionDate: Date;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 
-  @Field()
   @UpdatedAt
   updatedOn: Date;
 

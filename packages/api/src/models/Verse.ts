@@ -13,7 +13,6 @@ import {
   AllowNull,
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
-import { Field, ObjectType } from "type-graphql";
 
 /**
  * @openapi
@@ -103,47 +102,37 @@ import { Field, ObjectType } from "type-graphql";
  *         - typingSequence
  *         - entryId
  */
-@ObjectType()
 @Table({ modelName: "Verse" })
 export class Verse extends Model<Verse> {
-  @Field()
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(64) })
   language: string;
 
-  @Field()
   @Column({ type: DataTypes.BOOLEAN })
   isOriginal: boolean;
 
-  @Field()
   @Column({ type: DataTypes.BOOLEAN })
   isMain: boolean;
 
-  @Field()
   @Column({ type: new DataTypes.TEXT() })
   text: string;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.TEXT() })
   html: string;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.TEXT() })
   stylizedText: string;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.TEXT() })
   translator: string;
 
-  @Field((type) => [[[String]]])
   @Column({ type: DataTypes.JSON })
   typingSequence: [string, string][][];
 

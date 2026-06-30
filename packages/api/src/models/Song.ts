@@ -23,7 +23,6 @@ import {
 import { Artist } from "./Artist";
 import { Album } from "./Album";
 import { SongOfEntry } from "./SongOfEntry";
-import { Field, Int, ObjectType } from "type-graphql";
 import { GraphQLJSONObject } from "graphql-type-json";
 import _ from "lodash";
 import { processUtaiteDbAlbum, processUtaiteDbArtist } from "../utils/vocadb";
@@ -93,15 +92,12 @@ import { processUtaiteDbAlbum, processUtaiteDbArtist } from "../utils/vocadb";
  *         - sortOrder
  *         - incomplete
  */
-@ObjectType()
 @Table({ modelName: "Song" })
 export class Song extends Model<Song, Partial<Song>> {
-  @Field(() => Int)
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   public id!: number;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   @Index({
     name: "Song_SearchText",
@@ -110,7 +106,6 @@ export class Song extends Model<Song, Partial<Song>> {
   })
   public name!: string;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   @Index({
     name: "Song_SearchText",
@@ -125,7 +120,6 @@ export class Song extends Model<Song, Partial<Song>> {
   @BelongsToMany(() => Album, () => SongInAlbum)
   albums: Array<Album & { SongInAlbum: SongInAlbum }>;
 
-  @Field(() => Int, { nullable: true })
   @AllowNull
   @ForeignKey(() => Song)
   @Column({ type: DataTypes.INTEGER })
@@ -137,12 +131,10 @@ export class Song extends Model<Song, Partial<Song>> {
   @HasMany(() => Song, "originalId")
   readonly derivedSongs: Song[];
 
-  @Field((type) => GraphQLJSONObject)
   @AllowNull
   @Column({ type: DataTypes.JSON })
   vocaDbJson!: SongForApiContract | null;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   utaiteDbId: number | null;
@@ -150,7 +142,6 @@ export class Song extends Model<Song, Partial<Song>> {
   @HasMany(() => VideoFile)
   videos: VideoFile[];
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(4096) })
   coverUrl?: string;
@@ -161,15 +152,12 @@ export class Song extends Model<Song, Partial<Song>> {
   @BelongsToMany(() => Entry, () => SongOfEntry)
   lyricovaEntries: Array<Entry & { SongOfEntry: SongOfEntry }>;
 
-  @Field()
   @Column({ type: DataTypes.BOOLEAN, defaultValue: true })
   incomplete!: boolean;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 
-  @Field()
   @UpdatedAt
   updatedOn: Date;
 
@@ -177,7 +165,6 @@ export class Song extends Model<Song, Partial<Song>> {
   deletionDate: Date;
 
   /** ArtistOfSong reflected by Album.$get("songs"), added for GraphQL queries. */
-  @Field((type) => SongInAlbum, { nullable: true })
   SongInAlbum?: Partial<SongInAlbum>;
 
   private static selectPreferredThumbUrl(

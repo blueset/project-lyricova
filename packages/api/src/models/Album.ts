@@ -18,7 +18,6 @@ import {
 } from "sequelize-typescript";
 import { Song } from "./Song";
 import { DataTypes } from "sequelize";
-import { ObjectType, Field, Int } from "type-graphql";
 import { Artist } from "./Artist";
 import _ from "lodash";
 import { processUtaiteDbArtist } from "../utils/vocadb";
@@ -81,15 +80,12 @@ import { processUtaiteDbArtist } from "../utils/vocadb";
  *         - sortOrder
  *         - incomplete
  */
-@ObjectType()
 @Table({ modelName: "Album" })
 export class Album extends Model<Album, Partial<Album>> {
-  @Field((type) => Int)
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   @Index({
     name: "Album_SearchText",
@@ -98,7 +94,6 @@ export class Album extends Model<Album, Partial<Album>> {
   })
   name: string;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   @Index({
     name: "Album_SearchText",
@@ -113,7 +108,6 @@ export class Album extends Model<Album, Partial<Album>> {
   @BelongsToMany(() => Artist, () => ArtistOfAlbum)
   artists: Array<Artist & { ArtistOfAlbum: ArtistOfAlbum }>;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(4096) })
   coverUrl?: string;
@@ -125,30 +119,24 @@ export class Album extends Model<Album, Partial<Album>> {
   @Column({ type: DataTypes.JSON })
   vocaDbJson: AlbumForApiContract | null;
 
-  @Field()
   @Default(true)
   @Column({ type: DataTypes.BOOLEAN })
   incomplete: boolean;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   utaiteDbId: number | null;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 
-  @Field()
   @UpdatedAt
   updatedOn: Date;
 
-  @Field()
   @DeletedAt
   deletionDate: Date;
 
   /** SongInAlbum reflected by Song.$get("albums"), added for GraphQL queries. */
-  @Field((type) => SongInAlbum, { nullable: true })
   SongInAlbum?: Partial<SongInAlbum>;
 
   /** Incomplete build. */

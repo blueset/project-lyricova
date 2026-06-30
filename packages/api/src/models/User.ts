@@ -12,7 +12,6 @@ import {
 import { DataTypes } from "sequelize";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { ObjectType, Field, Int } from "type-graphql";
 
 /**
  * @openapi
@@ -78,31 +77,25 @@ import { ObjectType, Field, Int } from "type-graphql";
  *         - email
  *         - role
  */
-@ObjectType()
 @Table({ modelName: "User" })
 export class User extends Model<User> {
-  @Field()
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(256), unique: true })
   username: string;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(256) })
   displayName: string;
 
   @Column({ type: new DataTypes.STRING(256) })
   password: string;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(512), unique: true })
   email: string;
 
-  @Field()
   @Default("guest")
   @Column({ type: new DataTypes.ENUM("admin", "guest") })
   role: "admin" | "guest";
@@ -113,7 +106,6 @@ export class User extends Model<User> {
   @Column({ type: new DataTypes.STRING(1024) })
   provider_id?: string;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 
@@ -123,7 +115,6 @@ export class User extends Model<User> {
   @DeletedAt
   deletionDate: Date;
 
-  @Field()
   get emailMD5(): string {
     return crypto
       .createHash("md5")

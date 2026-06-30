@@ -12,7 +12,6 @@ import {
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { User } from "./User";
-import { ObjectType, Field, Int } from "type-graphql";
 
 /**
  * @openapi
@@ -53,16 +52,13 @@ import { ObjectType, Field, Int } from "type-graphql";
  *         - externalId
  *         - publicKey
  */
-@ObjectType()
 @Table({ modelName: "UserPublicKeyCredential" })
 export class UserPublicKeyCredential extends Model<UserPublicKeyCredential> {
-  @Field()
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   id?: number;
 
-  @Field()
   @ForeignKey(() => User)
   @Column
   userId: number;
@@ -77,15 +73,12 @@ export class UserPublicKeyCredential extends Model<UserPublicKeyCredential> {
   @Column({ type: new DataTypes.TEXT() })
   publicKey: string;
 
-  @Field({ nullable: true })
   @Column({ type: new DataTypes.TEXT(), defaultValue: null })
   remarks?: string;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 
-  @Field()
   @UpdatedAt
   updatedOn: Date;
 }

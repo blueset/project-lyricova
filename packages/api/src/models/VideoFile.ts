@@ -14,7 +14,6 @@ import {
   ForeignKey,
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
-import { Field, Int, ObjectType } from "type-graphql";
 
 /**
  * @openapi
@@ -75,10 +74,8 @@ import { Field, Int, ObjectType } from "type-graphql";
  *         - title
  *         - type
  */
-@ObjectType()
 @Table({ modelName: "VideoFile" })
 export class VideoFile extends Model<VideoFile> {
-  @Field(() => Int)
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })

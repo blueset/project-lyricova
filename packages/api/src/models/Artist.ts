@@ -24,7 +24,6 @@ import {
 } from "sequelize-typescript";
 import { Song } from "./Song";
 import { Album } from "./Album";
-import { Field, Int, ObjectType } from "type-graphql";
 import { GraphQLJSONObject } from "graphql-type-json";
 import { random } from "lodash";
 
@@ -124,15 +123,12 @@ import { random } from "lodash";
  *         - type
  *         - incomplete
  */
-@ObjectType()
 @Table({ modelName: "Artist" })
 export class Artist extends Model<Artist, Partial<Artist>> {
-  @Field(() => Int)
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   @Index({
     name: "Artist_SearchText",
@@ -141,7 +137,6 @@ export class Artist extends Model<Artist, Partial<Artist>> {
   })
   name: string;
 
-  @Field()
   @Column({ type: new DataTypes.STRING(4096) })
   @Index({
     name: "Artist_SearchText",
@@ -150,12 +145,10 @@ export class Artist extends Model<Artist, Partial<Artist>> {
   })
   sortOrder: string;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(4096) })
   mainPictureUrl?: string;
 
-  @Field()
   @Column({
     type: new DataTypes.ENUM(
       "Unknown",
@@ -207,25 +200,20 @@ export class Artist extends Model<Artist, Partial<Artist>> {
   public readonly derivedVoiceBanks: Artist[];
 
   @AllowNull
-  @Field((type) => GraphQLJSONObject)
   @Column({ type: DataTypes.JSON })
   vocaDbJson: ArtistForApiContract | null;
 
-  @Field()
   @Default(true)
   @Column({ type: DataTypes.BOOLEAN })
   incomplete: boolean;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   utaiteDbId: number | null;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 
-  @Field()
   @UpdatedAt
   updatedOn: Date;
 
@@ -233,11 +221,9 @@ export class Artist extends Model<Artist, Partial<Artist>> {
   deletionDate: Date;
 
   /** ArtistOfSong reflected by Song.$get("artists"), added for GraphQL queries. */
-  @Field((type) => ArtistOfSong, { nullable: true })
   ArtistOfSong?: Partial<ArtistOfSong>;
 
   /** ArtistOfAlbum reflected by Album.$get("artists"), added for GraphQL queries. */
-  @Field((type) => ArtistOfAlbum, { nullable: true })
   ArtistOfAlbum?: Partial<ArtistOfAlbum>;
 
   /** incomplete entity */

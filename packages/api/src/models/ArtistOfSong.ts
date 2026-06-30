@@ -21,7 +21,6 @@ import {
 } from "sequelize-typescript";
 import { DataTypes, ENUM } from "sequelize";
 import { SIMPLE_ENUM_ARRAY_INVOCABLE } from "../utils/sequelizeAdditions";
-import { Field, Int, ObjectType } from "type-graphql";
 
 /**
  * @openapi
@@ -108,22 +107,18 @@ import { Field, Int, ObjectType } from "type-graphql";
  *         - songId
  *         - artistId
  */
-@ObjectType()
 @Table({ modelName: "ArtistOfSong" })
 export class ArtistOfSong extends Model<ArtistOfSong> {
-  @Field((type) => Int)
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   artistOfSongId: number;
 
-  @Field((type) => Int, { nullable: true })
   @Unique
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   vocaDbId: number | null;
 
-  @Field((type) => [String])
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @Column(
@@ -149,7 +144,6 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
   )
   artistRoles: VDBArtistRoleType[];
 
-  @Field((type) => [String])
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @Column(
@@ -168,12 +162,10 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
   )
   categories: VDBArtistCategoryType[];
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(4096) })
   customName?: string;
 
-  @Field()
   @Default(false)
   @Column
   isSupport: boolean;
@@ -192,11 +184,9 @@ export class ArtistOfSong extends Model<ArtistOfSong> {
   @Column
   artistId: number;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 
-  @Field()
   @UpdatedAt
   updatedOn: Date;
 

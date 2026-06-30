@@ -8,7 +8,6 @@ import {
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { FileInPlaylist } from "./FileInPlaylist";
-import { ObjectType, Field, ID } from "type-graphql";
 
 /**
  * @openapi
@@ -36,15 +35,12 @@ import { ObjectType, Field, ID } from "type-graphql";
  *         - slug
  *         - name
  */
-@ObjectType({ description: "A playlist of music files." })
 @Table({ modelName: "Playlist" })
 export class Playlist extends Model<Playlist, Partial<Playlist>> {
-  @Field((type) => ID, { description: "Slug of the playlist." })
   @PrimaryKey
   @Column({ type: new DataTypes.STRING(512) })
   slug: string;
 
-  @Field({ description: "Name of the playlist." })
   @Column({ type: new DataTypes.STRING(1024) })
   name: string;
 

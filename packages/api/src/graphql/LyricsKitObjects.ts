@@ -1,4 +1,3 @@
-import { ObjectType, Field, Float, Int, InputType } from "type-graphql";
 import type {
   Lyrics,
   LyricsLine,
@@ -35,7 +34,6 @@ import { GraphQLJSONObject } from "graphql-type-json";
  *         - leftIndex
  *         - rightIndex
  */
-@ObjectType({ description: "Furigana/romaji to words in a lyrics line." })
 export class LyricsKitRangeAttachment {
   constructor(tag: RangeAttributeLabel) {
     if (tag) {
@@ -45,17 +43,10 @@ export class LyricsKitRangeAttachment {
     }
   }
 
-  @Field({ description: "Furigana/romaji content" })
   content: string;
 
-  @Field((type) => Int, {
-    description: "Starting character per Extended Grapheme Cluster (including)",
-  })
   leftIndex: number;
 
-  @Field((type) => Int, {
-    description: "Ending character per Extended Grapheme Cluster (excluding)",
-  })
   rightIndex: number;
 }
 
@@ -80,21 +71,14 @@ export class LyricsKitRangeAttachment {
  *         - timeTag
  *         - index
  */
-@ObjectType({ description: "Time tag per word to a lyrics line." })
 export class LyricsKitWordTimeTag {
   constructor(tag: WordTimeTagLabel) {
     this.timeTag = tag.timeTag;
     this.index = tag.index;
   }
 
-  @Field((type) => Float, {
-    description: "Time when the time tag happens, in seconds.",
-  })
   timeTag: number;
 
-  @Field((type) => Int, {
-    description: "Starting character per Extended Grapheme Cluster of this tag",
-  })
   index: number;
 }
 
@@ -123,7 +107,6 @@ export class LyricsKitWordTimeTag {
  *       required:
  *         - tags
  */
-@ObjectType({ description: "Time tag per word to a lyrics line." })
 export class LyricsKitWordTimeAttachment {
   constructor(wordTime: WordTimeTag) {
     this.duration = wordTime.duration;
@@ -132,16 +115,8 @@ export class LyricsKitWordTimeAttachment {
     );
   }
 
-  @Field((type) => Float, {
-    description: "Duration of line in seconds.",
-    nullable: true,
-  })
   duration: number;
 
-  @Field((type) => [LyricsKitWordTimeTag], {
-    description: "Tags in the line.",
-    nullable: true,
-  })
   tags: LyricsKitWordTimeTag[];
 }
 
@@ -196,7 +171,6 @@ export class LyricsKitWordTimeAttachment {
  *         - role
  *         - minor
  */
-@ObjectType({ description: "Attachments to a lyrics line." })
 export class LyricsKitAttachment {
   constructor(attachment: Attachments) {
     this.translation = attachment.translation() || null;
@@ -218,25 +192,18 @@ export class LyricsKitAttachment {
     this.minor = attachment.minor;
   }
 
-  @Field((type) => LyricsKitWordTimeAttachment, { nullable: true })
   timeTag?: LyricsKitWordTimeAttachment;
 
-  @Field({ nullable: true })
   translation?: string;
 
-  @Field((type) => GraphQLJSONObject)
   translations: { [key: string]: string };
 
-  @Field((type) => [LyricsKitRangeAttachment], { nullable: true })
   furigana?: LyricsKitRangeAttachment[];
 
-  @Field((type) => [LyricsKitRangeAttachment], { nullable: true })
   romaji?: LyricsKitRangeAttachment[];
 
-  @Field((type) => Int)
   role = 0;
 
-  @Field((type) => Boolean)
   minor = false;
 }
 
@@ -264,7 +231,6 @@ export class LyricsKitAttachment {
  *         - position
  *         - attachments
  */
-@ObjectType({ description: "A line of parsed lyrics." })
 export class LyricsKitLyricsLine {
   constructor(line: LyricsLine, timeDelay: number) {
     this.content = line.content;
@@ -272,13 +238,10 @@ export class LyricsKitLyricsLine {
     this.attachments = new LyricsKitAttachment(line.attachments);
   }
 
-  @Field()
   content: string;
 
-  @Field((type) => Float, { description: "Offset of the line in seconds" })
   position: number;
 
-  @Field((type) => LyricsKitAttachment)
   attachments: LyricsKitAttachment;
 }
 
@@ -317,7 +280,6 @@ export class LyricsKitLyricsLine {
  *         - lines
  *         - translationLanguages
  */
-@ObjectType({ description: "Parsed lyrics." })
 export class LyricsKitLyrics {
   constructor(lyrics: Lyrics) {
     this.quality = lyrics.quality;
@@ -328,18 +290,11 @@ export class LyricsKitLyrics {
     this.translationLanguages = lyrics.translationLanguages;
   }
 
-  @Field((type) => Float, { nullable: true })
   quality?: number;
 
-  @Field((type) => [LyricsKitLyricsLine])
   lines: LyricsKitLyricsLine[];
 
-  @Field((type) => Float, {
-    description: "Duration of the lyrics in seconds.",
-    nullable: true,
-  })
   length?: number;
 
-  @Field((type) => [String])
   translationLanguages: string[];
 }

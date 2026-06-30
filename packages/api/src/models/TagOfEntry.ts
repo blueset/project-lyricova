@@ -12,7 +12,6 @@ import {
 } from "sequelize-typescript";
 import { Entry } from "./Entry";
 import { Tag } from "./Tag";
-import { Field, ID, ObjectType } from "type-graphql";
 
 /**
  * @openapi
@@ -44,10 +43,8 @@ import { Field, ID, ObjectType } from "type-graphql";
  *         - tagId
  *         - entryId
  */
-@ObjectType()
 @Table({ modelName: "TagOfEntry" })
 export class TagOfEntry extends Model<TagOfEntry> {
-  @Field((type) => ID)
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })

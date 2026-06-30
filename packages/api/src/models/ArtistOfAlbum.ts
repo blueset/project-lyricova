@@ -21,7 +21,6 @@ import {
 } from "sequelize-typescript";
 import { SIMPLE_ENUM_ARRAY } from "../utils/sequelizeAdditions";
 import { DataTypes } from "sequelize";
-import { Field, Int, ObjectType } from "type-graphql";
 
 const ROLES = [
   "Default",
@@ -146,16 +145,13 @@ const CATEGORIES = [
  *         - albumId
  *         - artistId
  */
-@ObjectType()
 @Table({ modelName: "ArtistOfAlbum" })
 export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
-  @Field((type) => Int)
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   artistOfAlbumId: number;
 
-  @Field((type) => [String])
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @Column({
@@ -163,7 +159,6 @@ export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
   })
   roles: VDBArtistRoleType[];
 
-  @Field((type) => [String])
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @Column({
@@ -171,7 +166,6 @@ export class ArtistOfAlbum extends Model<ArtistOfAlbum> {
   })
   effectiveRoles: VDBArtistRoleType[];
 
-  @Field((type) => String)
   @Default("Nothing")
   @Column({
     type: DataTypes.ENUM(...CATEGORIES),

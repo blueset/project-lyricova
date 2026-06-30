@@ -10,7 +10,6 @@ import {
   Table,
 } from "sequelize-typescript";
 import { Entry } from "./Entry";
-import { Field, Int, ObjectType } from "type-graphql";
 
 /**
  * @openapi
@@ -36,10 +35,8 @@ import { Field, Int, ObjectType } from "type-graphql";
  *         - entryId
  *         - creationDate
  */
-@ObjectType()
 @Table({ updatedAt: false, modelName: "Pulse" })
 export class Pulse extends Model<Pulse> {
-  @Field((type) => Int)
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataType.INTEGER() })
@@ -52,7 +49,6 @@ export class Pulse extends Model<Pulse> {
   @BelongsTo(() => Entry)
   entry: Entry;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 }

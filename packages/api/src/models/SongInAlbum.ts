@@ -20,7 +20,6 @@ import {
   AllowNull,
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
-import { Field, Int, ObjectType } from "type-graphql";
 
 /**
  * @openapi
@@ -72,7 +71,6 @@ import { Field, Int, ObjectType } from "type-graphql";
  *         - songId
  *         - albumId
  */
-@ObjectType()
 @Table({ modelName: "SongInAlbum" })
 export class SongInAlbum extends Model<SongInAlbum> {
   @AutoIncrement
@@ -80,23 +78,19 @@ export class SongInAlbum extends Model<SongInAlbum> {
   @Column({ type: new DataTypes.INTEGER() })
   songInAlbumId: number;
 
-  @Field((type) => Int, { nullable: true })
   @Unique
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   vocaDbId: number | null;
 
-  @Field((type) => Int, { nullable: true })
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   diskNumber: number | null;
 
-  @Field((type) => Int, { nullable: true })
   @AllowNull
   @Column({ type: DataTypes.INTEGER })
   trackNumber: number | null;
 
-  @Field({ nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(2048) })
   name?: string;
@@ -115,11 +109,9 @@ export class SongInAlbum extends Model<SongInAlbum> {
   @Column
   albumId: number;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 
-  @Field()
   @UpdatedAt
   updatedOn: Date;
 

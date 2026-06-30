@@ -17,7 +17,6 @@ import {
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { FileInPlaylist } from "./FileInPlaylist";
-import { ObjectType, Field, Int, Float, ID } from "type-graphql";
 import { MUSIC_FILES_PATH } from "../utils/secret";
 import path from "path";
 import hasha from "hasha";
@@ -173,16 +172,13 @@ export const ID3_LYRICS_LANGUAGE = "eng";
  *         - hash
  *         - playCount
  */
-@ObjectType({ description: "A music file in the jukebox." })
 @Table({ modelName: "MusicFile" })
 export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
-  @Field((type) => Int, { description: "File ID in database." })
   @AutoIncrement
   @PrimaryKey
   @Column({ type: new DataTypes.INTEGER() })
   id: number;
 
-  @Field({ description: "Local path to the song." })
   @Column({ type: new DataTypes.STRING(768), unique: true })
   @Index({
     name: "MusicFile_SearchText",
@@ -191,14 +187,9 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   })
   path: string;
 
-  @Field((type) => Int, { description: "Size of file in bytes." })
   @Column({ type: DataTypes.INTEGER.UNSIGNED })
   fileSize: number;
 
-  @Field((type) => Int, {
-    description: "ID of corresponding song in database.",
-    nullable: true,
-  })
   @AllowNull
   @ForeignKey(() => Song)
   @Column({ type: new DataTypes.INTEGER() })
@@ -207,10 +198,6 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   @BelongsTo(() => Song)
   song: Song | null;
 
-  @Field((type) => Int, {
-    description: "ID of corresponding album in database.",
-    nullable: true,
-  })
   @AllowNull
   @ForeignKey(() => Album)
   @Column
@@ -222,7 +209,6 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   @BelongsToMany((type) => Playlist, (intermediate) => FileInPlaylist)
   playlists: Playlist[];
 
-  @Field({ description: "Name of the track stored in file.", nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
   @Index({
@@ -232,10 +218,6 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   })
   trackName?: string;
 
-  @Field({
-    description: "Sort order key of name of the track stored in file.",
-    nullable: true,
-  })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
   @Index({
@@ -245,7 +227,6 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   })
   trackSortOrder?: string;
 
-  @Field({ description: "Album of the track stored in file.", nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
   @Index({
@@ -255,10 +236,6 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   })
   albumName?: string;
 
-  @Field({
-    description: "Sort order key of album of the track stored in file.",
-    nullable: true,
-  })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
   @Index({
@@ -268,7 +245,6 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   })
   albumSortOrder?: string;
 
-  @Field({ description: "Artist of the track stored in file.", nullable: true })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
   @Index({
@@ -278,10 +254,6 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   })
   artistName?: string;
 
-  @Field({
-    description: "Sort order key of artist of the track stored in file.",
-    nullable: true,
-  })
   @AllowNull
   @Column({ type: new DataTypes.STRING(1024) })
   @Index({
@@ -291,50 +263,35 @@ export class MusicFile extends Model<MusicFile, Partial<MusicFile>> {
   })
   artistSortOrder?: string;
 
-  @Field({ description: "If the file is accompanied with a lyrics file." })
   @Column
   hasLyrics: boolean;
 
-  @Field({ description: "If the file has an embedded cover art." })
   @Column
   hasCover: boolean;
 
-  @Field({ description: "If this entry needs review." })
   @Column
   needReview: boolean;
 
-  @Field((type) => Float, { description: "Duration of the song in seconds." })
   @Column({ type: new DataTypes.FLOAT(), defaultValue: -1.0 })
   duration: number;
 
-  @Field({ description: "MD5 of the file." })
   @Column({ type: new DataTypes.STRING(128) })
   hash: string;
 
-  @Field((type) => Int, {
-    description: "Number of times the file has been played.",
-  })
   @Column({ type: DataTypes.INTEGER.UNSIGNED })
   playCount: number;
 
-  @Field((type) => Date, {
-    description: "Date when the file was last played.",
-    nullable: true,
-  })
   @AllowNull
   @Column({ type: DataTypes.DATE })
   lastPlayed?: Date;
 
-  @Field()
   @CreatedAt
   creationDate: Date;
 
-  @Field()
   @UpdatedAt
   updatedOn: Date;
 
   /** FileInPlaylist reflected by Playlist.$get("files"), added for GraphQL queries. */
-  @Field((type) => FileInPlaylist, { nullable: true })
   FileInPlaylist?: Partial<FileInPlaylist>;
 
   // Virtual column that does not exist in database
