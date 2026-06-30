@@ -10,8 +10,10 @@
     "build"
   ],
   "scripts": {
-    "build": "tsc && tsc-alias",
-    "dev": "concurrently \"tsc -w\" \"tsc-alias -w\"",
+    "build": "npm run codegen && tsc && tsc-alias",
+    "dev": "concurrently \"npm:codegen:watch\" \"tsc -w\" \"tsc-alias -w\"",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen:watch": "graphql-codegen --config codegen.ts --watch",
     "clean": "rimraf build"
   },
   "dependencies": {
@@ -59,6 +61,8 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^7.1.3",
+    "@graphql-codegen/client-preset": "^6.0.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "concurrently": "^8.0.0",
@@ -84,6 +88,8 @@
       "types": "./build/components/*.d.ts"
     },
     "./utils": "./src/utils/index.ts",
+    "./gql": "./src/gql/index.ts",
+    "./gql/*": "./src/gql/*",
     "./hooks/*": {
       "import": "./build/hooks/*.js",
       "require": "./build/hooks/*.js",

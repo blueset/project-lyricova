@@ -19,6 +19,7 @@
     "dev:debug-b": "npm run dev serve-debug",
     "dev:debug": "concurrently -n node,tscr -c green,blue npm:dev:node-debug npm:dev:ts",
     "posthog": "posthog-cli sourcemap inject --directory dist && posthog-cli sourcemap upload --directory dist",
+    "schema:check": "node scripts/schema-parity.mjs",
     "test": "jest"
   },
   "repository": {
