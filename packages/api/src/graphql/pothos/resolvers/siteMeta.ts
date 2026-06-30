@@ -1,5 +1,7 @@
+import { eq } from "drizzle-orm";
 import { builder } from "../builder";
-import { SiteMeta } from "../../../models/SiteMeta";
+import { db } from "../../../drizzle/client";
+import { SiteMeta } from "../../../drizzle/schema";
 
 builder.queryField("getSiteMeta", (t) =>
   t.string({
@@ -8,8 +10,10 @@ builder.queryField("getSiteMeta", (t) =>
       default: t.arg.string(),
     },
     resolve: async (_root, { key, default: defaultValue }) => {
-      const siteMeta = await SiteMeta.findByPk(key);
-      return siteMeta?.value ?? defaultValue;
+      const row = await db.query.SiteMeta.findFirst({
+        where: eq(SiteMeta.key, key),
+      });
+      return row?.value ?? defaultValue;
     },
   })
 );
@@ -23,7 +27,11 @@ builder.mutationField("setSiteMeta", (t) =>
     },
     resolve: async (_root, { key, value }) => {
       try {
-        await SiteMeta.upsert({ key, value });
+        const now = new Date();
+        await db
+          .insert(SiteMeta)
+          .values({ key, value, createdAt: now, updatedAt: now })
+          .onDuplicateKeyUpdate({ set: { value, updatedAt: now } });
         return true;
       } catch (error) {
         console.error("Error setting site meta:", error);
