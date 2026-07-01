@@ -3,7 +3,9 @@ import Segment from "novel-segment";
 import MeCab from "mecab-async";
 import _ from "lodash";
 import { kanaToHira } from "./kanaUtils";
-import { FuriganaMapping } from "../models/FuriganaMapping";
+import { and, eq } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { FuriganaMappings } from "../drizzle/schema";
 import { loadDefaultJapaneseParser, type HTMLProcessingParser } from "budoux";
 import { JSDOM } from "jsdom";
 
@@ -184,19 +186,30 @@ async function applyFuriganaMapping(
   if (cache?.[text]?.[furigana]) {
     return cache[text][furigana];
   }
-  let [{ segmentedText, segmentedFurigana }, created] =
-    await FuriganaMapping.findOrCreate({
-      where: { text, furigana },
-    });
+  const whereMapping = and(
+    eq(FuriganaMappings.text, text),
+    eq(FuriganaMappings.furigana, furigana),
+  );
+  let mapping = await db.query.FuriganaMappings.findFirst({
+    where: whereMapping,
+  });
+  let created = false;
+  if (!mapping) {
+    await db.insert(FuriganaMappings).values({ text, furigana });
+    mapping = await db.query.FuriganaMappings.findFirst({ where: whereMapping });
+    created = true;
+  }
+  let segmentedText = mapping?.segmentedText ?? null;
+  let segmentedFurigana = mapping?.segmentedFurigana ?? null;
   if (convertMonoruby && (created || !segmentedText || !segmentedFurigana)) {
     const [textGroups, furiganaGroups] = convertMonoruby(text, furigana);
     if (textGroups.length > 1 && furiganaGroups.length > 1) {
       segmentedText = textGroups.join(",");
       segmentedFurigana = furiganaGroups.join(",");
-      await FuriganaMapping.update(
-        { segmentedText, segmentedFurigana },
-        { where: { text, furigana } },
-      );
+      await db
+        .update(FuriganaMappings)
+        .set({ segmentedText, segmentedFurigana })
+        .where(whereMapping);
       created = false;
     }
   }
