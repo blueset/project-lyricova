@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
-import { Entry } from "../models/Entry";
-import { Pulse } from "../models/Pulse";
+import { and, eq, isNull } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { Entries, Pulses } from "../drizzle/schema";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 
 export class LyricovaAdminApiController {
@@ -54,15 +55,18 @@ export class LyricovaAdminApiController {
    */
   public bump = async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.entryId);
-    const entry = await Entry.findByPk(id);
+    const entry = await db.query.Entries.findFirst({
+      where: and(eq(Entries.id, id), isNull(Entries.deletionDate)),
+    });
     if (!entry) {
       return res.status(404).json({ message: `${id} is not found.` });
     }
     const date = new Date();
-    const pulse = await Pulse.create({ creationDate: date });
-    entry.$add("pulse", pulse);
-    entry.recentActionDate = date;
-    await entry.save();
+    await db.insert(Pulses).values({ entryId: id, creationDate: date });
+    await db
+      .update(Entries)
+      .set({ recentActionDate: date, updatedOn: new Date() })
+      .where(eq(Entries.id, id));
     res.status(200).json({
       creationDate: date,
     });
