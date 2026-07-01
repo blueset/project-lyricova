@@ -1,18 +1,3 @@
-import {
-  Model,
-  Table,
-  Column,
-  PrimaryKey,
-  AutoIncrement,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-  Default,
-} from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
-
 /**
  * @openapi
  * components:
@@ -77,52 +62,28 @@ import crypto from "crypto";
  *         - email
  *         - role
  */
-@Table({ modelName: "User" })
-export class User extends Model<User> {
-  @AutoIncrement
-  @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER() })
+export class User {
   id: number;
 
-  @Column({ type: new DataTypes.STRING(256), unique: true })
   username: string;
 
-  @Column({ type: new DataTypes.STRING(256) })
   displayName: string;
 
-  @Column({ type: new DataTypes.STRING(256) })
   password: string;
 
-  @Column({ type: new DataTypes.STRING(512), unique: true })
   email: string;
 
-  @Default("guest")
-  @Column({ type: new DataTypes.ENUM("admin", "guest") })
   role: "admin" | "guest";
 
-  @Column({ type: new DataTypes.STRING(256) })
   provider?: string;
 
-  @Column({ type: new DataTypes.STRING(1024) })
   provider_id?: string;
 
-  @CreatedAt
   creationDate: Date;
 
-  @UpdatedAt
   updatedOn: Date;
 
-  @DeletedAt
   deletionDate: Date;
 
-  get emailMD5(): string {
-    return crypto
-      .createHash("md5")
-      .update(this.email || "")
-      .digest("hex");
-  }
-
-  public async checkPassword(plaintextPassword: string): Promise<boolean> {
-    return await bcrypt.compare(plaintextPassword, this.password);
-  }
+  emailMD5: string;
 }

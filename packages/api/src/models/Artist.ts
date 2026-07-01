@@ -1,31 +1,8 @@
-import type {
-  ArtistForApiContract,
-  ArtistContract,
-  VDBArtistType,
-} from "../types/vocadb";
-import { ArtistOfSong } from "./ArtistOfSong";
-import { ArtistOfAlbum } from "./ArtistOfAlbum";
-import { DataTypes } from "sequelize";
-import {
-  Table,
-  Column,
-  Model,
-  PrimaryKey,
-  BelongsToMany,
-  AllowNull,
-  ForeignKey,
-  BelongsTo,
-  Default,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-  HasMany,
-  Index,
-} from "sequelize-typescript";
-import { Song } from "./Song";
-import { Album } from "./Album";
-import { GraphQLJSONObject } from "graphql-type-json";
-import { random } from "lodash";
+import type { ArtistForApiContract, VDBArtistType } from "../types/vocadb";
+import type { ArtistOfSong } from "./ArtistOfSong";
+import type { ArtistOfAlbum } from "./ArtistOfAlbum";
+import type { Song } from "./Song";
+import type { Album } from "./Album";
 
 /**
  * @openapi
@@ -123,101 +100,37 @@ import { random } from "lodash";
  *         - type
  *         - incomplete
  */
-@Table({ modelName: "Artist" })
-export class Artist extends Model<Artist, Partial<Artist>> {
-  @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER() })
+export class Artist {
   id: number;
 
-  @Column({ type: new DataTypes.STRING(4096) })
-  @Index({
-    name: "Artist_SearchText",
-    type: "FULLTEXT",
-    parser: "ngram",
-  })
   name: string;
 
-  @Column({ type: new DataTypes.STRING(4096) })
-  @Index({
-    name: "Artist_SearchText",
-    type: "FULLTEXT",
-    parser: "ngram",
-  })
   sortOrder: string;
 
-  @AllowNull
-  @Column({ type: new DataTypes.STRING(4096) })
   mainPictureUrl?: string;
 
-  @Column({
-    type: new DataTypes.ENUM(
-      "Unknown",
-      "Circle",
-      "Label",
-      "Producer",
-      "Animator",
-      "Illustrator",
-      "Lyricist",
-      "Vocaloid",
-      "UTAU",
-      "CeVIO",
-      "OtherVoiceSynthesizer",
-      "OtherVocalist",
-      "OtherGroup",
-      "OtherIndividual",
-      "Utaite",
-      "Band",
-      "Vocalist",
-      "CoverArtist",
-      "SynthesizerV",
-      "Character",
-      "NEUTRINO",
-      "VoiSona",
-      "NewType",
-      "Voiceroid",
-      "Instrumentalist",
-      "Designer"
-    ),
-    defaultValue: "Unknown",
-  })
   type: VDBArtistType;
 
-  @BelongsToMany(() => Song, () => ArtistOfSong)
   songs: Array<Song & { ArtistOfSong: ArtistOfSong }>;
 
-  @BelongsToMany(() => Album, () => ArtistOfAlbum)
   albums: Array<Album & { ArtistOfAlbum: ArtistOfAlbum }>;
 
-  @ForeignKey((type) => Artist)
-  @AllowNull
-  @Column({ type: DataTypes.INTEGER })
   public baseVoiceBankId!: number | null;
 
-  @BelongsTo((type) => Artist, "baseVoiceBankId")
   public baseVoiceBank: Artist | null;
 
-  @HasMany((type) => Artist, "baseVoiceBankId")
   public readonly derivedVoiceBanks: Artist[];
 
-  @AllowNull
-  @Column({ type: DataTypes.JSON })
   vocaDbJson: ArtistForApiContract | null;
 
-  @Default(true)
-  @Column({ type: DataTypes.BOOLEAN })
   incomplete: boolean;
 
-  @AllowNull
-  @Column({ type: DataTypes.INTEGER })
   utaiteDbId: number | null;
 
-  @CreatedAt
   creationDate: Date;
 
-  @UpdatedAt
   updatedOn: Date;
 
-  @DeletedAt
   deletionDate: Date;
 
   /** ArtistOfSong reflected by Song.$get("artists"), added for GraphQL queries. */
@@ -225,115 +138,4 @@ export class Artist extends Model<Artist, Partial<Artist>> {
 
   /** ArtistOfAlbum reflected by Album.$get("artists"), added for GraphQL queries. */
   ArtistOfAlbum?: Partial<ArtistOfAlbum>;
-
-  /** incomplete entity */
-  static async fromVocaDBArtistContract(
-    artist: ArtistContract
-  ): Promise<Artist> {
-    const { transliterate } = await import("../utils/transliterate.js");
-    const obj = (
-      await Artist.findOrCreate({
-        where: { id: artist.id },
-        defaults: {
-          name: artist.name,
-          sortOrder: await transliterate(artist.name),
-          type: artist.artistType,
-          incomplete: true,
-        },
-      })
-    )[0];
-    return obj;
-  }
-
-  static async saveFromVocaDBEntity(
-    entity: ArtistForApiContract,
-    baseVoiceBank: Artist | null
-  ): Promise<Artist | null> {
-    const { transliterate } = await import("../utils/transliterate.js");
-    await Artist.upsert({
-      id: entity.id,
-      name: entity.name,
-      sortOrder: await transliterate(entity.name), // prompt user to check this upon import
-      vocaDbJson: entity,
-      mainPictureUrl: entity.mainPicture?.urlOriginal,
-      type: entity.artistType as VDBArtistType,
-      incomplete: false,
-    });
-
-    const artist = await Artist.findByPk(entity.id);
-    if (baseVoiceBank !== null) {
-      await artist?.$set("baseVoiceBank", baseVoiceBank);
-    }
-
-    return artist;
-  }
-
-  /** incomplete entity */
-  static async fromUtaiteDBArtistContract(
-    entity: ArtistContract
-  ): Promise<Artist | null> {
-    const { transliterate } = await import("../utils/transliterate.js");
-
-    let dbId =
-      (await Artist.findOne({ where: { utaiteDbId: entity.id } }))?.id ??
-      undefined;
-    if (dbId === undefined) {
-      while (true) {
-        dbId = random(-2147483648, -1, false);
-        const existing = await Artist.findByPk(dbId);
-        if (existing === null) break; // found an unused ID
-      }
-    }
-
-    const obj = (
-      await Artist.findOrCreate({
-        where: { utaiteDbId: dbId },
-        defaults: {
-          id: dbId,
-          name: entity.name,
-          sortOrder: await transliterate(entity.name),
-          type: entity.artistType as VDBArtistType,
-          utaiteDbId: entity.id,
-          incomplete: true,
-        },
-      })
-    )[0];
-    return obj;
-  }
-
-  static async saveFromUtaiteDBEntity(
-    entity: ArtistForApiContract,
-    baseVoiceBank: Artist | null
-  ) {
-    const { transliterate } = await import("../utils/transliterate.js");
-
-    let dbId =
-      (await Artist.findOne({ where: { utaiteDbId: entity.id } }))?.id ??
-      undefined;
-    if (dbId === undefined) {
-      while (true) {
-        dbId = random(-2147483648, -1, false);
-        const existing = await Artist.findByPk(dbId);
-        if (existing === null) break; // found an unused ID
-      }
-    }
-
-    await Artist.upsert({
-      id: dbId,
-      name: entity.name,
-      sortOrder: await transliterate(entity.name), // prompt user to check this upon import
-      vocaDbJson: entity,
-      mainPictureUrl: entity.mainPicture?.urlOriginal,
-      type: entity.artistType as VDBArtistType,
-      utaiteDbId: entity.id,
-      incomplete: false,
-    });
-
-    const artist = await Artist.findByPk(dbId);
-    if (baseVoiceBank !== null) {
-      await artist?.$set("baseVoiceBank", baseVoiceBank);
-    }
-
-    return artist;
-  }
 }

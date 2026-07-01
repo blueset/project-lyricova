@@ -1,17 +1,4 @@
-import {
-  AutoIncrement,
-  BelongsTo,
-  Column,
-  CreatedAt,
-  ForeignKey,
-  Model,
-  PrimaryKey,
-  Table,
-  Unique,
-  UpdatedAt,
-} from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-import { User } from "./User";
+import type { User } from "./User";
 
 /**
  * @openapi
@@ -52,33 +39,20 @@ import { User } from "./User";
  *         - externalId
  *         - publicKey
  */
-@Table({ modelName: "UserPublicKeyCredential" })
-export class UserPublicKeyCredential extends Model<UserPublicKeyCredential> {
-  @AutoIncrement
-  @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER() })
+export class UserPublicKeyCredential {
   id?: number;
 
-  @ForeignKey(() => User)
-  @Column
   userId: number;
 
-  @BelongsTo((type) => User, "userId")
   user?: User;
 
-  @Unique
-  @Column({ type: new DataTypes.STRING(512) })
   externalId: string;
 
-  @Column({ type: new DataTypes.TEXT() })
   publicKey: string;
 
-  @Column({ type: new DataTypes.TEXT(), defaultValue: null })
   remarks?: string;
 
-  @CreatedAt
   creationDate: Date;
 
-  @UpdatedAt
   updatedOn: Date;
 }

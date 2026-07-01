@@ -1,27 +1,10 @@
-import { Song } from "./Song";
-import { User } from "./User";
-import { Tag } from "./Tag";
-import { Verse } from "./Verse";
-import {
-  Model,
-  Table,
-  Column,
-  PrimaryKey,
-  AutoIncrement,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-  BelongsToMany,
-  ForeignKey,
-  BelongsTo,
-  HasMany,
-  AllowNull,
-  Sequelize,
-} from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-import { SongOfEntry } from "./SongOfEntry";
-import { TagOfEntry } from "./TagOfEntry";
-import { Pulse } from "./Pulse";
+import type { Song } from "./Song";
+import type { User } from "./User";
+import type { Tag } from "./Tag";
+import type { Verse } from "./Verse";
+import type { SongOfEntry } from "./SongOfEntry";
+import type { TagOfEntry } from "./TagOfEntry";
+import type { Pulse } from "./Pulse";
 
 /**
  * @openapi
@@ -74,57 +57,34 @@ import { Pulse } from "./Pulse";
  *         - vocalistsName
  *         - authorId
  */
-@Table({ modelName: "Entry" })
-export class Entry extends Model<Entry> {
-  @AutoIncrement
-  @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER() })
+export class Entry {
   id: number;
 
-  @Column({ type: new DataTypes.STRING(512) })
   title: string;
 
-  @Column({ type: new DataTypes.STRING(1024) })
   producersName: string;
 
-  @Column({ type: new DataTypes.STRING(1024) })
   vocalistsName: string;
 
-  @BelongsToMany(() => Song, () => SongOfEntry)
   songs: Array<Song & { SongOfEntry: SongOfEntry }>;
 
-  @ForeignKey(() => User)
-  @Column
   authorId: number;
 
-  @BelongsTo((type) => User, "authorId")
   author: User;
 
-  @AllowNull
-  @Column({ type: "text" })
   comment: string;
 
-  @BelongsToMany(() => Tag, () => TagOfEntry)
   tags: Array<Tag & { TagOfEntry: TagOfEntry }>;
 
-  @HasMany((type) => Verse)
   verses: Verse[];
 
-  @HasMany((type) => Pulse)
   pulses: Pulse[];
 
-  @Column({
-    type: new DataTypes.DATE(),
-    defaultValue: Sequelize.literal("CURRENT_TIMESTAMP()"),
-  })
   recentActionDate: Date;
 
-  @CreatedAt
   creationDate: Date;
 
-  @UpdatedAt
   updatedOn: Date;
 
-  @DeletedAt
   deletionDate: Date;
 }

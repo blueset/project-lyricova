@@ -1,13 +1,4 @@
-import { MusicFile } from "./MusicFile";
-import {
-  Table,
-  Model,
-  PrimaryKey,
-  Column,
-  BelongsToMany,
-} from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-import { FileInPlaylist } from "./FileInPlaylist";
+import type { MusicFile } from "./MusicFile";
 
 /**
  * @openapi
@@ -35,18 +26,12 @@ import { FileInPlaylist } from "./FileInPlaylist";
  *         - slug
  *         - name
  */
-@Table({ modelName: "Playlist" })
-export class Playlist extends Model<Playlist, Partial<Playlist>> {
-  @PrimaryKey
-  @Column({ type: new DataTypes.STRING(512) })
+export class Playlist {
   slug: string;
 
-  @Column({ type: new DataTypes.STRING(1024) })
   name: string;
 
-  @BelongsToMany((type) => MusicFile, (intermediate) => FileInPlaylist)
   files: MusicFile[];
 
-  // virtual field in GraphQL
   filesCount?: number;
 }

@@ -1,18 +1,4 @@
-import { Entry } from "./Entry";
-import {
-  Model,
-  PrimaryKey,
-  Table,
-  Column,
-  AutoIncrement,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-  BelongsTo,
-  ForeignKey,
-  AllowNull,
-} from "sequelize-typescript";
-import { DataTypes } from "sequelize";
+import type { Entry } from "./Entry";
 
 /**
  * @openapi
@@ -102,53 +88,32 @@ import { DataTypes } from "sequelize";
  *         - typingSequence
  *         - entryId
  */
-@Table({ modelName: "Verse" })
-export class Verse extends Model<Verse> {
-  @AutoIncrement
-  @PrimaryKey
-  @Column({ type: new DataTypes.INTEGER() })
+export class Verse {
   id: number;
 
-  @Column({ type: new DataTypes.STRING(64) })
   language: string;
 
-  @Column({ type: DataTypes.BOOLEAN })
   isOriginal: boolean;
 
-  @Column({ type: DataTypes.BOOLEAN })
   isMain: boolean;
 
-  @Column({ type: new DataTypes.TEXT() })
   text: string;
 
-  @AllowNull
-  @Column({ type: new DataTypes.TEXT() })
   html: string;
 
-  @AllowNull
-  @Column({ type: new DataTypes.TEXT() })
   stylizedText: string;
 
-  @AllowNull
-  @Column({ type: new DataTypes.TEXT() })
   translator: string;
 
-  @Column({ type: DataTypes.JSON })
   typingSequence: [string, string][][];
 
-  @ForeignKey(() => Entry)
-  @Column
   entryId: number;
 
-  @BelongsTo(() => Entry)
   entry: Entry;
 
-  @CreatedAt
   creationDate: Date;
 
-  @UpdatedAt
   updatedOn: Date;
 
-  @DeletedAt
   deletionDate: Date;
 }

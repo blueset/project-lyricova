@@ -1,15 +1,4 @@
-import {
-  AutoIncrement,
-  BelongsTo,
-  Column,
-  CreatedAt,
-  DataType,
-  ForeignKey,
-  Model,
-  PrimaryKey,
-  Table,
-} from "sequelize-typescript";
-import { Entry } from "./Entry";
+import type { Entry } from "./Entry";
 
 /**
  * @openapi
@@ -35,20 +24,12 @@ import { Entry } from "./Entry";
  *         - entryId
  *         - creationDate
  */
-@Table({ updatedAt: false, modelName: "Pulse" })
-export class Pulse extends Model<Pulse> {
-  @AutoIncrement
-  @PrimaryKey
-  @Column({ type: new DataType.INTEGER() })
+export class Pulse {
   id: number;
 
-  @ForeignKey(() => Entry)
-  @Column
   entryId: number;
 
-  @BelongsTo(() => Entry)
   entry: Entry;
 
-  @CreatedAt
   creationDate: Date;
 }

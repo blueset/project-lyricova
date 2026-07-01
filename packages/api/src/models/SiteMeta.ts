@@ -1,6 +1,3 @@
-import { Table, Model, Column, PrimaryKey } from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-
 /**
  * @openapi
  * components:
@@ -21,12 +18,8 @@ import { DataTypes } from "sequelize";
  *         - key
  *         - value
  */
-@Table({ modelName: "SiteMeta" })
-export class SiteMeta extends Model<SiteMeta> {
-  @PrimaryKey
-  @Column({ type: new DataTypes.STRING(768) })
+export class SiteMeta {
   key: string;
 
-  @Column({ type: "text" })
   value: string;
 }
