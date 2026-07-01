@@ -1,11 +1,9 @@
 import { Router, Request, Response } from "express";
-import sequelize from "../db";
-import { Tag } from "../models/Tag";
-import { entryListingCondition } from "../utils/queries";
+import { desc, eq, sql } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { Tags, TagOfEntries, Entries } from "../drizzle/schema";
+import { fetchEntriesListing } from "../utils/queries";
 import { entriesPerPage } from "../utils/consts";
-import { TagOfEntry } from "../models/TagOfEntry";
-
-type TagWithCount = Tag & { entryCount: number };
 
 export class TagsController {
   public router: Router;
@@ -40,21 +38,18 @@ export class TagsController {
    *                         example: 42
    */
   private async getTags(req: Request, res: Response) {
-    let tags = (await sequelize.models.Tag.findAll({
-      attributes: {
-        include: [
-          [
-            sequelize.literal(
-              "(SELECT COUNT(*) FROM TagOfEntries WHERE TagOfEntries.tagId = Tag.slug)"
-            ),
-            "entryCount",
-          ],
-        ],
-      },
-    })) as TagWithCount[];
-    tags = tags.map((tag) => tag.toJSON() as TagWithCount);
+    const rows = await db
+      .select({
+        slug: Tags.slug,
+        name: Tags.name,
+        color: Tags.color,
+        createdAt: Tags.createdAt,
+        updatedAt: Tags.updatedAt,
+        entryCount: sql<number>`(SELECT COUNT(*) FROM TagOfEntries WHERE TagOfEntries.tagId = Tags.slug)`,
+      })
+      .from(Tags);
 
-    res.json(tags);
+    res.json(rows.map((r) => ({ ...r, entryCount: Number(r.entryCount) })));
   }
 
   /**
@@ -126,25 +121,53 @@ export class TagsController {
    */
   private async getTag(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
-    const tag = (await sequelize.models.Tag.findByPk(req.params.slug)) as Tag;
+    const tag = await db.query.Tags.findFirst({
+      where: eq(Tags.slug, req.params.slug),
+    });
 
     if (!tag) return res.status(404).send("Tag not found");
 
-    const totalEntries = await TagOfEntry.count({
-      where: {
-        tagId: tag.slug,
-      },
-    });
+    const totalEntries = await db.$count(
+      TagOfEntries,
+      eq(TagOfEntries.tagId, tag.slug)
+    );
 
-    const entries = await tag.$get("entries", {
-      ...entryListingCondition,
-      order: [["recentActionDate", "DESC"]],
-      limit: entriesPerPage,
-      offset: (page - 1) * entriesPerPage,
-    });
+    const junctionRows = await db
+      .select({
+        entryId: Entries.id,
+        toeId: TagOfEntries.id,
+        toeTagId: TagOfEntries.tagId,
+        toeEntryId: TagOfEntries.entryId,
+        toeCreationDate: TagOfEntries.creationDate,
+        toeUpdatedOn: TagOfEntries.updatedOn,
+      })
+      .from(TagOfEntries)
+      .innerJoin(Entries, eq(Entries.id, TagOfEntries.entryId))
+      .where(eq(TagOfEntries.tagId, tag.slug))
+      .orderBy(desc(Entries.recentActionDate))
+      .limit(entriesPerPage)
+      .offset((page - 1) * entriesPerPage);
+
+    const listing = await fetchEntriesListing(junctionRows.map((r) => r.entryId));
+    const throughByEntry = new Map(
+      junctionRows.map((r) => [
+        r.entryId,
+        {
+          id: r.toeId,
+          tagId: r.toeTagId,
+          entryId: r.toeEntryId,
+          creationDate: r.toeCreationDate,
+          updatedOn: r.toeUpdatedOn,
+        },
+      ])
+    );
+    const entries = listing.map((e) => ({
+      ...e,
+      TagOfEntry: throughByEntry.get(e.id),
+    }));
 
     res.json({
-      tag: tag.toJSON(),
+      tag,
       entries,
       totalEntries,
       page,
