@@ -61,7 +61,7 @@ export async function getSongMetadata(
     artistSortOrder: tags["artist-sort"] || tags.ARTISTSORT || undefined,
     albumName: tags.album || tags.ALBUM || undefined,
     albumSortOrder: tags["album-sort"] || tags.ALBUMSORT || undefined,
-    hasCover: metadata.streams.some((val: any) => val.codec_type === "video"),
+    hasCover: metadata.streams.some((val) => val.codec_type === "video"),
     duration: isNaN(duration) ? -1 : duration,
     fileSize: parseInt(metadata.format?.size ?? ""),
     playlists,

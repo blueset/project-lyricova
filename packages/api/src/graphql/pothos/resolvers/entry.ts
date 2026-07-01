@@ -50,7 +50,20 @@ const EntryInput = builder.inputType("EntryInput", {
   }),
 });
 
-async function populateVerseTypingSequence(verse: any) {
+/** Shape of a verse as it arrives in the EntryInput mutation argument. */
+interface VerseInputLike {
+  id?: number;
+  text?: string;
+  language?: string;
+  isOriginal?: boolean;
+  isMain?: boolean;
+  html?: string;
+  stylizedText?: string;
+  translator?: string;
+  typingSequence?: string[][][];
+}
+
+async function populateVerseTypingSequence(verse: VerseInputLike) {
   if (verse.text && !verse.typingSequence?.length) {
     verse.typingSequence = await segmentedTransliteration(verse.text, {
       language: verse.language.startsWith("ja")
@@ -64,7 +77,7 @@ async function populateVerseTypingSequence(verse: any) {
   return verse;
 }
 
-function verseValues(v: any) {
+function verseValues(v: VerseInputLike) {
   return {
     language: v.language,
     isOriginal: v.isOriginal,
