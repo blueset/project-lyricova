@@ -1,8 +1,9 @@
 "use client";
 
 import type { VDBArtistType } from "../../../types/vocadb";
-import { gql, useQuery } from "@apollo/client";
-import type { Artist } from "@lyricova/components/gql/schema";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import React from "react";
 import { SquareUserRound } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";
@@ -20,8 +21,8 @@ import {
 } from "@lyricova/components/components/ui/avatar";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
-const ARTISTS_LIST_QUERY = gql`
-  query ($types: [String!]!) {
+const ARTISTS_LIST_QUERY = graphql(`
+  query ArtistsList($types: [String!]!) {
     artistsHasFiles(types: $types) {
       id
       name
@@ -30,7 +31,11 @@ const ARTISTS_LIST_QUERY = gql`
       mainPictureUrl
     }
   }
-` as DocumentNode;
+`);
+
+type ArtistListItem = ResultOf<
+  typeof ARTISTS_LIST_QUERY
+>["artistsHasFiles"][number];
 
 interface Props {
   types: VDBArtistType[];
@@ -38,7 +43,7 @@ interface Props {
 }
 
 export default function ArtistsList({ types, typeName }: Props) {
-  const query = useQuery<{ artistsHasFiles: Artist[] }>(ARTISTS_LIST_QUERY, {
+  const query = useQuery(ARTISTS_LIST_QUERY, {
     variables: { types },
   });
 
@@ -66,7 +71,7 @@ export default function ArtistsList({ types, typeName }: Props) {
     );
 
   let lastKey: string | null = null;
-  const convertedList: (Artist | string)[] = [];
+  const convertedList: (ArtistListItem | string)[] = [];
 
   query.data.artistsHasFiles.forEach((i) => {
     let key: string;

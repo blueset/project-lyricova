@@ -1,11 +1,11 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
-import type { MusicFile } from "@lyricova/components/gql/schema";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import React, { useCallback, useMemo } from "react";
-import type { Artist } from "@lyricova/components/gql/schema";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import { NextComposedLink } from "@lyricova/components";
 import { formatTime } from "../../frontendUtils/strings";
 import filesize from "filesize";
@@ -20,8 +20,8 @@ import {
 } from "@lyricova/components/components/ui/alert";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
-const SINGLE_FILE_SONG_QUERY = gql`
-  query ($id: Int!) {
+const SINGLE_FILE_SONG_QUERY = graphql(`
+  query FileSongInfo($id: Int!) {
     musicFile(id: $id) {
       id
       trackName
@@ -44,6 +44,9 @@ const SINGLE_FILE_SONG_QUERY = gql`
           ArtistOfSong {
             categories
           }
+          ArtistOfAlbum {
+            categories
+          }
         }
       }
 
@@ -53,17 +56,20 @@ const SINGLE_FILE_SONG_QUERY = gql`
       }
     }
   }
-` as DocumentNode;
+`);
+
+type FileData = ResultOf<typeof SINGLE_FILE_SONG_QUERY>["musicFile"];
+type SongArtist = NonNullable<FileData["song"]>["artists"][number];
 
 interface Props {
-  partialFile?: Partial<MusicFile>;
+  partialFile?: Partial<FileData>;
   fileId?: number;
 }
 
 export default function FileSongInfo({ partialFile, fileId }: Props) {
   const idToQuery = fileId ?? partialFile?.id;
 
-  const query = useQuery<{ musicFile: MusicFile }>(SINGLE_FILE_SONG_QUERY, {
+  const query = useQuery(SINGLE_FILE_SONG_QUERY, {
     variables: { id: idToQuery },
   });
 
@@ -81,7 +87,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
       </Alert>
     );
 
-  const file: Partial<MusicFile> =
+  const file: Partial<FileData> =
     query.data?.musicFile ??
     (fileId == null
       ? partialFile
@@ -112,10 +118,10 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
     []
   );
 
-  const [producers, vocalists] = useMemo((): [Artist[], Artist[]] => {
+  const [producers, vocalists] = useMemo((): [SongArtist[], SongArtist[]] => {
     const song = file.song;
-    const producers: Artist[] = [],
-      vocalists: Artist[] = [];
+    const producers: SongArtist[] = [],
+      vocalists: SongArtist[] = [];
 
     if (song?.artists) {
       for (const i of song.artists) {

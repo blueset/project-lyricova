@@ -9,7 +9,7 @@ import type {
 } from "../../../hooks/types";
 import { usePlayerLyricsState } from "../../../hooks/usePlayerLyricsState";
 import _ from "lodash";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import type { RefObject } from "react";
 import { useEffect, useMemo, useRef } from "react";
 import type { MeasuredComponentProps } from "react-measure";
@@ -19,13 +19,13 @@ import measureElement, {
 } from "../../../frontendUtils/measure";
 import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
-import type { DocumentNode } from "graphql";
+import { graphql } from "@lyricova/components/gql";
 import { cn } from "@lyricova/components/utils";
 
 type Timeline = gsap.core.Timeline;
 const COUNTDOWN_DURATION = 3;
 
-const SEQUENCE_QUERY = gql`
+const SEQUENCE_QUERY = graphql(`
   query KaraokeTransliteration(
     $text: String!
     $furigana: [[FuriganaLabel!]!]! = []
@@ -35,14 +35,7 @@ const SEQUENCE_QUERY = gql`
       karaoke
     }
   }
-` as DocumentNode;
-
-interface SequenceQueryResult {
-  transliterate: {
-    text: string;
-    karaoke: [string, string][][];
-  };
-}
+`);
 
 //#region Page builders
 interface KaraokePage {
@@ -642,7 +635,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   const currentLineStartRef = useRef<number | null>(null);
   currentLineStartRef.current = currentLineStart;
 
-  const sequenceQuery = useQuery<SequenceQueryResult>(SEQUENCE_QUERY, {
+  const sequenceQuery = useQuery(SEQUENCE_QUERY, {
     variables: {
       text: lyrics.lines.map((v) => v.content).join("\n"),
       furigana: lyrics.lines.map(
@@ -819,7 +812,10 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
             showNext={showNext}
             lineIdx={lineIdx}
             lyrics={lyrics}
-            furigana={sequenceQuery.data?.transliterate.karaoke ?? null}
+            furigana={
+              (sequenceQuery.data?.transliterate.karaoke ??
+                null) as [string, string][][] | null
+            }
             activeRef={activeRef}
             containerWidth={contentRect.bounds.width}
           />
