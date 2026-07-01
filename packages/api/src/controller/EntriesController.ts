@@ -1,14 +1,29 @@
 import { Router, Request, Response } from "express";
-import sequelize from "../db";
-import { Entry } from "../models/Entry";
-import { entriesPerPage } from "../utils/consts";
-import { Song } from "../models/Song";
-import { PVContract } from "../types/vocadb";
+import { desc, eq, isNull } from "drizzle-orm";
 import shuffle from "lodash/shuffle";
-import { Op } from "sequelize";
+import { db } from "../drizzle/client";
+import { Entries } from "../drizzle/schema";
+import { parseEnumArray } from "../drizzle/enumArray";
+import { entriesPerPage } from "../utils/consts";
+import { PVContract } from "../types/vocadb";
 
-type ExpandedSong = Song & { videoUrl?: string };
-type ExpandedEntry = Entry & { songs: ExpandedSong[] };
+/** Pick the preferred playback URL from a song's VocaDB PV list. */
+function deriveVideoUrl(vocaDbJson: any): { has: boolean; url?: string } {
+  const pvs = vocaDbJson?.pvs as PVContract[] | undefined;
+  if (!pvs) return { has: false };
+  const url =
+    pvs.find((pv) => pv.service === "Youtube" && pv.pvType === "Original")
+      ?.url ??
+    pvs.find(
+      (pv) => pv.service === "NicoNicoDouga" && pv.pvType === "Original"
+    )?.url ??
+    pvs.find((pv) => pv.pvType === "Original")?.url ??
+    pvs.find((pv) => pv.service === "Youtube")?.url ??
+    pvs.find((pv) => pv.service === "NicoNicoDouga")?.url ??
+    pvs[0]?.url ??
+    undefined;
+  return { has: true, url };
+}
 
 export class EntriesController {
   public router: Router;
@@ -70,36 +85,48 @@ export class EntriesController {
    */
   private async getEntries(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
-    const entries = (await sequelize.models.Entry.findAll({
-      attributes: {
-        exclude: ["updatedAt"],
-      },
-      include: [
-        {
-          association: "verses",
-          attributes: ["id", "text", "isMain", "language", "typingSequence"],
-        },
-        {
-          association: "tags",
-          attributes: ["name", "slug", "color"],
-          through: {
-            attributes: [],
+    const rows = await db.query.Entries.findMany({
+      where: isNull(Entries.deletionDate),
+      with: {
+        verses: {
+          columns: {
+            id: true,
+            text: true,
+            isMain: true,
+            language: true,
+            typingSequence: true,
           },
+          where: (v: any, { isNull }: any) => isNull(v.deletionDate),
+          orderBy: (v: any, { desc }: any) => desc(v.id),
         },
-        {
-          association: "pulses",
-          attributes: ["creationDate"],
+        tagOfEntries: {
+          columns: {},
+          with: { tag: { columns: { name: true, slug: true, color: true } } },
         },
-      ],
-      order: [["recentActionDate", "DESC"]],
+        pulses: {
+          columns: { creationDate: true },
+          orderBy: (p: any, { desc }: any) => desc(p.id),
+        },
+      },
+      orderBy: (e: any, { desc }: any) => desc(e.recentActionDate),
       limit: entriesPerPage,
       offset: (page - 1) * entriesPerPage,
-    })) as Entry[];
+    });
 
-    const totalEntries = await sequelize.models.Entry.count();
+    const entries = rows.map((e: any) => {
+      const { tagOfEntries, verses, pulses, ...cols } = e;
+      return {
+        ...cols,
+        verses,
+        tags: (tagOfEntries ?? []).map((t: any) => t.tag),
+        pulses,
+      };
+    });
+
+    const totalEntries = await db.$count(Entries, isNull(Entries.deletionDate));
 
     res.json({
-      entries: entries.map((entry) => entry.toJSON()),
+      entries,
       count: totalEntries,
       totalPages: Math.ceil(totalEntries / entriesPerPage),
     });
@@ -109,7 +136,7 @@ export class EntriesController {
    * @openapi
    * /entries/{entryId}:
    *   get:
-   *     summary: Get a single entry by ID with full details
+   *     summary: Get a single entry by ID
    *     tags:
    *       - Entries
    *     parameters:
@@ -121,7 +148,7 @@ export class EntriesController {
    *         description: ID of the entry to retrieve
    *     responses:
    *       200:
-   *         description: Entry with verses, tags, songs, and pulses
+   *         description: The requested entry with verses, tags, songs, and pulses
    *         content:
    *           application/json:
    *             schema:
@@ -144,28 +171,28 @@ export class EntriesController {
    *                     songs:
    *                       type: array
    *                       items:
-   *                         allOf:
-   *                           - type: object
-   *                             properties:
-   *                               id:
-   *                                 $ref: '#/components/schemas/Song/properties/id'
-   *                               name:
-   *                                 $ref: '#/components/schemas/Song/properties/name'
-   *                               coverUrl:
-   *                                 $ref: '#/components/schemas/Song/properties/coverUrl'
-   *                               videoUrl:
-   *                                 type: string
-   *                                 nullable: true
-   *                                 description: Video URL from PV
-   *                               artists:
-   *                                 type: array
-   *                                 items:
-   *                                   allOf:
-   *                                     - $ref: '#/components/schemas/Artist'
-   *                                     - type: object
-   *                                       properties:
-   *                                         ArtistOfSong:
-   *                                           $ref: '#/components/schemas/ArtistOfSong'
+   *                         type: object
+   *                         properties:
+   *                           id:
+   *                             $ref: '#/components/schemas/Song/properties/id'
+   *                           name:
+   *                             $ref: '#/components/schemas/Song/properties/name'
+   *                           coverUrl:
+   *                             $ref: '#/components/schemas/Song/properties/coverUrl'
+   *                           videoUrl:
+   *                             type: string
+   *                             description: Preferred playback URL derived from VocaDB PVs
+   *                           artists:
+   *                             type: array
+   *                             items:
+   *                               type: object
+   *                               properties:
+   *                                 id:
+   *                                   $ref: '#/components/schemas/Artist/properties/id'
+   *                                 name:
+   *                                   $ref: '#/components/schemas/Artist/properties/name'
+   *                                 ArtistOfSong:
+   *                                   $ref: '#/components/schemas/ArtistOfSong'
    *       404:
    *         description: Entry not found
    *         content:
@@ -178,68 +205,80 @@ export class EntriesController {
    */
   private async getEntry(req: Request, res: Response) {
     const entryId = parseInt(req.params.entryId);
-    const entry = (await sequelize.models.Entry.findByPk(entryId, {
-      include: [
-        {
-          association: "verses",
-          attributes: {
-            exclude: ["creationDate", "updatedOn"],
-          },
+    const entry: any = await db.query.Entries.findFirst({
+      where: eq(Entries.id, entryId),
+      with: {
+        verses: {
+          columns: { creationDate: false, updatedOn: false },
+          where: (v: any, { isNull }: any) => isNull(v.deletionDate),
+          orderBy: (v: any, { asc }: any) => asc(v.id),
         },
-        {
-          association: "tags",
-          attributes: ["name", "slug", "color"],
-          through: {
-            attributes: [],
-          },
+        tagOfEntries: {
+          columns: {},
+          with: { tag: { columns: { name: true, slug: true, color: true } } },
         },
-        {
-          association: "songs",
-          attributes: ["id", "name", "coverUrl", "vocaDbJson"],
-          include: [
-            {
-              association: "artists",
-              attributes: ["id", "name"],
-              through: {
-                attributes: ["artistRoles", "categories", "isSupport"],
+        songOfEntries: {
+          columns: {},
+          with: {
+            song: {
+              columns: {
+                id: true,
+                name: true,
+                coverUrl: true,
+                vocaDbJson: true,
+              },
+              with: {
+                artistOfSongs: {
+                  columns: {
+                    artistRoles: true,
+                    categories: true,
+                    isSupport: true,
+                  },
+                  with: { artist: { columns: { id: true, name: true } } },
+                },
               },
             },
-          ],
-          through: {
-            attributes: [],
           },
         },
-        {
-          association: "pulses",
-          attributes: ["creationDate"],
+        pulses: {
+          columns: { creationDate: true },
+          orderBy: (p: any, { asc }: any) => asc(p.id),
         },
-      ],
-    })) as Entry;
-
-    if (!entry) return res.status(404).json({ message: "Entry not found" });
-
-    const entryObj = entry.toJSON() as ExpandedEntry;
-    entryObj.songs.forEach((song: ExpandedSong) => {
-      if (song.vocaDbJson?.pvs) {
-        const pvs = song.vocaDbJson.pvs as PVContract[];
-        let url: string | undefined = undefined;
-        url =
-          pvs.find((pv) => pv.service === "Youtube" && pv.pvType === "Original")
-            ?.url ??
-          pvs.find(
-            (pv) => pv.service === "NicoNicoDouga" && pv.pvType === "Original"
-          )?.url ??
-          pvs.find((pv) => pv.pvType === "Original")?.url ??
-          pvs.find((pv) => pv.service === "Youtube")?.url ??
-          pvs.find((pv) => pv.service === "NicoNicoDouga")?.url ??
-          pvs[0]?.url ??
-          undefined;
-        song.videoUrl = url;
-      }
-      delete song.vocaDbJson;
+      },
     });
 
-    res.json(entryObj);
+    if (!entry || entry.deletionDate !== null) {
+      return res.status(404).json({ message: "Entry not found" });
+    }
+
+    const { tagOfEntries, songOfEntries, verses, pulses, ...cols } = entry;
+    const songs = (songOfEntries ?? []).map((soe: any) => {
+      const s = soe.song;
+      const artists = (s.artistOfSongs ?? [])
+        .map((aos: any) => ({
+          id: aos.artist.id,
+          name: aos.artist.name,
+          ArtistOfSong: {
+            artistRoles: parseEnumArray(aos.artistRoles),
+            categories: parseEnumArray(aos.categories),
+            isSupport: aos.isSupport,
+          },
+        }))
+        .sort((a: any, b: any) => a.id - b.id);
+      const song: any = { id: s.id, name: s.name, coverUrl: s.coverUrl, artists };
+      const { has, url } = deriveVideoUrl(s.vocaDbJson);
+      if (has) song.videoUrl = url;
+      return song;
+    });
+    songs.sort((a: any, b: any) => a.id - b.id);
+
+    res.json({
+      ...cols,
+      verses,
+      tags: (tagOfEntries ?? []).map((t: any) => t.tag),
+      songs,
+      pulses,
+    });
   }
 
   /**
@@ -262,18 +301,16 @@ export class EntriesController {
    *         schema:
    *           type: string
    *         required: false
-   *         description: Comma-separated list of language codes to filter verses by
-   *         example: "ja,en,zh"
+   *         description: Comma-separated language prefixes to filter verses by
    *       - in: query
    *         name: tags
    *         schema:
    *           type: string
    *         required: false
-   *         description: Comma-separated list of tag slugs to filter entries by
-   *         example: "core,light,soft"
+   *         description: Comma-separated tag slugs to filter entries by
    *     responses:
    *       200:
-   *         description: Randomized verses and their associated entries
+   *         description: Randomized verses and their entries
    *         content:
    *           application/json:
    *             schema:
@@ -281,48 +318,14 @@ export class EntriesController {
    *               properties:
    *                 entries:
    *                   type: object
-   *                   description: Map of entry IDs to entry objects
-   *                   patternProperties:
-   *                     '^[0-9]+$':
-   *                       type: object
-   *                       properties:
-   *                         id:
-   *                           $ref: '#/components/schemas/Entry/properties/id'
-   *                         title:
-   *                           $ref: '#/components/schemas/Entry/properties/title'
-   *                         producersName:
-   *                           $ref: '#/components/schemas/Entry/properties/producersName'
-   *                         vocalistsName:
-   *                           $ref: '#/components/schemas/Entry/properties/vocalistsName'
-   *                         tags:
-   *                           type: array
-   *                           items:
-   *                             type: object
-   *                             properties:
-   *                               name:
-   *                                 $ref: '#/components/schemas/Tag/properties/name'
-   *                               slug:
-   *                                 $ref: '#/components/schemas/Tag/properties/slug'
-   *                               color:
-   *                                 $ref: '#/components/schemas/Tag/properties/color'
+   *                   additionalProperties:
+   *                     $ref: '#/components/schemas/Entry'
    *                 verses:
    *                   type: array
-   *                   description: Shuffled array of verses matching the filter criteria
    *                   items:
-   *                     type: object
-   *                     properties:
-   *                       id:
-   *                         $ref: '#/components/schemas/Verse/properties/id'
-   *                       text:
-   *                         $ref: '#/components/schemas/Verse/properties/text'
-   *                       typingSequence:
-   *                         $ref: '#/components/schemas/Verse/properties/typingSequence'
-   *                       language:
-   *                         $ref: '#/components/schemas/Verse/properties/language'
-   *                       entryId:
-   *                         $ref: '#/components/schemas/Verse/properties/entryId'
+   *                     $ref: '#/components/schemas/Verse'
    *       404:
-   *         description: No entries found matching the filter criteria
+   *         description: No entries found
    *         content:
    *           application/json:
    *             schema:
@@ -335,62 +338,75 @@ export class EntriesController {
     const type = req.query.type as string;
     const languages = (req.query.languages as string)?.split(",") || [];
     const tags = (req.query.tags as string)?.split(",") || [];
+    const verseWhereActive =
+      type === "original" || type === "main" || languages.length > 0;
 
-    const verseCondition = { [Op.and]: [] as unknown[] };
-    if (type === "original") verseCondition[Op.and].push({ isOriginal: true });
-    else if (type === "main") verseCondition[Op.and].push({ isMain: true });
-    if (languages.length)
-      verseCondition[Op.and].push({
-        [Op.or]: languages.map((l) => ({ language: { [Op.startsWith]: l } })),
-      });
-
-    const entries = (
-      await Entry.findAll({
-        attributes: ["id", "title", "producersName", "vocalistsName"],
-        include: [
-          {
-            association: "verses",
-            attributes: [
-              "id",
-              "text",
-              "typingSequence",
-              "isMain",
-              "isOriginal",
-              "language",
-              "entryId",
-            ],
-            where:
-              verseCondition[Op.and].length > 0 ? verseCondition : undefined,
+    const rows = await db.query.Entries.findMany({
+      where: isNull(Entries.deletionDate),
+      columns: {
+        id: true,
+        title: true,
+        producersName: true,
+        vocalistsName: true,
+      },
+      with: {
+        verses: {
+          columns: {
+            id: true,
+            text: true,
+            typingSequence: true,
+            isMain: true,
+            isOriginal: true,
+            language: true,
+            entryId: true,
           },
-          {
-            association: "tags",
-            attributes: ["name", "slug", "color"],
-            through: {
-              attributes: [] as string[],
-            },
-            where: tags.length ? { slug: tags } : undefined,
+          where: (v: any, { and, eq, or, like, isNull }: any) => {
+            const conds: any[] = [isNull(v.deletionDate)];
+            if (type === "original") conds.push(eq(v.isOriginal, true));
+            else if (type === "main") conds.push(eq(v.isMain, true));
+            if (languages.length)
+              conds.push(or(...languages.map((l) => like(v.language, `${l}%`))));
+            return and(...conds);
           },
-        ],
-      })
-    ).map((e) => e.toJSON()) as Entry[];
+        },
+        tagOfEntries: {
+          columns: {},
+          with: { tag: { columns: { name: true, slug: true, color: true } } },
+          ...(tags.length
+            ? { where: (toe: any, { inArray }: any) => inArray(toe.tagId, tags) }
+            : {}),
+        },
+      },
+    });
 
-    if (entries.length < 1) {
+    const matched = rows.filter(
+      (e: any) =>
+        (!verseWhereActive || e.verses.length > 0) &&
+        (tags.length === 0 || e.tagOfEntries.length > 0)
+    );
+
+    if (matched.length < 1) {
       return res.status(404).json({ message: "No entries found" });
     }
 
     const verses = shuffle(
-      entries
-        .flatMap((entry) => entry.verses)
-        .map((v) => {
-          delete v.isMain;
-          delete v.isOriginal;
-          return v;
-        })
+      matched.flatMap((entry: any) =>
+        entry.verses.map((v: any) => ({
+          id: v.id,
+          text: v.text,
+          typingSequence: v.typingSequence,
+          language: v.language,
+          entryId: v.entryId,
+        }))
+      )
     );
-    entries.forEach((entry) => delete entry.verses);
 
-    const entriesObj = entries.reduce<{ [id: number]: Entry }>((acc, entry) => {
-      acc[entry.id] = entry;
+    const entriesObj = matched.reduce<{ [id: number]: any }>((acc, entry: any) => {
+      const { verses: _verses, tagOfEntries, ...cols } = entry;
+      acc[entry.id] = {
+        ...cols,
+        tags: (tagOfEntries ?? []).map((t: any) => t.tag),
+      };
       return acc;
     }, {});
 
