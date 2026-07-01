@@ -1,20 +1,24 @@
-import { ID3_LYRICS_LANGUAGE, MusicFile } from "../../../models/MusicFile";
 import glob from "glob";
 import { MUSIC_FILES_PATH } from "../../../utils/secret";
 import { writeAsync as ffMetadataWrite } from "../../../utils/ffmetadata";
 import fs from "fs";
-import hasha from "hasha";
 import pLimit from "p-limit";
-import type { WhereOptions } from "sequelize";
-import { literal, Op } from "sequelize";
+import hasha from "hasha";
 import { and, desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
 import { db } from "../../../drizzle/client";
 import { MusicFiles, Playlists, FileInPlaylists } from "../../../drizzle/schema";
 import { updatePlaylistsOfFileAsTags } from "../../../utils/musicFileTags";
+import {
+  ID3_LYRICS_LANGUAGE,
+  buildSongEntry,
+  updateSongEntry,
+  writeMetadataToFile,
+  updateMD5,
+  replaceFilePlaylists,
+  fullPathOf,
+} from "../../../utils/musicFileScan";
 import Path from "path";
-import _ from "lodash";
 import { GraphQLError } from "graphql";
-import { Playlist } from "../../../models/Playlist";
 import NodeID3 from "node-id3";
 import { swapExt } from "../../../utils/path";
 import { builder } from "../builder";
@@ -91,15 +95,18 @@ async function writeLyricsToMusicFileImpl(
   fileId: number,
   lyrics: string
 ): Promise<boolean> {
-  const file = await MusicFile.findByPk(fileId);
-  if (file === null) return false;
+  const file = await db.query.MusicFiles.findFirst({
+    where: eq(MusicFiles.id, fileId),
+  });
+  if (!file) return false;
+  const fullPath = fullPathOf(file.path);
 
   try {
     if (file.path.toLowerCase().endsWith(".flac")) {
       const key = "LYRICS";
       const forceId3v2 = false;
       await ffMetadataWrite(
-        file.fullPath,
+        fullPath,
         { [key]: lyrics },
         { preserveStreams: true, forceId3v2 }
       );
@@ -111,7 +118,7 @@ async function writeLyricsToMusicFileImpl(
         },
       };
 
-      const result = NodeID3.update(tags, file.fullPath);
+      const result = NodeID3.update(tags, fullPath);
       if (result !== true) {
         throw result;
       }
@@ -121,7 +128,7 @@ async function writeLyricsToMusicFileImpl(
     return false;
   }
 
-  await file.updateMD5();
+  await updateMD5(fileId, file.path);
   return true;
 }
 
@@ -134,8 +141,14 @@ builder.mutationField("scan", (t) =>
       const publish = (payload: PubSubSessionPayload<MusicFilesScanOutcomeShape>) =>
         pubsub.publish(TOPIC_MUSIC_FILE_SCAN_PROGRESS, payload);
       const dryRun = false;
-      const databaseEntries = await MusicFile.findAll({
-        attributes: ["id", "path", "fileSize", "hash", "hasLyrics"],
+      const databaseEntries = await db.query.MusicFiles.findMany({
+        columns: {
+          id: true,
+          path: true,
+          fileSize: true,
+          hash: true,
+          hasLyrics: true,
+        },
       });
       const filePaths = glob.sync(`${MUSIC_FILES_PATH}**/*.{mp3,flac,aiff}`, {
         nosort: true,
@@ -165,15 +178,12 @@ builder.mutationField("scan", (t) =>
       );
 
       if (toDelete.size && !dryRun) {
-        await MusicFile.destroy({
-          where: {
-            path: {
-              [Op.in]: [...toDelete].map((p) =>
-                p.replace(MUSIC_FILES_PATH, "")
-              ),
-            },
-          },
-        });
+        await db.delete(MusicFiles).where(
+          inArray(
+            MusicFiles.path,
+            [...toDelete].map((p) => p.replace(MUSIC_FILES_PATH, ""))
+          )
+        );
       }
 
       console.log("entries deleted.");
@@ -184,22 +194,29 @@ builder.mutationField("scan", (t) =>
 
       if (!dryRun) {
         const entriesToAdd = await Promise.all(
-          [...toAdd].map((path) =>
-            limit(
-              async () =>
-                await MusicFile.build({ fullPath: path }).buildSongEntry()
-            )
+          [...toAdd].map((filePath) =>
+            limit(async () => buildSongEntry(filePath))
           )
         );
 
         console.log("entries_to_add done.");
 
-        entriesToAdd.map((entry) =>
-          limit(async () => {
-            await entry.save();
-            if (entry.playlists.length > 0)
-              await entry.$set("playlists", entry.playlists);
-          })
+        const now = new Date();
+        await Promise.all(
+          entriesToAdd.map((built) =>
+            limit(async () => {
+              const inserted = await db.insert(MusicFiles).values({
+                ...built.values,
+                creationDate: now,
+                updatedOn: now,
+              } as any);
+              if (built.playlistSlugs.length > 0)
+                await replaceFilePlaylists(
+                  inserted[0].insertId,
+                  built.playlistSlugs
+                );
+            })
+          )
         );
         progressObj.added += entriesToAdd.length;
       }
@@ -216,8 +233,8 @@ builder.mutationField("scan", (t) =>
         await Promise.all(
           toUpdateEntries.map((entry) =>
             limit(async () => {
-              const res = await entry.updateSongEntry();
-              if (res === null) progressObj.unchanged++;
+              const updated = await updateSongEntry(entry as any);
+              if (!updated) progressObj.unchanged++;
               else progressObj.updated++;
               if (
                 sessionId &&
@@ -252,17 +269,30 @@ builder.mutationField("scanByPath", (t) =>
     resolve: async (_root, { path }) => {
       const fullPath = Path.resolve(MUSIC_FILES_PATH, path);
       if (fs.existsSync(fullPath)) {
-        let file = await MusicFile.findOne({ where: { path } });
-        if (file === null) {
-          file = MusicFile.build({ path, fullPath });
-          await file.buildSongEntry();
-          await file.save();
+        const file = await db.query.MusicFiles.findFirst({
+          where: eq(MusicFiles.path, path),
+        });
+        let fileId: number;
+        if (!file) {
+          const built = await buildSongEntry(fullPath);
+          const now = new Date();
+          const inserted = await db.insert(MusicFiles).values({
+            ...built.values,
+            creationDate: now,
+            updatedOn: now,
+          } as any);
+          fileId = inserted[0].insertId;
+          if (built.playlistSlugs.length > 0)
+            await replaceFilePlaylists(fileId, built.playlistSlugs);
         } else {
-          file = await file.updateSongEntry();
+          fileId = file.id;
+          await updateSongEntry(file as any);
         }
-        return file as any;
+        return (await db.query.MusicFiles.findFirst({
+          where: eq(MusicFiles.id, fileId),
+        })) as any;
       } else {
-        await MusicFile.destroy({ where: { path } });
+        await db.delete(MusicFiles).where(eq(MusicFiles.path, path));
         return null;
       }
     },
@@ -340,21 +370,26 @@ builder.mutationField("writeTagsToMusicFile", (t) =>
     authScopes: { admin: true },
     args: { id: t.arg.int(), data: t.arg({ type: MusicFileInput }) },
     resolve: async (_root, { id, data }) => {
-      const song = await MusicFile.findByPk(id);
-      if (song === null) {
+      const song = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, id),
+      });
+      if (!song) {
         throw new GraphQLError(`Music file with id ${id} is not found.`);
       }
 
-      await song.writeToFile(data as any);
+      await writeMetadataToFile(song, data as any);
 
-      _.assign(song, data);
-
-      song.set({
-        hash: await hasha.fromFile(song.fullPath, { algorithm: "md5" }),
+      const hash = await hasha.fromFile(fullPathOf(song.path), {
+        algorithm: "md5",
       });
+      await db
+        .update(MusicFiles)
+        .set({ ...(data as any), hash, updatedOn: new Date() })
+        .where(eq(MusicFiles.id, id));
 
-      await song.save();
-      return song as any;
+      return (await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, id),
+      })) as any;
     },
   })
 );
@@ -413,10 +448,13 @@ builder.mutationField("removeLyrics", (t) =>
     description: "Remove lyrics of a file",
     args: { fileId: t.arg.int({ description: "Music file ID" }) },
     resolve: async (_root, { fileId }) => {
-      const file = await MusicFile.findByPk(fileId);
-      if (file === null) return false;
-      const lrcPath = swapExt(file.fullPath, "lrc");
-      const lrcxPath = swapExt(file.fullPath, "lrcx");
+      const file = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, fileId),
+      });
+      if (!file) return false;
+      const fullPath = fullPathOf(file.path);
+      const lrcPath = swapExt(fullPath, "lrc");
+      const lrcxPath = swapExt(fullPath, "lrcx");
 
       try {
         fs.unlinkSync(lrcPath);
@@ -425,7 +463,10 @@ builder.mutationField("removeLyrics", (t) =>
         const outcome = await writeLyricsToMusicFileImpl(fileId, "");
         if (!outcome) return false;
 
-        await file.update({ hasLyrics: false });
+        await db
+          .update(MusicFiles)
+          .set({ hasLyrics: false, updatedOn: new Date() })
+          .where(eq(MusicFiles.id, fileId));
       } catch (e) {
         console.error("Error while writing lyrics file:", e);
         return false;
