@@ -30,9 +30,9 @@ export default async function generateRssFeed() {
     orderBy: (e: any, { desc }: any) => desc(e.recentActionDate),
     limit: 20,
   });
-  entries.forEach((entry: any) => {
-    const mainVerse = entry.verses.filter((v: any) => v.isMain)[0];
-    const tags = (entry.tagOfEntries ?? []).map((t: any) => t.tag);
+  entries.forEach((entry) => {
+    const mainVerse = entry.verses.filter((v) => v.isMain)[0];
+    const tags = (entry.tagOfEntries ?? []).map((t) => t.tag);
     feed.item({
       title: entry.title,
       description:
@@ -43,7 +43,7 @@ export default async function generateRssFeed() {
         ),
       date: entry.recentActionDate,
       url: `${host}/entries/${entry.id}`,
-      categories: tags?.map((t: any) => t.name) ?? [],
+      categories: tags?.map((t) => t.name) ?? [],
     });
   });
 

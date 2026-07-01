@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
-import { and, desc, eq, inArray, isNull, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, like, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../drizzle/client";
 import { Entries, Verses, SongOfEntries, TagOfEntries } from "../drizzle/schema";
 import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
@@ -218,7 +218,7 @@ export class LyricovaPublicApiController {
       ? req.query.tags
       : (req.query.tags as string)?.split(",")) as string[] | undefined;
 
-    const conds: any[] = [isNull(Verses.deletionDate)];
+    const conds: (SQL | undefined)[] = [isNull(Verses.deletionDate)];
     if (type === "original") conds.push(eq(Verses.isOriginal, true));
     else if (type === "main") conds.push(eq(Verses.isMain, true));
     if (languages?.length)
@@ -252,7 +252,7 @@ export class LyricovaPublicApiController {
       return;
     }
 
-    const v: any = await db.query.Verses.findFirst({
+    const v = await db.query.Verses.findFirst({
       where: eq(Verses.id, picked[0].id),
       columns: {
         text: true,
@@ -265,7 +265,7 @@ export class LyricovaPublicApiController {
         entryId: true,
       },
     });
-    const e: any = await db.query.Entries.findFirst({
+    const e = await db.query.Entries.findFirst({
       where: eq(Entries.id, picked[0].entryId as number),
       columns: {
         id: true,
@@ -301,7 +301,7 @@ export class LyricovaPublicApiController {
         title: e.title,
         producersName: e.producersName,
         vocalistsName: e.vocalistsName,
-        tags: (e.tagOfEntries ?? []).map((t: any) => t.tag),
+        tags: (e.tagOfEntries ?? []).map((t) => t.tag),
       },
     };
 
@@ -406,7 +406,7 @@ export class LyricovaPublicApiController {
   public og = async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.entryId);
 
-    const entryRow: any = await db.query.Entries.findFirst({
+    const entryRow = await db.query.Entries.findFirst({
       where: and(eq(Entries.id, id), isNull(Entries.deletionDate)),
       with: {
         verses: { where: (v: any, { isNull }: any) => isNull(v.deletionDate) },
@@ -416,9 +416,9 @@ export class LyricovaPublicApiController {
     if (!entryRow) {
       return res.status(404).json({ message: `${id} is not found.` });
     }
-    const entry: any = {
+    const entry = {
       ...entryRow,
-      tags: (entryRow.tagOfEntries ?? []).map((t: any) => t.tag),
+      tags: (entryRow.tagOfEntries ?? []).map((t) => t.tag),
     };
 
     const artistString = !entry.producersName
@@ -426,12 +426,12 @@ export class LyricovaPublicApiController {
       : !entry.vocalistsName
       ? entry.producersName
       : `${entry.producersName} feat. ${entry.vocalistsName}`;
-    const mainVerse = entry.verses.find((v: any) => v.isMain);
+    const mainVerse = entry.verses.find((v) => v.isMain);
     const lang = mainVerse.language;
     const lines = mainVerse.text
       .replace(/——/g, "⸺")
       .split("\n")
-      .map((line: any) => {
+      .map((line) => {
         let match = line.match(/^([\p{Ps}\p{Pi}"]*)(.*)$/u);
         match = shiftinPuncts(line, match, "「", "」");
         match = shiftinPuncts(line, match, "『", "』");
@@ -499,7 +499,7 @@ export class LyricovaPublicApiController {
               overflow: "hidden",
             },
           },
-          ...lines.map((l: any) =>
+          ...lines.map((l) =>
             React.createElement(
               "div",
               {
@@ -554,7 +554,7 @@ export class LyricovaPublicApiController {
                 fontFamily: "Hubot Sans Narrow",
               },
             },
-            ...entry.tags.map((t: any) =>
+            ...entry.tags.map((t) =>
               React.createElement(
                 "span",
                 {

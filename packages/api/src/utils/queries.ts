@@ -82,9 +82,9 @@ export async function fetchEntriesListing(
       },
     },
   });
-  const byId = new Map(rows.map((r: any) => [r.id, r]));
+  const byId = new Map(rows.map((r) => [r.id, r] as const));
   return entryIds
     .map((id) => byId.get(id))
-    .filter((r): r is Record<string, any> => !!r)
+    .filter((r): r is NonNullable<typeof r> => !!r)
     .map(mapEntryListing);
 }
