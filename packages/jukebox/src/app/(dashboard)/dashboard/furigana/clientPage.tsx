@@ -1,7 +1,7 @@
 "use client";
 
-import { gql, useApolloClient, useQuery } from "@apollo/client";
-import type { FuriganaMapping } from "@lyricova/components/gql/schema";
+import { useApolloClient, useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
   AlertDescription,
@@ -32,7 +32,7 @@ import { toast } from "sonner";
 import { Textarea } from "@lyricova/components/components/ui/textarea";
 import { Input } from "@lyricova/components/components/ui/input";
 
-const GET_FURIGANA_MAPPING_QUERY = gql`
+const GET_FURIGANA_MAPPING_QUERY = graphql(`
   query FuriganaMappings {
     furiganaMappings {
       text
@@ -41,22 +41,22 @@ const GET_FURIGANA_MAPPING_QUERY = gql`
       segmentedFurigana
     }
   }
-`;
+`);
 
-const COMPUTE_FURIGANA_MAPPINGS_QUERY = gql`
+const COMPUTE_FURIGANA_MAPPINGS_QUERY = graphql(`
   query ComputeFuriganaMappings($mapping: [FuriganaMappingInput!]!) {
     computeFuriganaMappings(mapping: $mapping) {
       segmentedFurigana
       segmentedText
     }
   }
-`;
+`);
 
-const UPDATE_FURIGANA_MAPPINGS_MUTATION = gql`
+const UPDATE_FURIGANA_MAPPINGS_MUTATION = graphql(`
   mutation UpdateFuriganaMappings($mappings: [FuriganaMappingInput!]!) {
     updateFuriganaMappings(mappings: $mappings)
   }
-`;
+`);
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData> {
@@ -103,9 +103,7 @@ export default function FuriganaManager() {
   }>({});
   const apolloClient = useApolloClient();
 
-  const { data, loading, error, refetch } = useQuery<{
-    furiganaMappings: FuriganaMapping[];
-  }>(GET_FURIGANA_MAPPING_QUERY);
+  const { data, loading, error, refetch } = useQuery(GET_FURIGANA_MAPPING_QUERY);
 
   const rows = useMemo(() => {
     if (!data?.furiganaMappings) return [];
@@ -192,9 +190,7 @@ export default function FuriganaManager() {
   const processRowUpdate = useCallback(
     async (newRow: EditFormData) => {
       try {
-        const result = await apolloClient.mutate<{
-          updateFuriganaMappings: boolean;
-        }>({
+        const result = await apolloClient.mutate({
           mutation: UPDATE_FURIGANA_MAPPINGS_MUTATION,
           variables: {
             mappings: [
@@ -262,7 +258,7 @@ export default function FuriganaManager() {
             };
           });
 
-        await apolloClient.mutate<{ updateFuriganaMappings: boolean }>({
+        await apolloClient.mutate({
           mutation: UPDATE_FURIGANA_MAPPINGS_MUTATION,
           variables: { mappings },
         });
@@ -281,9 +277,7 @@ export default function FuriganaManager() {
 
   const handlePredictMapping = useCallback(async () => {
     try {
-      const result = await apolloClient.query<{
-        computeFuriganaMappings: FuriganaMapping[];
-      }>({
+      const result = await apolloClient.query({
         query: COMPUTE_FURIGANA_MAPPINGS_QUERY,
         variables: {
           mapping: rows

@@ -1,12 +1,11 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
-import type { DashboardStats } from "@lyricova/components/gql/schema";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { useNamedState } from "@/hooks/useNamedState";
 import { useEffect } from "react";
 import Link from "next/link";
 import { ClipboardEdit, Download, RefreshCw } from "lucide-react";
-import type { DocumentNode } from "graphql";
 import { CountCard, CountUpCard, PercentageCard } from "@lyricova/components";
 import {
   Item,
@@ -18,8 +17,8 @@ import {
 } from "@lyricova/components/components/ui/item";
 import { NavHeader } from "./NavHeader";
 
-const DASHBOARD_STATS_QUERY = gql`
-  query {
+const DASHBOARD_STATS_QUERY = graphql(`
+  query JukeboxDashboardStats {
     dashboardStats {
       aliveStartedOn
       revampStartedOn
@@ -32,15 +31,11 @@ const DASHBOARD_STATS_QUERY = gql`
       albumCount
     }
   }
-` as DocumentNode;
-
-type ConvertedDashboardStats = Record<keyof DashboardStats, number>;
+`);
 
 export default function DashboardIndex() {
   const [now, setNow] = useNamedState(new Date(), "now");
-  const { error, data } = useQuery<{ dashboardStats: ConvertedDashboardStats }>(
-    DASHBOARD_STATS_QUERY
-  );
+  const { error, data } = useQuery(DASHBOARD_STATS_QUERY);
 
   useEffect(() => {
     const timer = setInterval(() => {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
-import { gql, useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import PlaylistAvatar from "@/components/PlaylistAvatar";
 import { NavHeader } from "../../NavHeader";
 import { Alert } from "@lyricova/components/components/ui/alert";
@@ -35,11 +36,7 @@ import {
 import SelectMusicFileBox from "@/components/dashboard/selectMusicFileBox";
 import { useNamedState } from "@/hooks/useNamedState";
 import { useCallback, useEffect } from "react";
-import type { DocumentNode } from "graphql";
-import type {
-  Playlist,
-  MusicFile as MusicFileModel,
-} from "@lyricova/components/gql/schema";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import type { DropResult } from "@hello-pangea/dnd";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { move } from "@/frontendUtils/arrays";
@@ -57,9 +54,8 @@ import * as z from "zod";
 import { SlugifyAdornment } from "@lyricova/components";
 import { ButtonGroup } from "@lyricova/components/components/ui/button-group";
 
-// GraphQL queries remain unchanged...
-const PLAYLIST_QUERY = gql`
-  query ($slug: String!) {
+const PLAYLIST_QUERY = graphql(`
+  query DashboardPlaylist($slug: String!) {
     playlist(slug: $slug) {
       name
       slug
@@ -78,10 +74,10 @@ const PLAYLIST_QUERY = gql`
       }
     }
   }
-` as DocumentNode;
+`);
 
-const UPDATE_PLAYLIST_QUERY = gql`
-  mutation ($slug: String!, $data: UpdatePlaylistInput!, $files: [Int!]!) {
+const UPDATE_PLAYLIST_QUERY = graphql(`
+  mutation UpdatePlaylist($slug: String!, $data: UpdatePlaylistInput!, $files: [Int!]!) {
     updatePlaylist(slug: $slug, data: $data) {
       slug
     }
@@ -89,25 +85,16 @@ const UPDATE_PLAYLIST_QUERY = gql`
       slug
     }
   }
-` as DocumentNode;
+`);
 
-const REMOVE_PLAYLIST_QUERY = gql`
-  mutation ($slug: String!) {
+const REMOVE_PLAYLIST_QUERY = graphql(`
+  mutation RemovePlaylist($slug: String!) {
     removePlaylist(slug: $slug)
   }
-` as DocumentNode;
+`);
 
-type MusicFile = Pick<
-  MusicFileModel,
-  | "id"
-  | "trackName"
-  | "trackSortOrder"
-  | "artistName"
-  | "artistSortOrder"
-  | "albumName"
-  | "albumSortOrder"
-  | "hasCover"
->;
+type Playlist = NonNullable<ResultOf<typeof PLAYLIST_QUERY>["playlist"]>;
+type MusicFile = Playlist["files"][number];
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -510,7 +497,7 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
 
 export default function PlaylistDetails() {
   const { slug } = useParams<{ slug: string }>();
-  const playlistQuery = useQuery<{ playlist: Playlist }>(PLAYLIST_QUERY, {
+  const playlistQuery = useQuery(PLAYLIST_QUERY, {
     variables: { slug },
   });
 

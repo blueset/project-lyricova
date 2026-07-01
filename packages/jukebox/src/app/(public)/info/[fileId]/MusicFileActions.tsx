@@ -1,6 +1,6 @@
 import { addTrackToNext } from "@/redux/public/playlist";
 import { useAppDispatch } from "@/redux/public/store";
-import { gql, useLazyQuery, useQuery } from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client";
 import { graphql } from "@lyricova/components/gql";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
@@ -40,7 +40,7 @@ const SINGLE_FILE_SONG_QUERY = graphql(`
   }
 `);
 
-const ROMAJI_QUERY = gql`
+const ROMAJI_QUERY = graphql(`
   query RomajiTransliteration(
     $text: String!
     $furigana: [[FuriganaLabel!]!]! = []
@@ -49,16 +49,14 @@ const ROMAJI_QUERY = gql`
       romaji
     }
   }
-`;
+`);
 
 export function MusicFileActions({ fileId }: { fileId: number }) {
   const query = useQuery(SINGLE_FILE_SONG_QUERY, {
     variables: { id: fileId },
   });
   const dispatch = useAppDispatch();
-  const [fetchRomaji] = useLazyQuery<{
-    transliterate: { romaji: string[] };
-  }>(ROMAJI_QUERY);
+  const [fetchRomaji] = useLazyQuery(ROMAJI_QUERY);
 
   const handlePlayNext = () => {
     if (query.data?.musicFile) {

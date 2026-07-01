@@ -1,6 +1,7 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
   AlertDescription,
@@ -9,24 +10,22 @@ import {
 import { cn } from "@lyricova/components/utils";
 import { NextComposedLink } from "@lyricova/components";
 import React from "react";
-import type { Playlist } from "@lyricova/components/gql/schema";
 import PlaylistAvatar, { gradients } from "@/components/PlaylistAvatar";
-import type { DocumentNode } from "graphql";
 import { Sparkles, Play, Flame, FilePenLine } from "lucide-react";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
-const PLAYLISTS_LIST_QUERY = gql`
-  query {
+const PLAYLISTS_LIST_QUERY = graphql(`
+  query LibraryPlaylists {
     playlists {
       slug
       name
       filesCount
     }
   }
-` as DocumentNode;
+`);
 
 export default function PlaylistsList() {
-  const query = useQuery<{ playlists: Playlist[] }>(PLAYLISTS_LIST_QUERY);
+  const query = useQuery(PLAYLISTS_LIST_QUERY);
 
   if (query.loading)
     return (

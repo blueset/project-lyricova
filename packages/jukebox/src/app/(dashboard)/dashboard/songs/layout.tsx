@@ -2,12 +2,13 @@
 
 import type { ReactNode } from "react";
 import React from "react";
-import { gql, useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
   AlertDescription,
 } from "@lyricova/components/components/ui/alert";
-import type { Song } from "@lyricova/components/gql/schema";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import { useRouter } from "next/navigation";
 import {
   Avatar,
@@ -28,8 +29,8 @@ import {
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 
-const SONG_INFO_LIST_QUERY = gql`
-  query {
+const SONG_INFO_LIST_QUERY = graphql(`
+  query SongInfoList {
     songs {
       id
       utaiteDbId
@@ -47,12 +48,13 @@ const SONG_INFO_LIST_QUERY = gql`
       coverUrl
     }
   }
-`;
+`);
 
-const SONG_OVERWRITE_MUTATION = gql`
-  mutation ($id: Int!) {
+const SONG_OVERWRITE_MUTATION = graphql(`
+  mutation SongOverwrite($id: Int!) {
     enrolSongFromVocaDB(songId: $id) {
       id
+      utaiteDbId
       name
       sortOrder
       artists {
@@ -60,24 +62,27 @@ const SONG_OVERWRITE_MUTATION = gql`
         name
         ArtistOfSong {
           categories
+          artistRoles
         }
       }
       incomplete
       coverUrl
     }
   }
-`;
+`);
 
 interface Props {
   children: ReactNode;
 }
+
+type SongInfo = ResultOf<typeof SONG_INFO_LIST_QUERY>["songs"][number];
 
 type SongTableData = {
   id: number;
   utaiteDbId?: number;
   name: string;
   sortOrder: string;
-  artists: Song["artists"];
+  artists: SongInfo["artists"];
   incomplete: boolean;
   coverUrl: string;
 };
@@ -85,7 +90,7 @@ type SongTableData = {
 export default function SongInfoLayout({ children }: Props) {
   const router = useRouter();
   const apolloClient = useApolloClient();
-  const query = useQuery<{ songs: Song[] }>(SONG_INFO_LIST_QUERY);
+  const query = useQuery(SONG_INFO_LIST_QUERY);
 
   const columns: ColumnDef<SongTableData>[] = [
     {
@@ -164,16 +169,14 @@ export default function SongInfoLayout({ children }: Props) {
         const utaiteDbId = row.original.utaiteDbId;
 
         const handleOverwrite = async () => {
-          const result = await apolloClient.mutate<{
-            enrolSongFromVocaDB: Song;
-          }>({
+          const result = await apolloClient.mutate({
             mutation: SONG_OVERWRITE_MUTATION,
             variables: { id: songId },
           });
           if (result.data?.enrolSongFromVocaDB) {
             const updated = result.data.enrolSongFromVocaDB;
             query.updateQuery((prev) => ({
-              songs: prev.songs.map((v: Song) =>
+              songs: prev.songs.map((v) =>
                 v.id === updated.id ? updated : v
               ),
             }));

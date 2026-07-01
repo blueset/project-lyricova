@@ -1,15 +1,13 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@lyricova/components/components/ui/alert";
-import type {
-  MusicFilesPagination,
-  MusicFile,
-} from "@lyricova/components/gql/schema";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import React, { useCallback, useMemo } from "react";
 import { useNamedState } from "@/hooks/useNamedState";
 import { DataTableColumnHeader, NextComposedLink } from "@lyricova/components";
@@ -21,8 +19,8 @@ import { DataTable } from "@lyricova/components";
 import { NavHeader } from "../NavHeader";
 import { Eye, EyeOff, Pencil } from "lucide-react";
 
-const PENDING_REVIEW_FILES_QUERY = gql`
-  query {
+const PENDING_REVIEW_FILES_QUERY = graphql(`
+  query PendingReviewFiles {
     musicFiles(first: -1) {
       totalCount
       edges {
@@ -39,9 +37,13 @@ const PENDING_REVIEW_FILES_QUERY = gql`
       }
     }
   }
-`;
+`);
 
-const columns: ColumnDef<Partial<MusicFile>>[] = [
+type ReviewMusicFile = ResultOf<
+  typeof PENDING_REVIEW_FILES_QUERY
+>["musicFiles"]["edges"][number]["node"];
+
+const columns: ColumnDef<ReviewMusicFile>[] = [
   {
     id: "id",
     accessorKey: "id",
@@ -158,9 +160,7 @@ const columnVisibility = {
 };
 
 export default function Review() {
-  const needReviewQuery = useQuery<{ musicFiles: MusicFilesPagination }>(
-    PENDING_REVIEW_FILES_QUERY
-  );
+  const needReviewQuery = useQuery(PENDING_REVIEW_FILES_QUERY);
 
   const totalCount = needReviewQuery.data?.musicFiles.totalCount;
   const needReviewCount = needReviewQuery.data?.musicFiles.edges.filter(

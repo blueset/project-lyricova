@@ -4,13 +4,12 @@ import Player from "@/components/public/Player";
 import DetailsPanel from "@/components/public/DetailsPanel";
 import type { ReactNode, CSSProperties } from "react";
 import React, { useEffect, useRef, useCallback } from "react";
-import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
+import { useApolloClient, useLazyQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import type { Track } from "@/components/public/AppContext";
 import { AppContext } from "@/components/public/AppContext";
 import CurrentPlaylist from "@/components/public/CurrentPlaylist";
-import type { Texture } from "@lyricova/components/gql/schema";
 import { AuthContext } from "@lyricova/components";
-import type { DocumentNode } from "graphql";
 import store, {
   persistor,
   useAppDispatch,
@@ -36,7 +35,7 @@ interface Props {
   children: ReactNode;
 }
 
-const TEXTURE_QUERY = gql`
+const TEXTURE_QUERY = graphql(`
   query GetTexture {
     randomTexture {
       name
@@ -45,7 +44,7 @@ const TEXTURE_QUERY = gql`
       url
     }
   }
-` as DocumentNode;
+`);
 
 function getTrackCoverURL(track: Track): string {
   return `/api/files/${track.id}/cover`;
@@ -274,9 +273,7 @@ function IndexLayout({ children }: Props) {
   //   "textureURL"
   // );
   const textureURL = useAppSelector((state) => state.display.textureUrl);
-  const [loadRandomTexture, randomTextureQuery] = useLazyQuery<{
-    randomTexture: Texture;
-  }>(TEXTURE_QUERY);
+  const [loadRandomTexture, randomTextureQuery] = useLazyQuery(TEXTURE_QUERY);
 
   useEffect(() => {
     if (!currentSong?.hasCover) {
