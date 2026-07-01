@@ -130,23 +130,3 @@ export const MusicFileForPlaylistAttributesFragmentDoc = graphql(`
     hasLyrics
   }
 `);
-
-/**
- * @deprecated Transitional back-compat aliases for the Phase 1 (Sequelize/
- * TypeGraphQL -> Drizzle/Pothos) codegen migration. Operations that still
- * interpolate `${XFragments.Y}` into an Apollo `gql` document keep working via
- * these. New code should reference fragments **by name** (`...SelectSongEntry`)
- * inside `graphql()` operations and import the generated `*Fragment` types from
- * `@lyricova/components/gql`. Remove once no interpolation call sites remain.
- */
-export const SongFragments = { SelectSongEntry: SelectSongEntryFragmentDoc };
-export const ArtistFragments = {
-  SelectArtistEntry: SelectArtistEntryFragmentDoc,
-};
-export const AlbumFragments = {
-  SelectAlbumEntry: SelectAlbumEntryFragmentDoc,
-  FullAlbumEntry: FullAlbumEntryFragmentDoc,
-};
-export const MusicFileFragments = {
-  MusicFileForPlaylistAttributes: MusicFileForPlaylistAttributesFragmentDoc,
-};

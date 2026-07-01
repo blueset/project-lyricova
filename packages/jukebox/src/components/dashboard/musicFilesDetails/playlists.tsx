@@ -57,7 +57,7 @@ const SET_PLAYLISTS_MUTATION = gql`
 
 interface Props {
   fileId: number;
-  playlists: Playlist[];
+  playlists: Pick<Playlist, "name" | "slug">[];
   refresh: () => unknown | Promise<unknown>;
 }
 

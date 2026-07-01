@@ -1,13 +1,11 @@
 import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
-import type { MusicFile } from "@lyricova/components/gql/schema";
+import { graphql } from "@lyricova/components/gql";
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
 import InfoPanel from "./musicFilesDetails/info";
-import { SongFragments } from "@lyricova/components";
 import CoverArtPanel from "./musicFilesDetails/coverArt";
 import LyricsPanel from "./musicFilesDetails/lyrics";
 import PlaylistsPanel from "./musicFilesDetails/playlists";
-import type { DocumentNode } from "graphql";
 import StatsPanel from "./musicFilesDetails/stats";
 import { toast } from "sonner";
 import {
@@ -33,8 +31,8 @@ import {
   TabsTrigger,
 } from "@lyricova/components/components/ui/tabs";
 
-const SINGLE_FILE_DATA = gql`
-  query ($id: Int!) {
+const SINGLE_FILE_DATA = graphql(`
+  query DashboardMusicFileDetails($id: Int!) {
     musicFile(id: $id) {
       id
       path
@@ -69,9 +67,7 @@ const SINGLE_FILE_DATA = gql`
       }
     }
   }
-
-  ${SongFragments.SelectSongEntry}
-` as DocumentNode;
+`);
 
 const TOGGLE_NEED_REVIEW_MUTATION = gql`
   mutation ($fileId: Int!, $needReview: Boolean!) {
@@ -79,31 +75,7 @@ const TOGGLE_NEED_REVIEW_MUTATION = gql`
       needReview
     }
   }
-` as DocumentNode;
-
-type ExtendedMusicFile = Pick<
-  MusicFile,
-  | "id"
-  | "path"
-  | "trackName"
-  | "trackSortOrder"
-  | "artistName"
-  | "artistSortOrder"
-  | "albumName"
-  | "albumSortOrder"
-  | "songId"
-  | "hasCover"
-  | "song"
-  | "album"
-  | "duration"
-  | "playlists"
-  | "needReview"
-  | "playCount"
-  | "lastPlayed"
-> & {
-  lrcLyrics?: string;
-  lrcxLyrics?: string;
-};
+`;
 
 interface MusicFileDetailsProps {
   fileId?: number;
@@ -112,9 +84,9 @@ interface MusicFileDetailsProps {
 export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
   const apolloClient = useApolloClient();
 
-  const [getFile, fileData] = useLazyQuery<{
-    musicFile: ExtendedMusicFile;
-  }>(SINGLE_FILE_DATA, { variables: { id: fileId } });
+  const [getFile, fileData] = useLazyQuery(SINGLE_FILE_DATA, {
+    variables: { id: fileId },
+  });
 
   useEffect(() => {
     if (fileId != null) {

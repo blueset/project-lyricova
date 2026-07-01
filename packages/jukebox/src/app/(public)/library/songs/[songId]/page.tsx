@@ -1,10 +1,9 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { useParams } from "next/navigation";
 import {
-  MusicFileFragments,
-  SongFragments,
   formatArtists,
   Link,
   NextComposedLink,
@@ -13,9 +12,6 @@ import {
 import React, { Fragment } from "react";
 import _ from "lodash";
 import filesize from "filesize";
-import type { Song } from "@lyricova/components/gql/schema";
-import type { MusicFile } from "@lyricova/components/gql/schema";
-import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, playTrack, toggleShuffle } from "@/redux/public/playlist";
 import TrackListRow from "@/components/public/library/TrackListRow";
@@ -41,8 +37,8 @@ import {
 import { Separator } from "@lyricova/components/components/ui/separator";
 import { cn } from "@lyricova/components/utils";
 
-const SONG_QUERY = gql`
-  query ($id: Int!) {
+const SONG_QUERY = graphql(`
+  query LibrarySongDetails($id: Int!) {
     song(id: $id) {
       files {
         ...MusicFileForPlaylistAttributes
@@ -69,10 +65,7 @@ const SONG_QUERY = gql`
       }
     }
   }
-
-  ${SongFragments.SelectSongEntry}
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
+`);
 
 export default function LibrarySingleSong() {
   const { user } = useAuthContext();
@@ -80,7 +73,7 @@ export default function LibrarySingleSong() {
   const songId = parseInt(songIdString as string);
   const dispatch = useAppDispatch();
 
-  const query = useQuery<{ song: Song }>(SONG_QUERY, {
+  const query = useQuery(SONG_QUERY, {
     variables: { id: songId },
   });
 

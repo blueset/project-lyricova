@@ -1,21 +1,18 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
-import { AlbumFragments } from "@lyricova/components";
-import type { Album } from "@lyricova/components/gql/schema";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { useRouter, useParams } from "next/navigation";
 import { AlbumEntityDialog } from "@lyricova/components";
 import { useCallback } from "react";
 
-const ALBUM_ENTITY_QUERY = gql`
-  query ($id: Int!) {
+const ALBUM_ENTITY_QUERY = graphql(`
+  query DashboardAlbumEntity($id: Int!) {
     album(id: $id) {
       ...FullAlbumEntry
     }
   }
-
-  ${AlbumFragments.FullAlbumEntry}
-`;
+`);
 
 export default function AlbumEntitySingle() {
   const router = useRouter();
@@ -25,7 +22,7 @@ export default function AlbumEntitySingle() {
     router.push("/dashboard/albums");
   }, [router]);
 
-  const query = useQuery<{ album?: Album }>(ALBUM_ENTITY_QUERY, {
+  const query = useQuery(ALBUM_ENTITY_QUERY, {
     variables: { id },
   });
   let isOpen = false;

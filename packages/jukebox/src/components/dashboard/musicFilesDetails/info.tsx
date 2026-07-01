@@ -1,15 +1,14 @@
 "use client";
 
 import { gql, useApolloClient } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import type { Song as SongModel } from "@lyricova/components/gql/schema";
 import type { Album } from "@lyricova/components/gql/schema";
 import {
   SelectSongEntityBox,
   TransliterationAdornment,
-  AlbumFragments,
 } from "@lyricova/components";
 import * as z from "zod";
-import type { DocumentNode } from "graphql";
 import { toast } from "sonner";
 import { useNamedState } from "../../../hooks/useNamedState";
 import { useForm } from "react-hook-form";
@@ -56,27 +55,23 @@ const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
       trackName
     }
   }
-` as DocumentNode;
+`;
 
-const IMPORT_ALBUM_MUTATION = gql`
-  mutation ($id: Int!) {
+const IMPORT_ALBUM_MUTATION = graphql(`
+  mutation DashboardImportAlbumFromVocaDB($id: Int!) {
     enrolAlbumFromVocaDB(albumId: $id) {
       ...SelectAlbumEntry
     }
   }
+`);
 
-  ${AlbumFragments.SelectAlbumEntry}
-` as DocumentNode;
-
-const IMPORT_ALBUM_UTAITE_DB_MUTATION = gql`
-  mutation ($id: Int!) {
+const IMPORT_ALBUM_UTAITE_DB_MUTATION = graphql(`
+  mutation DashboardImportAlbumFromUtaiteDB($id: Int!) {
     enrolAlbumFromUtaiteDB(albumId: $id) {
       ...SelectAlbumEntry
     }
   }
-
-  ${AlbumFragments.SelectAlbumEntry}
-` as DocumentNode;
+`);
 
 type Song = Pick<SongModel, "id" | "name" | "sortOrder"> & {
   albums: Pick<

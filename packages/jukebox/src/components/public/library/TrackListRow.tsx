@@ -7,8 +7,7 @@ import {
   NextComposedLink,
 } from "@lyricova/components";
 import { MoreVertical } from "lucide-react";
-import type { MusicFile } from "@lyricova/components/gql/schema";
-import type { Song } from "@lyricova/components/gql/schema";
+import type { Track } from "@/redux/public/playlist";
 import ListItemTextWithTime from "./ListItemTextWithTime";
 import {
   playTrack,
@@ -27,9 +26,14 @@ import { cn } from "@lyricova/components/utils";
 import { Separator } from "@lyricova/components/components/ui/separator";
 
 interface Props {
-  song: Song | null;
-  file: MusicFile | null;
-  files: MusicFile[];
+  song: {
+    id: number;
+    name: string;
+    artists?: Parameters<typeof formatArtistsPlainText>[0] | null;
+    SongInAlbum?: { trackNumber?: number | null } | null;
+  } | null;
+  file: (Track & { album?: { name?: string | null } | null }) | null;
+  files: Track[];
   showAlbum?: boolean;
 }
 
@@ -66,7 +70,7 @@ export default function TrackListRow({ song, file, files, showAlbum }: Props) {
             secondary={
               <>
                 {(song
-                  ? formatArtistsPlainText(song.artists)
+                  ? formatArtistsPlainText(song.artists ?? [])
                   : file.artistName) || <em>Various Artists</em>}
                 {showAlbum && file && (
                   <>

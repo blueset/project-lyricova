@@ -18,21 +18,19 @@ import {
 } from "@lyricova/components/components/ui/tooltip";
 import { cn } from "@lyricova/components/utils";
 import AutoResizer from "react-virtualized-auto-sizer";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import {
   Link,
-  MusicFileFragments,
   NextComposedLink,
   useAuthContext,
 } from "@lyricova/components";
-import type { MusicFilesPagination } from "@lyricova/components/gql/schema";
 import React, { useCallback, useMemo, useRef } from "react";
-import type { MusicFile } from "@lyricova/components/gql/schema";
+import type { GetMusicFilesQuery } from "@lyricova/components/gql/graphql";
 import _ from "lodash";
 import { useNamedState } from "@/hooks/useNamedState";
 import { useRouter } from "next/navigation";
 import ListItemTextWithTime from "@/components/public/library/ListItemTextWithTime";
-import type { DocumentNode } from "graphql";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAppDispatch } from "@/redux/public/store";
 import {
@@ -47,7 +45,7 @@ import {
 } from "@lyricova/components/components/ui/alert";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
-const MUSIC_FILES_COUNT_QUERY = gql`
+const MUSIC_FILES_COUNT_QUERY = graphql(`
   query GetMusicFiles {
     musicFiles(first: -1) {
       edges {
@@ -57,9 +55,7 @@ const MUSIC_FILES_COUNT_QUERY = gql`
       }
     }
   }
-
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
+`);
 
 const ITEM_HEIGHT = 60;
 
@@ -74,7 +70,7 @@ const Row = React.memo(
     height: number;
     index: number;
     start: number;
-    data: MusicFile[];
+    data: GetMusicFilesQuery["musicFiles"]["edges"][number]["node"][];
     isScrolling: boolean;
   }) => {
     const item = index == 0 ? null : data[index - 1];
@@ -196,16 +192,14 @@ const Row = React.memo(
 Row.displayName = "Row";
 
 export default function LibraryTracks() {
-  const query = useQuery<{ musicFiles: MusicFilesPagination }>(
-    MUSIC_FILES_COUNT_QUERY
-  );
+  const query = useQuery(MUSIC_FILES_COUNT_QUERY);
   const parentRef = useRef<HTMLDivElement>(null);
 
-  const entries = useMemo<MusicFile[]>(() => {
+  const entries = useMemo<GetMusicFilesQuery["musicFiles"]["edges"][number]["node"][]>(() => {
     if (query.data) {
-      return _.sortBy<MusicFile>(
+      return _.sortBy(
         query.data.musicFiles.edges.map((v) => v.node),
-        (n: MusicFile) => n?.trackSortOrder?.toLocaleLowerCase()
+        (n) => n?.trackSortOrder?.toLocaleLowerCase()
       );
     } else {
       return [];
