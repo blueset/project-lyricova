@@ -45,6 +45,11 @@ type SongRow = typeof Songs.$inferSelect;
 type ArtistRow = typeof Artists.$inferSelect;
 type AlbumRow = typeof Albums.$inferSelect;
 
+// The VocaDB/UtaiteDB API contracts type these as plain strings, so narrow them
+// to the columns' enum unions when inserting (instead of a blanket `as any`).
+type ArtistTypeInsert = (typeof Artists.$inferInsert)["type"];
+type AoaCategoriesInsert = (typeof ArtistOfAlbums.$inferInsert)["categories"];
+
 async function transliterate(text: string): Promise<string> {
   const mod = await import("./transliterate.js");
   return mod.transliterate(text);
@@ -96,7 +101,7 @@ async function artistFromVocaDBContract(
     id: artist.id,
     name: artist.name,
     sortOrder: await transliterate(artist.name),
-    type: artist.artistType as any,
+    type: artist.artistType as ArtistTypeInsert,
     incomplete: true,
     creationDate: now,
     updatedOn: now,
@@ -114,9 +119,9 @@ export async function saveArtistFromVocaDB(
   const values = {
     name: entity.name,
     sortOrder: await transliterate(entity.name),
-    vocaDbJson: entity as any,
+    vocaDbJson: entity,
     mainPictureUrl: entity.mainPicture?.urlOriginal,
-    type: entity.artistType as any,
+    type: entity.artistType as ArtistTypeInsert,
     incomplete: false,
   };
   await db
@@ -156,7 +161,7 @@ async function artistFromUtaiteDBContract(
     id: dbId,
     name: entity.name,
     sortOrder: await transliterate(entity.name),
-    type: entity.artistType as any,
+    type: entity.artistType as ArtistTypeInsert,
     utaiteDbId: entity.id,
     incomplete: true,
     creationDate: now,
@@ -181,9 +186,9 @@ export async function saveArtistFromUtaiteDB(
   const values = {
     name: entity.name,
     sortOrder: await transliterate(entity.name),
-    vocaDbJson: entity as any,
+    vocaDbJson: entity,
     mainPictureUrl: entity.mainPicture?.urlOriginal,
-    type: entity.artistType as any,
+    type: entity.artistType as ArtistTypeInsert,
     utaiteDbId: entity.id,
     incomplete: false,
   };
@@ -263,7 +268,7 @@ export async function saveAlbumFromVocaDB(
   const values = {
     name: entity.name,
     sortOrder: await transliterate(entity.name),
-    vocaDbJson: entity as any,
+    vocaDbJson: entity,
     coverUrl: entity.mainPicture?.urlOriginal,
     incomplete: false,
   };
@@ -310,7 +315,7 @@ export async function saveAlbumFromUtaiteDB(
   const values = {
     name: entity.name,
     sortOrder: await transliterate(entity.name),
-    vocaDbJson: entity as any,
+    vocaDbJson: entity,
     coverUrl: entity.mainPicture?.urlOriginal,
     utaiteDbId: entity.id,
     incomplete: false,
@@ -374,7 +379,7 @@ export async function saveSongFromVocaDB(
   const values = {
     name: entity.name,
     sortOrder: await transliterate(entity.name),
-    vocaDbJson: entity as any,
+    vocaDbJson: entity,
     coverUrl: selectPreferredThumbUrl(entity),
     incomplete: intermediate,
   };
@@ -425,7 +430,7 @@ export async function saveSongFromUtaiteDB(
   const values = {
     name: entity.name,
     sortOrder: await transliterate(entity.name),
-    vocaDbJson: entity as any,
+    vocaDbJson: entity,
     coverUrl: selectPreferredThumbUrl(entity),
     utaiteDbId: entity.id,
     incomplete: intermediate,
@@ -659,7 +664,7 @@ async function setArtistsOfAlbum(
       artistId: e.artistId,
       effectiveRoles: serializeEnumArray(e.effectiveRoles),
       roles: serializeEnumArray(e.roles),
-      categories: e.categories as any,
+      categories: e.categories as AoaCategoriesInsert,
       creationDate: now,
       updatedOn: now,
     }))

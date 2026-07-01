@@ -113,7 +113,7 @@ builder.mutationField("newAlbum", (t) =>
         await db.insert(ArtistOfAlbums).values({
           albumId: id,
           artistId: v.artistId,
-          categories: v.categories as any,
+          categories: v.categories as (typeof ArtistOfAlbums.$inferInsert)["categories"],
           roles: serializeEnumArray(v.roles),
           effectiveRoles: serializeEnumArray(v.effectiveRoles),
           creationDate: now,
@@ -165,7 +165,7 @@ builder.mutationField("updateAlbum", (t) =>
         await db.insert(ArtistOfAlbums).values({
           albumId: id,
           artistId: v.artistId,
-          categories: v.categories as any,
+          categories: v.categories as (typeof ArtistOfAlbums.$inferInsert)["categories"],
           roles: serializeEnumArray(v.roles),
           effectiveRoles: serializeEnumArray(v.effectiveRoles),
           creationDate: now,

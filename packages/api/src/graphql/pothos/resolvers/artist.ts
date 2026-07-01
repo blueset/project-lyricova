@@ -82,7 +82,7 @@ builder.queryField("artistsHasFiles", (t) =>
     resolve: async (_root, { types }) =>
       db.query.Artists.findMany({
         orderBy: (a, { asc }) => [asc(a.sortOrder)],
-        where: and(inArray(Artists.type, types as any), FILES_FOR_ARTIST),
+        where: and(inArray(Artists.type, types as NonNullable<(typeof Artists.$inferInsert)["type"]>[]), FILES_FOR_ARTIST),
       }) as any,
   })
 );
@@ -130,7 +130,7 @@ builder.mutationField("newArtist", (t) =>
         name: data.name,
         sortOrder: data.sortOrder,
         mainPictureUrl: data.mainPictureUrl ?? null,
-        type: data.type as any,
+        type: data.type as (typeof Artists.$inferInsert)["type"],
         incomplete: false,
         creationDate: now,
         updatedOn: now,
@@ -160,7 +160,7 @@ builder.mutationField("updateArtist", (t) =>
           name: data.name,
           sortOrder: data.sortOrder,
           mainPictureUrl: data.mainPictureUrl ?? null,
-          type: data.type as any,
+          type: data.type as (typeof Artists.$inferInsert)["type"],
           updatedOn: new Date(),
         })
         .where(eq(Artists.id, id));
