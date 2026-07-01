@@ -3,6 +3,9 @@
 import "reflect-metadata";
 import express from "express";
 import bodyParser from "body-parser";
+// Initialize the Sequelize models for any not-yet-migrated controllers. Once all
+// controllers are on Drizzle this import (and db.ts) can be dropped.
+import "../dist/db.js";
 import routesModule from "../dist/routes.js";
 const registerRoutes = routesModule.default ?? routesModule;
 

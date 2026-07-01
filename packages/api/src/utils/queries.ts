@@ -51,9 +51,16 @@ export function mapEntryListing(e: Record<string, any>): Record<string, any> {
   };
 }
 
-/** Fetch entries (by id, preserving the given order) in the listing shape. */
+/**
+ * Fetch entries (by id, preserving the given order) in the listing shape.
+ *
+ * `pulseOrder` mirrors the incidental order the legacy Sequelize eager-load
+ * returned pulses in: paginated callers (with a LIMIT subquery) got id-DESC,
+ * un-paginated `findAll` callers (search / versesBySong) got id-ASC.
+ */
 export async function fetchEntriesListing(
-  entryIds: number[]
+  entryIds: number[],
+  pulseOrder: "asc" | "desc" = "desc"
 ): Promise<Record<string, any>[]> {
   if (!entryIds.length) return [];
   const rows = await db.query.Entries.findMany({
@@ -66,7 +73,8 @@ export async function fetchEntriesListing(
       },
       pulses: {
         columns: { creationDate: true },
-        orderBy: (p: any, { desc }: any) => desc(p.id),
+        orderBy: (p: any, ops: any) =>
+          pulseOrder === "asc" ? ops.asc(p.id) : ops.desc(p.id),
       },
       tagOfEntries: {
         columns: {},
