@@ -1,6 +1,6 @@
-import { Song } from "../models/Song";
-import { Artist } from "../models/Artist";
-import { Album } from "../models/Album";
+import { eq } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { Songs, Artists, Albums } from "../drizzle/schema";
 import {
   getAlbum,
   getArtist,
@@ -14,114 +14,131 @@ import {
   getUtaiteDbBaseVoiceBank,
   getUtaiteDbOriginalSong,
 } from "./vocadb";
+import {
+  saveSongFromVocaDB,
+  saveSongFromUtaiteDB,
+  saveArtistFromVocaDB,
+  saveArtistFromUtaiteDB,
+  saveAlbumFromVocaDB,
+  saveAlbumFromUtaiteDB,
+} from "./vocadbImport";
+
+type SongRow = typeof Songs.$inferSelect;
+type ArtistRow = typeof Artists.$inferSelect;
+type AlbumRow = typeof Albums.$inferSelect;
 
 /**
  * Insert-or-update import logic for songs/artists/albums from VocaDB and
- * UtaiteDB. Extracted from the GraphQL resolver so it is shared between the
- * TypeGraphQL `VocaDBImportResolver` and the Pothos `enrol*` mutations during
- * the migration. The actual persistence lives in the model static methods
- * (`saveFromVocaDBEntity` / `saveFromUtaiteDBEntity`).
+ * UtaiteDB. Shared between the Pothos `enrol*` mutations and the REST
+ * VocaDBImportController. Persistence lives in utils/vocadbImport.ts (Drizzle).
  */
 
-export async function enrolSongFromVocaDB(songId: number): Promise<Song> {
+export async function enrolSongFromVocaDB(songId: number): Promise<SongRow> {
   const song = await getSong(songId);
   const originalSong = await getOriginalSong(song);
-  let originalSongEntity: Song | null = null;
+  let originalSongEntity: SongRow | null = null;
   if (originalSong !== null) {
-    originalSongEntity = await Song.saveFromVocaDBEntity(originalSong, null);
+    originalSongEntity = await saveSongFromVocaDB(originalSong, null);
   }
-  return await Song.saveFromVocaDBEntity(song, originalSongEntity);
+  return (await saveSongFromVocaDB(song, originalSongEntity)) as SongRow;
 }
 
-export async function enrolArtistFromVocaDB(artistId: number): Promise<Artist> {
+export async function enrolArtistFromVocaDB(
+  artistId: number
+): Promise<ArtistRow> {
   const artist = await getArtist(artistId);
   const baseVoicebank = await getBaseVoiceBank(artist);
-  let baseVoicebankEntity: Artist | null = null;
+  let baseVoicebankEntity: ArtistRow | null = null;
   if (baseVoicebank !== null) {
-    baseVoicebankEntity = await Artist.saveFromVocaDBEntity(baseVoicebank, null);
+    baseVoicebankEntity = await saveArtistFromVocaDB(baseVoicebank, null);
   }
-  return await Artist.saveFromVocaDBEntity(artist, baseVoicebankEntity);
+  return (await saveArtistFromVocaDB(artist, baseVoicebankEntity)) as ArtistRow;
 }
 
-export async function enrolAlbumFromVocaDB(albumId: number): Promise<Album> {
+export async function enrolAlbumFromVocaDB(albumId: number): Promise<AlbumRow> {
   const album = await getAlbum(albumId);
-  return await Album.saveFromVocaDBEntity(album);
+  return (await saveAlbumFromVocaDB(album)) as AlbumRow;
 }
 
-export async function enrolSongFromUtaiteDB(songId: number): Promise<Song> {
+export async function enrolSongFromUtaiteDB(songId: number): Promise<SongRow> {
   const song = await getUtaiteDbSong(songId);
 
   const vocaDbId = getVocaDbId(song);
   if (vocaDbId !== undefined) {
     const vocaSong = await enrolSongFromVocaDB(vocaDbId);
-    await Song.update({ utaiteDbId: songId }, { where: { id: vocaSong.id } });
+    await db
+      .update(Songs)
+      .set({ utaiteDbId: songId })
+      .where(eq(Songs.id, vocaSong.id));
     vocaSong.utaiteDbId = songId;
     return vocaSong;
   }
 
   const originalSong = await getUtaiteDbOriginalSong(song);
-  let originalSongEntity: Song | null = null;
+  let originalSongEntity: SongRow | null = null;
   if (originalSong !== null) {
     const originalSongVocaDbId = getVocaDbId(originalSong);
     if (originalSongVocaDbId !== undefined) {
       originalSongEntity = await enrolSongFromVocaDB(originalSongVocaDbId);
-      await Song.update(
-        { utaiteDbId: originalSong.id },
-        { where: { id: originalSongEntity.id } }
-      );
+      await db
+        .update(Songs)
+        .set({ utaiteDbId: originalSong.id })
+        .where(eq(Songs.id, originalSongEntity.id));
     } else {
-      originalSongEntity = await Song.saveFromUtaiteDBEntity(originalSong, null);
+      originalSongEntity = await saveSongFromUtaiteDB(originalSong, null);
     }
   }
-  return await Song.saveFromUtaiteDBEntity(song, originalSongEntity);
+  return (await saveSongFromUtaiteDB(song, originalSongEntity)) as SongRow;
 }
 
 export async function enrolArtistFromUtaiteDB(
   artistId: number
-): Promise<Artist> {
+): Promise<ArtistRow> {
   const artist = await getUtaiteDbArtist(artistId);
 
   const vocaDbId = getVocaDbId(artist);
   if (vocaDbId !== undefined) {
     const vocaArtist = await enrolArtistFromVocaDB(vocaDbId);
-    await Artist.update(
-      { utaiteDbId: artistId },
-      { where: { id: vocaArtist.id } }
-    );
+    await db
+      .update(Artists)
+      .set({ utaiteDbId: artistId })
+      .where(eq(Artists.id, vocaArtist.id));
     vocaArtist.utaiteDbId = artistId;
     return vocaArtist;
   }
 
   const baseVoicebank = await getUtaiteDbBaseVoiceBank(artist);
-  let baseVoicebankEntity: Artist | null = null;
+  let baseVoicebankEntity: ArtistRow | null = null;
   if (baseVoicebank !== null) {
     const baseVoicebankId = getVocaDbId(baseVoicebank);
     if (baseVoicebankId !== undefined) {
       baseVoicebankEntity = await enrolArtistFromVocaDB(baseVoicebankId);
-      await Artist.update(
-        { utaiteDbId: baseVoicebank.id },
-        { where: { id: baseVoicebankEntity.id } }
-      );
+      await db
+        .update(Artists)
+        .set({ utaiteDbId: baseVoicebank.id })
+        .where(eq(Artists.id, baseVoicebankEntity.id));
     } else {
-      baseVoicebankEntity = await Artist.saveFromUtaiteDBEntity(
-        baseVoicebank,
-        null
-      );
+      baseVoicebankEntity = await saveArtistFromUtaiteDB(baseVoicebank, null);
     }
   }
-  return await Artist.saveFromUtaiteDBEntity(artist, baseVoicebankEntity);
+  return (await saveArtistFromUtaiteDB(
+    artist,
+    baseVoicebankEntity
+  )) as ArtistRow;
 }
 
-export async function enrolAlbumFromUtaiteDB(albumId: number): Promise<Album> {
+export async function enrolAlbumFromUtaiteDB(
+  albumId: number
+): Promise<AlbumRow> {
   const album = await getUtaiteDbAlbum(albumId);
 
   const vocaDbId = getVocaDbId(album);
   if (vocaDbId !== undefined) {
     const vocaAlbum = await enrolAlbumFromVocaDB(vocaDbId);
-    await Album.update(
-      { utaiteDbId: albumId },
-      { where: { id: vocaAlbum.id } }
-    );
+    await db
+      .update(Albums)
+      .set({ utaiteDbId: albumId })
+      .where(eq(Albums.id, vocaAlbum.id));
     vocaAlbum.utaiteDbId = albumId;
     return vocaAlbum;
   }
@@ -132,7 +149,7 @@ export async function enrolAlbumFromUtaiteDB(albumId: number): Promise<Album> {
         ?.filter((track) => !!track?.song?.id)
         ?.map((track) => enrolSongFromUtaiteDB(track.song.id)) ?? []
     )
-  ).filter((t): t is Song => !!t);
+  ).filter((t): t is SongRow => !!t);
 
-  return await Album.saveFromUtaiteDBEntity(album, tracks);
+  return (await saveAlbumFromUtaiteDB(album, tracks)) as AlbumRow;
 }

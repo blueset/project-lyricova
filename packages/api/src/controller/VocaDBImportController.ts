@@ -1,10 +1,13 @@
-import { Song } from "../models/Song";
 import type { Request, Response, NextFunction } from "express";
 import { Router } from "express";
 import type { SongForApiContract } from "../types/vocadb";
 import type { AxiosInstance } from "axios";
 import axios from "axios";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
+import { saveSongFromVocaDB } from "../utils/vocadbImport";
+import { Songs } from "../drizzle/schema";
+
+type SongRow = typeof Songs.$inferSelect;
 
 export class VocaDBImportController {
   private axios: AxiosInstance;
@@ -58,19 +61,13 @@ export class VocaDBImportController {
       const song = await this.getSong(songId);
       // Recursively get original song
       const originalSong = await this.getOriginalSong(song);
-      let originalSongEntity: Song | null = null;
+      let originalSongEntity: SongRow | null = null;
 
       if (originalSong !== null) {
-        originalSongEntity = await Song.saveFromVocaDBEntity(
-          originalSong,
-          null
-        );
+        originalSongEntity = await saveSongFromVocaDB(originalSong, null);
       }
       console.dir(originalSongEntity);
-      const songEntity = await Song.saveFromVocaDBEntity(
-        song,
-        originalSongEntity
-      );
+      const songEntity = await saveSongFromVocaDB(song, originalSongEntity);
 
       res.json({ status: "OK", data: songEntity });
     } catch (e) {
