@@ -1,15 +1,14 @@
 import { NextFunction, Router, Request, Response } from "express";
-import { MusicFile } from "../models/MusicFile";
-import { Song } from "../models/Song";
-import { swapExt } from "../utils/path";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { promises as fs } from "node:fs";
 import { Lyrics } from "lyrics-kit/core";
+import { db } from "../drizzle/client";
+import { Songs, SongOfEntries, Entries } from "../drizzle/schema";
+import { parseEnumArray } from "../drizzle/enumArray";
+import { fullPathOf } from "../utils/musicFileScan";
+import { swapExt } from "../utils/path";
 import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
-import { Artist } from "../models/Artist";
-import { Album } from "../models/Album";
-import { SongOfEntry } from "../models/SongOfEntry";
-import { entryListingCondition } from "../utils/queries";
-import { Entry } from "../models/Entry";
+import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
 import { entriesPerPage } from "../utils/consts";
 
 export class SongController {
@@ -79,30 +78,53 @@ export class SongController {
    */
   public getSong = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const song = await Song.findByPk(parseInt(req.params.songId), {
-        include: [
-          {
-            model: Artist,
-            as: "artists",
-            attributes: { exclude: ["vocaDbJson"] },
+      const song: any = await db.query.Songs.findFirst({
+        where: and(
+          eq(Songs.id, parseInt(req.params.songId)),
+          isNull(Songs.deletionDate)
+        ),
+        columns: { vocaDbJson: false },
+        with: {
+          artistOfSongs: {
+            with: { artist: { columns: { vocaDbJson: false } } },
           },
-          {
-            model: Album,
-            as: "albums",
-            attributes: { exclude: ["vocaDbJson"] },
+          songInAlbums: {
+            with: { album: { columns: { vocaDbJson: false } } },
           },
-          {
-            model: MusicFile,
-            as: "files",
-            attributes: { exclude: ["fullPath", "path"] },
-          },
-        ],
-        attributes: { exclude: ["vocaDbJson"] },
+          files: { columns: { path: false } },
+        },
       });
       if (!song) {
         return res.status(404).json({ status: 404, message: "Song not found" });
       }
-      res.json(song);
+
+      const { artistOfSongs, songInAlbums, files, ...songCols } = song;
+      const artists = (artistOfSongs ?? [])
+        .filter((a: any) => a.artist && !a.artist.deletionDate)
+        .map((a: any) => {
+          const { artist, ...junction } = a;
+          return {
+            ...artist,
+            ArtistOfSong: {
+              ...junction,
+              artistRoles: parseEnumArray(junction.artistRoles),
+              categories: parseEnumArray(junction.categories),
+            },
+          };
+        })
+        .sort((x: any, y: any) => x.id - y.id);
+      const albums = (songInAlbums ?? [])
+        .filter((a: any) => a.album && !a.album.deletionDate)
+        .map((a: any) => {
+          const { album, ...junction } = a;
+          return { ...album, SongInAlbum: junction };
+        })
+        .sort((x: any, y: any) => x.id - y.id);
+      const filesSorted = [...(files ?? [])].sort(
+        (x: any, y: any) => x.id - y.id
+      );
+
+      res.json({ ...songCols, artists, albums, files: filesSorted });
     } catch (e) {
       console.error(e);
       next(e);
@@ -157,20 +179,26 @@ export class SongController {
     next: NextFunction
   ) => {
     try {
-      const song = await Song.findByPk(parseInt(req.params.songId), {
-        include: ["files"],
+      const song: any = await db.query.Songs.findFirst({
+        where: and(
+          eq(Songs.id, parseInt(req.params.songId)),
+          isNull(Songs.deletionDate)
+        ),
+        columns: { id: true },
+        with: { files: { columns: { path: true } } },
       });
       if (!song) {
         return res.status(404).json({ status: 404, message: "Song not found" });
       }
       const lyrics = (
         await Promise.all(
-          song.files.map(async (f) => {
-            const lrcxPath = swapExt(f.fullPath, "lrcx");
+          song.files.map(async (f: any) => {
+            const fullPath = fullPathOf(f.path);
+            const lrcxPath = swapExt(fullPath, "lrcx");
             if (await fs.stat(lrcxPath)) {
               return fs.readFile(lrcxPath, "utf8");
             }
-            const lrcPath = swapExt(f.fullPath, "lrc");
+            const lrcPath = swapExt(fullPath, "lrc");
             if (await fs.stat(lrcPath)) {
               return fs.readFile(lrcPath, "utf8");
             }
@@ -253,24 +281,62 @@ export class SongController {
     try {
       const songId = parseInt(req.params.songId);
       const page = parseInt(req.query.page as string) || 1;
-      const song = (await Song.findByPk(songId, {
-        attributes: ["id", "name"],
-      })) as Song;
+      const song = await db.query.Songs.findFirst({
+        where: and(eq(Songs.id, songId), isNull(Songs.deletionDate)),
+        columns: { id: true, name: true },
+      });
       if (!song) {
         return res.status(404).json({ status: 404, message: "Song not found" });
       }
-      const totalEntries = await SongOfEntry.count({
-        where: { songId: songId },
-      });
+      const totalEntries = await db.$count(
+        SongOfEntries,
+        eq(SongOfEntries.songId, songId)
+      );
       if (totalEntries < 1) {
         return res.status(404).json({ status: 404, message: "Song not found" });
       }
-      const entries = (await song.$get("lyricovaEntries", {
-        ...entryListingCondition,
-        order: [["recentActionDate", "DESC"]],
-        limit: entriesPerPage,
-        offset: (page - 1) * entriesPerPage,
-      })) as Entry[];
+
+      const junctionRows = await db
+        .select({
+          entryId: Entries.id,
+          soeId: SongOfEntries.id,
+          soeSongId: SongOfEntries.songId,
+          soeEntryId: SongOfEntries.entryId,
+          soeCreationDate: SongOfEntries.creationDate,
+          soeUpdatedOn: SongOfEntries.updatedOn,
+        })
+        .from(SongOfEntries)
+        .innerJoin(Entries, eq(Entries.id, SongOfEntries.entryId))
+        .where(
+          and(
+            eq(SongOfEntries.songId, songId),
+            isNull(Entries.deletionDate),
+            entryHasMainVerse
+          )
+        )
+        .orderBy(desc(Entries.recentActionDate))
+        .limit(entriesPerPage)
+        .offset((page - 1) * entriesPerPage);
+
+      const listing = await fetchEntriesListing(
+        junctionRows.map((r) => r.entryId)
+      );
+      const throughByEntry = new Map(
+        junctionRows.map((r) => [
+          r.entryId,
+          {
+            id: r.soeId,
+            songId: r.soeSongId,
+            entryId: r.soeEntryId,
+            creationDate: r.soeCreationDate,
+            updatedOn: r.soeUpdatedOn,
+          },
+        ])
+      );
+      const entries = listing.map((e) => ({
+        ...e,
+        SongOfEntry: throughByEntry.get(e.id),
+      }));
 
       res.json({
         totalEntries,

@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../drizzle/client";
 import { Tags, TagOfEntries, Entries } from "../drizzle/schema";
-import { fetchEntriesListing } from "../utils/queries";
+import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
 import { entriesPerPage } from "../utils/consts";
 
 export class TagsController {
@@ -143,7 +143,13 @@ export class TagsController {
       })
       .from(TagOfEntries)
       .innerJoin(Entries, eq(Entries.id, TagOfEntries.entryId))
-      .where(eq(TagOfEntries.tagId, tag.slug))
+      .where(
+        and(
+          eq(TagOfEntries.tagId, tag.slug),
+          isNull(Entries.deletionDate),
+          entryHasMainVerse
+        )
+      )
       .orderBy(desc(Entries.recentActionDate))
       .limit(entriesPerPage)
       .offset((page - 1) * entriesPerPage);
