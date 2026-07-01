@@ -9,7 +9,6 @@ import type { ResultOf } from "@graphql-typed-document-node/core";
 import { NextComposedLink } from "@lyricova/components";
 import { formatTime } from "../../frontendUtils/strings";
 import filesize from "filesize";
-import type { DocumentNode } from "graphql";
 import { cn } from "@lyricova/components/utils";
 import { Avatar, AvatarImage } from "@lyricova/components/components/ui/avatar";
 import { Button } from "@lyricova/components/components/ui/button";

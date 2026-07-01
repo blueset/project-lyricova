@@ -7,7 +7,6 @@ import type { ResultOf } from "@graphql-typed-document-node/core";
 import React from "react";
 import { SquareUserRound } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";
-import type { DocumentNode } from "graphql";
 import {
   Alert,
   AlertDescription,
