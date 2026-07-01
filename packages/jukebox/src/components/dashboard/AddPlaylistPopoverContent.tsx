@@ -3,8 +3,8 @@
 import { useForm } from "react-hook-form";
 import PlaylistAvatar from "../PlaylistAvatar";
 import { SlugifyAdornment } from "@lyricova/components";
-import type { DocumentNode } from "@apollo/client";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { toast } from "sonner";
 import {
   Form,
@@ -22,14 +22,14 @@ import { Button } from "@lyricova/components/components/ui/button";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Check, X } from "lucide-react";
 
-const NEW_PLAYLIST_MUTATION = gql`
-  mutation ($name: String!, $slug: String!) {
+const NEW_PLAYLIST_MUTATION = graphql(`
+  mutation NewPlaylist($name: String!, $slug: String!) {
     newPlaylist(data: { name: $name, slug: $slug }) {
       name
       slug
     }
   }
-` as DocumentNode;
+`);
 
 interface FormValues {
   name: string;

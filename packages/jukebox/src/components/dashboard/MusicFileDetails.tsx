@@ -1,4 +1,4 @@
-import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
+import { useApolloClient, useLazyQuery } from "@apollo/client";
 import { graphql } from "@lyricova/components/gql";
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
@@ -69,13 +69,13 @@ const SINGLE_FILE_DATA = graphql(`
   }
 `);
 
-const TOGGLE_NEED_REVIEW_MUTATION = gql`
-  mutation ($fileId: Int!, $needReview: Boolean!) {
+const TOGGLE_NEED_REVIEW_MUTATION = graphql(`
+  mutation ToggleNeedReview($fileId: Int!, $needReview: Boolean!) {
     toggleMusicFileReviewStatus(fileId: $fileId, needReview: $needReview) {
       needReview
     }
   }
-`;
+`);
 
 interface MusicFileDetailsProps {
   fileId?: number;
