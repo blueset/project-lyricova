@@ -7,13 +7,17 @@ import WebAuthnStrategy, {
   SessionChallengeStore,
 } from "passport-fido2-webauthn";
 import jwt from "jsonwebtoken";
-import { User } from "../models/User";
+import bcrypt from "bcryptjs";
+import { and, eq, isNull } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { Users, UserPublicKeyCredentials } from "../drizzle/schema";
 import { JWT_SECRET } from "../utils/secret";
 import cors from "cors";
 import { VerifiedFunction } from "passport-fido2-webauthn";
-import { UserPublicKeyCredential } from "../models/UserPublicKeyCredential";
 import base64url from "base64url";
 import { v4 as uuid } from "uuid";
+
+type User = typeof Users.$inferSelect;
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -27,7 +31,8 @@ declare global {
 const JWT_ISSUER = "lyricova";
 const store = new SessionChallengeStore();
 
-interface WebAuthnEnrolPayload extends User {
+interface WebAuthnEnrolPayload {
+  id: number | string;
   remarks?: string;
 }
 
@@ -81,7 +86,7 @@ export class AuthController {
         }
         let handle = Buffer.alloc(16);
         handle = uuid({}, handle);
-        const userObj = (req.user as unknown as User).toJSON();
+        const userObj = req.user as any;
         const user = {
           id: userObj.id.toString(),
           name: userObj.username.toString(),
@@ -144,8 +149,14 @@ export class AuthController {
           ) => void
         ) => {
           try {
-            const user = await User.findOne({ where: { username: username } });
-            if (user !== null && (await user.checkPassword(password))) {
+            const user = await db.query.Users.findFirst({
+              where: and(eq(Users.username, username), isNull(Users.deletionDate)),
+            });
+            if (
+              user != null &&
+              user.password != null &&
+              (await bcrypt.compare(password, user.password))
+            ) {
               return done(null, user);
             }
             return done(null, false, {
@@ -166,11 +177,13 @@ export class AuthController {
 
     passport.deserializeUser(
       async (id: string, done: (err: any, user?: Express.User) => void) => {
-        const user = await User.findByPk(parseInt(id));
-        if (user === null) {
+        const user = await db.query.Users.findFirst({
+          where: and(eq(Users.id, parseInt(id)), isNull(Users.deletionDate)),
+        });
+        if (!user) {
           return done("User not found");
         }
-        done(null, user);
+        done(null, user as unknown as Express.User);
       }
     );
     // #endregion
@@ -188,8 +201,10 @@ export class AuthController {
           done: (err: any, user: User | false) => void
         ) => {
           try {
-            const user = await User.findByPk(payload.id);
-            if (user === null) {
+            const user = await db.query.Users.findFirst({
+              where: and(eq(Users.id, payload.id), isNull(Users.deletionDate)),
+            });
+            if (!user) {
               return done(null, false);
             }
             return done(null, user);
@@ -210,9 +225,9 @@ export class AuthController {
           userHandle: Buffer,
           cb: VerifiedFunction
         ) => {
-          const cred = await UserPublicKeyCredential.findOne({
-            where: { externalId: id },
-            include: [User],
+          const cred = await db.query.UserPublicKeyCredentials.findFirst({
+            where: eq(UserPublicKeyCredentials.externalId, id),
+            with: { user: true },
           });
           if (!cred?.user) cb(null, false, { message: "Invalid key. " });
           return cb(null, cred?.user, cred?.publicKey);
@@ -223,13 +238,17 @@ export class AuthController {
           publicKey: string,
           cb: RegisteredFunction
         ) => {
-          const userObj = await User.findOne({ where: { id: user.id } });
+          const userObj = await db.query.Users.findFirst({
+            where: eq(Users.id, Number(user.id)),
+          });
           if (!userObj) return cb({ message: "User not found. " });
-          await UserPublicKeyCredential.create({
-            userId: user.id,
+          await db.insert(UserPublicKeyCredentials).values({
+            userId: Number(user.id),
             externalId: id,
             publicKey: publicKey,
             remarks: user.remarks,
+            creationDate: new Date(),
+            updatedOn: new Date(),
           });
           return cb(null, userObj);
         }
