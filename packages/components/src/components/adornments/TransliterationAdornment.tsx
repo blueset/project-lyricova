@@ -1,8 +1,8 @@
 "use client";
 
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import { useCallback } from "react";
-import { DocumentNode } from "graphql";
+import { graphql } from "../../gql";
 import {
   FieldPath,
   FieldValues,
@@ -23,13 +23,13 @@ import {
 } from "@lyricova/components/components/ui/tooltip";
 import { InputGroupButton } from "@lyricova/components/components/ui/input-group";
 
-const TRANSLITRATION_QUERY = gql`
-  query ($text: String!, $language: String) {
+const TRANSLITRATION_QUERY = graphql(`
+  query TransliterationAdornment($text: String!, $language: String) {
     transliterate(text: $text) {
       plain(language: $language)
     }
   }
-` as DocumentNode;
+`);
 
 type Props<
   TFieldValues extends FieldValues = FieldValues,
@@ -50,9 +50,7 @@ export function TransliterationAdornment<
   const transliterateCallback = useCallback(
     (language?: "zh" | "ja") => async () => {
       try {
-        const result = await apolloClient.query<{
-          transliterate: { plain: string };
-        }>({
+        const result = await apolloClient.query({
           query: TRANSLITRATION_QUERY,
           variables: {
             text: sourceValue,
