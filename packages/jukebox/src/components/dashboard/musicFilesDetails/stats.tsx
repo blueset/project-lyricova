@@ -1,4 +1,4 @@
-import { DocumentNode, gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -17,9 +17,14 @@ import { Button } from "@lyricova/components/components/ui/button";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { DateTimePicker } from "@lyricova/components/components/ui/datetime-picker";
 import { DateTimeInput } from "@lyricova/components/components/ui/datetime-input";
+import { graphql } from "@lyricova/components/gql";
 
-const UPDATE_MUSIC_FILE_STATS_MUTATION = gql`
-  mutation ($fileId: Int!, $playCount: Int!, $lastPlayed: Date) {
+const UPDATE_MUSIC_FILE_STATS_MUTATION = graphql(`
+  mutation UpdateMusicFileStats(
+    $fileId: Int!
+    $playCount: Int!
+    $lastPlayed: Timestamp
+  ) {
     updateMusicFileStats(
       fileId: $fileId
       playCount: $playCount
@@ -28,7 +33,7 @@ const UPDATE_MUSIC_FILE_STATS_MUTATION = gql`
       trackName
     }
   }
-` as DocumentNode;
+`);
 
 const formSchema = z.object({
   playCount: z.number().min(0, "Play count must be 0 or greater").optional(),
@@ -64,9 +69,7 @@ export default function StatsPanel({
 
   const onSubmit = async (values: FormSchema) => {
     try {
-      const result = await apolloClient.mutate<{
-        updateMusicFileStats: { trackName: string };
-      }>({
+      const result = await apolloClient.mutate({
         mutation: UPDATE_MUSIC_FILE_STATS_MUTATION,
         variables: {
           fileId,

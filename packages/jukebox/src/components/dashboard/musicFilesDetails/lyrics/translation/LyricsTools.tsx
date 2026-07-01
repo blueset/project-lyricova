@@ -20,13 +20,14 @@ import { useShallow } from "zustand/shallow";
 import { useAuthContext } from "@lyricova/components";
 import { fetchEventData } from "fetch-sse";
 import { toast } from "sonner";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 
-const GET_LLM_MODELS_QUERY = gql`
+const GET_LLM_MODELS_QUERY = graphql(`
   query GetLLMModels($key: String!, $default: String!) {
     getSiteMeta(key: $key, default: $default)
   }
-`;
+`);
 
 // Fallback models in case the site meta is empty or invalid
 const FALLBACK_LLM_MODELS = [

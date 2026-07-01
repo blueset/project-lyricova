@@ -1,9 +1,7 @@
 "use client";
 
-import { gql, useApolloClient } from "@apollo/client";
-import { graphql } from "@lyricova/components/gql";
+import { useApolloClient } from "@apollo/client";
 import type { Song as SongModel } from "@lyricova/components/gql/schema";
-import type { Album } from "@lyricova/components/gql/schema";
 import {
   SelectSongEntityBox,
   TransliterationAdornment,
@@ -48,14 +46,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
+import { graphql } from "@lyricova/components/gql";
 
-const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
-  mutation ($id: Int!, $data: MusicFileInput!) {
+const UPDATE_MUSIC_FILE_INFO_MUTATION = graphql(`
+  mutation UpdateMusicFileInfo($id: Int!, $data: MusicFileInput!) {
     writeTagsToMusicFile(id: $id, data: $data) {
       trackName
     }
   }
-`;
+`);
 
 const IMPORT_ALBUM_MUTATION = graphql(`
   mutation DashboardImportAlbumFromVocaDB($id: Int!) {
@@ -176,9 +175,7 @@ export default function InfoPanel({
 
     toggleImporting(true);
     try {
-      const result = await apolloClient.mutate<{
-        enrolAlbumFromVocaDB: Partial<Album>;
-      }>({
+      const result = await apolloClient.mutate({
         mutation: IMPORT_ALBUM_MUTATION,
         variables: {
           id: albumId,
@@ -213,9 +210,7 @@ export default function InfoPanel({
 
     toggleImporting(true);
     try {
-      const result = await apolloClient.mutate<{
-        enrolAlbumFromUtaiteDB: Partial<Album>;
-      }>({
+      const result = await apolloClient.mutate({
         mutation: IMPORT_ALBUM_UTAITE_DB_MUTATION,
         variables: {
           id: utaiteDbId,
@@ -242,9 +237,7 @@ export default function InfoPanel({
 
   const onSubmit = async (values: FormProps) => {
     try {
-      const result = await apolloClient.mutate<{
-        writeTagsToMusicFile: { trackName: string };
-      }>({
+      const result = await apolloClient.mutate({
         mutation: UPDATE_MUSIC_FILE_INFO_MUTATION,
         variables: {
           id: fileId,

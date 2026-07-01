@@ -9,17 +9,18 @@ import type { ChangeEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { FURIGANA, Lyrics } from "lyrics-kit/core";
 import { toast } from "sonner";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import { useLyricsStore } from "./state/editorState";
 import { useShallow } from "zustand/shallow";
+import { graphql } from "@lyricova/components/gql";
 
-const KARAOKE_TRANSLITERATION_QUERY = gql`
-  query ($text: String!) {
+const KARAOKE_TRANSLITERATION_QUERY = graphql(`
+  query EditPlainLyricsKaraoke($text: String!) {
     transliterate(text: $text) {
       karaoke(language: "ja")
     }
   }
-`;
+`);
 
 export default function EditPlainLyrics() {
   const { lyrics, setLyrics, lrcx } = useLyricsStore(
@@ -65,9 +66,7 @@ export default function EditPlainLyrics() {
   const copyFromLRCXWithSmartFurigana = useCallback(async () => {
     try {
       const parsed = new Lyrics(lrcx);
-      const result = await apolloClient.query<{
-        transliterate: { karaoke: [string, string][][] };
-      }>({
+      const result = await apolloClient.query({
         query: KARAOKE_TRANSLITERATION_QUERY,
         variables: { text: parsed.lines.map((v) => v.content).join("\n") },
       });

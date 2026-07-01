@@ -18,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@lyricova/components/components/ui/form";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import type { LyricsKitLyricsEntry } from "@lyricova/components/gql/schema";
 import { toast } from "sonner";
@@ -33,7 +33,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
-import type { DocumentNode } from "graphql";
 import type { Subscription } from "zen-observable-ts";
 import { cn } from "@lyricova/components/utils";
 import {
@@ -42,9 +41,10 @@ import {
   InputGroupInput,
   InputGroupText,
 } from "@lyricova/components/components/ui/input-group";
+import { graphql } from "@lyricova/components/gql";
 
-const SEARCH_LYRICS_QUERY = gql`
-  query (
+const SEARCH_LYRICS_QUERY = graphql(`
+  query SearchLyrics(
     $title: String!
     $artists: String!
     $duration: Float
@@ -67,10 +67,10 @@ const SEARCH_LYRICS_QUERY = gql`
       tags
     }
   }
-` as DocumentNode;
+`);
 
-const SEARCH_LYRICS_PROGRESS_SUBSCRIPTION = gql`
-  subscription ($sessionId: String!) {
+const SEARCH_LYRICS_PROGRESS_SUBSCRIPTION = graphql(`
+  subscription SearchLyricsProgress($sessionId: String!) {
     lyricsKitSearchIncremental(sessionId: $sessionId) {
       lyrics
       quality
@@ -79,7 +79,7 @@ const SEARCH_LYRICS_PROGRESS_SUBSCRIPTION = gql`
       tags
     }
   }
-` as DocumentNode;
+`);
 
 function AnalysisBadge({
   variant,
@@ -311,20 +311,18 @@ export default function SearchLyrics({
       const sessionId = `${Math.random()}`;
       setSearchResults([]);
 
-      const query = apolloClient.query<{
-        lyricsKitSearch: LyricsKitLyricsEntry[];
-      }>({
+      const query = apolloClient.query({
         query: SEARCH_LYRICS_QUERY,
         variables: {
-          ...values,
+          title: values.title ?? "",
+          artists: values.artists ?? "",
+          duration: values.duration,
           sessionId,
         },
         fetchPolicy: "network-only", // Ensure fresh results
       });
 
-      const subscription = apolloClient.subscribe<{
-        lyricsKitSearchIncremental: LyricsKitLyricsEntry;
-      }>({
+      const subscription = apolloClient.subscribe({
         query: SEARCH_LYRICS_PROGRESS_SUBSCRIPTION,
         variables: { sessionId },
       });

@@ -1,9 +1,8 @@
 import { useCallback } from "react";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import type { HmikuAtWikiSearchResultEntry } from "@lyricova/components/gql/schema";
 import { useNamedState } from "../../../../../hooks/useNamedState";
 import HMikuWikiResultDialog from "./HMikuWikiResultDialog";
-import type { DocumentNode } from "graphql";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,16 +25,17 @@ import {
   FormMessage,
 } from "@lyricova/components/components/ui/form";
 import { Input } from "@lyricova/components/components/ui/input";
+import { graphql } from "@lyricova/components/gql";
 
-const HMIKU_ATWIKI_LYRICS_QUERY = gql`
-  query ($keyword: String!) {
+const HMIKU_ATWIKI_LYRICS_QUERY = graphql(`
+  query HmikuAtwikiLyrics($keyword: String!) {
     hmikuLyricsSearch(keyword: $keyword) {
       id
       name
       desc
     }
   }
-` as DocumentNode;
+`);
 
 const formSchema = z.object({
   keyword: z.string().min(1, "Keyword is required"),
@@ -87,9 +87,7 @@ export default function HMikuWikiSearchDialog({
 
   const onSubmit = async (values: FormValues) => {
     try {
-      const result = await apolloClient.query<{
-        hmikuLyricsSearch: HmikuAtWikiSearchResultEntry[];
-      }>({
+      const result = await apolloClient.query({
         query: HMIKU_ATWIKI_LYRICS_QUERY,
         variables: {
           ...values,
