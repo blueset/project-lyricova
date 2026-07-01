@@ -1,5 +1,7 @@
-import { Entry } from "../models/Entry";
+import { desc, isNull } from "drizzle-orm";
 import RSS from "rss";
+import { db } from "../drizzle/client";
+import { Entries } from "../drizzle/schema";
 import { host, siteName, tagLine1, tagLine2 } from "./consts";
 
 export default async function generateRssFeed() {
@@ -14,13 +16,23 @@ export default async function generateRssFeed() {
   };
   const feed = new RSS(feedOptions);
 
-  const entries = await Entry.findAll({
-    include: ["verses", "tags"],
-    order: [["recentActionDate", "DESC"]],
+  const entries = await db.query.Entries.findMany({
+    where: isNull(Entries.deletionDate),
+    with: {
+      verses: {
+        where: (v: any, { isNull }: any) => isNull(v.deletionDate),
+      },
+      tagOfEntries: {
+        columns: {},
+        with: { tag: true },
+      },
+    },
+    orderBy: (e: any, { desc }: any) => desc(e.recentActionDate),
     limit: 20,
   });
-  entries.forEach((entry) => {
-    const mainVerse = entry.verses.filter((v) => v.isMain)[0];
+  entries.forEach((entry: any) => {
+    const mainVerse = entry.verses.filter((v: any) => v.isMain)[0];
+    const tags = (entry.tagOfEntries ?? []).map((t: any) => t.tag);
     feed.item({
       title: entry.title,
       description:
@@ -31,7 +43,7 @@ export default async function generateRssFeed() {
         ),
       date: entry.recentActionDate,
       url: `${host}/entries/${entry.id}`,
-      categories: entry.tags?.map((t) => t.name) ?? [],
+      categories: tags?.map((t: any) => t.name) ?? [],
     });
   });
 
