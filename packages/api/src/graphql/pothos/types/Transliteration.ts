@@ -71,7 +71,7 @@ TransliterationResultRef.implement({
           .join("\n"),
     }),
     plainSegmented: t.field({
-      type: [[["String"]]] as any,
+      type: t.listRef(t.listRef(t.listRef("String"))),
       args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
       resolve: (parent, { language }) =>
         segmentedTransliteration(parent.text, {
@@ -82,7 +82,7 @@ TransliterationResultRef.implement({
         }),
     }),
     karaoke: t.field({
-      type: [[["String"]]] as any,
+      type: t.listRef(t.listRef(t.listRef("String"))),
       args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
       resolve: (parent, { language }) =>
         segmentedTransliteration(parent.text, {
@@ -93,7 +93,7 @@ TransliterationResultRef.implement({
         }),
     }),
     typing: t.field({
-      type: [[["String"]]] as any,
+      type: t.listRef(t.listRef(t.listRef("String"))),
       args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
       resolve: (parent, { language }) =>
         segmentedTransliteration(parent.text, {
@@ -138,7 +138,7 @@ TransliterationResultRef.implement({
       },
     }),
     typingSequence: t.field({
-      type: [[AnimatedWordRef]] as any,
+      type: t.listRef(t.listRef(AnimatedWordRef)),
       args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
       resolve: async (parent, { language }) => {
         const lang = asLang(language) ?? getLanguage(parent.text);

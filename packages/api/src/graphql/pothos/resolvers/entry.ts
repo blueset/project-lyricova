@@ -28,7 +28,10 @@ const VerseInput = builder.inputType("VerseInput", {
     text: t.string(),
     html: t.string({ required: false }),
     stylizedText: t.string({ required: false }),
-    typingSequence: t.field({ type: [[["String"]]] as any, defaultValue: [] }),
+    typingSequence: t.field({
+      type: t.listRef(t.listRef(t.listRef("String"))),
+      defaultValue: [],
+    }),
     translator: t.string({ required: false }),
   }),
 });
@@ -53,8 +56,8 @@ async function populateVerseTypingSequence(verse: any) {
       language: verse.language.startsWith("ja")
         ? "ja"
         : verse.language.startsWith("zh")
-        ? "zh"
-        : "en",
+          ? "zh"
+          : "en",
       type: "typing",
     });
   }

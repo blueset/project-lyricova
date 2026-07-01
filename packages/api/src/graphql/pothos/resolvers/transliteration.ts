@@ -34,7 +34,10 @@ builder.queryField("transliterate", (t) =>
     type: TransliterationResultRef,
     args: {
       text: t.arg.string(),
-      furigana: t.arg({ type: [[FuriganaLabelInput]] as any, defaultValue: [] }),
+      furigana: t.arg({
+        type: t.arg.listRef(t.arg.listRef(FuriganaLabelInput)),
+        defaultValue: [],
+      }),
     },
     resolve: (_root, { text, furigana }) => ({
       text,

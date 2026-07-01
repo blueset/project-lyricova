@@ -27,7 +27,7 @@ builder.drizzleObjectFields("Verses", (t) => ({
     resolve: (v: any) => v.translator,
   }),
   typingSequence: t.field({
-    type: [[["String"]]] as any,
+    type: t.listRef(t.listRef(t.listRef("String"))),
     resolve: (v: any) => v.typingSequence,
   }),
 }));
