@@ -21,9 +21,6 @@ const config: CodegenConfig = {
     "../lyricova/src/**/*.{ts,tsx}",
     "!**/gql/**",
     "!**/*.d.ts",
-    // Excluded: runtime-built (dynamic) mutation that cannot be statically
-    // analyzed by codegen; it stays on Apollo's `gql` tag.
-    "!../jukebox/src/app/**/imports/clientPage.tsx",
   ],
   ignoreNoDocuments: true,
   generates: {

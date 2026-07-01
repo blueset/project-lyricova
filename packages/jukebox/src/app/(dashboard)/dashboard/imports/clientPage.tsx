@@ -1,10 +1,11 @@
 "use client";
 
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import { useNamedState } from "@/hooks/useNamedState";
 import { toast } from "sonner";
-import type { Artist } from "@lyricova/components/gql/schema";
 import { NavHeader } from "../NavHeader";
 import {
   Item,
@@ -14,16 +15,29 @@ import {
   ItemTitle,
 } from "@lyricova/components/components/ui/item";
 
-const ARTISTS_TO_IMPORT_QUERY = gql`
-  query {
+const ARTISTS_TO_IMPORT_QUERY = graphql(`
+  query ArtistsToImport {
     artistsWithFilesNeedEnrol
   }
-`;
+`);
+
+const ENROL_ARTISTS_MUTATION = graphql(`
+  mutation EnrolArtistsFromVocaDB($artistIds: [Int!]!) {
+    enrolArtistsFromVocaDB(artistIds: $artistIds) {
+      id
+      name
+    }
+  }
+`);
+
+type ImportedArtist = ResultOf<
+  typeof ENROL_ARTISTS_MUTATION
+>["enrolArtistsFromVocaDB"][number];
 
 export default function Imports() {
   const [importing, setImporting] = useNamedState(false, "importing");
   const [artistImportOutcomes, setArtistImportOutcomes] = useNamedState<
-    Artist[]
+    ImportedArtist[]
   >([], "importing");
   const apolloClient = useApolloClient();
 
@@ -50,9 +64,7 @@ export default function Imports() {
             <ProgressButton
               onClick={async () => {
                 setImporting(true);
-                const data = await apolloClient.query<{
-                  artistsWithFilesNeedEnrol: number[];
-                }>({
+                const data = await apolloClient.query({
                   query: ARTISTS_TO_IMPORT_QUERY,
                 });
                 if (data.error) {
@@ -66,24 +78,15 @@ export default function Imports() {
                   setImporting(false);
                   return;
                 }
-                const importMutation = gql`
-                mutation importArtist {
-                  ${artists
-                    .map(
-                      (a, idx) =>
-                        `import${idx}: enrolArtistFromVocaDB(artistId: ${a}) { id\n name }`
-                    )
-                    .join("\n")}
-                }
-              `;
                 try {
-                  const importData = await apolloClient.mutate<{
-                    [key: string]: Artist;
-                  }>({
-                    mutation: importMutation,
+                  const importData = await apolloClient.mutate({
+                    mutation: ENROL_ARTISTS_MUTATION,
+                    variables: { artistIds: artists },
                   });
                   toast.success(`Imported ${artists.length} artists`);
-                  setArtistImportOutcomes(Object.values(importData.data));
+                  setArtistImportOutcomes(
+                    importData.data?.enrolArtistsFromVocaDB ?? []
+                  );
                 } catch (e) {
                   toast.error(`Error: ${e}`);
                 }

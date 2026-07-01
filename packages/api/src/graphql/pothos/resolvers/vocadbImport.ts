@@ -29,6 +29,21 @@ builder.mutationField("enrolArtistFromVocaDB", (t) =>
   })
 );
 
+builder.mutationField("enrolArtistsFromVocaDB", (t) =>
+  t.field({
+    type: [ArtistRef],
+    description: "Insert or update multiple artists from VocaDB in one request.",
+    authScopes: { admin: true },
+    args: {
+      artistIds: t.arg.intList({ description: "Artist IDs in VocaDB" }),
+    },
+    resolve: (_root, { artistIds }) =>
+      Promise.all(
+        artistIds.map((artistId) => enrolArtistFromVocaDB(artistId))
+      ) as any,
+  })
+);
+
 builder.mutationField("enrolAlbumFromVocaDB", (t) =>
   t.field({
     type: AlbumRef,

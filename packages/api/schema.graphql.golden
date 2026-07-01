@@ -450,6 +450,12 @@ type Mutation {
     artistId: Int!
   ): Artist!
 
+  """Insert or update multiple artists from VocaDB in one request."""
+  enrolArtistsFromVocaDB(
+    """Artist IDs in VocaDB"""
+    artistIds: [Int!]!
+  ): [Artist!]!
+
   """Insert or update a song from UtaiteDB."""
   enrolSongFromUtaiteDB(
     """Song ID in UtaiteDB"""
