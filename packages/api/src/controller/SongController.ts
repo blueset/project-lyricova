@@ -78,7 +78,7 @@ export class SongController {
    */
   public getSong = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const song: any = await db.query.Songs.findFirst({
+      const song = await db.query.Songs.findFirst({
         where: and(
           eq(Songs.id, parseInt(req.params.songId)),
           isNull(Songs.deletionDate)
@@ -112,14 +112,14 @@ export class SongController {
             },
           };
         })
-        .sort((x: any, y: any) => x.id - y.id);
+        .sort((x, y) => x.id - y.id);
       const albums = (songInAlbums ?? [])
         .filter((a: any) => a.album && !a.album.deletionDate)
         .map((a: any) => {
           const { album, ...junction } = a;
           return { ...album, SongInAlbum: junction };
         })
-        .sort((x: any, y: any) => x.id - y.id);
+        .sort((x, y) => x.id - y.id);
       const filesSorted = [...(files ?? [])].sort(
         (x: any, y: any) => x.id - y.id
       );
@@ -179,7 +179,7 @@ export class SongController {
     next: NextFunction
   ) => {
     try {
-      const song: any = await db.query.Songs.findFirst({
+      const song = await db.query.Songs.findFirst({
         where: and(
           eq(Songs.id, parseInt(req.params.songId)),
           isNull(Songs.deletionDate)
@@ -192,7 +192,7 @@ export class SongController {
       }
       const lyrics = (
         await Promise.all(
-          song.files.map(async (f: any) => {
+          song.files.map(async (f) => {
             const fullPath = fullPathOf(f.path);
             const lrcxPath = swapExt(fullPath, "lrcx");
             if (await fs.stat(lrcxPath)) {

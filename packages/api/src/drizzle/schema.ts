@@ -12,6 +12,7 @@ import {
   index,
   uniqueIndex,
   primaryKey,
+  type AnyMySqlColumn,
 } from "drizzle-orm/mysql-core";
 
 /**
@@ -87,7 +88,7 @@ export const Artists = mysqlTable(
       "Instrumentalist",
       "Designer",
     ]),
-    baseVoiceBankId: int("baseVoiceBankId").references((): any => Artists.id, {
+    baseVoiceBankId: int("baseVoiceBankId").references((): AnyMySqlColumn => Artists.id, {
       onDelete: "set null",
       onUpdate: "cascade",
     }),
@@ -107,7 +108,7 @@ export const Songs = mysqlTable(
     id: int("id").primaryKey(),
     name: varchar("name", { length: 4096 }),
     sortOrder: varchar("sortOrder", { length: 4096 }),
-    originalId: int("originalId").references((): any => Songs.id, {
+    originalId: int("originalId").references((): AnyMySqlColumn => Songs.id, {
       onDelete: "set null",
       onUpdate: "cascade",
     }),
@@ -128,11 +129,11 @@ export const MusicFiles = mysqlTable(
     id: int("id").primaryKey().autoincrement(),
     path: varchar("path", { length: 768 }),
     fileSize: int("fileSize", { unsigned: true }),
-    songId: int("songId").references((): any => Songs.id, {
+    songId: int("songId").references((): AnyMySqlColumn => Songs.id, {
       onDelete: "set null",
       onUpdate: "cascade",
     }),
-    albumId: int("albumId").references((): any => Albums.id, {
+    albumId: int("albumId").references((): AnyMySqlColumn => Albums.id, {
       onDelete: "set null",
       onUpdate: "cascade",
     }),
@@ -164,7 +165,7 @@ export const VideoFiles = mysqlTable(
   {
     id: int("id").primaryKey().autoincrement(),
     path: varchar("path", { length: 768 }),
-    songId: int("songId").references((): any => Songs.id, {
+    songId: int("songId").references((): AnyMySqlColumn => Songs.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -207,11 +208,11 @@ export const ArtistOfAlbums = mysqlTable(
       "Illustrator",
       "Subject",
     ]).default("Nothing"),
-    albumId: int("albumId").references((): any => Albums.id, {
+    albumId: int("albumId").references((): AnyMySqlColumn => Albums.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-    artistId: int("artistId").references((): any => Artists.id, {
+    artistId: int("artistId").references((): AnyMySqlColumn => Artists.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -237,11 +238,11 @@ export const ArtistOfSongs = mysqlTable(
     categories: varchar("categories", { length: 174 }),
     customName: varchar("customName", { length: 4096 }),
     isSupport: boolean("isSupport").default(false),
-    songId: int("songId").references((): any => Songs.id, {
+    songId: int("songId").references((): AnyMySqlColumn => Songs.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-    artistId: int("artistId").references((): any => Artists.id, {
+    artistId: int("artistId").references((): AnyMySqlColumn => Artists.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -263,11 +264,11 @@ export const SongInAlbums = mysqlTable(
     diskNumber: int("diskNumber"),
     trackNumber: int("trackNumber"),
     name: varchar("name", { length: 2048 }),
-    songId: int("songId").references((): any => Songs.id, {
+    songId: int("songId").references((): AnyMySqlColumn => Songs.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-    albumId: int("albumId").references((): any => Albums.id, {
+    albumId: int("albumId").references((): AnyMySqlColumn => Albums.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -308,7 +309,7 @@ export const UserPublicKeyCredentials = mysqlTable(
   "UserPublicKeyCredentials",
   {
     id: int("id").primaryKey().autoincrement(),
-    userId: int("userId").references((): any => Users.id, {
+    userId: int("userId").references((): AnyMySqlColumn => Users.id, {
       onUpdate: "cascade",
     }),
     externalId: varchar("externalId", { length: 512 }),
@@ -330,7 +331,7 @@ export const Entries = mysqlTable(
     title: varchar("title", { length: 512 }),
     producersName: varchar("producersName", { length: 1024 }),
     vocalistsName: varchar("vocalistsName", { length: 1024 }),
-    authorId: int("authorId").references((): any => Users.id, {
+    authorId: int("authorId").references((): AnyMySqlColumn => Users.id, {
       onUpdate: "cascade",
     }),
     comment: text("comment"),
@@ -351,7 +352,7 @@ export const Pulses = mysqlTable(
   "Pulses",
   {
     id: int("id").primaryKey().autoincrement(),
-    entryId: int("entryId").references((): any => Entries.id, {
+    entryId: int("entryId").references((): AnyMySqlColumn => Entries.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -372,7 +373,7 @@ export const Verses = mysqlTable(
     stylizedText: text("stylizedText"),
     translator: text("translator"),
     typingSequence: json("typingSequence"),
-    entryId: int("entryId").references((): any => Entries.id, {
+    entryId: int("entryId").references((): AnyMySqlColumn => Entries.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -395,11 +396,11 @@ export const SongOfEntries = mysqlTable(
   "SongOfEntries",
   {
     id: int("id").primaryKey().autoincrement(),
-    songId: int("songId").references((): any => Songs.id, {
+    songId: int("songId").references((): AnyMySqlColumn => Songs.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-    entryId: int("entryId").references((): any => Entries.id, {
+    entryId: int("entryId").references((): AnyMySqlColumn => Entries.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -416,11 +417,11 @@ export const TagOfEntries = mysqlTable(
   "TagOfEntries",
   {
     id: int("id").primaryKey().autoincrement(),
-    tagId: varchar("tagId", { length: 512 }).references((): any => Tags.slug, {
+    tagId: varchar("tagId", { length: 512 }).references((): AnyMySqlColumn => Tags.slug, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-    entryId: int("entryId").references((): any => Entries.id, {
+    entryId: int("entryId").references((): AnyMySqlColumn => Entries.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -446,12 +447,12 @@ export const FileInPlaylists = mysqlTable(
   "FileInPlaylists",
   {
     id: int("id").primaryKey().autoincrement(),
-    fileId: int("fileId").references((): any => MusicFiles.id, {
+    fileId: int("fileId").references((): AnyMySqlColumn => MusicFiles.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
     playlistId: varchar("playlistId", { length: 512 }).references(
-      (): any => Playlists.slug,
+      (): AnyMySqlColumn => Playlists.slug,
       { onDelete: "cascade", onUpdate: "cascade" }
     ),
     sortOrder: int("sortOrder").notNull().default(0),

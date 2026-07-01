@@ -113,12 +113,12 @@ export class EntriesController {
       offset: (page - 1) * entriesPerPage,
     });
 
-    const entries = rows.map((e: any) => {
+    const entries = rows.map((e) => {
       const { tagOfEntries, verses, pulses, ...cols } = e;
       return {
         ...cols,
         verses,
-        tags: (tagOfEntries ?? []).map((t: any) => t.tag),
+        tags: (tagOfEntries ?? []).map((t) => t.tag),
         pulses,
       };
     });
@@ -205,7 +205,7 @@ export class EntriesController {
    */
   private async getEntry(req: Request, res: Response) {
     const entryId = parseInt(req.params.entryId);
-    const entry: any = await db.query.Entries.findFirst({
+    const entry = await db.query.Entries.findFirst({
       where: eq(Entries.id, entryId),
       with: {
         verses: {
@@ -252,10 +252,10 @@ export class EntriesController {
     }
 
     const { tagOfEntries, songOfEntries, verses, pulses, ...cols } = entry;
-    const songs = (songOfEntries ?? []).map((soe: any) => {
+    const songs = (songOfEntries ?? []).map((soe) => {
       const s = soe.song;
       const artists = (s.artistOfSongs ?? [])
-        .map((aos: any) => ({
+        .map((aos) => ({
           id: aos.artist.id,
           name: aos.artist.name,
           ArtistOfSong: {
@@ -275,7 +275,7 @@ export class EntriesController {
     res.json({
       ...cols,
       verses,
-      tags: (tagOfEntries ?? []).map((t: any) => t.tag),
+      tags: (tagOfEntries ?? []).map((t) => t.tag),
       songs,
       pulses,
     });
@@ -380,7 +380,7 @@ export class EntriesController {
     });
 
     const matched = rows.filter(
-      (e: any) =>
+      (e) =>
         (!verseWhereActive || e.verses.length > 0) &&
         (tags.length === 0 || e.tagOfEntries.length > 0)
     );
@@ -390,8 +390,8 @@ export class EntriesController {
     }
 
     const verses = shuffle(
-      matched.flatMap((entry: any) =>
-        entry.verses.map((v: any) => ({
+      matched.flatMap((entry) =>
+        entry.verses.map((v) => ({
           id: v.id,
           text: v.text,
           typingSequence: v.typingSequence,
@@ -401,11 +401,11 @@ export class EntriesController {
       )
     );
 
-    const entriesObj = matched.reduce<{ [id: number]: any }>((acc, entry: any) => {
+    const entriesObj = matched.reduce<{ [id: number]: any }>((acc, entry) => {
       const { verses: _verses, tagOfEntries, ...cols } = entry;
       acc[entry.id] = {
         ...cols,
-        tags: (tagOfEntries ?? []).map((t: any) => t.tag),
+        tags: (tagOfEntries ?? []).map((t) => t.tag),
       };
       return acc;
     }, {});
