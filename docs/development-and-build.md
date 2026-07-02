@@ -63,8 +63,8 @@ lyrics-kit ─┐
 
 | Package | `build` | `dev` |
 | --- | --- | --- |
-| `@lyricova/api` | `build:ts` (tsc) → `lint` → `posthog` sourcemaps | `nodemon dist/server.js` + `tsc -w` |
-| `@lyricova/components` | **`codegen`** → `tsc` → `tsc-alias` | `codegen:watch` + `tsc -w` + `tsc-alias -w` |
+| `@lyricova/api` | `build:ts` (tsc) → `lint` → `posthog` sourcemaps | `nodemon dist/server.js` + `tsc -w` + **`pothos:emit:watch`** (re-emits `schema.graphql`) |
+| `@lyricova/components` | **`codegen`** → `tsc` → `tsc-alias` | **`codegen:watch`** (regenerates typed docs + schema types) + `tsc -w` + `tsc-alias -w` |
 | `@lyricova/jukebox` | `next build` | `next dev` (PORT 8082) |
 | `@lyricova/blog` (`packages/lyricova`) | `next build` | `next dev` (PORT 8081) |
 
@@ -80,6 +80,10 @@ codegen runs inside the `components` build before the apps compile.
 ### `npm run dev`
 
 `turbo run dev` starts **all** `dev` scripts in parallel (persistent, uncached).
+GraphQL codegen and the server schema emit run **on watch**, so the typed graph
+stays in sync automatically as you edit (see
+[§3.1](#31-graphql-watch-pipeline)).
+
 Cold-start caveats on a **fresh checkout / clean tree**:
 
 1. **Generated GraphQL types don't exist yet.** The apps import
@@ -94,10 +98,56 @@ Cold-start caveats on a **fresh checkout / clean tree**:
 
 2. **`api` serves from `dist/`.** `api`'s `dev` runs `nodemon dist/server.js`
    alongside `tsc -w`; on a clean tree `dist/` is produced by the watcher, so the
-   node process may restart a couple of times before it comes up.
+   node process (and the `pothos:emit:watch` emitter, which also reads `dist/`)
+   may run a couple of times before `dist/` is fully populated.
 
-Ports: **jukebox → 8082**, **blog/lyricova → 8081**. `api` needs a working
-`.env` (database connection etc.).
+Ports: **jukebox → 8082**, **blog/lyricova → 8081**. `api` needs a `.env` with a
+**parseable** `DB_URI` (the emit only creates a lazy pool — a reachable database
+isn't required just to regenerate the schema, but the server obviously needs one).
+
+### 3.1 GraphQL watch pipeline
+
+During `npm run dev` the whole GraphQL type graph regenerates automatically —
+you should never need to hand-run codegen or `pothos:emit`:
+
+```
+edit a graphql() document (components / jukebox / lyricova)
+   └─▶ components codegen:watch regenerates src/gql/**            (typed operations)
+
+edit a Pothos resolver/type (packages/api/src/graphql/**)
+   └─▶ api tsc -w recompiles → dist/graphql/** changes
+         └─▶ api pothos:emit:watch re-emits packages/api/schema.graphql
+               └─▶ components codegen:watch regenerates src/gql/** + src/gql/schema.ts
+```
+
+How it's wired (and why):
+
+- **`components` `codegen:watch`** is a `nodemon` that watches
+  `../api/schema.graphql` and runs
+  `graphql-codegen --config codegen.schema.ts && graphql-codegen --config codegen.ts --watch`.
+  The inner `--watch` handles **document** edits incrementally (fast, and it
+  works across packages). Wrapping it in `nodemon` is deliberate:
+  graphql-codegen caches the schema for the life of a `--watch` process and does
+  **not** reload it when the schema *file* changes, so a schema change restarts
+  the whole codegen — reloading the fresh schema and re-emitting
+  `src/gql/schema.ts` too. This needs **`@parcel/watcher`** (a root devDependency;
+  without it `graphql-codegen --watch` silently no-ops) and **`nodemon`**.
+- **`api` `pothos:emit:watch`** is a `nodemon --watch dist/graphql` that runs the
+  emit into `schema.graphql` (the committed codegen source) whenever the compiled
+  resolvers change.
+
+Practical notes:
+
+- **No churn for internal-only edits.** The emit is deterministic and only the
+  *interface* (types, fields, args, nullability, descriptions, directives) lands
+  in the SDL — not resolver bodies. Refactor a resolver's logic and
+  `schema.graphql` is rewritten byte-identically, so `git status` stays clean.
+  `schema.graphql` only shows as modified when you actually change the GraphQL
+  contract — which is exactly when you'd want a visible diff (reconcile
+  `schema.graphql.golden` at commit time; see
+  [§5.3](#53-graphql--api-schema-changes-resolver--type--field)).
+- The emit reads the **compiled** `dist/`, so a schema change propagates only
+  after `tsc -w` finishes recompiling (a second or two).
 
 ---
 
@@ -162,6 +212,14 @@ three** frontend packages; every operation's types land in the shared
 Because `schema.graphql` is a **committed file that codegen reads**, changing the
 server schema is a multi-step operation:
 
+> **During `npm run dev` most of this is automatic.** The watch pipeline
+> ([§3.1](#31-graphql-watch-pipeline)) re-emits `schema.graphql` and regenerates
+> the frontend types on every resolver save — so in dev you can skip the manual
+> emit (step 2) and codegen (step 5) below, and just do the **commit-time**
+> reconciliation: update `schema.graphql.golden` to match and run the parity
+> checks (steps 3b–4). The manual sequence here is what you run **outside** dev
+> (CI, a one-off, or to produce the golden diff).
+
 1. Edit the Pothos resolver/type under `packages/api/src/graphql/pothos/`.
 2. Re-emit the SDL from the running schema:
 
@@ -182,13 +240,13 @@ server schema is a multi-step operation:
    > conflict, so plain `npm install` needs that flag), or as a stopgap run node
    > with `NODE_PATH=$PWD/node_modules`.
    >
-   > `pothos:emit` (like the server) loads the real app, so a working `.env` (DB
-   > connection) is required too.
+   > `pothos:emit` (like the server) loads the real app, so a *parseable* `DB_URI`
+   > is required (a reachable database is not — the pool is created lazily).
 3. Promote the emit to the codegen source and update the parity baseline:
 
    ```bash
-   cp schema.pothos.graphql schema.graphql          # codegen source of truth
-   # add the same field(s) to schema.graphql.golden  (parity baseline)
+   cp schema.pothos.graphql schema.graphql          # codegen source of truth (dev's watch already did this)
+   # add the same field(s) to schema.graphql.golden  (parity baseline — NOT automated)
    ```
 
 4. Verify parity:
@@ -261,12 +319,15 @@ cross-referenced with the canonical `lyricova-schema.sql` dump).
 ```bash
 # Everyday
 npm run dev                                   # all apps + watchers (root, turbo)
+                                              #   → codegen + schema emit run on watch (see §3.1);
+                                              #     editing docs/resolvers regenerates types automatically
 npm run build                                 # full topological build (root, turbo)
 
-# GraphQL client document added/changed
+# GraphQL client document added/changed  (manual — only needed OUTSIDE `npm run dev`)
 npm run codegen -w @lyricova/components        # regenerate typed graphql()
 
 # GraphQL API schema changed (resolver/type/field)
+# In `npm run dev`, schema.graphql + client types regenerate automatically; then at commit time:
 cd packages/api && npm run pothos:emit         # regenerate SDL (see the drizzle-orm note in §5.3)
 cp schema.pothos.graphql schema.graphql        # + mirror the change into schema.graphql.golden
 npm run schema:check && npm run pothos:check

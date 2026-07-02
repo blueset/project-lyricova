@@ -13,7 +13,7 @@
     "build": "npm run codegen && tsc && tsc-alias",
     "dev": "concurrently \"npm:codegen:watch\" \"tsc -w\" \"tsc-alias -w\"",
     "codegen": "graphql-codegen --config codegen.ts && graphql-codegen --config codegen.schema.ts",
-    "codegen:watch": "graphql-codegen --config codegen.ts --watch",
+    "codegen:watch": "nodemon --watch ../api/schema.graphql --ext graphql --exec \"graphql-codegen --config codegen.schema.ts && graphql-codegen --config codegen.ts --watch\"",
     "clean": "rimraf build"
   },
   "dependencies": {
@@ -66,6 +66,7 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "concurrently": "^8.0.0",
+    "nodemon": "^3.1.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "rimraf": "^6.0.1",
