@@ -80,7 +80,7 @@ codegen runs inside the `components` build before the apps compile.
 ### `npm run dev`
 
 `turbo run dev` starts **all** `dev` scripts in parallel (persistent, uncached).
-Two cold-start caveats on a **fresh checkout / clean tree**:
+Cold-start caveats on a **fresh checkout / clean tree**:
 
 1. **Generated GraphQL types don't exist yet.** The apps import
    `@lyricova/components/gql`, which is git-ignored and only created by codegen.
@@ -95,6 +95,13 @@ Two cold-start caveats on a **fresh checkout / clean tree**:
 2. **`api` serves from `dist/`.** `api`'s `dev` runs `nodemon dist/server.js`
    alongside `tsc -w`; on a clean tree `dist/` is produced by the watcher, so the
    node process may restart a couple of times before it comes up.
+
+3. **`api` may fail to start with `Cannot find module 'drizzle-orm'`.** This is
+   the same install/hoisting issue described in
+   [§5.3](#53-graphql--api-schema-changes-resolver--type--field) — it affects the
+   server exactly as it affects `pothos:emit`. Until the install is repaired, run
+   the node process with `NODE_PATH=packages/api/node_modules` (see §5.3 for the
+   workaround and the durable fix).
 
 Ports: **jukebox → 8082**, **blog/lyricova → 8081**. `api` needs a working
 `.env` (database connection etc.).
@@ -170,19 +177,30 @@ server schema is a multi-step operation:
    npm run pothos:emit          # writes schema.pothos.graphql
    ```
 
-   > ⚠️ **Known issue:** the emit step loads the compiled server, and
-   > `@pothos/plugin-drizzle` (hoisted to the repo-root `node_modules`) fails to
-   > resolve `drizzle-orm` (installed under `packages/api/node_modules`). If you
-   > see `Cannot find module 'drizzle-orm'`, run the emitter with an explicit
-   > module path:
+   > ⚠️ **Known issue — `drizzle-orm` module resolution (install/hoisting).** This
+   > is **not** specific to `pothos:emit`. Any process that loads the compiled
+   > Pothos schema hits it — **including the API server itself** (`npm run serve`,
+   > and `nodemon dist/server.js` under `npm run dev`), which crashes at startup
+   > with the same error. `@pothos/plugin-drizzle` `require`s `drizzle-orm` but
+   > does not declare it as a dependency; it is hoisted to the repo-root
+   > `node_modules`, while `drizzle-orm` currently resolves only under
+   > `packages/api/node_modules`, so the hoisted plugin can't find it and throws
+   > `Cannot find module 'drizzle-orm'`.
+   >
+   > **Workaround** (applies to the emitter *and* the server) — put
+   > `packages/api/node_modules` on the module path:
    >
    > ```bash
    > tsc   # or: npm run build:ts
-   > NODE_PATH=$PWD/node_modules node scripts/emit-pothos-schema.mjs
+   > NODE_PATH=$PWD/node_modules node scripts/emit-pothos-schema.mjs   # or: dist/server.js
    > ```
    >
-   > `pothos:emit` loads the real server, so a working `.env` (DB connection) is
-   > required.
+   > **Durable fix:** make `drizzle-orm` hoist next to the plugin — declare it in
+   > the **root** `package.json`, add an npm `overrides`/hoisting rule, or run a
+   > clean `npm install`.
+   >
+   > `pothos:emit` (like the server) loads the real app, so a working `.env` (DB
+   > connection) is required too.
 3. Promote the emit to the codegen source and update the parity baseline:
 
    ```bash
