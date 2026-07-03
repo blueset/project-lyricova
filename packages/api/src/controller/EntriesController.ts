@@ -226,6 +226,7 @@ export class EntriesController {
                 name: true,
                 coverUrl: true,
                 vocaDbJson: true,
+                deletionDate: true,
               },
               with: {
                 artistOfSongs: {
@@ -234,7 +235,11 @@ export class EntriesController {
                     categories: true,
                     isSupport: true,
                   },
-                  with: { artist: { columns: { id: true, name: true } } },
+                  with: {
+                    artist: {
+                      columns: { id: true, name: true, deletionDate: true },
+                    },
+                  },
                 },
               },
             },
@@ -252,24 +257,32 @@ export class EntriesController {
     }
 
     const { tagOfEntries, songOfEntries, verses, pulses, ...cols } = entry;
-    const songs = (songOfEntries ?? []).map((soe) => {
-      const s = soe.song;
-      const artists = (s.artistOfSongs ?? [])
-        .map((aos) => ({
-          id: aos.artist.id,
-          name: aos.artist.name,
-          ArtistOfSong: {
-            artistRoles: parseEnumArray(aos.artistRoles),
-            categories: parseEnumArray(aos.categories),
-            isSupport: aos.isSupport,
-          },
-        }))
-        .sort((a: any, b: any) => a.id - b.id);
-      const song: any = { id: s.id, name: s.name, coverUrl: s.coverUrl, artists };
-      const { has, url } = deriveVideoUrl(s.vocaDbJson);
-      if (has) song.videoUrl = url;
-      return song;
-    });
+    const songs = (songOfEntries ?? [])
+      .filter((soe) => soe.song && !soe.song.deletionDate)
+      .map((soe) => {
+        const s = soe.song;
+        const artists = (s.artistOfSongs ?? [])
+          .filter((aos) => aos.artist && !aos.artist.deletionDate)
+          .map((aos) => ({
+            id: aos.artist.id,
+            name: aos.artist.name,
+            ArtistOfSong: {
+              artistRoles: parseEnumArray(aos.artistRoles),
+              categories: parseEnumArray(aos.categories),
+              isSupport: aos.isSupport,
+            },
+          }))
+          .sort((a: any, b: any) => a.id - b.id);
+        const song: any = {
+          id: s.id,
+          name: s.name,
+          coverUrl: s.coverUrl,
+          artists,
+        };
+        const { has, url } = deriveVideoUrl(s.vocaDbJson);
+        if (has) song.videoUrl = url;
+        return song;
+      });
     songs.sort((a: any, b: any) => a.id - b.id);
 
     res.json({

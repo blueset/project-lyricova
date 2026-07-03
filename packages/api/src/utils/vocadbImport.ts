@@ -292,8 +292,8 @@ export async function saveAlbumFromVocaDB(
     )
   ).filter((t): t is SongInAlbumTrackEntry => t !== null);
 
-  await setArtistsOfAlbum(entity.id, _.uniqBy(artists, (a) => a.artistId));
-  await setSongsOfAlbum(entity.id, _.uniqBy(tracks, (t) => t.songId));
+  await setArtistsOfAlbum(entity.id, artists);
+  await setSongsOfAlbum(entity.id, tracks);
   return (
     (await db.query.Albums.findFirst({
       where: and(eq(Albums.id, entity.id), isNull(Albums.deletionDate)),
@@ -359,8 +359,8 @@ export async function saveAlbumFromUtaiteDB(
     })
     .filter((t): t is SongInAlbumTrackEntry => t !== null);
 
-  await setArtistsOfAlbum(dbId, _.uniqBy(artists, (a) => a.artistId));
-  await setSongsOfAlbum(dbId, _.uniqBy(trackEntries, (t) => t.songId));
+  await setArtistsOfAlbum(dbId, artists);
+  await setSongsOfAlbum(dbId, trackEntries);
   return (
     (await db.query.Albums.findFirst({ where: eq(Albums.id, dbId) })) ?? null
   );
@@ -617,6 +617,7 @@ async function setArtistsOfSong(
   entries: ArtistOfSongEntry[]
 ): Promise<void> {
   await db.delete(ArtistOfSongs).where(eq(ArtistOfSongs.songId, songId));
+  entries = _.uniqBy(entries, (e) => e.artistId);
   if (!entries.length) return;
   const now = new Date();
   await db.insert(ArtistOfSongs).values(
@@ -638,6 +639,7 @@ async function setAlbumsOfSong(
   entries: SongInAlbumAlbumEntry[]
 ): Promise<void> {
   await db.delete(SongInAlbums).where(eq(SongInAlbums.songId, songId));
+  entries = _.uniqBy(entries, (e) => e.albumId);
   if (!entries.length) return;
   const now = new Date();
   await db.insert(SongInAlbums).values(
@@ -656,6 +658,7 @@ async function setArtistsOfAlbum(
   entries: ArtistOfAlbumEntry[]
 ): Promise<void> {
   await db.delete(ArtistOfAlbums).where(eq(ArtistOfAlbums.albumId, albumId));
+  entries = _.uniqBy(entries, (e) => e.artistId);
   if (!entries.length) return;
   const now = new Date();
   await db.insert(ArtistOfAlbums).values(
@@ -676,6 +679,7 @@ async function setSongsOfAlbum(
   entries: SongInAlbumTrackEntry[]
 ): Promise<void> {
   await db.delete(SongInAlbums).where(eq(SongInAlbums.albumId, albumId));
+  entries = _.uniqBy(entries, (e) => e.songId);
   if (!entries.length) return;
   const now = new Date();
   await db.insert(SongInAlbums).values(

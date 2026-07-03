@@ -227,20 +227,19 @@ export class LyricovaPublicApiController {
     let picker = db
       .select({ id: Verses.id, entryId: Verses.entryId })
       .from(Verses)
+      .innerJoin(
+        Entries,
+        and(eq(Entries.id, Verses.entryId), isNull(Entries.deletionDate))
+      )
       .$dynamic();
     if (tags?.length) {
-      picker = picker
-        .innerJoin(
-          Entries,
-          and(eq(Entries.id, Verses.entryId), isNull(Entries.deletionDate))
+      picker = picker.innerJoin(
+        TagOfEntries,
+        and(
+          eq(TagOfEntries.entryId, Verses.entryId),
+          inArray(TagOfEntries.tagId, tags)
         )
-        .innerJoin(
-          TagOfEntries,
-          and(
-            eq(TagOfEntries.entryId, Verses.entryId),
-            inArray(TagOfEntries.tagId, tags)
-          )
-        );
+      );
     }
     const picked = await picker
       .where(and(...conds))
@@ -286,6 +285,11 @@ export class LyricovaPublicApiController {
         },
       },
     });
+
+    if (!e) {
+      res.status(404).json({ message: "No verse found" });
+      return;
+    }
 
     const verse = {
       text: v.text,

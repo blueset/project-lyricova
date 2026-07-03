@@ -117,7 +117,7 @@ export async function replaceFilePlaylists(
   await db.delete(FileInPlaylists).where(eq(FileInPlaylists.fileId, fileId));
   const now = new Date();
   let sortOrder = 0;
-  for (const slug of slugs) {
+  for (const slug of [...new Set(slugs)]) {
     await db.insert(FileInPlaylists).values({
       fileId,
       playlistId: slug,
