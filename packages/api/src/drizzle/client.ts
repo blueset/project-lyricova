@@ -5,12 +5,11 @@ import * as schema from "./schema";
 import * as relations from "./relations";
 
 /**
- * Drizzle client for the Lyricova MySQL database. Runs **alongside** the Sequelize
- * instance (`src/db.ts`) during the migration — both point at the same DB via the
- * same `DB_URI`. Domains move from Sequelize to Drizzle one at a time (Phase 4+).
+ * Drizzle client for the Lyricova MySQL database — the single data-access layer
+ * for the API.
  *
  * The pool connects lazily (first query), so importing this module never blocks
- * even when the DB is unreachable.
+ * even when the DB is unreachable (e.g. during `pothos:emit`).
  */
 export const pool = mysql.createPool(DB_URI);
 

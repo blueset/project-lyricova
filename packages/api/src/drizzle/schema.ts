@@ -19,9 +19,10 @@ import {
  * Drizzle schema for the Lyricova MySQL database.
  *
  * Hand-authored from the canonical `lyricova-schema.sql` dump (the DB has no live
- * introspection target here) and cross-checked against the Sequelize models in
- * `src/models/*`. Phase 3 stands this up **alongside** Sequelize; queries are
- * migrated to Drizzle domain-by-domain in Phase 4.
+ * introspection target here) and cross-checked against the plain model types in
+ * `src/models/*` (which now also back the OpenAPI schema). This is the sole ORM
+ * source of truth; migrations are generated with drizzle-kit (`npm run
+ * db:generate` / `db:migrate`).
  *
  * Notes:
  * - **FULLTEXT (ngram) indexes** on Albums/Artists/Songs/MusicFiles are NOT
@@ -30,8 +31,8 @@ import {
  * - **SIMPLE_ENUM_ARRAY** columns (ArtistOf*.roles/effectiveRoles/artistRoles/
  *   categories) are stored as VARCHAR; (de)serialize with the helpers in
  *   `./enumArray`.
- * - `MusicFile.fullPath` is a Sequelize VIRTUAL (not a column) and is intentionally
- *   absent here; compute it in the app/resolver layer.
+ * - `MusicFile.fullPath` was a Sequelize VIRTUAL (not a column) and is
+ *   intentionally absent here; compute it in the app/resolver layer.
  */
 
 // --- Core entities -------------------------------------------------------

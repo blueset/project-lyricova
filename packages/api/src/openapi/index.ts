@@ -5,7 +5,7 @@
  * hand-written `@openapi` JSDoc) via `openapi-typescript`. This is the REST
  * counterpart to `@lyricova/api/graphql/types`: frontend code that consumes
  * REST endpoints (e.g. lyricova's public pages) should import entity DTO shapes
- * from here instead of the Sequelize/TypeGraphQL model classes.
+ * from here instead of the API's internal model classes.
  *
  * Note: on the wire these are JSON, so date-time fields are ISO `string`s (not
  * `Date`), matching what `fetch().json()` actually returns.

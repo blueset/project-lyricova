@@ -24,16 +24,15 @@ export const entryListingCondition = {
   ],
 };
 
-// --- Drizzle entry-listing helper (Phase 5 REST migration) ---
-// Mirrors `entryListingCondition`: entries with main verses, tags, and pulses,
-// excluding `updatedOn`. Kept alongside the Sequelize export until all consumers
-// (Song/Artist/Tag/LyricovaPublic) are migrated.
+// --- Drizzle entry-listing helper ---
+// Mirrors the legacy `entryListingCondition`: entries with main verses, tags,
+// and pulses, excluding `updatedOn`. Shared by Song/Artist/Tag/LyricovaPublic.
 import { inArray, sql } from "drizzle-orm";
 import { db } from "../drizzle/client";
 import { Entries } from "../drizzle/schema";
 
 /**
- * Correlated condition mirroring the Sequelize `entryListingCondition`
+ * Correlated condition mirroring the legacy `entryListingCondition`
  * requirement that a listed entry has at least one non-deleted main verse
  * (the eager-load INNER JOINs verses filtered to `isMain = true`). Use in a
  * query that joins `Entries`, alongside `isNull(Entries.deletionDate)`.

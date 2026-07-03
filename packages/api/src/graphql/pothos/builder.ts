@@ -7,12 +7,12 @@ import type { User } from "../../models/User";
 import { db, fullSchema } from "../../drizzle/client";
 
 /**
- * Pothos schema builder for the Sequelize/TypeGraphQL -> Drizzle/Pothos migration.
+ * Pothos schema builder (replaced the former TypeGraphQL setup).
  *
- * Phase 2 replaced TypeGraphQL with Pothos (types backed by Sequelize model
- * instances). Phase 4 migrates types domain-by-domain to `builder.drizzleObject`
- * (via `@pothos/plugin-drizzle`); both backings coexist during the strangler. The
- * emitted schema must stay byte-compatible with schema.graphql (`npm run schema:check`).
+ * Object types are backed by Drizzle via `builder.drizzleObject`
+ * (`@pothos/plugin-drizzle`) plus plain object refs for mapped/computed shapes.
+ * The emitted schema must stay byte-compatible with schema.graphql
+ * (`npm run schema:check`).
  */
 
 export interface Context {

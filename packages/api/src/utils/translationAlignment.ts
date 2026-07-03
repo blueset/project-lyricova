@@ -5,7 +5,7 @@ import { getTranslationAlignmentLLMPrompt } from "./llmPrompt";
 /**
  * Align a translation to the original text via an LLM, returning the aligned
  * translation lines joined by newlines. Shared by the GraphQL `translationAlignment`
- * query (TypeGraphQL today, Pothos during the migration).
+ * query.
  */
 export async function translationAlignment(
   original: string,

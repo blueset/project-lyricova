@@ -23,15 +23,15 @@ import {
  * primary key, which is both unnecessary (the parent row already carries the
  * column) and unreliable when the parent is a *mapped* M2M result rather than a
  * plugin-loaded row. Direct reads work uniformly for query rows, mapped M2M
- * targets, and (transitionally) Sequelize instances.
+ * targets, and plain mapped rows.
  *
  * FK / self-ref associations use `t.relation` (auto-dataloaded by primary key).
  *
  * The schema's many-to-many fields carry the junction row on the *target* entity
- * (a Sequelize `belongsToMany` idiom: e.g. `Song.artists` returns Artists each
- * exposing `ArtistOfSong`). drizzle-orm has no through-relations, so these are
- * resolved with an explicit junction query, attaching the junction row to each
- * mapped target (read back by the target's reflected junction field).
+ * (mirroring the original `belongsToMany` idiom: e.g. `Song.artists` returns
+ * Artists each exposing `ArtistOfSong`). drizzle-orm has no through-relations, so
+ * these are resolved with an explicit junction query, attaching the junction row
+ * to each mapped target (read back by the target's reflected junction field).
  */
 
 builder.drizzleObjectFields("Songs", (t) => {

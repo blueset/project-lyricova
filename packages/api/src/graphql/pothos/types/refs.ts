@@ -10,20 +10,19 @@ import type {
 /**
  * Central object references for every model-backed GraphQL type.
  *
- * Phase 4 migrates the data layer to Drizzle. The interconnected **music entity
- * cluster** (Song/Album/Artist/MusicFile/VideoFile/Playlist) is backed by
+ * The interconnected **music entity cluster**
+ * (Song/Album/Artist/MusicFile/VideoFile/Playlist) is backed by
  * `builder.drizzleObject(table, { name })`, which creates + names the GraphQL type
  * here and returns the cached `DrizzleObjectRef`; their fields are attached in the
  * type modules via `builder.drizzleObjectFields(ref, ...)`. `t.relation` fields are
- * auto-dataloaded by the plugin (parents resolve by primary key even when fed from
- * a non-Drizzle source, so the cluster interoperates during the strangler).
+ * auto-dataloaded by the plugin (parents resolve by primary key).
  *
  * Junction leaf types (ArtistOfSong/ArtistOfAlbum/SongInAlbum/FileInPlaylist) are
  * plain `objectRef` typed to their Drizzle row shape (they expose only scalars +
  * SIMPLE_ENUM_ARRAY columns; populated as reflected fields off mapped M2M results).
  *
- * Blog types (Entry/Verse/Pulse/Tag/User/...) remain Sequelize-backed objectRefs
- * until their own migration commit.
+ * Blog types (Entry/Verse/Pulse/Tag/User/...) are plain `objectRef`s backed by
+ * explicit Drizzle queries.
  */
 
 // --- Music entity cluster (Drizzle-backed) ---
