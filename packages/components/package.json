@@ -19,11 +19,13 @@
   "dependencies": {
     "@apollo/client": "^3.13.6",
     "@ark-ui/react": "^5.5.0",
+    "@graphql-typed-document-node/core": "^3.2.0",
     "@hookform/resolvers": "^5.0.1",
     "@microsoft/clarity": "^1.0.0",
     "@mui/icons-material": "^7.0.1",
     "@mui/material": "^7.0.1",
     "@mui/x-data-grid": "^7.28.3",
+    "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-portal": "^1.1.5",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
