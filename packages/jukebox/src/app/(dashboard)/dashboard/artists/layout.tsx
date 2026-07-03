@@ -2,12 +2,12 @@
 
 import type { ReactNode } from "react";
 import React from "react";
-import { gql, useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
   AlertDescription,
 } from "@lyricova/components/components/ui/alert";
-import type { Artist } from "@lyricova/api/graphql/types";
 import { useRouter } from "next/navigation";
 import {
   Avatar,
@@ -27,8 +27,8 @@ import {
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 
-const ARTIST_INFO_LIST_QUERY = gql`
-  query {
+const ARTIST_INFO_LIST_QUERY = graphql(`
+  query ArtistInfoList {
     artists {
       id
       utaiteDbId
@@ -38,19 +38,20 @@ const ARTIST_INFO_LIST_QUERY = gql`
       mainPictureUrl
     }
   }
-`;
+`);
 
-const ARTIST_OVERWRITE_MUTATION = gql`
-  mutation ($id: Int!) {
+const ARTIST_OVERWRITE_MUTATION = graphql(`
+  mutation ArtistOverwrite($id: Int!) {
     enrolArtistFromVocaDB(artistId: $id) {
       id
+      utaiteDbId
       name
       sortOrder
       incomplete
       mainPictureUrl
     }
   }
-`;
+`);
 
 interface Props {
   children: ReactNode;
@@ -68,7 +69,7 @@ type ArtistTableData = {
 export default function ArtistInfoLayout({ children }: Props) {
   const router = useRouter();
   const apolloClient = useApolloClient();
-  const query = useQuery<{ artists: Artist[] }>(ARTIST_INFO_LIST_QUERY);
+  const query = useQuery(ARTIST_INFO_LIST_QUERY);
 
   const columns: ColumnDef<ArtistTableData>[] = [
     {
@@ -137,16 +138,14 @@ export default function ArtistInfoLayout({ children }: Props) {
         const utaiteDbId = row.original.utaiteDbId;
 
         const handleOverwrite = async () => {
-          const result = await apolloClient.mutate<{
-            enrolArtistFromVocaDB: Artist;
-          }>({
+          const result = await apolloClient.mutate({
             mutation: ARTIST_OVERWRITE_MUTATION,
             variables: { id: artistId },
           });
           if (result.data?.enrolArtistFromVocaDB) {
             const updated = result.data.enrolArtistFromVocaDB;
             query.updateQuery((prev) => ({
-              artists: prev.artists.map((v: Artist) =>
+              artists: prev.artists.map((v) =>
                 v.id === updated.id ? updated : v
               ),
             }));

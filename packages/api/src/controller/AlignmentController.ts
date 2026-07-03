@@ -1,7 +1,10 @@
 import { NextFunction, Router, Request, Response } from "express";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 import { YOHANE_SERVER_URL } from "../utils/secret";
-import { MusicFile } from "../models/MusicFile";
+import { eq } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { MusicFiles } from "../drizzle/schema";
+import { fullPathOf } from "../utils/musicFileScan";
 import fetch from "node-fetch";
 import { Readable } from "stream";
 import FormData from "form-data";
@@ -26,11 +29,11 @@ export class AlignmentController {
     if (!fileId || isNaN(fileId)) {
       return res.status(400).json({ error: "Invalid fileId" });
     }
-    const musicFile = await MusicFile.findByPk(parseInt(fileId));
+    const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(fileId)) });
     if (!musicFile) {
       return res.status(404).json({ error: "Music file not found" });
     }
-    const path = musicFile.fullPath;
+    const path = fullPathOf(musicFile.path);
     if (!existsSync(path)) {
       return res.status(404).json({ status: 404, message: "File not found" });
     }
@@ -174,11 +177,11 @@ export class AlignmentController {
     if (!fileId || isNaN(fileId)) {
       return res.status(400).json({ error: "Invalid fileId" });
     }
-    const musicFile = await MusicFile.findByPk(parseInt(fileId));
+    const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(fileId)) });
     if (!musicFile) {
       return res.status(404).json({ error: "Music file not found" });
     }
-    const path = musicFile.fullPath;
+    const path = fullPathOf(musicFile.path);
     if (!existsSync(path)) {
       return res.status(404).json({ status: 404, message: "File not found" });
     }

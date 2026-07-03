@@ -3,9 +3,8 @@
 import type { ReactNode } from "react";
 import { useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { gql, useQuery } from "@apollo/client";
-import type { DocumentNode } from "@apollo/client/core";
-import type { MusicFilesPagination } from "@lyricova/api/graphql/types";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { Alert, AlertTitle } from "@lyricova/components/components/ui/alert";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Badge } from "@lyricova/components/components/ui/badge";
@@ -22,8 +21,8 @@ import {
 } from "lucide-react";
 import { NavHeader } from "../../NavHeader";
 
-const PENDING_REVIEW_FILES_QUERY = gql`
-  query {
+const PENDING_REVIEW_FILES_QUERY = graphql(`
+  query PendingReviewFilesLayout {
     musicFiles(first: -1) {
       totalCount
       edges {
@@ -35,7 +34,7 @@ const PENDING_REVIEW_FILES_QUERY = gql`
       }
     }
   }
-` as DocumentNode;
+`);
 
 interface Props {
   children: ReactNode;
@@ -46,9 +45,7 @@ export default function ReviewLayout({ children }: Props) {
   const params = useParams();
   const fileId = parseInt(params.fileId as string);
 
-  const needReviewQuery = useQuery<{ musicFiles: MusicFilesPagination }>(
-    PENDING_REVIEW_FILES_QUERY
-  );
+  const needReviewQuery = useQuery(PENDING_REVIEW_FILES_QUERY);
   const edges = needReviewQuery.data?.musicFiles.edges;
 
   let content = (

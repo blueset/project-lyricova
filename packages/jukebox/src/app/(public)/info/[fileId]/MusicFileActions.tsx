@@ -1,8 +1,7 @@
 import { addTrackToNext } from "@/redux/public/playlist";
 import { useAppDispatch } from "@/redux/public/store";
-import { DocumentNode, gql, useLazyQuery, useQuery } from "@apollo/client";
-import { LyricsKitLyrics, MusicFile } from "@lyricova/api/graphql/types";
-import { MusicFileFragments } from "@lyricova/components";
+import { useLazyQuery, useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 import {
@@ -14,8 +13,8 @@ import {
 import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
-const SINGLE_FILE_SONG_QUERY = gql`
-  query ($id: Int!) {
+const SINGLE_FILE_SONG_QUERY = graphql(`
+  query MusicFileActionsSingleFile($id: Int!) {
     musicFile(id: $id) {
       id
       ...MusicFileForPlaylistAttributes
@@ -27,6 +26,7 @@ const SINGLE_FILE_SONG_QUERY = gql`
         lines {
           content
           attachments {
+            translation
             translations
             furigana {
               content
@@ -38,11 +38,9 @@ const SINGLE_FILE_SONG_QUERY = gql`
       }
     }
   }
+`);
 
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
-
-const ROMAJI_QUERY = gql`
+const ROMAJI_QUERY = graphql(`
   query RomajiTransliteration(
     $text: String!
     $furigana: [[FuriganaLabel!]!]! = []
@@ -51,25 +49,14 @@ const ROMAJI_QUERY = gql`
       romaji
     }
   }
-`;
-
-type MusicFileWithLyrics = MusicFile & {
-  lrcxLyrics?: string;
-  lrcLyrics?: string;
-  lyrics?: LyricsKitLyrics;
-};
+`);
 
 export function MusicFileActions({ fileId }: { fileId: number }) {
-  const query = useQuery<{ musicFile: MusicFileWithLyrics }>(
-    SINGLE_FILE_SONG_QUERY,
-    {
-      variables: { id: fileId },
-    },
-  );
+  const query = useQuery(SINGLE_FILE_SONG_QUERY, {
+    variables: { id: fileId },
+  });
   const dispatch = useAppDispatch();
-  const [fetchRomaji] = useLazyQuery<{
-    transliterate: { romaji: string[] };
-  }>(ROMAJI_QUERY);
+  const [fetchRomaji] = useLazyQuery(ROMAJI_QUERY);
 
   const handlePlayNext = () => {
     if (query.data?.musicFile) {

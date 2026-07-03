@@ -1,15 +1,12 @@
 "use client";
 
-import { gql, useApolloClient } from "@apollo/client";
-import type { Song as SongModel } from "@lyricova/api/graphql/types";
-import type { Album } from "@lyricova/api/graphql/types";
+import { useApolloClient } from "@apollo/client";
+import type { Song as SongModel } from "@lyricova/components/gql/schema";
 import {
   SelectSongEntityBox,
   TransliterationAdornment,
-  AlbumFragments,
 } from "@lyricova/components";
 import * as z from "zod";
-import type { DocumentNode } from "graphql";
 import { toast } from "sonner";
 import { useNamedState } from "../../../hooks/useNamedState";
 import { useForm } from "react-hook-form";
@@ -49,34 +46,31 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
+import { graphql } from "@lyricova/components/gql";
 
-const UPDATE_MUSIC_FILE_INFO_MUTATION = gql`
-  mutation ($id: Int!, $data: MusicFileInput!) {
+const UPDATE_MUSIC_FILE_INFO_MUTATION = graphql(`
+  mutation UpdateMusicFileInfo($id: Int!, $data: MusicFileInput!) {
     writeTagsToMusicFile(id: $id, data: $data) {
       trackName
     }
   }
-` as DocumentNode;
+`);
 
-const IMPORT_ALBUM_MUTATION = gql`
-  mutation ($id: Int!) {
+const IMPORT_ALBUM_MUTATION = graphql(`
+  mutation DashboardImportAlbumFromVocaDB($id: Int!) {
     enrolAlbumFromVocaDB(albumId: $id) {
       ...SelectAlbumEntry
     }
   }
+`);
 
-  ${AlbumFragments.SelectAlbumEntry}
-` as DocumentNode;
-
-const IMPORT_ALBUM_UTAITE_DB_MUTATION = gql`
-  mutation ($id: Int!) {
+const IMPORT_ALBUM_UTAITE_DB_MUTATION = graphql(`
+  mutation DashboardImportAlbumFromUtaiteDB($id: Int!) {
     enrolAlbumFromUtaiteDB(albumId: $id) {
       ...SelectAlbumEntry
     }
   }
-
-  ${AlbumFragments.SelectAlbumEntry}
-` as DocumentNode;
+`);
 
 type Song = Pick<SongModel, "id" | "name" | "sortOrder"> & {
   albums: Pick<
@@ -181,9 +175,7 @@ export default function InfoPanel({
 
     toggleImporting(true);
     try {
-      const result = await apolloClient.mutate<{
-        enrolAlbumFromVocaDB: Partial<Album>;
-      }>({
+      const result = await apolloClient.mutate({
         mutation: IMPORT_ALBUM_MUTATION,
         variables: {
           id: albumId,
@@ -218,9 +210,7 @@ export default function InfoPanel({
 
     toggleImporting(true);
     try {
-      const result = await apolloClient.mutate<{
-        enrolAlbumFromUtaiteDB: Partial<Album>;
-      }>({
+      const result = await apolloClient.mutate({
         mutation: IMPORT_ALBUM_UTAITE_DB_MUTATION,
         variables: {
           id: utaiteDbId,
@@ -247,9 +237,7 @@ export default function InfoPanel({
 
   const onSubmit = async (values: FormProps) => {
     try {
-      const result = await apolloClient.mutate<{
-        writeTagsToMusicFile: { trackName: string };
-      }>({
+      const result = await apolloClient.mutate({
         mutation: UPDATE_MUSIC_FILE_INFO_MUTATION,
         variables: {
           id: fileId,

@@ -1,6 +1,5 @@
 import { useCallback } from "react";
-import { gql, useQuery } from "@apollo/client";
-import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
+import { useQuery } from "@apollo/client";
 import { Link } from "@lyricova/components";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
@@ -19,9 +18,10 @@ import {
 } from "@lyricova/components/components/ui/tooltip";
 import { toast } from "sonner";
 import { Copy } from "lucide-react";
+import { graphql } from "@lyricova/components/gql";
 
-const VOCADB_LYRICS_QUERY = gql`
-  query ($id: Int!) {
+const VOCADB_LYRICS_QUERY = graphql(`
+  query VocaDbLyricsDialogLyrics($id: Int!) {
     vocaDBLyrics(id: $id) {
       id
       translationType
@@ -31,7 +31,7 @@ const VOCADB_LYRICS_QUERY = gql`
       value
     }
   }
-`;
+`);
 
 interface Props {
   isOpen: boolean;
@@ -48,7 +48,7 @@ export default function VocaDBLyricsDialog({
     toggleOpen(false);
   }, [toggleOpen]);
 
-  const query = useQuery<{ vocaDBLyrics: VocaDBLyricsEntry[] }>(
+  const query = useQuery(
     VOCADB_LYRICS_QUERY,
     {
       variables: { id: songId },

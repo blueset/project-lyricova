@@ -1,6 +1,8 @@
-import { Playlist } from "../models/Playlist";
 import type { Request, Response } from "express";
 import { Router } from "express";
+import { eq } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { Playlists, FileInPlaylists } from "../drizzle/schema";
 
 export class PlaylistController {
   public router: Router;
@@ -56,15 +58,22 @@ export class PlaylistController {
    *                 message: "Playlist not found."
    */
   public buildPlaylist = async (req: Request, res: Response) => {
-    const playlist = await Playlist.findByPk(req.params.slug);
-    if (playlist === null) {
+    const playlist = await db.query.Playlists.findFirst({
+      where: eq(Playlists.slug, req.params.slug),
+    });
+    if (!playlist) {
       return res
         .status(404)
         .json({ status: 404, message: "Playlist not found." });
     }
 
     let text = `#EXTM3U\n#EXTENC:UTF-8\n#PLAYLIST:${playlist.name}\n`;
-    (await playlist.$get("files")).forEach((file) => {
+    const rows = await db.query.FileInPlaylists.findMany({
+      where: eq(FileInPlaylists.playlistId, playlist.slug),
+      with: { file: true },
+      orderBy: (f, { asc }) => [asc(f.sortOrder)],
+    });
+    rows.forEach(({ file }) => {
       text += `#EXTINF:${Math.round(file.duration)},${file.trackName} - ${
         file.artistName || "Various artists"
       }\n${file.path}\n`;

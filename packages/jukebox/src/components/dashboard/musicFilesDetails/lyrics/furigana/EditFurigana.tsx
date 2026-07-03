@@ -1,9 +1,8 @@
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import EditFuriganaLine from "./EditFuriganaLine";
 import { FuriganaLineButton } from "./FuriganaLineButton";
-import type { DocumentNode } from "graphql";
 import { CheckSquare, Wand2 } from "lucide-react";
 import { useVocaDBFurigana } from "./FuriganaRomajiMatching";
 import { ApplyAllFurigana } from "./ApplyAllFurigana";
@@ -17,14 +16,15 @@ import {
 } from "@lyricova/components/components/ui/tooltip";
 import { useLyricsStore } from "../state/editorState";
 import { useShallow } from "zustand/shallow";
+import { graphql } from "@lyricova/components/gql";
 
-const KARAOKE_TRANSLITERATION_QUERY = gql`
-  query ($text: String!) {
+const KARAOKE_TRANSLITERATION_QUERY = graphql(`
+  query EditFuriganaKaraoke($text: String!) {
     transliterate(text: $text) {
       karaoke(language: "ja")
     }
   }
-` as DocumentNode;
+`);
 
 interface Props {
   fileId: number;
@@ -59,15 +59,17 @@ export default function EditFurigana({ fileId, songId }: Props) {
   const overwriteFurigana = useCallback(async () => {
     try {
       const lines = useLyricsStore.getState().lyrics?.lines ?? [];
-      const result = await apolloClient.query<{
-        transliterate: { karaoke: [string, string][][] };
-      }>({
+      const result = await apolloClient.query({
         query: KARAOKE_TRANSLITERATION_QUERY,
         variables: { text: lines.map((v) => v.content).join("\n") },
         fetchPolicy: "network-only",
       });
       if (result.data) {
-        setFurigana(result.data.transliterate.karaoke);
+        setFurigana(
+          result.data.transliterate.karaoke.map((line) =>
+            line.map(([base, furigana]) => [base, furigana])
+          )
+        );
       }
     } catch (e) {
       console.error(`Error occurred while generating furigana: ${e}`, e);

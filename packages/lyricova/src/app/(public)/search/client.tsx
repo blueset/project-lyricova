@@ -8,7 +8,7 @@ import { Search, LoaderCircle } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import _ from "lodash";
-import type { Entry } from "@lyricova/api/graphql/types";
+import type { Entry } from "@/frontendUtils/restTypes";
 import { SingleEntry } from "@/components/public/listing/SingleEntry";
 import { motion } from "framer-motion";
 import { usePathname, useSearchParams } from "next/navigation";

@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useEffect, useContext, ReactNode } from "react";
-import type { User } from "@lyricova/api/graphql/types";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "../gql";
+import type { CurrentUserQuery } from "../gql/graphql";
 import { useRouter } from "next/navigation";
 import { LS_JWT_KEY } from "../utils/localStorage";
 import React from "react";
@@ -18,8 +19,8 @@ interface AuthContextProps {
   children?: ReactNode;
 }
 
-const CURRENT_USER_QUERY = gql`
-  query {
+const CURRENT_USER_QUERY = graphql(`
+  query CurrentUser {
     currentUser {
       id
       username
@@ -29,12 +30,9 @@ const CURRENT_USER_QUERY = gql`
       emailMD5
     }
   }
-`;
+`);
 
-type QueriedUser = Pick<
-  User,
-  "id" | "username" | "displayName" | "role" | "creationDate" | "emailMD5"
->;
+type QueriedUser = NonNullable<CurrentUserQuery["currentUser"]>;
 
 type UserContextType = {
   user?: QueriedUser;
@@ -48,9 +46,7 @@ export function AuthContext({
   children,
   noRedirect,
 }: AuthContextProps) {
-  const { loading, error, data } = useQuery<{ currentUser: QueriedUser }>(
-    CURRENT_USER_QUERY
-  );
+  const { loading, error, data } = useQuery(CURRENT_USER_QUERY);
 
   const router = useRouter();
   const postHog = usePostHog();

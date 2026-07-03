@@ -1,10 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
-import { User } from "../models/User";
+import { eq } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { Users } from "../drizzle/schema";
 
 export class UserController {
   async all(request: Request, response: Response, next: NextFunction) {
     try {
-      return await User.findAll();
+      return await db.query.Users.findMany();
     } catch (e) {
       next(e);
     }
@@ -12,7 +14,9 @@ export class UserController {
 
   async one(request: Request, response: Response, next: NextFunction) {
     try {
-      return await User.findByPk(request.params.id);
+      return await db.query.Users.findFirst({
+        where: eq(Users.id, parseInt(request.params.id)),
+      });
     } catch (e) {
       next(e);
     }
@@ -20,8 +24,13 @@ export class UserController {
 
   async save(request: Request, response: Response, next: NextFunction) {
     try {
-      const user = await User.findByPk(request.body.id);
-      return await user.update(request.body);
+      await db
+        .update(Users)
+        .set(request.body)
+        .where(eq(Users.id, request.body.id));
+      return await db.query.Users.findFirst({
+        where: eq(Users.id, request.body.id),
+      });
     } catch (e) {
       next(e);
     }
@@ -29,8 +38,7 @@ export class UserController {
 
   async remove(request: Request, response: Response, next: NextFunction) {
     try {
-      const userToRemove = await User.findByPk(request.params.id);
-      await userToRemove.destroy();
+      await db.delete(Users).where(eq(Users.id, parseInt(request.params.id)));
     } catch (e) {
       next(e);
     }

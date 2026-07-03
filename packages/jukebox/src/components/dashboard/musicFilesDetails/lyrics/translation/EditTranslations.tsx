@@ -1,13 +1,13 @@
-import { gql, useQuery } from "@apollo/client";
-import type { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
+import { useQuery } from "@apollo/client";
 import LanguagePicker from "./LanguagePicker";
 import LyricsTools from "./LyricsTools";
 import VocaDBTranslationImport from "./VocaDBTranslationImport";
 import TranslationPreview from "./TranslationPreview";
 import TranslationTextarea from "./TranslationTextarea";
+import { graphql } from "@lyricova/components/gql";
 
-const VOCADB_LYRICS_QUERY = gql`
-  query ($id: Int!) {
+const VOCADB_LYRICS_QUERY = graphql(`
+  query EditTranslationsVocaDbLyrics($id: Int!) {
     vocaDBLyrics(id: $id) {
       id
       translationType
@@ -17,16 +17,14 @@ const VOCADB_LYRICS_QUERY = gql`
       value
     }
   }
-`;
+`);
 
 interface Props {
   songId: number;
 }
 
 export default function EditTranslations({ songId }: Props) {
-  const { data: vocaDBTranslationsData } = useQuery<{
-    vocaDBLyrics: VocaDBLyricsEntry[];
-  }>(VOCADB_LYRICS_QUERY, {
+  const { data: vocaDBTranslationsData } = useQuery(VOCADB_LYRICS_QUERY, {
     variables: { id: songId },
   });
 

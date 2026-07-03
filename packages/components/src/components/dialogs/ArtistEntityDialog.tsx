@@ -1,13 +1,12 @@
 "use client";
 
-import type { Artist } from "@lyricova/api/graphql/types";
 import { useCallback } from "react";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
+import { graphql } from "../../gql";
+import type { SelectArtistEntryFragment } from "../../gql/graphql";
 import { TransliterationAdornment } from "../adornments/TransliterationAdornment";
 import { toast } from "sonner";
 import { z } from "zod";
-import { ArtistFragments } from "../../utils/fragments";
-import { DocumentNode } from "graphql";
 import { Button } from "@lyricova/components/components/ui/button";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
@@ -42,25 +41,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { AvatarField } from "../inputs/AvatarField";
 
-const NEW_ARTIST_MUTATION = gql`
-  mutation ($data: ArtistInput!) {
+const NEW_ARTIST_MUTATION = graphql(`
+  mutation NewArtist($data: ArtistInput!) {
     newArtist(data: $data) {
       ...SelectArtistEntry
     }
   }
+`);
 
-  ${ArtistFragments.SelectArtistEntry}
-` as DocumentNode;
-
-const UPDATE_ARTIST_MUTATION = gql`
-  mutation ($id: Int!, $data: ArtistInput!) {
+const UPDATE_ARTIST_MUTATION = graphql(`
+  mutation UpdateArtist($id: Int!, $data: ArtistInput!) {
     updateArtist(id: $id, data: $data) {
       ...SelectArtistEntry
     }
   }
-
-  ${ArtistFragments.SelectArtistEntry}
-` as DocumentNode;
+`);
 
 const formSchema = z.object({
   name: z.string().min(1, "Artist name is required"),
@@ -81,8 +76,8 @@ interface Props {
   toggleOpen: (value: boolean) => void;
   keyword: string;
   setKeyword: (value: string) => void;
-  setArtist: (value: Partial<Artist>) => void;
-  artistToEdit?: Partial<Artist>;
+  setArtist: (value: Partial<SelectArtistEntryFragment>) => void;
+  artistToEdit?: Partial<SelectArtistEntryFragment>;
 }
 
 export function ArtistEntityDialog({
@@ -128,9 +123,7 @@ export function ArtistEntityDialog({
   const onSubmit = async (data: FormValues) => {
     try {
       if (create) {
-        const result = await apolloClient.mutate<{
-          newArtist: Partial<Artist>;
-        }>({
+        const result = await apolloClient.mutate({
           mutation: NEW_ARTIST_MUTATION,
           variables: { data },
         });
@@ -143,11 +136,9 @@ export function ArtistEntityDialog({
           handleClose();
         }
       } else {
-        const result = await apolloClient.mutate<{
-          updateArtist: Partial<Artist>;
-        }>({
+        const result = await apolloClient.mutate({
           mutation: UPDATE_ARTIST_MUTATION,
-          variables: { id: artistId, data },
+          variables: { id: artistId!, data },
         });
 
         if (result.data) {

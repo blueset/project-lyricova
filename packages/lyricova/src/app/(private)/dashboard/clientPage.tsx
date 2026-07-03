@@ -1,13 +1,13 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { CountCard, CountUpCard } from "@lyricova/components";
-import type { DashboardStats } from "@lyricova/api/graphql/types";
+import { graphql } from "@lyricova/components/gql";
 import { NavHeader } from "./NavHeader";
 
-const DASHBOARD_STATS_QUERY = gql`
-  query {
+const DASHBOARD_STATS_QUERY = graphql(`
+  query DashboardStats {
     dashboardStats {
       aliveStartedOn
       revampStartedOn
@@ -16,15 +16,11 @@ const DASHBOARD_STATS_QUERY = gql`
       tagsCount
     }
   }
-`;
-
-type ConvertedDashboardStats = Record<keyof DashboardStats, number>;
+`);
 
 export default function DashboardIndex() {
   const [now, setNow] = useState(new Date());
-  const { data } = useQuery<{ dashboardStats: ConvertedDashboardStats }>(
-    DASHBOARD_STATS_QUERY
-  );
+  const { data } = useQuery(DASHBOARD_STATS_QUERY);
 
   useEffect(() => {
     const timer = setInterval(() => {

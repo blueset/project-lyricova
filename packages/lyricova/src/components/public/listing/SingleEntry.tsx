@@ -1,6 +1,6 @@
 "use client";
 
-import type { Entry } from "@lyricova/api/graphql/types";
+import type { Entry } from "@/frontendUtils/restTypes";
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { TagRow } from "../TagRow";

@@ -8,8 +8,7 @@ import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
 import EditTranslations from "./lyrics/translation/EditTranslations";
 import EditFurigana from "./lyrics/furigana/EditFurigana";
-import { gql, useApolloClient } from "@apollo/client";
-import type { DocumentNode } from "graphql";
+import { useApolloClient } from "@apollo/client";
 import LyricsPreviewPanel from "./lyrics/WebVTTPreview";
 import WebAudioTaggingLyrics from "./lyrics/WebAudioTaggingLyrics";
 import InlineTagging from "./lyrics/inlineTagging/InlineTagging";
@@ -31,12 +30,13 @@ import { ProgressButton } from "@lyricova/components/components/ui/progress-butt
 import { useLyricsStore } from "./lyrics/state/editorState";
 import { useShallow } from "zustand/shallow";
 import { toast } from "sonner";
+import { graphql } from "@lyricova/components/gql";
 
-const WRITE_LYRICS_MUTATION = gql`
-  mutation ($fileId: Int!, $lyrics: String!, $ext: String!) {
+const WRITE_LYRICS_MUTATION = graphql(`
+  mutation WriteLyrics($fileId: Int!, $lyrics: String!, $ext: String!) {
     writeLyrics(fileId: $fileId, lyrics: $lyrics, ext: $ext)
   }
-` as DocumentNode;
+`);
 
 function PreviewPanel({ fileId }: { fileId: number }) {
   const { lrcx, lrc } = useLyricsStore(
@@ -126,7 +126,7 @@ export default function LyricsEditDialog({
     const promises: Promise<unknown>[] = [];
     if (lrc) {
       promises.push(
-        apolloClient.mutate<{ writeLyrics: boolean }>({
+        apolloClient.mutate({
           mutation: WRITE_LYRICS_MUTATION,
           variables: { fileId, lyrics: lrc, ext: "lrc" },
         })
@@ -134,7 +134,7 @@ export default function LyricsEditDialog({
     }
     if (lrcx && lrcx !== lrc) {
       promises.push(
-        apolloClient.mutate<{ writeLyrics: boolean }>({
+        apolloClient.mutate({
           mutation: WRITE_LYRICS_MUTATION,
           variables: { fileId, lyrics: lrcx, ext: "lrcx" },
         })

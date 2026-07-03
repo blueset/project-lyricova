@@ -1,4 +1,4 @@
-import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
+import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { LyricsVirtualizer } from "../components/LyricsVirtualizer";
 import { RowRenderer } from "./RowRenderer";
 import type { ComponentProps } from "react";

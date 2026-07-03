@@ -1,4 +1,4 @@
-import type { Entry } from "@lyricova/api/graphql/types";
+import type { Entry } from "@/frontendUtils/restTypes";
 import { formatDistanceToNow } from "date-fns";
 
 function formatTime(date: Date | number) {

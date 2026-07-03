@@ -1,10 +1,8 @@
 import { ReactNode, useCallback } from "react";
-import { gql, useQuery } from "@apollo/client";
-import type { HmikuAtWikiEntry } from "@lyricova/api/graphql/types";
+import { useQuery } from "@apollo/client";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@lyricova/components";
-import type { DocumentNode } from "graphql";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
   Dialog,
@@ -14,9 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@lyricova/components/components/ui/dialog";
+import { graphql } from "@lyricova/components/gql";
 
-const HMIKU_LYRICS_QUERY = gql`
-  query ($id: String!) {
+const HMIKU_LYRICS_QUERY = graphql(`
+  query HmikuLyrics($id: String!) {
     hmikuLyrics(id: $id) {
       id
       name
@@ -24,7 +23,7 @@ const HMIKU_LYRICS_QUERY = gql`
       lyrics
     }
   }
-` as DocumentNode;
+`);
 
 interface Props {
   isOpen: boolean;
@@ -44,7 +43,7 @@ export default function HMikuWikiResultDialog({
     [toggleOpen]
   );
 
-  const query = useQuery<{ hmikuLyrics: HmikuAtWikiEntry }>(
+  const query = useQuery(
     HMIKU_LYRICS_QUERY,
     {
       variables: { id: articleId || "" },

@@ -1,16 +1,14 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import {
-  MusicFileFragments,
   useAuthContext,
   NextComposedLink,
 } from "@lyricova/components";
 import React from "react";
-import type { Artist } from "@lyricova/api/graphql/types";
 import _ from "lodash";
 import filesize from "filesize";
-import type { DocumentNode } from "graphql";
 import {
   playTrack,
   toggleShuffle,
@@ -45,8 +43,8 @@ import {
 import TrackListRow from "./TrackListRow";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
-const ARTIST_DETAILS_QUERY = gql`
-  query ($id: Int!) {
+const ARTIST_DETAILS_QUERY = graphql(`
+  query LibraryArtistDetails($id: Int!) {
     artist(id: $id) {
       id
       utaiteDbId
@@ -81,9 +79,7 @@ const ARTIST_DETAILS_QUERY = gql`
       }
     }
   }
-
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
+`);
 
 interface Props {
   id: number;
@@ -94,7 +90,7 @@ export default function ArtistDetails({ id, type }: Props) {
   const { user } = useAuthContext();
   const dispatch = useAppDispatch();
 
-  const query = useQuery<{ artist: Artist }>(ARTIST_DETAILS_QUERY, {
+  const query = useQuery(ARTIST_DETAILS_QUERY, {
     variables: { id },
   });
   let content;

@@ -3,7 +3,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { gql, useQuery, useApolloClient } from "@apollo/client";
+import { useQuery, useApolloClient } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import {
@@ -22,17 +23,17 @@ import {
 } from "@lyricova/components/components/ui/alert";
 import { NavHeader } from "../NavHeader";
 
-const GET_SITE_META_QUERY = gql`
+const GET_SITE_META_QUERY = graphql(`
   query GetSiteMeta($key: String!, $default: String!) {
     getSiteMeta(key: $key, default: $default)
   }
-`;
+`);
 
-const SET_SITE_META_MUTATION = gql`
+const SET_SITE_META_MUTATION = graphql(`
   mutation SetSiteMeta($key: String!, $value: String!) {
     setSiteMeta(key: $key, value: $value)
   }
-`;
+`);
 
 const formSchema = z.object({
   llmModels: z

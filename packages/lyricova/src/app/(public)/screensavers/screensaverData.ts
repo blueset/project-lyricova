@@ -1,5 +1,5 @@
 import { apiBaseUrl } from "@/utils/consts";
-import { Entry, Verse } from "@lyricova/api/graphql/types";
+import { Entry, Verse } from "@/frontendUtils/restTypes";
 
 export interface ScreensaverProps {
   entries: Entry[];

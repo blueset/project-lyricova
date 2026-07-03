@@ -2,9 +2,9 @@
 
 import { Progress } from "@lyricova/components/components/ui/progress";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
-import { gql, useApolloClient, useMutation } from "@apollo/client";
+import { useApolloClient, useMutation } from "@apollo/client";
 import { useCallback } from "react";
-import type { MusicFilesScanOutcome } from "@lyricova/api/graphql/types";
+import { graphql } from "@lyricova/components/gql";
 import { useNamedState } from "@/hooks/useNamedState";
 import { NavHeader } from "../NavHeader";
 import {
@@ -21,8 +21,8 @@ import {
   ItemTitle,
 } from "@lyricova/components/components/ui/item";
 
-const SCAN_MUTATION = gql`
-  mutation ($sessionId: String!) {
+const SCAN_MUTATION = graphql(`
+  mutation ScanMusicFiles($sessionId: String!) {
     scan(sessionId: $sessionId) {
       added
       deleted
@@ -30,10 +30,10 @@ const SCAN_MUTATION = gql`
       unchanged
     }
   }
-`;
+`);
 
-const SCAN_PROGRESS_SUBSCRIPTION = gql`
-  subscription ($sessionId: String!) {
+const SCAN_PROGRESS_SUBSCRIPTION = graphql(`
+  subscription ScanProgress($sessionId: String!) {
     scanProgress(sessionId: $sessionId) {
       total
       added
@@ -42,7 +42,7 @@ const SCAN_PROGRESS_SUBSCRIPTION = gql`
       unchanged
     }
   }
-`;
+`);
 
 function LinearProgressWithLabel({ value }: { value: number }) {
   return (
@@ -58,9 +58,7 @@ function LinearProgressWithLabel({ value }: { value: number }) {
 }
 
 export default function Scan() {
-  const [scan, scanResult] = useMutation<{ scan: MusicFilesScanOutcome }>(
-    SCAN_MUTATION
-  );
+  const [scan, scanResult] = useMutation(SCAN_MUTATION);
   const [progress, setProgress] = useNamedState(0, "progress");
   const [scanning, setScanning] = useNamedState(false, "scanning");
   const apolloClient = useApolloClient();
@@ -71,9 +69,7 @@ export default function Scan() {
     const scanPromise = scan({ variables: { sessionId } });
     setProgress(0);
 
-    const subscription = apolloClient.subscribe<{
-      scanProgress: MusicFilesScanOutcome;
-    }>({
+    const subscription = apolloClient.subscribe({
       query: SCAN_PROGRESS_SUBSCRIPTION,
       variables: { sessionId },
     });

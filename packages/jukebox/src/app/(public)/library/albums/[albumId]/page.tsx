@@ -1,22 +1,18 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import {
-  AlbumFragments,
-  MusicFileFragments,
   formatArtists,
   Link,
   useAuthContext,
   NextComposedLink,
 } from "@lyricova/components";
 import React, { Fragment } from "react";
-import type { Album } from "@lyricova/api/graphql/types";
 import _ from "lodash";
 import filesize from "filesize";
-import type { Song } from "@lyricova/api/graphql/types";
-import type { MusicFile } from "@lyricova/api/graphql/types";
-import type { DocumentNode } from "graphql";
+import type { LibraryAlbumDetailsQuery } from "@lyricova/components/gql/graphql";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, playTrack, toggleShuffle } from "@/redux/public/playlist";
 import {
@@ -43,8 +39,8 @@ import {
 import TrackListRow from "@/components/public/library/TrackListRow";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
-const ALBUM_QUERY = gql`
-  query ($id: Int!) {
+const ALBUM_QUERY = graphql(`
+  query LibraryAlbumDetails($id: Int!) {
     album(id: $id) {
       files {
         ...MusicFileForPlaylistAttributes
@@ -55,13 +51,13 @@ const ALBUM_QUERY = gql`
       ...FullAlbumEntry
     }
   }
+`);
 
-  ${AlbumFragments.FullAlbumEntry}
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
+type AlbumTrack = NonNullable<LibraryAlbumDetailsQuery["album"]>["songs"][number];
+type AlbumFile = NonNullable<LibraryAlbumDetailsQuery["album"]>["files"][number];
 
-type ConvertedTrack = Song & {
-  foundFile: MusicFile | null;
+type ConvertedTrack = AlbumTrack & {
+  foundFile: AlbumFile | null;
 };
 
 export default function LibrarySingleAlbum() {
@@ -70,7 +66,7 @@ export default function LibrarySingleAlbum() {
   const albumId = albumIdString ? parseInt(albumIdString as string) : null;
   const dispatch = useAppDispatch();
 
-  const query = useQuery<{ album: Album }>(ALBUM_QUERY, {
+  const query = useQuery(ALBUM_QUERY, {
     variables: { id: albumId },
   });
 

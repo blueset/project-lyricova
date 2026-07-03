@@ -1,8 +1,8 @@
 "use client";
 
-import { gql, useApolloClient } from "@apollo/client";
-import type { DocumentNode } from "graphql";
-import type { MusicFile } from "@lyricova/api/graphql/types";
+import { useApolloClient } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import {
   Command,
   CommandEmpty,
@@ -31,8 +31,8 @@ import _ from "lodash";
 import type { FieldValues, FieldPath, UseFormReturn } from "react-hook-form";
 import { useController } from "react-hook-form";
 
-const LOCAL_ARTIST_ENTITY_QUERY = gql`
-  query ($text: String!) {
+const LOCAL_ARTIST_ENTITY_QUERY = graphql(`
+  query LocalArtistEntitySearch($text: String!) {
     searchMusicFiles(keywords: $text) {
       id
       trackName
@@ -44,7 +44,11 @@ const LOCAL_ARTIST_ENTITY_QUERY = gql`
       hasCover
     }
   }
-` as DocumentNode;
+`);
+
+type LocalMusicFile = ResultOf<
+  typeof LOCAL_ARTIST_ENTITY_QUERY
+>["searchMusicFiles"][number];
 
 interface Props<
   TFieldValues extends FieldValues = FieldValues,
@@ -65,15 +69,15 @@ export default function SelectMusicFileBox<
     name: fieldName,
     control: form.control,
   });
-  const value = field.value as MusicFile | null;
+  const value = field.value as LocalMusicFile | null;
 
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [options, setOptions] = useState<MusicFile[]>([]);
+  const [options, setOptions] = useState<LocalMusicFile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchOptions = useCallback(
-    _.debounce(async (searchText: string, currentValue: MusicFile | null) => {
+    _.debounce(async (searchText: string, currentValue: LocalMusicFile | null) => {
       if (searchText === "") {
         setOptions(currentValue ? [currentValue] : []);
         setIsLoading(false);
@@ -81,12 +85,10 @@ export default function SelectMusicFileBox<
       }
 
       setIsLoading(true);
-      let result: MusicFile[] = [];
+      let result: LocalMusicFile[] = [];
 
       try {
-        const apolloResult = await apolloClient.query<{
-          searchMusicFiles: MusicFile[];
-        }>({
+        const apolloResult = await apolloClient.query({
           query: LOCAL_ARTIST_ENTITY_QUERY,
           variables: { text: searchText },
         });

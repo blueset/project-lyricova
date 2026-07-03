@@ -1,10 +1,9 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import React from "react";
-import type { Album } from "@lyricova/api/graphql/types";
 import { NextComposedLink, formatArtistsPlainText } from "@lyricova/components";
-import type { DocumentNode } from "graphql";
 import {
   Alert,
   AlertDescription,
@@ -15,8 +14,8 @@ import { cn } from "@lyricova/components/utils";
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
-const ALBUMS_QUERY = gql`
-  query {
+const ALBUMS_QUERY = graphql(`
+  query LibraryAlbums {
     albumsHasFiles {
       id
       name
@@ -30,10 +29,10 @@ const ALBUMS_QUERY = gql`
       }
     }
   }
-` as DocumentNode;
+`);
 
 export default function LibraryAlbums() {
-  const query = useQuery<{ albumsHasFiles: Album[] }>(ALBUMS_QUERY);
+  const query = useQuery(ALBUMS_QUERY);
 
   if (query.loading)
     return (

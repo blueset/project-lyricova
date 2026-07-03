@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
-import { Entry } from "../models/Entry";
-import { Verse } from "../models/Verse";
-import { Op, fn } from "sequelize";
-import { entryListingCondition } from "../utils/queries";
+import { and, desc, eq, inArray, isNull, like, or, sql, type SQL } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { Entries, Verses, SongOfEntries, TagOfEntries } from "../drizzle/schema";
+import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
 import { resolve } from "path";
 import { readFile } from "node:fs/promises";
 import { Resvg } from "@resvg/resvg-js";
@@ -105,33 +105,50 @@ export class LyricovaPublicApiController {
       ? req.query.query[0]
       : req.query.query;
 
-    const entryIds = (await Entry.findAll({
-      attributes: ["id"],
-      where: {
-        [Op.or]: [
-          { title: { [Op.like]: `%${query}%` } },
-          { producersName: { [Op.like]: `%${query}%` } },
-          { vocalistsName: { [Op.like]: `%${query}%` } },
-        ],
-      },
-    })) as Entry[];
-    const verseEntryIds = (await Verse.findAll({
-      attributes: ["entryId"],
-      where: { text: { [Op.like]: `%${query}%` } },
-    })) as Verse[];
+    const titleMatches = await db
+      .select({ id: Entries.id })
+      .from(Entries)
+      .where(
+        and(
+          isNull(Entries.deletionDate),
+          or(
+            like(Entries.title, `%${query}%`),
+            like(Entries.producersName, `%${query}%`),
+            like(Entries.vocalistsName, `%${query}%`)
+          )
+        )
+      );
+    const verseMatches = await db
+      .select({ entryId: Verses.entryId })
+      .from(Verses)
+      .where(and(isNull(Verses.deletionDate), like(Verses.text, `%${query}%`)));
 
     const ids = [
-      ...entryIds.map((e) => e.id),
-      ...verseEntryIds.map((e) => e.entryId),
-    ];
+      ...titleMatches.map((e) => e.id),
+      ...verseMatches.map((e) => e.entryId),
+    ].filter((x): x is number => x != null);
 
-    const result = (await Entry.findAll({
-      ...entryListingCondition,
-      where: {
-        id: { [Op.in]: ids },
-      },
-      order: [["recentActionDate", "DESC"]],
-    })) as Entry[];
+    const distinctIds = [...new Set(ids)];
+    if (distinctIds.length === 0) {
+      res.status(200).json([]);
+      return;
+    }
+
+    const ordered = await db
+      .select({ id: Entries.id })
+      .from(Entries)
+      .where(
+        and(
+          inArray(Entries.id, distinctIds),
+          isNull(Entries.deletionDate),
+          entryHasMainVerse
+        )
+      )
+      .orderBy(desc(Entries.recentActionDate));
+    const result = await fetchEntriesListing(
+      ordered.map((r) => r.id),
+      "asc"
+    );
 
     res.status(200).json(result);
   };
@@ -194,60 +211,103 @@ export class LyricovaPublicApiController {
    */
   public verse = async (req: Request, res: Response) => {
     const type = String(req.query.type);
-    const languages = Array.isArray(req.query.languages)
+    const languages = (Array.isArray(req.query.languages)
       ? req.query.languages
-      : (req.query.languages as string)?.split(",");
-    const tags = Array.isArray(req.query.tags)
+      : (req.query.languages as string)?.split(",")) as string[] | undefined;
+    const tags = (Array.isArray(req.query.tags)
       ? req.query.tags
-      : (req.query.tags as string)?.split(",");
+      : (req.query.tags as string)?.split(",")) as string[] | undefined;
 
-    const verseCondition: any = { [Op.and]: [] };
-    if (type === "original") verseCondition[Op.and].push({ isOriginal: true });
-    else if (type === "main") verseCondition[Op.and].push({ isMain: true });
+    const conds: (SQL | undefined)[] = [isNull(Verses.deletionDate)];
+    if (type === "original") conds.push(eq(Verses.isOriginal, true));
+    else if (type === "main") conds.push(eq(Verses.isMain, true));
     if (languages?.length)
-      verseCondition[Op.and].push({
-        [Op.or]: languages.map((l) => ({ language: { [Op.startsWith]: l } })),
-      });
+      conds.push(or(...languages.map((l) => like(Verses.language, `${l}%`))));
 
-    const verse = (
-      await Verse.findOne({
-        attributes: [
-          "text",
-          "typingSequence",
-          "stylizedText",
-          "html",
-          "isMain",
-          "isOriginal",
-          "language",
-          "entryId",
-        ],
-        where: verseCondition[Op.and].length > 0 ? verseCondition : undefined,
-        order: fn("RAND"),
-        include: [
-          {
-            association: "entry",
-            attributes: ["id", "title", "producersName", "vocalistsName"],
-            required: tags?.length ? true : false,
-            include: [
-              {
-                association: "tags",
-                attributes: ["name", "slug", "color"],
-                through: { attributes: [] },
-                required: tags?.length ? true : false,
-                where: tags?.length
-                  ? { [Op.or]: tags.map((tag) => ({ slug: tag })) }
-                  : undefined,
-              },
-            ],
-          },
-        ],
-      })
-    )?.toJSON();
+    let picker = db
+      .select({ id: Verses.id, entryId: Verses.entryId })
+      .from(Verses)
+      .innerJoin(
+        Entries,
+        and(eq(Entries.id, Verses.entryId), isNull(Entries.deletionDate))
+      )
+      .$dynamic();
+    if (tags?.length) {
+      picker = picker.innerJoin(
+        TagOfEntries,
+        and(
+          eq(TagOfEntries.entryId, Verses.entryId),
+          inArray(TagOfEntries.tagId, tags)
+        )
+      );
+    }
+    const picked = await picker
+      .where(and(...conds))
+      .orderBy(sql`RAND()`)
+      .limit(1);
 
-    if (!verse) {
+    if (!picked.length) {
       res.status(404).json({ message: "No verse found" });
       return;
     }
+
+    const v = await db.query.Verses.findFirst({
+      where: eq(Verses.id, picked[0].id),
+      columns: {
+        text: true,
+        typingSequence: true,
+        stylizedText: true,
+        html: true,
+        isMain: true,
+        isOriginal: true,
+        language: true,
+        entryId: true,
+      },
+    });
+    const e = await db.query.Entries.findFirst({
+      where: eq(Entries.id, picked[0].entryId as number),
+      columns: {
+        id: true,
+        title: true,
+        producersName: true,
+        vocalistsName: true,
+      },
+      with: {
+        tagOfEntries: {
+          columns: {},
+          with: { tag: { columns: { name: true, slug: true, color: true } } },
+          ...(tags?.length
+            ? {
+                where: (toe: any, { inArray }: any) =>
+                  inArray(toe.tagId, tags),
+              }
+            : {}),
+        },
+      },
+    });
+
+    if (!e) {
+      res.status(404).json({ message: "No verse found" });
+      return;
+    }
+
+    const verse = {
+      text: v.text,
+      typingSequence: v.typingSequence,
+      stylizedText: v.stylizedText,
+      html: v.html,
+      isMain: v.isMain,
+      isOriginal: v.isOriginal,
+      language: v.language,
+      entryId: v.entryId,
+      entry: {
+        id: e.id,
+        title: e.title,
+        producersName: e.producersName,
+        vocalistsName: e.vocalistsName,
+        tags: (e.tagOfEntries ?? []).map((t) => t.tag),
+      },
+    };
 
     res.status(200).header("Access-Control-Allow-Origin", "*").json(verse);
   };
@@ -296,23 +356,25 @@ export class LyricovaPublicApiController {
       ? req.query.songId[0]
       : req.query.songId;
 
-    const result = (await Entry.findAll({
-      attributes: entryListingCondition.attributes,
-      include: [
-        ...entryListingCondition.include,
-        {
-          association: "songs",
-          attributes: [],
-          where: { id: songId },
-        },
-      ],
-      order: [["recentActionDate", "DESC"]],
-    })) as Entry[];
+    const idRows = await db
+      .select({ id: Entries.id })
+      .from(Entries)
+      .innerJoin(SongOfEntries, eq(SongOfEntries.entryId, Entries.id))
+      .where(
+        and(
+          eq(SongOfEntries.songId, parseInt(songId as string)),
+          isNull(Entries.deletionDate),
+          entryHasMainVerse
+        )
+      )
+      .orderBy(desc(Entries.recentActionDate));
+    const distinctIds = [...new Set(idRows.map((r) => r.id))];
+    const result = await fetchEntriesListing(distinctIds, "asc");
 
     res
       .status(200)
       .header("Access-Control-Allow-Origin", "*")
-      .json(result.map((e) => e.toJSON()));
+      .json(result);
   };
 
   /**
@@ -348,12 +410,20 @@ export class LyricovaPublicApiController {
   public og = async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.entryId);
 
-    const entry = await Entry.findByPk(id, {
-      include: ["verses", "tags"],
+    const entryRow = await db.query.Entries.findFirst({
+      where: and(eq(Entries.id, id), isNull(Entries.deletionDate)),
+      with: {
+        verses: { where: (v: any, { isNull }: any) => isNull(v.deletionDate) },
+        tagOfEntries: { columns: {}, with: { tag: true } },
+      },
     });
-    if (!entry) {
+    if (!entryRow) {
       return res.status(404).json({ message: `${id} is not found.` });
     }
+    const entry = {
+      ...entryRow,
+      tags: (entryRow.tagOfEntries ?? []).map((t) => t.tag),
+    };
 
     const artistString = !entry.producersName
       ? entry.vocalistsName

@@ -8,12 +8,12 @@ import passport from "passport";
 
 import registerRoutes from "./routes";
 import { SESSION_SECRET } from "./utils/secret";
-import sequelize from "./db";
-import SequelizeStoreConstructor from "connect-session-sequelize";
+import expressMySQLSession from "express-mysql-session";
+import { pool as drizzlePool } from "./drizzle/client";
 import { postHog } from "./utils/posthog";
 import { setupExpressErrorHandler } from "posthog-node";
 
-const SequelizeStore = SequelizeStoreConstructor(session.Store);
+const MySQLStore = expressMySQLSession(session as any);
 
 export default () => {
   const app = express();
@@ -29,9 +29,8 @@ export default () => {
       saveUninitialized: false,
       proxy: true,
       secret: SESSION_SECRET,
-      store: new SequelizeStore({
-        db: sequelize,
-      }),
+      // Reuse the Drizzle mysql2 pool (shares the DB_URI connection settings).
+      store: new MySQLStore({}, (drizzlePool as any).pool),
     })
   );
   app.use(passport.initialize());

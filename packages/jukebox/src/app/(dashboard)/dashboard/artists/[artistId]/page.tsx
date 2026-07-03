@@ -1,20 +1,18 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
-import type { Artist } from "@lyricova/api/graphql/types";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { useRouter, useParams } from "next/navigation";
-import { ArtistFragments, ArtistEntityDialog } from "@lyricova/components";
+import { ArtistEntityDialog } from "@lyricova/components";
 import { useCallback } from "react";
 
-const ARTIST_ENTITY_QUERY = gql`
-  query ($id: Int!) {
+const ARTIST_ENTITY_QUERY = graphql(`
+  query DashboardArtistEntity($id: Int!) {
     artist(id: $id) {
       ...SelectArtistEntry
     }
   }
-
-  ${ArtistFragments.SelectArtistEntry}
-`;
+`);
 
 export default function ArtistEntitySingle() {
   const router = useRouter();
@@ -24,7 +22,7 @@ export default function ArtistEntitySingle() {
     router.push("/dashboard/artists");
   }, [router]);
 
-  const query = useQuery<{ artist?: Artist }>(ARTIST_ENTITY_QUERY, {
+  const query = useQuery(ARTIST_ENTITY_QUERY, {
     variables: { id },
   });
   let isOpen = false;

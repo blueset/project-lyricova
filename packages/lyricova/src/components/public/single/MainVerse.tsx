@@ -1,4 +1,4 @@
-import type { Entry } from "@lyricova/api/graphql/types";
+import type { Entry } from "@/frontendUtils/restTypes";
 import { TagRow } from "../TagRow";
 import classes from "./MainVerse.module.scss";
 import { VerseRenderer } from "./VerseRenderer";

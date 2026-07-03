@@ -1,11 +1,12 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { ReactNode, useMemo, useRef, useState } from "react";
 import { FocusedLyrics } from "@/components/public/lyrics/focused";
 import { PlainLyrics } from "@/components/public/lyrics/plain";
 import { LyricsSwitchButton } from "@/components/public/LyricsSwitchButton";
-import type { LyricsKitLyrics } from "@lyricova/api/graphql/types";
+import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { SlantedLyrics } from "@/components/public/lyrics/slanted";
 import { ParagraphLyrics } from "@/components/public/lyrics/paragraph";
 import { TypingFocusedLyrics } from "@/components/public/lyrics/typingFocused";
@@ -13,7 +14,6 @@ import { TypingStackedLyrics } from "@/components/public/lyrics/typingStack";
 import { KaraokeJaLyrics } from "@/components/public/lyrics/karaokeJa";
 import { StrokeLyrics } from "@/components/public/lyrics/stroke";
 import { useClientPersistentState } from "@/frontendUtils/clientPersistantState";
-import type { DocumentNode } from "graphql";
 import { useAppDispatch, useAppSelector } from "@/redux/public/store";
 import { currentSongSelector } from "@/redux/public/playlist";
 import { toggleFullscreen } from "@/redux/public/display";
@@ -38,10 +38,12 @@ const useYuuruka =
   args.get("kawaii") === "true" ||
   args.get("kawaii") === "1";
 
-const LYRICS_QUERY = gql`
+const LYRICS_QUERY = graphql(`
   query Lyrics($id: Int!) {
     musicFile(id: $id) {
       lyrics {
+        length
+        quality
         translationLanguages
         lines {
           content
@@ -61,6 +63,11 @@ const LYRICS_QUERY = gql`
               leftIndex
               rightIndex
             }
+            romaji {
+              content
+              leftIndex
+              rightIndex
+            }
             role
             minor
           }
@@ -68,7 +75,7 @@ const LYRICS_QUERY = gql`
       }
     }
   }
-` as DocumentNode;
+`);
 
 // prettier-ignore
 const MODULE_LIST = {
@@ -102,13 +109,10 @@ export default function Index() {
   const isFullscreen = useAppSelector((s) => s.display.isFullscreen);
   const dispatch = useAppDispatch();
 
-  const lyricsQuery = useQuery<{ musicFile?: { lyrics: LyricsKitLyrics } }>(
-    LYRICS_QUERY,
-    {
-      variables: currentSong?.id ? { id: currentSong.id } : undefined,
-      skip: !currentSong?.id,
-    }
-  );
+  const lyricsQuery = useQuery(LYRICS_QUERY, {
+    variables: currentSong?.id ? { id: currentSong.id } : undefined,
+    skip: !currentSong?.id,
+  });
 
   const languages = useMemo(() => {
     const languages =

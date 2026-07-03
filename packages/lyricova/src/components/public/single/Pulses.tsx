@@ -1,11 +1,11 @@
-import type { Pulse } from "@lyricova/api/graphql/types";
+import type { Pulse } from "@/frontendUtils/restTypes";
 import { Divider } from "../Divider";
 import classes from "./Pulses.module.scss";
 import { formatDistanceToNow, format } from "date-fns";
 
 interface PulsesProps {
   pulses: Pulse[];
-  creationDate: Date;
+  creationDate: string | Date;
 }
 
 export function Pulses({ pulses, creationDate }: PulsesProps) {

@@ -1,12 +1,12 @@
-import { ApolloClient, gql, useQuery } from "@apollo/client";
+import { ApolloClient, useQuery } from "@apollo/client";
 import { kanaToHira, romaToHira } from "@lyricova/components";
 import { FURIGANA, LyricsLine } from "lyrics-kit/core";
-import { VocaDBLyricsEntry } from "@lyricova/api/graphql/types";
 import diff from "fast-diff";
 import { useMemo } from "react";
+import { graphql } from "@lyricova/components/gql";
 
-const VOCADB_LYRICS_QUERY = gql`
-  query ($id: Int!) {
+const VOCADB_LYRICS_QUERY = graphql(`
+  query FuriganaRomajiVocaDbLyrics($id: Int!) {
     vocaDBLyrics(id: $id) {
       id
       translationType
@@ -16,12 +16,10 @@ const VOCADB_LYRICS_QUERY = gql`
       value
     }
   }
-`;
+`);
 
 export function useVocaDBFurigana(songId: number) {
-  const { data } = useQuery<{
-    vocaDBLyrics: VocaDBLyricsEntry[];
-  }>(VOCADB_LYRICS_QUERY, {
+  const { data } = useQuery(VOCADB_LYRICS_QUERY, {
     variables: { id: songId },
     skip: songId === 0,
   });
@@ -134,9 +132,7 @@ export async function furiganaRomajiMatching({
     return kanaToHira(kanaLine.join("").trimEnd());
   });
 
-  const vocaDBLyrics = await apolloClient.query<{
-    vocaDBLyrics: VocaDBLyricsEntry[];
-  }>({
+  const vocaDBLyrics = await apolloClient.query({
     query: VOCADB_LYRICS_QUERY,
     variables: { id: songId },
   });

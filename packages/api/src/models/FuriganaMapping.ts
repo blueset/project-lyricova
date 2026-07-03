@@ -1,12 +1,3 @@
-import {
-  Column,
-  Model,
-  Table,
-  DataType,
-  AllowNull,
-} from "sequelize-typescript";
-import { Field, ObjectType } from "type-graphql";
-
 /**
  * @openapi
  * components:
@@ -43,24 +34,12 @@ import { Field, ObjectType } from "type-graphql";
  *         - text
  *         - furigana
  */
-@ObjectType()
-@Table({ updatedAt: false, createdAt: false, modelName: "FuriganaMapping" })
-export class FuriganaMapping extends Model<FuriganaMapping> {
-  @Field()
-  @Column({ type: new DataType.STRING(128), primaryKey: true })
+export class FuriganaMapping {
   text: string;
 
-  @Field()
-  @Column({ type: new DataType.STRING(128), primaryKey: true })
   furigana: string;
 
-  @Field({ nullable: true })
-  @AllowNull
-  @Column({ type: new DataType.STRING(128) })
   segmentedText?: string;
 
-  @Field({ nullable: true })
-  @AllowNull
-  @Column({ type: new DataType.STRING(128) })
   segmentedFurigana?: string;
 }

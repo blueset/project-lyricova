@@ -2,7 +2,9 @@ import type { Request, Response, NextFunction } from "express";
 import { Router } from "express";
 import axios from "axios";
 import cheerio from "cheerio";
-import { Song } from "../models/Song";
+import { and, eq, isNull } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { Songs } from "../drizzle/schema";
 import type { SongForApiContract } from "../types/vocadb";
 import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit/service";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
@@ -151,7 +153,9 @@ export class LyricsProvidersController {
   ) => {
     try {
       const id = req.params.id;
-      const elm = await Song.findByPk(id);
+      const elm: any = await db.query.Songs.findFirst({
+        where: and(eq(Songs.id, parseInt(id)), isNull(Songs.deletionDate)),
+      });
       if (elm) {
         if (elm.vocaDbJson.lyrics && elm.vocaDbJson.lyrics.length) {
           return res.json(elm.vocaDbJson.lyrics);

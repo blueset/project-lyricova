@@ -1,12 +1,12 @@
 import { useEffect, useRef, useCallback } from "react";
 import { ApolloClient } from "@apollo/client";
-import { gql, DocumentNode } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 
-const BUMP_PLAY_COUNT_MUTATION = gql`
+const BUMP_PLAY_COUNT_MUTATION = graphql(`
   mutation bumpPlayCount($id: Int!) {
     bumpPlayCount(fileId: $id)
   }
-` as DocumentNode;
+`);
 
 interface Track {
   id: number;

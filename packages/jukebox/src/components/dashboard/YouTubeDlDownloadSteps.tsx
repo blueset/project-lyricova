@@ -7,14 +7,13 @@ import type {
 } from "react";
 import { useCallback } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
-import { gql, useApolloClient, useLazyQuery } from "@apollo/client";
+import { useApolloClient, useLazyQuery } from "@apollo/client";
 import { toast } from "sonner";
 import filesize from "filesize";
 import { ExternalLink } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";
 import { swapExt } from "@/frontendUtils/path";
-import type { DocumentNode } from "graphql";
-import { MusicFile, YouTubeDlProgressType } from "@lyricova/api/graphql/types";
+import { graphql } from "@lyricova/components/gql";
 import {
   Step,
   StepContent,
@@ -35,14 +34,14 @@ import { Label } from "@lyricova/components/components/ui/label";
 import { cn } from "@lyricova/components/utils";
 import { PVContract, SongForApiContract } from "@/types/vocadb";
 
-const YOUTUBE_DL_INFO_QUERY = gql`
-  query ($url: String!) {
+const YOUTUBE_DL_INFO_QUERY = graphql(`
+  query YouTubeDlInfo($url: String!) {
     youtubeDlGetInfo(url: $url)
   }
-` as DocumentNode;
+`);
 
-const YOUTUBE_DL_DOWNLOAD_MUTATION = gql`
-  mutation (
+const YOUTUBE_DL_DOWNLOAD_MUTATION = graphql(`
+  mutation YouTubeDlDownload(
     $url: String!
     $filename: String
     $overwrite: Boolean
@@ -54,11 +53,12 @@ const YOUTUBE_DL_DOWNLOAD_MUTATION = gql`
       sessionId: $sessionId
     )
   }
-` as DocumentNode;
+`);
 
-const YOUTUBE_DL_DOWNLOAD_PROGRESS_SUBSCRIPTION = gql`
+const YOUTUBE_DL_DOWNLOAD_PROGRESS_SUBSCRIPTION = graphql(`
   subscription YouTubeDlDownloadProgress($sessionId: String!) {
     youTubeDlDownloadProgress(sessionId: $sessionId) {
+      __typename
       ... on YouTubeDlProgressDone {
         type
       }
@@ -79,37 +79,37 @@ const YOUTUBE_DL_DOWNLOAD_PROGRESS_SUBSCRIPTION = gql`
       }
     }
   }
-`;
+`);
 
-const SINGLE_FILE_SCAN_MUTATION = gql`
-  mutation ($path: String!) {
+const SINGLE_FILE_SCAN_MUTATION = graphql(`
+  mutation SingleFileScan($path: String!) {
     scanByPath(path: $path) {
       id
     }
   }
-` as DocumentNode;
+`);
 
 // Fetch song by internal DB id (used optimistically with VocaDB id; if not found we'll enrol)
-const SONG_QUERY = gql`
-  query ($id: Int!) {
+const SONG_QUERY = graphql(`
+  query YouTubeDlSong($id: Int!) {
     song(id: $id) {
       id
     }
   }
-` as DocumentNode;
+`);
 
 // Enrol a song from VocaDB
-const ENROL_SONG_FROM_VOCADB_MUTATION = gql`
-  mutation ($songId: Int!) {
+const ENROL_SONG_FROM_VOCADB_MUTATION = graphql(`
+  mutation EnrolSongFromVocaDb($songId: Int!) {
     enrolSongFromVocaDB(songId: $songId) {
       id
     }
   }
-` as DocumentNode;
+`);
 
 // Get existing tag fields for a music file
-const MUSIC_FILE_FIELDS_QUERY = gql`
-  query ($id: Int!) {
+const MUSIC_FILE_FIELDS_QUERY = graphql(`
+  query YouTubeDlMusicFileFields($id: Int!) {
     musicFile(id: $id) {
       id
       trackName
@@ -120,16 +120,16 @@ const MUSIC_FILE_FIELDS_QUERY = gql`
       artistSortOrder
     }
   }
-` as DocumentNode;
+`);
 
 // Write tags to a music file (attach songId while preserving other fields)
-const WRITE_TAGS_TO_MUSIC_FILE_MUTATION = gql`
-  mutation ($id: Int!, $data: MusicFileInput!) {
+const WRITE_TAGS_TO_MUSIC_FILE_MUTATION = graphql(`
+  mutation WriteTagsToMusicFile($id: Int!, $data: MusicFileInput!) {
     writeTagsToMusicFile(id: $id, data: $data) {
       id
     }
   }
-` as DocumentNode;
+`);
 
 interface YouTubeDlInfo {
   fulltitle: string;
@@ -192,17 +192,22 @@ export default function YouTubeDlDownloadSteps({
     [toggleOverwrite]
   );
 
-  const [fetchInfo, fetchInfoQuery] = useLazyQuery<{
-    youtubeDlGetInfo: YouTubeDlInfo;
-  }>(YOUTUBE_DL_INFO_QUERY);
-  const fetchInfoQueryData = fetchInfoQuery?.data?.youtubeDlGetInfo;
+  const [fetchInfo, fetchInfoQuery] = useLazyQuery(YOUTUBE_DL_INFO_QUERY);
+  const fetchInfoQueryData = fetchInfoQuery?.data?.youtubeDlGetInfo as unknown as
+    | YouTubeDlInfo
+    | undefined;
   const handleVerify = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
       const result = await fetchInfo({ variables: { url: videoURL } });
       setStep((v) => v + 1);
       if (result?.data?.youtubeDlGetInfo) {
-        setFilename(swapExt(result.data.youtubeDlGetInfo._filename, ".mp3"));
+        setFilename(
+          swapExt(
+            (result.data.youtubeDlGetInfo as unknown as YouTubeDlInfo)._filename,
+            ".mp3"
+          )
+        );
       }
       return false;
     },
@@ -221,17 +226,13 @@ export default function YouTubeDlDownloadSteps({
 
     try {
       const sessionId = `${Math.random()}`;
-      const outcomePromise = apolloClient.mutate<{
-        youtubeDlDownloadAudio: string | null;
-      }>({
+      const outcomePromise = apolloClient.mutate({
         mutation: YOUTUBE_DL_DOWNLOAD_MUTATION,
         variables: { url: videoURL, filename, overwrite, sessionId },
       });
 
       // Subscribe to download progress.
-      const subscription = apolloClient.subscribe<{
-        youTubeDlDownloadProgress: YouTubeDlProgressType;
-      }>({
+      const subscription = apolloClient.subscribe({
         query: YOUTUBE_DL_DOWNLOAD_PROGRESS_SUBSCRIPTION,
         variables: { sessionId },
       });
@@ -241,15 +242,15 @@ export default function YouTubeDlDownloadSteps({
         },
         next(x) {
           console.log("subscription event", x);
-          if (x.data.youTubeDlDownloadProgress?.type === "progress") {
-            const progress = x.data.youTubeDlDownloadProgress;
+          const progress = x.data.youTubeDlDownloadProgress;
+          if (progress?.__typename === "YouTubeDlProgressValue") {
             setDownloadProgress((progress.current / progress.total) * 100);
             setDownloadInfo(
               `${progress.current}/${progress.total}, ${progress.speed}, ETA: ${progress.eta}`
             );
-          } else if (x.data.youTubeDlDownloadProgress?.type === "message") {
+          } else if (progress?.__typename === "YouTubeDlProgressMessage") {
             setDownloadProgress(null);
-            setDownloadInfo(x.data.youTubeDlDownloadProgress.message);
+            setDownloadInfo(progress.message);
           } else {
             setDownloadProgress(null);
             setDownloadInfo("");
@@ -273,9 +274,7 @@ export default function YouTubeDlDownloadSteps({
       }
 
       // Scan the file downloaded.
-      const scanOutcome = await apolloClient.mutate<{
-        scanByPath: { id: number };
-      }>({
+      const scanOutcome = await apolloClient.mutate({
         mutation: SINGLE_FILE_SCAN_MUTATION,
         variables: { path: filePath },
       });
@@ -317,9 +316,7 @@ export default function YouTubeDlDownloadSteps({
         // 3) Check if the song already exists in our DB; if not, enrol it
         let internalSongId: number | undefined;
         try {
-          const existing = await apolloClient.query<{
-            song: { id: number } | null;
-          }>({
+          const existing = await apolloClient.query({
             query: SONG_QUERY,
             variables: { id: vocaSongId },
             fetchPolicy: "no-cache",
@@ -333,9 +330,7 @@ export default function YouTubeDlDownloadSteps({
           setDownloadInfo(
             `Song not found locally. Enrolling from VocaDB (#${vocaSongId})…`
           );
-          const enrol = await apolloClient.mutate<{
-            enrolSongFromVocaDB: { id: number };
-          }>({
+          const enrol = await apolloClient.mutate({
             mutation: ENROL_SONG_FROM_VOCADB_MUTATION,
             variables: { songId: vocaSongId },
           });
@@ -349,9 +344,7 @@ export default function YouTubeDlDownloadSteps({
 
         // 4) Read existing tag fields of the music file
         const fileId = scanOutcome.data.scanByPath.id;
-        const fileData = await apolloClient.query<{
-          musicFile: MusicFile | null;
-        }>({
+        const fileData = await apolloClient.query({
           query: MUSIC_FILE_FIELDS_QUERY,
           variables: { id: fileId },
           fetchPolicy: "no-cache",

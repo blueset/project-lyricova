@@ -5,7 +5,7 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
+import { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import { LyricsAnimationRef } from "../components/AnimationRef.type";
 import { LineRenderer, TimedSpanProps } from "../components/RubyLineRenderer";
 import { safeDuration } from "../../../../frontendUtils/safeDuration";

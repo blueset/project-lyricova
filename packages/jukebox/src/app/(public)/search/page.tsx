@@ -3,9 +3,8 @@
 import { useNamedState } from "@/hooks/useNamedState";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import React, { useCallback } from "react";
-import { gql, useLazyQuery } from "@apollo/client";
-import { MusicFileFragments } from "@lyricova/components";
-import type { MusicFile } from "@lyricova/api/graphql/types";
+import { useLazyQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import TrackListRow from "@/components/public/library/TrackListRow";
 import { Search as SearchIcon } from "lucide-react";
 import { Input } from "@lyricova/components/components/ui/input";
@@ -15,15 +14,13 @@ import {
   AlertDescription,
 } from "@lyricova/components/components/ui/alert";
 
-const MUSIC_FILE_SEARCH_QUERY = gql`
-  query ($keywords: String!) {
+const MUSIC_FILE_SEARCH_QUERY = graphql(`
+  query SearchMusicFiles($keywords: String!) {
     searchMusicFiles(keywords: $keywords) {
       ...MusicFileForPlaylistAttributes
     }
   }
-
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-`;
+`);
 
 export default function Search() {
   const [searchKeyword, setSearchKeyword] = useNamedState("", "searchKeyword");
@@ -35,9 +32,7 @@ export default function Search() {
     [setSearchKeyword]
   );
 
-  const [searchFiles, searchFilesQuery] = useLazyQuery<{
-    searchMusicFiles: MusicFile[];
-  }>(MUSIC_FILE_SEARCH_QUERY);
+  const [searchFiles, searchFilesQuery] = useLazyQuery(MUSIC_FILE_SEARCH_QUERY);
 
   const handleSearch = useCallback(
     async (e: FormEvent) => {

@@ -1,8 +1,12 @@
 "use client";
 
-import type { Album } from "@lyricova/api/graphql/types";
 import { Fragment, useCallback } from "react";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
+import { graphql } from "../../gql";
+import type {
+  SelectAlbumEntryFragment,
+  FullAlbumEntryFragment,
+} from "../../gql/graphql";
 import { toast } from "sonner";
 import { Plus, X, Disc3, Music, Trash, RefreshCw } from "lucide-react";
 import { z } from "zod";
@@ -46,7 +50,6 @@ import { TrackNameAdornment } from "../adornments/TrackNameAdornment";
 import { SelectSongEntityBox } from "../inputs/SelectSongEntityBox";
 import { SelectArtistEntityBox } from "../inputs/SelectArtistEntityBox";
 import { AvatarField } from "../inputs/AvatarField";
-import { AlbumFragments } from "../../utils/fragments";
 
 interface MultiSelectOption {
   value: string;
@@ -114,35 +117,29 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const NEW_ALBUM_MUTATION = gql`
-  mutation ($data: AlbumInput!) {
+const NEW_ALBUM_MUTATION = graphql(`
+  mutation NewAlbum($data: AlbumInput!) {
     newAlbum(data: $data) {
       ...SelectAlbumEntry
     }
   }
+`);
 
-  ${AlbumFragments.SelectAlbumEntry}
-`;
-
-const UPDATE_ALBUM_MUTATION = gql`
-  mutation ($id: Int!, $data: AlbumInput!) {
+const UPDATE_ALBUM_MUTATION = graphql(`
+  mutation UpdateAlbum($id: Int!, $data: AlbumInput!) {
     updateAlbum(id: $id, data: $data) {
       ...SelectAlbumEntry
     }
   }
+`);
 
-  ${AlbumFragments.SelectAlbumEntry}
-`;
-
-const FULL_ALBUM_QUERY = gql`
-  query ($id: Int!) {
+const FULL_ALBUM_QUERY = graphql(`
+  query FullAlbum($id: Int!) {
     album(id: $id) {
       ...FullAlbumEntry
     }
   }
-
-  ${AlbumFragments.FullAlbumEntry}
-`;
+`);
 
 interface Props {
   isOpen: boolean;
@@ -150,8 +147,8 @@ interface Props {
   toggleOpen: (value: boolean) => void;
   keyword: string;
   setKeyword: (value: string) => void;
-  setAlbum: (value: Partial<Album>) => void;
-  albumToEdit?: Partial<Album>;
+  setAlbum: (value: Partial<SelectAlbumEntryFragment>) => void;
+  albumToEdit?: Partial<FullAlbumEntryFragment>;
 }
 
 export function AlbumEntityDialog({
@@ -185,15 +182,17 @@ export function AlbumEntityDialog({
           coverUrl: albumToEdit.coverUrl ?? "",
           artists:
             albumToEdit.artists?.map((v) => ({
-              ...v.ArtistOfAlbum,
               artist: v,
+              roles: v.ArtistOfAlbum?.roles ?? [],
+              effectiveRoles: v.ArtistOfAlbum?.effectiveRoles ?? [],
+              categories: v.ArtistOfAlbum?.categories ?? "",
             })) ?? [],
           songs:
             albumToEdit.songs?.map((v) => ({
-              ...v.SongInAlbum,
               song: v,
-              diskNumber: v.SongInAlbum.diskNumber ?? undefined,
-              trackNumber: v.SongInAlbum.trackNumber ?? undefined,
+              name: v.SongInAlbum?.name ?? undefined,
+              diskNumber: v.SongInAlbum?.diskNumber ?? undefined,
+              trackNumber: v.SongInAlbum?.trackNumber ?? undefined,
             })) ?? [],
         };
 
@@ -210,10 +209,10 @@ export function AlbumEntityDialog({
 
   const refresh = useCallback(async () => {
     try {
-      const result = await apolloClient.query<{ album: Album }>({
+      const result = await apolloClient.query({
         query: FULL_ALBUM_QUERY,
         variables: {
-          id: albumId,
+          id: albumId!,
         },
       });
       apolloClient.cache.evict({ id: `Album:${albumId}` });
@@ -225,15 +224,17 @@ export function AlbumEntityDialog({
           coverUrl: album.coverUrl!,
           artists:
             album.artists?.map((v) => ({
-              ...v.ArtistOfAlbum,
               artist: v,
+              roles: v.ArtistOfAlbum?.roles ?? [],
+              effectiveRoles: v.ArtistOfAlbum?.effectiveRoles ?? [],
+              categories: v.ArtistOfAlbum?.categories ?? "",
             })) ?? [],
           songs:
             album.songs?.map((v) => ({
-              ...v.SongInAlbum,
               song: v,
-              diskNumber: v.SongInAlbum.diskNumber ?? undefined,
-              trackNumber: v.SongInAlbum.trackNumber ?? undefined,
+              name: v.SongInAlbum?.name ?? undefined,
+              diskNumber: v.SongInAlbum?.diskNumber ?? undefined,
+              trackNumber: v.SongInAlbum?.trackNumber ?? undefined,
             })) ?? [],
         });
 
@@ -266,9 +267,7 @@ export function AlbumEntityDialog({
       };
 
       if (create) {
-        const result = await apolloClient.mutate<{
-          newAlbum: Partial<Album>;
-        }>({
+        const result = await apolloClient.mutate({
           mutation: NEW_ALBUM_MUTATION,
           variables: { data },
         });
@@ -281,11 +280,9 @@ export function AlbumEntityDialog({
           handleClose();
         }
       } else {
-        const result = await apolloClient.mutate<{
-          updateAlbum: Partial<Album>;
-        }>({
+        const result = await apolloClient.mutate({
           mutation: UPDATE_ALBUM_MUTATION,
-          variables: { id: albumId, data },
+          variables: { id: albumId!, data },
         });
 
         if (result.data) {

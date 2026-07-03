@@ -2,12 +2,13 @@
 
 import type { ReactNode } from "react";
 import React from "react";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
   AlertDescription,
 } from "@lyricova/components/components/ui/alert";
-import type { Album } from "@lyricova/api/graphql/types";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import { useRouter } from "next/navigation";
 import {
   Avatar,
@@ -28,8 +29,8 @@ import {
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 
-const ALBUM_INFO_LIST_QUERY = gql`
-  query {
+const ALBUM_INFO_LIST_QUERY = graphql(`
+  query AlbumInfoList {
     albums {
       id
       utaiteDbId
@@ -46,25 +47,27 @@ const ALBUM_INFO_LIST_QUERY = gql`
       coverUrl
     }
   }
-`;
+`);
 
 interface Props {
   children: ReactNode;
 }
+
+type AlbumInfo = ResultOf<typeof ALBUM_INFO_LIST_QUERY>["albums"][number];
 
 type AlbumTableData = {
   id: number;
   utaiteDbId?: number;
   name: string;
   sortOrder: string;
-  artists: Album["artists"];
+  artists: AlbumInfo["artists"];
   incomplete: boolean;
   coverUrl: string;
 };
 
 export default function AlbumInfoLayout({ children }: Props) {
   const router = useRouter();
-  const query = useQuery<{ albums: Album[] }>(ALBUM_INFO_LIST_QUERY);
+  const query = useQuery(ALBUM_INFO_LIST_QUERY);
 
   const columns: ColumnDef<AlbumTableData>[] = [
     {

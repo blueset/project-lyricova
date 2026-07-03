@@ -1,6 +1,6 @@
 "use client";
 
-import { gql, useQuery, useApolloClient } from "@apollo/client";
+import { useQuery, useApolloClient } from "@apollo/client";
 import {
   Alert,
   AlertDescription,
@@ -17,7 +17,7 @@ import { DataTable } from "@lyricova/components";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 import _ from "lodash";
-import type { Entry, Tag, Song, Verse } from "@lyricova/api/graphql/types";
+import { graphql } from "@lyricova/components/gql";
 import { DataTableColumnHeader, NextComposedLink } from "@lyricova/components";
 import { Pencil, Plus, Trash, SquareArrowUp, XCircle } from "lucide-react";
 import React, { useCallback } from "react";
@@ -30,8 +30,8 @@ import {
 import { NavHeader } from "../NavHeader";
 import { formatDistanceToNow } from "date-fns";
 
-const ENTRIES_QUERY = gql`
-  query {
+const ENTRIES_QUERY = graphql(`
+  query Entries {
     entries {
       id
       title
@@ -55,22 +55,22 @@ const ENTRIES_QUERY = gql`
       }
     }
   }
-`;
+`);
 
-const DELETE_ENTRY_MUTATION = gql`
+const DELETE_ENTRY_MUTATION = graphql(`
   mutation DeleteEntry($id: Int!) {
     deleteEntry(id: $id)
   }
-`;
+`);
 
-const BUMP_ENTRY_MUTATION = gql`
+const BUMP_ENTRY_MUTATION = graphql(`
   mutation BumpEntry($id: Int!) {
     bumpEntry(id: $id)
   }
-`;
+`);
 
 export default function Entries() {
-  const entriesQuery = useQuery<{ entries: Entry[] }>(ENTRIES_QUERY);
+  const entriesQuery = useQuery(ENTRIES_QUERY);
   const apolloClient = useApolloClient();
 
   const rows =
@@ -154,7 +154,7 @@ export default function Entries() {
         <DataTableColumnHeader column={column} title="Text" />
       ),
       cell: ({ row }) =>
-        row.original.verses.filter((v: Verse) => v.isMain)[0].text,
+        row.original.verses.filter((v) => v.isMain)[0].text,
       meta: {
         width: "1fr",
       },
@@ -167,7 +167,7 @@ export default function Entries() {
       ),
       cell: ({ row }) => (
         <div className="flex gap-1">
-          {row.original.tags.map((t: Tag) => (
+          {row.original.tags.map((t) => (
             <Badge
               key={t.slug}
               variant="outline"
@@ -192,7 +192,7 @@ export default function Entries() {
         <DataTableColumnHeader column={column} title="Songs" />
       ),
       cell: ({ row }) =>
-        row.original.songs.map((t: Song) => t.name).join(", ") || <em>None</em>,
+        row.original.songs.map((t) => t.name).join(", ") || <em>None</em>,
       meta: {
         width: "1fr",
       },

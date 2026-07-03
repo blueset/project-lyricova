@@ -1,19 +1,20 @@
-import { gql, QueryResult, useQuery } from "@apollo/client";
+import { QueryResult, useQuery } from "@apollo/client";
 import { RefObject, useEffect, useMemo, useState } from "react";
 import { useTrackwiseTimelineControl } from "./useTrackwiseTimelineControl";
 import {
   LyricsKitLyricsLine,
   LyricsKitLyrics,
-} from "@lyricova/api/graphql/types";
-import { AnimatedWord } from "@lyricova/api/graphql/types";
+} from "@lyricova/components/gql/schema";
+import { AnimatedWord } from "@lyricova/components/gql/schema";
 import { PlayerLyricsState } from "./types";
 import { usePlainPlayerLyricsState } from "./usePlainPlayerLyricsState";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
+import { graphql } from "@lyricova/components/gql";
 
 type Timeline = gsap.core.Timeline;
 
-const SEQUENCE_QUERY = gql`
+const SEQUENCE_QUERY = graphql(`
   query TypingSequence($text: String!, $furigana: [[FuriganaLabel!]!]! = []) {
     transliterate(text: $text, furigana: $furigana) {
       text
@@ -23,7 +24,7 @@ const SEQUENCE_QUERY = gql`
       }
     }
   }
-`;
+`);
 
 export interface SequenceQueryResult {
   transliterate: {
@@ -78,7 +79,7 @@ export function usePlayerLyricsTypingState(
     [lyrics.lines],
   );
 
-  const sequenceQuery = useQuery<SequenceQueryResult>(SEQUENCE_QUERY, {
+  const sequenceQuery = useQuery(SEQUENCE_QUERY, {
     variables: { text, furigana },
   });
 

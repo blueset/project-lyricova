@@ -1,6 +1,7 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { graphql } from "@lyricova/components/gql";
 import { Badge } from "@lyricova/components/components/ui/badge";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
@@ -20,27 +21,20 @@ import { NextComposedLink } from "@lyricova/components";
 import _ from "lodash";
 import AddPlaylistPopoverContent from "@/components/dashboard/AddPlaylistPopoverContent";
 import { CircleX, Plus } from "lucide-react";
-import type { DocumentNode } from "graphql";
 import { NavHeader } from "../NavHeader";
 
-const PLAYLISTS_QUERY = gql`
-  query {
+const PLAYLISTS_QUERY = graphql(`
+  query DashboardPlaylists {
     playlists {
       name
       slug
       filesCount
     }
   }
-` as DocumentNode;
+`);
 
 export default function PlaylistsPage() {
-  const playlistsQuery = useQuery<{
-    playlists: {
-      name: string;
-      slug: string;
-      filesCount: number;
-    }[];
-  }>(PLAYLISTS_QUERY);
+  const playlistsQuery = useQuery(PLAYLISTS_QUERY);
 
   let elements: ReactNode = "";
   if (playlistsQuery.error) {

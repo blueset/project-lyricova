@@ -1,4 +1,4 @@
-import type { Entry } from "@lyricova/api/graphql/types";
+import type { Entry } from "@/frontendUtils/restTypes";
 import { Fragment } from "react";
 import { Divider } from "@/components/public/Divider";
 import { Footer } from "@/components/public/Footer";

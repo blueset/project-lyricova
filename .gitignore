@@ -225,3 +225,9 @@ modules.xml
 assets
 
 .turbo
+
+# Local MySQL logical backups (transient, never commit)
+.db-backups/
+
+# Transient container-fs safety backup for devcontainer rebuilds (never commit)
+.rebuild-backup/

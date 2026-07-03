@@ -3,19 +3,24 @@
 import { useParams } from "next/navigation";
 import {
   useAuthContext,
-  MusicFileFragments,
   NextComposedLink,
 } from "@lyricova/components";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import type { TypedDocumentNode } from "@graphql-typed-document-node/core";
+import { graphql } from "@lyricova/components/gql";
+import type {
+  PlaylistDetailsQuery,
+  PlaylistNewMusicFilesQuery,
+  PlaylistPopularMusicFilesQuery,
+  PlaylistRecentMusicFilesQuery,
+  PlaylistRecentlyReviewedMusicFilesQuery,
+} from "@lyricova/components/gql/graphql";
 import _ from "lodash";
 import filesize from "filesize";
 import React from "react";
-import type { Playlist } from "@lyricova/api/graphql/types";
 import PlaylistAvatar, { gradients, hash } from "@/components/PlaylistAvatar";
-import type { DocumentNode } from "graphql";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, toggleShuffle } from "@/redux/public/playlist";
-import type { MusicFile } from "@lyricova/api/graphql/types";
 import { cn } from "@lyricova/components/utils";
 import {
   DropdownMenu,
@@ -46,8 +51,8 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
-const PLAYLIST_DETAILS_QUERY = gql`
-  query ($slug: String!) {
+const PLAYLIST_DETAILS_QUERY = graphql(`
+  query PlaylistDetails($slug: String!) {
     playlist(slug: $slug) {
       slug
       name
@@ -60,49 +65,47 @@ const PLAYLIST_DETAILS_QUERY = gql`
       }
     }
   }
+`);
 
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
-
-const NEW_QUERY = gql`
-  query {
+const NEW_QUERY = graphql(`
+  query PlaylistNewMusicFiles {
     newMusicFiles {
       ...MusicFileForPlaylistAttributes
     }
   }
+`);
 
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
-
-const RECENT_QUERY = gql`
-  query {
+const RECENT_QUERY = graphql(`
+  query PlaylistRecentMusicFiles {
     recentMusicFiles {
       ...MusicFileForPlaylistAttributes
     }
   }
+`);
 
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
-
-const POPULAR_QUERY = gql`
-  query {
+const POPULAR_QUERY = graphql(`
+  query PlaylistPopularMusicFiles {
     popularMusicFiles(limit: 100) {
       ...MusicFileForPlaylistAttributes
     }
   }
+`);
 
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
-
-const RECENTLY_REVIEWED_QUERY = gql`
-  query {
+const RECENTLY_REVIEWED_QUERY = graphql(`
+  query PlaylistRecentlyReviewedMusicFiles {
     recentlyReviewedMusicFiles {
       ...MusicFileForPlaylistAttributes
     }
   }
+`);
 
-  ${MusicFileFragments.MusicFileForPlaylistAttributes}
-` as DocumentNode;
+type PlaylistPageQuery = Partial<
+  PlaylistDetailsQuery &
+    PlaylistNewMusicFilesQuery &
+    PlaylistRecentMusicFilesQuery &
+    PlaylistPopularMusicFilesQuery &
+    PlaylistRecentlyReviewedMusicFilesQuery
+>;
 
 export default function PlaylistDetails() {
   const { slug } = useParams<{ slug: string }>();
@@ -115,13 +118,7 @@ export default function PlaylistDetails() {
     slug === "popular" ||
     slug === "recently-reviewed";
 
-  const query = useQuery<{
-    playlist?: Playlist;
-    newMusicFiles?: MusicFile[];
-    recentMusicFiles?: MusicFile[];
-    popularMusicFiles?: MusicFile[];
-    recentlyReviewedMusicFiles?: MusicFile[];
-  }>(
+  const selectedQuery = (
     slug === "new"
       ? NEW_QUERY
       : slug === "recent"
@@ -130,11 +127,11 @@ export default function PlaylistDetails() {
       ? POPULAR_QUERY
       : slug === "recently-reviewed"
       ? RECENTLY_REVIEWED_QUERY
-      : PLAYLIST_DETAILS_QUERY,
-    {
-      variables: !isPredefined ? { slug } : undefined,
-    }
-  );
+      : PLAYLIST_DETAILS_QUERY
+  ) as TypedDocumentNode<PlaylistPageQuery, { slug?: string }>;
+  const query = useQuery(selectedQuery, {
+    variables: !isPredefined ? { slug } : undefined,
+  });
 
   let content;
 

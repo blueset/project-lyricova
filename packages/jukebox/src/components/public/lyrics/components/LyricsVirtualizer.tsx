@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import { LyricsKitLyricsLine } from "@lyricova/api/graphql/types";
+import { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import {
   type LyricsSegment,
   useActiveLyrcsRanges,

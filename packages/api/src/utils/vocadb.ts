@@ -3,11 +3,7 @@ import {
   SongForApiContract,
   ArtistForApiContract,
   AlbumForApiContract,
-  ArtistContract,
-  AlbumContract,
 } from "../types/vocadb";
-import { Artist } from "../models/Artist";
-import { Album } from "../models/Album";
 
 export async function getSong(
   songId: string | number
@@ -230,78 +226,4 @@ export async function getUtaiteDbBaseVoiceBank(
     voicebank = await getUtaiteDbArtist(voicebank.baseVoicebank.id);
   } while (voicebank.baseVoicebank);
   return voicebank;
-}
-
-export async function processUtaiteDbArtist(artist: ArtistContract): Promise<{
-  artist: ArtistContract;
-  type: "vocaDb" | "utaiteDb";
-  isNew: boolean;
-}> {
-  const existing = await Artist.findOne({ where: { utaiteDbId: artist.id } });
-  if (existing) {
-    return {
-      artist: {
-        ...artist,
-        id: existing.id,
-      },
-      type: "vocaDb",
-      isNew: false,
-    };
-  }
-
-  const artistLite = await getUtaiteDbArtistLite(artist.id);
-  const vocaDbId = getVocaDbId(artistLite);
-  if (vocaDbId) {
-    return {
-      artist: {
-        ...artist,
-        id: vocaDbId,
-      },
-      type: "vocaDb",
-      isNew: true,
-    };
-  }
-
-  return {
-    artist,
-    type: "utaiteDb",
-    isNew: true,
-  };
-}
-
-export async function processUtaiteDbAlbum(album: AlbumContract): Promise<{
-  album: AlbumContract;
-  type: "vocaDb" | "utaiteDb";
-  isNew: boolean;
-}> {
-  const existing = await Album.findOne({ where: { utaiteDbId: album.id } });
-  if (existing) {
-    return {
-      album: {
-        ...album,
-        id: existing.id,
-      },
-      type: "vocaDb",
-      isNew: false,
-    };
-  }
-
-  const albumLite = await getUtaiteDbAlbumLite(album.id);
-  const vocaDbId = getVocaDbId(albumLite);
-  if (vocaDbId) {
-    return {
-      album: {
-        ...album,
-        id: vocaDbId,
-      },
-      type: "vocaDb",
-      isNew: true,
-    };
-  }
-
-  return {
-    album,
-    type: "utaiteDb",
-    isNew: true,
-  };
 }

@@ -1,4 +1,4 @@
-import { LyricsKitLyrics } from "@lyricova/api/graphql/types";
+import { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   LyricLine as AAMLyricLine,

@@ -1,4 +1,9 @@
-import { MusicFile } from "../models/MusicFile";
+import { eq, inArray } from "drizzle-orm";
+import { db } from "../drizzle/client";
+import { MusicFiles } from "../drizzle/schema";
+import { fullPathOf } from "../utils/musicFileScan";
+
+type MusicFile = typeof MusicFiles.$inferSelect;
 import type { Request, Response, NextFunction } from "express";
 import { Router } from "express";
 import glob from "glob";
@@ -7,7 +12,6 @@ import ffprobe from "ffprobe-client";
 import ffmetadata from "../utils/ffmetadata";
 import fs from "fs";
 import hasha from "hasha";
-import { Op } from "sequelize";
 import Path from "path";
 import chunkArray from "../utils/chunkArray";
 import _ from "lodash";
@@ -160,7 +164,9 @@ export class MusicFileController {
   }
 
   /** Make a new MusicFile object from file path. */
-  private async buildSongEntry(path: string): Promise<Partial<MusicFile>> {
+  private async buildSongEntry(
+    path: string
+  ): Promise<typeof MusicFiles.$inferInsert> {
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
     const metadataPromise = this.getSongMetadata(path);
     const md5 = await md5Promise,
@@ -173,11 +179,15 @@ export class MusicFileController {
       hash: md5,
       needReview: true,
       ...metadata,
+      creationDate: new Date(),
+      updatedOn: new Date(),
     };
   }
 
   /** Update an existing MusicFile object with data in file. */
-  private async updateSongEntry(entry: MusicFile): Promise<MusicFile | null> {
+  private async updateSongEntry(
+    entry: Pick<MusicFile, "id" | "path" | "hasLyrics" | "hash">
+  ): Promise<MusicFile | null> {
     let needUpdate = false;
     const path = entry.path;
     const lrcPath = path.substr(0, path.lastIndexOf(".")) + ".lrc";
@@ -189,15 +199,17 @@ export class MusicFileController {
     if (!needUpdate) return null;
 
     const metadata = await this.getSongMetadata(path);
-    entry = await entry.update({
+    const values = {
       path: Path.relative(MUSIC_FILES_PATH, path),
       hasLyrics: hasLyrics,
       fileSize: fileSize,
       hash: md5,
       needReview: true,
       ...metadata,
-    });
-    return entry;
+      updatedOn: new Date(),
+    };
+    await db.update(MusicFiles).set(values).where(eq(MusicFiles.id, entry.id));
+    return { ...entry, ...values } as MusicFile;
   }
 
   /** Write metadata to file partially */
@@ -219,7 +231,7 @@ export class MusicFileController {
     }
     const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
     await ffmetadata.writeAsync(
-      file.fullPath,
+      fullPathOf(file.path),
       {
         title: data.trackName,
         [mapping.trackSortOrder]: data.trackSortOrder,
@@ -280,8 +292,14 @@ export class MusicFileController {
     const dryRun = false;
     try {
       // Load
-      const databaseEntries = await MusicFile.findAll({
-        attributes: ["id", "path", "fileSize", "hash", "hasLyrics"],
+      const databaseEntries = await db.query.MusicFiles.findMany({
+        columns: {
+          id: true,
+          path: true,
+          fileSize: true,
+          hash: true,
+          hasLyrics: true,
+        },
       });
       const filePaths = glob.sync(`${MUSIC_FILES_PATH}/**/*.{mp3,flac,aiff}`, {
         nosort: true,
@@ -302,9 +320,9 @@ export class MusicFileController {
 
       // Remove records from database for removed files
       if (toDelete.size && !dryRun) {
-        await MusicFile.destroy({
-          where: { path: { [Op.in]: [...toDelete] } },
-        });
+        await db
+          .delete(MusicFiles)
+          .where(inArray(MusicFiles.path, [...toDelete]));
       }
 
       console.log("entries deleted.");
@@ -315,17 +333,14 @@ export class MusicFileController {
       if (!dryRun) {
         const entriesToAdd = await Promise.all(
           [...toAdd].map((path) =>
-            limit(
-              async () =>
-                (await this.buildSongEntry(path)) as Promise<MusicFile>
-            )
+            limit(async () => this.buildSongEntry(path))
           )
         );
 
         console.log("entries_to_add done.");
 
         for (const chunk of chunkArray(entriesToAdd)) {
-          await MusicFile.bulkCreate(chunk);
+          await db.insert(MusicFiles).values(chunk);
         }
       }
 
@@ -383,8 +398,10 @@ export class MusicFileController {
    */
   public getSongs = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const songs = await MusicFile.findAll();
-      return res.json(songs);
+      const songs = await db.query.MusicFiles.findMany();
+      return res.json(
+        songs.map((s: any) => ({ fullPath: fullPathOf(s.path), ...s }))
+      );
     } catch (e) {
       next(e);
     }
@@ -422,11 +439,11 @@ export class MusicFileController {
    */
   public getSong = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const song = await MusicFile.findByPk(parseInt(req.params.id));
-      if (song === null) {
+      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      if (!song) {
         return res.status(404).json({ status: 404, message: "Not found" });
       }
-      return res.json(song);
+      return res.json({ fullPath: fullPathOf(song.path), ...song });
     } catch (e) {
       next(e);
     }
@@ -479,13 +496,13 @@ export class MusicFileController {
     next: NextFunction
   ) => {
     try {
-      const song = await MusicFile.findByPk(parseInt(req.params.id));
-      if (song === null) {
+      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      if (!song) {
         return res
           .status(404)
           .json({ status: 404, message: "Entry not found" });
       }
-      const path = song.fullPath;
+      const path = fullPathOf(song.path);
       if (!fs.existsSync(path)) {
         return res.status(404).json({ status: 404, message: "File not found" });
       }
@@ -544,13 +561,13 @@ export class MusicFileController {
     next: NextFunction
   ) => {
     try {
-      const song = await MusicFile.findByPk(parseInt(req.params.id));
-      if (song === null) {
+      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      if (!song) {
         return res
           .status(404)
           .json({ status: 404, message: "Entry not found" });
       }
-      const path = swapExt(song.fullPath, "lrc");
+      const path = swapExt(fullPathOf(song.path), "lrc");
       if (!fs.existsSync(path)) {
         return res.status(404).json({ status: 404, message: "File not found" });
       }
@@ -609,13 +626,13 @@ export class MusicFileController {
     next: NextFunction
   ) => {
     try {
-      const song = await MusicFile.findByPk(parseInt(req.params.id));
-      if (song === null) {
+      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      if (!song) {
         return res
           .status(404)
           .json({ status: 404, message: "Entry not found" });
       }
-      const path = swapExt(song.fullPath, "lrcx");
+      const path = swapExt(fullPathOf(song.path), "lrcx");
       if (!fs.existsSync(path)) {
         return res.status(404).json({ status: 404, message: "File not found" });
       }
@@ -693,8 +710,8 @@ export class MusicFileController {
     next: NextFunction
   ) => {
     try {
-      const song = await MusicFile.findByPk(parseInt(req.params.id));
-      if (song === null) {
+      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      if (!song) {
         return res.status(404).json({ status: 404, message: "Not found" });
       }
 
@@ -712,9 +729,13 @@ export class MusicFileController {
       // write song file
       await this.writeToFile(song, data);
 
-      _.assign(song, data);
-      await song.save();
-      return res.json(song);
+      const now = new Date();
+      _.assign(song, data, { updatedOn: now });
+      await db
+        .update(MusicFiles)
+        .set({ ...data, updatedOn: now })
+        .where(eq(MusicFiles.id, song.id));
+      return res.json({ fullPath: fullPathOf(song.path), ...song });
     } catch (e) {
       next(e);
     }
@@ -773,8 +794,8 @@ export class MusicFileController {
    *                   description: Error message
    */
   public getCoverArt = async (req: Request, res: Response) => {
-    const musicFile = await MusicFile.findByPk(parseInt(req.params.id));
-    if (musicFile === null) {
+    const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+    if (!musicFile) {
       return res
         .status(404)
         .json({ status: 404, message: "Music file entry not found." });
@@ -789,7 +810,7 @@ export class MusicFileController {
 
     const coverUrl = tempy.file({ extension: "png" });
     try {
-      await ffmetadata.readAsync(musicFile.fullPath, { coverUrl: coverUrl });
+      await ffmetadata.readAsync(fullPathOf(musicFile.path), { coverUrl: coverUrl });
     } catch (e) {
       console.log("Error while extracting cover art from file", e);
       return res.status(500).json({ status: 404, message: e });
@@ -929,8 +950,8 @@ export class MusicFileController {
     let coverPath = "";
 
     try {
-      const musicFile = await MusicFile.findByPk(parseInt(req.params.id));
-      if (musicFile === null) {
+      const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      if (!musicFile) {
         return res
           .status(404)
           .json({ status: 404, message: "Music file entry not found." });
@@ -947,7 +968,8 @@ export class MusicFileController {
               message: `Request to download the cover has returned a ${response.status} error.`,
             });
           }
-          const contentType = response.headers?.["content-type"] ?? "";
+          const contentType = (response.headers?.["content-type"] ??
+            "") as string;
           if (!contentType.startsWith("image/")) {
             return res.status(415).json({
               status: 415,
@@ -971,7 +993,7 @@ export class MusicFileController {
         }
 
         await ffmetadata.writeAsync(
-          musicFile.fullPath,
+          fullPathOf(musicFile.path),
           {},
           {
             forceId3v2: musicFile.path.toLowerCase().endsWith(".aiff"),
@@ -984,10 +1006,13 @@ export class MusicFileController {
       }
 
       // Update file hash
-      const md5 = await hasha.fromFile(musicFile.fullPath, {
+      const md5 = await hasha.fromFile(fullPathOf(musicFile.path), {
         algorithm: "md5",
       });
-      await musicFile.update({ hash: md5, hasCover: true });
+      await db
+        .update(MusicFiles)
+        .set({ hash: md5, hasCover: true, updatedOn: new Date() })
+        .where(eq(MusicFiles.id, musicFile.id));
 
       res.status(200).json({ status: 200, message: "Done." });
     } finally {

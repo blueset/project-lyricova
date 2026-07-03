@@ -1,5 +1,5 @@
-import type { Playlist } from "@lyricova/api/graphql/types";
-import { gql, useApolloClient, useQuery } from "@apollo/client";
+import type { Playlist } from "@lyricova/components/gql/schema";
+import { useApolloClient, useQuery } from "@apollo/client";
 import _ from "lodash";
 import type { ReactNode } from "react";
 import { useCallback, useEffect } from "react";
@@ -22,6 +22,7 @@ import {
 import { Checkbox } from "@lyricova/components/components/ui/checkbox";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 import { Label } from "@lyricova/components/components/ui/label";
+import { graphql } from "@lyricova/components/gql";
 
 function SkeletonItem() {
   return (
@@ -35,17 +36,17 @@ function SkeletonItem() {
   );
 }
 
-const PLAYLISTS_QUERY = gql`
-  query {
+const PLAYLISTS_QUERY = graphql(`
+  query MusicFilePlaylists {
     playlists {
       name
       slug
     }
   }
-`;
+`);
 
-const SET_PLAYLISTS_MUTATION = gql`
-  mutation ($slugs: [String!]!, $fileId: Int!) {
+const SET_PLAYLISTS_MUTATION = graphql(`
+  mutation SetMusicFilePlaylists($slugs: [String!]!, $fileId: Int!) {
     setPlaylistsOfFile(playlistSlugs: $slugs, fileId: $fileId) {
       playlists {
         name
@@ -53,16 +54,16 @@ const SET_PLAYLISTS_MUTATION = gql`
       }
     }
   }
-`;
+`);
 
 interface Props {
   fileId: number;
-  playlists: Playlist[];
+  playlists: Pick<Playlist, "name" | "slug">[];
   refresh: () => unknown | Promise<unknown>;
 }
 
 export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
-  const playlistsQuery = useQuery<{ playlists: Playlist[] }>(PLAYLISTS_QUERY);
+  const playlistsQuery = useQuery(PLAYLISTS_QUERY);
   const apolloClient = useApolloClient();
 
   const [isOpen, setIsOpen] = useNamedState(false, "isOpen");
@@ -77,9 +78,7 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
 
   const handleSubmit = useCallback(async () => {
     try {
-      const result = await apolloClient.mutate<{
-        setPlaylistsOfFile: { playlists: Playlist[] };
-      }>({
+      const result = await apolloClient.mutate({
         mutation: SET_PLAYLISTS_MUTATION,
         variables: { fileId, slugs: checkedPlaylists },
       });
