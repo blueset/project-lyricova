@@ -13,60 +13,65 @@
 
   // The optional 'workspaceFolder' property is the path VS Code should open by default when
   // connected. This is typically a file mount in .devcontainer/docker-compose.yml
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceFolder": "/workspaces",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "nodeGypDependencies": true,
-      "installYarnUsingApt": true,
-      "version": "lts",
-      "pnpmVersion": "latest",
-      "nvmVersion": "latest"
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": false,
+      "installOhMyZsh": true,
+      "installOhMyZshConfig": true,
+      "upgradePackages": false,
+      "username": "none"
     },
-    "ghcr.io/devcontainers/features/python:1": {
-      "installTools": true,
-      "version": "latest"
-    },
-    "ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {
-      "setLocale": true,
-      "theme": "robbyrussell",
-      "plugins": "git docker",
-      "desiredLocale": "en_US.UTF-8 UTF-8"
-    },
-    "ghcr.io/devcontainers-extra/features/ffmpeg-apt-get:1": {},
-    "ghcr.io/meaningful-ooo/devcontainer-features/homebrew:2": {},
-    "ghcr.io/devcontainers-extra/features/homebrew-package:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/copilot-cli:1": {},
     "ghcr.io/devcontainers-extra/features/yt-dlp:2": {
       "version": "latest"
     }
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [3000, 8001, 8002],
+  "forwardPorts": [8081, 8082, 8083],
 
   "portsAttributes": {
-    "8001": {
+    "8081": {
       "label": "Lyricova",
       "onAutoForward": "notify"
     },
-    "8002": {
+    "8082": {
       "label": "Jukebox",
       "onAutoForward": "notify"
+    },
+    "8083": {
+      "label": "API",
+      "onAutoForward": "notify"
     }
-  }
+  },
 
   // Uncomment the next line if you want start specific services in your Docker Compose config.
-  // "runServices": [],
+  "runServices": ["lyricova", "mysql"],
 
   // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
   // "shutdownAction": "none",
 
-  // Uncomment the next line to run commands after the container is created.
-  // "postCreateCommand": "cp /home/linuxbrew/.linuxbrew/Cellar/mysql/9.2.0_1/support-files/mysql.server /etc/init.d/mysql && chmod +x /etc/init.d/mysql && service mysql start && mysql -u root -e \"CREATE DATABASE IF NOT EXISTS lyricova; CREATE USER IF NOT EXISTS 'lyricova'@'%' IDENTIFIED BY 'lyricova'; GRANT ALL PRIVILEGES ON lyricova.* TO 'lyricova'@'%'; FLUSH PRIVILEGES;\" && mysql -u root lyricova < /workspaces/lyricova-schema.sql && npm install && npm run build --workspace lyricova-common --workspace lyrics-kit --workspace lyricova-jukebox --workspace lyricova-blog",
+  "postCreateCommand": "npm ci --legacy-peer-deps && npm run build:ts -w @lyricova/api && npm run codegen -w @lyricova/components",
 
   // Configure tool-specific properties.
-  // "customizations": {},
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "GraphQL.vscode-graphql",
+        "bradlc.vscode-tailwindcss",
+        "ms-azuretools.vscode-docker",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-mysql"
+      ]
+    }
+  }
 
   // Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "devcontainer"

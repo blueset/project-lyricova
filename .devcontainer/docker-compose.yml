@@ -12,14 +12,21 @@ services:
       dockerfile: ./Dockerfile
     environment:
       NODE_ENV: development
+      DB_URI: mysql://lyricova:lyricova@mysql/lyricova?ssl=false&allowPublicKeyRetrieval=true
+      YTDLP_PATH: /usr/local/py-utils/bin/yt-dlp
+      MUSIC_FILES_PATH: /var/music/
     env_file: []
     ports: []
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      mysql:
+        condition: service_healthy
 
     volumes:
       # Update this to wherever you want VS Code to mount the folder of your project
       - ..:/workspaces:cached
+      - lyricova_music:/var/music
 
     # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
     # cap_add:
@@ -36,10 +43,15 @@ services:
       MYSQL_DATABASE: lyricova
       MYSQL_USER: lyricova
       MYSQL_PASSWORD: lyricova
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "lyricova", "-plyricova"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 volumes:
   mysql_data:
+    external: false
+  lyricova_music:
     external: false
