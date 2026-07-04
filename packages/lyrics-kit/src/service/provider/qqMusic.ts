@@ -8,8 +8,7 @@ import { TITLE, ARTIST, ALBUM } from "../../core/idTagKey";
 import { LyricsProviderSource } from "../lyricsProviderSource";
 import type { QQSongItem, QQResponseSearchResult } from "../types/qqMusic/searchResult";
 import type { QQResponseSinglePlainLyrics } from "../types/qqMusic/singleLyrics";
-import type {
-  Range} from "../../core/lyricsLineAttachment";
+import type { Range } from "../../core/lyricsLineAttachment";
 import {
   Attachments,
   FURIGANA,
@@ -25,7 +24,8 @@ import { LyricsLine } from "../../core";
 
 const SEARCH_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg";
 const LYRICS_URL = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg";
-const DETAILED_LYRICS_URL = "https://c.y.qq.com/qqmusic/fcgi-bin/lyric_download.fcg ";
+const DETAILED_LYRICS_URL = "https://c.y.qq.com/qqmusic/fcgi-bin/lyric_download.fcg";
+const MUSICU_CLIENT_VERSION = "1003006";
 const headers = {
   Cookie:
     "os=pc;osver=Microsoft-Windows-10-Professional-build-16299.125-64bit;appver=2.0.3.131777;channel=netease;__remember_me=true",
@@ -33,8 +33,82 @@ const headers = {
   "User-Agent":
     "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
 };
+const musicuHeaders = {
+  Cookie: "tmeLoginType=-1;",
+  "content-type": "application/json",
+  "accept-encoding": "gzip",
+  "User-Agent": "okhttp/3.14.9",
+};
 
 const timeTagPattern = /^\[(\d+),(\d+)\](.*)/;
+
+type QQMusicuComm = Record<string, number | string>;
+
+interface QQMusicuResponse<T> {
+  code: number;
+  request: {
+    code: number;
+    data: T;
+  };
+}
+
+interface QQMusicuSessionData {
+  session: {
+    uid: number | string;
+    sid: string;
+    userip: string;
+  };
+}
+
+interface QQLiteSongItem {
+  title: string;
+  id: number;
+  mid: string;
+  interval: number;
+  singer: {
+    title?: string;
+    name?: string;
+  }[];
+  album?: {
+    title?: string;
+    name?: string;
+  };
+}
+
+interface QQMusicuSearchData {
+  body: {
+    item_song: QQLiteSongItem[];
+  };
+}
+
+interface QQMusicuPlayLyricData {
+  lyric?: string;
+  trans?: string;
+  roma?: string;
+  lrc_t?: number | string;
+  qrc_t?: number | string;
+  trans_t?: number | string;
+  roma_t?: number | string;
+}
+
+function encodeBase64(value: string): string {
+  return Buffer.from(value).toString("base64");
+}
+
+function hasValidLyricTimestamp(value: number | string | undefined): boolean {
+  return value !== undefined && value !== 0 && value !== "0";
+}
+
+function makeSearchId(): string {
+  return `${(Math.floor(Math.random() * 20) + 1) * 18014398509481984 +
+    Math.floor(Math.random() * 4194304) * 4294967296 +
+    (Date.now() % 86400000)
+    }`;
+}
+
+function stripSearchHighlights(value: string | undefined): string {
+  return (value || "").replace(/<[^>]+>/g, "");
+}
 
 class QQMusicQLyrics extends Lyrics {
   constructor(content: string) {
@@ -58,15 +132,20 @@ class QQMusicQLyrics extends Lyrics {
       let lineContent = "";
       const attachment = new WordTimeTag([], duration / 1000);
       const segments = line.split(/([\[\(]\d+,\d+[\]\)])/g);
+      let hasWordTimeTags = false;
       segments.forEach((segment, idx) => {
         const match = segment.match(/[\[\(](\d+),(\d+)[\]\)]/);
         if (match) {
+          hasWordTimeTags = true;
           const time = parseInt(match[1]);
           const dt = (time - start) / 1000;
           attachment.tags.push(new WordTimeTagLabel(dt, lineContent.length));
           lineContent += segments[idx - 1];
         }
       });
+      if (!hasWordTimeTags) {
+        lineContent = line;
+      }
       attachment.tags.push(new WordTimeTagLabel(duration / 1000, lineContent.length));
 
       const att = new Attachments({ [TIME_TAG]: attachment });
@@ -94,40 +173,185 @@ function decodeLyrics(base64: string): string {
 export class QQMusicProvider extends LyricsProvider<QQSongItem> {
   // static source = LyricsProviderSource.qq;
 
-  public async searchLyrics(request: LyricsSearchRequest): Promise<QQSongItem[]> {
+  private comm: QQMusicuComm = {
+    ct: 11,
+    cv: MUSICU_CLIENT_VERSION,
+    v: MUSICU_CLIENT_VERSION,
+    os_ver: "15",
+    phonetype: "24122RKC7C",
+    rom: `Redmi/miro/miro:15/AE3A.240806.005/OS2.0.10${["5", "4", "2"][
+      Math.floor(Math.random() * 3)
+    ]}.0.VOMCNXM:user/release-keys`,
+    tmeAppID: "qqmusiclight",
+    nettype: "NETWORK_WIFI",
+    udid: "0",
+  };
+  private musicuInited = false;
+  private musicuSessionPromise?: Promise<void>;
+
+  private async initMusicuSession(): Promise<void> {
+    if (this.musicuInited) return;
+
+    if (!this.musicuSessionPromise) {
+      this.musicuSessionPromise = this.musicuRequest<QQMusicuSessionData>(
+        "GetSession",
+        "music.getSession.session",
+        { caller: 0, uid: "0", vkey: 0 },
+        false
+      ).then(data => {
+        this.comm = {
+          ...this.comm,
+          uid: data.session.uid,
+          sid: data.session.sid,
+          userip: data.session.userip,
+        };
+        this.musicuInited = true;
+      });
+    }
+
     try {
-      const response = await axios.post<QQResponseSearchResult>(
-        SEARCH_URL,
-        {
-          req_1: {
-            method: "DoSearchForQQMusicDesktop",
-            module: "music.search.SearchCgiService",
-            param: {
-              num_per_page: "20",
-              page_num: "1",
-              query: request.searchTerm.toString(),
-              search_type: 0,
-            },
+      await this.musicuSessionPromise;
+    } catch (e) {
+      this.musicuSessionPromise = undefined;
+      throw e;
+    }
+  }
+
+  private async musicuRequest<T>(
+    method: string,
+    module: string,
+    param: Record<string, unknown>,
+    initSession = true
+  ): Promise<T> {
+    if (initSession) {
+      await this.initMusicuSession();
+    }
+
+    const response = await axios.post<QQMusicuResponse<T>>(
+      SEARCH_URL,
+      {
+        comm: this.comm,
+        request: {
+          method,
+          module,
+          param,
+        },
+      },
+      {
+        headers: musicuHeaders,
+      }
+    );
+    if (response.status !== 200) {
+      throw new Error(`QQ Music request failed with HTTP ${response.status}`);
+    }
+
+    const data = response.data;
+    if (data.code !== 0 || data.request.code !== 0) {
+      throw new Error(
+        `QQ Music API request failed with code ${data.code !== 0 ? data.code : data.request.code}`
+      );
+    }
+    return data.request.data;
+  }
+
+  private applyTokenMetadata(lrc: Lyrics, token: QQSongItem): void {
+    lrc.idTags[TITLE] = token.title;
+    if (token.singer.length > 0) lrc.idTags[ARTIST] = token.singer.map(s => s.title).join(", ");
+    lrc.idTags[ALBUM] = token.album?.title;
+
+    lrc.length = token.interval;
+    lrc.metadata.source = LyricsProviderSource.qq;
+    lrc.metadata.providerToken = `${token.mid}`;
+    if (token.mid) {
+      const id = parseInt(token.mid);
+      lrc.metadata.artworkURL = `http://imgcache.qq.com/music/photo/album/${id % 100}/${id}.jpg`;
+    }
+  }
+
+  private parseQqLyrics(content: string): Lyrics {
+    const $ = cheerio.load(content, { xmlMode: true });
+    const lyricContent = $("Lyric_1").attr("LyricContent") || content;
+    if (lyricContent.split("\n").some(line => line.match(timeTagPattern))) {
+      return new QQMusicQLyrics(lyricContent);
+    }
+    return new Lyrics(lyricContent);
+  }
+
+  private async searchLyricsLegacy(request: LyricsSearchRequest): Promise<QQSongItem[]> {
+    const response = await axios.post<QQResponseSearchResult>(
+      SEARCH_URL,
+      {
+        req_1: {
+          method: "DoSearchForQQMusicDesktop",
+          module: "music.search.SearchCgiService",
+          param: {
+            num_per_page: "20",
+            page_num: "1",
+            query: request.searchTerm.toString(),
+            search_type: 0,
           },
         },
+      },
+      {
+        headers,
+      }
+    );
+    if (response.status !== 200) {
+      console.error(response.data);
+      return [];
+    }
+    return response.data.req_1.data.body.song.list;
+  }
+
+  private normalizeSearchResult(song: QQLiteSongItem): QQSongItem {
+    return {
+      title: stripSearchHighlights(song.title),
+      id: song.id,
+      mid: song.mid,
+      interval: song.interval,
+      singer: song.singer.map(singer => ({
+        title: stripSearchHighlights(singer.title || singer.name),
+      })),
+      album: {
+        title: stripSearchHighlights(song.album?.title || song.album?.name),
+      },
+    };
+  }
+
+  public async searchLyrics(request: LyricsSearchRequest): Promise<QQSongItem[]> {
+    try {
+      const data = await this.musicuRequest<QQMusicuSearchData>(
+        "DoSearchForQQMusicLite",
+        "music.search.SearchCgiService",
         {
-          headers,
+          search_id: makeSearchId(),
+          remoteplace: "search.android.keyboard",
+          query: request.searchTerm.toString(),
+          search_type: 0,
+          num_per_page: 20,
+          page_num: 1,
+          highlight: 0,
+          nqc_flag: 0,
+          page_id: 1,
+          grp: 1,
         }
       );
-      if (response.status !== 200) {
-        console.error(response.data);
+      return data.body.item_song.map(song => this.normalizeSearchResult(song));
+    } catch {
+      try {
+        return await this.searchLyricsLegacy(request);
+      } catch (e) {
+        console.error(e);
         return [];
       }
-      const data = response.data;
-      return data.req_1.data.body.song.list;
-      // return data.req_1.data.body.song.list.slice(0, 1);
-    } catch (e) {
-      console.error(e);
-      return [];
     }
   }
   public async fetchLyrics(token: QQSongItem): Promise<Lyrics | undefined> {
-    return (await this.fetchLyricsQrc(token)) || (await this.fetchLyricsLrc(token));
+    return (
+      (await this.fetchLyricsQrc(token)) ||
+      (await this.fetchLyricsLegacyQrc(token)) ||
+      (await this.fetchLyricsLrc(token))
+    );
   }
 
   async fetchLyricsLrc(token: QQSongItem): Promise<Lyrics | undefined> {
@@ -183,17 +407,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         lrc.mergeByProximity(transLrc, "zh");
       }
 
-      lrc.idTags[TITLE] = token.title;
-      if (token.singer.length > 0) lrc.idTags[ARTIST] = token.singer.map(s => s.title).join(", ");
-      lrc.idTags[ALBUM] = token.album?.title;
-
-      lrc.length = token.interval;
-      lrc.metadata.source = LyricsProviderSource.qq;
-      lrc.metadata.providerToken = `${token.mid}`;
-      if (token.mid) {
-        const id = parseInt(token.mid);
-        lrc.metadata.artworkURL = `http://imgcache.qq.com/music/photo/album/${id % 100}/${id}.jpg`;
-      }
+      this.applyTokenMetadata(lrc, token);
       return lrc;
     } catch (e) {
       console.error(e);
@@ -202,6 +416,61 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
   }
 
   async fetchLyricsQrc(token: QQSongItem): Promise<Lyrics | undefined> {
+    try {
+      const artist = token.singer.map(s => s.title).join(", ");
+      const data = await this.musicuRequest<QQMusicuPlayLyricData>(
+        "GetPlayLyricInfo",
+        "music.musichallSong.PlayLyricInfo",
+        {
+          albumName: encodeBase64(token.album?.title || ""),
+          crypt: 1,
+          ct: 19,
+          cv: 2111,
+          interval: token.interval,
+          lrc_t: 0,
+          qrc: 1,
+          qrc_t: 0,
+          roma: 1,
+          roma_t: 0,
+          singerName: encodeBase64(artist),
+          songID: token.id,
+          songName: encodeBase64(token.title),
+          trans: 1,
+          trans_t: 0,
+          type: 0,
+        }
+      );
+
+      const lyricTimestamp = hasValidLyricTimestamp(data.qrc_t) ? data.qrc_t : data.lrc_t;
+      if (!data.lyric || !hasValidLyricTimestamp(lyricTimestamp)) {
+        throw new Error("lyric is empty");
+      }
+
+      const lrc = this.parseQqLyrics(decodeQrc(data.lyric));
+      this.applyTokenMetadata(lrc, token);
+
+      if (data.trans && hasValidLyricTimestamp(data.trans_t)) {
+        const transLrc = this.parseQqLyrics(decodeQrc(data.trans));
+        transLrc.lines.forEach(line => {
+          if (line.content.trim() === "//") {
+            line.content = "";
+          }
+        });
+        lrc.mergeByProximity(transLrc, "zh");
+
+        if (transLrc.idTags.kana) {
+          this.applyFurigana(lrc, transLrc.idTags.kana);
+        }
+      }
+
+      return lrc;
+    } catch (e) {
+      console.error(e);
+      return undefined;
+    }
+  }
+
+  async fetchLyricsLegacyQrc(token: QQSongItem): Promise<Lyrics | undefined> {
     try {
       const payload = new URLSearchParams({
         version: "15",
@@ -238,20 +507,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         $ = cheerio.load(contentXml, { xmlMode: true });
         const content = $("Lyric_1").attr("LyricContent");
         const lrc = new QQMusicQLyrics(content ?? "");
-
-        lrc.idTags[TITLE] = token.title;
-        if (token.singer.length > 0) lrc.idTags[ARTIST] = token.singer.map(s => s.title).join(", ");
-        lrc.idTags[ALBUM] = token.album?.title;
-
-        lrc.length = token.interval;
-        lrc.metadata.source = LyricsProviderSource.qq;
-        lrc.metadata.providerToken = `${token.mid}`;
-        if (token.mid) {
-          const id = parseInt(token.mid);
-          lrc.metadata.artworkURL = `http://imgcache.qq.com/music/photo/album/${
-            id % 100
-          }/${id}.jpg`;
-        }
+        this.applyTokenMetadata(lrc, token);
 
         if (contentHexTs) {
           const transLrcContent = decodeQrc(contentHexTs);
