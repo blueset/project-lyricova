@@ -43,7 +43,7 @@ in VocaDB.net.</small>
   - Configure the environment variables in `.env` file. Refer to `.env.sample`
     for examples.
 - Node.js
-  - Install Node.js and npm.
+  - Install Node.js 24 LTS and npm 10.9.2 or newer.
   - Install dependencies:
     ```bash
     npm install

@@ -26,6 +26,15 @@ git-ignored), so some changes require a regeneration step before types line up.
 
 ---
 
+## Prerequisites
+
+- Node.js 24 LTS for the monorepo runtime, builds, and development containers.
+- npm 10.9.2 or newer, matching the root `packageManager` pin.
+- `lyrics-kit` supports Node.js 22 or newer when consumed as a standalone
+  package.
+
+---
+
 ## 2. Repository / build topology
 
 npm workspaces (`packages/*`) orchestrated by **Turborepo**. The root only

@@ -41,7 +41,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "engines": {
-    "node": ">=8.9"
+    "node": ">=22"
   },
   "dependencies": {
     "axios": "^1.16.0",
