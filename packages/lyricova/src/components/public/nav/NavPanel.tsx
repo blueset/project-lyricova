@@ -52,7 +52,9 @@ function NavEntry({ href, children, rel }: NavEntryProps) {
       href={href}
       className={classes.navEntry}
       data-active={pathname.startsWith(href)}
-      ref={(elm) => elm && positionChars(elm)}
+      ref={(elm) => {
+        if (elm) positionChars(elm);
+      }}
       rel={rel}
     >
       <span className={classes.mainNavText}>
@@ -165,7 +167,12 @@ export function NavPanel() {
               </TooltipTrigger>
               <TooltipContent side="bottom">Close menu</TooltipContent>
             </Tooltip>
-            <nav className={classes.nav} ref={(elm) => buildTimeline(elm)}>
+            <nav
+              className={classes.nav}
+              ref={(elm) => {
+                if (elm) buildTimeline(elm);
+              }}
+            >
               <NavEntry href={jukeboxUrl}>Jukebox</NavEntry>
               <NavEntry href="/screensavers">Screensavers</NavEntry>
               <NavEntry href="/search" rel="search">

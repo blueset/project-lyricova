@@ -10,7 +10,7 @@ export function VerseRenderer({ verse }: VerseRendererProps) {
   const lines = verse.text.trimEnd().split("\n");
   const stylizedLines = verse.stylizedText?.trimEnd()?.split("\n");
   const htmlLines = verse.html?.trimEnd()?.split("\n");
-  const baseTypingSequence = verse.typingSequence;
+  const baseTypingSequence = verse.typingSequence ?? [];
 
   let renderMode: "plain" | "stylized" | "html";
   let renderLines: string[];

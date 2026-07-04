@@ -1,5 +1,5 @@
-import { LyricsLine } from "lyrics-kit/core";
-import { SetStateAction } from "react";
+import type { LyricsLine } from "lyrics-kit/core";
+import type { SetStateAction } from "react";
 
 /** Apply -200ms offset to all keypresses to compensate reflection time. */
 const KEY_PRESS_OFFSET_SEC = -0.2;

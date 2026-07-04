@@ -105,7 +105,7 @@ let breakMatches: number[] | null;
 /**
  * Object for tracking next whitespace params
  */
-// eslint-disable-next-line camelcase
+ 
 class NextWS_params {
   public index = 0;
   public width = 0;
@@ -323,7 +323,7 @@ function preprocessCJ(text: string): [string, boolean] {
   ) {
     return [text, false];
   }
-  // eslint-disable-next-line no-misleading-character-class
+   
   text = text.replace(
     new RegExp(`([${cj}${notBefore}])([^${notBefore}])`, "ug"),
     "$1\u200B$2"
@@ -481,7 +481,7 @@ export function balanceText(
         if (newText.length > 0) {
           newText += justify(el, lineText, containerWidth, xCoord, lineHeight);
         } else {
-          newText += justify(el, lineText, containerWidth, null, null);
+          newText += justify(el, lineText, containerWidth, undefined, undefined);
         }
       } else {
         const posAttr = newText.length > 0 ? " " + positioning : "";

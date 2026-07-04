@@ -60,19 +60,19 @@ import type { Song } from "./Song";
  *         - type
  */
 export class VideoFile {
-  id: number;
+  id!: number;
 
-  path: string;
+  path!: string;
 
-  songId: number;
+  songId!: number;
 
-  song: Song;
+  song!: Song;
 
-  title: string;
+  title!: string;
 
   sourceUrl?: string;
 
-  type:
+  type!:
       | "Original"
       | "PV"
       | "Derived"
@@ -81,9 +81,9 @@ export class VideoFile {
       | "OffVocal"
       | "Other";
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 
-  deletionDate: Date;
+  deletionDate!: Date;
 }

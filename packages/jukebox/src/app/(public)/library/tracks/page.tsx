@@ -245,10 +245,10 @@ export default function LibraryTracks() {
       if (!i?.trackSortOrder) key = "?";
       else {
         const firstChar = i.trackSortOrder.charAt(0);
-        if (firstChar.codePointAt(0) < 65 /* "A" */) key = "#";
+        if ((firstChar.codePointAt(0) ?? 0) < 65 /* "A" */) key = "#";
         else key = firstChar.toLocaleUpperCase();
       }
-      if (indexes[indexes.length - 1].name !== key) {
+      if (indexes[indexes.length - 1]?.name !== key) {
         indexes.push({ name: key, index: idx * ITEM_HEIGHT });
       }
     });
@@ -279,9 +279,10 @@ export default function LibraryTracks() {
     );
 
   const onScrollSliderChange = (newValue: number[]) => {
+    const value = newValue[0] ?? scrollLength;
     setIsDragging(true);
-    setScrollDistance(scrollLength - newValue[0]);
-    rowVirtualizer.scrollToOffset(scrollLength - newValue[0]);
+    setScrollDistance(scrollLength - value);
+    rowVirtualizer.scrollToOffset(scrollLength - value);
   };
 
   return (
@@ -322,7 +323,7 @@ export default function LibraryTracks() {
                         },
                         "index"
                       ) - 1;
-                    return sliderLookup[Math.max(0, index)].name;
+                    return sliderLookup[Math.max(0, index)]?.name ?? "#";
                   })()}
                 </TooltipContent>
               </Tooltip>

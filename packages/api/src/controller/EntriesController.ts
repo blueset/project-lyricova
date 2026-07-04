@@ -259,19 +259,26 @@ export class EntriesController {
     const { tagOfEntries, songOfEntries, verses, pulses, ...cols } = entry;
     const songs = (songOfEntries ?? [])
       .filter((soe) => soe.song && !soe.song.deletionDate)
-      .map((soe) => {
+      .flatMap((soe) => {
         const s = soe.song;
+        if (!s) return [];
         const artists = (s.artistOfSongs ?? [])
           .filter((aos) => aos.artist && !aos.artist.deletionDate)
-          .map((aos) => ({
-            id: aos.artist.id,
-            name: aos.artist.name,
-            ArtistOfSong: {
-              artistRoles: parseEnumArray(aos.artistRoles),
-              categories: parseEnumArray(aos.categories),
-              isSupport: aos.isSupport,
-            },
-          }))
+          .flatMap((aos) =>
+            aos.artist
+              ? [
+                  {
+                    id: aos.artist.id,
+                    name: aos.artist.name,
+                    ArtistOfSong: {
+                      artistRoles: parseEnumArray(aos.artistRoles),
+                      categories: parseEnumArray(aos.categories),
+                      isSupport: aos.isSupport,
+                    },
+                  },
+                ]
+              : []
+          )
           .sort((a: any, b: any) => a.id - b.id);
         const song: any = {
           id: s.id,
@@ -281,7 +288,7 @@ export class EntriesController {
         };
         const { has, url } = deriveVideoUrl(s.vocaDbJson);
         if (has) song.videoUrl = url;
-        return song;
+        return [song];
       });
     songs.sort((a: any, b: any) => a.id - b.id);
 

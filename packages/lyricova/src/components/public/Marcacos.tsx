@@ -11,7 +11,7 @@ import p5 from "p5";
 import { useEffect, useLayoutEffect } from "react";
 import classes from "./Marcacos.module.scss";
 import { relayout } from "../../frontendUtils/relayout";
-import { ScreensaverProps } from "@/app/(public)/screensavers/screensaverData";
+import type { ScreensaverProps } from "@/app/(public)/screensavers/screensaverData";
 const IS_SERVER = typeof window === "undefined";
 const useIsomorphicLayoutEffect = IS_SERVER ? useEffect : useLayoutEffect;
 
@@ -57,7 +57,7 @@ const buildContext =
     let mouse: Mouse;
     const letters: Letter[] = [];
     let gravity: Body;
-    let verse: Verse = null;
+    let verse: Verse | null = null;
     let typeSize: number;
     let border: number;
     let verseIndex = -1;
@@ -105,10 +105,13 @@ const buildContext =
       if (new_index >= arr.length) {
         let k = new_index - arr.length + 1;
         while (k--) {
-          arr.push(undefined);
+          arr.push(arr[arr.length - 1]);
         }
       }
-      arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+      const [item] = arr.splice(old_index, 1);
+      if (item !== undefined) {
+        arr.splice(new_index, 0, item);
+      }
     }
 
     function checkPos(body: Body, b: number) {
@@ -130,6 +133,7 @@ const buildContext =
       // mouse = sketch.createVector(0, 0);
       const div = document.getElementById("p5-sketch");
       const sizer = document.getElementById("sizer");
+      if (!div || !sizer) return;
       const cnv = sketch.createCanvas(div.offsetWidth, div.offsetHeight);
       // div.style.setProperty("height", sketch.height + "px", "important");
 
@@ -172,17 +176,17 @@ const buildContext =
         "g"
       );
       const targetAdvWdth = font.font.glyphs.glyphs[10].advanceWidth;
-      id10Replace = Object.values(font.font.glyphs.glyphs)
-        .filter(
-          (g: { unicode: number }) =>
-            g.unicode != font.font.glyphs.glyphs[10].unicode
-        )
-        .map<[number, string]>(
-          (g: { advanceWidth: number; unicode: number }) => [
-            Math.abs(g.advanceWidth - targetAdvWdth),
-            String.fromCharCode(g.unicode),
-          ]
-        )
+      id10Replace = (
+        Object.values(font.font.glyphs.glyphs) as {
+          advanceWidth: number;
+          unicode: number;
+        }[]
+      )
+        .filter((g) => g.unicode != font.font.glyphs.glyphs[10].unicode)
+        .map<[number, string]>((g) => [
+          Math.abs(g.advanceWidth - targetAdvWdth),
+          String.fromCharCode(g.unicode),
+        ])
         .sort()[0][1];
 
       let alphabet = "";
@@ -278,8 +282,8 @@ const buildContext =
       body: Body;
       midX: number;
       midY: number;
-      posD: Matter.Vector;
-      posC: Matter.Vector;
+      posD = Matter.Vector.create(0, 0);
+      posC = Matter.Vector.create(0, 0);
 
       constructor(l: string, size: number, x: number, y: number) {
         this.color = clrChar1;
@@ -476,11 +480,13 @@ const buildContext =
         // const words = this.text.split(/\s/g);
         const sizer = document
           .getElementById("sizer")
-          .getElementsByTagName("span")[0];
+          ?.getElementsByTagName("span")[0];
+        if (!sizer) return;
         sizer.innerText = this.text;
         relayout(sizer, 1);
 
         const node = sizer.firstChild;
+        if (!node) return;
         const coordinates = [...sizer.innerText]
           .map<[string, DOMRect]>((char, i) => {
             range.setStart(node, i);
@@ -699,7 +705,7 @@ const buildContext =
         sketch.circle(
           this.body.position.x,
           this.body.position.y,
-          this.body.circleRadius * 2
+          (this.body.circleRadius ?? 0) * 2
         );
       }
     }
@@ -707,7 +713,7 @@ const buildContext =
 
 // let skch = new p5(p, "p5-sketch");
 export const buildSketch = (props: ContextProps) =>
-  new p5(buildContext(props), document.getElementById("p5-sketch"));
+  new p5(buildContext(props), document.getElementById("p5-sketch") ?? undefined);
 
 export default function Marcacos(props: ContextProps) {
   useIsomorphicLayoutEffect(() => {

@@ -2,7 +2,8 @@ import { Textarea } from "@lyricova/components/components/ui/textarea";
 import { Button } from "@lyricova/components/components/ui/button";
 import { CornerDownLeft } from "lucide-react";
 import { createRef, useMemo, useState } from "react";
-import { FURIGANA, Lyrics, LyricsLine, TIME_TAG } from "lyrics-kit/core";
+import type { LyricsLine} from "lyrics-kit/core";
+import { FURIGANA, Lyrics, TIME_TAG } from "lyrics-kit/core";
 import { cn } from "@lyricova/components/utils";
 import {
   Tooltip,

@@ -25,11 +25,11 @@ import type { Entry } from "./Entry";
  *         - creationDate
  */
 export class Pulse {
-  id: number;
+  id!: number;
 
-  entryId: number;
+  entryId!: number;
 
-  entry: Entry;
+  entry!: Entry;
 
-  creationDate: Date;
+  creationDate!: Date;
 }

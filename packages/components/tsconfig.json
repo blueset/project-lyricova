@@ -1,27 +1,22 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "es2020",
-    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "strict": true,
+    "verbatimModuleSyntax": true,
     "declaration": true,
     "declarationDir": "./build",
-    "sourceMap": true,
     "outDir": "./build",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
     "rootDir": "./src",
+    "sourceMap": true,
+    "noEmit": false,
     "paths": {
       "@/*": ["./src/*"],
       "@lyricova/components/*": ["./src/*"]
-    },
-    "noEmit": false,
-    "isolatedModules": true
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "build"]

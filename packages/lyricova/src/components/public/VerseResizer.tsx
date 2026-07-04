@@ -1,7 +1,7 @@
 "use client";
 
 import { resizeVerse } from "@/utils/sizing";
-import { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 
 export function VerseResizer({
   children,

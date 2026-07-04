@@ -13,7 +13,7 @@ import { PlaylistRef, FileInPlaylistRef } from "./refs";
 
 /** Replicates the Sequelize `MusicFile.fullPath` VIRTUAL (not a DB column). */
 function fullPathOf(filePath: string): string {
-  return path.resolve(MUSIC_FILES_PATH, filePath);
+  return path.resolve(MUSIC_FILES_PATH!, filePath);
 }
 
 // NOTE: the drizzle plugin's `t.expose*` helpers drop the `description` option,

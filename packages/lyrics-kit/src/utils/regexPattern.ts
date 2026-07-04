@@ -24,7 +24,7 @@ export function resolveTimeTag(str: string): number[] {
  * buildTimeTag(1.25); // returns "00:01.250"
  * buildTimeTag(121.9423); // returns "02:01.942"
  */
-export function buildTimeTag(position: number): string {
+export function buildTimeTag(position: number): string | null {
   if (isNaN(position)) return null;
   const min = Math.floor(position / 60),
     sec = position - min * 60;

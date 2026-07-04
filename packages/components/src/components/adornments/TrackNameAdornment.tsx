@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 import { InputGroupButton } from "@lyricova/components/components/ui/input-group";
-import {
+import type {
   FieldPath,
   FieldValues,
   PathValue,

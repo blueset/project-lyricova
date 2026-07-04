@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import classes from "./marcacos.module.scss";
 import { TagRow } from "@/components/public/TagRow";
-import { ScreensaverProps } from "../screensaverData";
+import type { ScreensaverProps } from "../screensaverData";
 
 const Marcacos = dynamic(() => import("@/components/public/Marcacos"), {
   ssr: false,

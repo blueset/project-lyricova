@@ -1,4 +1,5 @@
-import { ReactNode, useCallback } from "react";
+import type { ReactNode} from "react";
+import { useCallback } from "react";
 import { useQuery } from "@apollo/client";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";

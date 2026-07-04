@@ -50,7 +50,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
     },
     scrollToCenter() {
       requestAnimationFrame(() =>
-        boxRef.current.scrollIntoView({
+        boxRef.current?.scrollIntoView({
           block: "center",
           behavior: "smooth",
         }),
@@ -76,7 +76,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
           const target = elm.querySelector(".furigana") as HTMLDivElement;
           target.style.backgroundSize = "0% 100%";
           const lengths = measureTextWidths(target);
-          const length = lengths.at(-1);
+          const length = lengths.at(-1) ?? 0;
           const percentages = lengths.map((v) => (v / length) * 100);
           const duration = safeDuration(start, end, 1, { line });
           const keyframes = tags.map((v) => ({
@@ -123,13 +123,13 @@ const LyricsRowMemo = memo(LyricsRow, (prev, next) => {
 LyricsRowMemo.displayName = "LyricsRowMemo";
 
 interface Props {
-  lyrics: Lyrics;
+  lyrics: Lyrics | null;
   fileId: number;
   className?: string;
 }
 
 export default function LyricsPreview({ lyrics, fileId, className }: Props) {
-  const playerRef = useRef<HTMLAudioElement>(null);
+  const playerRef = useRef<HTMLAudioElement>(null!);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { playerState, currentFrame, segments } = useActiveLyrcsRanges(
@@ -154,7 +154,10 @@ export default function LyricsPreview({ lyrics, fileId, className }: Props) {
       }
     });
     if (activeSegments.length) {
-      rowRefs.current[activeSegments.at(-1)]?.scrollToCenter();
+      const lastActiveSegment = activeSegments.at(-1);
+      if (lastActiveSegment !== undefined) {
+        rowRefs.current[lastActiveSegment]?.scrollToCenter();
+      }
     }
   }, [playerState, currentFrame]);
 

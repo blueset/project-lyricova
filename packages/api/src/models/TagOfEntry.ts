@@ -31,11 +31,11 @@
 export class TagOfEntry {
   public id!: number;
 
-  tagId: string;
+  tagId!: string;
 
-  entryId: number;
+  entryId!: number;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 }

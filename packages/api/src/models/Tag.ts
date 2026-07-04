@@ -29,11 +29,11 @@ import type { Entry } from "./Entry";
  *         - color
  */
 export class Tag {
-  slug: string;
+  slug!: string;
 
-  name: string;
+  name!: string;
 
-  color: string;
+  color!: string;
 
-  entries: Entry[];
+  entries!: Entry[];
 }

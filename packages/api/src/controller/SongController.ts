@@ -193,6 +193,7 @@ export class SongController {
       const lyrics = (
         await Promise.all(
           song.files.map(async (f) => {
+            if (f.path === null) return null;
             const fullPath = fullPathOf(f.path);
             const lrcxPath = swapExt(fullPath, "lrcx");
             if (await fs.stat(lrcxPath)) {

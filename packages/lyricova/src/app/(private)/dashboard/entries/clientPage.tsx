@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from "@lyricova/components/components/ui/popover";
 import { DataTable } from "@lyricova/components";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 import _ from "lodash";
 import { graphql } from "@lyricova/components/gql";
@@ -79,7 +79,7 @@ export default function Entries() {
       actionDate: new Date(
         Math.max(
           e.creationDate.valueOf(),
-          ...e.pulses.map((p) => p.creationDate.valueOf())
+          ...(e.pulses ?? []).map((p) => p.creationDate.valueOf())
         )
       ),
     })) ?? [];
@@ -154,7 +154,7 @@ export default function Entries() {
         <DataTableColumnHeader column={column} title="Text" />
       ),
       cell: ({ row }) =>
-        row.original.verses.filter((v) => v.isMain)[0].text,
+        row.original.verses?.filter((v) => v.isMain)[0]?.text ?? "",
       meta: {
         width: "1fr",
       },
@@ -167,7 +167,7 @@ export default function Entries() {
       ),
       cell: ({ row }) => (
         <div className="flex gap-1">
-          {row.original.tags.map((t) => (
+          {row.original.tags?.map((t) => (
             <Badge
               key={t.slug}
               variant="outline"
@@ -192,7 +192,7 @@ export default function Entries() {
         <DataTableColumnHeader column={column} title="Songs" />
       ),
       cell: ({ row }) =>
-        row.original.songs.map((t) => t.name).join(", ") || <em>None</em>,
+        row.original.songs?.map((t) => t.name).join(", ") || <em>None</em>,
       meta: {
         width: "1fr",
       },
@@ -206,7 +206,7 @@ export default function Entries() {
       cell: ({ row }) =>
         `${formatDistanceToNow(row.original.actionDate.valueOf(), {
           addSuffix: true,
-        })} (${row.original.pulses.length} pulses)`,
+        })} (${row.original.pulses?.length ?? 0} pulses)`,
       meta: {
         width: "1fr",
       },

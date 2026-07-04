@@ -9,7 +9,8 @@ import {
   BreadcrumbSeparator,
 } from "@lyricova/components/components/ui/breadcrumb";
 import { NextComposedLink } from "@lyricova/components";
-import { Fragment, ReactNode } from "react";
+import type { ReactNode } from "react";
+import { Fragment } from "react";
 
 interface NavHeaderProps {
   breadcrumbs?: {

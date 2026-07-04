@@ -269,7 +269,7 @@ export default function FuriganaManager() {
         setBulkUpdateInput("");
       } catch (err) {
         console.error(err);
-        toast.error(err.message);
+        toast.error(err instanceof Error ? err.message : String(err));
       }
     },
     [apolloClient, refetch]
@@ -298,7 +298,7 @@ export default function FuriganaManager() {
       }
     } catch (err) {
       console.error(err);
-      toast.error(err.message);
+      toast.error(err instanceof Error ? err.message : String(err));
     }
   }, [apolloClient, rows]);
 
@@ -441,6 +441,7 @@ Output:
         cell: ({ row, table }) => {
           // Ensure the meta type includes handleValueChange
           const meta = table.options.meta;
+          if (!meta) return <div>{row.original.segmentedText || "—"}</div>;
           const isEditing = meta.editingRowId === row.original.id;
 
           return isEditing && meta.editFormData ? (
@@ -466,6 +467,7 @@ Output:
         cell: ({ row, table }) => {
           // Ensure the meta type includes handleValueChange
           const meta = table.options.meta;
+          if (!meta) return <div>{row.original.segmentedFurigana || "—"}</div>;
           const isEditing = meta.editingRowId === row.original.id;
 
           return isEditing && meta.editFormData ? (

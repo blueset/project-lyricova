@@ -26,7 +26,8 @@ import { Check, Copy, Images, Loader2, Music, X } from "lucide-react";
 import type { LyricsAnalysisResult } from "@/frontendUtils/lyricsCheck";
 import { lyricsAnalysis } from "@/frontendUtils/lyricsCheck";
 import { Lyrics } from "lyrics-kit/core";
-import { ComponentProps, useCallback, useMemo, useState } from "react";
+import type { ComponentProps} from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -116,6 +117,7 @@ function InlineAnalysisResult({
   );
 
   if (result) {
+    const timestamp = result.lastTimestamp;
     const translation = result.hasTranslation ? (
       <AnalysisBadge variant="success">
         <Check className="h-3 w-3" />
@@ -160,15 +162,15 @@ function InlineAnalysisResult({
         Simplified Japanese
       </AnalysisBadge>
     );
-    const lastTimestamp = Number.isNaN(result.lastTimestamp) ? (
+    const lastTimestamp = timestamp === undefined || Number.isNaN(timestamp) ? (
       <AnalysisBadge variant="outline">Last line: N/A</AnalysisBadge>
-    ) : result.lastTimestamp < duration ? (
+    ) : timestamp < duration ? (
       <AnalysisBadge variant="success">
-        Last line: {result.lastTimestamp.toFixed(2)} seconds
+        Last line: {timestamp.toFixed(2)} seconds
       </AnalysisBadge>
     ) : (
       <AnalysisBadge variant="outline">
-        Last line: {result.lastTimestamp.toFixed(2)} seconds
+        Last line: {timestamp.toFixed(2)} seconds
       </AnalysisBadge>
     );
 
@@ -247,7 +249,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface SearchLyricsProps {
-  title: string;
+  title?: string;
   artists?: string;
   duration: number;
 }
@@ -333,18 +335,15 @@ export default function SearchLyrics({
         },
         next(x) {
           console.log("subscription event", x);
-          if (x.data?.lyricsKitSearchIncremental) {
+          const entry = x.data?.lyricsKitSearchIncremental;
+          if (entry) {
             setSearchResults((results) => {
               // Avoid duplicates based on lyrics content
-              if (
-                results.some(
-                  (r) => r.lyrics === x.data.lyricsKitSearchIncremental.lyrics
-                )
-              ) {
+              if (results.some((r) => r.lyrics === entry.lyrics)) {
                 return results;
               }
-              const arr = [...results, x.data.lyricsKitSearchIncremental];
-              arr.sort((a, b) => b.quality - a.quality);
+              const arr = [...results, { ...entry, quality: entry.quality ?? 0 }];
+              arr.sort((a, b) => (b.quality ?? 0) - (a.quality ?? 0));
               return arr;
             });
           }
@@ -363,20 +362,22 @@ export default function SearchLyrics({
 
       if (result.data) {
         setSearchResults((currentResults) => {
-          const newResults = result.data.lyricsKitSearch.filter(
+          const newResults = (result.data?.lyricsKitSearch ?? []).filter(
             (newItem) =>
               !currentResults.some(
                 (existing) => existing.lyrics === newItem.lyrics
               )
           );
           const combined = [...currentResults, ...newResults];
-          combined.sort((a, b) => b.quality - a.quality);
+          combined.sort((a, b) => (b.quality ?? 0) - (a.quality ?? 0));
           return combined;
         });
       }
-    } catch (e: any) {
+    } catch (e) {
       console.error(`Error while loading search result; ${e}`);
-      toast.error(`Failed to load search results: ${e.message || e}`);
+      toast.error(
+        `Failed to load search results: ${e instanceof Error ? e.message : String(e)}`
+      );
     } finally {
       setIsSubmitting(false);
     }

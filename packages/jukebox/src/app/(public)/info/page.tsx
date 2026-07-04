@@ -14,7 +14,7 @@ export default function Information() {
 
   return (
     <div className="px-4 pb-4">
-      {currentSong && <FileSongInfo partialFile={currentSong} fileId={null} />}
+      {currentSong && <FileSongInfo partialFile={currentSong} />}
 
       <div className="flex flex-row gap-2 flex-wrap">
         {currentSong?.id && (

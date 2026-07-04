@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+ 
 import analyzer from "@next/bundle-analyzer";
 import { withPostHogConfig } from "@posthog/nextjs-config";
 

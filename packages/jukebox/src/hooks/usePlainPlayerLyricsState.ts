@@ -1,6 +1,7 @@
-import { RefObject, useMemo } from "react";
-import { LyricsKitLyrics, LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
-import { PlayerLyricsState, PlayerLyricsKeyframe } from "./types";
+import type { RefObject} from "react";
+import { useMemo } from "react";
+import type { LyricsKitLyrics, LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
+import type { PlayerLyricsState, PlayerLyricsKeyframe } from "./types";
 import { usePlayerLyricsState } from "./usePlayerLyricsState";
 
 export function usePlainPlayerLyricsState(

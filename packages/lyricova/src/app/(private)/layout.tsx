@@ -6,7 +6,7 @@ import {
 } from "@/fonts";
 import clsx from "clsx";
 import "../../styles/global.scss";
-import * as React from "react";
+import type * as React from "react";
 import type { Metadata, Viewport } from "next";
 import { palette, TelemetryProvider } from "@lyricova/components";
 import "@lyricova/components/styles/tailwindGlobal.css";

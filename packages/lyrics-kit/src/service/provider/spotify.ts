@@ -1,13 +1,13 @@
 import axios from "axios";
 import { LyricsProvider } from ".";
 import { ALBUM, ARTIST, Lyrics, LyricsLine, TITLE } from "../../core";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { SpotifyAuthToken } from "../types/spotify/token";
-import {
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { SpotifyAuthToken } from "../types/spotify/token";
+import type {
   SpotifySearchResponse,
   SpotifySearchResult,
 } from "../types/spotify/search";
-import { SpotifyLyricsJSON } from "../types/spotify/lyrics";
+import type { SpotifyLyricsJSON } from "../types/spotify/lyrics";
 import { LyricsProviderSource } from "../lyricsProviderSource";
 
 const TOKEN_URL = "https://open.spotify.com/get_access_token";

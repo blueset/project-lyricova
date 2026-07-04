@@ -27,11 +27,11 @@ import type { MusicFile } from "./MusicFile";
  *         - name
  */
 export class Playlist {
-  slug: string;
+  slug!: string;
 
-  name: string;
+  name!: string;
 
-  files: MusicFile[];
+  files!: MusicFile[];
 
   filesCount?: number;
 }

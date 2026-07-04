@@ -69,13 +69,16 @@ export class LyricsProvidersController {
             .filter((x) => !!x);
           const desc = text[1],
             name = a.text(),
-            id = a.attr("href").match(urlRegex)[0];
+            href = a.attr("href"),
+            id = href?.match(urlRegex)?.[0];
+          if (!id) return null;
           return {
             id: id,
             name: name,
             desc: desc,
           };
         })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
         .get();
       return res.json(data);
     } catch (e) {
@@ -136,7 +139,7 @@ export class LyricsProvidersController {
         lyrics: lyrics,
       });
     } catch (e) {
-      if (e.response && e.response.status === 404) {
+      if (axios.isAxiosError(e) && e.response?.status === 404) {
         return res.status(404).json({
           status: 404,
           error: "Not found",
@@ -181,7 +184,7 @@ export class LyricsProvidersController {
         return res.json([]);
       }
     } catch (e) {
-      if (e.response && e.response.status === 404) {
+      if (axios.isAxiosError(e) && e.response?.status === 404) {
         return res.status(404).json({
           status: 404,
           error: "Not found",

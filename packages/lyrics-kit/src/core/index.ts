@@ -1,8 +1,8 @@
-export { Lyrics, LyricsJSON } from "./lyrics";
-export { LyricsLine, LyricsLineJSON } from "./lyricsLine";
+export { Lyrics, type LyricsJSON } from "./lyrics";
+export { LyricsLine, type LyricsLineJSON } from "./lyricsLine";
 export * from "./attachmentTypes";
 export {
-  Range,
+  type Range,
   TRANSLATION,
   TIME_TAG,
   FURIGANA,
@@ -18,7 +18,7 @@ export {
   WordTimeTag,
   RangeAttributeLabel,
   RangeAttribute,
-  AttachmentsContent,
+  type AttachmentsContent,
 } from "./lyricsLineAttachment";
 export {
   LyricsMetadata,

@@ -74,7 +74,7 @@ ArtistOfSongRef.implement({
       resolve: (a) => a.creationDate,
     }),
     customName: t.exposeString("customName", { nullable: true }),
-    isSupport: t.exposeBoolean("isSupport"),
+    isSupport: t.field({ type: "Boolean", resolve: (a) => a.isSupport! }),
     updatedOn: t.field({ type: "Timestamp", resolve: (a) => a.updatedOn }),
     vocaDbId: t.exposeInt("vocaDbId", { nullable: true }),
   }),
@@ -82,8 +82,11 @@ ArtistOfSongRef.implement({
 
 ArtistOfAlbumRef.implement({
   fields: (t) => ({
-    artistOfAlbumId: t.exposeInt("artistOfAlbumId"),
-    categories: t.exposeString("categories"),
+    artistOfAlbumId: t.field({
+      type: "Int",
+      resolve: (a) => a.artistOfAlbumId,
+    }),
+    categories: t.field({ type: "String", resolve: (a) => a.categories! }),
     effectiveRoles: t.field({
       type: ["String"],
       resolve: (a) => parseEnumArray(a.effectiveRoles),

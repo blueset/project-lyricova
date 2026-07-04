@@ -58,33 +58,33 @@ import type { Pulse } from "./Pulse";
  *         - authorId
  */
 export class Entry {
-  id: number;
+  id!: number;
 
-  title: string;
+  title!: string;
 
-  producersName: string;
+  producersName!: string;
 
-  vocalistsName: string;
+  vocalistsName!: string;
 
-  songs: Array<Song & { SongOfEntry: SongOfEntry }>;
+  songs!: Array<Song & { SongOfEntry: SongOfEntry }>;
 
-  authorId: number;
+  authorId!: number;
 
-  author: User;
+  author!: User;
 
-  comment: string;
+  comment!: string;
 
-  tags: Array<Tag & { TagOfEntry: TagOfEntry }>;
+  tags!: Array<Tag & { TagOfEntry: TagOfEntry }>;
 
-  verses: Verse[];
+  verses!: Verse[];
 
-  pulses: Pulse[];
+  pulses!: Pulse[];
 
-  recentActionDate: Date;
+  recentActionDate!: Date;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 
-  deletionDate: Date;
+  deletionDate!: Date;
 }

@@ -1,5 +1,6 @@
 import * as React from "react";
-import Select, { GroupBase, type Props as SelectProps } from "react-select";
+import type { GroupBase} from "react-select";
+import Select, { type Props as SelectProps } from "react-select";
 import { cn } from "@lyricova/components/utils";
 import { ChevronDownIcon, XIcon } from "lucide-react";
 import { Button } from "@lyricova/components/components/ui/button";

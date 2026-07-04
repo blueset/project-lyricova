@@ -1,7 +1,8 @@
 import { usePlayerLyricsState } from "./usePlayerLyricsState";
 import type { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
 import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
-import { RefObject, useMemo } from "react";
+import type { RefObject} from "react";
+import { useMemo } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 
 export interface LyricsSegment {
@@ -26,11 +27,13 @@ export function lyricsToSegments(
     .toSorted((a, b) => a.position - b.position)
     .map((line, index, lines) => {
       const start = Number.isNaN(line.position) ? 0 : line.position;
+      const lastTag = line.attachments?.timeTag?.tags?.at(-1);
+      const nextLine = lines[index + 1];
       const end = Math.max(
-        line.attachments?.timeTag?.tags?.length
-          ? start + line.attachments.timeTag.tags.at(-1).timeTag
-          : index + 1 < lines.length
-          ? lines[index + 1].position
+        lastTag
+          ? start + lastTag.timeTag
+          : nextLine
+          ? nextLine.position
           : start + 1,
         start,
       );
@@ -60,9 +63,9 @@ export function segmentsToKeyframes(
 
   const keyframes: PlayerLyricsKeyframe<LyricsKeyframeInfo>[] = [];
   actions.forEach(({ time, lineIndex, action }) => {
-    if (keyframes.length && keyframes.at(-1).start === time) {
+    if (keyframes.length && keyframes[keyframes.length - 1]!.start === time) {
       // If the keyframe already exists at the same time, update the keyframe.
-      const lastKeyFrame = keyframes.at(-1);
+      const lastKeyFrame = keyframes[keyframes.length - 1]!;
       if (action === START) {
         lastKeyFrame.data.activeSegments.push(lineIndex);
         lastKeyFrame.data.rangeEnd = lineIndex + 1;
@@ -82,13 +85,13 @@ export function segmentsToKeyframes(
     } else {
       // If the keyframe does not exist at the same time, create a new keyframe.
       let lastKeyframeIndexes = keyframes.length
-        ? [...keyframes.at(-1).data.activeSegments]
+        ? [...keyframes[keyframes.length - 1]!.data.activeSegments]
         : [];
       let rangeStart = keyframes.at(-1)?.data.rangeStart ?? 0;
       let rangeEnd = keyframes.at(-1)?.data.rangeEnd ?? 1;
       if (action === START) {
         lastKeyframeIndexes.push(lineIndex);
-        rangeStart = Math.max(rangeStart, lastKeyframeIndexes[0]);
+        rangeStart = Math.max(rangeStart, lastKeyframeIndexes[0] ?? lineIndex);
         rangeEnd = Math.max(rangeEnd, lineIndex + 1);
       } else {
         lastKeyframeIndexes = lastKeyframeIndexes.filter(

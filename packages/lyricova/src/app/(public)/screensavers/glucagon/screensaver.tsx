@@ -6,7 +6,7 @@ import { TagRow } from "@/components/public/TagRow";
 import { generateColorGradientFunction } from "@/frontendUtils/colors";
 import { relayout } from "@/frontendUtils/relayout";
 import classes from "./glucagon.module.scss";
-import { ScreensaverProps } from "../screensaverData";
+import type { ScreensaverProps } from "../screensaverData";
 
 /**
  * Measure line wraps in a text node.
@@ -205,10 +205,15 @@ class Glucagon {
     this.backCanvas = backCanvas;
 
     this.sizer = sizer;
-    this.ctx = canvas.getContext("2d");
-    this.backCtx = this.backCanvas.getContext("2d", {
+    const ctx = canvas.getContext("2d");
+    const backCtx = this.backCanvas.getContext("2d", {
       willReadFrequently: true,
     });
+    if (!ctx || !backCtx) {
+      throw new Error("Canvas 2D context unavailable");
+    }
+    this.ctx = ctx;
+    this.backCtx = backCtx;
 
     this.resize();
     this.register();

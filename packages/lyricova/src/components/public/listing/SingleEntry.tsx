@@ -90,6 +90,8 @@ export function SingleEntry({ entry }: SingleEntryProps) {
     }
   }, [mouseMoveCallback]);
 
+  if (!mainVerse) return null;
+
   const text = mainVerse.text.replace(/\n/g, " ").replace(/　/g, " ");
 
   return (

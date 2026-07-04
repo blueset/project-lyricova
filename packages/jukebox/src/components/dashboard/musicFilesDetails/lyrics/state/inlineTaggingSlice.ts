@@ -1,5 +1,5 @@
-import { StateCreator } from "zustand";
-import {
+import type { StateCreator } from "zustand";
+import type {
   InlineTaggingCurrentLineState,
   InlineTaggingSlice,
   LyricsState,
@@ -65,7 +65,7 @@ export const createInlineTaggingSlice: StateCreator<
         set(
           (state) => {
             const [row, col] = state.inlineTagging.cursorPosition;
-            const lines = state.lyrics?.lines;
+            const lines = state.lyrics?.lines ?? [];
             const nRow = Math.max(0, row - 1);
             const rowCols = lines[nRow]?.content?.length ?? 0;
             state.inlineTagging.cursorPosition = [nRow, Math.min(col, rowCols)];
@@ -78,7 +78,7 @@ export const createInlineTaggingSlice: StateCreator<
         set(
           (state) => {
             const [row, col] = state.inlineTagging.cursorPosition;
-            const lines = state.lyrics?.lines;
+            const lines = state.lyrics?.lines ?? [];
             const nRow = Math.min(lines.length - 1, row + 1);
             const rowCols = lines[nRow]?.content?.length ?? 0;
             state.inlineTagging.cursorPosition = [nRow, Math.min(col, rowCols)];
@@ -92,10 +92,10 @@ export const createInlineTaggingSlice: StateCreator<
           (state) => {
             const [row, col] = state.inlineTagging.cursorPosition;
             if (col === 0 && row > 0) {
-              const lines = state.lyrics?.lines;
+              const lines = state.lyrics?.lines ?? [];
               state.inlineTagging.cursorPosition = [
                 row - 1,
-                lines[row - 1].content.length,
+                lines[row - 1]?.content?.length ?? 0,
               ];
             } else if (col === 0 && row === 0) {
               return;
@@ -111,7 +111,7 @@ export const createInlineTaggingSlice: StateCreator<
         set(
           (state) => {
             const [row, col] = state.inlineTagging.cursorPosition;
-            const lines = state.lyrics?.lines;
+            const lines = state.lyrics?.lines ?? [];
             const rowCols = lines[row]?.content?.length ?? 0;
             if (col + 1 > rowCols && row + 1 < lines.length) {
               state.inlineTagging.cursorPosition = [row + 1, 0];
@@ -409,7 +409,7 @@ export const createInlineTaggingSlice: StateCreator<
                 });
                 if (
                   timeTags.length > 1 &&
-                  timeTags.at(-2).index > timeTags.at(-1).index
+                  (timeTags.at(-2)?.index ?? 0) > (timeTags.at(-1)?.index ?? 0)
                 ) {
                   timeTags.sort((a, b) => a.index - b.index);
                 }
@@ -447,9 +447,10 @@ export const createInlineTaggingSlice: StateCreator<
                 values: [],
               };
             }
-            const tags = line.attachments[TAGS].values;
+            let tags = line.attachments[TAGS].values;
             if (!Array.isArray(tags)) {
               line.attachments[TAGS].values = [];
+              tags = line.attachments[TAGS].values;
             }
             tags[column] = [];
             if (line.attachments[TIME_TAG]?.tags?.length) {
@@ -471,7 +472,7 @@ export const createInlineTaggingSlice: StateCreator<
             lyrics,
           } = get();
           const time =
-            lyrics?.lines[newRow].attachments?.[TAGS]?.values?.[newCol]?.[0];
+            lyrics?.lines[newRow]?.attachments?.[TAGS]?.values?.[newCol]?.[0];
           if (time) {
             seek(Math.max(0, time - 3));
           }
@@ -484,8 +485,8 @@ export const createInlineTaggingSlice: StateCreator<
             state.lyrics?.lines.forEach((line) => {
               if (
                 line.attachments?.[TIME_TAG]?.tags?.length &&
-                (!line.attachments?.[DOTS]?.values.some((v) => v) ||
-                  !line.attachments?.[TAGS]?.values.some((v) =>
+                (!line.attachments?.[DOTS]?.values?.some((v) => v) ||
+                  !line.attachments?.[TAGS]?.values?.some((v) =>
                     v?.some((t) => t),
                   ))
               ) {
@@ -500,16 +501,15 @@ export const createInlineTaggingSlice: StateCreator<
                     values: [],
                   };
                 }
-                if (!line.attachments[DOTS].values.some((v) => v)) {
-                  line.attachments[DOTS].values = new Array(
-                    contentSize + 1,
-                  ).fill(0);
+                const dotsAttachment = line.attachments[DOTS];
+                if (!dotsAttachment.values.some((v) => v)) {
+                  dotsAttachment.values = new Array(contentSize + 1).fill(0);
                   timeTags.forEach((tag, idx) => {
                     const index = Math.min(
                       Math.max(0, tag.index),
-                      line.attachments[DOTS].values.length,
+                      dotsAttachment.values.length,
                     );
-                    line.attachments[DOTS].values[index] =
+                    dotsAttachment.values[index] =
                       idx < timeTags.length - 1 ? 1 : -1;
                   });
                 }
@@ -519,21 +519,22 @@ export const createInlineTaggingSlice: StateCreator<
                     values: [],
                   };
                 }
-                if (!line.attachments[TAGS].values) {
-                  line.attachments[TAGS].values = [];
+                const tagsAttachment = line.attachments[TAGS];
+                if (!tagsAttachment.values) {
+                  tagsAttachment.values = [];
                 }
-                if (
-                  !line.attachments[TAGS].values.some((v) => v?.some((t) => t))
-                ) {
-                  line.attachments[TAGS].values = new Array(contentSize + 1)
+                if (!tagsAttachment.values.some((v) => v?.some((t) => t))) {
+                  tagsAttachment.values = new Array(contentSize + 1)
                     .fill(0)
                     .map((): number[] => []);
                   timeTags.forEach((tag) => {
                     const index = Math.min(
                       Math.max(0, tag.index),
-                      line.attachments[TAGS].values.length,
+                      tagsAttachment.values.length,
                     );
-                    line.attachments[TAGS].values[index][0] =
+                    const tagValues = tagsAttachment.values[index];
+                    if (!tagValues) return;
+                    tagValues[0] =
                       (isNaN(line.position) ? 0 : line.position) + tag.timeTag;
                   });
                 }
@@ -566,7 +567,7 @@ export const createInlineTaggingSlice: StateCreator<
               const nextStartTime = nextTags?.length
                 ? Math.min(...nextTags)
                 : !Number.isNaN(arr[idx + 1]?.position ?? NaN)
-                ? arr[idx + 1].position
+                ? arr[idx + 1]?.position ?? null
                 : null;
               const firstTag = line?.attachments?.[TAGS]?.values?.flat()[0];
               const fallbackStartTime =
@@ -589,6 +590,7 @@ export const createInlineTaggingSlice: StateCreator<
                     prevEndTime;
               const newTime = firstTag || fallbackStartTime;
               if (
+                newTime != null &&
                 !isNaN(newTime) &&
                 (isNaN(line.position) ||
                   Math.abs(line.position - newTime) > 0.01)
@@ -615,7 +617,7 @@ export const createInlineTaggingSlice: StateCreator<
                       }
                       return null;
                     })
-                    .filter((tag) => tag !== null);
+                    .filter((tag): tag is { index: number; timeTag: number } => tag !== null);
                 }
               }
             });

@@ -5,9 +5,9 @@ import { ARTIST, TITLE } from "../../core/idTagKey";
 import { Lyrics } from "../../core/lyrics";
 import { LyricsLine } from "../../core/lyricsLine";
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { YouTubeSearchResult } from "../types/youtube/searchResult";
-import { YouTubeLyricsJSON3 } from "../types/youtube/singleLyrics";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { YouTubeSearchResult } from "../types/youtube/searchResult";
+import type { YouTubeLyricsJSON3 } from "../types/youtube/singleLyrics";
 
 const BASE_SEARCH_URL = "https://www.youtube.com/results";
 
@@ -62,16 +62,17 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
       .filter((_, el) =>
         $(el)
           .html()
-          .startsWith("var ytInitialPlayerResponse = ")
+          ?.startsWith("var ytInitialPlayerResponse = ") ?? false
       )
       .first()
       .html();
+    if (dataTag === null) throw new Error("Cannot find ytInitialPlayerResponse");
     const dataJSON = dataTag.substring(
       "var ytInitialPlayerResponse = ".length,
       dataTag.length - 1
     );
     const data = JSON.parse(dataJSON);
-    const timedTextTracks =
+    const timedTextTracks: { languageCode: string; baseUrl: string }[] =
       data.captions?.playerCaptionsTracklistRenderer.captionTracks ?? [];
     return timedTextTracks.map((track) => ({
       language: track.languageCode,
@@ -96,10 +97,11 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
       .filter((_, el) =>
         $(el)
           .html()
-          .startsWith("var ytInitialData = ")
+          ?.startsWith("var ytInitialData = ") ?? false
       )
       .first()
       .html();
+    if (dataTag === null) throw new Error("Cannot find ytInitialData");
     const dataJSON = dataTag.substring(
       "var ytInitialData = ".length,
       dataTag.length - 1
@@ -108,7 +110,7 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
 
     if (data.alerts && !data.contents) {
       const error = data.alerts.find(
-        (a) => a.alertRenderer && a.alertRenderer.type === "ERROR"
+        (a: any) => a.alertRenderer && a.alertRenderer.type === "ERROR"
       );
       if (error) throw new Error(`API error: ${JSON.stringify(error)}`);
     }
@@ -116,11 +118,11 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
     const renderers =
       data.contents.twoColumnSearchResultsRenderer.primaryContents
         .sectionListRenderer.contents;
-    const itemSection = renderers.find((r) => r.itemSectionRenderer)
+    const itemSection = renderers.find((r: any) => r.itemSectionRenderer)
       .itemSectionRenderer.contents;
     const items = itemSection
-      .filter((r) => r.videoRenderer)
-      .map((r) => r.videoRenderer);
+      .filter((r: any) => r.videoRenderer)
+      .map((r: any) => r.videoRenderer);
 
     const searchResults: YouTubeSearchResult[] = [];
     for (const item of items.slice(0, 5)) {

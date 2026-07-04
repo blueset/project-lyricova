@@ -41,7 +41,7 @@ export default function ArtistEntitySingle() {
       setArtist={() => {
         /* No-op. */
       }}
-      artistToEdit={query.data?.artist}
+      artistToEdit={query.data?.artist ?? undefined}
     />
   );
 }

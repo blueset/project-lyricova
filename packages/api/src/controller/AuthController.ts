@@ -230,7 +230,7 @@ export class AuthController {
             with: { user: true },
           });
           if (!cred?.user) cb(null, false, { message: "Invalid key. " });
-          return cb(null, cred?.user, cred?.publicKey);
+          return cb(null, cred?.user, cred?.publicKey ?? undefined);
         },
         /* register */ async (
           user: WebAuthnEnrolPayload,

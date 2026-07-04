@@ -491,12 +491,15 @@ function safeSetSelection(
     }
   });
 }
-export function useEventCallback<T extends Function>(fn: T, deps: any[]) {
+export function useEventCallback<T extends (...args: any[]) => any>(
+  fn: T,
+  deps: React.DependencyList
+) {
   const ref = useRef(fn);
   useIsomorphicLayoutEffect(() => {
     ref.current = fn;
   });
-  return useCallback((...args: any[]) => {
+  return useCallback((...args: Parameters<T>) => {
     return ref.current?.(...args);
   }, deps);
 }

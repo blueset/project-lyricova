@@ -1,4 +1,4 @@
-import * as React from "react";
+import type * as React from "react";
 import type { Metadata, Viewport } from "next";
 import { ClientProviders } from "./clientProviders";
 import { palette } from "@lyricova/components";

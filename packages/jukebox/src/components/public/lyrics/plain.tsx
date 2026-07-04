@@ -11,11 +11,13 @@ import {
   useRef,
 } from "react";
 import { cn } from "@lyricova/components/utils";
+import type {
+  RowRendererProps} from "./components/LyricsVirtualizer";
 import {
-  LyricsVirtualizer,
-  RowRendererProps,
+  LyricsVirtualizer
 } from "./components/LyricsVirtualizer";
-import { LineRenderer, TimedSpanProps } from "./components/RubyLineRenderer";
+import type { TimedSpanProps } from "./components/RubyLineRenderer";
+import { LineRenderer } from "./components/RubyLineRenderer";
 import { safeDuration } from "../../../frontendUtils/safeDuration";
 import type { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { useSpring, animated } from "@react-spring/web";
@@ -24,7 +26,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
   function TimedSpan({ startTime, endTime, children }, ref) {
     const webAnimationRef = useRef<Animation | null>(null);
     const refCallback = useCallback(
-      (node?: HTMLSpanElement) => {
+      (node: HTMLSpanElement | null) => {
         if (node && node.style.opacity !== "1") {
           node.style.opacity = "1";
           const duration = safeDuration(startTime, endTime, 0.1, { children });
@@ -50,7 +52,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
         const anim = webAnimationRef.current;
         if (anim) {
           anim.currentTime = time ? time * 1000 : 0;
-          if (time <= endTime) anim.play();
+          if ((time ?? 0) <= endTime) anim.play();
           else anim.pause();
         }
       },
@@ -141,7 +143,7 @@ const InnerRowRenderer = forwardRef<
           ref={animationRef}
         />
         <div className="text-[0.8em]" lang={transLang}>
-          {row.attachments.translations[transLang]}
+          {transLang ? row.attachments.translations[transLang] : null}
         </div>
       </animated.div>
     );

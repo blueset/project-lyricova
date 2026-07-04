@@ -428,7 +428,7 @@ export function romaToHira(roma: string): string {
   };
 
   while (index < len) {
-    let char = roma.charAt(index);
+    const char = roma.charAt(index);
     if (char.match(/[a-z-]/)) {
       const prev = roma.charAt(index - 1);
       const nextChar = roma.charAt(index + 1);

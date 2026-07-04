@@ -1,17 +1,18 @@
 import { LyricsProvider } from ".";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 import axiosJsonp from "../../utils/axiosJsonp";
 import _ from "lodash";
 import { TITLE, ARTIST, ALBUM } from "../../core/idTagKey";
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import { QQSongItem, QQResponseSearchResult } from "../types/qqMusic/searchResult";
-import { QQResponseSinglePlainLyrics } from "../types/qqMusic/singleLyrics";
+import type { QQSongItem, QQResponseSearchResult } from "../types/qqMusic/searchResult";
+import type { QQResponseSinglePlainLyrics } from "../types/qqMusic/singleLyrics";
+import type {
+  Range} from "../../core/lyricsLineAttachment";
 import {
   Attachments,
   FURIGANA,
-  Range,
   RangeAttribute,
   TIME_TAG,
   WordTimeTag,
@@ -46,11 +47,12 @@ class QQMusicQLyrics extends Lyrics {
 
     const lines = linesString.map<[number, number, string]>(line => {
       const timeTag = line.match(timeTagPattern);
+      if (!timeTag) throw new Error("Malformed lyrics line");
       const start = parseInt(timeTag[1]);
       const duration = parseInt(timeTag[2]);
       return [start, duration, timeTag[3]];
     });
-    const lineObjs = [];
+    const lineObjs: LyricsLine[] = [];
 
     lines.forEach(([start, duration, line], idx) => {
       let lineContent = "";
@@ -226,7 +228,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         .trim();
 
       let $ = cheerio.load(xml, { xmlMode: true });
-      const lyrics = $("lyric") || [];
+      const lyrics = $("lyric");
       for (const lyricEntry of lyrics) {
         // let content = getChildElementCDATA(lyricEntry, 'content');
         const contentHex = $(lyricEntry).find("content")?.text();
@@ -235,7 +237,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         const contentXml = decodeQrc(contentHex);
         $ = cheerio.load(contentXml, { xmlMode: true });
         const content = $("Lyric_1").attr("LyricContent");
-        const lrc = new QQMusicQLyrics(content);
+        const lrc = new QQMusicQLyrics(content ?? "");
 
         lrc.idTags[TITLE] = token.title;
         if (token.singer.length > 0) lrc.idTags[ARTIST] = token.singer.map(s => s.title).join(", ");
@@ -288,6 +290,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
 
         while (kanjis.length > 0 && furiganaReplacements.length > 0) {
           const rep = furiganaReplacements.shift();
+          if (!rep) break;
           let count = parseInt(rep[1]);
           const content = rep[2];
 
@@ -297,6 +300,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
           while (count > 0 && kanjis.length > 0) {
             count--;
             const kanji = kanjis.shift();
+            if (!kanji) break;
             startIndex = Math.min(startIndex, kanji.index);
             endIndex = Math.max(endIndex, kanji.index + kanji[0].length);
           }

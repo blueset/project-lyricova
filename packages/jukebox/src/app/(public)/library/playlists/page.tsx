@@ -55,11 +55,11 @@ export default function PlaylistsList() {
       <div className="grid grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-2">
         <div className="col-span-full my-2">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            {query.data.playlists.length} curated playlists
+            {query.data?.playlists.length ?? 0} curated playlists
           </p>
           <hr className="mt-2" />
         </div>
-        {query.data.playlists.map((v) => (
+        {(query.data?.playlists ?? []).map((v) => (
           <NextComposedLink
             key={`playlist-${v.slug}`}
             href={`/library/playlists/${v.slug}`}

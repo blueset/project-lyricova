@@ -9,7 +9,7 @@ import {
 } from "@lyricova/components/components/ui/tooltip";
 import { InputGroupButton } from "@lyricova/components/components/ui/input-group";
 import { RefreshCw } from "lucide-react";
-import {
+import type {
   FieldPath,
   FieldValues,
   PathValue,

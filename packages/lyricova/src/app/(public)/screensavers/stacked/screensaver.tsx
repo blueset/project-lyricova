@@ -9,7 +9,7 @@ import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
 import { buildAnimationSequence } from "@/utils/typingSequence";
 import { PlainTextHangingPunct } from "@/components/public/PlainTextHangingPunct";
-import { ScreensaverProps } from "../screensaverData";
+import type { ScreensaverProps } from "../screensaverData";
 
 gsap.registerPlugin(TextPlugin);
 
@@ -76,7 +76,7 @@ export default function TypingStackedScreensaver({
       const tl = gsap.timeline();
       const stepDuration = verse.language.startsWith("ja") ? 1 / 8 : 1 / 10;
       // const stepDuration = verse.language.match(/^(zh|ja)/) ? 1 / 15 : 1 / 30;
-      const sequence = verse.typingSequence.map((i) =>
+      const sequence = (verse.typingSequence ?? []).map((i) =>
         buildAnimationSequence(i, verse.language)
       );
 

@@ -1,5 +1,5 @@
 import { LyricsProviderSource } from "./lyricsProviderSource";
-import { LyricsProvider } from "./provider";
+import type { LyricsProvider } from "./provider";
 import { LyricsSearchRequest } from "./lyricsSearchRequest";
 
 const SONG = "初音ミクの消失",

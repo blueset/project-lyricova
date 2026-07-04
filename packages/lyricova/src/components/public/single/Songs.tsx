@@ -56,7 +56,9 @@ export function Songs({ songs }: SongsProps) {
               target="_blank"
               rel="noreferrer"
             >
-              <img className={classes.songCover} src={song.coverUrl} />
+              {song.coverUrl && (
+                <img className={classes.songCover} src={song.coverUrl} />
+              )}
             </Link>
             <div className={classes.songMeta}>
               <div className={classes.songTitle}>

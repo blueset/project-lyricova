@@ -88,27 +88,27 @@ import type { Artist } from "./Artist";
  *         - artistId
  */
 export class ArtistOfSong {
-  artistOfSongId: number;
+  artistOfSongId!: number;
 
-  vocaDbId: number | null;
+  vocaDbId!: number | null;
 
-  artistRoles: VDBArtistRoleType[];
+  artistRoles!: VDBArtistRoleType[];
 
-  categories: VDBArtistCategoryType[];
+  categories!: VDBArtistCategoryType[];
 
   customName?: string;
 
-  isSupport: boolean;
+  isSupport!: boolean;
 
-  song: Song;
+  song!: Song;
 
-  songId: number;
+  songId!: number;
 
-  artist: Artist;
+  artist!: Artist;
 
-  artistId: number;
+  artistId!: number;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 }

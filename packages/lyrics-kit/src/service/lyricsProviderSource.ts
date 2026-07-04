@@ -1,4 +1,4 @@
-import { LyricsProvider } from "./provider";
+import type { LyricsProvider } from "./provider";
 import { NetEaseProvider } from "./provider/netease";
 import { QQMusicProvider } from "./provider/qqMusic";
 import { KugouProvider } from "./provider/kugou";

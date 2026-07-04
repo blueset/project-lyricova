@@ -1,10 +1,10 @@
 import { LyricsProvider } from ".";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import { GecimiResultEntry, GecimiResponseSearchResult } from "../types/gecimi/searchResult";
+import type { GecimiResultEntry, GecimiResponseSearchResult } from "../types/gecimi/searchResult";
 
 const SEARCH_URL = "http://gecimi.com/api/lyric";
 // const COVER_URL = "http://gecimi.com/api/cover";

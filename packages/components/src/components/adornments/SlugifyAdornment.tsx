@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect } from "react";
 import slugify from "slugify";
-import {
+import type {
   FieldPath,
   FieldValues,
   Path,

@@ -31,11 +31,11 @@
 export class SongOfEntry {
   public id!: number;
 
-  songId: number;
+  songId!: number;
 
-  entryId: number;
+  entryId!: number;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 }

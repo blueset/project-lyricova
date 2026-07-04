@@ -73,7 +73,7 @@ export default function TypingCenteredScreensaver({
       const tl = gsap.timeline();
       const stepDuration = verse.language.startsWith("ja") ? 1 / 8 : 1 / 10;
       // const stepDuration = verse.language.match(/^(zh|ja)/) ? 1 / 15 : 1 / 30;
-      const sequence = verse.typingSequence.map((i) =>
+      const sequence = (verse.typingSequence ?? []).map((i) =>
         buildAnimationSequence(i, verse.language)
       );
 
@@ -85,7 +85,7 @@ export default function TypingCenteredScreensaver({
       tl.call(
         (el: HTMLElement) => {
           el.classList.remove(classes.hidden);
-          el.parentElement.classList.remove(classes.done);
+          el.parentElement?.classList.remove(classes.done);
         },
         [lineEl],
         0
@@ -133,7 +133,7 @@ export default function TypingCenteredScreensaver({
       tl.call(
         (el: HTMLElement) => {
           el.classList.add(classes.hidden);
-          el.parentElement.classList.add(classes.done);
+          el.parentElement?.classList.add(classes.done);
         },
         [lineEl],
         "<"
@@ -169,7 +169,8 @@ export default function TypingCenteredScreensaver({
     if (typingLineRef.current) {
       buildTimeline(typingLineRef.current, cursorRef.current);
       const scrollerContent = typingLineRef.current.parentElement;
-      const scroller = scrollerContent.parentElement;
+      const scroller = scrollerContent?.parentElement;
+      if (!scrollerContent || !scroller) return;
       // resize observer to keep it at bottom
       const resizeObserver = new ResizeObserver(() => {
         scroller.scrollTop = scroller.scrollHeight;

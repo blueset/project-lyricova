@@ -1,6 +1,7 @@
 "use client";
 
-import React, { AnchorHTMLAttributes } from "react";
+import type { AnchorHTMLAttributes } from "react";
+import React from "react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@lyricova/components/utils";

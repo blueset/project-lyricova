@@ -26,7 +26,7 @@ export function measureElement(element: string): {
   // Gets the element size
   const height = container.clientHeight;
   const width = container.clientWidth;
-  container.parentNode.removeChild(container);
+  container.parentNode?.removeChild(container);
   return { height, width };
 }
 
@@ -38,11 +38,11 @@ function* recursivelyFindTextNode(el: Node): Generator<Node> {
   } else if (el.nodeType === Node.ELEMENT_NODE) {
     if (el.nodeName === "RUBY") {
       if (el.childNodes.length > 0) {
-        yield* recursivelyFindTextNode(el.childNodes[0]);
+        yield* recursivelyFindTextNode(el.childNodes[0]!);
       }
     } else {
       for (let i = 0; i < el.childNodes.length; i++) {
-        yield* recursivelyFindTextNode(el.childNodes[i]);
+        yield* recursivelyFindTextNode(el.childNodes[i]!);
       }
     }
   }
@@ -74,7 +74,7 @@ export function measureTextWidths(el: HTMLElement): number[] {
   range.setStartBefore(el);
   const nodes = [...recursivelyFindTextNode(el)];
   for (const textNode of nodes) {
-    const textLength = [...textNode.textContent].length;
+    const textLength = [...(textNode.textContent ?? "")].length;
     for (let i = 0; i < textLength; i++) {
       range.setEnd(textNode, i);
       const rect = range.getBoundingClientRect();

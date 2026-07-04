@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Lyricova base",
+  "_comment": "Shared, environment-agnostic TypeScript defaults for all workspace packages. Packages set their own module/moduleResolution, lib, jsx, emit (outDir/declaration/rootDir), and paths. Kept free of `baseUrl` and `moduleResolution: node` (deprecated in TS 6, removed in TS 7) and of `moduleDetection: force` (would break the ambient `declare module` typings under src/types).",
+  "compilerOptions": {
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  }
+}

@@ -33,6 +33,9 @@ export class AlignmentController {
     if (!musicFile) {
       return res.status(404).json({ error: "Music file not found" });
     }
+    if (musicFile.path === null) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
     const path = fullPathOf(musicFile.path);
     if (!existsSync(path)) {
       return res.status(404).json({ status: 404, message: "File not found" });
@@ -180,6 +183,9 @@ export class AlignmentController {
     const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(fileId)) });
     if (!musicFile) {
       return res.status(404).json({ error: "Music file not found" });
+    }
+    if (musicFile.path === null) {
+      return res.status(404).json({ status: 404, message: "File not found" });
     }
     const path = fullPathOf(musicFile.path);
     if (!existsSync(path)) {

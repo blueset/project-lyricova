@@ -38,7 +38,9 @@ export default () => {
   app.use(flash());
 
   registerRoutes(app);
-  setupExpressErrorHandler(postHog, app);
+  if (postHog) {
+    setupExpressErrorHandler(postHog, app);
+  }
 
   app.get("/", async (req: Request, res: Response) => {
     res.send("Hello world!");

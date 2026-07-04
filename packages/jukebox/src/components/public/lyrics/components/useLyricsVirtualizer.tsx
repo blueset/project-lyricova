@@ -1,4 +1,5 @@
-import { RefObject, useMemo } from "react";
+import type { RefObject} from "react";
+import { useMemo } from "react";
 import { useContainerSize } from "./useContainerSize";
 import { useRowMeasurement } from "./useRowMeasurement";
 import { useScrollOffset } from "./useScrollOffset";

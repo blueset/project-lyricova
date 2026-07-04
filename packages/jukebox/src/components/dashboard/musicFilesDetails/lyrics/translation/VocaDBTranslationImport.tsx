@@ -26,13 +26,13 @@ export default function VocaDBTranslationImport({
   const handleImportTranslation = useCallback(
     (translation: VocaDBLyricsEntry) => {
       const languages = useLyricsStore.getState().translations.languages;
-      let newLanguage = translation.cultureCodes.join("+") || "lang";
+      let newLanguage = translation.cultureCodes?.join("+") || "lang";
       let idx = 0;
       while (languages.includes(newLanguage)) {
         newLanguage = `${newLanguage}-${++idx}`;
       }
       setSelectedLanguage(newLanguage);
-      setTextareaValue(translation.value);
+      setTextareaValue(translation.value ?? "");
     },
     [setSelectedLanguage, setTextareaValue]
   );
@@ -59,7 +59,7 @@ export default function VocaDBTranslationImport({
             <div>
               {translation.cultureCodes?.join(", ")} – {translation.source}
               <br />
-              {translation.value.substring(0, 100)}…
+              {translation.value?.substring(0, 100)}…
             </div>
           </TooltipContent>
         </Tooltip>

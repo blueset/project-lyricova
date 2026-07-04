@@ -59,6 +59,7 @@ export function BlockVerseRenderer({
       for (let lineIdx = 0; lineIdx < sequence.length; lineIdx++) {
         const line = sequence[lineIdx];
         let committed = "";
+        if (!animationEl) continue;
         const lineEl = animationEl.querySelector(`[data-line="${lineIdx}"]`);
         if (!lineEl) continue;
         const typingEl = lineEl.querySelector(".typing");
@@ -136,7 +137,9 @@ export function BlockVerseRenderer({
       onMouseLeave={() => {
         timelineRef.current?.pause(timelineRef.current?.endTime());
       }}
-      ref={(elm) => elm && buildTimeline(elm)}
+      ref={(elm) => {
+        if (elm) buildTimeline(elm);
+      }}
     >
       <div className={`base ${classes.base}`}>
         <BaseVerseRenderer renderMode={renderMode}>

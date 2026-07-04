@@ -52,10 +52,11 @@ import { SongEntityDialog } from "../dialogs/SongEntityDialog";
 import { formatArtists, formatArtistsPlainText } from "../../utils/artists";
 import { graphql } from "../../gql";
 import type { SelectSongEntryFragment } from "../../gql/graphql";
-import {
+import type {
   FieldValues,
   FieldPath,
-  UseFormReturn,
+  UseFormReturn} from "react-hook-form";
+import {
   useController,
 } from "react-hook-form";
 

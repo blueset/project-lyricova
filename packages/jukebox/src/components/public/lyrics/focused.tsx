@@ -13,8 +13,9 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import { LyricsAnimationRef } from "./components/AnimationRef.type";
-import { LineRenderer, TimedSpanProps } from "./components/RubyLineRenderer";
+import type { LyricsAnimationRef } from "./components/AnimationRef.type";
+import type { TimedSpanProps } from "./components/RubyLineRenderer";
+import { LineRenderer } from "./components/RubyLineRenderer";
 import { cn } from "@lyricova/components/utils";
 import { safeDuration } from "../../../frontendUtils/safeDuration";
 
@@ -30,7 +31,7 @@ const TimedSpanGenerator = (full: boolean) =>
   ) {
     const webAnimationRef = useRef<Animation | null>(null);
     const refCallback = useCallback(
-      (node?: HTMLSpanElement) => {
+      (node: HTMLSpanElement | null) => {
         if (node && node.style.opacity !== "1") {
           node.style.opacity = "1";
           const duration = safeDuration(startTime, endTime, 0.1, { children });
@@ -63,7 +64,7 @@ const TimedSpanGenerator = (full: boolean) =>
         const anim = webAnimationRef.current;
         if (anim) {
           anim.currentTime = time ? time * 1000 : 0;
-          if (time <= endTime) anim.play();
+          if ((time ?? 0) <= endTime) anim.play();
           else anim.pause();
         }
       },
@@ -133,7 +134,7 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
             style: { textWrap: "balance", wordBreak: "auto-phrase" },
           }}
         />
-        {line.attachments.translations[transLang] && (
+        {transLang && line.attachments.translations[transLang] && (
           <div lang={transLang || "zh"} className="mt-2 block text-[0.6em]">
             {line.attachments.translations[transLang]}
           </div>
@@ -170,7 +171,7 @@ const GlowLineElementGenerator = (full: boolean) =>
             timedSpan={full ? TimedSpan : TimedSpanPerSyllable}
             ref={ref}
           />
-          {line.attachments?.translations[transLang] && (
+          {transLang && line.attachments?.translations[transLang] && (
             <div
               className="block text-[0.6em] bg-cover bg-center bg-fixed"
               lang={transLang || "zh"}
@@ -251,7 +252,7 @@ export function FocusedLyrics({
   const playerStateRef = useRef(playerState);
   playerStateRef.current = playerState;
 
-  const animationRefs = useRef<LyricsAnimationRef[]>([]);
+  const animationRefs = useRef<(LyricsAnimationRef | null)[]>([]);
   useEffect(() => {
     if (playerState.state === "playing") {
       const currentTime =
@@ -280,7 +281,7 @@ export function FocusedLyrics({
       : GlowPerSyllableLineElement;
 
   const setRef = useCallback(
-    (index: number) => (ref?: LyricsAnimationRef) => {
+    (index: number) => (ref: LyricsAnimationRef | null) => {
       if (animationRefs.current[index] === ref) return;
       animationRefs.current[index] = ref;
       if (ref) {
@@ -310,18 +311,23 @@ export function FocusedLyrics({
       }}
       layout
     >
-      {currentFrame?.data?.activeSegments.map((segment) => (
-        <LineElement
-          line={lines[segment]}
-          start={segments[segment].start}
-          end={segments[segment].end}
-          transLang={lang}
-          idx={segment}
-          key={segment}
-          animate={true}
-          ref={setRef(segment)}
-        />
-      ))}
+      {currentFrame?.data?.activeSegments.map((segment) => {
+        const line = lines[segment];
+        const lyricsSegment = segments[segment];
+        if (!line || !lyricsSegment) return null;
+        return (
+          <LineElement
+            line={line}
+            start={lyricsSegment.start}
+            end={lyricsSegment.end}
+            transLang={lang}
+            idx={segment}
+            key={segment}
+            animate={true}
+            ref={setRef(segment)}
+          />
+        );
+      })}
     </motion.div>
   );
 }

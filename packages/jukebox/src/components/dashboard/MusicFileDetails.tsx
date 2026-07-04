@@ -85,7 +85,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
   const apolloClient = useApolloClient();
 
   const [getFile, fileData] = useLazyQuery(SINGLE_FILE_DATA, {
-    variables: { id: fileId },
+    variables: { id: fileId! },
   });
 
   useEffect(() => {
@@ -101,12 +101,12 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
 
   const toggleReviewStatus = useCallback(async () => {
     toggleSubmittingReview(true);
-    if (!fileData.data) return;
+    if (!fileData.data?.musicFile) return;
     const needReview = !fileData.data.musicFile.needReview;
     try {
       await apolloClient.mutate({
         mutation: TOGGLE_NEED_REVIEW_MUTATION,
-        variables: { fileId, needReview },
+        variables: { fileId: fileId!, needReview },
       });
       await fileData.refetch();
     } catch (e) {
@@ -115,6 +115,8 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
     }
     toggleSubmittingReview(false);
   }, [toggleSubmittingReview, apolloClient, fileData, fileId]);
+
+  const musicFile = fileData.data?.musicFile;
 
   useEffect(() => {
     if (document?.title && fileData?.data?.musicFile?.trackName) {
@@ -135,44 +137,44 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
             <CardContent>
               <TabsContent value="info">
                 <InfoPanel
-                  fileId={fileId}
-                  path={fileData.data?.musicFile.path ?? ""}
-                  trackName={fileData.data?.musicFile.trackName ?? ""}
-                  trackSortOrder={fileData.data?.musicFile.trackSortOrder ?? ""}
-                  artistName={fileData.data?.musicFile.artistName ?? ""}
+                  fileId={fileId!}
+                  path={musicFile?.path ?? ""}
+                  trackName={musicFile?.trackName ?? ""}
+                  trackSortOrder={musicFile?.trackSortOrder ?? ""}
+                  artistName={musicFile?.artistName ?? ""}
                   artistSortOrder={
-                    fileData.data?.musicFile.artistSortOrder ?? ""
+                    musicFile?.artistSortOrder ?? ""
                   }
-                  albumName={fileData.data?.musicFile.albumName ?? ""}
-                  albumSortOrder={fileData.data?.musicFile.albumSortOrder ?? ""}
-                  song={fileData.data?.musicFile.song ?? null}
-                  albumId={fileData.data?.musicFile.album?.id ?? null}
+                  albumName={musicFile?.albumName ?? ""}
+                  albumSortOrder={musicFile?.albumSortOrder ?? ""}
+                  song={musicFile?.song ?? null}
+                  albumId={musicFile?.album?.id ?? null}
                   refresh={fileData.refetch}
                 />
               </TabsContent>
               <TabsContent value="cover-art">
                 <CoverArtPanel
-                  fileId={fileId}
-                  trackName={fileData.data?.musicFile.trackName ?? ""}
-                  hasCover={fileData.data?.musicFile.hasCover ?? false}
-                  hasSong={(fileData.data?.musicFile.song ?? null) !== null}
-                  hasAlbum={(fileData.data?.musicFile.album ?? null) !== null}
-                  songCoverUrl={fileData.data?.musicFile.song?.coverUrl ?? null}
+                  fileId={fileId!}
+                  trackName={musicFile?.trackName ?? ""}
+                  hasCover={musicFile?.hasCover ?? false}
+                  hasSong={(musicFile?.song ?? null) !== null}
+                  hasAlbum={(musicFile?.album ?? null) !== null}
+                  songCoverUrl={musicFile?.song?.coverUrl ?? null}
                   albumCoverUrl={
-                    fileData.data?.musicFile.album?.coverUrl ?? null
+                    musicFile?.album?.coverUrl ?? null
                   }
                   refresh={fileData.refetch}
                 />
               </TabsContent>
               <TabsContent value="lyrics">
                 <LyricsPanel
-                  fileId={fileId}
-                  title={fileData.data?.musicFile.trackName ?? ""}
-                  artists={fileData.data?.musicFile.artistName ?? ""}
-                  lrcLyrics={fileData.data?.musicFile.lrcLyrics}
-                  lrcxLyrics={fileData.data?.musicFile.lrcxLyrics}
-                  duration={fileData.data?.musicFile.duration ?? 0}
-                  songId={fileData.data?.musicFile.song?.id ?? null}
+                  fileId={fileId!}
+                  title={musicFile?.trackName ?? ""}
+                  artists={musicFile?.artistName ?? ""}
+                  lrcLyrics={musicFile?.lrcLyrics}
+                  lrcxLyrics={musicFile?.lrcxLyrics}
+                  duration={musicFile?.duration ?? 0}
+                  songId={musicFile?.song?.id ?? null}
                   refresh={fileData.refetch}
                 />
               </TabsContent>
@@ -181,17 +183,17 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
             <CardFooter>
               <CardAction>
                 <ProgressButton
-                  disabled={!fileData.data}
+                  disabled={!musicFile}
                   progress={submittingReview}
                   variant={
-                    fileData.data?.musicFile.needReview ?? false
+                    musicFile?.needReview ?? false
                       ? "default"
                       : "secondary"
                   }
                   onClick={toggleReviewStatus}
                 >
                   {`${
-                    fileData.data?.musicFile.needReview
+                    musicFile?.needReview
                       ? "Mark as reviewed"
                       : "Mark as need review"
                   }`}
@@ -213,8 +215,8 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
                 <Separator className="my-2" />
                 <CardContent className="py-4">
                   <PlaylistsPanel
-                    fileId={fileId}
-                    playlists={fileData.data?.musicFile.playlists ?? []}
+                    fileId={fileId!}
+                    playlists={musicFile?.playlists ?? []}
                     refresh={fileData.refetch}
                   />
                 </CardContent>
@@ -233,9 +235,9 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
                 <Separator className="my-2" />
                 <CardContent className="py-4">
                   <StatsPanel
-                    fileId={fileId}
-                    playCount={fileData.data?.musicFile.playCount}
-                    lastPlayed={fileData.data?.musicFile.lastPlayed}
+                    fileId={fileId!}
+                    playCount={musicFile?.playCount}
+                    lastPlayed={musicFile?.lastPlayed}
                     refresh={fileData.refetch}
                   />
                 </CardContent>

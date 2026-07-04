@@ -1,6 +1,6 @@
 import { isTranslationTag } from "./lyricsLineAttachment";
-import { LyricsProviderSource } from "../service/lyricsProviderSource";
-import { LyricsSearchRequest } from "../service/lyricsSearchRequest";
+import type { LyricsProviderSource } from "../service/lyricsProviderSource";
+import type { LyricsSearchRequest } from "../service/lyricsSearchRequest";
 import _ from "lodash";
 
 export interface LyricsMetadataJSON {

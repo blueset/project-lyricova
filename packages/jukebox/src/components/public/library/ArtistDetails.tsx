@@ -122,7 +122,7 @@ export default function ArtistDetails({ id, type }: Props) {
         <AlertDescription>{`${query.error}`}</AlertDescription>
       </Alert>
     );
-  else if (query.data.artist === null)
+  else if (!query.data?.artist)
     content = (
       <Alert variant="error">
         <AlertDescription>Error: Artist #{id} was not found.</AlertDescription>
@@ -130,7 +130,8 @@ export default function ArtistDetails({ id, type }: Props) {
     );
   else {
     const artist = query.data.artist;
-    const files = _.flatMap(artist.songs, (v) => v.files.slice(0, 1));
+    const songs = artist.songs ?? [];
+    const files = _.flatMap(songs, (v) => (v.files ?? []).slice(0, 1));
     const trackCount = files.length;
     const totalMinutes = Math.round(_.sumBy(files, "duration") / 60);
     const totalSize = _.sumBy(files, "fileSize");
@@ -155,7 +156,7 @@ export default function ArtistDetails({ id, type }: Props) {
               style={{ objectPosition: "top center" }}
             >
               <AvatarImage
-                src={artist.mainPictureUrl}
+                src={artist.mainPictureUrl ?? undefined}
                 className="object-top object-cover"
               />
               <AvatarFallback className="rounded-md">
@@ -230,12 +231,12 @@ export default function ArtistDetails({ id, type }: Props) {
         </div>
         <div className="mt-4">
           {_.sortBy(
-            artist.songs.filter((v) => v.files.length),
+            songs.filter((v) => (v.files ?? []).length),
             "sortOrder"
           ).map((v) => (
             <TrackListRow
               song={v}
-              file={v.files.length > 0 ? v.files[0] : null}
+              file={(v.files ?? []).length > 0 ? (v.files ?? [])[0] : null}
               files={files}
               key={v.id}
               showAlbum

@@ -51,9 +51,17 @@ if (!YTDLP_PATH) {
   process.exit(1);
 }
 
-export const MUSIC_FILES_PATH = process.env["MUSIC_FILES_PATH"].endsWith("/")
-  ? process.env["MUSIC_FILES_PATH"]
-  : process.env["MUSIC_FILES_PATH"] + "/";
+const musicFilesPath = process.env["MUSIC_FILES_PATH"];
+if (!musicFilesPath) {
+  logger.error(
+    "Music files path is not set. Set MUSIC_FILES_PATH environment variable."
+  );
+  process.exit(1);
+}
+
+export const MUSIC_FILES_PATH = musicFilesPath.endsWith("/")
+  ? musicFilesPath
+  : musicFilesPath + "/";
 
 export const OPENAI_BASE_URL = process.env["OPENAI_BASE_URL"] ?? "";
 export const OPENAI_API_KEY = process.env["OPENAI_API_KEY"] ?? "";

@@ -1,7 +1,7 @@
 import { type StateCreator } from "zustand";
 import "zustand/middleware/immer";
 import { Lyrics } from "lyrics-kit";
-import { LyricsState, MainSlice } from "./sliceTypes";
+import type { LyricsState, MainSlice } from "./sliceTypes";
 
 export const createMainSlice: StateCreator<
   LyricsState,

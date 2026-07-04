@@ -22,6 +22,9 @@ function buildTimeline(
   const logoContainer = elm.querySelector<HTMLDivElement>(
     "." + classes.logoContainer
   );
+  if (!logoContainer) {
+    throw new Error("Transition cover logo is missing");
+  }
   const paths = logoContainer.querySelectorAll("path");
 
   paths.forEach((path) => {
@@ -36,7 +39,9 @@ function buildTimeline(
       duration: 0.5,
       ease: "power3.in",
     },
-    onComplete: () => startTimeline.play("revealLogo"),
+    onComplete: () => {
+      startTimeline.play("revealLogo");
+    },
   });
   startTimeline
     .set(elm, { y: top, display: "block" }, 0)
@@ -150,8 +155,8 @@ export function TransitionCover() {
           Math.max(0, 0.75 - timelineRef.current[0].progress()) * 1000;
         // console.log("timeout", timeout);
         setTimeout(() => {
-          timelineRef.current[0].pause();
-          timelineRef.current[1].play();
+          timelineRef.current?.[0].pause();
+          timelineRef.current?.[1].play();
           enableBodyScroll(document.body);
         }, timeout);
       }
@@ -204,8 +209,8 @@ export function TransitionCover() {
     if (promises.length) await Promise.all(promises);
     */
     // console.log("stopTimeline", timelineRef.current);
-    timelineRef.current[0].pause();
-    timelineRef.current[1].play();
+    timelineRef.current?.[0].pause();
+    timelineRef.current?.[1].play();
     enableBodyScroll(document.body);
   }
 

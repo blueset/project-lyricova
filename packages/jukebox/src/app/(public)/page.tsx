@@ -2,7 +2,8 @@
 
 import { useQuery } from "@apollo/client";
 import { graphql } from "@lyricova/components/gql";
-import { ReactNode, useMemo, useRef, useState } from "react";
+import type { ReactNode} from "react";
+import { useMemo, useRef, useState } from "react";
 import { FocusedLyrics } from "@/components/public/lyrics/focused";
 import { PlainLyrics } from "@/components/public/lyrics/plain";
 import { LyricsSwitchButton } from "@/components/public/LyricsSwitchButton";
@@ -82,8 +83,8 @@ const MODULE_LIST = {
   "Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="plain" />,
   "Focused Glow": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="glow" />,
   "Focused Glow Seg": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="glowPerSyllable" />,
-  "Plain": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PlainLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
-  "Ringoll": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <RingollLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
+  "Plain": (lyrics: LyricsKitLyrics, transLangIdx = 0) => <PlainLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
+  "Ringoll": (lyrics: LyricsKitLyrics, transLangIdx = 0) => <RingollLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
   "AMLL": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <AMLLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
   "Nicokara": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <KaraokeJaLyrics lyrics={lyrics} />,
   "Slanted": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <SlantedLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,

@@ -72,17 +72,29 @@ const IMPORT_ALBUM_UTAITE_DB_MUTATION = graphql(`
   }
 `);
 
+type SongAlbum = Pick<
+  NonNullable<NonNullable<SongModel["albums"]>[number]>,
+  "id" | "utaiteDbId" | "name" | "sortOrder" | "coverUrl"
+>;
+
+type SongArtist = Pick<
+  NonNullable<NonNullable<SongModel["artists"]>[number]>,
+  "name" | "sortOrder"
+> & {
+  ArtistOfSong?: Pick<
+    NonNullable<
+      NonNullable<NonNullable<SongModel["artists"]>[number]>["ArtistOfSong"]
+    >,
+    "customName" | "isSupport" | "categories"
+  > | null;
+};
+
 type Song = Pick<SongModel, "id" | "name" | "sortOrder"> & {
-  albums: Pick<
-    SongModel["albums"][number],
+  albums?: Pick<
+    SongAlbum,
     "id" | "utaiteDbId" | "name" | "sortOrder" | "coverUrl"
-  >[];
-  artists: (Pick<SongModel["artists"][number], "name" | "sortOrder"> & {
-    ArtistOfSong: Pick<
-      SongModel["artists"][number]["ArtistOfSong"],
-      "customName" | "isSupport" | "categories"
-    >;
-  })[];
+  >[] | null;
+  artists?: SongArtist[] | null;
 };
 
 const formSchema = z
@@ -125,8 +137,8 @@ const formSchema = z
 type FormProps = z.infer<typeof formSchema>;
 
 interface Props extends Omit<FormProps, "song" | "albumId"> {
-  song?: Partial<Song>;
-  albumId?: number;
+  song?: FormProps["song"];
+  albumId?: number | null;
   path: string;
   fileId: number;
   refresh: () => unknown | Promise<unknown>;
@@ -202,7 +214,7 @@ export default function InfoPanel({
     }
     const utaiteDbId = form
       .getValues("song")
-      ?.albums.find((a) => a.id === albumId)?.utaiteDbId;
+      ?.albums?.find((a) => a.id === albumId)?.utaiteDbId;
     if (!utaiteDbId) {
       toast.error("This album does not have UtaiteDB ID.");
       return;
@@ -427,8 +439,7 @@ export default function InfoPanel({
                             />
                           </SelectTrigger>
                         </FormControl>
-                        {form.getValues("albumId") &&
-                          form.getValues("albumId") > 0 && (
+                        {(form.getValues("albumId") ?? 0) > 0 && (
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <ProgressButton
@@ -450,7 +461,7 @@ export default function InfoPanel({
                           )}
                         {(form
                           .watch("song")
-                          ?.albums.find((a) => a.id === form.watch("albumId"))
+                          ?.albums?.find((a) => a.id === form.watch("albumId"))
                           ?.utaiteDbId ?? 0) > 0 && (
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -481,7 +492,7 @@ export default function InfoPanel({
                             className="flex items-center gap-2"
                           >
                             <Avatar className="h-8 w-8 rounded-sm">
-                              <AvatarImage src={v.coverUrl} />
+                              <AvatarImage src={v.coverUrl ?? undefined} />
                               <AvatarFallback className="rounded-sm">
                                 <Music />
                               </AvatarFallback>
@@ -516,6 +527,7 @@ export default function InfoPanel({
                 variant="outline"
                 onClick={() => {
                   const song = form.getValues("song");
+                  if (!song) return;
                   form.setValue("trackName", song.name);
                   form.setValue("trackSortOrder", song.sortOrder);
                 }}
@@ -528,37 +540,37 @@ export default function InfoPanel({
                 variant="outline"
                 onClick={() => {
                   const song = form.getValues("song");
-                  if (song.artists) {
+                  if (song?.artists) {
                     let artistName = "",
                       artistSortOrder = "";
 
                     const producers = song.artists.filter(
                       (v) =>
-                        v.ArtistOfSong.categories.indexOf("Producer") >= 0 &&
-                        !v.ArtistOfSong.isSupport
+                        (v.ArtistOfSong?.categories.indexOf("Producer") ??
+                          -1) >= 0 && !v.ArtistOfSong?.isSupport
                     );
                     artistName += producers
-                      .map((v) => v.ArtistOfSong.customName || v.name)
+                      .map((v) => v.ArtistOfSong?.customName || v.name)
                       .join(", ");
                     artistSortOrder += producers
-                      .map((v) => v.ArtistOfSong.customName || v.sortOrder)
+                      .map((v) => v.ArtistOfSong?.customName || v.sortOrder)
                       .join(", ");
 
                     const vocalists = song.artists.filter(
                       (v) =>
-                        v.ArtistOfSong.categories.indexOf("Vocalist") >= 0 &&
-                        !v.ArtistOfSong.isSupport
+                        (v.ArtistOfSong?.categories.indexOf("Vocalist") ??
+                          -1) >= 0 && !v.ArtistOfSong?.isSupport
                     );
                     if (vocalists.length > 0) {
                       artistName +=
                         " feat. " +
                         vocalists
-                          .map((v) => v.ArtistOfSong.customName || v.name)
+                          .map((v) => v.ArtistOfSong?.customName || v.name)
                           .join(", ");
                       artistSortOrder +=
                         " feat. " +
                         vocalists
-                          .map((v) => v.ArtistOfSong.customName || v.sortOrder)
+                          .map((v) => v.ArtistOfSong?.customName || v.sortOrder)
                           .join(", ");
                     }
 
@@ -577,7 +589,8 @@ export default function InfoPanel({
                 onClick={() => {
                   const song = form.getValues("song");
                   const albumId = form.getValues("albumId");
-                  const album = song.albums.find((i) => i.id === albumId);
+                  const album = song?.albums?.find((i) => i.id === albumId);
+                  if (!album) return;
                   form.setValue("albumName", album.name);
                   form.setValue("albumSortOrder", album.sortOrder);
                 }}

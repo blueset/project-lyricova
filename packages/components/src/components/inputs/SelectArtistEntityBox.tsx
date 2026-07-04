@@ -50,10 +50,11 @@ import { UtaiteDBSearchArtistDialog } from "../dialogs/UtaiteDBSearchArtistDialo
 import { ArtistEntityDialog } from "../dialogs/ArtistEntityDialog";
 import { graphql } from "../../gql";
 import type { SelectArtistEntryFragment } from "../../gql/graphql";
-import {
+import type {
   FieldValues,
   FieldPath,
-  UseFormReturn,
+  UseFormReturn} from "react-hook-form";
+import {
   useController,
 } from "react-hook-form";
 

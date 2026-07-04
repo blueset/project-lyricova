@@ -124,10 +124,10 @@ export default function Login() {
       await apolloClient.resetStore();
       await router.push("/dashboard");
       toast.success("Login Successful. Welcome back!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Passkey login failed:", error);
       toast.error(
-        `Passkey Login Failed: ${error.message || "An unknown error occurred."}`
+        `Passkey Login Failed: ${error instanceof Error ? error.message : "An unknown error occurred."}`
       );
     }
   }, [apolloClient, router]);
@@ -168,14 +168,14 @@ export default function Login() {
       await apolloClient.resetStore();
       await router.push("/dashboard");
       toast.success("Login Successful. Welcome back!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login error:", error);
       setError("username", {
         type: "manual",
         message: "An unexpected error occurred during login.",
       });
       toast.error(
-        `Login Error: ${error.message || "An unexpected error occurred."}`
+        `Login Error: ${error instanceof Error ? error.message : "An unexpected error occurred."}`
       );
     }
   };

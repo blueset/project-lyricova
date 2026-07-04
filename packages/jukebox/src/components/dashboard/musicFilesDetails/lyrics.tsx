@@ -21,12 +21,12 @@ const REMOVE_LYRICS_MUTATION = graphql(`
 
 interface Props {
   fileId: number;
-  lrcLyrics?: string;
-  lrcxLyrics?: string;
+  lrcLyrics?: string | null;
+  lrcxLyrics?: string | null;
   title: string;
   artists: string;
   duration: number;
-  songId?: number;
+  songId?: number | null;
   refresh: () => unknown | Promise<unknown>;
 }
 
@@ -89,7 +89,10 @@ export default function LyricsPanel({
     lyricsNode = <LyricsPreview lyrics={lyrics} fileId={fileId} />;
   }
 
-  const analysisResult = useMemo(() => lyricsAnalysis(lyrics), [lyrics]);
+  const analysisResult = useMemo(
+    () => (lyrics ? lyricsAnalysis(lyrics) : null),
+    [lyrics]
+  );
 
   return (
     <>
@@ -114,7 +117,7 @@ export default function LyricsPanel({
                   <>
                     <p>
                       Translation:{" "}
-                      {analysisResult.hasTranslation ? (
+                      {analysisResult?.hasTranslation ? (
                         <Badge variant="successOutline">Yes</Badge>
                       ) : (
                         <Badge variant="outline">No</Badge>
@@ -122,7 +125,7 @@ export default function LyricsPanel({
                     </p>
                     <p>
                       Inline time tags:{" "}
-                      {analysisResult.hasInlineTimeTags ? (
+                      {analysisResult?.hasInlineTimeTags ? (
                         <Badge variant="successOutline">Yes</Badge>
                       ) : (
                         <Badge variant="outline">No</Badge>
@@ -130,7 +133,7 @@ export default function LyricsPanel({
                     </p>
                     <p>
                       Furigana:{" "}
-                      {analysisResult.hasFurigana ? (
+                      {analysisResult?.hasFurigana ? (
                         <Badge variant="successOutline">Yes</Badge>
                       ) : (
                         <Badge variant="outline">No</Badge>
@@ -140,7 +143,7 @@ export default function LyricsPanel({
                 )}
                 <p>
                   “Simplified Japanese”:{" "}
-                  {analysisResult.hasSimplifiedJapanese ? (
+                  {analysisResult?.hasSimplifiedJapanese ? (
                     <Badge variant="destructive">Yes</Badge>
                   ) : (
                     <Badge variant="successOutline">No</Badge>
@@ -148,9 +151,9 @@ export default function LyricsPanel({
                 </p>
                 <p>
                   Last timestamp:{" "}
-                  {analysisResult.lastTimestamp &&
-                  !Number.isNaN(analysisResult.lastTimestamp)
-                    ? format(analysisResult.lastTimestamp * 1000, "HH:mm:ss")
+                  {analysisResult?.lastTimestamp &&
+                  !Number.isNaN(analysisResult?.lastTimestamp)
+                    ? format(analysisResult?.lastTimestamp * 1000, "HH:mm:ss")
                     : "N/A"}
                 </p>
               </>
@@ -182,12 +185,12 @@ export default function LyricsPanel({
         fileId={fileId}
         isOpen={isLyricsEditDialogOpen}
         toggleOpen={toggleLyricsEditDialogOpen}
-        initialLrc={lrcLyrics}
-        initialLrcx={lrcxLyrics}
+        initialLrc={lrcLyrics ?? undefined}
+        initialLrcx={lrcxLyrics ?? undefined}
         title={title}
         artists={artists}
         duration={duration}
-        songId={songId}
+        songId={songId ?? undefined}
       />
     </>
   );

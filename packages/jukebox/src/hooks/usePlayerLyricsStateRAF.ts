@@ -1,6 +1,7 @@
 import _ from "lodash";
-import { RefObject, useRef, useMemo, useCallback, useEffect } from "react";
-import { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
+import type { RefObject} from "react";
+import { useRef, useMemo, useCallback, useEffect } from "react";
+import type { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
 import { useNamedState } from "./useNamedState";
 import { usePlayerState } from "./usePlayerState";
 import { usePlayerStateRAF } from "./usePlayerStateRAF";

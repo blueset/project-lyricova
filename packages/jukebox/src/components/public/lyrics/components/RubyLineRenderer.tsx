@@ -1,22 +1,23 @@
-import {
+import type {
   ElementType,
   FC,
   PropsWithChildren,
   ReactElement,
-  RefAttributes,
+  RefAttributes} from "react";
+import {
   forwardRef,
   memo,
   useImperativeHandle,
   useRef,
 } from "react";
-import { LyricsAnimationRef } from "./AnimationRef.type";
-import { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
+import type { LyricsAnimationRef } from "./AnimationRef.type";
+import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
 
 function lineToTimeSegments(
   line: LyricsKitLyricsLine,
   lineStart: number,
-  lineEnd: number
+  lineEnd: number,
 ) {
   const timeTags = line.attachments?.timeTag?.tags ?? [];
   const rubyBoundaries = (
@@ -30,32 +31,34 @@ function lineToTimeSegments(
   if (timeTags.length === 0) {
     return [{ index: 0, start: lineStart, end: lineEnd }];
   }
-  if (timeTags[0].index > 0) {
-    segments.push({ index: 0, start: 0, end: timeTags[0].timeTag });
+  const firstTimeTag = timeTags[0]!;
+  if (firstTimeTag.index > 0) {
+    segments.push({ index: 0, start: 0, end: firstTimeTag.timeTag });
   }
   timeTags.forEach((tag, idx) => {
     let segmentIndex = tag.index;
     let segmentStart = tag.timeTag;
-    const segmentEnd = timeTags[idx + 1]
-      ? timeTags[idx + 1].timeTag
+    const nextTag = timeTags[idx + 1];
+    const segmentEnd = nextTag
+      ? nextTag.timeTag
       : lineEnd - lineStart;
 
-    while (rubyBoundaries.length && tag.index === rubyBoundaries[0]) {
+    while (rubyBoundaries.length && tag.index === rubyBoundaries[0]!) {
       rubyBoundaries.shift();
     }
 
     while (
-      timeTags[idx + 1] &&
+      nextTag &&
       rubyBoundaries.length &&
-      timeTags[idx + 1].index > rubyBoundaries[0]
+      nextTag.index > rubyBoundaries[0]!
     ) {
-      const nextSegmentIndex = timeTags[idx + 1]?.index ?? line.content.length;
+      const nextSegmentIndex = nextTag.index;
       const percentage =
-        (rubyBoundaries[0] - segmentIndex) / (nextSegmentIndex - segmentIndex);
+        (rubyBoundaries[0]! - segmentIndex) / (nextSegmentIndex - segmentIndex);
       const start = segmentStart + percentage * (segmentEnd - segmentStart);
       segments.push({ index: segmentIndex, start: segmentStart, end: start });
       // console.log("lineToTimeSegments, #%o, line: %o, lineStart: %o, lineEnd: %o, percentage: %o, rubyBoundaries: %o, segmentIndex: %o", segmentIndex, line.content[segmentIndex], segmentStart, start, percentage, rubyBoundaries, segmentIndex);
-      segmentIndex = rubyBoundaries[0];
+      segmentIndex = rubyBoundaries[0]!;
       segmentStart = start;
       rubyBoundaries.shift();
     }
@@ -68,18 +71,20 @@ function lineToTimeSegments(
   });
 
   while (timeTags.length && rubyBoundaries.length) {
+    const lastSegment = segments.at(-1)!;
     segments.push({
-      index: rubyBoundaries[0],
-      start: segments.at(-1).start,
+      index: rubyBoundaries[0]!,
+      start: lastSegment.start,
       end: lineEnd - lineStart,
     });
     rubyBoundaries.shift();
   }
 
-  if (segments.at(-1).index < line.content.length) {
+  const lastSegment = segments.at(-1)!;
+  if (lastSegment.index < line.content.length) {
     segments.push({
       index: line.content.length,
-      start: segments.at(-1).end,
+      start: lastSegment.end,
       end: lineEnd,
     });
   }
@@ -103,13 +108,13 @@ function buildTimeSpans(
   TimedSpan: TimedSpanComponent,
   content: string,
   timeSegments: { index: number; start: number; end: number }[],
-  setRef: (idx: number) => (ref: LyricsAnimationRef) => void,
-  tillIdx: number = Infinity
+  setRef: (idx: number) => (ref: LyricsAnimationRef | null) => void,
+  tillIdx: number = Infinity,
 ) {
   // console.log("buildTimeSpans, content: %o, lineAnchorMs: %o, timeSegments: %o, tillIdx: %o", content, lineAnchorMs, timeSegments, tillIdx);
   const spans: ReactElement[] = [];
   while (timeSegments.length && timeSegments[0].index < tillIdx) {
-    const segment = timeSegments.shift();
+    const segment = timeSegments.shift()!;
     const child = content.slice(segment.index, timeSegments[0]?.index);
     // console.log("buildTimeSpans, segment: %o, slicing from %o to %o", segment, segment.index, timeSegments[0]?.index, child);
     if (child) {
@@ -149,8 +154,8 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
     },
     ref
   ) {
-    const animationRefs = useRef<{ [idx: number]: LyricsAnimationRef }>({});
-    const setRef = (idx: number) => (ref?: LyricsAnimationRef) => {
+    const animationRefs = useRef<{ [idx: number]: LyricsAnimationRef | null }>({});
+    const setRef = (idx: number) => (ref: LyricsAnimationRef | null) => {
       animationRefs.current[idx] = ref;
     };
 
@@ -161,16 +166,17 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
           return;
         }
 
-        if (start <= time && time <= end) {
+        const currentTime = time ?? 0;
+        if (start <= currentTime && currentTime <= end) {
           Object.values(animationRefs.current).forEach((ref) =>
             ref
-              ? ref?.resume(time - start)
+              ? ref?.resume(currentTime - start)
               : console.log("ref is not found", ref)
           );
         } else {
           Object.values(animationRefs.current).forEach((ref) =>
             ref
-              ? ref?.pause(time - start)
+              ? ref?.pause(currentTime - start)
               : console.log("ref is not found", ref)
           );
         }
@@ -181,8 +187,9 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
           return;
         }
 
+        const currentTime = time ?? 0;
         Object.values(animationRefs.current).forEach((ref) =>
-          ref ? ref?.pause(time - start) : console.log("ref is not found", ref)
+          ref ? ref?.pause(currentTime - start) : console.log("ref is not found", ref)
         );
       },
     }));
@@ -213,7 +220,7 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
         )
       );
       // console.log("rubyBoundaries, before ruby", ruby, timeSegments[0]);
-      const rubyStartTime = timeSegments[0].start;
+      const rubyStartTime = timeSegments[0]?.start ?? 0;
       const inRubySpans = buildTimeSpans(
         TimedSpan,
         line.content,

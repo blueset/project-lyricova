@@ -1,12 +1,14 @@
-import { QueryResult, useQuery } from "@apollo/client";
-import { RefObject, useEffect, useMemo, useState } from "react";
+import type { QueryResult} from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import type { RefObject} from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTrackwiseTimelineControl } from "./useTrackwiseTimelineControl";
-import {
+import type {
   LyricsKitLyricsLine,
   LyricsKitLyrics,
 } from "@lyricova/components/gql/schema";
-import { AnimatedWord } from "@lyricova/components/gql/schema";
-import { PlayerLyricsState } from "./types";
+import type { AnimatedWord } from "@lyricova/components/gql/schema";
+import type { PlayerLyricsState } from "./types";
 import { usePlainPlayerLyricsState } from "./usePlainPlayerLyricsState";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
@@ -54,8 +56,8 @@ export function usePlayerLyricsTypingState(
   lyrics: LyricsKitLyrics,
   playerRef: RefObject<HTMLAudioElement>,
   perLineThreshold: number,
-  doneElementRef: RefObject<HTMLElement>,
-  typingElementRef: RefObject<HTMLElement>,
+  doneElementRef: RefObject<HTMLElement | null>,
+  typingElementRef: RefObject<HTMLElement | null>,
 ): PlayerLyricsTypingState {
   const state = usePlainPlayerLyricsState(lyrics, playerRef);
   const { playerState, startTimes, endTimes } = state;
@@ -81,7 +83,7 @@ export function usePlayerLyricsTypingState(
 
   const sequenceQuery = useQuery(SEQUENCE_QUERY, {
     variables: { text, furigana },
-  });
+  }) as unknown as QueryResult<SequenceQueryResult>;
 
   const [timeline, setTimeline] = useState<Timeline | null>(null);
 

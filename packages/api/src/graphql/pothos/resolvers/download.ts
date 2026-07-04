@@ -27,8 +27,8 @@ function publishDownloadProgress(
   sessionId: string,
   current: number,
   total: number,
-  speed: string = null,
-  eta: string = null
+  speed: string | null = null,
+  eta: string | null = null
 ): Promise<void> {
   console.log(
     `Download progress of ${sessionId}: ${current} / ${total} @ ${speed} ETA: ${eta}}`
@@ -99,8 +99,11 @@ builder.mutationField("youtubeDlDownloadAudio", (t) =>
         const info = await ytdlpWrap.getVideoInfo(["-f", format, url]);
         filename = info.filename;
       }
+      if (!filename) {
+        throw new Error("Could not determine output filename.");
+      }
       filename = swapExt(filename, "mp3");
-      const fullPath = Path.resolve(MUSIC_FILES_PATH, filename);
+      const fullPath = Path.resolve(MUSIC_FILES_PATH!, filename);
       const params = [
         url,
         "--extract-audio",
@@ -125,7 +128,7 @@ builder.mutationField("youtubeDlDownloadAudio", (t) =>
           if (sessionId) {
             publishDownloadProgress(
               sessionId,
-              progress.percent,
+              progress.percent ?? 0,
               100,
               progress.currentSpeed,
               progress.eta

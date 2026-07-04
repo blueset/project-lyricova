@@ -3,7 +3,7 @@
 import { useApolloClient } from "@apollo/client";
 import { useCallback } from "react";
 import { graphql } from "../../gql";
-import {
+import type {
   FieldPath,
   FieldValues,
   UseFormReturn,

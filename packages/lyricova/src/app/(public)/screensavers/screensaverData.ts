@@ -1,5 +1,5 @@
 import { apiBaseUrl } from "@/utils/consts";
-import { Entry, Verse } from "@/frontendUtils/restTypes";
+import type { Entry, Verse } from "@/frontendUtils/restTypes";
 
 export interface ScreensaverProps {
   entries: Entry[];

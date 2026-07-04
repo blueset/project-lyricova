@@ -21,8 +21,8 @@ interface Props {
   hasCover: boolean;
   hasSong: boolean;
   hasAlbum: boolean;
-  songCoverUrl?: string;
-  albumCoverUrl?: string;
+  songCoverUrl?: string | null;
+  albumCoverUrl?: string | null;
   refresh: () => unknown | Promise<unknown>;
 }
 
@@ -36,7 +36,7 @@ export default function CoverArtPanel({
   albumCoverUrl,
   refresh,
 }: Props) {
-  const [selectedImage, setSelectedImage] = useNamedState<SelectedImage>(
+  const [selectedImage, setSelectedImage] = useNamedState<SelectedImage | null>(
     null,
     "selectedImage"
   );
@@ -62,8 +62,9 @@ export default function CoverArtPanel({
   // Apply file selection
   const handleFileFieldOnChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      if (event.target.files.length > 0) {
-        setSelectedImage({ blob: event.target.files[0] });
+      const file = event.target.files?.[0];
+      if (file) {
+        setSelectedImage({ blob: file });
       }
     },
     [setSelectedImage]
@@ -197,7 +198,7 @@ export default function CoverArtPanel({
         <div className="relative w-full pt-[100%] mb-2 bg-secondary rounded-lg overflow-hidden">
           {hasSong ? (
             <img
-              src={songCoverUrl}
+              src={songCoverUrl ?? undefined}
               alt="Song cover art"
               className="absolute inset-0 w-full h-full object-contain"
             />
@@ -211,7 +212,7 @@ export default function CoverArtPanel({
           variant="outline"
           className="w-full"
           disabled={!hasSong || !songCoverUrl}
-          onClick={setImageUrl(songCoverUrl)}
+          onClick={songCoverUrl ? setImageUrl(songCoverUrl) : undefined}
         >
           Use this
         </Button>
@@ -235,7 +236,7 @@ export default function CoverArtPanel({
           variant="outline"
           className="w-full"
           disabled={!hasAlbum || !albumCoverUrl}
-          onClick={setImageUrl(albumCoverUrl)}
+          onClick={albumCoverUrl ? setImageUrl(albumCoverUrl) : undefined}
         >
           Use this
         </Button>
@@ -245,7 +246,12 @@ export default function CoverArtPanel({
         <div className="relative w-full pt-[100%] mb-2 bg-secondary rounded-lg overflow-hidden">
           {selectedImage ? (
             <img
-              src={selectedImage.url || URL.createObjectURL(selectedImage.blob)}
+              src={
+                selectedImage.url ??
+                (selectedImage.blob
+                  ? URL.createObjectURL(selectedImage.blob)
+                  : "")
+              }
               alt="Selected cover art"
               className="absolute inset-0 w-full h-full object-contain"
             />

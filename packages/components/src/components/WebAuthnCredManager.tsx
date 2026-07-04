@@ -3,7 +3,8 @@
 import { useQuery, useApolloClient } from "@apollo/client";
 import { Button } from "@lyricova/components/components/ui/button";
 import { graphql } from "../gql";
-import { MouseEvent, useCallback, useEffect, useState } from "react";
+import type { MouseEvent} from "react";
+import { useCallback, useEffect, useState } from "react";
 import base64url from "base64url";
 import { LS_JWT_KEY } from "../utils/localStorage";
 import { Trash2 } from "lucide-react";

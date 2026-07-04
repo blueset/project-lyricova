@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { ArtistArchivePageComponent, generateMetadataData } from "../../common";
 import { permanentRedirect } from "next/navigation";
 

@@ -1,11 +1,11 @@
 import { LyricsProvider } from ".";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 import cheerio from "cheerio";
 
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import { SyairResponseSearchResult } from "../types/syair/searchResult";
+import type { SyairResponseSearchResult } from "../types/syair/searchResult";
 import { TITLE } from "../../core/idTagKey";
 
 const SEARCH_URL = "https://www.lyricsify.com/search";
@@ -41,7 +41,7 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
       return $(".li > a.title")
         .map(
           (_, x): SyairResponseSearchResult => {
-            return { url: $(x).attr("href"), name: $(x).text() };
+            return { url: $(x).attr("href") ?? "", name: $(x).text() };
           }
         )
         .get();

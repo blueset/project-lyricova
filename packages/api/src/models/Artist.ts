@@ -101,37 +101,37 @@ import type { Album } from "./Album";
  *         - incomplete
  */
 export class Artist {
-  id: number;
+  id!: number;
 
-  name: string;
+  name!: string;
 
-  sortOrder: string;
+  sortOrder!: string;
 
   mainPictureUrl?: string;
 
-  type: VDBArtistType;
+  type!: VDBArtistType;
 
-  songs: Array<Song & { ArtistOfSong: ArtistOfSong }>;
+  songs!: Array<Song & { ArtistOfSong: ArtistOfSong }>;
 
-  albums: Array<Album & { ArtistOfAlbum: ArtistOfAlbum }>;
+  albums!: Array<Album & { ArtistOfAlbum: ArtistOfAlbum }>;
 
   public baseVoiceBankId!: number | null;
 
-  public baseVoiceBank: Artist | null;
+  public baseVoiceBank!: Artist | null;
 
-  public readonly derivedVoiceBanks: Artist[];
+  public readonly derivedVoiceBanks!: Artist[];
 
-  vocaDbJson: ArtistForApiContract | null;
+  vocaDbJson!: ArtistForApiContract | null;
 
-  incomplete: boolean;
+  incomplete!: boolean;
 
-  utaiteDbId: number | null;
+  utaiteDbId!: number | null;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 
-  deletionDate: Date;
+  deletionDate!: Date;
 
   /** ArtistOfSong reflected by Song.$get("artists"), added for GraphQL queries. */
   ArtistOfSong?: Partial<ArtistOfSong>;

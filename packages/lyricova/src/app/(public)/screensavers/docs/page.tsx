@@ -5,7 +5,7 @@ import { Link } from "@/components/public/Link";
 import { Recursive } from "next/font/google";
 import { Fragment } from "react";
 import { apiBaseUrl } from "@/utils/consts";
-import { Tag } from "@/frontendUtils/restTypes";
+import type { Tag } from "@/frontendUtils/restTypes";
 
 export const metadata = {
   title: "Documentation",

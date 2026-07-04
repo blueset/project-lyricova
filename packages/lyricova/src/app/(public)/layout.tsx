@@ -5,7 +5,7 @@ import {
   SourceHanSansPunct,
 } from "@/fonts";
 import clsx from "clsx";
-import * as React from "react";
+import type * as React from "react";
 import type { Metadata, Viewport } from "next";
 import { palette, TelemetryProvider } from "@lyricova/components";
 import { siteName } from "@/utils/consts";

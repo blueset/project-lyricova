@@ -43,9 +43,10 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface Props extends FormValues {
+interface Props {
   isOpen: boolean;
   toggleOpen: (value: boolean) => void;
+  keyword?: string;
 }
 
 export default function HMikuWikiSearchDialog({
@@ -90,7 +91,7 @@ export default function HMikuWikiSearchDialog({
       const result = await apolloClient.query({
         query: HMIKU_ATWIKI_LYRICS_QUERY,
         variables: {
-          ...values,
+          keyword: values.keyword ?? "",
         },
       });
       if (result.data) setSearchResults(result.data.hmikuLyricsSearch);
@@ -168,7 +169,7 @@ export default function HMikuWikiSearchDialog({
       <HMikuWikiResultDialog
         isOpen={showSingleDialog}
         toggleOpen={toggleShowSingleDialog}
-        articleId={selectedArticleId}
+        articleId={selectedArticleId ?? undefined}
       />
     </>
   );

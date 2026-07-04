@@ -11,6 +11,9 @@
   ],
   "scripts": {
     "build": "npm run codegen && tsc && tsc-alias",
+    "typecheck": "tsc --noEmit",
+    "typecheck:native": "tsgo --noEmit",
+    "lint": "eslint src",
     "dev": "concurrently \"npm:codegen:watch\" \"tsc -w\" \"tsc-alias -w\"",
     "codegen": "graphql-codegen --config codegen.ts && graphql-codegen --config codegen.schema.ts",
     "codegen:watch": "nodemon --watch ../api/schema.graphql --ext graphql --exec \"graphql-codegen --config codegen.schema.ts && graphql-codegen --config codegen.ts --watch\"",
@@ -68,12 +71,14 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "concurrently": "^8.0.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
     "nodemon": "^3.1.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "rimraf": "^6.0.1",
     "tsc-alias": "^1.8.8",
-    "typescript": "^5.0.0"
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "react": "^19.1.0",

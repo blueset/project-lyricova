@@ -4,9 +4,9 @@ import { ARTIST, TITLE } from "../../core/idTagKey";
 import { Lyrics } from "../../core/lyrics";
 import { LyricsLine } from "../../core/lyricsLine";
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { MusixMatchEntry } from "../types/lyrixmatch/searchResult";
-import { MusixMatchSyncLyricsLine } from "../types/lyrixmatch/singleLyrics";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { MusixMatchEntry } from "../types/lyrixmatch/searchResult";
+import type { MusixMatchSyncLyricsLine } from "../types/lyrixmatch/singleLyrics";
 
 /* Token from: https://github.com/logan-mcgee/DiscordLyrics/blob/master/config.json */
 const token = {

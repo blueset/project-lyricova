@@ -39,7 +39,7 @@ export interface GenericMetadata {
 type MusicFileRow = typeof MusicFiles.$inferSelect;
 
 export function fullPathOf(relPath: string): string {
-  return Path.resolve(MUSIC_FILES_PATH, relPath);
+  return Path.resolve(MUSIC_FILES_PATH!, relPath);
 }
 
 export async function getSongMetadata(
@@ -96,7 +96,7 @@ export async function buildSongEntry(
   const hasLyrics = fs.existsSync(lrcPath);
 
   const values: Record<string, unknown> = {
-    path: Path.relative(MUSIC_FILES_PATH, fullPath),
+    path: Path.relative(MUSIC_FILES_PATH!, fullPath),
     hasLyrics,
     hash: md5,
     needReview: true,
@@ -134,6 +134,7 @@ export async function replaceFilePlaylists(
  */
 export async function updateSongEntry(file: MusicFileRow): Promise<boolean> {
   try {
+    if (file.path === null) return false;
     const fullPath = fullPathOf(file.path);
     const lrcPath = fullPath.substr(0, fullPath.lastIndexOf(".")) + ".lrc";
     const hasLyrics = fs.existsSync(lrcPath);
@@ -146,7 +147,7 @@ export async function updateSongEntry(file: MusicFileRow): Promise<boolean> {
     const { songId, albumId, playlists, lyrics: _lyrics, ...metadata } =
       await getSongMetadata(fullPath);
     const set: Record<string, unknown> = {
-      path: Path.relative(MUSIC_FILES_PATH, fullPath),
+      path: Path.relative(MUSIC_FILES_PATH!, fullPath),
       hasLyrics,
       fileSize,
       hash: md5,
@@ -170,6 +171,9 @@ export async function writeMetadataToFile(
   file: Pick<MusicFileRow, "path">,
   data: Partial<MusicFileRow>
 ): Promise<void> {
+  if (file.path === null) {
+    throw new Error("Music file path is missing.");
+  }
   let mapping: {
     trackSortOrder: string;
     artistSortOrder: string;
@@ -192,12 +196,12 @@ export async function writeMetadataToFile(
   await ffMetadataWrite(
     fullPathOf(file.path),
     {
-      title: data.trackName || undefined,
-      [mapping.trackSortOrder]: data.trackSortOrder || undefined,
-      album: data.albumName || undefined,
-      [mapping.albumSortOrder]: data.albumSortOrder || undefined,
-      artist: data.artistName || undefined,
-      [mapping.artistSortOrder]: data.artistSortOrder || undefined,
+      title: data.trackName ?? undefined,
+      [mapping.trackSortOrder]: data.trackSortOrder ?? undefined,
+      album: data.albumName ?? undefined,
+      [mapping.albumSortOrder]: data.albumSortOrder ?? undefined,
+      artist: data.artistName ?? undefined,
+      [mapping.artistSortOrder]: data.artistSortOrder ?? undefined,
       [SONG_ID_TAG]: `${data.songId}`,
       [ALBUM_ID_TAG]: `${data.albumId}`,
     },

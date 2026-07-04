@@ -508,7 +508,7 @@ export default function PlaylistDetails() {
           { label: "Dashboard", href: "/dashboard" },
           { label: "Playlists", href: "/dashboard/playlists" },
           {
-            label: playlistQuery.data ? playlistQuery.data.playlist.name : slug,
+            label: playlistQuery.data?.playlist?.name ?? slug,
           },
         ]}
       />
@@ -519,6 +519,10 @@ export default function PlaylistDetails() {
           </Alert>
         ) : !playlistQuery.data ? (
           <Alert variant="info">Loading...</Alert>
+        ) : !playlistQuery.data.playlist ? (
+          <Alert variant="error">
+            Playlist with slug <code>{slug}</code> is not found.
+          </Alert>
         ) : (
           <PlaylistForm initialData={playlistQuery.data.playlist} />
         )}

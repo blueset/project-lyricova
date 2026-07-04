@@ -130,21 +130,21 @@ export const ID3_LYRICS_LANGUAGE = "eng";
  *         - playCount
  */
 export class MusicFile {
-  id: number;
+  id!: number;
 
-  path: string;
+  path!: string;
 
-  fileSize: number;
+  fileSize!: number;
 
-  songId: number;
+  songId!: number;
 
-  song: Song | null;
+  song!: Song | null;
 
-  albumId: number;
+  albumId!: number;
 
-  album: Album | null;
+  album!: Album | null;
 
-  playlists: Playlist[];
+  playlists!: Playlist[];
 
   trackName?: string;
 
@@ -158,26 +158,26 @@ export class MusicFile {
 
   artistSortOrder?: string;
 
-  hasLyrics: boolean;
+  hasLyrics!: boolean;
 
-  hasCover: boolean;
+  hasCover!: boolean;
 
-  needReview: boolean;
+  needReview!: boolean;
 
-  duration: number;
+  duration!: number;
 
-  hash: string;
+  hash!: string;
 
-  playCount: number;
+  playCount!: number;
 
   lastPlayed?: Date;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 
   /** FileInPlaylist reflected by Playlist.$get("files"), added for GraphQL queries. */
   FileInPlaylist?: Partial<FileInPlaylist>;
 
-  fullPath: string;
+  fullPath!: string;
 }

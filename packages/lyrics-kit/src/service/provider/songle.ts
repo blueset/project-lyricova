@@ -1,11 +1,12 @@
 import axios from "axios";
 import { LyricsProvider } from ".";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { SongleResponseLyricsList, SongleResponseSearch, SongleResponseSearchResult } from "../types/songle/searchResult";
-import { SongleError, SongleLicenseResponse, SongleLyricsObject, SongleTimeTagData } from "../types/songle/lyricsResult";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { SongleResponseLyricsList, SongleResponseSearch, SongleResponseSearchResult } from "../types/songle/searchResult";
+import type { SongleError, SongleLicenseResponse, SongleLyricsObject, SongleTimeTagData } from "../types/songle/lyricsResult";
 import { ARTIST, Attachments, Lyrics, LyricsLine, TIME_TAG, TITLE, WordTimeTag, WordTimeTagLabel } from "../../core";
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import cheerio, { Element } from "cheerio";
+import type { Element } from "cheerio";
+import cheerio from "cheerio";
 
 const CHORD_PROGRESSION_REGEXP = new RegExp(
   "\\b([CDEFGAB](?:b|bb)*(?:#|##|sus|maj|min|aug|m|M)*[\\d/]*(?:[CDEFGAB](?:b|bb)*(?:#|##|sus|maj|min|aug|m|M)*[\\d/]*)*\\-){2}"
@@ -18,7 +19,7 @@ type ScraperOptions = Partial<{
 /** @url https://songle.jp/lyric_parsers/98.js */
 class SongleLyricsScraper {
 
-  private parseFn: (data: any, options?: ScraperOptions) => string;
+  private parseFn!: (data: any, options?: ScraperOptions) => string;
   private cache: {[url: string]: string} = {};
 
   private async get(url: string, format?: string) {
@@ -39,7 +40,7 @@ class SongleLyricsScraper {
       return this.cache[url];
     }
 
-    let restQuery: string, format: string, matched: RegExpMatchArray;
+    let restQuery: string, format: string, matched: RegExpMatchArray | null;
 
     if (url.match(/atwiki/)) {
       format = "html";
@@ -191,7 +192,7 @@ class SongleLyricsScraper {
   private parsePiapro(data: string) {
     const $ = cheerio.load(data);
     const doc = $(".contents_text_txt p");
-    const parsed = doc.html()
+    const parsed = (doc.html() ?? "")
       .replace(/<br><br>/g, "\n")
       .replace(/<br>/g, "")
       .replace(/^\t+/gm, "");
@@ -231,7 +232,7 @@ class SongleLyricsScraper {
 
   private preFilter(content: string): string {
     const maxHeaderLines = 5;
-    let markedIndex: number;
+    let markedIndex: number | undefined = undefined;
     const lines = content.split(/\n/);
 
     lines.forEach(function(line, index) {
@@ -336,7 +337,7 @@ class SongleLyrics extends Lyrics {
         if (char.match(/[\s\r\n]/)) return;
         const tag = flatternedTimeTags[charPointer];
         if (tag) {
-          if (tag.start_time !== null && tag.end_time !== null && (labels.length === 0 || labels.at(-1).timeTag !== tag.start_time)) {
+          if (tag.start_time !== null && tag.end_time !== null && (labels.length === 0 || labels.at(-1)!.timeTag !== tag.start_time)) {
             labels.push(new WordTimeTagLabel(tag.start_time, index));
             lastChar = index;
             lastEnd = tag.end_time;
@@ -352,8 +353,8 @@ class SongleLyrics extends Lyrics {
       labels.forEach(label => label.timeTag -= lineStart);
       const attachments = labels.length ? new Attachments({ [TIME_TAG]: new WordTimeTag(labels) }) : undefined;
       const line = new LyricsLine(textLine, lineStart, attachments);
-      if (lines.length && !lines.at(-1).content.trim() && lines.at(-1).position === line.position) {
-        lines.at(-1).position -= 0.001;
+      if (lines.length && !lines.at(-1)!.content.trim() && lines.at(-1)!.position === line.position) {
+        lines.at(-1)!.position -= 0.001;
       }
       lines.push(line);
     }

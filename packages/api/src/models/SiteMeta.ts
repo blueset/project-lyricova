@@ -19,7 +19,7 @@
  *         - value
  */
 export class SiteMeta {
-  key: string;
+  key!: string;
 
-  value: string;
+  value!: string;
 }

@@ -1,0 +1,53 @@
+# Type-check & lint gate for the monorepo.
+#
+# This workflow validates the codebase with BOTH the classic TypeScript
+# compiler (`tsc`, pinned to 6.0.x) and the native TypeScript 7 compiler
+# (`tsgo`, via @typescript/native-preview), plus ESLint. It intentionally does
+# NOT run the full `next build` / `api build` (those require env/secrets such as
+# PostHog sourcemap upload), and it skips the network-dependent provider
+# integration tests.
+#
+# It is scoped to pull requests and manual runs so it can be adopted
+# incrementally (the repository had no CI before this file was added).
+name: Type-check
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: typecheck-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: Lint & type-check (tsc + tsgo)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # The repo has a pre-existing react/expo peer conflict; matches local dev.
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      # Build the two zero-side-effect library packages first. @lyricova/components
+      # runs GraphQL codegen in its build (producing src/gql/**), which the two
+      # Next.js apps type-check against. lyrics-kit is a plain dual tsc build.
+      - name: Build libraries (lyrics-kit, components + codegen)
+        run: |
+          npm run build -w lyrics-kit
+          npm run build -w @lyricova/components
+
+      - name: Lint (ESLint flat config)
+        run: npm run lint
+
+      - name: Type-check (tsc 6.x)
+        run: npm run typecheck
+
+      - name: Type-check (tsgo — TypeScript 7 native preview)
+        run: npm run typecheck:native

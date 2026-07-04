@@ -1,6 +1,7 @@
 import _ from "lodash";
+import type {
+  RefObject} from "react";
 import {
-  RefObject,
   useCallback,
   useEffect,
   useMemo,

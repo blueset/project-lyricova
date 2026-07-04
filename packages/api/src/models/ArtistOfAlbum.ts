@@ -94,23 +94,23 @@ import type { Album } from "./Album";
  *         - artistId
  */
 export class ArtistOfAlbum {
-  artistOfAlbumId: number;
+  artistOfAlbumId!: number;
 
-  roles: VDBArtistRoleType[];
+  roles!: VDBArtistRoleType[];
 
-  effectiveRoles: VDBArtistRoleType[];
+  effectiveRoles!: VDBArtistRoleType[];
 
-  categories: VDBArtistCategoryType;
+  categories!: VDBArtistCategoryType;
 
-  album: Album;
+  album!: Album;
 
-  albumId: number;
+  albumId!: number;
 
-  artist: Artist;
+  artist!: Artist;
 
-  artistId: number;
+  artistId!: number;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 }

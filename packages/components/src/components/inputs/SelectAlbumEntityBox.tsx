@@ -48,10 +48,11 @@ import { UtaiteDBSearchAlbumDialog } from "../dialogs/UtaiteDBSearchAlbumDialog"
 import { AlbumEntityDialog } from "../dialogs/AlbumEntityDialog";
 import { graphql } from "../../gql";
 import type { SelectAlbumEntryFragment } from "../../gql/graphql";
-import {
+import type {
   FieldValues,
   FieldPath,
-  UseFormReturn,
+  UseFormReturn} from "react-hook-form";
+import {
   useController,
 } from "react-hook-form";
 

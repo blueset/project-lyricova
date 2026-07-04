@@ -1,7 +1,7 @@
 import { forwardRef, memo, useEffect } from "react";
 import { useSpring, animated } from "@react-spring/web";
-import { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
-import { RowRendererProps } from "../components/LyricsVirtualizer";
+import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
+import type { RowRendererProps } from "../components/LyricsVirtualizer";
 import { RingollLineRenderer } from "./LineRenderer";
 import { cn } from "@lyricova/components/utils";
 
@@ -91,7 +91,7 @@ const InnerRowRenderer = forwardRef<
           style={{ wordBreak: "auto-phrase" }} // wordBreak
           lang={transLang}
         >
-          {row.attachments.translations[transLang]}
+          {transLang ? row.attachments.translations[transLang] : undefined}
         </div>
       </animated.div>
     );

@@ -68,24 +68,27 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
       "STYLE\n::cue(.lang) {\n  font-size: 0.7em;\n  color: #ffff00;\n}\n\n";
 
     const trackNumbers = lyrics.lines
-      .flatMap((line, idx, arr) => [
-        { idx, time: _.round(line.position, 3), offset: 1 },
-        {
-          idx,
-          time: _.round(
-            line.attachments?.[TIME_TAG]?.tags?.at(-1)?.timeTag
-              ? line.attachments[TIME_TAG].tags.at(-1)?.timeTag + line.position
-              : arr[idx + 1]?.position ?? line.position + 10,
-            3,
-          ),
-          offset: -1,
-        },
-      ])
+      .flatMap((line, idx, arr) => {
+        const lastTimeTag = line.attachments?.[TIME_TAG]?.tags?.at(-1)?.timeTag;
+        return [
+          { idx, time: _.round(line.position, 3), offset: 1 },
+          {
+            idx,
+            time: _.round(
+              lastTimeTag
+                ? lastTimeTag + line.position
+                : arr[idx + 1]?.position ?? line.position + 10,
+              3,
+            ),
+            offset: -1,
+          },
+        ];
+      })
       .toSorted((a, b) => a.time - b.time)
       .reduce<{
         layers: number[];
-        trackToIdx: { [track: number]: number };
-        idxToTrack: { [idx: number]: number };
+        trackToIdx: { [track: number]: number | undefined };
+        idxToTrack: { [idx: number]: number | undefined };
       }>(
         (acc, { idx, offset }) => {
           if (offset === 1) {
@@ -99,7 +102,9 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
           } else {
             const layer = acc.idxToTrack[idx];
             acc.idxToTrack[idx] = undefined;
-            acc.trackToIdx[layer] = undefined;
+            if (layer !== undefined) {
+              acc.trackToIdx[layer] = undefined;
+            }
           }
           return acc;
         },
@@ -111,11 +116,15 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
       .map((v, idx) => {
         if (Number.isNaN(v.position)) return "";
         const timeTag = buildTimeTag(v.position);
+        if (!timeTag) return "";
         const start = timeTag.substring(0, 10);
         const startTime = v.position;
         const nextPosition = lyrics.lines[idx + 1]?.position ?? NaN;
-        const end = !Number.isNaN(nextPosition)
-          ? buildTimeTag(nextPosition).substring(0, 10)
+        const endTag = !Number.isNaN(nextPosition)
+          ? buildTimeTag(nextPosition)
+          : null;
+        const end = endTag
+          ? endTag.substring(0, 10)
           : "99:59.999";
         const vttOffsiteLine = (trackNumbers[idx] ?? 0) * 4;
         const role = parseInt(v.attachments?.[METADATA_ROLE]?.text ?? "0") % 3;
@@ -137,7 +146,7 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
               ...v,
               content: section,
             } as LyricsLineJSON)}`;
-            const endTimeTag = buildTimeTag(startTime + timeTag);
+            const endTimeTag = buildTimeTag(startTime + timeTag) ?? ptrTime;
             lineCounter++;
             result += `${lineCounter}\n${ptrTime} --> ${endTimeTag} line:${vttOffsiteLine} align:${align}\n<c.tt${minor}>[${start}] (@ ${ptrTime} ${metadata})</c>\n${formattedSection}<c.pndg>${divider}${base.substring(
               index,
@@ -194,7 +203,7 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
       }}
     >
       <track
-        src={trackDataUrl}
+        src={trackDataUrl ?? undefined}
         kind="subtitles"
         srcLang="ja"
         label="LRCX Preview"

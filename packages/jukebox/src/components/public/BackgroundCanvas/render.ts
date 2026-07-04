@@ -1,4 +1,5 @@
-import { Pixel, resizeImage } from "./utils";
+import type { Pixel } from "./utils";
+import { resizeImage } from "./utils";
 import { FBMWaveMethod } from "./fbm-wave";
 import { BlurAlbumMethod } from "./blur-album";
 import { MontereyWannaBe } from "./monterey-wannabe";
@@ -45,10 +46,10 @@ export class CanvasBackgroundRender {
   private createTime = Date.now();
   skipFrameRate = 0;
   private _skipFrameRate = 0;
-  private currentRenderMethod: BackgroundRenderMethod;
+  private currentRenderMethod: BackgroundRenderMethod = BlurAlbumMethod;
   private _displaySize = [0, 0];
   private _currentAlbumColorMapColors: Pixel[] = [];
-  private _currentAlbumImage: HTMLImageElement;
+  private _currentAlbumImage: HTMLImageElement | null = null;
   private get time() {
     return Date.now() - this.createTime;
   }
@@ -129,7 +130,7 @@ export class CanvasBackgroundRender {
       }
     }
   };
-  private vertexBuffer: WebGLBuffer;
+  private vertexBuffer: WebGLBuffer | null = null;
   private rebuildVertex() {
     const gl = this.gl;
     if (this.vertexBuffer) gl.deleteBuffer(this.vertexBuffer);
@@ -147,8 +148,8 @@ export class CanvasBackgroundRender {
 
     this.vertexBuffer = buffer;
   }
-  private vshader: WebGLShader;
-  private fshader: WebGLShader;
+  private vshader: WebGLShader | null = null;
+  private fshader: WebGLShader | null = null;
   private rebuildShader(
     fragmentSource: string,
     vertexSource = DEFAULT_VERTEX_SHADER
@@ -183,10 +184,13 @@ export class CanvasBackgroundRender {
     this.vshader = vshader;
     this.fshader = fshader;
   }
-  private program: WebGLProgram;
+  private program: WebGLProgram | null = null;
   private rebuildProgram() {
     const gl = this.gl;
     if (this.program) gl.deleteProgram(this.program);
+    if (!this.vshader || !this.fshader) {
+      throw new TypeError("着色器尚未创建！");
+    }
 
     const program = gl.createProgram();
 
@@ -212,7 +216,7 @@ export class CanvasBackgroundRender {
     this.program = program;
   }
   private albumColorMapSize = 0;
-  private albumColorMapTex: WebGLTexture;
+  private albumColorMapTex: WebGLTexture | undefined = undefined;
   setAlbumColorMap(colorMap: Pixel[]) {
     this._currentAlbumColorMapColors = colorMap;
     const tmp = [...colorMap];
@@ -252,7 +256,7 @@ export class CanvasBackgroundRender {
     this.updateAllUniforms();
   }
   private albumImageSize = [0, 0];
-  private albumImageTex: WebGLTexture;
+  private albumImageTex: WebGLTexture | undefined = undefined;
   setAlbumImage(image: HTMLImageElement) {
     this._currentAlbumImage = image;
     this.albumImageSize = [image.width, image.height];
@@ -328,46 +332,48 @@ export class CanvasBackgroundRender {
   }
   private updateUniforms() {
     const gl = this.gl;
+    const program = this.program;
+    if (!program) return;
     // 着色器开始运行到现在的时间，单位秒
     {
-      const loc = gl.getUniformLocation(this.program, "time");
+      const loc = gl.getUniformLocation(program, "time");
       if (loc) gl.uniform1f(loc, this.time / 1000);
     }
     // 绘制画板的大小，单位像素
     {
-      const loc = gl.getUniformLocation(this.program, "resolution");
+      const loc = gl.getUniformLocation(program, "resolution");
       if (loc) gl.uniform2f(loc, this._displaySize[0], this._displaySize[1]);
     }
     // 特征色表图的分辨率，单位像素
     {
-      const loc = gl.getUniformLocation(this.program, "albumColorMapRes");
+      const loc = gl.getUniformLocation(program, "albumColorMapRes");
       if (loc)
         gl.uniform2f(loc, this.albumColorMapSize, this.albumColorMapSize);
     }
     // 专辑图片的大小，单位像素
     {
-      const loc = gl.getUniformLocation(this.program, "albumImageRes");
+      const loc = gl.getUniformLocation(program, "albumImageRes");
       if (loc)
         gl.uniform2f(loc, this.albumImageSize[0], this.albumImageSize[1]);
     }
     // 从专辑图片中取色得出的特征色表图
     {
-      const loc = gl.getUniformLocation(this.program, "albumColorMap");
+      const loc = gl.getUniformLocation(program, "albumColorMap");
       if (loc) gl.uniform1i(loc, 1);
     }
     // 专辑图片
     {
-      const loc = gl.getUniformLocation(this.program, "albumImage");
+      const loc = gl.getUniformLocation(program, "albumImage");
       if (loc) gl.uniform1i(loc, 2);
     }
     // TODO: 当前音频的波形数据缓冲区
     {
-      const loc = gl.getUniformLocation(this.program, "audioWaveBuffer");
+      const loc = gl.getUniformLocation(program, "audioWaveBuffer");
       if (loc) gl.uniform1fv(loc, EMPTY_128_F32_ARRAY);
     }
     // TODO: 当前音频的可视化数据缓冲区
     {
-      const loc = gl.getUniformLocation(this.program, "audioFFTBuffer");
+      const loc = gl.getUniformLocation(program, "audioFFTBuffer");
       if (loc) gl.uniform1fv(loc, EMPTY_128_F32_ARRAY);
     }
   }

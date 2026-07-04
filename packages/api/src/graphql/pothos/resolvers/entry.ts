@@ -52,23 +52,23 @@ const EntryInput = builder.inputType("EntryInput", {
 
 /** Shape of a verse as it arrives in the EntryInput mutation argument. */
 interface VerseInputLike {
-  id?: number;
-  text?: string;
-  language?: string;
-  isOriginal?: boolean;
-  isMain?: boolean;
-  html?: string;
-  stylizedText?: string;
-  translator?: string;
+  id?: number | null;
+  text?: string | null;
+  language?: string | null;
+  isOriginal?: boolean | null;
+  isMain?: boolean | null;
+  html?: string | null;
+  stylizedText?: string | null;
+  translator?: string | null;
   typingSequence?: string[][][];
 }
 
 async function populateVerseTypingSequence(verse: VerseInputLike) {
   if (verse.text && !verse.typingSequence?.length) {
     verse.typingSequence = await segmentedTransliteration(verse.text, {
-      language: verse.language.startsWith("ja")
+      language: verse.language?.startsWith("ja")
         ? "ja"
-        : verse.language.startsWith("zh")
+        : verse.language?.startsWith("zh")
           ? "zh"
           : "en",
       type: "typing",

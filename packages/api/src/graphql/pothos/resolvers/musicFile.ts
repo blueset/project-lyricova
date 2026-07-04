@@ -43,6 +43,13 @@ function setIntersect<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter((val) => other.has(val)));
 }
 
+function musicFilePath(path: string | null): string {
+  if (path === null) {
+    throw new GraphQLError("Music file path is missing.");
+  }
+  return path;
+}
+
 const MusicFileInput = builder.inputType("MusicFileInput", {
   description: "Write metadata to music file.",
   fields: (t) => ({
@@ -99,10 +106,11 @@ async function writeLyricsToMusicFileImpl(
     where: eq(MusicFiles.id, fileId),
   });
   if (!file) return false;
-  const fullPath = fullPathOf(file.path);
+  const filePath = musicFilePath(file.path);
+  const fullPath = fullPathOf(filePath);
 
   try {
-    if (file.path.toLowerCase().endsWith(".flac")) {
+    if (filePath.toLowerCase().endsWith(".flac")) {
       const key = "LYRICS";
       const forceId3v2 = false;
       await ffMetadataWrite(
@@ -128,7 +136,7 @@ async function writeLyricsToMusicFileImpl(
     return false;
   }
 
-  await updateMD5(fileId, file.path);
+  await updateMD5(fileId, filePath);
   return true;
 }
 
@@ -150,12 +158,14 @@ builder.mutationField("scan", (t) =>
           hasLyrics: true,
         },
       });
-      const filePaths = glob.sync(`${MUSIC_FILES_PATH}**/*.{mp3,flac,aiff}`, {
+      const filePaths = glob.sync(`${MUSIC_FILES_PATH!}**/*.{mp3,flac,aiff}`, {
         nosort: true,
         nocase: true,
       });
       const knownPathsSet: Set<string> = new Set(
-        databaseEntries.map((entry) => MUSIC_FILES_PATH + entry.path)
+        databaseEntries.flatMap((entry) =>
+          entry.path === null ? [] : [MUSIC_FILES_PATH! + entry.path]
+        )
       );
       const filePathsSet: Set<string> = new Set(filePaths);
 
@@ -181,7 +191,7 @@ builder.mutationField("scan", (t) =>
         await db.delete(MusicFiles).where(
           inArray(
             MusicFiles.path,
-            [...toDelete].map((p) => p.replace(MUSIC_FILES_PATH, ""))
+            [...toDelete].map((p) => p.replace(MUSIC_FILES_PATH!, ""))
           )
         );
       }
@@ -224,7 +234,7 @@ builder.mutationField("scan", (t) =>
       console.log("entries added.");
 
       const toUpdateEntries = databaseEntries.filter((entry) =>
-        toUpdate.has(MUSIC_FILES_PATH + entry.path)
+        entry.path !== null && toUpdate.has(MUSIC_FILES_PATH! + entry.path)
       );
 
       console.log("to Update Entries", toUpdateEntries.length);
@@ -240,12 +250,12 @@ builder.mutationField("scan", (t) =>
                 sessionId &&
                 (progressObj.updated + progressObj.unchanged) % 10 === 0
               )
-                await publish({ sessionId, data: progressObj });
+                if (sessionId) await publish({ sessionId, data: progressObj });
             })
           )
         );
       }
-      await publish({ sessionId, data: progressObj });
+      if (sessionId) await publish({ sessionId, data: progressObj });
 
       console.log("entries updated.");
 
@@ -267,7 +277,7 @@ builder.mutationField("scanByPath", (t) =>
       }),
     },
     resolve: async (_root, { path }) => {
-      const fullPath = Path.resolve(MUSIC_FILES_PATH, path);
+      const fullPath = Path.resolve(MUSIC_FILES_PATH!, path);
       if (fs.existsSync(fullPath)) {
         const file = await db.query.MusicFiles.findFirst({
           where: eq(MusicFiles.path, path),
@@ -330,7 +340,7 @@ builder.queryField("musicFiles", (t) =>
         node: r,
       }));
       const endCursor =
-        edges.length > 0 ? edges[edges.length - 1].cursor : after;
+        edges.length > 0 ? edges[edges.length - 1]!.cursor : after;
       return {
         totalCount: count,
         edges,
@@ -379,7 +389,7 @@ builder.mutationField("writeTagsToMusicFile", (t) =>
 
       await writeMetadataToFile(song, data as any);
 
-      const hash = await hasha.fromFile(fullPathOf(song.path), {
+      const hash = await hasha.fromFile(fullPathOf(musicFilePath(song.path)), {
         algorithm: "md5",
       });
       await db
@@ -411,7 +421,10 @@ builder.mutationField("writeLyrics", (t) =>
         where: eq(MusicFiles.id, fileId),
       });
       if (!file) return false;
-      const lyricsPath = swapExt(Path.resolve(MUSIC_FILES_PATH, file.path), ext);
+      const lyricsPath = swapExt(
+        Path.resolve(MUSIC_FILES_PATH!, musicFilePath(file.path)),
+        ext ?? "lrc"
+      );
 
       try {
         fs.writeFileSync(lyricsPath, lyrics);
@@ -452,7 +465,7 @@ builder.mutationField("removeLyrics", (t) =>
         where: eq(MusicFiles.id, fileId),
       });
       if (!file) return false;
-      const fullPath = fullPathOf(file.path);
+      const fullPath = fullPathOf(musicFilePath(file.path));
       const lrcPath = swapExt(fullPath, "lrc");
       const lrcxPath = swapExt(fullPath, "lrcx");
 

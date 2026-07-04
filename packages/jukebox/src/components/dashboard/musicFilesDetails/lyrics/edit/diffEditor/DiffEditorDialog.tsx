@@ -9,13 +9,14 @@ import { Button } from "@lyricova/components/components/ui/button";
 import { useCallback, useEffect, useState } from "react";
 import DiffEditorTextarea from "./DiffEditorBox";
 import diff from "fast-diff";
+import type {
+  Range,
+  RangeAttributeLabel} from "lyrics-kit/core";
 import {
   FURIGANA,
   Lyrics,
   LyricsLine,
-  Range,
   RangeAttribute,
-  RangeAttributeLabel,
   TIME_TAG,
   WordTimeTag,
   WordTimeTagLabel,
@@ -59,29 +60,32 @@ function applyDiff(source: string, edited: string): string {
       if (sourceLine.attachments.content) {
         resultLine.attachments.content = { ...sourceLine.attachments.content };
       }
-      const timeTagQueue =
-        sourceLine.attachments.content[TIME_TAG]?.tags || null;
-      const furiganaQueue =
-        sourceLine.attachments.content[FURIGANA]?.attachment || null;
+      const timeTagQueue = [
+        ...(sourceLine.attachments.content[TIME_TAG]?.tags ?? []),
+      ];
+      const furiganaQueue = [
+        ...(sourceLine.attachments.content[FURIGANA]?.attachment ?? []),
+      ];
       const dotsQueue =
         sourceLine.attachments
           .getTag("dots")
           ?.split(",")
-          .map<[string, number]>((v, idx) => [v, idx]) || null;
+          .map<[string, number]>((v, idx) => [v, idx]) ?? [];
       const tagsQueue =
         sourceLine.attachments
           .getTag("tags")
           ?.split(",")
-          .map<[string, number]>((v, idx) => [v, idx]) || null;
+          .map<[string, number]>((v, idx) => [v, idx]) ?? [];
 
       let ptr = 0; // ptr of the source string index
       let relativeTimeOffset = 0; // relative time offset for when line break happens
       const finalizeLine = () => {
         if (resultTimeTags.length > 0) {
-          if ((timeTagQueue?.length ?? 0) > 0) {
+          const firstTimeTag = timeTagQueue[0];
+          if (firstTimeTag) {
             const eolTimeTag = new WordTimeTagLabel(
-              timeTagQueue[0].timeTag,
-              timeTagQueue[0].index + resultLine.content.length - ptr
+              firstTimeTag.timeTag,
+              firstTimeTag.index + resultLine.content.length - ptr
             );
             resultTimeTags.push(eolTimeTag);
           }
@@ -117,28 +121,34 @@ function applyDiff(source: string, edited: string): string {
           if (text !== "\0") resultLine.content += text;
           ptr += text.length;
           while (
-            (timeTagQueue?.length ?? 0) > 0 &&
+            timeTagQueue.length > 0 &&
             timeTagQueue[0]?.index < ptr
           ) {
             const tag = timeTagQueue.shift();
+            if (!tag) break;
             tag.index += baseOffset;
             tag.timeTag += relativeTimeOffset;
             resultTimeTags.push(tag);
           }
           while (
-            (furiganaQueue?.length ?? 0) > 0 &&
+            furiganaQueue.length > 0 &&
             furiganaQueue[0]?.range[1] <= ptr
           ) {
             const tag = furiganaQueue.shift();
+            if (!tag) break;
             tag.range[0] += baseOffset;
             tag.range[1] += baseOffset;
             resultFurigana.push(tag);
           }
-          while ((dotsQueue?.length ?? 0) > 0 && dotsQueue[0][1] <= ptr) {
-            resultDots.push(dotsQueue.shift()[0]);
+          while (dotsQueue.length > 0 && dotsQueue[0]?.[1] <= ptr) {
+            const tag = dotsQueue.shift();
+            if (!tag) break;
+            resultDots.push(tag[0]);
           }
-          while ((tagsQueue?.length ?? 0) > 0 && tagsQueue[0][1] <= ptr) {
-            resultTags.push(tagsQueue.shift()[0]);
+          while (tagsQueue.length > 0 && tagsQueue[0]?.[1] <= ptr) {
+            const tag = tagsQueue.shift();
+            if (!tag) break;
+            resultTags.push(tag[0]);
           }
         } else if (op === 1 && text !== "\n") {
           resultLine.content += text;
@@ -148,9 +158,10 @@ function applyDiff(source: string, edited: string): string {
           }
         } else if (op === 1 && text === "\n") {
           finalizeLine();
+          const nextTimeTag = timeTagQueue[0]?.timeTag ?? 0.001;
           resultLine.position =
-            resultLine.position + (timeTagQueue?.[0]?.timeTag ?? 0.001);
-          relativeTimeOffset -= timeTagQueue?.[0]?.timeTag ?? 0.001;
+            resultLine.position + nextTimeTag;
+          relativeTimeOffset -= nextTimeTag;
         } else if (op === -1) {
           ptr += text.length;
           while ((timeTagQueue?.[0]?.index ?? Infinity) < ptr)

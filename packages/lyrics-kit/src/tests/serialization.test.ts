@@ -9,7 +9,7 @@ import {
   TIME_TAG,
 } from "../core/lyricsLineAttachment";
 import { ARTIST, TITLE, OFFSET } from "../core/idTagKey";
-import { AttachmentJSON } from "../core/attachmentTypes";
+import type { AttachmentJSON } from "../core/attachmentTypes";
 
 describe("Lyrics Kit Serialization", () => {
   test("should serialize and deserialize attachment types correctly", () => {
@@ -73,8 +73,8 @@ describe("Lyrics Kit Serialization", () => {
       type: "plain_text",
       text: "Plain text",
     });
-    expect(json[TIME_TAG].type).toBe("time_tag");
-    expect(json[FURIGANA].type).toBe("range");
+    expect(json[TIME_TAG]!.type).toBe("time_tag");
+    expect(json[FURIGANA]!.type).toBe("range");
     expect(json["tr:en"].type).toBe("plain_text");
     expect(json["tr:fr"].type).toBe("plain_text");
 
@@ -83,7 +83,7 @@ describe("Lyrics Kit Serialization", () => {
 
     // Verify all attachments are restored correctly
     expect(deserialized.getTag("custom_plain")).toBe("Plain text");
-    expect(deserialized.timeTag.tags.length).toBe(2);
+    expect(deserialized.timeTag!.tags.length).toBe(2);
     expect(deserialized.getTag(FURIGANA)).toBe("<ruby,0,2>");
     expect(deserialized.translation("en")).toBe("English text");
     expect(deserialized.translation("fr")).toBe("French text");

@@ -1,6 +1,6 @@
 import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { useAppContext } from "../AppContext";
-import type { CSSProperties } from "react";
+import type React from "react";
 import { useRef } from "react";
 import { usePlayerLyricsTypingState } from "../../../hooks/usePlayerLyricsTypingState";
 
@@ -17,8 +17,8 @@ export function TypingStackedLyrics({ lyrics }: Props) {
     lyrics,
     playerRef,
     0.75,
-    doneRef,
-    typingRef,
+    doneRef as React.RefObject<HTMLElement>,
+    typingRef as React.RefObject<HTMLElement>,
   );
 
   let statusNode: React.ReactNode = null;
@@ -28,7 +28,7 @@ export function TypingStackedLyrics({ lyrics }: Props) {
   else if (!sequenceQuery.data) {
     statusNode = (
       <span>
-        {lyrics.lines.length} lines, starting at {lyrics.lines[0].position}{" "}
+        {lyrics.lines.length} lines, starting at {lyrics.lines[0]?.position ?? 0}{" "}
         second.
       </span>
     );

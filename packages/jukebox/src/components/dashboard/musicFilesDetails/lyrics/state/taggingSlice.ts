@@ -1,5 +1,5 @@
-import { StateCreator } from "zustand";
-import { LyricsState, TaggingSlice } from "./sliceTypes";
+import type { StateCreator } from "zustand";
+import type { LyricsState, TaggingSlice } from "./sliceTypes";
 import { TIME_TAG } from "lyrics-kit/core";
 import { TAGS } from "../../../../../../../lyrics-kit/build/module/core/lyricsLineAttachment";
 import { linearRegression } from "simple-statistics";
@@ -73,11 +73,13 @@ export const createTaggingSlice: StateCreator<
             const points: [number, number][] = [];
             for (
               let i = 0;
-              i < Math.min(state.lyrics.lines.length, extrapolateTags.length);
+              i < Math.min(lines.length, extrapolateTags.length);
               i++
             ) {
-              if (extrapolateTags[i] != null && lines[i]?.position != null) {
-                points.push([lines[i].position, extrapolateTags[i]]);
+              const extrapolateTag = extrapolateTags[i];
+              const position = lines[i]?.position;
+              if (extrapolateTag != null && position != null) {
+                points.push([position, extrapolateTag]);
               }
             }
             if (points.length < 1) return;

@@ -21,7 +21,8 @@ export async function updatePlaylistsOfFileAsTags(
     where: eq(MusicFiles.id, fileId),
   });
   if (!file) return;
-  const fullPath = path.resolve(MUSIC_FILES_PATH, file.path);
+  if (file.path === null) return;
+  const fullPath = path.resolve(MUSIC_FILES_PATH!, file.path);
   const rows = await db.query.FileInPlaylists.findMany({
     where: eq(FileInPlaylists.fileId, fileId),
     with: { playlist: true },
@@ -29,7 +30,11 @@ export async function updatePlaylistsOfFileAsTags(
   const forceId3v2 = file.path.toLowerCase().endsWith(".aiff");
   await ffMetadataWrite(
     fullPath,
-    { [PLAYLIST_IDS_TAG]: rows.map((r) => r.playlist.slug).join(",") },
+    {
+      [PLAYLIST_IDS_TAG]: rows
+        .flatMap((r) => (r.playlist ? [r.playlist.slug] : []))
+        .join(","),
+    },
     { preserveStreams: true, forceId3v2 }
   );
   const md5 = await hasha.fromFile(fullPath, { algorithm: "md5" });

@@ -1,6 +1,7 @@
-import {
+import type {
   ComponentProps,
-  ReactNode,
+  ReactNode} from "react";
+import {
   useCallback,
   useEffect,
   useRef,

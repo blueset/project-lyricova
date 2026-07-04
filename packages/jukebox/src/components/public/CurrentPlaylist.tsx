@@ -49,6 +49,7 @@ function CurrentPlaylistItem({
   const handleRemoveFromPlaylist = () => {
     dispatch(removeTrack(index));
   };
+  const isPastTrack = nowPlaying !== null && index < nowPlaying;
   return (
     <div
       ref={provided.innerRef}
@@ -59,7 +60,7 @@ function CurrentPlaylistItem({
       }}
       className={cn(
         "flex items-center justify-between pr-2",
-        index < nowPlaying ? "opacity-40" : "opacity-100",
+        isPastTrack ? "opacity-40" : "opacity-100",
         nowPlaying === index || isDragging ? "bg-secondary" : "hover:bg-muted"
       )}
     >

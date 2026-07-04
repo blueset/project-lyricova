@@ -1,8 +1,10 @@
 export const resizeVerse = (elm: HTMLElement) => {
+  const parent = elm.parentElement;
+  if (!parent) return;
   elm.style.whiteSpace = "nowrap";
-  const containerWidth = elm.parentElement.scrollWidth;
+  const containerWidth = parent.scrollWidth;
   const fontSize = parseFloat(window.getComputedStyle(elm).fontSize);
-  const containerHeight = elm.parentElement.scrollHeight;
+  const containerHeight = parent.scrollHeight;
   const max = containerHeight / fontSize < 5 ? 5 : 4;
   let scaledSize =
     Math.round(((containerWidth * 0.6) / elm.offsetWidth) * fontSize * 100) /

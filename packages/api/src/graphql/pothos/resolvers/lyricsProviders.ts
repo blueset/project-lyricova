@@ -180,11 +180,12 @@ async function vocaDBLyrics(id: number): Promise<LyricsForSongContract[]> {
       }
     }
   } catch (e) {
-    if (e.response && e.response.status === 404) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
       return [];
     }
     throw e;
   }
+  return [];
 }
 
 builder.queryField("hmikuLyricsSearch", (t) =>
@@ -215,9 +216,12 @@ builder.queryField("hmikuLyricsSearch", (t) =>
             .filter((x) => !!x);
           const desc = text[1],
             name = a.text(),
-            id = a.attr("href").match(urlRegex)[0];
+            href = a.attr("href"),
+            id = href?.match(urlRegex)?.[0];
+          if (!id) return null;
           return { id, name, desc };
         })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
         .get();
       return data;
     },
@@ -267,9 +271,9 @@ builder.queryField("hmikuLyrics", (t) =>
         } else {
           console.log("lyricsTitleNode not found");
         }
-        return { id, name: title, furigana, lyrics };
+        return { id, name: title, furigana, lyrics: lyrics ?? "" };
       } catch (e) {
-        if (e.response && e.response.status === 404) {
+        if (axios.isAxiosError(e) && e.response?.status === 404) {
           return null;
         }
         throw e;
@@ -328,7 +332,7 @@ builder.queryField("lyricsKitSearch", (t) =>
             }
             return converted;
           } catch (e) {
-            failed.push(e);
+            failed.push(e instanceof Error ? e.message : String(e));
             return [];
           }
         })

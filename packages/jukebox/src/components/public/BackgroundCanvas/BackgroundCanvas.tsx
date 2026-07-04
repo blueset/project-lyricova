@@ -5,8 +5,10 @@
  * @license GPLv3
  */
 
-import { RefObject, useEffect, useRef, useState } from "react";
-import { Pixel, normalizeColor } from "./utils";
+import type { RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { Pixel } from "./utils";
+import { normalizeColor } from "./utils";
 import { BUILDIN_RENDER_METHODS, CanvasBackgroundRender } from "./render";
 import convert from "color-convert";
 import ColorThief from "colorthief";
@@ -25,8 +27,12 @@ const BackgroundRenderNoSSR = dynamic(
 interface Props {
   coverUrl?: string;
   textureUrl?: string;
-  playerRef?: RefObject<HTMLAudioElement>;
+  playerRef: RefObject<HTMLAudioElement>;
   hasLyrics?: boolean;
+}
+
+interface RenderProps {
+  coverUrl?: string;
 }
 
 export function BackgroundCanvas({
@@ -56,7 +62,7 @@ export function BackgroundCanvas({
           reject(err);
         };
       });
-      image.src = coverUrl;
+      image.src = String(coverUrl);
       (async () => {
         try {
           await albumImageLoaded;
@@ -96,7 +102,7 @@ export function BackgroundCanvas({
   }
 }
 
-export function BackgroundCanvasRender({ coverUrl }: Props) {
+export function BackgroundCanvasRender({ coverUrl }: RenderProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<CanvasBackgroundRender | null>(null);
   const [albumImageMainColors, setAlbumImageMainColors] = useState<Pixel[]>([
@@ -243,7 +249,7 @@ export function BackgroundCanvasRender({ coverUrl }: Props) {
         reject(err);
       };
     });
-    image.src = coverUrl;
+    image.src = String(coverUrl);
     (async () => {
       try {
         await albumImageLoaded;

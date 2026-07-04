@@ -142,7 +142,7 @@ export default function LyricsTools() {
           signal,
           onMessage: (event) => {
             try {
-              if (!event.data) return;
+              if (!event?.data) return;
               const data = JSON.parse(event.data);
               if (data.error) {
                 console.error(data.error);
@@ -214,7 +214,7 @@ export default function LyricsTools() {
         Math.max(
           0,
           (chunkBuffer.split("\n").length * 100) /
-            (useLyricsStore.getState().lyrics?.lines.length * 4 + 2 || 1)
+            ((useLyricsStore.getState().lyrics?.lines?.length ?? 0) * 4 + 2 || 1)
         )
       )
     : undefined;

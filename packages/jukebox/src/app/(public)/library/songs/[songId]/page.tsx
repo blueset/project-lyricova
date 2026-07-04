@@ -100,12 +100,13 @@ export default function LibrarySingleSong() {
     );
 
   const song = query.data.song;
-  const filesCount = song.files.length;
-  const totalMinutes = Math.round(_.sumBy(song.files, "duration") / 60);
-  const totalSize = _.sumBy(song.files, "fileSize");
+  const files = song.files ?? [];
+  const albums = song.albums ?? [];
+  const derivedSongs = song.derivedSongs ?? [];
+  const filesCount = files.length;
+  const totalMinutes = Math.round(_.sumBy(files, "duration") / 60);
+  const totalSize = _.sumBy(files, "fileSize");
   const canPlay = filesCount > 0;
-
-  const files = song.files;
 
   const playAll = () => {
     dispatch(loadTracks(files));
@@ -140,7 +141,7 @@ export default function LibrarySingleSong() {
             {song.name}
           </h1>
           <h2 className="text-lg text-muted-foreground" lang="ja">
-            {formatArtists(song.artists, (v, isProd) =>
+            {formatArtists(song.artists ?? [], (v, isProd) =>
               v.map((artist, idx) => (
                 <Fragment key={artist.id}>
                   {idx > 0 && ", "}
@@ -253,14 +254,13 @@ export default function LibrarySingleSong() {
               />
             ))}
 
-            {song.albums.length > 0 && (
+            {albums.length > 0 && (
               <>
                 <div className="py-2 uppercase tracking-wider font-medium text-xs text-muted-foreground mt-4">
-                  {song.albums.length}{" "}
-                  {song.albums.length < 2 ? "album" : "albums"}
+                  {albums.length} {albums.length < 2 ? "album" : "albums"}
                 </div>
 
-                {song.albums.map((v) => (
+                {albums.map((v) => (
                   <Fragment key={v.id}>
                     <Button
                       variant="ghost"
@@ -278,10 +278,10 @@ export default function LibrarySingleSong() {
                             <div>{v.name}</div>
                             <div className="text-sm text-muted-foreground">
                               {[
-                                v.SongInAlbum.diskNumber
+                                v.SongInAlbum?.diskNumber
                                   ? `Disk ${v.SongInAlbum.diskNumber}`
                                   : "",
-                                v.SongInAlbum.trackNumber
+                                v.SongInAlbum?.trackNumber
                                   ? `Track ${v.SongInAlbum.trackNumber}`
                                   : "",
                               ]
@@ -298,16 +298,14 @@ export default function LibrarySingleSong() {
               </>
             )}
 
-            {song.derivedSongs.length > 0 && (
+            {derivedSongs.length > 0 && (
               <>
                 <div className="py-2 uppercase tracking-wider font-medium text-xs text-muted-foreground mt-4">
-                  {song.derivedSongs.length}{" "}
-                  {song.derivedSongs.length < 2
-                    ? "derived song"
-                    : "derived songs"}
+                  {derivedSongs.length}{" "}
+                  {derivedSongs.length < 2 ? "derived song" : "derived songs"}
                 </div>
 
-                {song.derivedSongs.map((v) => (
+                {derivedSongs.map((v) => (
                   <Fragment key={v.id}>
                     <Button
                       variant="ghost"
@@ -324,10 +322,10 @@ export default function LibrarySingleSong() {
                           <div className={!v.coverUrl ? "ml-12" : ""}>
                             {v.name}
                             <div className="text-sm text-muted-foreground">
-                              {formatArtists(v.artists, (a) =>
+                              {formatArtists(v.artists ?? [], (a) =>
                                 a.map((artist) => (
                                   <Fragment key={artist.id}>
-                                    {artist.ArtistOfSong.customName ||
+                                    {artist.ArtistOfSong?.customName ||
                                       artist.name}
                                   </Fragment>
                                 ))

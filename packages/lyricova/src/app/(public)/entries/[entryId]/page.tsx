@@ -38,13 +38,14 @@ export async function generateMetadata({
     ? entry.producersName
     : `${entry.producersName} feat. ${entry.vocalistsName}`;
   const verse = entry.verses.find((verse) => verse.isMain);
+  const description = verse?.text ?? "";
 
   return {
     title: `${entry.title} / ${artistString}`,
-    description: verse.text,
+    description,
     openGraph: {
       title: `${entry.title} / ${artistString} – ${siteName}`,
-      description: verse.text,
+      description,
       images: [`${host}/api/og/${entry.id}`],
     },
   };
@@ -93,11 +94,11 @@ export default async function EntryPage({ params }: EntryPageProps) {
           <Divider />
         </>
       )}
-      <Pulses pulses={entry.pulses} creationDate={entry.creationDate} />
+      <Pulses pulses={entry.pulses} creationDate={entry.creationDate ?? ""} />
       <Songs songs={entry.songs} />
-      <Comment>{entry.comment}</Comment>
+      <Comment>{entry.comment ?? ""}</Comment>
       <Gallery entryIds={entry.songs.map((s) => s.id)} />
-      <AdminLinks id={entry.id} />
+      {entry.id !== undefined && <AdminLinks id={entry.id} />}
       <Footer />
     </>
   );

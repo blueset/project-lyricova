@@ -55,14 +55,14 @@ interface Process {
   env: Record<string, string | undefined>;
   browser: boolean;
 }
-declare var process: Process;
+declare let process: Process;
 
 const link = (() => {
   const baseLink = errorLink.concat(authLink).concat(httpLink);
   // return authLink.concat(httpLink);
   if (process.browser) {
     const protocol = location.protocol === "http:" ? "ws:" : "wss:";
-    let wsPort = location.port;
+    const wsPort = location.port;
     const wsHost = location.hostname + (wsPort ? ":" + wsPort : "");
     const wsLink = new GraphQLWsLink(
       createClient({
