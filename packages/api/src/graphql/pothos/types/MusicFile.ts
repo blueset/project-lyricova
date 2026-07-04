@@ -133,7 +133,7 @@ builder.drizzleObjectFields("MusicFiles", (t) => ({
         where: eq(FileInPlaylists.fileId, m.id),
         with: { playlist: true },
       });
-      return rows.map((r) => r.playlist) as any;
+      return rows.map((r) => r.playlist!);
     },
   }),
   FileInPlaylist: t.field({

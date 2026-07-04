@@ -6,6 +6,16 @@ import { PostHogProvider, usePostHog } from "posthog-js/react";
 import clarity from "@microsoft/clarity";
 import { usePathname, useSearchParams } from "next/navigation";
 
+type ClarityWindow = Window & {
+  clarity: (
+    command: "consentv2",
+    options: {
+      ad_Storage: "granted";
+      analytics_Storage: "granted";
+    }
+  ) => void;
+};
+
 interface TelemetryProviderProps {
   children: ReactNode;
   clarityProjectId?: string;
@@ -23,7 +33,7 @@ export function TelemetryProvider({
     // Initialize Microsoft Clarity if project ID is provided
     if (clarityProjectId) {
       clarity.init(clarityProjectId);
-      (window as any).clarity("consentv2", {
+      (window as unknown as ClarityWindow).clarity("consentv2", {
         ad_Storage: "granted",
         analytics_Storage: "granted",
       });

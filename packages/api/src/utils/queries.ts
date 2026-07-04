@@ -27,9 +27,9 @@ export const entryListingCondition = {
 // --- Drizzle entry-listing helper ---
 // Mirrors the legacy `entryListingCondition`: entries with main verses, tags,
 // and pulses, excluding `updatedOn`. Shared by Song/Artist/Tag/LyricovaPublic.
-import { inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../drizzle/client";
-import { Entries } from "../drizzle/schema";
+import { Entries, Verses } from "../drizzle/schema";
 
 /**
  * Correlated condition mirroring the legacy `entryListingCondition`
@@ -67,12 +67,11 @@ export async function fetchEntriesListing(
     with: {
       verses: {
         columns: { text: true, isMain: true, isOriginal: true, language: true },
-        where: (v: any, { and, eq, isNull }: any) =>
-          and(eq(v.isMain, true), isNull(v.deletionDate)),
+        where: and(eq(Verses.isMain, true), isNull(Verses.deletionDate)),
       },
       pulses: {
         columns: { creationDate: true },
-        orderBy: (p: any, ops: any) =>
+        orderBy: (p, ops) =>
           pulseOrder === "asc" ? ops.asc(p.id) : ops.desc(p.id),
       },
       tagOfEntries: {

@@ -1,3 +1,4 @@
+import type { LyricsJSON } from "lyrics-kit";
 import type { StateCreator } from "zustand";
 import type {
   InlineTaggingCurrentLineState,
@@ -24,7 +25,7 @@ export const createInlineTaggingSlice: StateCreator<
 > = (set, get, api) => {
   // Helper to get the dots array for a given row
   function getRowDots(
-    lines: any[] | undefined,
+    lines: LyricsJSON["lines"] | undefined,
     row: number,
   ): number[] | undefined {
     return lines?.[row]?.attachments?.[DOTS]?.values;

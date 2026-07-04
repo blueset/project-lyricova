@@ -55,7 +55,8 @@ import type { SelectSongEntryFragment } from "../../gql/graphql";
 import type {
   FieldValues,
   FieldPath,
-  UseFormReturn} from "react-hook-form";
+  UseFormReturn,
+  FieldPathValue} from "react-hook-form";
 import {
   useController,
 } from "react-hook-form";
@@ -277,7 +278,7 @@ export function SelectSongEntityBox<
         toggleManualDialogOpen(true);
         setOpen(false);
         setInputValue("");
-        form.setValue(fieldName, null as any);
+        form.setValue(fieldName, null as FieldPathValue<TFieldValues, TName>);
         return;
       }
       return;
@@ -294,7 +295,7 @@ export function SelectSongEntityBox<
       setOpen(false);
       setInputValue("");
     } else {
-      form.setValue(fieldName, selectedOption as any, {
+      form.setValue(fieldName, selectedOption as FieldPathValue<TFieldValues, TName>, {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -525,7 +526,7 @@ export function SelectSongEntityBox<
                       <CommandGroup>
                         <CommandItem
                           onSelect={() => {
-                            form.setValue(fieldName, null as any, {
+                            form.setValue(fieldName, null as FieldPathValue<TFieldValues, TName>, {
                               shouldValidate: true,
                               shouldDirty: true,
                             });
@@ -647,7 +648,7 @@ export function SelectSongEntityBox<
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
           setSong={(v) =>
-            form.setValue(fieldName, v as any, {
+            form.setValue(fieldName, v as FieldPathValue<TFieldValues, TName>, {
               shouldValidate: true,
               shouldDirty: true,
             })
@@ -661,7 +662,7 @@ export function SelectSongEntityBox<
           keyword={utaiteDBDialogKeyword}
           setKeyword={setUtaiteDBDialogKeyword}
           setSong={(v) =>
-            form.setValue(fieldName, v as any, {
+            form.setValue(fieldName, v as FieldPathValue<TFieldValues, TName>, {
               shouldValidate: true,
               shouldDirty: true,
             })
@@ -677,7 +678,7 @@ export function SelectSongEntityBox<
           create={isManualDialogForCreate}
           setKeyword={setImportDialogKeyword}
           setSong={(v) =>
-            form.setValue(fieldName, v as any, {
+            form.setValue(fieldName, v as FieldPathValue<TFieldValues, TName>, {
               shouldValidate: true,
               shouldDirty: true,
             })

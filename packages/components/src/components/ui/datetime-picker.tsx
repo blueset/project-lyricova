@@ -398,7 +398,7 @@ export function DateTimePicker({
           ></div>
           <MonthYearPicker
             value={month}
-            mode={monthYearPicker as any}
+            mode={monthYearPicker}
             onChange={onMonthYearChanged}
             minDate={minDate}
             maxDate={maxDate}
@@ -445,7 +445,7 @@ function MonthYearPicker({
   className,
 }: {
   value: Date;
-  mode: "month" | "year";
+  mode: "month" | "year" | false;
   minDate?: Date;
   maxDate?: Date;
   onChange: (value: Date, mode: "month" | "year") => void;

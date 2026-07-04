@@ -124,8 +124,8 @@ export class AlignmentController {
       // Pipe the response body stream using Node.js streams API
       if (proxyRes.body) {
         // Ensure proxyRes.body is a Node.js Readable stream before piping
-        const bodyStream = Readable.from(proxyRes.body as any);
-        bodyStream.on("data", (chunk: any) => {
+        const bodyStream = Readable.from(proxyRes.body);
+        bodyStream.on("data", (chunk: Buffer) => {
           res.write(chunk);
           if (typeof res.flush === "function") {
             res.flush();
@@ -275,8 +275,8 @@ export class AlignmentController {
       // Pipe the response body stream using Node.js streams API
       if (proxyRes.body) {
         // Ensure proxyRes.body is a Node.js Readable stream before piping
-        const bodyStream = Readable.from(proxyRes.body as any);
-        bodyStream.on("data", (chunk: any) => {
+        const bodyStream = Readable.from(proxyRes.body);
+        bodyStream.on("data", (chunk: Buffer) => {
           res.write(chunk);
           if (typeof res.flush === "function") {
             res.flush();

@@ -22,7 +22,7 @@ const UpdateTagInput = builder.inputType("UpdateTagInput", {
 });
 
 builder.queryField("tags", (t) =>
-  t.field({ type: [TagRef], resolve: async () => db.query.Tags.findMany() as any })
+  t.field({ type: [TagRef], resolve: async () => db.query.Tags.findMany() })
 );
 
 builder.queryField("tag", (t) =>
@@ -32,7 +32,7 @@ builder.queryField("tag", (t) =>
     args: { slug: t.arg.string() },
     resolve: async (_root, { slug }) =>
       ((await db.query.Tags.findFirst({ where: eq(Tags.slug, slug) })) ??
-        null) as any,
+        null),
   })
 );
 
@@ -52,7 +52,7 @@ builder.mutationField("newTag", (t) =>
       });
       return (await db.query.Tags.findFirst({
         where: eq(Tags.slug, data.slug),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -74,7 +74,7 @@ builder.mutationField("updateTag", (t) =>
       await db.update(Tags).set(set).where(eq(Tags.slug, slug));
       return (await db.query.Tags.findFirst({
         where: eq(Tags.slug, data.slug ?? slug),
-      })) as any;
+      }))!;
     },
   })
 );

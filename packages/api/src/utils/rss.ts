@@ -20,14 +20,14 @@ export default async function generateRssFeed() {
     where: isNull(Entries.deletionDate),
     with: {
       verses: {
-        where: (v: any, { isNull }: any) => isNull(v.deletionDate),
+        where: (v, { isNull }) => isNull(v.deletionDate),
       },
       tagOfEntries: {
         columns: {},
         with: { tag: true },
       },
     },
-    orderBy: (e: any, { desc }: any) => desc(e.recentActionDate),
+    orderBy: (e, { desc }) => desc(e.recentActionDate),
     limit: 20,
   });
   entries.forEach((entry) => {

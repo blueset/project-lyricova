@@ -132,7 +132,9 @@ export async function replaceFilePlaylists(
  * Update an existing music file row from its file on disk. Returns true if the
  * row was updated, false if unchanged (mirrors the model's null return).
  */
-export async function updateSongEntry(file: MusicFileRow): Promise<boolean> {
+export async function updateSongEntry(
+  file: Pick<MusicFileRow, "id" | "path" | "hasLyrics" | "hash">
+): Promise<boolean> {
   try {
     if (file.path === null) return false;
     const fullPath = fullPathOf(file.path);

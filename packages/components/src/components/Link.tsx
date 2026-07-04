@@ -19,7 +19,7 @@ export const NextComposedLink = React.forwardRef<
 >(function NextComposed(props, ref) {
   const { as, href, ...other } = props;
 
-  return <NextLink href={href} as={as} ref={ref} {...(other as any)} />;
+  return <NextLink href={href} as={as} ref={ref} {...other} />;
 });
 
 interface LinkProps extends Omit<NextComposedProps, "ref"> {

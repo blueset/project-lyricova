@@ -18,8 +18,7 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
     request: LyricsSearchRequest
   ): Promise<SyairResponseSearchResult[]> {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const parameters: any = {
+      const parameters: Record<string, string | number> = {
         page: 1,
       };
       if (request.searchTerm.state === "info") {

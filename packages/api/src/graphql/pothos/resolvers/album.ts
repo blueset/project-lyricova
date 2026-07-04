@@ -44,7 +44,7 @@ builder.queryField("album", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.Albums.findFirst({ where: eq(Albums.id, id) })) ?? null) as any,
+      ((await db.query.Albums.findFirst({ where: eq(Albums.id, id) })) ?? null),
   })
 );
 
@@ -54,7 +54,7 @@ builder.queryField("albums", (t) =>
     resolve: async () =>
       db.query.Albums.findMany({
         orderBy: (a, { asc }) => [asc(a.sortOrder)],
-      }) as any,
+      }),
   })
 );
 
@@ -75,7 +75,7 @@ builder.queryField("albumsHasFiles", (t) =>
         WHERE 
           SongInAlbums.albumId = Albums.id and MusicFiles.albumId = Albums.id 
       ) > 0`,
-      }) as any,
+      }),
   })
 );
 
@@ -86,7 +86,7 @@ builder.queryField("searchAlbums", (t) =>
     resolve: async (_root, { keywords }) =>
       db.query.Albums.findMany({
         where: sql`match (name, sortOrder) against (${keywords} in boolean mode)`,
-      }) as any,
+      }),
   })
 );
 
@@ -134,7 +134,7 @@ builder.mutationField("newAlbum", (t) =>
 
       return (await db.query.Albums.findFirst({
         where: eq(Albums.id, id),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -189,7 +189,7 @@ builder.mutationField("updateAlbum", (t) =>
 
       return (await db.query.Albums.findFirst({
         where: eq(Albums.id, id),
-      })) as any;
+      }))!;
     },
   })
 );

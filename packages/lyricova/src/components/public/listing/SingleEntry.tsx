@@ -21,6 +21,11 @@ interface SingleEntryProps {
   entry: Entry;
 }
 
+type VerseMouseMoveEvent = {
+  currentTarget: EventTarget | null;
+  clientX: number;
+};
+
 export function SingleEntry({ entry }: SingleEntryProps) {
   const mainVerse = entry.verses.find((verse) => verse.isMain);
   const artistString = !entry.producersName
@@ -59,7 +64,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
     }
   }, [applyMask, verseRef]);
 
-  const mouseMoveCallback = useCallback((e: MouseEvent) => {
+  const mouseMoveCallback = useCallback((e: VerseMouseMoveEvent) => {
     const target = e.currentTarget as HTMLDivElement;
     const cyclingVerse = target.querySelector(
       "[data-cyclingverse]",
@@ -82,7 +87,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
   useEffect(() => {
     const containerElm = containerRef.current;
     if (containerElm) {
-      mouseMoveCallback({ currentTarget: containerElm, clientX: 0 } as any);
+      mouseMoveCallback({ currentTarget: containerElm, clientX: 0 });
       containerElm.addEventListener("mousemove", mouseMoveCallback);
       return () => {
         containerElm.removeEventListener("mousemove", mouseMoveCallback);

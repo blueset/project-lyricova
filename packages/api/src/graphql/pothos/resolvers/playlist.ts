@@ -24,7 +24,7 @@ const UpdatePlaylistInput = builder.inputType("UpdatePlaylistInput", {
 builder.queryField("playlists", (t) =>
   t.field({
     type: [PlaylistRef],
-    resolve: async () => db.query.Playlists.findMany() as any,
+    resolve: async () => db.query.Playlists.findMany(),
   })
 );
 
@@ -36,7 +36,7 @@ builder.queryField("playlist", (t) =>
     resolve: async (_root, { slug }) =>
       ((await db.query.Playlists.findFirst({
         where: eq(Playlists.slug, slug),
-      })) ?? null) as any,
+      })) ?? null),
   })
 );
 
@@ -55,7 +55,7 @@ builder.mutationField("newPlaylist", (t) =>
       });
       return (await db.query.Playlists.findFirst({
         where: eq(Playlists.slug, data.slug),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -93,7 +93,7 @@ builder.mutationField("updatePlaylist", (t) =>
       }
       return (await db.query.Playlists.findFirst({
         where: eq(Playlists.slug, newSlug),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -143,7 +143,7 @@ builder.mutationField("addFileToPlaylist", (t) =>
         updatedOn: now,
       });
       await updatePlaylistsOfFileAsTags(fileId);
-      return playlist as any;
+      return playlist;
     },
   })
 );
@@ -189,7 +189,7 @@ builder.mutationField("removeFileFromPlaylist", (t) =>
           )
         );
       await updatePlaylistsOfFileAsTags(fileId);
-      return playlist as any;
+      return playlist;
     },
   })
 );
@@ -229,7 +229,7 @@ builder.mutationField("updatePlaylistSortOrder", (t) =>
       for (let idx = 0; idx < fileIds.length; idx++) {
         await upsertFileSortOrder(slug, fileIds[idx], idx);
       }
-      return playlist as any;
+      return playlist;
     },
   })
 );
@@ -315,7 +315,7 @@ builder.mutationField("updatePlaylistFiles", (t) =>
         toAdd.map((id) => limit(async () => updatePlaylistsOfFileAsTags(id)))
       );
 
-      return playlist as any;
+      return playlist;
     },
   })
 );

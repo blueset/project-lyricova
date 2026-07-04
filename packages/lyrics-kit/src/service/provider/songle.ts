@@ -16,10 +16,16 @@ type ScraperOptions = Partial<{
   noFormat: boolean;
 }>;
 
+type SongleJamendoResponse = {
+  results?: Array<{
+    lyrics?: string;
+  }>;
+};
+
 /** @url https://songle.jp/lyric_parsers/98.js */
 class SongleLyricsScraper {
 
-  private parseFn!: (data: any, options?: ScraperOptions) => string;
+  private parseFn!: (data: unknown, options?: ScraperOptions) => string;
   private cache: {[url: string]: string} = {};
 
   private async get(url: string, format?: string) {
@@ -46,12 +52,12 @@ class SongleLyricsScraper {
       format = "html";
       url = url.replace(/^http:/, "https:");
       restQuery = url;
-      this.parseFn = this.parseAtwiki;
+      this.parseFn = (data) => this.parseAtwiki(data as string);
     } else if (url.match(/^https?:\/\/piapro\.jp\/(t|content)\//)) {
       format = "html";
       url = url.replace(/^http:/, "https:");
       restQuery = url;
-      this.parseFn = this.parsePiapro;
+      this.parseFn = (data) => this.parsePiapro(data as string);
     } else if (
       (matched = url.match(
         /^https?:\/\/www\.jamendo\.com\/track\/(\d+)\/[^\/]+\/lyrics/
@@ -63,11 +69,11 @@ class SongleLyricsScraper {
         "https://api.jamendo.com/v3.0/tracks/?client_id=723c4be4&id[]=" +
         matched[1] +
         "&include=lyrics&type=single albumtrack";
-      this.parseFn = this.parseJamendo;
+      this.parseFn = (data) => this.parseJamendo(data as SongleJamendoResponse);
     } else if (url.match(/\.(txt|lrc)$/)) {
       format = "plain";
       restQuery = url;
-      this.parseFn = this.parseRawPlainText;
+      this.parseFn = (data, options) => this.parseRawPlainText(data as string, options);
     } else {
       throw new Error(`unsupported url: ${url}`);
     }
@@ -119,7 +125,7 @@ class SongleLyricsScraper {
     }
   }
 
-  private parseJamendo(data: any) {
+  private parseJamendo(data: SongleJamendoResponse) {
     if (
       typeof data.results === "undefined" ||
       data.results.length === 0 ||

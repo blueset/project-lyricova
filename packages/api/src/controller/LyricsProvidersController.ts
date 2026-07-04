@@ -156,18 +156,17 @@ export class LyricsProvidersController {
   ) => {
     try {
       const id = req.params.id;
-      const elm: any = await db.query.Songs.findFirst({
+      const elm = await db.query.Songs.findFirst({
         where: and(eq(Songs.id, parseInt(id)), isNull(Songs.deletionDate)),
       });
       if (elm) {
-        if (elm.vocaDbJson.lyrics && elm.vocaDbJson.lyrics.length) {
-          return res.json(elm.vocaDbJson.lyrics);
-        } else {
-          if (elm.vocaDbJson.originalVersionId) {
-            return res.redirect(`${elm.vocaDbJson.originalVersionId}`);
-          }
-          return res.json([]);
+        const vocaDbJson = elm.vocaDbJson as SongForApiContract | null;
+        if (vocaDbJson?.lyrics && vocaDbJson.lyrics.length) {
+          return res.json(vocaDbJson.lyrics);
+        } else if (vocaDbJson?.originalVersionId) {
+          return res.redirect(`${vocaDbJson.originalVersionId}`);
         }
+        return res.json([]);
       }
       const resp = await axios.get<SongForApiContract>(
         `https://vocadb.net/api/songs/${id}`,

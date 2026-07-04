@@ -42,7 +42,7 @@ builder.queryField("song", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.Songs.findFirst({ where: eq(Songs.id, id) })) ?? null) as any,
+      ((await db.query.Songs.findFirst({ where: eq(Songs.id, id) })) ?? null),
   })
 );
 
@@ -55,7 +55,7 @@ builder.queryField("searchSongs", (t) =>
       const whereClause = isNaN(numericKeywords)
         ? sql`match (name, sortOrder) against (${keywords} in boolean mode)`
         : sql`match (name, sortOrder) against (${keywords} in boolean mode) OR id = ${numericKeywords}`;
-      return db.query.Songs.findMany({ where: whereClause }) as any;
+      return db.query.Songs.findMany({ where: whereClause });
     },
   })
 );
@@ -66,7 +66,7 @@ builder.queryField("songs", (t) =>
     resolve: async () =>
       db.query.Songs.findMany({
         orderBy: (s, { asc }) => [asc(s.sortOrder)],
-      }) as any,
+      }),
   })
 );
 
@@ -115,7 +115,7 @@ builder.mutationField("newSong", (t) =>
       }
       return (await db.query.Songs.findFirst({
         where: eq(Songs.id, id),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -178,7 +178,7 @@ builder.mutationField("updateSong", (t) =>
 
       return (await db.query.Songs.findFirst({
         where: eq(Songs.id, id),
-      })) as any;
+      }))!;
     },
   })
 );

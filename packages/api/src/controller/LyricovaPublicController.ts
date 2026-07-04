@@ -282,7 +282,7 @@ export class LyricovaPublicApiController {
           with: { tag: { columns: { name: true, slug: true, color: true } } },
           ...(tags?.length
             ? {
-                where: (toe: any, { inArray }: any) =>
+                where: (toe, { inArray }) =>
                   inArray(toe.tagId, tags),
               }
             : {}),
@@ -417,7 +417,7 @@ export class LyricovaPublicApiController {
     const entryRow = await db.query.Entries.findFirst({
       where: and(eq(Entries.id, id), isNull(Entries.deletionDate)),
       with: {
-        verses: { where: (v: any, { isNull }: any) => isNull(v.deletionDate) },
+        verses: { where: (v, { isNull }) => isNull(v.deletionDate) },
         tagOfEntries: { columns: {}, with: { tag: true } },
       },
     });

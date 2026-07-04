@@ -2,13 +2,17 @@ import { and, eq } from "drizzle-orm";
 import { builder } from "../builder";
 import { UserRef, UserPublicKeyCredentialRef } from "../types/refs";
 import { db } from "../../../drizzle/client";
-import { UserPublicKeyCredentials } from "../../../drizzle/schema";
+import { Users, UserPublicKeyCredentials } from "../../../drizzle/schema";
 
 builder.queryField("currentUser", (t) =>
   t.field({
     type: UserRef,
     nullable: true,
-    resolve: (_root, _args, ctx) => (ctx.user ?? null) as any,
+    // ctx.user is the legacy `models/User` class, but at runtime it is a
+    // Drizzle `Users` row (set by passport `deserializeUser`); the two shapes
+    // differ only in optional-vs-null of `provider`/`provider_id`.
+    resolve: (_root, _args, ctx) =>
+      (ctx.user ?? null) as unknown as typeof Users.$inferSelect | null,
   })
 );
 
@@ -18,9 +22,8 @@ builder.queryField("currentCredentials", (t) =>
     resolve: async (_root, _args, ctx) => {
       if (!ctx.user) return [];
       return db.query.UserPublicKeyCredentials.findMany({
-        columns: { id: true, creationDate: true, remarks: true, userId: true },
         where: eq(UserPublicKeyCredentials.userId, ctx.user.id),
-      }) as any;
+      });
     },
   })
 );

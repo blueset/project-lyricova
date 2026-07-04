@@ -219,7 +219,7 @@ builder.mutationField("scan", (t) =>
                 ...built.values,
                 creationDate: now,
                 updatedOn: now,
-              } as any);
+              });
               if (built.playlistSlugs.length > 0)
                 await replaceFilePlaylists(
                   inserted[0].insertId,
@@ -243,7 +243,7 @@ builder.mutationField("scan", (t) =>
         await Promise.all(
           toUpdateEntries.map((entry) =>
             limit(async () => {
-              const updated = await updateSongEntry(entry as any);
+              const updated = await updateSongEntry(entry);
               if (!updated) progressObj.unchanged++;
               else progressObj.updated++;
               if (
@@ -290,17 +290,17 @@ builder.mutationField("scanByPath", (t) =>
             ...built.values,
             creationDate: now,
             updatedOn: now,
-          } as any);
+          });
           fileId = inserted[0].insertId;
           if (built.playlistSlugs.length > 0)
             await replaceFilePlaylists(fileId, built.playlistSlugs);
         } else {
           fileId = file.id;
-          await updateSongEntry(file as any);
+          await updateSongEntry(file);
         }
         return (await db.query.MusicFiles.findFirst({
           where: eq(MusicFiles.id, fileId),
-        })) as any;
+        }))!;
       } else {
         await db.delete(MusicFiles).where(eq(MusicFiles.path, path));
         return null;
@@ -360,7 +360,7 @@ builder.queryField("searchMusicFiles", (t) =>
     resolve: async (_root, { keywords }) =>
       db.query.MusicFiles.findMany({
         where: sql`match (path, trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder) against (${keywords} in boolean mode)`,
-      }) as any,
+      }),
   })
 );
 
@@ -370,7 +370,7 @@ builder.queryField("musicFile", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, id) })) ?? null) as any,
+      ((await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, id) })) ?? null),
   })
 );
 
@@ -387,19 +387,19 @@ builder.mutationField("writeTagsToMusicFile", (t) =>
         throw new GraphQLError(`Music file with id ${id} is not found.`);
       }
 
-      await writeMetadataToFile(song, data as any);
+      await writeMetadataToFile(song, data);
 
       const hash = await hasha.fromFile(fullPathOf(musicFilePath(song.path)), {
         algorithm: "md5",
       });
       await db
         .update(MusicFiles)
-        .set({ ...(data as any), hash, updatedOn: new Date() })
+        .set({ ...data, hash, updatedOn: new Date() })
         .where(eq(MusicFiles.id, id));
 
       return (await db.query.MusicFiles.findFirst({
         where: eq(MusicFiles.id, id),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -529,7 +529,7 @@ builder.mutationField("setPlaylistsOfFile", (t) =>
       await updatePlaylistsOfFileAsTags(fileId);
       return (await db.query.MusicFiles.findFirst({
         where: eq(MusicFiles.id, fileId),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -558,7 +558,7 @@ builder.mutationField("toggleMusicFileReviewStatus", (t) =>
         .where(eq(MusicFiles.id, fileId));
       return (await db.query.MusicFiles.findFirst({
         where: eq(MusicFiles.id, fileId),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -608,7 +608,7 @@ builder.mutationField("updateMusicFileStats", (t) =>
         .where(eq(MusicFiles.id, fileId));
       return (await db.query.MusicFiles.findFirst({
         where: eq(MusicFiles.id, fileId),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -623,7 +623,7 @@ builder.queryField("newMusicFiles", (t) =>
       return db.query.MusicFiles.findMany({
         where: gte(MusicFiles.creationDate, thirtyDaysAgo),
         orderBy: [desc(MusicFiles.creationDate)],
-      }) as any;
+      });
     },
   })
 );
@@ -638,7 +638,7 @@ builder.queryField("recentlyReviewedMusicFiles", (t) =>
       return db.query.MusicFiles.findMany({
         where: gte(MusicFiles.updatedOn, thirtyDaysAgo),
         orderBy: [desc(MusicFiles.updatedOn)],
-      }) as any;
+      });
     },
   })
 );
@@ -653,7 +653,7 @@ builder.queryField("recentMusicFiles", (t) =>
       return db.query.MusicFiles.findMany({
         where: gte(MusicFiles.lastPlayed, thirtyDaysAgo),
         orderBy: [desc(MusicFiles.lastPlayed)],
-      }) as any;
+      });
     },
   })
 );
@@ -668,6 +668,6 @@ builder.queryField("popularMusicFiles", (t) =>
         where: gt(MusicFiles.playCount, 0),
         orderBy: [desc(MusicFiles.playCount), desc(MusicFiles.lastPlayed)],
         limit,
-      }) as any,
+      }),
   })
 );

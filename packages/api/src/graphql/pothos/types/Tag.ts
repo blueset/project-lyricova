@@ -15,7 +15,7 @@ builder.drizzleObjectFields("Tags", (t) => ({
         where: eq(TagOfEntries.tagId, tag.slug),
         with: { entry: true },
       });
-      return rows.map((r) => r.entry) as any;
+      return rows.map((r) => r.entry!);
     },
   }),
 }));

@@ -1,15 +1,15 @@
 import { Router, Request, Response } from "express";
-import { desc, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, like, or } from "drizzle-orm";
 import shuffle from "lodash/shuffle";
 import { db } from "../drizzle/client";
-import { Entries } from "../drizzle/schema";
+import { Entries, Verses } from "../drizzle/schema";
 import { parseEnumArray } from "../drizzle/enumArray";
 import { entriesPerPage } from "../utils/consts";
 import { PVContract } from "../types/vocadb";
 
 /** Pick the preferred playback URL from a song's VocaDB PV list. */
-function deriveVideoUrl(vocaDbJson: any): { has: boolean; url?: string } {
-  const pvs = vocaDbJson?.pvs as PVContract[] | undefined;
+function deriveVideoUrl(vocaDbJson: unknown): { has: boolean; url?: string } {
+  const pvs = (vocaDbJson as { pvs?: PVContract[] } | null)?.pvs;
   if (!pvs) return { has: false };
   const url =
     pvs.find((pv) => pv.service === "Youtube" && pv.pvType === "Original")
@@ -96,8 +96,8 @@ export class EntriesController {
             language: true,
             typingSequence: true,
           },
-          where: (v: any, { isNull }: any) => isNull(v.deletionDate),
-          orderBy: (v: any, { desc }: any) => desc(v.id),
+          where: (v, { isNull }) => isNull(v.deletionDate),
+          orderBy: (v, { desc }) => desc(v.id),
         },
         tagOfEntries: {
           columns: {},
@@ -105,10 +105,10 @@ export class EntriesController {
         },
         pulses: {
           columns: { creationDate: true },
-          orderBy: (p: any, { desc }: any) => desc(p.id),
+          orderBy: (p, { desc }) => desc(p.id),
         },
       },
-      orderBy: (e: any, { desc }: any) => desc(e.recentActionDate),
+      orderBy: (e, { desc }) => desc(e.recentActionDate),
       limit: entriesPerPage,
       offset: (page - 1) * entriesPerPage,
     });
@@ -210,8 +210,8 @@ export class EntriesController {
       with: {
         verses: {
           columns: { creationDate: false, updatedOn: false },
-          where: (v: any, { isNull }: any) => isNull(v.deletionDate),
-          orderBy: (v: any, { asc }: any) => asc(v.id),
+          where: (v, { isNull }) => isNull(v.deletionDate),
+          orderBy: (v, { asc }) => asc(v.id),
         },
         tagOfEntries: {
           columns: {},
@@ -247,7 +247,7 @@ export class EntriesController {
         },
         pulses: {
           columns: { creationDate: true },
-          orderBy: (p: any, { asc }: any) => asc(p.id),
+          orderBy: (p, { asc }) => asc(p.id),
         },
       },
     });
@@ -279,18 +279,18 @@ export class EntriesController {
                 ]
               : []
           )
-          .sort((a: any, b: any) => a.id - b.id);
-        const song: any = {
+          .sort((a, b) => a.id - b.id);
+        const { has, url } = deriveVideoUrl(s.vocaDbJson);
+        const song = {
           id: s.id,
           name: s.name,
           coverUrl: s.coverUrl,
           artists,
+          ...(has ? { videoUrl: url } : {}),
         };
-        const { has, url } = deriveVideoUrl(s.vocaDbJson);
-        if (has) song.videoUrl = url;
         return [song];
       });
-    songs.sort((a: any, b: any) => a.id - b.id);
+    songs.sort((a, b) => a.id - b.id);
 
     res.json({
       ...cols,
@@ -380,20 +380,20 @@ export class EntriesController {
             language: true,
             entryId: true,
           },
-          where: (v: any, { and, eq, or, like, isNull }: any) => {
-            const conds: any[] = [isNull(v.deletionDate)];
-            if (type === "original") conds.push(eq(v.isOriginal, true));
-            else if (type === "main") conds.push(eq(v.isMain, true));
-            if (languages.length)
-              conds.push(or(...languages.map((l) => like(v.language, `${l}%`))));
-            return and(...conds);
-          },
+          where: and(
+            isNull(Verses.deletionDate),
+            type === "original" ? eq(Verses.isOriginal, true) : undefined,
+            type === "main" ? eq(Verses.isMain, true) : undefined,
+            languages.length
+              ? or(...languages.map((l) => like(Verses.language, `${l}%`)))
+              : undefined
+          ),
         },
         tagOfEntries: {
           columns: {},
           with: { tag: { columns: { name: true, slug: true, color: true } } },
           ...(tags.length
-            ? { where: (toe: any, { inArray }: any) => inArray(toe.tagId, tags) }
+            ? { where: (toe, { inArray }) => inArray(toe.tagId, tags) }
             : {}),
         },
       },
@@ -421,7 +421,8 @@ export class EntriesController {
       )
     );
 
-    const entriesObj = matched.reduce<{ [id: number]: any }>((acc, entry) => {
+    const entriesObj = matched.reduce<{ [id: number]: Record<string, unknown> }>(
+      (acc, entry) => {
       const { verses: _verses, tagOfEntries, ...cols } = entry;
       acc[entry.id] = {
         ...cols,

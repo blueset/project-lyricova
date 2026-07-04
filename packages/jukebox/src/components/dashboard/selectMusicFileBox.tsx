@@ -28,7 +28,7 @@ import { Music, ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@lyricova/components/utils";
 import { useCallback, useEffect, useState } from "react";
 import _ from "lodash";
-import type { FieldValues, FieldPath, UseFormReturn } from "react-hook-form";
+import type { FieldValues, FieldPath, FieldPathValue, UseFormReturn } from "react-hook-form";
 import { useController } from "react-hook-form";
 
 const LOCAL_ARTIST_ENTITY_QUERY = graphql(`
@@ -131,7 +131,7 @@ export default function SelectMusicFileBox<
 
     if (!selectedOption) return;
 
-    form.setValue(fieldName, selectedOption as any, {
+    form.setValue(fieldName, selectedOption as FieldPathValue<TFieldValues, TName>, {
       shouldValidate: true,
       shouldDirty: true,
     });

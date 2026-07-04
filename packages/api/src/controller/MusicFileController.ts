@@ -407,7 +407,7 @@ export class MusicFileController {
     try {
       const songs = await db.query.MusicFiles.findMany();
       return res.json(
-        songs.map((s: any) => ({ fullPath: fullPathOf(s.path), ...s }))
+        songs.map((s) => ({ fullPath: fullPathOf(s.path!), ...s }))
       );
     } catch (e) {
       next(e);
