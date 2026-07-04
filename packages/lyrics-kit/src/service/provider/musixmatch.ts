@@ -3,7 +3,7 @@ import { LyricsProvider } from ".";
 import { ARTIST, TITLE } from "../../core/idTagKey";
 import { Lyrics } from "../../core/lyrics";
 import { LyricsLine } from "../../core/lyricsLine";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import type { MusixMatchEntry } from "../types/lyrixmatch/searchResult";
 import type { MusixMatchSyncLyricsLine } from "../types/lyrixmatch/singleLyrics";
@@ -26,7 +26,7 @@ class MusixMatchLyrics extends Lyrics {
         this.idTags[ARTIST] = trackInfo.artist_name;
         this.metadata.artworkURL = trackInfo.album_coverart_100x100;
         this.metadata.providerToken = `${trackInfo.track_id}`;
-        this.metadata.source = LyricsProviderSource.musixmatch;
+        this.metadata.source = LyricsProviderSourceId.musixmatch;
         this.length = trackInfo.track_length;
         this.lines = lyricsData.map(line => {
             const lline = new LyricsLine(line.text, line.time.total);
@@ -56,12 +56,12 @@ export class MusixMatchProvider extends LyricsProvider<MusixMatchEntry> {
         };
 
         const lyrres = await axios.get<MusixMatchEntry>("https://apic-desktop.musixmatch.com/ws/1.1/macro.subtitles.get",
-        {
-            params: query,
-            headers: {
-                Cookie: token.Cookie
-            }
-        });
+            {
+                params: query,
+                headers: {
+                    Cookie: token.Cookie
+                }
+            });
 
         if (lyrres.status !== 200) {
             console.error(lyrres.data);

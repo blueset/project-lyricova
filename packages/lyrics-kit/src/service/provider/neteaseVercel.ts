@@ -3,7 +3,7 @@ import { LyricsProvider } from ".";
 import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { ALBUM, ARTIST, LRC_BY, Lyrics, TITLE } from "../../core";
 import type { NetEaseResponseSearchResult, NetEaseResponseSong } from "../types/netease/searchResult";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
 import { NeteaseKLyrics, NeteaseYLyrics } from "./netease";
 
@@ -95,7 +95,7 @@ export class NetEaseVercelProvider extends LyricsProvider<NetEaseResponseSong> {
       }
 
       lyrics.length = token.duration / 1000;
-      lyrics.metadata.source = LyricsProviderSource.neteaseVercel;
+      lyrics.metadata.source = LyricsProviderSourceId.neteaseVercel;
       lyrics.metadata.artworkURL = token.album.picUrl;
       lyrics.metadata.providerToken = `${token.id}`;
 

@@ -4,7 +4,7 @@ import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 import cheerio from "cheerio";
 
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import stringMD5 from "../../utils/stringMD5";
 import type { ViewLyricsResponseSearchResult } from "../types/viewLyrics/searchResult";
 
@@ -116,7 +116,7 @@ export class ViewLyricsProvider extends LyricsProvider<
         throw new Error("lyric is empty");
       }
       const lrc = new Lyrics(lrcContent);
-      lrc.metadata.source = LyricsProviderSource.viewLyrics;
+      lrc.metadata.source = LyricsProviderSourceId.viewLyrics;
       lrc.metadata.remoteURL = url;
       if (token.timelength) {
         lrc.length = token.timelength;

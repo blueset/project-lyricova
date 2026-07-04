@@ -4,7 +4,7 @@ import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import type { SongleResponseLyricsList, SongleResponseSearch, SongleResponseSearchResult } from "../types/songle/searchResult";
 import type { SongleError, SongleLicenseResponse, SongleLyricsObject, SongleTimeTagData } from "../types/songle/lyricsResult";
 import { ARTIST, Attachments, Lyrics, LyricsLine, TIME_TAG, TITLE, WordTimeTag, WordTimeTagLabel } from "../../core";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { Element } from "cheerio";
 import cheerio from "cheerio";
 
@@ -26,7 +26,7 @@ type SongleJamendoResponse = {
 class SongleLyricsScraper {
 
   private parseFn!: (data: unknown, options?: ScraperOptions) => string;
-  private cache: {[url: string]: string} = {};
+  private cache: { [url: string]: string } = {};
 
   private async get(url: string, format?: string) {
     if (typeof format === "undefined") {
@@ -35,9 +35,9 @@ class SongleLyricsScraper {
     if (!url) throw new Error("url is required");
     const response = await axios.get(url);
     if (format.toLowerCase() === "json") {
-      return {data: response.data, status: response.status};
+      return { data: response.data, status: response.status };
     } else {
-      return {data: response.data.toString(), status: response.status};
+      return { data: response.data.toString(), status: response.status };
     }
   }
 
@@ -78,7 +78,7 @@ class SongleLyricsScraper {
       throw new Error(`unsupported url: ${url}`);
     }
 
-    const {data, status} = await this.get(restQuery, format);
+    const { data, status } = await this.get(restQuery, format);
     if (Math.floor(status / 100) !== 2) {
       throw new Error("HTTP error: " + status);
     }
@@ -112,7 +112,7 @@ class SongleLyricsScraper {
 
     const result = lines
       .filter(filterFn)
-      .filter(function(line) {
+      .filter(function (line) {
         return !line.match(/^#/);
       })
       .join("\n")
@@ -162,7 +162,7 @@ class SongleLyricsScraper {
 
     while ((el = el.next as Element)) {
       if (el.type === "text") continue;
-      
+
       const tagName = el.tagName.toUpperCase();
 
       if (tagName === "H3") {
@@ -173,13 +173,13 @@ class SongleLyricsScraper {
     }
 
     const parsed = elements
-      .filter(function(el) {
+      .filter(function (el) {
         return (
           $("a", el).length === 0 &&
           $("form", el).length === 0
         );
       })
-      .map(function(el) {
+      .map(function (el) {
         const content = $(el).text();
 
         return content
@@ -241,7 +241,7 @@ class SongleLyricsScraper {
     let markedIndex: number | undefined = undefined;
     const lines = content.split(/\n/);
 
-    lines.forEach(function(line, index) {
+    lines.forEach(function (line, index) {
       if (line.match(/^\S+：\S+$/m)) {
         // e.g.
         //
@@ -372,7 +372,7 @@ class SongleLyrics extends Lyrics {
 
 export class SongleProvider extends LyricsProvider<SongleResponseSearchResult> {
   private scraper: SongleLyricsScraper;
-  
+
   constructor() {
     super();
     this.scraper = new SongleLyricsScraper();
@@ -412,16 +412,16 @@ export class SongleProvider extends LyricsProvider<SongleResponseSearchResult> {
   }
 
   private computeToken(t: string): number {
-      const size = t.length;
-      let n = 0;
-      if (0 === size) {
-          return n;
-      }
-      for (let i = 0; i < size; i++) {
-          n = (n << 5) - n + t.charCodeAt(i);
-          n |= 0;
-      }
+    const size = t.length;
+    let n = 0;
+    if (0 === size) {
       return n;
+    }
+    for (let i = 0; i < size; i++) {
+      n = (n << 5) - n + t.charCodeAt(i);
+      n |= 0;
+    }
+    return n;
   }
 
   private async fetchLyricsTextFromScrapper(
@@ -446,7 +446,7 @@ export class SongleProvider extends LyricsProvider<SongleResponseSearchResult> {
   ): Promise<Lyrics | undefined> {
     try {
       const response = await axios.get<SongleLyricsObject>(`https://songle.jp/songs/${token.code}/lyrics/${token.id}.json`);
-      let lyrics = ""; 
+      let lyrics = "";
       let lyricsObj: SongleLyrics;
       const licenseResponse = await axios.get<SongleLicenseResponse | SongleError>("https://api.textalive.jp/etc/license", {
         params: {
@@ -469,11 +469,11 @@ export class SongleProvider extends LyricsProvider<SongleResponseSearchResult> {
         lyricsObj.idTags[TITLE] = licenseResponse.data.name;
         lyricsObj.idTags[ARTIST] = licenseResponse.data.authorName;
       }
-      
+
       lyricsObj.length = token.durationSeconds;
-      lyricsObj.metadata.source = LyricsProviderSource.songle;
+      lyricsObj.metadata.source = LyricsProviderSourceId.songle;
       lyricsObj.metadata.providerToken = token.code;
-      
+
 
       return lyricsObj;
     } catch (e) {

@@ -8,7 +8,7 @@ import type {
   SpotifySearchResult,
 } from "../types/spotify/search";
 import type { SpotifyLyricsJSON } from "../types/spotify/lyrics";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 
 const TOKEN_URL = "https://open.spotify.com/get_access_token";
 const SEARCH_URL = "https://api-partner.spotify.com/pathfinder/v1/query";
@@ -73,7 +73,7 @@ export class SpotifyProvider extends LyricsProvider<SpotifySearchResult> {
       .join(", ");
     lyrics.idTags[ALBUM] = token.item.data.albumOfTrack.name;
     lyrics.metadata.providerToken = trackid;
-    lyrics.metadata.source = LyricsProviderSource.spotify;
+    lyrics.metadata.source = LyricsProviderSourceId.spotify;
     lyrics.length = token.item.data.duration.totalMilliseconds / 1000;
     if (token.item.data.albumOfTrack.coverArt.sources.length > 0) {
       let maxSize = 0,

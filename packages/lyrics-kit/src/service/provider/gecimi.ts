@@ -3,7 +3,7 @@ import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { GecimiResultEntry, GecimiResponseSearchResult } from "../types/gecimi/searchResult";
 
 const SEARCH_URL = "http://gecimi.com/api/lyric";
@@ -48,7 +48,7 @@ export class GecimiProvider extends LyricsProvider<GecimiResultEntry> {
                 throw new Error("lyric is empty");
             }
             const lrc = new Lyrics(lrcContent);
-            lrc.metadata.source = LyricsProviderSource.gecimi;
+            lrc.metadata.source = LyricsProviderSourceId.gecimi;
             lrc.metadata.remoteURL = token.lrc;
             lrc.metadata.providerToken = `${token.aid},${token.lrc}`;
             return lrc;

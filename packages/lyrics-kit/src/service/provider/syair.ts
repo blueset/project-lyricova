@@ -4,7 +4,7 @@ import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 import cheerio from "cheerio";
 
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { SyairResponseSearchResult } from "../types/syair/searchResult";
 import { TITLE } from "../../core/idTagKey";
 
@@ -71,7 +71,7 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
       lyricsText = lyricsText.replace(/\r\n/g, "\n");
       const lrc = new Lyrics(lyricsText);
       lrc.idTags[TITLE] = lrc.idTags[TITLE] || token.name;
-      lrc.metadata.source = LyricsProviderSource.syair;
+      lrc.metadata.source = LyricsProviderSourceId.syair;
       lrc.metadata.providerToken = token.url;
       return lrc;
     } catch (e) {

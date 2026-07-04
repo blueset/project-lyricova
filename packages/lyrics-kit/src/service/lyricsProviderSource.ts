@@ -12,6 +12,7 @@ import { SpotifyProvider } from "./provider/spotify";
 import { SongleProvider } from "./provider/songle";
 import { LrcLibLyricsProvider as LrcLibProvider } from "./provider/lrclib";
 import { NetEaseVercelProvider } from "./provider/neteaseVercel";
+import { LyricsProviderSourceId, type LyricsProviderSourceId as LyricsProviderSourceIdValue } from "./lyricsProviderSourceId";
 
 export class LyricsProviderSource<T extends LyricsProvider<unknown>> {
   static netease: LyricsProviderSource<NetEaseProvider>;
@@ -29,22 +30,23 @@ export class LyricsProviderSource<T extends LyricsProvider<unknown>> {
   static LrcLib: LyricsProviderSource<LrcLibProvider>;
 
   static allCases: LyricsProviderSource<LyricsProvider<unknown>>[] = [];
+  static byId: Partial<Record<LyricsProviderSourceIdValue, LyricsProviderSource<LyricsProvider<unknown>>>> = {};
 
   static {
     try {
-      LyricsProviderSource.netease = new LyricsProviderSource(NetEaseProvider);
-      LyricsProviderSource.neteaseVercel = new LyricsProviderSource(NetEaseVercelProvider);
-      LyricsProviderSource.qq = new LyricsProviderSource(QQMusicProvider);
-      LyricsProviderSource.kugou = new LyricsProviderSource(KugouProvider);
-      LyricsProviderSource.xiami = new LyricsProviderSource(XiamiProvider);
-      LyricsProviderSource.gecimi = new LyricsProviderSource(GecimiProvider);
-      LyricsProviderSource.viewLyrics = new LyricsProviderSource(ViewLyricsProvider);
-      LyricsProviderSource.syair = new LyricsProviderSource(SyairProvider);
-      LyricsProviderSource.musixmatch = new LyricsProviderSource(MusixMatchProvider);
-      LyricsProviderSource.youtube = new LyricsProviderSource(YouTubeProvider);
-      LyricsProviderSource.spotify = new LyricsProviderSource(SpotifyProvider);
-      LyricsProviderSource.songle = new LyricsProviderSource(SongleProvider);
-      LyricsProviderSource.LrcLib = new LyricsProviderSource(LrcLibProvider);
+      LyricsProviderSource.netease = new LyricsProviderSource(LyricsProviderSourceId.netease, NetEaseProvider);
+      LyricsProviderSource.neteaseVercel = new LyricsProviderSource(LyricsProviderSourceId.neteaseVercel, NetEaseVercelProvider);
+      LyricsProviderSource.qq = new LyricsProviderSource(LyricsProviderSourceId.qq, QQMusicProvider);
+      LyricsProviderSource.kugou = new LyricsProviderSource(LyricsProviderSourceId.kugou, KugouProvider);
+      LyricsProviderSource.xiami = new LyricsProviderSource(LyricsProviderSourceId.xiami, XiamiProvider);
+      LyricsProviderSource.gecimi = new LyricsProviderSource(LyricsProviderSourceId.gecimi, GecimiProvider);
+      LyricsProviderSource.viewLyrics = new LyricsProviderSource(LyricsProviderSourceId.viewLyrics, ViewLyricsProvider);
+      LyricsProviderSource.syair = new LyricsProviderSource(LyricsProviderSourceId.syair, SyairProvider);
+      LyricsProviderSource.musixmatch = new LyricsProviderSource(LyricsProviderSourceId.musixmatch, MusixMatchProvider);
+      LyricsProviderSource.youtube = new LyricsProviderSource(LyricsProviderSourceId.youtube, YouTubeProvider);
+      LyricsProviderSource.spotify = new LyricsProviderSource(LyricsProviderSourceId.spotify, SpotifyProvider);
+      LyricsProviderSource.songle = new LyricsProviderSource(LyricsProviderSourceId.songle, SongleProvider);
+      LyricsProviderSource.LrcLib = new LyricsProviderSource(LyricsProviderSourceId.LrcLib, LrcLibProvider);
 
       LyricsProviderSource.allCases = [
         LyricsProviderSource.netease,
@@ -61,17 +63,22 @@ export class LyricsProviderSource<T extends LyricsProvider<unknown>> {
         LyricsProviderSource.songle,
         LyricsProviderSource.LrcLib,
       ];
+      LyricsProviderSource.byId = Object.fromEntries(
+        LyricsProviderSource.allCases.map(source => [source.id, source])
+      );
     } catch (e) {
       console.error("Error initializing LyricsProviderSource:", e);
     }
   }
 
+  id: LyricsProviderSourceIdValue;
   cls: new () => T;
   name: string;
 
-  constructor(cls: new () => T) {
+  constructor(id: LyricsProviderSourceIdValue, cls: new () => T) {
+    this.id = id;
     this.cls = cls;
-    this.name = cls && cls.constructor && cls.constructor.name;
+    this.name = cls.name;
   }
 
   public build(): T {
@@ -79,6 +86,6 @@ export class LyricsProviderSource<T extends LyricsProvider<unknown>> {
   }
 
   public toJSON(): string {
-    return this.name;
+    return this.id;
   }
 }

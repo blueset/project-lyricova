@@ -1,5 +1,5 @@
 import { LyricsProvider } from ".";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import axios from "axios";
 import { Lyrics } from "../../core/lyrics";
@@ -56,7 +56,7 @@ class KugouKRCLyrics extends Lyrics {
                 this.idTags[key] = value;
             }
         }
-        
+
         const krcLineMatches = content.matchAll(krcLineRegex);
         const lines: LyricsLine[] = [];
         for (const match of krcLineMatches) {
@@ -162,7 +162,7 @@ export class KugouProvider extends LyricsProvider<KugouResultItem> {
             lrc.idTags[LRC_BY] = "Kugou";
 
             lrc.length = token.duration / 1000;
-            lrc.metadata.source = LyricsProviderSource.kugou;
+            lrc.metadata.source = LyricsProviderSourceId.kugou;
             lrc.metadata.providerToken = `${token.id},${token.accesskey}`;
             return lrc;
         } catch (e) {

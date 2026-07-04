@@ -3,7 +3,7 @@ import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 import { TITLE, ARTIST } from "../../core/idTagKey";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import { ttpodXtrcLineRegex, id3TagRegex, resolveTimeTag, ttpodXtrcInlineTagRegex } from "../../utils/regexPattern";
 import { LyricsLine } from "../../core/lyricsLine";
 import { WordTimeTag, WordTimeTagLabel, Attachments, TRANSLATION, TIME_TAG } from "../../core/lyricsLineAttachment";
@@ -66,12 +66,12 @@ class TTPodXtrcLyrics extends Lyrics {
                 const att = new Attachments({ [TIME_TAG]: timetagAttachment });
                 line = new LyricsLine(lineContent, 0, att);
             }
-            
+
             if (match[4]) {
                 line.attachments.setTranslation(match[4]);
                 this.metadata.attachmentTags.add(TRANSLATION);
             }
-            
+
             timeTags.forEach(v => {
                 const l = _.clone(line);
                 l.position = v;
@@ -136,7 +136,7 @@ export class XiamiProvider extends LyricsProvider<XiamiResultSong> {
             lrc.idTags[ARTIST] = token.artist_name;
 
             lrc.metadata.remoteURL = lrcURL;
-            lrc.metadata.source = LyricsProviderSource.xiami;
+            lrc.metadata.source = LyricsProviderSourceId.xiami;
             lrc.metadata.providerToken = token.lyric;
             lrc.metadata.artworkURL = token.album_logo;
             return lrc;

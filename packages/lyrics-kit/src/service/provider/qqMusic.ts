@@ -5,7 +5,7 @@ import axios from "axios";
 import axiosJsonp from "../../utils/axiosJsonp";
 import _ from "lodash";
 import { TITLE, ARTIST, ALBUM } from "../../core/idTagKey";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { QQSongItem, QQResponseSearchResult } from "../types/qqMusic/searchResult";
 import type { QQResponseSinglePlainLyrics } from "../types/qqMusic/singleLyrics";
 import type { Range } from "../../core/lyricsLineAttachment";
@@ -260,7 +260,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
     lrc.idTags[ALBUM] = token.album?.title;
 
     lrc.length = token.interval;
-    lrc.metadata.source = LyricsProviderSource.qq;
+    lrc.metadata.source = LyricsProviderSourceId.qq;
     lrc.metadata.providerToken = `${token.mid}`;
     if (token.mid) {
       const id = parseInt(token.mid);

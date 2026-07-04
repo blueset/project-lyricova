@@ -3,7 +3,7 @@ import { LyricsProvider } from ".";
 import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import type { LrcLibSearchResult } from "../types/lrclib/LrcLibSearchResult";
 import { ALBUM, ARTIST, Lyrics, TITLE } from "../../core";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 
 const SEARCH_URL = "https://lrclib.net/api/search";
 const FETCH_URL = "https://lrclib.net/api/get/";
@@ -54,7 +54,7 @@ export class LrcLibLyricsProvider extends LyricsProvider<LrcLibSearchResult> {
   ): Promise<Lyrics | undefined> {
     try {
       const lyrics = new Lyrics(token.syncedLyrics);
-      lyrics.metadata.source = LyricsProviderSource.LrcLib;
+      lyrics.metadata.source = LyricsProviderSourceId.LrcLib;
       lyrics.metadata.remoteURL = FETCH_URL + token.id;
       if (token.duration) {
         lyrics.length = token.duration;

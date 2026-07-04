@@ -1,6 +1,5 @@
 import { isTranslationTag } from "./lyricsLineAttachment";
-import type { LyricsProvider } from "../service/provider";
-import type { LyricsProviderSource } from "../service/lyricsProviderSource";
+import type { LyricsProviderSourceId } from "../service/lyricsProviderSourceId";
 import type { LyricsSearchRequest } from "../service/lyricsSearchRequest";
 import _ from "lodash";
 
@@ -41,8 +40,8 @@ export class LyricsMetadata {
       json.attachmentTags = Array.from(this.attachmentTags);
     }
 
-    if (this.source?.cls?.name) {
-      json.source = this.source.cls.name;
+    if (this.source) {
+      json.source = this.source;
     }
 
     if (this.request) {
@@ -88,10 +87,10 @@ export class LyricsMetadata {
 
   /* Sources/LyricsService/LyricsMetadata+Extension.swift */
 
-  public get source(): LyricsProviderSource<LyricsProvider<unknown>> | undefined {
-    return this.data[SOURCE] as LyricsProviderSource<LyricsProvider<unknown>> | undefined;
+  public get source(): LyricsProviderSourceId | undefined {
+    return this.data[SOURCE] as LyricsProviderSourceId | undefined;
   }
-  public set source(val: LyricsProviderSource<LyricsProvider<unknown>> | undefined) {
+  public set source(val: LyricsProviderSourceId | undefined) {
     this.data[SOURCE] = val;
   }
 

@@ -4,7 +4,7 @@ import { LyricsProvider } from ".";
 import { ARTIST, TITLE } from "../../core/idTagKey";
 import { Lyrics } from "../../core/lyrics";
 import { LyricsLine } from "../../core/lyricsLine";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import type { YouTubeSearchResult } from "../types/youtube/searchResult";
 import type { YouTubeLyricsJSON3 } from "../types/youtube/singleLyrics";
@@ -200,7 +200,7 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
     const lyrics = new YouTubeLyrics(data.data);
     lyrics.idTags[TITLE] = token.title;
     lyrics.idTags[ARTIST] = token.uploader;
-    lyrics.metadata.source = LyricsProviderSource.youtube;
+    lyrics.metadata.source = LyricsProviderSourceId.youtube;
     lyrics.metadata.providerToken = `${token.id} ${token.language}`;
     lyrics.metadata.artworkURL = token.thumbnail;
     lyrics.length = YouTubeProvider.parseDuration(token.durationText);

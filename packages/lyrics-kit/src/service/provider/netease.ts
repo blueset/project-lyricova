@@ -1,7 +1,7 @@
 import { LyricsProvider } from ".";
 import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
-import { LyricsProviderSource } from "../lyricsProviderSource";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import axios from "axios";
 import { TITLE, ARTIST, ALBUM, LRC_BY } from "../../core/idTagKey";
 import {
@@ -236,7 +236,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
       }
 
       lyrics.length = token.duration / 1000;
-      lyrics.metadata.source = LyricsProviderSource.netease;
+      lyrics.metadata.source = LyricsProviderSourceId.netease;
       lyrics.metadata.artworkURL = token.album.picUrl;
       lyrics.metadata.providerToken = `${token.id}`;
 
