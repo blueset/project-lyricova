@@ -1,5 +1,5 @@
-import { StateCreator } from "zustand";
-import { LyricsState, TranslationSlice } from "./sliceTypes";
+import type { StateCreator } from "zustand";
+import type { LyricsState, TranslationSlice } from "./sliceTypes";
 import { TRANSLATION } from "../../../../../../../lyrics-kit/build/module/core/lyricsLineAttachment";
 import { smartypantsu } from "smartypants";
 

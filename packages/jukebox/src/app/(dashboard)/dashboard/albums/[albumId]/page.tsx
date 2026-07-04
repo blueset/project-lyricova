@@ -41,7 +41,7 @@ export default function AlbumEntitySingle() {
       setAlbum={() => {
         /* No-op. */
       }}
-      albumToEdit={query.data?.album}
+      albumToEdit={query.data?.album ?? undefined}
     />
   );
 }

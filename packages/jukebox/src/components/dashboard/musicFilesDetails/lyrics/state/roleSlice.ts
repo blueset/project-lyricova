@@ -1,5 +1,5 @@
-import { StateCreator } from "zustand";
-import { LyricsState, RoleSlice } from "./sliceTypes";
+import type { StateCreator } from "zustand";
+import type { LyricsState, RoleSlice } from "./sliceTypes";
 import { METADATA_MINOR, METADATA_ROLE } from "lyrics-kit/core";
 
 export const createRoleSlice: StateCreator<

@@ -52,23 +52,23 @@ const EntryInput = builder.inputType("EntryInput", {
 
 /** Shape of a verse as it arrives in the EntryInput mutation argument. */
 interface VerseInputLike {
-  id?: number;
-  text?: string;
-  language?: string;
-  isOriginal?: boolean;
-  isMain?: boolean;
-  html?: string;
-  stylizedText?: string;
-  translator?: string;
+  id?: number | null;
+  text?: string | null;
+  language?: string | null;
+  isOriginal?: boolean | null;
+  isMain?: boolean | null;
+  html?: string | null;
+  stylizedText?: string | null;
+  translator?: string | null;
   typingSequence?: string[][][];
 }
 
 async function populateVerseTypingSequence(verse: VerseInputLike) {
   if (verse.text && !verse.typingSequence?.length) {
     verse.typingSequence = await segmentedTransliteration(verse.text, {
-      language: verse.language.startsWith("ja")
+      language: verse.language?.startsWith("ja")
         ? "ja"
-        : verse.language.startsWith("zh")
+        : verse.language?.startsWith("zh")
           ? "zh"
           : "en",
       type: "typing",
@@ -96,7 +96,7 @@ builder.queryField("entries", (t) =>
     resolve: async () =>
       db.query.Entries.findMany({
         orderBy: (e, { desc }) => [desc(e.recentActionDate)],
-      }) as any,
+      }),
   })
 );
 
@@ -107,7 +107,7 @@ builder.queryField("entry", (t) =>
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
       ((await db.query.Entries.findFirst({ where: eq(Entries.id, id) })) ??
-        null) as any,
+        null),
   })
 );
 
@@ -150,7 +150,7 @@ builder.mutationField("newEntry", (t) =>
             entryId: newId,
             creationDate: now,
             updatedOn: now,
-          } as any);
+          });
         }
         for (const songId of songIds ?? []) {
           await tx.insert(SongOfEntries).values({
@@ -179,7 +179,7 @@ builder.mutationField("newEntry", (t) =>
 
       return (await db.query.Entries.findFirst({
         where: eq(Entries.id, entryId),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -235,7 +235,7 @@ builder.mutationField("updateEntry", (t) =>
           if (v.id) {
             await tx
               .update(Verses)
-              .set({ ...verseValues(v), entryId: id, updatedOn: now } as any)
+              .set({ ...verseValues(v), entryId: id, updatedOn: now })
               .where(eq(Verses.id, v.id));
             verseIds.push(v.id);
           } else {
@@ -244,7 +244,7 @@ builder.mutationField("updateEntry", (t) =>
               entryId: id,
               creationDate: now,
               updatedOn: now,
-            } as any);
+            });
             verseIds.push(r[0].insertId);
           }
         }
@@ -310,7 +310,7 @@ builder.mutationField("updateEntry", (t) =>
 
       return (await db.query.Entries.findFirst({
         where: eq(Entries.id, id),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -370,7 +370,7 @@ builder.mutationField("pulseEntry", (t) =>
       await db.insert(Pulses).values({ entryId: id, creationDate: new Date() });
       return (await db.query.Entries.findFirst({
         where: eq(Entries.id, id),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -407,7 +407,7 @@ builder.mutationField("unpulseEntry", (t) =>
         .where(eq(Entries.id, id));
       return (await db.query.Entries.findFirst({
         where: eq(Entries.id, id),
-      })) as any;
+      }))!;
     },
   })
 );

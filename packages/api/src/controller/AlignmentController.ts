@@ -33,6 +33,9 @@ export class AlignmentController {
     if (!musicFile) {
       return res.status(404).json({ error: "Music file not found" });
     }
+    if (musicFile.path === null) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
     const path = fullPathOf(musicFile.path);
     if (!existsSync(path)) {
       return res.status(404).json({ status: 404, message: "File not found" });
@@ -121,8 +124,8 @@ export class AlignmentController {
       // Pipe the response body stream using Node.js streams API
       if (proxyRes.body) {
         // Ensure proxyRes.body is a Node.js Readable stream before piping
-        const bodyStream = Readable.from(proxyRes.body as any);
-        bodyStream.on("data", (chunk: any) => {
+        const bodyStream = Readable.from(proxyRes.body);
+        bodyStream.on("data", (chunk: Buffer) => {
           res.write(chunk);
           if (typeof res.flush === "function") {
             res.flush();
@@ -180,6 +183,9 @@ export class AlignmentController {
     const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(fileId)) });
     if (!musicFile) {
       return res.status(404).json({ error: "Music file not found" });
+    }
+    if (musicFile.path === null) {
+      return res.status(404).json({ status: 404, message: "File not found" });
     }
     const path = fullPathOf(musicFile.path);
     if (!existsSync(path)) {
@@ -269,8 +275,8 @@ export class AlignmentController {
       // Pipe the response body stream using Node.js streams API
       if (proxyRes.body) {
         // Ensure proxyRes.body is a Node.js Readable stream before piping
-        const bodyStream = Readable.from(proxyRes.body as any);
-        bodyStream.on("data", (chunk: any) => {
+        const bodyStream = Readable.from(proxyRes.body);
+        bodyStream.on("data", (chunk: Buffer) => {
           res.write(chunk);
           if (typeof res.flush === "function") {
             res.flush();

@@ -100,11 +100,11 @@ export class SongController {
 
       const { artistOfSongs, songInAlbums, files, ...songCols } = song;
       const artists = (artistOfSongs ?? [])
-        .filter((a: any) => a.artist && !a.artist.deletionDate)
-        .map((a: any) => {
+        .filter((a) => a.artist && !a.artist.deletionDate)
+        .map((a) => {
           const { artist, ...junction } = a;
           return {
-            ...artist,
+            ...artist!,
             ArtistOfSong: {
               ...junction,
               artistRoles: parseEnumArray(junction.artistRoles),
@@ -114,14 +114,14 @@ export class SongController {
         })
         .sort((x, y) => x.id - y.id);
       const albums = (songInAlbums ?? [])
-        .filter((a: any) => a.album && !a.album.deletionDate)
-        .map((a: any) => {
+        .filter((a) => a.album && !a.album.deletionDate)
+        .map((a) => {
           const { album, ...junction } = a;
-          return { ...album, SongInAlbum: junction };
+          return { ...album!, SongInAlbum: junction };
         })
         .sort((x, y) => x.id - y.id);
       const filesSorted = [...(files ?? [])].sort(
-        (x: any, y: any) => x.id - y.id
+        (x, y) => x.id - y.id
       );
 
       res.json({ ...songCols, artists, albums, files: filesSorted });
@@ -193,6 +193,7 @@ export class SongController {
       const lyrics = (
         await Promise.all(
           song.files.map(async (f) => {
+            if (f.path === null) return null;
             const fullPath = fullPathOf(f.path);
             const lrcxPath = swapExt(fullPath, "lrcx");
             if (await fs.stat(lrcxPath)) {

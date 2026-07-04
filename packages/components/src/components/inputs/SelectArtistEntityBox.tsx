@@ -50,10 +50,12 @@ import { UtaiteDBSearchArtistDialog } from "../dialogs/UtaiteDBSearchArtistDialo
 import { ArtistEntityDialog } from "../dialogs/ArtistEntityDialog";
 import { graphql } from "../../gql";
 import type { SelectArtistEntryFragment } from "../../gql/graphql";
-import {
+import type {
   FieldValues,
   FieldPath,
   UseFormReturn,
+  FieldPathValue} from "react-hook-form";
+import {
   useController,
 } from "react-hook-form";
 
@@ -274,7 +276,7 @@ export function SelectArtistEntityBox<
         toggleManualDialogOpen(true);
         setOpen(false);
         setInputValue("");
-        form.setValue(fieldName, null as any);
+        form.setValue(fieldName, null as FieldPathValue<TFieldValues, TName>);
         return;
       }
       return;
@@ -291,7 +293,7 @@ export function SelectArtistEntityBox<
       setOpen(false);
       setInputValue("");
     } else {
-      form.setValue(fieldName, selectedOption as any, {
+      form.setValue(fieldName, selectedOption as FieldPathValue<TFieldValues, TName>, {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -519,7 +521,7 @@ export function SelectArtistEntityBox<
                     <CommandGroup>
                       <CommandItem
                         onSelect={() => {
-                          form.setValue(fieldName, null as any, {
+                          form.setValue(fieldName, null as FieldPathValue<TFieldValues, TName>, {
                             shouldValidate: true,
                             shouldDirty: true,
                           });
@@ -634,7 +636,7 @@ export function SelectArtistEntityBox<
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
           setArtist={(v) =>
-            form.setValue(fieldName, v as any, {
+            form.setValue(fieldName, v as FieldPathValue<TFieldValues, TName>, {
               shouldValidate: true,
               shouldDirty: true,
             })
@@ -648,7 +650,7 @@ export function SelectArtistEntityBox<
           keyword={utaiteDBDialogKeyword}
           setKeyword={setUtaiteDBDialogKeyword}
           setArtist={(v) =>
-            form.setValue(fieldName, v as any, {
+            form.setValue(fieldName, v as FieldPathValue<TFieldValues, TName>, {
               shouldValidate: true,
               shouldDirty: true,
             })
@@ -664,7 +666,7 @@ export function SelectArtistEntityBox<
           create={isManualDialogForCreate}
           setKeyword={setImportDialogKeyword}
           setArtist={(v) =>
-            form.setValue(fieldName, v as any, {
+            form.setValue(fieldName, v as FieldPathValue<TFieldValues, TName>, {
               shouldValidate: true,
               shouldDirty: true,
             })

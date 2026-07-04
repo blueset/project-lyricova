@@ -80,35 +80,35 @@ export class Song {
 
   public sortOrder!: string;
 
-  artists: Array<Artist & { ArtistOfSong: ArtistOfSong }>;
+  artists!: Array<Artist & { ArtistOfSong: ArtistOfSong }>;
 
-  albums: Array<Album & { SongInAlbum: SongInAlbum }>;
+  albums!: Array<Album & { SongInAlbum: SongInAlbum }>;
 
   originalId!: number | null;
 
-  original: Song | null;
+  original!: Song | null;
 
-  readonly derivedSongs: Song[];
+  readonly derivedSongs!: Song[];
 
   vocaDbJson!: SongForApiContract | null;
 
-  utaiteDbId: number | null;
+  utaiteDbId!: number | null;
 
-  videos: VideoFile[];
+  videos!: VideoFile[];
 
   coverUrl?: string;
 
-  files: MusicFile[];
+  files!: MusicFile[];
 
-  lyricovaEntries: Array<Entry & { SongOfEntry: SongOfEntry }>;
+  lyricovaEntries!: Array<Entry & { SongOfEntry: SongOfEntry }>;
 
   incomplete!: boolean;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 
-  deletionDate: Date;
+  deletionDate!: Date;
 
   /** ArtistOfSong reflected by Album.$get("songs"), added for GraphQL queries. */
   SongInAlbum?: Partial<SongInAlbum>;

@@ -1,5 +1,6 @@
 import { Alert } from "@lyricova/components/components/ui/alert";
-import { ComponentProps, useState } from "react";
+import type { ComponentProps} from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@lyricova/components/utils";
 

@@ -43,11 +43,12 @@ import {
   XCircle,
   Calendar,
 } from "lucide-react";
-import {
-  DayPicker,
+import type {
   DayPickerProps,
   Matcher,
-  PropsSingle,
+  PropsSingle} from "react-day-picker";
+import {
+  DayPicker,
   TZDate,
 } from "react-day-picker";
 
@@ -397,7 +398,7 @@ export function DateTimePicker({
           ></div>
           <MonthYearPicker
             value={month}
-            mode={monthYearPicker as any}
+            mode={monthYearPicker}
             onChange={onMonthYearChanged}
             minDate={minDate}
             maxDate={maxDate}
@@ -444,7 +445,7 @@ function MonthYearPicker({
   className,
 }: {
   value: Date;
-  mode: "month" | "year";
+  mode: "month" | "year" | false;
   minDate?: Date;
   maxDate?: Date;
   onChange: (value: Date, mode: "month" | "year") => void;
@@ -684,13 +685,12 @@ function TimePicker({
       }
     }, 1);
     return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const onHourChange = useCallback(
     (v: TimeOption) => {
       if (min) {
-        let newTime = buildTime({
+        const newTime = buildTime({
           use12HourFormat,
           value,
           formatStr,
@@ -705,7 +705,7 @@ function TimePicker({
         }
       }
       if (max) {
-        let newTime = buildTime({
+        const newTime = buildTime({
           use12HourFormat,
           value,
           formatStr,
@@ -727,7 +727,7 @@ function TimePicker({
   const onMinuteChange = useCallback(
     (v: TimeOption) => {
       if (min) {
-        let newTime = buildTime({
+        const newTime = buildTime({
           use12HourFormat,
           value,
           formatStr,
@@ -741,7 +741,7 @@ function TimePicker({
         }
       }
       if (max) {
-        let newTime = buildTime({
+        const newTime = buildTime({
           use12HourFormat,
           value,
           formatStr,
@@ -762,7 +762,7 @@ function TimePicker({
   const onAmpmChange = useCallback(
     (v: TimeOption) => {
       if (min) {
-        let newTime = buildTime({
+        const newTime = buildTime({
           use12HourFormat,
           value,
           formatStr,
@@ -779,7 +779,7 @@ function TimePicker({
         }
       }
       if (max) {
-        let newTime = buildTime({
+        const newTime = buildTime({
           use12HourFormat,
           value,
           formatStr,
@@ -801,7 +801,7 @@ function TimePicker({
   );
 
   const display = useMemo(() => {
-    let arr = [];
+    const arr = [];
     for (const element of ["hour", "minute", "second"]) {
       if (!timePicker || timePicker[element as keyof typeof timePicker]) {
         if (element === "hour") {

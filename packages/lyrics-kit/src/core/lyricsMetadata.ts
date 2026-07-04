@@ -1,6 +1,7 @@
 import { isTranslationTag } from "./lyricsLineAttachment";
-import { LyricsProviderSource } from "../service/lyricsProviderSource";
-import { LyricsSearchRequest } from "../service/lyricsSearchRequest";
+import type { LyricsProvider } from "../service/provider";
+import type { LyricsProviderSource } from "../service/lyricsProviderSource";
+import type { LyricsSearchRequest } from "../service/lyricsSearchRequest";
 import _ from "lodash";
 
 export interface LyricsMetadataJSON {
@@ -12,7 +13,7 @@ export interface LyricsMetadataJSON {
   artworkURL?: string;
   providerToken?: string;
   quality?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export const ATTACHMENT_TAGS = "attachmentTags";
@@ -25,8 +26,7 @@ export const PROVIDER_TOKEN = "providerToken";
 const QUALITY = "quality";
 
 export class LyricsMetadata {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public data: { [key: string]: any } = {};
+  public data: { [key: string]: unknown } = {};
   /* Lyrics.Metadata.Key is mapped to string */
   public toString(): string {
     return Object.entries(this)
@@ -73,7 +73,7 @@ export class LyricsMetadata {
   }
 
   public get attachmentTags(): Set<string> {
-    return this.data[ATTACHMENT_TAGS] || new Set();
+    return (this.data[ATTACHMENT_TAGS] as Set<string> | undefined) || new Set();
   }
   public set attachmentTags(val: Set<string>) {
     this.data[ATTACHMENT_TAGS] = val;
@@ -88,13 +88,10 @@ export class LyricsMetadata {
 
   /* Sources/LyricsService/LyricsMetadata+Extension.swift */
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public get source(): LyricsProviderSource<any> | undefined {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.data[SOURCE] as LyricsProviderSource<any> | undefined;
+  public get source(): LyricsProviderSource<LyricsProvider<unknown>> | undefined {
+    return this.data[SOURCE] as LyricsProviderSource<LyricsProvider<unknown>> | undefined;
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public set source(val: LyricsProviderSource<any> | undefined) {
+  public set source(val: LyricsProviderSource<LyricsProvider<unknown>> | undefined) {
     this.data[SOURCE] = val;
   }
 

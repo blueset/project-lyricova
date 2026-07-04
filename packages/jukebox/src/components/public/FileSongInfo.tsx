@@ -57,8 +57,12 @@ const SINGLE_FILE_SONG_QUERY = graphql(`
   }
 `);
 
-type FileData = ResultOf<typeof SINGLE_FILE_SONG_QUERY>["musicFile"];
-type SongArtist = NonNullable<FileData["song"]>["artists"][number];
+type FileData = NonNullable<
+  ResultOf<typeof SINGLE_FILE_SONG_QUERY>["musicFile"]
+>;
+type SongArtist = NonNullable<
+  NonNullable<FileData["song"]>["artists"]
+>[number];
 
 interface Props {
   partialFile?: Partial<FileData>;
@@ -69,7 +73,8 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
   const idToQuery = fileId ?? partialFile?.id;
 
   const query = useQuery(SINGLE_FILE_SONG_QUERY, {
-    variables: { id: idToQuery },
+    variables: { id: idToQuery ?? 0 },
+    skip: idToQuery == null,
   });
 
   let banner: ReactNode = null;
@@ -89,7 +94,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
   const file: Partial<FileData> =
     query.data?.musicFile ??
     (fileId == null
-      ? partialFile
+      ? (partialFile ?? {})
       : {
           id: fileId,
           trackName: "",
@@ -124,9 +129,8 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
 
     if (song?.artists) {
       for (const i of song.artists) {
-        const categories = i?.ArtistOfSong?.categories || [
-          i.ArtistOfAlbum?.categories,
-        ];
+        const categories: (string | string[] | null | undefined)[] =
+          i.ArtistOfSong?.categories ?? [i.ArtistOfAlbum?.categories];
         if (
           categories.indexOf("Producer") >= 0 ||
           categories.indexOf("Circle") >= 0
@@ -141,7 +145,8 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
     return [producers, vocalists];
   }, [file.song]);
 
-  const vocaDbId = (file.song?.id ?? 0) > 0 ? file.song.id : null;
+  const songId = file.song?.id;
+  const vocaDbId = songId != null && songId > 0 ? songId : null;
   const utaiteDbId = file.song?.utaiteDbId ?? null;
 
   return (
@@ -156,10 +161,10 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
       )}
       {banner}
       <div className="grid grid-cols-12 gap-4">
-        {file.hasCover && (
+        {file.hasCover && file.id != null && (
           <div className="@3xl/details:col-span-4 col-span-12">
             <div className="@3xl/details:sticky @3xl/details:top-2 mb-4">
-              {file.hasCover && (
+              {file.hasCover && file.id != null && (
                 <Avatar className="rounded-md mb-2 w-full h-auto">
                   <AvatarImage
                     src={`/api/files/${file.id}/cover`}
@@ -174,7 +179,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
         <div
           className={cn(
             "col-span-12",
-            file.hasCover && "@3xl/details:col-span-8"
+            file.hasCover && file.id != null && "@3xl/details:col-span-8"
           )}
         >
           <span className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -268,8 +273,12 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
                 {file.albumSortOrder}
               </TableRow>
             )}
-            <TableRow heading="Duration">{formatTime(file.duration)}</TableRow>
-            <TableRow heading="File size">{filesize(file.fileSize)}</TableRow>
+            <TableRow heading="Duration">
+              {formatTime(file.duration ?? 0)}
+            </TableRow>
+            <TableRow heading="File size">
+              {filesize(file.fileSize ?? 0)}
+            </TableRow>
             {(vocaDbId || utaiteDbId) && (
               <TableRow heading="External links">
                 <div className="flex flex-wrap gap-6">

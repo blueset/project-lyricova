@@ -1,6 +1,6 @@
 import { LyricsProvider } from ".";
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import axios from "axios";
 import { Lyrics } from "../../core/lyrics";
 import { unzipSync } from "zlib";
@@ -9,9 +9,9 @@ import { WordTimeTag, WordTimeTagLabel, Attachments, TIME_TAG, TRANSLATION } fro
 import { LyricsLine } from "../../core/lyricsLine";
 import _ from "lodash";
 import { LRC_BY, TITLE, ARTIST } from "../../core/idTagKey";
-import { KugouKrcHeaderField } from "../types/kugou/headerField";
-import { KugouResultItem, KugouResponseSearchResult } from "../types/kugou/searchResult";
-import { KugouResponseSingleLyrics } from "../types/kugou/singleLyrics";
+import type { KugouKrcHeaderField } from "../types/kugou/headerField";
+import type { KugouResultItem, KugouResponseSearchResult } from "../types/kugou/searchResult";
+import type { KugouResponseSingleLyrics } from "../types/kugou/singleLyrics";
 
 const SEARCH_URL = "http://lyrics.kugou.com/search";
 const LYRICS_URL = "http://lyrics.kugou.com/download";

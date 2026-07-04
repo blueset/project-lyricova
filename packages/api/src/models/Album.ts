@@ -64,31 +64,31 @@ import type { Artist } from "./Artist";
  *         - incomplete
  */
 export class Album {
-  id: number;
+  id!: number;
 
-  name: string;
+  name!: string;
 
-  sortOrder: string;
+  sortOrder!: string;
 
-  songs: Array<Song & { SongInAlbum: SongInAlbum }>;
+  songs!: Array<Song & { SongInAlbum: SongInAlbum }>;
 
-  artists: Array<Artist & { ArtistOfAlbum: ArtistOfAlbum }>;
+  artists!: Array<Artist & { ArtistOfAlbum: ArtistOfAlbum }>;
 
   coverUrl?: string;
 
-  files: MusicFile[];
+  files!: MusicFile[];
 
-  vocaDbJson: AlbumForApiContract | null;
+  vocaDbJson!: AlbumForApiContract | null;
 
-  incomplete: boolean;
+  incomplete!: boolean;
 
-  utaiteDbId: number | null;
+  utaiteDbId!: number | null;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 
-  deletionDate: Date;
+  deletionDate!: Date;
 
   /** SongInAlbum reflected by Song.$get("albums"), added for GraphQL queries. */
   SongInAlbum?: Partial<SongInAlbum>;

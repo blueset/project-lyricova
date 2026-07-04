@@ -13,7 +13,7 @@ import { pool as drizzlePool } from "./drizzle/client";
 import { postHog } from "./utils/posthog";
 import { setupExpressErrorHandler } from "posthog-node";
 
-const MySQLStore = expressMySQLSession(session as any);
+const MySQLStore = expressMySQLSession(session);
 
 export default () => {
   const app = express();
@@ -30,7 +30,7 @@ export default () => {
       proxy: true,
       secret: SESSION_SECRET,
       // Reuse the Drizzle mysql2 pool (shares the DB_URI connection settings).
-      store: new MySQLStore({}, (drizzlePool as any).pool),
+      store: new MySQLStore({}, drizzlePool.pool),
     })
   );
   app.use(passport.initialize());
@@ -38,7 +38,9 @@ export default () => {
   app.use(flash());
 
   registerRoutes(app);
-  setupExpressErrorHandler(postHog, app);
+  if (postHog) {
+    setupExpressErrorHandler(postHog, app);
+  }
 
   app.get("/", async (req: Request, res: Response) => {
     res.send("Hello world!");

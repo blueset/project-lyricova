@@ -1,5 +1,6 @@
-import { RefObject, useRef, useCallback, useEffect } from "react";
-import { PlayerState } from "./types";
+import type { RefObject} from "react";
+import { useRef, useCallback, useEffect } from "react";
+import type { PlayerState } from "./types";
 import { usePlayerState } from "./usePlayerState";
 
 export function usePlayerStateRAF(

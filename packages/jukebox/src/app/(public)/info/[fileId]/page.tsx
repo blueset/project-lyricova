@@ -10,7 +10,7 @@ import { MusicFileActions } from "./MusicFileActions";
 export default function InformationById() {
   const { user } = useAuthContext();
   const { fileId: fileIdString } = useParams<{ fileId: string }>();
-  const fileId = fileIdString ? parseInt(fileIdString as string) : null;
+  const fileId = fileIdString ? parseInt(fileIdString as string) : undefined;
 
   return (
     <div className="p-4 pt-0">
@@ -26,7 +26,7 @@ export default function InformationById() {
             </NextComposedLink>
           </Button>
         )}
-        <MusicFileActions fileId={fileId} />
+        {fileId !== undefined && <MusicFileActions fileId={fileId} />}
       </div>
     </div>
   );

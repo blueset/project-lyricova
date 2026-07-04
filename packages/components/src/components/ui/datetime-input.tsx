@@ -81,8 +81,8 @@ const segmentConfigs = [
   },
 ];
 
-const mergeRefs = (...refs: any) => {
-  return (node: any) => {
+const mergeRefs = <T,>(...refs: Array<React.MutableRefObject<T | null>>) => {
+  return (node: T | null) => {
     for (const ref of refs) {
       if (ref) ref.current = node;
     }
@@ -423,7 +423,7 @@ interface Segment {
 }
 function parseFormat(formatStr: string, value?: Date) {
   const views: Segment[] = [];
-  let lastPattern: any = "";
+  let lastPattern: SegmentType = "space";
   let symbols = "";
   let patternIndex = 0;
   let index = 0;
@@ -491,12 +491,15 @@ function safeSetSelection(
     }
   });
 }
-export function useEventCallback<T extends Function>(fn: T, deps: any[]) {
+export function useEventCallback<T extends (...args: any[]) => unknown>(
+  fn: T,
+  deps: React.DependencyList
+) {
   const ref = useRef(fn);
   useIsomorphicLayoutEffect(() => {
     ref.current = fn;
   });
-  return useCallback((...args: any[]) => {
+  return useCallback((...args: Parameters<T>) => {
     return ref.current?.(...args);
   }, deps);
 }

@@ -1,6 +1,7 @@
-import { RefObject, useEffect } from "react";
-import { LyricsKitLyrics } from "@lyricova/components/gql/schema";
-import { LyricsFrameCallback } from "./types";
+import type { RefObject} from "react";
+import { useEffect } from "react";
+import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
+import type { LyricsFrameCallback } from "./types";
 import { useNamedState } from "./useNamedState";
 
 /** Refactor useLyricsState using WebVTT Cue callbacks. */
@@ -8,7 +9,7 @@ export function useLyricsState(
   playerRef: RefObject<HTMLAudioElement>,
   lyrics: LyricsKitLyrics,
   callback?: LyricsFrameCallback
-): number {
+): number | null {
   const [line, setLine] = useNamedState<number | null>(null, "line");
 
   useEffect(() => {
@@ -27,7 +28,8 @@ export function useLyricsState(
     player.appendChild(track);
     track.track.mode = "hidden";
     // Workaround for Firefox
-    player.textTracks.getTrackById(track.id).mode = "hidden";
+    const textTrack = player.textTracks.getTrackById(track.id);
+    if (textTrack) textTrack.mode = "hidden";
 
     const addCues = () => {
       // Generate cues

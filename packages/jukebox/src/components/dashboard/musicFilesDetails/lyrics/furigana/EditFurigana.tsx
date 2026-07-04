@@ -28,7 +28,7 @@ const KARAOKE_TRANSLITERATION_QUERY = graphql(`
 
 interface Props {
   fileId: number;
-  songId: number;
+  songId?: number;
 }
 
 export default function EditFurigana({ fileId, songId }: Props) {
@@ -50,7 +50,7 @@ export default function EditFurigana({ fileId, songId }: Props) {
     }))
   );
   const apolloClient = useApolloClient();
-  const vocaDBFuriganaLines = useVocaDBFurigana(songId);
+  const vocaDBFuriganaLines = useVocaDBFurigana(songId ?? 0);
   useEffect(() => {
     setVocaDbFuriganaLines(vocaDBFuriganaLines);
   }, [vocaDBFuriganaLines, setVocaDbFuriganaLines]);

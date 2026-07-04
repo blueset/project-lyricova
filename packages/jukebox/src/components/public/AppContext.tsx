@@ -48,7 +48,8 @@ export interface Playlist {
   getSongByIndex: (index: number) => Track | null;
 }
 
-const PlayerRefContext = React.createContext<RefObject<HTMLAudioElement>>(null);
+const PlayerRefContext =
+  React.createContext<RefObject<HTMLAudioElement> | null>(null);
 PlayerRefContext.displayName = "PlayerRefContext";
 
 export interface ContextProps {

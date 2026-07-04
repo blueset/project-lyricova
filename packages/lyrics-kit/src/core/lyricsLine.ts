@@ -1,4 +1,4 @@
-import { Lyrics } from "./lyrics";
+import type { Lyrics } from "./lyrics";
 import { Attachments, FURIGANA } from "./lyricsLineAttachment";
 import { buildTimeTag } from "../utils/regexPattern";
 
@@ -16,7 +16,7 @@ export interface ToLegacyStringOptions {
   translationLanguage?: string;
 }
 
-const DefaultToLegacyStringOptions = {
+const DefaultToLegacyStringOptions: ToLegacyStringOptions = {
   before: " / ",
   after: "",
   useFurigana: true,
@@ -31,7 +31,7 @@ export class LyricsLine {
 
   public lyrics?: Lyrics;
 
-  public get timeTag(): string {
+  public get timeTag(): string | null {
     return buildTimeTag(this.position);
   }
 
@@ -57,7 +57,7 @@ export class LyricsLine {
     return [
       this.content,
       ...Object.entries(this.attachments.content).map(
-        v => `[${v[0].toString()}]${v[1].toString()}`
+        v => `[${v[0].toString()}]${v[1]?.toString() ?? ""}`
       ),
     ]
       .map(v => `${timeLabel}${v}`)

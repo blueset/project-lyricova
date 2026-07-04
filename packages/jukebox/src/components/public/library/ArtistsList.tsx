@@ -71,13 +71,14 @@ export default function ArtistsList({ types, typeName }: Props) {
 
   let lastKey: string | null = null;
   const convertedList: (ArtistListItem | string)[] = [];
+  const artists = query.data?.artistsHasFiles ?? [];
 
-  query.data.artistsHasFiles.forEach((i) => {
+  artists.forEach((i) => {
     let key: string;
     if (i.sortOrder === null || i.sortOrder === "") key = "?";
     else {
       const firstChar = i.sortOrder.charAt(0);
-      if (firstChar.codePointAt(0) < 65 /* "A" */) key = "#";
+      if ((firstChar.codePointAt(0) ?? 0) < 65 /* "A" */) key = "#";
       else key = firstChar.toLocaleUpperCase();
     }
     if (key !== lastKey) {
@@ -107,7 +108,7 @@ export default function ArtistsList({ types, typeName }: Props) {
               >
                 <Avatar className="size-16 mr-4 rounded-md">
                   <AvatarImage
-                    src={v.mainPictureUrl}
+                    src={v.mainPictureUrl ?? undefined}
                     alt={v.name}
                     className="object-top object-cover"
                     loading="lazy"

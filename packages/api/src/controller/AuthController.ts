@@ -86,10 +86,10 @@ export class AuthController {
         }
         let handle = Buffer.alloc(16);
         handle = uuid({}, handle);
-        const userObj = req.user as any;
+        const userObj = req.user as User;
         const user = {
           id: userObj.id.toString(),
-          name: userObj.username.toString(),
+          name: userObj.username!.toString(),
           displayName: userObj.displayName,
           remarks: `${req.headers["user-agent"]}, ${JSON.stringify([
             ...req.ips,
@@ -110,7 +110,7 @@ export class AuthController {
     );
 
     this.router.use(
-      (err: any, req: Request, res: Response, next: NextFunction) => {
+      (err: unknown, req: Request, res: Response, next: NextFunction) => {
         if (err) {
           console.error("auth router err", err);
           res.sendStatus(401);
@@ -230,7 +230,7 @@ export class AuthController {
             with: { user: true },
           });
           if (!cred?.user) cb(null, false, { message: "Invalid key. " });
-          return cb(null, cred?.user, cred?.publicKey);
+          return cb(null, cred?.user, cred?.publicKey ?? undefined);
         },
         /* register */ async (
           user: WebAuthnEnrolPayload,

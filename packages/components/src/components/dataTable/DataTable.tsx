@@ -1,20 +1,21 @@
 "use client";
 
-import {
+import type {
   ColumnDef,
   SortingState,
   ColumnFiltersState,
   VisibilityState,
-  ColumnMeta,
   RowData,
+  GlobalFilterTableState,
+  TableMeta,
+  ColumnMeta} from "@tanstack/react-table";
+import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  GlobalFilterTableState,
-  TableMeta,
+  useReactTable
 } from "@tanstack/react-table";
 
 import {

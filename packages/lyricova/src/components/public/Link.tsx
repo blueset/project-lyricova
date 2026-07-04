@@ -21,7 +21,7 @@ export const Link = forwardRef<
       onClick={(evt) => {
         let target = evt.target as HTMLElement;
         if (window.getComputedStyle(target, ":after").content !== "none") {
-          target = target.parentElement;
+          target = target.parentElement ?? target;
         }
         const rect = target?.getBoundingClientRect() ?? undefined;
         window.lastClickTop = rect && rect.top + rect.height / 2;

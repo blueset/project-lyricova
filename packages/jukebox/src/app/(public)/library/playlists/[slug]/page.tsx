@@ -162,7 +162,13 @@ export default function PlaylistDetails() {
         <AlertDescription>{`${query.error}`}</AlertDescription>
       </Alert>
     );
-  else if (query.data.playlist === null)
+  else if (!query.data)
+    content = (
+      <Alert variant="info">
+        <AlertDescription>Loading...</AlertDescription>
+      </Alert>
+    );
+  else if (!isPredefined && !query.data.playlist)
     content = (
       <Alert variant="error">
         <AlertDescription>
@@ -171,13 +177,14 @@ export default function PlaylistDetails() {
       </Alert>
     );
   else {
-    const playlistData = query.data.playlist;
+    const playlistData = query.data.playlist ?? undefined;
     const files =
       playlistData?.files ??
       query.data.newMusicFiles ??
       query.data.recentMusicFiles ??
       query.data.popularMusicFiles ??
-      query.data.recentlyReviewedMusicFiles;
+      query.data.recentlyReviewedMusicFiles ??
+      [];
     const trackCount = files.length;
     const totalMinutes = Math.round(_.sumBy(files, "duration") / 60);
     const totalSize = _.sumBy(files, "fileSize");
@@ -191,7 +198,7 @@ export default function PlaylistDetails() {
         ? "Most Played"
         : slug === "recently-reviewed"
         ? "Recently Reviewed"
-        : playlistData?.name;
+        : playlistData?.name ?? slug;
     const displaySlug =
       slug === "new"
         ? "Track added in 30 days"
@@ -201,7 +208,7 @@ export default function PlaylistDetails() {
         ? "Most played tracks"
         : slug === "recently-reviewed"
         ? "Tracks reviewed in 30 days"
-        : playlistData?.slug;
+        : playlistData?.slug ?? slug;
 
     const playAll = () => dispatch(loadTracks(files));
     const shuffleAll = () => {
@@ -269,7 +276,7 @@ export default function PlaylistDetails() {
                 Shuffle
               </Button>
             )}
-            {!isPredefined && (
+            {!isPredefined && playlistData && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">

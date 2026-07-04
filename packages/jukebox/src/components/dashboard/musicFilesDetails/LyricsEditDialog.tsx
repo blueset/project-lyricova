@@ -100,8 +100,8 @@ export default function LyricsEditDialog({
   useEffect(() => {
     const { setLrc, setLrcx, parse } = useLyricsStore.getState();
     if (isOpen) {
-      setLrc(initialLrc);
-      setLrcx(initialLrcx || initialLrc);
+      setLrc(initialLrc ?? "");
+      setLrcx(initialLrcx || initialLrc || "");
       parse();
     } else {
       setLrc("");

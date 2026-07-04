@@ -71,7 +71,8 @@ function generateBackgroundStyle(
 }
 
 function IndexLayout({ children }: Props) {
-  const playerRef = useRef<HTMLAudioElement>(null);
+  // AppContext expects a non-null audio ref, while React initializes DOM refs with null until mount.
+  const playerRef = useRef<HTMLAudioElement>(null!);
   const apolloClient = useApolloClient();
 
   const dispatch = useAppDispatch();
@@ -174,11 +175,11 @@ function IndexLayout({ children }: Props) {
       });
       navigator.mediaSession.setActionHandler("previoustrack", function () {
         console.log("Media session action: previoustrack");
-        dispatch(playPrevious(!playerRef?.current.paused));
+        dispatch(playPrevious(!(playerRef.current?.paused ?? true)));
       });
       navigator.mediaSession.setActionHandler("nexttrack", function () {
         console.log("Media session action: nexttrack");
-        dispatch(playNext(!playerRef?.current.paused));
+        dispatch(playNext(!(playerRef.current?.paused ?? true)));
       });
       try {
         navigator.mediaSession.setActionHandler("stop", function () {
@@ -188,6 +189,7 @@ function IndexLayout({ children }: Props) {
 
       try {
         navigator.mediaSession.setActionHandler("seekto", function (event) {
+          if (!playerRef.current) return;
           if (event.fastSeek === true) return;
           if (playerRef.current.fastSeek) {
             playerRef.current.fastSeek(event.seekTime);

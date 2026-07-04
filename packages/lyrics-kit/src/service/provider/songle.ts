@@ -1,11 +1,12 @@
 import axios from "axios";
 import { LyricsProvider } from ".";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { SongleResponseLyricsList, SongleResponseSearch, SongleResponseSearchResult } from "../types/songle/searchResult";
-import { SongleError, SongleLicenseResponse, SongleLyricsObject, SongleTimeTagData } from "../types/songle/lyricsResult";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { SongleResponseLyricsList, SongleResponseSearch, SongleResponseSearchResult } from "../types/songle/searchResult";
+import type { SongleError, SongleLicenseResponse, SongleLyricsObject, SongleTimeTagData } from "../types/songle/lyricsResult";
 import { ARTIST, Attachments, Lyrics, LyricsLine, TIME_TAG, TITLE, WordTimeTag, WordTimeTagLabel } from "../../core";
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import cheerio, { Element } from "cheerio";
+import type { Element } from "cheerio";
+import cheerio from "cheerio";
 
 const CHORD_PROGRESSION_REGEXP = new RegExp(
   "\\b([CDEFGAB](?:b|bb)*(?:#|##|sus|maj|min|aug|m|M)*[\\d/]*(?:[CDEFGAB](?:b|bb)*(?:#|##|sus|maj|min|aug|m|M)*[\\d/]*)*\\-){2}"
@@ -15,10 +16,16 @@ type ScraperOptions = Partial<{
   noFormat: boolean;
 }>;
 
+type SongleJamendoResponse = {
+  results?: Array<{
+    lyrics?: string;
+  }>;
+};
+
 /** @url https://songle.jp/lyric_parsers/98.js */
 class SongleLyricsScraper {
 
-  private parseFn: (data: any, options?: ScraperOptions) => string;
+  private parseFn!: (data: unknown, options?: ScraperOptions) => string;
   private cache: {[url: string]: string} = {};
 
   private async get(url: string, format?: string) {
@@ -39,18 +46,18 @@ class SongleLyricsScraper {
       return this.cache[url];
     }
 
-    let restQuery: string, format: string, matched: RegExpMatchArray;
+    let restQuery: string, format: string, matched: RegExpMatchArray | null;
 
     if (url.match(/atwiki/)) {
       format = "html";
       url = url.replace(/^http:/, "https:");
       restQuery = url;
-      this.parseFn = this.parseAtwiki;
+      this.parseFn = (data) => this.parseAtwiki(data as string);
     } else if (url.match(/^https?:\/\/piapro\.jp\/(t|content)\//)) {
       format = "html";
       url = url.replace(/^http:/, "https:");
       restQuery = url;
-      this.parseFn = this.parsePiapro;
+      this.parseFn = (data) => this.parsePiapro(data as string);
     } else if (
       (matched = url.match(
         /^https?:\/\/www\.jamendo\.com\/track\/(\d+)\/[^\/]+\/lyrics/
@@ -62,11 +69,11 @@ class SongleLyricsScraper {
         "https://api.jamendo.com/v3.0/tracks/?client_id=723c4be4&id[]=" +
         matched[1] +
         "&include=lyrics&type=single albumtrack";
-      this.parseFn = this.parseJamendo;
+      this.parseFn = (data) => this.parseJamendo(data as SongleJamendoResponse);
     } else if (url.match(/\.(txt|lrc)$/)) {
       format = "plain";
       restQuery = url;
-      this.parseFn = this.parseRawPlainText;
+      this.parseFn = (data, options) => this.parseRawPlainText(data as string, options);
     } else {
       throw new Error(`unsupported url: ${url}`);
     }
@@ -118,7 +125,7 @@ class SongleLyricsScraper {
     }
   }
 
-  private parseJamendo(data: any) {
+  private parseJamendo(data: SongleJamendoResponse) {
     if (
       typeof data.results === "undefined" ||
       data.results.length === 0 ||
@@ -191,7 +198,7 @@ class SongleLyricsScraper {
   private parsePiapro(data: string) {
     const $ = cheerio.load(data);
     const doc = $(".contents_text_txt p");
-    const parsed = doc.html()
+    const parsed = (doc.html() ?? "")
       .replace(/<br><br>/g, "\n")
       .replace(/<br>/g, "")
       .replace(/^\t+/gm, "");
@@ -231,7 +238,7 @@ class SongleLyricsScraper {
 
   private preFilter(content: string): string {
     const maxHeaderLines = 5;
-    let markedIndex: number;
+    let markedIndex: number | undefined = undefined;
     const lines = content.split(/\n/);
 
     lines.forEach(function(line, index) {
@@ -336,7 +343,7 @@ class SongleLyrics extends Lyrics {
         if (char.match(/[\s\r\n]/)) return;
         const tag = flatternedTimeTags[charPointer];
         if (tag) {
-          if (tag.start_time !== null && tag.end_time !== null && (labels.length === 0 || labels.at(-1).timeTag !== tag.start_time)) {
+          if (tag.start_time !== null && tag.end_time !== null && (labels.length === 0 || labels.at(-1)!.timeTag !== tag.start_time)) {
             labels.push(new WordTimeTagLabel(tag.start_time, index));
             lastChar = index;
             lastEnd = tag.end_time;
@@ -352,8 +359,8 @@ class SongleLyrics extends Lyrics {
       labels.forEach(label => label.timeTag -= lineStart);
       const attachments = labels.length ? new Attachments({ [TIME_TAG]: new WordTimeTag(labels) }) : undefined;
       const line = new LyricsLine(textLine, lineStart, attachments);
-      if (lines.length && !lines.at(-1).content.trim() && lines.at(-1).position === line.position) {
-        lines.at(-1).position -= 0.001;
+      if (lines.length && !lines.at(-1)!.content.trim() && lines.at(-1)!.position === line.position) {
+        lines.at(-1)!.position -= 0.001;
       }
       lines.push(line);
     }

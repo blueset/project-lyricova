@@ -10,6 +10,7 @@ interface MainVerseProps {
 
 export function MainVerse({ entry }: MainVerseProps) {
   const verse = entry.verses.find((verse) => verse.isMain);
+  if (!verse) return null;
   const artistString = !entry.producersName
     ? entry.vocalistsName
     : !entry.vocalistsName

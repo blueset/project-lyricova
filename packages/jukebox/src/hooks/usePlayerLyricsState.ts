@@ -1,5 +1,6 @@
-import { RefObject, useMemo, useEffect } from "react";
-import { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
+import type { RefObject} from "react";
+import { useMemo, useEffect } from "react";
+import type { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
 import { useNamedState } from "./useNamedState";
 import { usePlayerState } from "./usePlayerState";
 
@@ -32,7 +33,7 @@ export function usePlayerLyricsState<T>(
     if (playerRef.current)
       endTimes[keyframes.length] = playerRef.current.duration;
     else if (keyframes.length > 0)
-      endTimes[keyframes.length] = keyframes[keyframes.length - 1].start + 10;
+      endTimes[keyframes.length] = keyframes[keyframes.length - 1]!.start + 10;
     else endTimes[keyframes.length] = 0;
 
     return endTimes;
@@ -56,12 +57,14 @@ export function usePlayerLyricsState<T>(
     player.appendChild(track);
     track.track.mode = "hidden";
     // Workaround for Firefox
-    player.textTracks.getTrackById(track.id).mode = "hidden";
+    const textTrack = player.textTracks.getTrackById(track.id);
+    if (textTrack) textTrack.mode = "hidden";
 
     const addCues = () => {
       // Generate cues
-      if (startTimes[0] > 0) {
-        const cue = new VTTCue(0, startTimes[0], `-1,0,${startTimes[0]}`);
+      const firstStartTime = startTimes[0];
+      if (firstStartTime !== undefined && firstStartTime > 0) {
+        const cue = new VTTCue(0, firstStartTime, `-1,0,${firstStartTime}`);
         cue.addEventListener("enter", () => {
           setCurrentFrameId(-1);
           // console.log("WebWTT lyrics state enter", -1);
@@ -69,7 +72,7 @@ export function usePlayerLyricsState<T>(
         track.track.addCue(cue);
       }
       startTimes.forEach((startTime, index) => {
-        let endTime: number = endTimes[index + 1];
+        let endTime: number = endTimes[index + 1] ?? player.duration;
         if (isNaN(startTime)) return;
         if (isNaN(endTime)) endTime = 1e10;
         const cue = new VTTCue(
@@ -102,8 +105,8 @@ export function usePlayerLyricsState<T>(
   return {
     playerState,
     currentFrameId,
-    currentFrame: currentFrameId >= 0 ? keyframes[currentFrameId] : null,
-    endTime: endTimes[currentFrameId + 1],
+    currentFrame: currentFrameId >= 0 ? keyframes[currentFrameId] ?? null : null,
+    endTime: endTimes[currentFrameId + 1] ?? 0,
     startTimes,
     endTimes,
   };

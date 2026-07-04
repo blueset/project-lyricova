@@ -69,13 +69,16 @@ export class LyricsProvidersController {
             .filter((x) => !!x);
           const desc = text[1],
             name = a.text(),
-            id = a.attr("href").match(urlRegex)[0];
+            href = a.attr("href"),
+            id = href?.match(urlRegex)?.[0];
+          if (!id) return null;
           return {
             id: id,
             name: name,
             desc: desc,
           };
         })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
         .get();
       return res.json(data);
     } catch (e) {
@@ -136,7 +139,7 @@ export class LyricsProvidersController {
         lyrics: lyrics,
       });
     } catch (e) {
-      if (e.response && e.response.status === 404) {
+      if (axios.isAxiosError(e) && e.response?.status === 404) {
         return res.status(404).json({
           status: 404,
           error: "Not found",
@@ -153,18 +156,17 @@ export class LyricsProvidersController {
   ) => {
     try {
       const id = req.params.id;
-      const elm: any = await db.query.Songs.findFirst({
+      const elm = await db.query.Songs.findFirst({
         where: and(eq(Songs.id, parseInt(id)), isNull(Songs.deletionDate)),
       });
       if (elm) {
-        if (elm.vocaDbJson.lyrics && elm.vocaDbJson.lyrics.length) {
-          return res.json(elm.vocaDbJson.lyrics);
-        } else {
-          if (elm.vocaDbJson.originalVersionId) {
-            return res.redirect(`${elm.vocaDbJson.originalVersionId}`);
-          }
-          return res.json([]);
+        const vocaDbJson = elm.vocaDbJson as SongForApiContract | null;
+        if (vocaDbJson?.lyrics && vocaDbJson.lyrics.length) {
+          return res.json(vocaDbJson.lyrics);
+        } else if (vocaDbJson?.originalVersionId) {
+          return res.redirect(`${vocaDbJson.originalVersionId}`);
         }
+        return res.json([]);
       }
       const resp = await axios.get<SongForApiContract>(
         `https://vocadb.net/api/songs/${id}`,
@@ -181,7 +183,7 @@ export class LyricsProvidersController {
         return res.json([]);
       }
     } catch (e) {
-      if (e.response && e.response.status === 404) {
+      if (axios.isAxiosError(e) && e.response?.status === 404) {
         return res.status(404).json({
           status: 404,
           error: "Not found",

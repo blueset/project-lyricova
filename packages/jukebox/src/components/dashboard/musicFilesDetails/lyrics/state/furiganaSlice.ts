@@ -1,6 +1,7 @@
-import { StateCreator } from "zustand";
-import { FuriganaSlice, LyricsState } from "./sliceTypes";
-import { FURIGANA, RangeAttributeLabelJSON } from "lyrics-kit/core";
+import type { StateCreator } from "zustand";
+import type { FuriganaSlice, LyricsState } from "./sliceTypes";
+import type { RangeAttributeLabelJSON } from "lyrics-kit/core";
+import { FURIGANA } from "lyrics-kit/core";
 import { kanaToHira } from "@lyricova/components";
 import { generateDiffLines } from "../furigana/FuriganaRomajiMatching";
 
@@ -159,11 +160,12 @@ export const createFuriganaSlice: StateCreator<
       setFurigana(data) {
         set(
           (state) => {
-            if (!state.lyrics) {
+            const lyrics = state.lyrics;
+            if (!lyrics) {
               return;
             }
             data.forEach((v, index) => {
-              const line = state.lyrics.lines[index];
+              const line = lyrics.lines[index];
               if (!line) return;
               if (v.length < 1) {
                 delete line.attachments[FURIGANA];
@@ -242,7 +244,7 @@ export const createFuriganaSlice: StateCreator<
         set(
           (state) => {
             const lines = state.lyrics?.lines ?? [];
-            const line = lines[state.furigana.selectedLine];
+            const line = lines[state.furigana.selectedLine ?? -1];
             if (!line) return;
             if (!line.attachments) {
               line.attachments = {};
@@ -253,6 +255,7 @@ export const createFuriganaSlice: StateCreator<
                 attachment: [],
               };
             }
+            const furiganaAttachment = line.attachments[FURIGANA];
 
             const base = line.content.substring(start, end);
             if (
@@ -265,7 +268,7 @@ export const createFuriganaSlice: StateCreator<
                   acc += value.length;
                 } else {
                   const [base, furigana] = value;
-                  line.attachments[FURIGANA].attachment.push({
+                  furiganaAttachment.attachment.push({
                     content: furigana,
                     range: [acc, acc + base.length],
                   });
@@ -274,13 +277,13 @@ export const createFuriganaSlice: StateCreator<
                 return acc;
               }, start);
             } else {
-              line.attachments[FURIGANA].attachment.push({
+              furiganaAttachment.attachment.push({
                 content: furigana,
                 range: [start, end],
               });
             }
 
-            line.attachments[FURIGANA].attachment.sort((a, b) => {
+            furiganaAttachment.attachment.sort((a, b) => {
               if (a.range[0] === b.range[0]) {
                 return a.range[1] - b.range[1];
               }
@@ -291,8 +294,9 @@ export const createFuriganaSlice: StateCreator<
           "furigana/addFuriganaToSelectedLine",
         );
 
-        if (get().furigana.autoApplyIdentical) {
-          get().furigana.applyIdenticalFurigana(get().furigana.selectedLine);
+        const selectedLine = get().furigana.selectedLine;
+        if (get().furigana.autoApplyIdentical && selectedLine != null) {
+          get().furigana.applyIdenticalFurigana(selectedLine);
         }
         get().debouncedGenerate();
         get().furigana.refreshRomajiMatching();
@@ -301,7 +305,7 @@ export const createFuriganaSlice: StateCreator<
         set(
           (state) => {
             const lines = state.lyrics?.lines ?? [];
-            const line = lines[state.furigana.selectedLine];
+            const line = lines[state.furigana.selectedLine ?? -1];
             if (!line) return;
             if (!line.attachments || !line.attachments[FURIGANA]) return;
             line.attachments[FURIGANA].attachment = line.attachments[
@@ -317,8 +321,9 @@ export const createFuriganaSlice: StateCreator<
           "furigana/removeFuriganaFromSelectedLine",
         );
 
-        if (get().furigana.autoApplyIdentical) {
-          get().furigana.applyIdenticalFurigana(get().furigana.selectedLine);
+        const selectedLine = get().furigana.selectedLine;
+        if (get().furigana.autoApplyIdentical && selectedLine != null) {
+          get().furigana.applyIdenticalFurigana(selectedLine);
         }
         get().debouncedGenerate();
         get().furigana.refreshRomajiMatching();
@@ -326,7 +331,7 @@ export const createFuriganaSlice: StateCreator<
       applyPatternToAllLines(baseText, furiganaText) {
         set(
           (state) => {
-            const lines = state.lyrics?.lines;
+            const lines = state.lyrics?.lines ?? [];
             if (!baseText || !furiganaText || !lines.length) return;
             const groups = codeToFuriganaGroups(baseText, furiganaText);
 

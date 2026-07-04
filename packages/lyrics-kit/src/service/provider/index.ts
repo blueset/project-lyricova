@@ -1,5 +1,5 @@
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { Lyrics } from "../../core/lyrics";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { Lyrics } from "../../core/lyrics";
 
 export interface LyricsProviderConstructor<T> {
     new(): LyricsProvider<T>;
@@ -25,12 +25,12 @@ export abstract class LyricsProvider<T> {
 
     public async getLyrics(request: LyricsSearchRequest): Promise<Lyrics[]> {
         const results = (await this.searchLyrics(request)).slice(0, request.limit);
-        let lyrics = await Promise.all(results.map(
-            token => this.fetchLyrics(token).catch(() => undefined)
+        const lyrics = await Promise.all(results.map(
+            token => this.fetchLyrics(token).catch((): Lyrics | undefined => undefined)
         ));
-        lyrics = lyrics.filter(v => v !== undefined);
-        lyrics.forEach((v) => { v.metadata.request = request; });
-        return lyrics;
+        const definedLyrics = lyrics.filter((v): v is Lyrics => v !== undefined);
+        definedLyrics.forEach((v) => { v.metadata.request = request; });
+        return definedLyrics;
     }
 
 }

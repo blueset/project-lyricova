@@ -53,10 +53,11 @@ function furiganaFromDom(elm: Node): FuriganaGroup[] {
 
   while (currentNode) {
     if (currentNode instanceof Text) {
+      const textContent = currentNode.textContent ?? "";
       if (result.length > 0 && typeof result[result.length - 1] === "string") {
-        result[result.length - 1] += currentNode.textContent;
+        result[result.length - 1] += textContent;
       } else {
-        result.push(currentNode.textContent);
+        result.push(textContent);
       }
     } else if (currentNode instanceof HTMLElement) {
       if (currentNode.nodeName === "RUBY") {
@@ -78,13 +79,14 @@ function furiganaFromDom(elm: Node): FuriganaGroup[] {
         if (rts.length > 0) {
           let lastNode = rts[rts.length - 1].nextSibling;
           while (lastNode) {
+            const textContent = lastNode.textContent ?? "";
             if (
               result.length > 0 &&
               typeof result[result.length - 1] === "string"
             ) {
-              result[result.length - 1] += lastNode.textContent;
+              result[result.length - 1] += textContent;
             } else {
-              result.push(lastNode.textContent);
+              result.push(textContent);
             }
             lastNode = lastNode.nextSibling;
           }

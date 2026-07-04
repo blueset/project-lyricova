@@ -250,7 +250,7 @@ function useNicokaraLyricsState(
 //#endregion Lyrics state
 
 interface CountdownProps {
-  activeRef?: RefObject<HTMLSpanElement>;
+  activeRef?: RefObject<HTMLSpanElement | null>;
   className?: string;
 }
 
@@ -278,9 +278,9 @@ function Countdown({ activeRef, className }: CountdownProps) {
 
 interface LyricsLineProps {
   textLine: string;
-  furiganaLine?: [string, string][];
+  furiganaLine?: [string, string][] | null;
   done?: boolean;
-  activeRef?: RefObject<HTMLSpanElement>;
+  activeRef?: RefObject<HTMLSpanElement | null> | null;
 }
 
 function LyricsLine({
@@ -296,7 +296,7 @@ function LyricsLine({
   }
 
   const content =
-    furiganaLine !== null ? (
+    furiganaLine ? (
       <FuriganaLyricsLine transliterationLine={furiganaLine} />
     ) : (
       <span>{textLine}</span>
@@ -351,17 +351,21 @@ interface PageClassInfo {
 function buildPageClasses(
   lines: number[],
   lyrics: LyricsKitLyrics,
-  furigana: [string, string][][] | null,
+  furigana: [string, string][][] | null | undefined,
   containerWidth: number,
 ) {
   const lineWidths = lines.map(
-    (v) =>
-      measureElement(
+    (v) => {
+      const line = lyrics.lines[v];
+      return line
+        ? measureElement(
         LyricsLineHTML({
-          textLine: lyrics.lines[v].content,
-          furiganaLine: furigana && furigana[v],
+          textLine: line.content,
+          furiganaLine: furigana?.[v],
         }),
-      ).width,
+      ).width
+        : 0;
+    },
   );
 
   const classes: string[] = lines.map(
@@ -372,7 +376,7 @@ function buildPageClasses(
   lines.forEach((v, idx) => {
     result.push({
       index: v,
-      className: classes[idx],
+      className: classes[idx] ?? "",
       left: null,
       right: null,
     });
@@ -382,25 +386,28 @@ function buildPageClasses(
     _.sum(lineWidths) - lineOverlap * (lineWidths.length - 1);
   const padding = (containerWidth - stretchedWidth) / 2;
   if (result.length === 1) {
-    result[0].left = 1;
-    result[0].right = 1;
+    result[0]!.left = 1;
+    result[0]!.right = 1;
   } else {
     if (stretchedWidth < containerWidth) {
       let i = 0,
         left = padding;
       while (i < result.length) {
-        result[i].left = left;
-        result[i].right = containerWidth - lineWidths[i] - left;
-        left += lineWidths[i] - lineOverlap;
+        const resultLine = result[i]!;
+        const lineWidth = lineWidths[i] ?? 0;
+        resultLine.left = left;
+        resultLine.right = containerWidth - lineWidth - left;
+        left += lineWidth - lineOverlap;
         i++;
       }
     } else {
       for (let i = 0; i < result.length; i++) {
-        if (i === 0) result[i].right = 1;
-        else if (i === result.length - 1) result[i].left = 1;
+        const resultLine = result[i]!;
+        if (i === 0) resultLine.right = 1;
+        else if (i === result.length - 1) resultLine.left = 1;
         else {
-          result[i].left = i;
-          result[i].right = result.length - i - 1;
+          resultLine.left = i;
+          resultLine.right = result.length - i - 1;
         }
       }
     }
@@ -413,11 +420,11 @@ interface LyricsScreenProps {
   thisPage: KaraokePage | null;
   nextPage: KaraokePage | null;
   showNext: boolean;
-  lineIdx: number;
+  lineIdx: number | null;
   containerWidth: number;
   lyrics: LyricsKitLyrics;
-  furigana?: [string, string][][];
-  activeRef?: RefObject<HTMLSpanElement>;
+  furigana?: [string, string][][] | null;
+  activeRef?: RefObject<HTMLSpanElement | null>;
 }
 
 function LyricsScreen({
@@ -432,11 +439,13 @@ function LyricsScreen({
 }: LyricsScreenProps) {
   let linesToShow: (PageClassInfo | null)[] = [null, null, null, null];
   let offsetLineIdx = lineIdx;
-  showNext =
+  showNext = Boolean(
     showNext &&
+    thisPage &&
     nextPage &&
     !nextPage.countdown &&
-    nextPage.start - thisPage.end < 1;
+    nextPage.start - thisPage.end < 1,
+  );
 
   if (thisPage !== null) {
     const thisPageWithClass = buildPageClasses(
@@ -445,7 +454,7 @@ function LyricsScreen({
       furigana,
       containerWidth,
     );
-    if (showNext) {
+    if (showNext && nextPage) {
       const nextPageLines = buildPageClasses(
         nextPage.lines,
         lyrics,
@@ -464,7 +473,7 @@ function LyricsScreen({
       lineIdx === null || lineIdx < 0
         ? lineIdx
         : 4 - thisPage.lines.length + lineIdx;
-    if (thisPage.lines.length === 1) {
+    if (thisPage.lines.length === 1 && offsetLineIdx !== null) {
       offsetLineIdx--;
     }
   }
@@ -477,105 +486,41 @@ function LyricsScreen({
     (prev, curr, idx) => (prev === null && curr !== null ? idx : prev),
     null,
   );
+  const renderRow = (rowIndex: number, rowClass: string, done: boolean) => {
+    const lineInfo = linesToShow[rowIndex];
+    if (!lineInfo) return null;
+    const lyricLine = lyrics.lines[lineInfo.index];
+    if (!lyricLine) return null;
+    return (
+      <div
+        className={cn(
+          "h-36 flex flex-row relative items-end" /* row */,
+          rowClass,
+        )}
+      >
+        {lineInfo.left !== null && (
+          <div style={{ flexGrow: lineInfo.left }} />
+        )}
+        {firstNotNull === rowIndex && countdown}
+        <LyricsLine
+          textLine={lyricLine.content}
+          furiganaLine={furigana?.[lineInfo.index]}
+          done={done}
+          activeRef={offsetLineIdx === rowIndex ? activeRef : null}
+        />
+        {lineInfo.right !== null && (
+          <div style={{ flexGrow: lineInfo.right }} />
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
-      <div
-        className={cn(
-          "h-36 flex flex-row relative items-end" /* row */,
-          "row-4",
-        )}
-      >
-        {linesToShow[0] !== null && (
-          <>
-            {linesToShow[0].left !== null && (
-              <div style={{ flexGrow: linesToShow[0].left }} />
-            )}
-            {firstNotNull === 0 && countdown}
-            <LyricsLine
-              textLine={lyrics.lines[linesToShow[0].index].content}
-              furiganaLine={furigana && furigana[linesToShow[0].index]}
-              done={!showNext && offsetLineIdx > 0}
-              activeRef={offsetLineIdx === 0 ? activeRef : null}
-            />
-            {linesToShow[0].right !== null && (
-              <div style={{ flexGrow: linesToShow[0].right }} />
-            )}
-          </>
-        )}
-      </div>
-      <div
-        className={cn(
-          "h-36 flex flex-row relative items-end" /* row */,
-          "row-3",
-        )}
-      >
-        {linesToShow[1] !== null && (
-          <>
-            {linesToShow[1].left !== null && (
-              <div style={{ flexGrow: linesToShow[1].left }} />
-            )}
-            {firstNotNull === 1 && countdown}
-            <LyricsLine
-              textLine={lyrics.lines[linesToShow[1].index].content}
-              furiganaLine={furigana && furigana[linesToShow[1].index]}
-              done={!showNext && offsetLineIdx > 1}
-              activeRef={offsetLineIdx === 1 ? activeRef : null}
-            />
-            {linesToShow[1].right !== null && (
-              <div style={{ flexGrow: linesToShow[1].right }} />
-            )}
-          </>
-        )}
-      </div>
-      <div
-        className={cn(
-          "h-36 flex flex-row relative items-end" /* row */,
-          "row-2",
-        )}
-      >
-        {linesToShow[2] !== null && (
-          <>
-            {linesToShow[2].left !== null && (
-              <div style={{ flexGrow: linesToShow[2].left }} />
-            )}
-            {firstNotNull === 2 && countdown}
-            <LyricsLine
-              textLine={lyrics.lines[linesToShow[2].index].content}
-              furiganaLine={furigana && furigana[linesToShow[2].index]}
-              done={!showNext && offsetLineIdx > 2}
-              activeRef={offsetLineIdx === 2 ? activeRef : null}
-            />
-            {linesToShow[2].right !== null && (
-              <div style={{ flexGrow: linesToShow[2].right }} />
-            )}
-          </>
-        )}
-      </div>
-      <div
-        className={cn(
-          "h-36 flex flex-row relative items-end" /* row */,
-          "row-1",
-        )}
-      >
-        {linesToShow[3] !== null && (
-          <>
-            {linesToShow[3].left !== null && (
-              <div style={{ flexGrow: linesToShow[3].left }} />
-            )}
-            {firstNotNull === 3 && countdown}
-            <LyricsLine
-              textLine={lyrics.lines[linesToShow[3].index].content}
-              furiganaLine={furigana && furigana[linesToShow[3].index]}
-              done={offsetLineIdx > 3}
-              activeRef={offsetLineIdx === 3 ? activeRef : null}
-            />
-            {linesToShow[3].right !== null && (
-              <div style={{ flexGrow: linesToShow[3].right }} />
-            )}
-          </>
-        )}
-      </div>
+      {renderRow(0, "row-4", !showNext && (offsetLineIdx ?? -Infinity) > 0)}
+      {renderRow(1, "row-3", !showNext && (offsetLineIdx ?? -Infinity) > 1)}
+      {renderRow(2, "row-2", !showNext && (offsetLineIdx ?? -Infinity) > 2)}
+      {renderRow(3, "row-1", (offsetLineIdx ?? -Infinity) > 3)}
     </>
   );
 }
@@ -589,10 +534,10 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
 
   // Page should only be rebuild if the 2 parameters change
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   const pages = useMemo(
-    () => buildPages(lyrics, playerRef.current.duration),
-    [lyrics, playerRef.current.duration],
+    () => buildPages(lyrics, playerRef.current?.duration ?? lyrics.length ?? 0),
+    [lyrics, playerRef.current?.duration],
   );
   const activeRef = useRef<HTMLSpanElement>(null);
 
@@ -603,33 +548,47 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   );
   const pageIdx = currentFrame?.data.pageIdx ?? null;
   const lineIdx = currentFrame?.data.lineIdx ?? null;
-  const showNext = currentFrame?.data.showNext ?? null;
+  const showNext = currentFrame?.data.showNext ?? false;
   const [currentLine, currentLineStart, currentLineEnd, nextLineStart] =
     useMemo(():
       | [LyricsKitLyricsLine | null, number, number, number]
       | [null, null, null, null] => {
       if (pageIdx === null) return [null, null, null, null];
       const page = pages[pageIdx];
-      if (lineIdx > page.lines.length) return [null, null, null, null];
+      if (!page) return [null, null, null, null];
+      if (lineIdx !== null && lineIdx > page.lines.length)
+        return [null, null, null, null];
       if (currentFrame !== null && lineIdx === null) {
+        const firstLineIndex = page.lines[0];
+        const firstLine =
+          firstLineIndex !== undefined ? lyrics.lines[firstLineIndex] : undefined;
+        if (!firstLine) return [null, null, null, null];
         return [
           null,
-          currentFrame?.start,
-          lyrics.lines[page.lines[0]].position,
-          lyrics.lines[page.lines[0]].position,
+          currentFrame.start,
+          firstLine.position,
+          firstLine.position,
         ];
       }
+      if (lineIdx === null) return [null, null, null, null];
 
       // Countdown pages starts COUNTDOWN_DURATION seconds earlier than first line.
       if (lineIdx < 0)
-        return [null, currentFrame.start, page.start, page.start];
-      const line = lyrics.lines[page.lines[lineIdx]];
+        return currentFrame
+          ? [null, currentFrame.start, page.start, page.start]
+          : [null, null, null, null];
+      const lineIndex = page.lines[lineIdx];
+      if (lineIndex === undefined) return [null, null, null, null];
+      const line = lyrics.lines[lineIndex];
       if (!line) return [null, null, null, null];
       const start = line.position;
+      const nextLineIndex = page.lines[lineIdx + 1];
+      const nextLine =
+        nextLineIndex !== undefined ? lyrics.lines[nextLineIndex] : undefined;
       const end =
         lineIdx + 1 === page.lines.length
           ? page.end
-          : lyrics.lines[page.lines[lineIdx + 1]].position;
+          : nextLine?.position ?? page.end;
       return [line, start, end, end];
     }, [pageIdx, pages, lineIdx, currentFrame, lyrics.lines]);
   const currentLineStartRef = useRef<number | null>(null);
@@ -651,7 +610,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     },
   });
 
-  const timelineRef = useRef<Timeline>(null);
+  const timelineRef = useRef<Timeline | null>(null);
   // Line object or -1 for countdown.
   const timelineForRef = useRef<LyricsKitLyricsLine | -1 | null>(null);
 
@@ -776,12 +735,24 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     currentLine,
   ]);
 
-  let node = <span>...</span>;
+  let node: React.ReactNode = <span>...</span>;
   if (sequenceQuery.error)
     node = <span>Error: {JSON.stringify(sequenceQuery.error)}</span>;
   else {
     node = null;
   }
+
+  const page = pageIdx !== null ? pages[pageIdx] ?? null : null;
+  const nextPage = pageIdx !== null ? pages[pageIdx + 1] ?? null : null;
+  const karaokeFurigana: [string, string][][] | null =
+    sequenceQuery.data?.transliterate.karaoke?.map((line) =>
+      line.flatMap((pair) => {
+        const [text, ruby] = pair;
+        if (text === undefined || ruby === undefined) return [];
+        const tuple: [string, string] = [text, ruby];
+        return [tuple];
+      }),
+    ) ?? null;
 
   return (
     <Measure bounds>
@@ -797,8 +768,8 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           // Add group/page for conditional countdown styles based on parent state
           data-done={
             lineIdx !== null &&
-            pages[pageIdx] &&
-            lineIdx >= pages[pageIdx].lines.length
+            page &&
+            lineIdx >= page.lines.length
               ? "true"
               : undefined
           }
@@ -807,17 +778,14 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
         >
           {node}
           <LyricsScreen
-            thisPage={pages[pageIdx] ?? null}
-            nextPage={pages[pageIdx + 1] ?? null}
+            thisPage={page}
+            nextPage={nextPage}
             showNext={showNext}
             lineIdx={lineIdx}
             lyrics={lyrics}
-            furigana={
-              (sequenceQuery.data?.transliterate.karaoke ??
-                null) as [string, string][][] | null
-            }
+            furigana={karaokeFurigana}
             activeRef={activeRef}
-            containerWidth={contentRect.bounds.width}
+            containerWidth={contentRect.bounds?.width ?? 0}
           />
           <div
             id="measure-layer"

@@ -1,8 +1,8 @@
 export { LyricsProviderManager } from "./service/lyricsProviderManager";
 export { LyricsProviderSource } from "./service/lyricsProviderSource";
 export { LyricsSearchRequest } from "./service/lyricsSearchRequest";
-export { Lyrics, LyricsJSON } from "./core/lyrics";
-export { LyricsLine, LyricsLineJSON } from "./core/lyricsLine";
+export { Lyrics, type LyricsJSON } from "./core/lyrics";
+export { LyricsLine, type LyricsLineJSON } from "./core/lyricsLine";
 export {
   Attachments,
   isTranslationTag,
@@ -11,7 +11,7 @@ export {
   WordTimeTag,
   RangeAttributeLabel,
   RangeAttribute,
-  AttachmentsContent,
+  type AttachmentsContent,
 } from "./core/lyricsLineAttachment";
 export {
   LyricsMetadata,

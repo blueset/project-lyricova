@@ -8,6 +8,7 @@ type RelayoutFn = (wrapper: HTMLElement, ratio: number) => void;
  */
 export const relayout: RelayoutFn = (wrapper, ratio = 1) => {
   const container = wrapper.parentElement;
+  if (!container) return;
 
   const update = (width: number) => (wrapper.style.maxWidth = width + "px");
 

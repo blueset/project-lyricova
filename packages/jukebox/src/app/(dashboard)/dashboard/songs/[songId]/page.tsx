@@ -40,7 +40,7 @@ export default function SongEntitySingle() {
       setSong={() => {
         /* No-op. */
       }}
-      songToEdit={query.data?.song}
+      songToEdit={query.data?.song ?? undefined}
     />
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { PlayerState } from "./types";
+import type { PlayerState } from "./types";
 
 type Timeline = gsap.core.Timeline;
 

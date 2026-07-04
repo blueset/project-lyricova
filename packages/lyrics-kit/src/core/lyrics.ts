@@ -1,4 +1,4 @@
-import type { LyricsLineJSON } from "./lyricsLine";
+import type { LyricsLineJSON , ToLegacyStringOptions } from "./lyricsLine";
 import type { LyricsMetadataJSON } from "./lyricsMetadata";
 
 export interface LyricsJSON {
@@ -14,7 +14,7 @@ import {
   lyricsLineAttachmentRegex,
   base60TimeRegex,
 } from "../utils/regexPattern";
-import { LyricsLine, ToLegacyStringOptions } from "./lyricsLine";
+import { LyricsLine } from "./lyricsLine";
 import { LyricsMetadata, ATTACHMENT_TAGS } from "./lyricsMetadata";
 import _ from "lodash";
 import { OFFSET, LENGTH, ARTIST, TITLE } from "./idTagKey";
@@ -84,7 +84,7 @@ export class Lyrics {
 
     const lines: LyricsLine[] = [];
     const tags: Set<string> = new Set();
-    let lastEmptyLine: LyricsLine = null;
+    let lastEmptyLine: LyricsLine | null = null;
     let hasUntimedLine = false;
     let shouldSort = true;
     for (const entry of mainLines) {
@@ -210,9 +210,12 @@ export class Lyrics {
   };
 
   public toCustomSyntax(config: CustomSyntaxConfig): string {
-    config = _.defaults(config, Lyrics.customSyntaxConfig);
-    const components = Object.entries(this.idTags).map(v => config.idTag(v[0], v[1]));
-    components.push(...this.lines.map(config.line));
+    const { idTag, line } = _.defaults(
+      config,
+      Lyrics.customSyntaxConfig
+    ) as Required<CustomSyntaxConfig>;
+    const components = Object.entries(this.idTags).map(v => idTag(v[0], v[1]));
+    components.push(...this.lines.map(line));
     return components.join("\n");
   }
 
@@ -262,7 +265,7 @@ export class Lyrics {
 
   set length(number: number | undefined) {
     if (number === undefined) {
-      this.idTags[LENGTH] = undefined;
+      delete this.idTags[LENGTH];
     } else {
       // 0-2 digits maximum
       // trim trailing 0 and .00 at the end.
@@ -278,7 +281,7 @@ export class Lyrics {
    * Note: this would not re-enable lines that doesn't match the condition.
    * @param predicate Condition to check against
    */
-  public filtrate(predicate: (LyricsLine) => boolean) {
+  public filtrate(predicate: (line: LyricsLine) => boolean) {
     for (const index in this.lines) {
       if (!predicate(this.lines[index])) {
         this.lines[index].enabled = false;
@@ -386,7 +389,7 @@ export class Lyrics {
     if (searchDuration === undefined) {
       return this.noDurationFactor;
     }
-    const absDt = Math.abs(searchDuration - duration);
+    const absDt = Math.abs(searchDuration - (duration ?? NaN));
     if (absDt <= 1) return 1;
     if (1 < absDt && absDt <= 4) return 0.9;
     if (4 < absDt && absDt <= 10) return 0.8;

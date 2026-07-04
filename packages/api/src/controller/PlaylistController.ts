@@ -74,6 +74,7 @@ export class PlaylistController {
       orderBy: (f, { asc }) => [asc(f.sortOrder)],
     });
     rows.forEach(({ file }) => {
+      if (!file || file.duration === null) return;
       text += `#EXTINF:${Math.round(file.duration)},${file.trackName} - ${
         file.artistName || "Various artists"
       }\n${file.path}\n`;

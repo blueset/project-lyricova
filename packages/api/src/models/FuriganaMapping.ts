@@ -35,9 +35,9 @@
  *         - furigana
  */
 export class FuriganaMapping {
-  text: string;
+  text!: string;
 
-  furigana: string;
+  furigana!: string;
 
   segmentedText?: string;
 

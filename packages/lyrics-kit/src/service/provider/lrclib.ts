@@ -1,7 +1,7 @@
 import axios from "axios";
 import { LyricsProvider } from ".";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { LrcLibSearchResult } from "../types/lrclib/LrcLibSearchResult";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { LrcLibSearchResult } from "../types/lrclib/LrcLibSearchResult";
 import { ALBUM, ARTIST, Lyrics, TITLE } from "../../core";
 import { LyricsProviderSource } from "../lyricsProviderSource";
 

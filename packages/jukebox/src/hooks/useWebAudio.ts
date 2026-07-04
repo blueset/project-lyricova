@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
-import { WebAudioPlayerState } from "./types";
+import type { WebAudioPlayerState } from "./types";
 
 let globalAudioContext: AudioContext | undefined = undefined;
 let globalAudioGain: GainNode | undefined = undefined;
@@ -33,8 +33,8 @@ export function useWebAudio(mediaUrl: string) {
   }, []);
 
   // File-scope variables
-  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | undefined>(
-    cachedWebAudioBuffer[mediaUrl]
+  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(
+    cachedWebAudioBuffer[mediaUrl] ?? null
   );
   useEffect(() => {
     let active = true;
@@ -102,7 +102,7 @@ export function useWebAudio(mediaUrl: string) {
   }, [audioContext, audioBuffer, audioGain]);
 
   const play = useCallback(() => {
-    if (!audioContext) return;
+    if (!audioContext || !audioBuffer) return;
     const playerStatus = playerStatusRef.current;
     if (playerStatus.state === "playing") return;
     const currentTime = audioContext.currentTime;
@@ -116,10 +116,11 @@ export function useWebAudio(mediaUrl: string) {
       startingOffset,
       bufferSource,
     });
-  }, [audioContext, getBufferSource]);
+  }, [audioContext, audioBuffer, getBufferSource]);
 
   const pause = useCallback(() => {
     if (!audioContext) return;
+    if (!audioBuffer) return;
     const playerStatus = playerStatusRef.current;
     if (playerStatus.state === "paused") return;
     const currentTime = audioContext.currentTime;
@@ -139,6 +140,7 @@ export function useWebAudio(mediaUrl: string) {
   const seek = useCallback(
     (progress: number) => {
       if (!audioContext) return;
+      if (!audioBuffer) return;
       progress = Math.max(0, Math.min(progress, audioBuffer.duration));
       const currentTime = audioContext.currentTime;
       const playerStatus = playerStatusRef.current;
@@ -175,12 +177,15 @@ export function useWebAudio(mediaUrl: string) {
         playerStatus.bufferSource.playbackRate.value = rate;
         const progress =
           (currentTime - playerStatus.startingOffset) * playerStatus.rate;
-        setPlayerStatus((ps) => ({
-          state: "playing",
-          rate,
-          startingOffset: currentTime - progress / rate,
-          bufferSource: ps.state === "playing" && ps.bufferSource,
-        }));
+        setPlayerStatus((ps) => {
+          if (ps.state !== "playing") return ps;
+          return {
+            state: "playing",
+            rate,
+            startingOffset: currentTime - progress / rate,
+            bufferSource: ps.bufferSource,
+          };
+        });
       } else {
         setPlayerStatus({
           state: "paused",

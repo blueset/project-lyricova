@@ -5,7 +5,8 @@
  * http://suwa.pupu.jp/RhythmicaLyrics.html
  */
 
-import React, { useCallback, useEffect, useRef, memo } from "react";
+import type React from "react";
+import { useCallback, useEffect, useRef, memo } from "react";
 import type { WebAudioPlayerState } from "../../../../../hooks/types";
 import { useNamedState } from "../../../../../hooks/useNamedState";
 import { useWebAudio } from "../../../../../hooks/useWebAudio";
@@ -99,6 +100,10 @@ export default function InlineTagging({ fileId }: Props) {
         lyrics,
         inlineTagging: { cursorPosition, setDotCursorPosition },
       } = useLyricsStore.getState();
+      if (!lyrics) {
+        setDotCursorPosition([0, 0, 0]);
+        return;
+      }
       let [lineIdx, charIdx] = cursorPosition;
       let lineDots = lyrics?.lines?.[lineIdx]?.attachments?.[DOTS]?.values;
       while (
@@ -251,7 +256,7 @@ export default function InlineTagging({ fileId }: Props) {
     }
   }, [getProgress, section, seek]);
 
-  const timelinesRef = useRef<gsap.core.Timeline[]>([]);
+  const timelinesRef = useRef<(gsap.core.Timeline | undefined)[]>([]);
   const isMounted = useRef(true);
 
   // Update time tags

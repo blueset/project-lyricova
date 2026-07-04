@@ -89,31 +89,31 @@ import type { Entry } from "./Entry";
  *         - entryId
  */
 export class Verse {
-  id: number;
+  id!: number;
 
-  language: string;
+  language!: string;
 
-  isOriginal: boolean;
+  isOriginal!: boolean;
 
-  isMain: boolean;
+  isMain!: boolean;
 
-  text: string;
+  text!: string;
 
-  html: string;
+  html!: string;
 
-  stylizedText: string;
+  stylizedText!: string;
 
-  translator: string;
+  translator!: string;
 
-  typingSequence: [string, string][][];
+  typingSequence!: [string, string][][];
 
-  entryId: number;
+  entryId!: number;
 
-  entry: Entry;
+  entry!: Entry;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 
-  deletionDate: Date;
+  deletionDate!: Date;
 }

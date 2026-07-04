@@ -12,7 +12,7 @@ export function getScrollParent(element: HTMLElement, includeHidden: boolean = t
   const overflowRegex = includeHidden ? /(auto|scroll|hidden)/ : /(auto|scroll)/;
 
   if (style.position === "fixed") return document.body;
-  for (let parent = element; (parent = parent.parentElement);) {
+  for (let parent: HTMLElement | null = element; (parent = parent.parentElement);) {
     const style = getComputedStyle(parent);
     if (excludeStaticParent && style.position === "static") {
       continue;

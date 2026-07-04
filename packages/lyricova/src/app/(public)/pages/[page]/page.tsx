@@ -13,7 +13,7 @@ import {
   tagLine1,
   tagLine2,
 } from "@/utils/consts";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
 
 interface EntryPageProps {

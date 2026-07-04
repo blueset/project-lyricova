@@ -4,7 +4,11 @@
   "packageManager": "npm@10.9.2",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev"
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "typecheck:native": "turbo run typecheck:native"
   },
   "workspaces": [
     "packages/*"
@@ -17,11 +21,15 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.0",
     "@parcel/watcher": "^2.5.6",
+    "@typescript/native-preview": "7.0.0-dev.20260703.1",
     "eslint": "^9.39.2",
-    "prettier": "^2.8.7",
-    "ts-jest": "^29.1.2",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.4",
+    "ts-jest": "^29.4.11",
     "turbo": "^2.9.14",
-    "typescript": "^5.4.5"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.1"
   }
 }

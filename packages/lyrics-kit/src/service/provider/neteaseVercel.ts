@@ -1,10 +1,10 @@
 import axios from "axios";
 import { LyricsProvider } from ".";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { ALBUM, ARTIST, LRC_BY, Lyrics, TITLE } from "../../core";
-import { NetEaseResponseSearchResult, NetEaseResponseSong } from "../types/netease/searchResult";
+import type { NetEaseResponseSearchResult, NetEaseResponseSong } from "../types/netease/searchResult";
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
+import type { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
 import { NeteaseKLyrics, NeteaseYLyrics } from "./netease";
 
 const SEARCH_URL = "https://neteasecloudmusicapi-ten-wine.vercel.app/search";
@@ -55,7 +55,7 @@ export class NetEaseVercelProvider extends LyricsProvider<NetEaseResponseSong> {
         return undefined;
       }
       const data = response.data;
-      let lyrics: Lyrics = undefined;
+      let lyrics: Lyrics | undefined = undefined;
       const transLrc = data?.ytlrc?.lyric
         ? new Lyrics(data.ytlrc.lyric)
         : data?.tlyric?.lyric
@@ -90,7 +90,9 @@ export class NetEaseVercelProvider extends LyricsProvider<NetEaseResponseSong> {
         lyrics.idTags[ARTIST] = token.artists[0].name;
       }
       lyrics.idTags[ALBUM] = token.album.name;
-      lyrics.idTags[LRC_BY] = data.lyricUser?.nickname;
+      if (data.lyricUser?.nickname) {
+        lyrics.idTags[LRC_BY] = data.lyricUser.nickname;
+      }
 
       lyrics.length = token.duration / 1000;
       lyrics.metadata.source = LyricsProviderSource.neteaseVercel;

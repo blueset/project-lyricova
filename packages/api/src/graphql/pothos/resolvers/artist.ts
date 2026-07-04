@@ -32,7 +32,7 @@ builder.queryField("artist", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.Artists.findFirst({ where: eq(Artists.id, id) })) ?? null) as any,
+      ((await db.query.Artists.findFirst({ where: eq(Artists.id, id) })) ?? null),
   })
 );
 
@@ -42,7 +42,7 @@ builder.queryField("artists", (t) =>
     resolve: async () =>
       db.query.Artists.findMany({
         orderBy: (a, { asc }) => [asc(a.sortOrder)],
-      }) as any,
+      }),
   })
 );
 
@@ -83,7 +83,7 @@ builder.queryField("artistsHasFiles", (t) =>
       db.query.Artists.findMany({
         orderBy: (a, { asc }) => [asc(a.sortOrder)],
         where: and(inArray(Artists.type, types as NonNullable<(typeof Artists.$inferInsert)["type"]>[]), FILES_FOR_ARTIST),
-      }) as any,
+      }),
   })
 );
 
@@ -94,7 +94,7 @@ builder.queryField("searchArtists", (t) =>
     resolve: async (_root, { keywords }) =>
       db.query.Artists.findMany({
         where: sql`match (name, sortOrder) against (${keywords} in boolean mode)`,
-      }) as any,
+      }),
   })
 );
 
@@ -137,7 +137,7 @@ builder.mutationField("newArtist", (t) =>
       });
       return (await db.query.Artists.findFirst({
         where: eq(Artists.id, id),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -166,7 +166,7 @@ builder.mutationField("updateArtist", (t) =>
         .where(eq(Artists.id, id));
       return (await db.query.Artists.findFirst({
         where: eq(Artists.id, id),
-      })) as any;
+      }))!;
     },
   })
 );

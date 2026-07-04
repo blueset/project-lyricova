@@ -7,8 +7,8 @@ import { SubArchiveHeader } from "@/components/public/listing/SubArchiveHeader";
 import { apiBaseUrl, host, siteName, tagLine1, tagLine2 } from "@/utils/consts";
 import classes from "./SongListings.module.scss";
 import Head from "next/head";
-import { Artist, Entry } from "@/frontendUtils/restTypes";
-import { Metadata } from "next";
+import type { Artist, Entry } from "@/frontendUtils/restTypes";
+import type { Metadata } from "next";
 
 export async function generateMetadataData(
   artistId: string,

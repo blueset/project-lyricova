@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
+import type {
+  Track} from "./playlist";
 import {
-  Track,
   loadTracks,
   removeTrack,
   toggleShuffle,

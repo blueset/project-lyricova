@@ -1,4 +1,4 @@
-import { LyricsProvider } from "./provider";
+import type { LyricsProvider } from "./provider";
 import { NetEaseProvider } from "./provider/netease";
 import { QQMusicProvider } from "./provider/qqMusic";
 import { KugouProvider } from "./provider/kugou";
@@ -13,8 +13,7 @@ import { SongleProvider } from "./provider/songle";
 import { LrcLibLyricsProvider as LrcLibProvider } from "./provider/lrclib";
 import { NetEaseVercelProvider } from "./provider/neteaseVercel";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class LyricsProviderSource<T extends LyricsProvider<any>> {
+export class LyricsProviderSource<T extends LyricsProvider<unknown>> {
   static netease: LyricsProviderSource<NetEaseProvider>;
   static neteaseVercel: LyricsProviderSource<NetEaseVercelProvider>;
   static qq: LyricsProviderSource<QQMusicProvider>;
@@ -29,7 +28,7 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
   static songle: LyricsProviderSource<SongleProvider>;
   static LrcLib: LyricsProviderSource<LrcLibProvider>;
 
-  static allCases: LyricsProviderSource<any>[] = [];
+  static allCases: LyricsProviderSource<LyricsProvider<unknown>>[] = [];
 
   static {
     try {
@@ -67,12 +66,10 @@ export class LyricsProviderSource<T extends LyricsProvider<any>> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cls: new (...args: any[]) => T;
+  cls: new () => T;
   name: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(cls: new (...args: any[]) => T) {
+  constructor(cls: new () => T) {
     this.cls = cls;
     this.name = cls && cls.constructor && cls.constructor.name;
   }

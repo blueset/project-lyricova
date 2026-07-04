@@ -60,7 +60,7 @@ export default function LibraryAlbums() {
 
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 p-4">
-      {query.data.albumsHasFiles.map((val) => (
+      {(query.data?.albumsHasFiles ?? []).map((val) => (
         <Button
           key={val.id}
           variant="ghostBright"
@@ -82,7 +82,7 @@ export default function LibraryAlbums() {
                 {val.name}
               </p>
               <p className="text-sm text-muted-foreground truncate" lang="ja">
-                {formatArtistsPlainText(val.artists)}
+                {formatArtistsPlainText(val.artists ?? [])}
               </p>
             </div>
           </NextComposedLink>

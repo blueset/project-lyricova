@@ -84,7 +84,9 @@ builder.subscriptionField("aLengthyTask", (t) =>
         () => pubsub.asyncIterator(TOPIC_LENGTHY_TASK),
         (payload: PubSubSessionPayload<string>, a: { sessionId: string }) =>
           a.sessionId === payload.sessionId
-      )(root, args, ctx, info) as any,
+      )(root, args, ctx, info) as unknown as AsyncIterable<
+        PubSubSessionPayload<string>
+      >,
     resolve: (payload: PubSubSessionPayload<string>) => payload.data,
   })
 );

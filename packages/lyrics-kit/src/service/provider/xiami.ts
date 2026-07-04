@@ -1,5 +1,5 @@
 import { LyricsProvider } from ".";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import axios from "axios";
 import { TITLE, ARTIST } from "../../core/idTagKey";
@@ -8,7 +8,7 @@ import { ttpodXtrcLineRegex, id3TagRegex, resolveTimeTag, ttpodXtrcInlineTagRege
 import { LyricsLine } from "../../core/lyricsLine";
 import { WordTimeTag, WordTimeTagLabel, Attachments, TRANSLATION, TIME_TAG } from "../../core/lyricsLineAttachment";
 import _ from "lodash";
-import { XiamiResultSong, XiamiResponseSearchResult } from "../types/xiami/searchResult";
+import type { XiamiResultSong, XiamiResponseSearchResult } from "../types/xiami/searchResult";
 
 const SEARCH_URL = "http://api.xiami.com/web";
 
@@ -36,7 +36,7 @@ class TTPodXtrcLyrics extends Lyrics {
             }
         }
 
-        const lines = [];
+        const lines: LyricsLine[] = [];
         for (const match of lineMatches) {
             const
                 timeTagStr = match[1],
@@ -102,7 +102,6 @@ export class XiamiProvider extends LyricsProvider<XiamiResultSong> {
                 limit: 10,
                 r: "search/songs",
                 v: "2.0",
-                // eslint-disable-next-line @typescript-eslint/camelcase
                 app_key: 1
             };
             const response = await axios.post<XiamiResponseSearchResult>(SEARCH_URL, "",

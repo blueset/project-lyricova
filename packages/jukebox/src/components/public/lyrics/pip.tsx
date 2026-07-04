@@ -208,7 +208,7 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
     [coverImage, currentSong?.artistName, currentSong?.trackName, lines]
   );
 
-  const [timeline, setTimeline] = useState<gsap.core.Timeline>();
+  const [timeline, setTimeline] = useState<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -218,6 +218,7 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
       return;
     }
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
     ctx.font = LyricsTextFont;
     const measurement = lines.map((line) => {
       return [...line.content, ""].map((_, idx) => {
@@ -239,9 +240,10 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
       const widths = measurement[lineId];
       const width = widths[widths.length - 1] ?? 0;
       timeline.set(tlRefObj, { lineId, offsetPx: 0 }, line.position);
-      if (line.attachments.timeTag) {
+      const tags = line.attachments.timeTag?.tags;
+      if (tags?.length) {
         let lastPosition = 0;
-        line.attachments.timeTag.tags.forEach((tag) => {
+        tags.forEach((tag) => {
           const startTime = lastPosition,
             endTime = tag.timeTag;
           timeline.to(
@@ -290,6 +292,7 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
       canvas.width = 240;
     }
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
     ctx.fillText("Loading...", 20, 20);

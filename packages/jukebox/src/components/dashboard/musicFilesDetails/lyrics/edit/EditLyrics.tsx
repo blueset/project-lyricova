@@ -16,7 +16,7 @@ function replaceWithPattern(
 ): string | null {
   const linesMatchPattern = lines
     .map((v) => (v[1].match(pattern) ? 1 : 0))
-    .reduce((prev, curr) => prev + curr, 0);
+    .reduce<number>((prev, curr) => prev + curr, 0);
   if (linesMatchPattern / lines.length > 0.25) {
     const result: string[] = [];
     for (const [tag, text] of lines) {
@@ -36,7 +36,7 @@ function replaceWithPattern(
 function smartTranslationSeparation(text: string): string {
   const lines = text.split("\n").map((v): [string, string] => {
     const groups = v.trimEnd().match(/^(\[.+\])?(.*)$/);
-    if (groups) return [groups[1], groups[2]];
+    if (groups) return [groups[1] ?? "", groups[2] ?? ""];
     return ["", ""];
   });
   // Cases:

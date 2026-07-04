@@ -13,13 +13,14 @@ import {
 import { useCallback, useState } from "react";
 import { useLyricsStore } from "../state/editorState";
 import { toast } from "sonner";
+import type {
+  LyricsJSON,
+  WordTimeTagLabelJSON} from "lyrics-kit/core";
 import {
   DOTS,
   FURIGANA,
-  LyricsJSON,
   TAGS,
-  TIME_TAG,
-  WordTimeTagLabelJSON,
+  TIME_TAG
 } from "lyrics-kit/core";
 import { fetchEventData } from "fetch-sse";
 import {
@@ -291,7 +292,7 @@ export function YohaneAlign({ fileId }: { fileId: number }) {
           data: { fileId, lyrics: romajiLyrics },
           onMessage: (event) => {
             try {
-              if (!event.data) return;
+              if (!event?.data) return;
               const data = JSON.parse(event.data);
               if (data.type === "progress") {
                 setProgress({

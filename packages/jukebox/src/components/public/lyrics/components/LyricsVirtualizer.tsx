@@ -1,15 +1,17 @@
-import React, { useCallback, useEffect, useRef } from "react";
-import { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
+import type React from "react";
+import { useCallback, useEffect, useRef } from "react";
+import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import {
   type LyricsSegment,
   useActiveLyrcsRanges,
 } from "../../../../hooks/useActiveLyricsRanges";
 import { useAppContext } from "../../AppContext";
+import type {
+  VirtualizerRowRenderProps} from "./useLyricsVirtualizer";
 import {
-  VirtualizerRowRenderProps,
   useLyricsVirtualizer,
 } from "./useLyricsVirtualizer";
-import { LyricsAnimationRef } from "./AnimationRef.type";
+import type { LyricsAnimationRef } from "./AnimationRef.type";
 
 export interface RowRendererProps<T> {
   row: T;
@@ -79,9 +81,9 @@ export function LyricsVirtualizer({
   const startRow = currentFrame?.data?.rangeStart ?? 0;
   const activeSegmentsRef = useRef<number[]>([]);
   activeSegmentsRef.current = currentFrame?.data?.activeSegments ?? [];
-  const animationRefs = useRef<LyricsAnimationRef[]>([]);
+  const animationRefs = useRef<(LyricsAnimationRef | null)[]>([]);
   const setRef = useCallback(
-    (index: number) => (ref?: LyricsAnimationRef) => {
+    (index: number) => (ref: LyricsAnimationRef | null) => {
       if (animationRefs.current[index] === ref) return;
       animationRefs.current[index] = ref;
       if (ref) {
@@ -108,17 +110,20 @@ export function LyricsVirtualizer({
       isActiveScroll,
     }: VirtualizerRowRenderProps) =>
       rowRenderer({
-        row: rows[index],
-        segment: segments[index],
-        ref: rowRefHandler,
+        row: rows[index]!,
+        segment: segments[index]!,
+        ref: (el) => {
+          if (el) rowRefHandler(el);
+        },
         top,
         absoluteIndex,
         isActiveScroll,
         isActive: activeSegmentsRef.current.includes(index),
         animationRef: setRef(index),
         onClick: () => {
-          if (playerRef.current && segments[index]?.start) {
-            playerRef.current.currentTime = segments[index].start;
+          const segment = segments[index];
+          if (playerRef.current && segment?.start) {
+            playerRef.current.currentTime = segment.start;
           }
         },
       }),
@@ -126,7 +131,7 @@ export function LyricsVirtualizer({
   );
 
   const { renderedRows, isActiveScroll } = useLyricsVirtualizer({
-    containerRef,
+    containerRef: containerRef as React.RefObject<HTMLDivElement>,
     startRow,
     endRow,
     align,

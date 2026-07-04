@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { devtools, subscribeWithSelector } from "zustand/middleware";
 import { createMainSlice } from "./mainSlice";
-import { LyricsState } from "./sliceTypes";
+import type { LyricsState } from "./sliceTypes";
 import { createTaggingSlice } from "./taggingSlice";
 import { createTranslationSlice } from "./translationSlice";
 import { createFuriganaSlice } from "./furiganaSlice";

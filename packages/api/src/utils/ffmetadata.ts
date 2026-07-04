@@ -226,7 +226,7 @@ export function read(
   });
 
   if (callback) {
-    stream.on("metadata", callback.bind(null, null));
+    stream.on("metadata", callback.bind(null, undefined));
     stream.on("error", callback);
   }
 

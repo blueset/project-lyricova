@@ -51,13 +51,14 @@ export default function VocaDBLyricsDialog({
   const query = useQuery(
     VOCADB_LYRICS_QUERY,
     {
-      variables: { id: songId },
+      variables: { id: songId ?? 0 },
       skip: !isOpen || !songId, // Skip query if dialog is not open or songId is missing
     }
   );
 
   const copyText = useCallback(
-    (text: string) => async () => {
+    (text?: string | null) => async () => {
+      if (!text) return;
       navigator.clipboard.writeText(text).then(
         function () {
           toast.success("Copied!");
@@ -110,7 +111,7 @@ export default function VocaDBLyricsDialog({
                     <>
                       ,{" "}
                       <Link
-                        href={v.url}
+                        href={v.url ?? ""}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="underline"

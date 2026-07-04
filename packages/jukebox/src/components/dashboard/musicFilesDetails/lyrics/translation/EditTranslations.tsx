@@ -20,12 +20,13 @@ const VOCADB_LYRICS_QUERY = graphql(`
 `);
 
 interface Props {
-  songId: number;
+  songId?: number;
 }
 
 export default function EditTranslations({ songId }: Props) {
   const { data: vocaDBTranslationsData } = useQuery(VOCADB_LYRICS_QUERY, {
-    variables: { id: songId },
+    variables: { id: songId ?? 0 },
+    skip: !songId,
   });
 
   const vocaDBTranslations = (

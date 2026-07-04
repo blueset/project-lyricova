@@ -1,4 +1,4 @@
-import {
+import type {
   DOTS,
   FURIGANA,
   METADATA_MINOR,
@@ -62,5 +62,5 @@ export interface AttachmentsJSON {
   [METADATA_MINOR]?: PlainTextJSON;
   [DOTS]?: NumberArrayJson;
   [TAGS]?: Number2DArrayJson;
-  [key: string]: AttachmentJSON;
+  [key: string]: AttachmentJSON | undefined;
 }

@@ -45,8 +45,8 @@ const JA_MAP = {
 };
 
 export class AnimatedWord {
-  convert: boolean;
-  sequence: string[];
+  convert!: boolean;
+  sequence!: string[];
 }
 
 function animateJa(words: [string, string][]): AnimatedWord[] {

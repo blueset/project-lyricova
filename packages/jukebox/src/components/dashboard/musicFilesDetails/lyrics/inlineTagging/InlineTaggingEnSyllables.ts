@@ -1,7 +1,8 @@
+import type {
+  LyricsLineJSON} from "lyrics-kit/core";
 import {
   FURIGANA,
   LyricsLine,
-  LyricsLineJSON,
   RangeAttributeLabel,
 } from "lyrics-kit/core";
 

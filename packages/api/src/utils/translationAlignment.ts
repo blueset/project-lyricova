@@ -40,8 +40,12 @@ export async function translationAlignment(
         }
       : undefined
   );
-  console.log("response", response.choices[0].message.content);
-  const parsedResponse = JSON.parse(response.choices[0].message.content);
+  const content = response.choices[0].message.content;
+  if (content === null) {
+    throw new Error(`Invalid response format: ${JSON.stringify(response)}`);
+  }
+  console.log("response", content);
+  const parsedResponse = JSON.parse(content);
   if (!Array.isArray(parsedResponse)) {
     throw new Error(`Invalid response format: ${JSON.stringify(response)}`);
   }

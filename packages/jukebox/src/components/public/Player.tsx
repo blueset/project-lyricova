@@ -1,4 +1,5 @@
-import React, { CSSProperties } from "react";
+import type { CSSProperties } from "react";
+import React from "react";
 import { CardContent } from "@lyricova/components/components/ui/card";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
@@ -32,7 +33,7 @@ const LOOP_MODE_SWITCH = {
   none: "all",
 } as const;
 
-function generateBackgroundStyle(track: Track): CSSProperties {
+function generateBackgroundStyle(track: Track | null): CSSProperties {
   if (track?.hasCover) {
     return {
       backgroundImage: `url(/api/files/${track.id}/cover)`,

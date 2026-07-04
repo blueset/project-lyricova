@@ -1,6 +1,7 @@
 import { DOTS, FURIGANA, TAGS } from "lyrics-kit/core";
+import type {
+  RefObject} from "react";
 import {
-  RefObject,
   memo,
   useCallback,
   useEffect,
@@ -25,7 +26,7 @@ import { useShallow } from "zustand/shallow";
 function ApplyMarksToAllButton({ index }: { index: number }) {
   const { lineContent, applyMarksToIdenticalLines } = useLyricsStore(
     useShallow((state) => ({
-      lineContent: state.lyrics?.lines[index].content,
+      lineContent: state.lyrics?.lines[index]?.content ?? "",
       applyMarksToIdenticalLines:
         state.inlineTagging.applyMarksToIdenticalLines,
     }))
@@ -62,7 +63,7 @@ const ApplyMarksToAllButtonMemo = memo(
 
 interface InlineTaggingLineProps {
   index: number;
-  timelinesRef: RefObject<gsap.core.Timeline[]>;
+  timelinesRef: RefObject<(gsap.core.Timeline | undefined)[]>;
   playerStatusRef: RefObject<WebAudioPlayerState>;
   getProgress: () => number;
   section: "mark" | "tag";
@@ -88,10 +89,10 @@ export function InlineTaggingLine({
     relativeProgress,
   } = useLyricsStore(
     useShallow((state) => ({
-      lineContent: state.lyrics?.lines[index].content,
-      furigana: state.lyrics?.lines[index].attachments?.[FURIGANA]?.attachment,
-      dots: state.lyrics?.lines[index].attachments?.[DOTS]?.values,
-      tags: state.lyrics?.lines[index].attachments?.[TAGS]?.values,
+      lineContent: state.lyrics?.lines[index]?.content ?? "",
+      furigana: state.lyrics?.lines[index]?.attachments?.[FURIGANA]?.attachment,
+      dots: state.lyrics?.lines[index]?.attachments?.[DOTS]?.values,
+      tags: state.lyrics?.lines[index]?.attachments?.[TAGS]?.values,
       hasCursor:
         section === "mark" && state.inlineTagging.cursorPosition[0] === index,
       cursorIndex:
@@ -133,15 +134,16 @@ export function InlineTaggingLine({
   );
 
   useEffect(() => {
-    if (centerRowRef.current && lineContent) {
+    const centerRow = centerRowRef.current;
+    if (centerRow && lineContent) {
       requestAnimationFrame(() => {
-        setCoords(measureTextWidths(centerRowRef.current));
+        setCoords(measureTextWidths(centerRow));
       });
     }
   }, [lineContent]);
   useEffect(() => {
     if ((hasCursor || hasDotCursor) && centerRowRef.current) {
-      centerRowRef.current.parentElement.scrollIntoView({
+      centerRowRef.current.parentElement?.scrollIntoView({
         block: "center",
         // behavior: "smooth",
       });
@@ -156,7 +158,7 @@ export function InlineTaggingLine({
         timelinesRef.current[index].kill();
       }
       const tags =
-        useLyricsStore.getState().lyrics?.lines[index].attachments?.[TAGS]
+        useLyricsStore.getState().lyrics?.lines[index]?.attachments?.[TAGS]
           ?.values ?? [];
       const startingTags = tags.map((x) => x?.[0] ?? null);
       if (startingTags.every((x) => !x)) {
@@ -210,7 +212,7 @@ export function InlineTaggingLine({
       }
     } else if (relativeProgress === -1) {
       const tags =
-        useLyricsStore.getState().lyrics?.lines[index].attachments?.[TAGS]
+        useLyricsStore.getState().lyrics?.lines[index]?.attachments?.[TAGS]
           ?.values ?? [];
       centerRow.style.backgroundSize = `${coords[coords.length - 1]}px 100%`;
       const flatternTags = tags.flat().filter(Boolean);
@@ -244,7 +246,9 @@ export function InlineTaggingLine({
             className="absolute text-center origin-left"
             style={{
               left: coords[t.range[0] - 1] ?? 0,
-              width: coords[t.range[1] - 1] - (coords[t.range[0] - 1] ?? 0),
+              width:
+                (coords[t.range[1] - 1] ?? 0) -
+                (coords[t.range[0] - 1] ?? 0),
             }}
             ref={(el) => {
               if (el && el.scrollWidth > el.clientWidth) {
@@ -327,7 +331,7 @@ export function InlineTaggingLine({
           <span
             style={{
               transform: `translateX(calc(${
-                coords[cursorIndex - 1] ?? 0
+                coords[(cursorIndex ?? 0) - 1] ?? 0
               }px - 1em))`,
             }}
             className="absolute z-10 scale-y-200 text-info-foreground origin-top-right"
@@ -339,12 +343,12 @@ export function InlineTaggingLine({
       {/* Tags Indicator */}
       <div className="relative h-[1em] font-markers text-[0.4rem] leading-none text-success-foreground">
         {[0, ...coords]
-          .filter((x, idx) => tags?.[idx]?.length > 0)
+          .filter((x, idx) => (tags?.[idx]?.length ?? 0) > 0)
           .map((x, idx) => (
             <span
               key={idx}
               className="absolute"
-              style={{ left: x, width: coords[idx] - x }}
+              style={{ left: x, width: (coords[idx] ?? x) - x }}
             >
               ◣
             </span>

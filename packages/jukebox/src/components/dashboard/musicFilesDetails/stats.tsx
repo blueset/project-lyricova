@@ -45,7 +45,7 @@ type FormSchema = z.infer<typeof formSchema>;
 interface Props {
   fileId: number;
   playCount?: number;
-  lastPlayed?: number | Date;
+  lastPlayed?: number | Date | null;
   refresh: () => unknown | Promise<unknown>;
 }
 
@@ -73,7 +73,7 @@ export default function StatsPanel({
         mutation: UPDATE_MUSIC_FILE_STATS_MUTATION,
         variables: {
           fileId,
-          playCount: values.playCount,
+          playCount: values.playCount ?? 0,
           lastPlayed: values.lastPlayed?.valueOf() ?? null,
         },
       });

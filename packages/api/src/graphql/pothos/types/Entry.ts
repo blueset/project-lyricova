@@ -31,7 +31,7 @@ builder.drizzleObjectFields("Entries", (t) => {
           where: eq(SongOfEntries.entryId, e.id),
           with: { song: true },
         });
-        return rows.map((r) => r.song) as any;
+        return rows.map((r) => r.song!);
       },
     }),
     tags: t.field({
@@ -42,7 +42,7 @@ builder.drizzleObjectFields("Entries", (t) => {
           where: eq(TagOfEntries.entryId, e.id),
           with: { tag: true },
         });
-        return rows.map((r) => r.tag) as any;
+        return rows.map((r) => r.tag!);
       },
     }),
   };

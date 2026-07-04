@@ -1,54 +1,23 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "lib": [
-      "ESNext.Array",
-      "es5",
-      "es6",
-      "ESNext",
-      "DOM"
-    ],
     "module": "esnext",
-    "esModuleInterop": true,
-    "target": "ES2024",
-    "noImplicitAny": true,
     "moduleResolution": "bundler",
-    "sourceMap": true,
-    "outDir": "dist",
-    "rootDir": "..",
-    "baseUrl": ".",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "paths": {
-      "*": [
-        "node_modules/*",
-        "src/types"
-      ],
-      "@/*": [
-        "src/*"
-      ]
-    },
-    "allowJs": true,
-    "strict": false,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
     "incremental": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "strictNullChecks": false
+    ]
   },
-  "include": [
-    "src/**/*",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

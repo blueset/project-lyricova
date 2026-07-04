@@ -121,7 +121,10 @@ export const playlistSlice = createSlice({
         state.nowPlaying >= state.tracks.length
       ) {
         state.nowPlaying = state.tracks.length - 1;
-      } else if (state.nowPlaying > action.payload) {
+      } else if (
+        state.nowPlaying !== null &&
+        state.nowPlaying > action.payload
+      ) {
         state.nowPlaying--;
       }
     },

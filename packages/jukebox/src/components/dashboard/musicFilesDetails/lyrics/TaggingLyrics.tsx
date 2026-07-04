@@ -44,6 +44,7 @@ const LineListItem = ({
   );
 
   const lineText = useMemo(() => {
+    if (!line) return "";
     return LyricsLine.fromJSON(line)
       .toString()
       .replace(/^\[[\d:\.]+\]/gm, "");
@@ -65,7 +66,7 @@ const LineListItem = ({
       </span>
       <div className="flex flex-row items-start flex-grow gap-2">
         <span className="block tabular-nums w-max flex-shrink-0">
-          {!Number.isNaN(line?.position)
+          {line && !Number.isNaN(line.position)
             ? `[${buildTimeTag(line.position)}]`
             : ""}
         </span>
@@ -171,7 +172,7 @@ export default function TaggingLyrics({ fileId }: Props) {
     }))
   );
 
-  const playerRef = useRef<HTMLAudioElement>(null);
+  const playerRef = useRef<HTMLAudioElement>(null!);
   const listRef = useRef<HTMLUListElement>(null);
 
   const playerState = usePlayerState(playerRef);
@@ -188,7 +189,7 @@ export default function TaggingLyrics({ fileId }: Props) {
     (timestamp: number) => {
       const playerState = playerStateRef.current;
       const currentLine = useLyricsStore.getState().tagging.currentLine;
-      const lines = useLyricsStore.getState().lyrics.lines;
+      const lines = useLyricsStore.getState().lyrics?.lines ?? [];
 
       let time: number;
       if (playerState.state === "paused") {
@@ -244,7 +245,7 @@ export default function TaggingLyrics({ fileId }: Props) {
   const moveCursor = useCallback(
     (idx: number | ((orig: number) => number)) => {
       const orig = useLyricsStore.getState().tagging.cursor;
-      const length = useLyricsStore.getState().lyrics.lines.length;
+      const length = useLyricsStore.getState().lyrics?.lines?.length ?? 0;
       let nidx = typeof idx !== "number" ? idx(orig) : idx;
       nidx = _.clamp(nidx, 0, length);
       if (length > 0 && listRef.current) {
@@ -453,7 +454,7 @@ export default function TaggingLyrics({ fileId }: Props) {
         {isInExtrapolateMode && (
           <div className="flex items-center gap-2 p-1 mb-1">
             <span className="my-2 text-sm">
-              {extrapolateTags.reduce(
+              {extrapolateTags.reduce<number>(
                 (prev, curr) => prev + (curr == null ? 0 : 1),
                 0
               )}{" "}

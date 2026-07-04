@@ -52,25 +52,25 @@ import type { Album } from "./Album";
  *         - albumId
  */
 export class SongInAlbum {
-  songInAlbumId: number;
+  songInAlbumId!: number;
 
-  vocaDbId: number | null;
+  vocaDbId!: number | null;
 
-  diskNumber: number | null;
+  diskNumber!: number | null;
 
-  trackNumber: number | null;
+  trackNumber!: number | null;
 
   name?: string;
 
-  song: Song;
+  song!: Song;
 
-  songId: number;
+  songId!: number;
 
-  album: Album;
+  album!: Album;
 
-  albumId: number;
+  albumId!: number;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 }

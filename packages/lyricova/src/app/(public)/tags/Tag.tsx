@@ -1,7 +1,8 @@
 "use client";
 
 import type { Tag } from "@/frontendUtils/restTypes";
-import React, { useRef } from "react";
+import type React from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { Link } from "@/components/public/Link";
 import classes from "./index.module.scss";
@@ -33,7 +34,7 @@ export function TagNode({ tag }: { tag: TagWithCount }) {
       onMouseLeave={(evt) => {
         animationRef.current?.kill();
         const target = evt.currentTarget.querySelector("[data-count]");
-        target.textContent = String(tag.entryCount);
+        if (target) target.textContent = String(tag.entryCount);
       }}
     >
       <span

@@ -40,9 +40,6 @@ export const builder = new SchemaBuilder<{
   drizzle: {
     client: db,
   },
-  // The api tsconfig has `strict: false`; Pothos requires acknowledging this.
-  notStrict:
-    "Pothos may not work correctly when strict mode is not enabled in tsconfig.json",
   // Match TypeGraphQL defaults so the emitted schema stays parity-compatible
   // without per-field annotations: output fields non-null, input fields required.
   defaultFieldNullability: false,

@@ -35,13 +35,13 @@
 export class FileInPlaylist {
   public id!: number;
 
-  fileId: number;
+  fileId!: number;
 
-  playlistId: number;
+  playlistId!: number;
 
-  sortOrder: number;
+  sortOrder!: number;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 }

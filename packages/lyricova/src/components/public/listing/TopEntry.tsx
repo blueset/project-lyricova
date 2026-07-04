@@ -39,13 +39,14 @@ export function TopEntry({ entry }: TopEntryProps) {
 
   const buildTimeline = useCallback(
     (verseRefEl: HTMLElement) => {
+      if (!mainVerse) return;
       if (timelineRef.current) {
         timelineRef.current.kill();
       }
 
       const tl = gsap.timeline();
       const stepDuration = 1 / 40;
-      const sequence = mainVerse.typingSequence.map((i) =>
+      const sequence = (mainVerse.typingSequence ?? []).map((i) =>
         buildAnimationSequence(i, mainVerse.language),
       );
       let i = 0;
@@ -93,8 +94,10 @@ export function TopEntry({ entry }: TopEntryProps) {
         tl.kill();
       };
     },
-    [mainVerse.typingSequence, mainVerse.language],
+    [mainVerse],
   );
+
+  if (!mainVerse) return null;
 
   return (
     <section

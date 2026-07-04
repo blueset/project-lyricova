@@ -12,7 +12,7 @@ import React, { useCallback, useMemo } from "react";
 import { useNamedState } from "@/hooks/useNamedState";
 import { DataTableColumnHeader, NextComposedLink } from "@lyricova/components";
 import { CircleX } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Badge } from "@lyricova/components/components/ui/badge";
 import { DataTable } from "@lyricova/components";

@@ -8,13 +8,14 @@ import {
 import { useCallback, useState } from "react";
 import { useLyricsStore } from "../state/editorState";
 import { toast } from "sonner";
+import type {
+  LyricsJSON,
+  WordTimeTagLabelJSON} from "lyrics-kit/core";
 import {
   DOTS,
   FURIGANA,
-  LyricsJSON,
   TAGS,
-  TIME_TAG,
-  WordTimeTagLabelJSON,
+  TIME_TAG
 } from "lyrics-kit/core";
 import { fetchEventData } from "fetch-sse";
 import {
@@ -302,7 +303,7 @@ export function CustomAlign({ fileId }: { fileId: number }) {
           data: { fileId, lyrics: hiraganaLyrics },
           onMessage: (event) => {
             try {
-              if (!event.data) return;
+              if (!event?.data) return;
               const data = JSON.parse(event.data);
               if (data.type === "progress") {
                 setProgress({
@@ -340,6 +341,12 @@ export function CustomAlign({ fileId }: { fileId: number }) {
         setIsAlignmentLoading(false);
         return;
       } finally {
+      }
+
+      if (!result) {
+        toast.error("No alignment result returned.");
+        setIsAlignmentLoading(false);
+        return;
       }
 
       assToInlineTags(lyrics, result);

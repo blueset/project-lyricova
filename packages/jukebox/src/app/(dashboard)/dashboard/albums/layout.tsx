@@ -57,12 +57,12 @@ type AlbumInfo = ResultOf<typeof ALBUM_INFO_LIST_QUERY>["albums"][number];
 
 type AlbumTableData = {
   id: number;
-  utaiteDbId?: number;
+  utaiteDbId: number | null;
   name: string;
   sortOrder: string;
-  artists: AlbumInfo["artists"];
+  artists: NonNullable<AlbumInfo["artists"]>;
   incomplete: boolean;
-  coverUrl: string;
+  coverUrl: string | null;
 };
 
 export default function AlbumInfoLayout({ children }: Props) {
@@ -227,7 +227,7 @@ export default function AlbumInfoLayout({ children }: Props) {
       utaiteDbId: v.utaiteDbId,
       name: v.name,
       sortOrder: v.sortOrder,
-      artists: v.artists,
+      artists: v.artists ?? [],
       incomplete: v.incomplete,
       coverUrl: v.coverUrl,
     }));

@@ -6,7 +6,8 @@ import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import Balancer from "react-wrap-balancer";
 import type { RefObject } from "react";
-import React, { useRef, useEffect } from "react";
+import type React from "react";
+import { useRef, useEffect } from "react";
 import type { MeasuredComponentProps } from "react-measure";
 import Measure from "react-measure";
 import { Scene } from "react-scenejs";
@@ -114,6 +115,7 @@ type RelayoutFn = (wrapper: HTMLElement, ratio: number) => void;
  */
 export const relayout: RelayoutFn = (wrapper, ratio = 1) => {
   const container = wrapper.parentElement;
+  if (!container) return;
 
   const update = (width: number) => (wrapper.style.maxWidth = width + "px");
 
@@ -150,7 +152,7 @@ interface LyricsLineElementProps {
   line: LyricsKitLyricsLine | null;
   duration: number;
   width: number;
-  progressorRef?: RefObject<Scene>;
+  progressorRef?: RefObject<Scene | null>;
 }
 
 function LyricsLineElement({
@@ -167,7 +169,9 @@ function LyricsLineElement({
 
   useEffect(() => {
     if (textRef.current && sizerRef.current) {
+      if (!line) return;
       const sizerSpan = sizerRef.current.querySelector("span");
+      if (!sizerSpan) return;
       sizerSpan.innerText = line?.content ?? "";
       relayout(sizerSpan, 1);
       const lines = sizerSpan.firstChild
@@ -202,10 +206,9 @@ function LyricsLineElement({
         );
       }
 
-      progressorRef.current &&
-        progressorRef.current.getItem().load(animate && keyframes);
+      progressorRef?.current?.getItem().load(animate ? keyframes : {});
     }
-  }, [animate, line.content, progressorRef, width]);
+  }, [animate, line, progressorRef, width]);
 
   return (
     <div>
@@ -218,8 +221,14 @@ function LyricsLineElement({
         </div>
         {/* @ts-expect-error Scene is an JSX element. */}
         <Scene
-          keyframes={animate ? keyframes : null}
-          ref={animate ? progressorRef : null}
+          keyframes={animate ? keyframes : undefined}
+          ref={
+            animate
+              ? (scene) => {
+                  if (progressorRef) progressorRef.current = scene;
+                }
+              : undefined
+          }
           autoplay={true}
         >
           <svg
@@ -244,7 +253,7 @@ function LyricsLineElement({
           </svg>
         </Scene>
       </div>
-      {line.attachments?.translation && (
+      {line?.attachments?.translation && (
         <div
           lang="zh"
           className={cn(
@@ -311,7 +320,7 @@ export function StrokeLyrics({ lyrics }: Props) {
     <div className="p-8 w-full h-full flex flex-col justify-center">
       <Measure bounds>
         {({ contentRect, measureRef }: MeasuredComponentProps) => (
-          <div ref={measureRef}>{lineElement(contentRect.bounds.width)}</div>
+          <div ref={measureRef}>{lineElement(contentRect.bounds?.width ?? 0)}</div>
         )}
       </Measure>
     </div>

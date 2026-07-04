@@ -51,8 +51,8 @@ export default function FuriganaLyricsLine({
       });
       if (ptr < base.length) groupings.push(base.substring(ptr));
     } else {
-      const base = graphQLSourceLine.content;
-      const furigana = graphQLSourceLine.attachments.furigana ?? [];
+      const base = graphQLSourceLine!.content;
+      const furigana = graphQLSourceLine!.attachments.furigana ?? [];
       furigana.forEach(({ content, leftIndex: start, rightIndex: end }) => {
         if (start > ptr) {
           groupings.push(base.substring(ptr, start));

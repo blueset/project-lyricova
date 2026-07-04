@@ -3,7 +3,7 @@ import {
   timeLineAttachmentDurationRegex,
   timeLineAttachmentRegex,
 } from "../utils/regexPattern";
-import {
+import type {
   WordTimeTagJSON,
   RangeAttributeJSON,
   PlainTextJSON,

@@ -63,27 +63,27 @@
  *         - role
  */
 export class User {
-  id: number;
+  id!: number;
 
-  username: string;
+  username!: string;
 
-  displayName: string;
+  displayName!: string;
 
-  password: string;
+  password!: string;
 
-  email: string;
+  email!: string;
 
-  role: "admin" | "guest";
+  role!: "admin" | "guest";
 
   provider?: string;
 
   provider_id?: string;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 
-  deletionDate: Date;
+  deletionDate!: Date;
 
-  emailMD5: string;
+  emailMD5!: string;
 }

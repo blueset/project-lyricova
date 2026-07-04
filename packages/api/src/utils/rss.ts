@@ -20,30 +20,33 @@ export default async function generateRssFeed() {
     where: isNull(Entries.deletionDate),
     with: {
       verses: {
-        where: (v: any, { isNull }: any) => isNull(v.deletionDate),
+        where: (v, { isNull }) => isNull(v.deletionDate),
       },
       tagOfEntries: {
         columns: {},
         with: { tag: true },
       },
     },
-    orderBy: (e: any, { desc }: any) => desc(e.recentActionDate),
+    orderBy: (e, { desc }) => desc(e.recentActionDate),
     limit: 20,
   });
   entries.forEach((entry) => {
-    const mainVerse = entry.verses.filter((v) => v.isMain)[0];
-    const tags = (entry.tagOfEntries ?? []).map((t) => t.tag);
+    const mainVerse = entry.verses.find((v) => v.isMain);
+    if (!mainVerse) return;
+    const tags = (entry.tagOfEntries ?? []).flatMap((t) =>
+      t.tag ? [t.tag] : []
+    );
     feed.item({
-      title: entry.title,
+      title: entry.title ?? "",
       description:
         `<img src="${host}/api/og/${entry.id}" alt="${entry.title}" />` +
-        (mainVerse.html || mainVerse.stylizedText || mainVerse.text).replace(
+        (mainVerse.html || mainVerse.stylizedText || (mainVerse.text ?? "")).replace(
           /\n/g,
           "<br />"
         ),
       date: entry.recentActionDate,
       url: `${host}/entries/${entry.id}`,
-      categories: tags?.map((t) => t.name) ?? [],
+      categories: tags.flatMap((t) => (t.name === null ? [] : [t.name])),
     });
   });
 

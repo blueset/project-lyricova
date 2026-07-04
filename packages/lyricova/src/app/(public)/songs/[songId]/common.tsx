@@ -5,8 +5,8 @@ import { Paginator } from "@/components/public/listing/Paginator";
 import { SingleEntry } from "@/components/public/listing/SingleEntry";
 import { SubArchiveHeader } from "@/components/public/listing/SubArchiveHeader";
 import { apiBaseUrl, host, siteName, tagLine1, tagLine2 } from "@/utils/consts";
-import { Artist, Entry, Song } from "@/frontendUtils/restTypes";
-import { Metadata } from "next";
+import type { Artist, Entry, Song } from "@/frontendUtils/restTypes";
+import type { Metadata } from "next";
 import classes from "./SongListings.module.scss";
 
 export async function generateMetadataData(

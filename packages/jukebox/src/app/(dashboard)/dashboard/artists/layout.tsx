@@ -59,11 +59,11 @@ interface Props {
 
 type ArtistTableData = {
   id: number;
-  utaiteDbId?: number;
+  utaiteDbId: number | null;
   name: string;
   sortOrder: string;
   incomplete: boolean;
-  mainPictureUrl: string;
+  mainPictureUrl: string | null;
 };
 
 export default function ArtistInfoLayout({ children }: Props) {
@@ -93,7 +93,7 @@ export default function ArtistInfoLayout({ children }: Props) {
         <div className="flex items-center gap-4">
           <Avatar className="h-10 w-10 rounded-md border-border border">
             <AvatarImage
-              src={row.original.mainPictureUrl}
+              src={row.original.mainPictureUrl ?? undefined}
               className="object-cover object-top"
               alt={row.getValue("name") as string}
             />

@@ -43,11 +43,11 @@ export class LyricsKitRangeAttachment {
     }
   }
 
-  content: string;
+  content!: string;
 
-  leftIndex: number;
+  leftIndex!: number;
 
-  rightIndex: number;
+  rightIndex!: number;
 }
 
 /**
@@ -115,7 +115,7 @@ export class LyricsKitWordTimeAttachment {
     );
   }
 
-  duration: number;
+  duration?: number;
 
   tags: LyricsKitWordTimeTag[];
 }
@@ -192,15 +192,15 @@ export class LyricsKitAttachment {
     this.minor = attachment.minor;
   }
 
-  timeTag?: LyricsKitWordTimeAttachment;
+  timeTag?: LyricsKitWordTimeAttachment | null;
 
-  translation?: string;
+  translation?: string | null;
 
   translations: { [key: string]: string };
 
-  furigana?: LyricsKitRangeAttachment[];
+  furigana?: LyricsKitRangeAttachment[] | null;
 
-  romaji?: LyricsKitRangeAttachment[];
+  romaji?: LyricsKitRangeAttachment[] | null;
 
   role = 0;
 
@@ -287,7 +287,9 @@ export class LyricsKitLyrics {
     this.lines = lyrics.lines.map(
       (v) => new LyricsKitLyricsLine(v, lyrics.timeDelay)
     );
-    this.translationLanguages = lyrics.translationLanguages;
+    this.translationLanguages = lyrics.translationLanguages.filter(
+      (language): language is string => language !== undefined
+    );
   }
 
   quality?: number;

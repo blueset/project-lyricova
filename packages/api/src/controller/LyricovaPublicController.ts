@@ -264,6 +264,10 @@ export class LyricovaPublicApiController {
         entryId: true,
       },
     });
+    if (!v) {
+      res.status(404).json({ message: "No verse found" });
+      return;
+    }
     const e = await db.query.Entries.findFirst({
       where: eq(Entries.id, picked[0].entryId as number),
       columns: {
@@ -278,7 +282,7 @@ export class LyricovaPublicApiController {
           with: { tag: { columns: { name: true, slug: true, color: true } } },
           ...(tags?.length
             ? {
-                where: (toe: any, { inArray }: any) =>
+                where: (toe, { inArray }) =>
                   inArray(toe.tagId, tags),
               }
             : {}),
@@ -305,7 +309,7 @@ export class LyricovaPublicApiController {
         title: e.title,
         producersName: e.producersName,
         vocalistsName: e.vocalistsName,
-        tags: (e.tagOfEntries ?? []).map((t) => t.tag),
+        tags: (e.tagOfEntries ?? []).flatMap((t) => (t.tag ? [t.tag] : [])),
       },
     };
 
@@ -413,7 +417,7 @@ export class LyricovaPublicApiController {
     const entryRow = await db.query.Entries.findFirst({
       where: and(eq(Entries.id, id), isNull(Entries.deletionDate)),
       with: {
-        verses: { where: (v: any, { isNull }: any) => isNull(v.deletionDate) },
+        verses: { where: (v, { isNull }) => isNull(v.deletionDate) },
         tagOfEntries: { columns: {}, with: { tag: true } },
       },
     });
@@ -422,7 +426,9 @@ export class LyricovaPublicApiController {
     }
     const entry = {
       ...entryRow,
-      tags: (entryRow.tagOfEntries ?? []).map((t) => t.tag),
+      tags: (entryRow.tagOfEntries ?? []).flatMap((t) =>
+        t.tag ? [t.tag] : []
+      ),
     };
 
     const artistString = !entry.producersName
@@ -431,16 +437,19 @@ export class LyricovaPublicApiController {
       ? entry.producersName
       : `${entry.producersName} feat. ${entry.vocalistsName}`;
     const mainVerse = entry.verses.find((v) => v.isMain);
+    if (!mainVerse?.text || !mainVerse.language) {
+      return res.status(404).json({ message: "No verse found" });
+    }
     const lang = mainVerse.language;
     const lines = mainVerse.text
       .replace(/——/g, "⸺")
       .split("\n")
-      .map((line) => {
+      .flatMap((line) => {
         let match = line.match(/^([\p{Ps}\p{Pi}"]*)(.*)$/u);
         match = shiftinPuncts(line, match, "「", "」");
         match = shiftinPuncts(line, match, "『", "』");
         match = shiftinPuncts(line, match, "｢", "｣");
-        return match;
+        return match ? [match] : [];
       });
 
     const [
@@ -558,20 +567,24 @@ export class LyricovaPublicApiController {
                 fontFamily: "Hubot Sans Narrow",
               },
             },
-            ...entry.tags.map((t) =>
-              React.createElement(
-                "span",
-                {
-                  style: {
-                    borderRadius: 3,
-                    border: "1px solid currentColor",
-                    color: t.color,
-                    lineHeight: 1,
-                    padding: "3px 3px 0",
-                  },
-                },
-                t.name.toUpperCase()
-              )
+            ...entry.tags.flatMap((t) =>
+              t.name
+                ? [
+                    React.createElement(
+                      "span",
+                      {
+                        style: {
+                          borderRadius: 3,
+                          border: "1px solid currentColor",
+                          color: t.color,
+                          lineHeight: 1,
+                          padding: "3px 3px 0",
+                        },
+                      },
+                      t.name.toUpperCase()
+                    ),
+                  ]
+                : []
             )
           ),
           React.createElement(

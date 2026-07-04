@@ -54,7 +54,7 @@ export default function ReviewLayout({ children }: Props) {
     </Alert>
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   const goToFile = useCallback(
     (index: number) => async () => {
       if (edges) {

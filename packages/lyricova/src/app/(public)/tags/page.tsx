@@ -4,7 +4,8 @@ import { Footer } from "@/components/public/Footer";
 import { IndexHeader } from "@/components/public/IndexHeader";
 import classes from "./index.module.scss";
 import { apiBaseUrl, host, siteName, tagLine1, tagLine2 } from "@/utils/consts";
-import { TagNode, TagWithCount } from "./Tag";
+import type { TagWithCount } from "./Tag";
+import { TagNode } from "./Tag";
 
 export const metadata = {
   title: "Tags",

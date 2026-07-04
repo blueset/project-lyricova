@@ -59,18 +59,19 @@ export default function Search() {
         </AlertDescription>
       </Alert>
     );
-  else if (searchFilesQuery.data.searchMusicFiles.length < 1)
+  else if ((searchFilesQuery.data?.searchMusicFiles ?? []).length < 1)
     content = (
       <Alert variant="info">
         <AlertDescription>No result found.</AlertDescription>
       </Alert>
     );
   else {
-    content = searchFilesQuery.data.searchMusicFiles.map((v) => (
+    const files = searchFilesQuery.data?.searchMusicFiles ?? [];
+    content = files.map((v) => (
       <TrackListRow
         song={null}
         file={v}
-        files={searchFilesQuery.data.searchMusicFiles}
+        files={files}
         key={v.id}
         showAlbum
       />

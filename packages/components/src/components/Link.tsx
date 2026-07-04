@@ -1,6 +1,7 @@
 "use client";
 
-import React, { AnchorHTMLAttributes } from "react";
+import type { AnchorHTMLAttributes } from "react";
+import React from "react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@lyricova/components/utils";
@@ -18,7 +19,7 @@ export const NextComposedLink = React.forwardRef<
 >(function NextComposed(props, ref) {
   const { as, href, ...other } = props;
 
-  return <NextLink href={href} as={as} ref={ref} {...(other as any)} />;
+  return <NextLink href={href} as={as} ref={ref} {...other} />;
 });
 
 interface LinkProps extends Omit<NextComposedProps, "ref"> {

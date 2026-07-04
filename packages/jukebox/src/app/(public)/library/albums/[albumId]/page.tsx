@@ -53,8 +53,9 @@ const ALBUM_QUERY = graphql(`
   }
 `);
 
-type AlbumTrack = NonNullable<LibraryAlbumDetailsQuery["album"]>["songs"][number];
-type AlbumFile = NonNullable<LibraryAlbumDetailsQuery["album"]>["files"][number];
+type Album = NonNullable<LibraryAlbumDetailsQuery["album"]>;
+type AlbumTrack = NonNullable<Album["songs"]>[number];
+type AlbumFile = NonNullable<Album["files"]>[number];
 
 type ConvertedTrack = AlbumTrack & {
   foundFile: AlbumFile | null;
@@ -63,7 +64,7 @@ type ConvertedTrack = AlbumTrack & {
 export default function LibrarySingleAlbum() {
   const { user } = useAuthContext();
   const { albumId: albumIdString } = useParams<{ albumId: string }>();
-  const albumId = albumIdString ? parseInt(albumIdString as string) : null;
+  const albumId = parseInt(albumIdString as string);
   const dispatch = useAppDispatch();
 
   const query = useQuery(ALBUM_QUERY, {
@@ -104,28 +105,38 @@ export default function LibrarySingleAlbum() {
       </Alert>
     );
 
+  if (!query.data?.album)
+    return (
+      <Alert variant="warning" className="m-4 w-auto">
+        <AlertTitle>Not found</AlertTitle>
+        <AlertDescription>Album ID {albumId} not found.</AlertDescription>
+      </Alert>
+    );
+
   const album = query.data.album;
-  const trackCount = album.files.length;
-  const totalMinutes = Math.round(_.sumBy(album.files, "duration") / 60);
-  const totalSize = _.sumBy(album.files, "fileSize");
+  const files = album.files ?? [];
+  const songs = album.songs ?? [];
+  const trackCount = files.length;
+  const totalMinutes = Math.round(_.sumBy(files, "duration") / 60);
+  const totalSize = _.sumBy(files, "fileSize");
   const canPlay = trackCount > 0;
 
   const convertedTracks = _.sortBy(
-    album.songs.map(
+    songs.map(
       (v) =>
         ({
           ...v,
-          foundFile: album.files.find((f) => f.songId === v.id) ?? null,
+          foundFile: files.find((f) => f.songId === v.id) ?? null,
         } as ConvertedTrack)
     ),
-    (v) => v.SongInAlbum.diskNumber,
-    (v) => v.SongInAlbum.trackNumber
+    (v) => v.SongInAlbum?.diskNumber,
+    (v) => v.SongInAlbum?.trackNumber
   );
 
   // Load tracks into playlist in order
   const sortedFiles = convertedTracks
-    .filter((v) => v.foundFile)
-    .map((v) => v.foundFile);
+    .map((v) => v.foundFile)
+    .filter((file): file is AlbumFile => file !== null);
 
   const diskSeparatedTracked: (ConvertedTrack | number | null)[] = [];
 
@@ -133,9 +144,9 @@ export default function LibrarySingleAlbum() {
     if (
       diskSeparatedTracked.length < 1 ||
       (diskSeparatedTracked[diskSeparatedTracked.length - 1] as ConvertedTrack)
-        .SongInAlbum?.diskNumber != i.SongInAlbum.diskNumber
+        .SongInAlbum?.diskNumber != i.SongInAlbum?.diskNumber
     ) {
-      diskSeparatedTracked.push(i.SongInAlbum.diskNumber);
+      diskSeparatedTracked.push(i.SongInAlbum?.diskNumber ?? null);
     }
     diskSeparatedTracked.push(i);
   }
@@ -183,7 +194,7 @@ export default function LibrarySingleAlbum() {
               {album.name}
             </h1>
             <h2 className="text-lg text-muted-foreground" lang="ja">
-              {formatArtists(album.artists, (v, isProd) =>
+              {formatArtists(album.artists ?? [], (v, isProd) =>
                 v.map((artist, idx) => (
                   <Fragment key={artist.id}>
                     {idx > 0 && ", "}
@@ -280,7 +291,7 @@ export default function LibrarySingleAlbum() {
                     key={idx}
                     song={v}
                     file={v.foundFile}
-                    files={album.files}
+                    files={files}
                   />
                 );
               }

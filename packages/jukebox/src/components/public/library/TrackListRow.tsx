@@ -40,13 +40,15 @@ interface Props {
 export default function TrackListRow({ song, file, files, showAlbum }: Props) {
   const { user } = useAuthContext();
   const dispatch = useAppDispatch();
-  const id = song ? song.id : file.id;
-  const showTrackNumber = song && song.SongInAlbum !== undefined;
+  const id = song ? song.id : file?.id;
+  const showTrackNumber = song?.SongInAlbum !== undefined;
 
   const handlePlayNext = () => {
+    if (!file) return;
     dispatch(addTrackToNext(file));
   };
   const handlePlayInList = () => {
+    if (!file) return;
     dispatch(loadTracks(files));
     dispatch(playTrack({ track: files.indexOf(file), playNow: true }));
   };
@@ -62,16 +64,16 @@ export default function TrackListRow({ song, file, files, showAlbum }: Props) {
         >
           {showTrackNumber && (
             <div className="mr-4 w-6">
-              {song?.SongInAlbum.trackNumber ?? "?"}
+              {song?.SongInAlbum?.trackNumber ?? "?"}
             </div>
           )}
           <ListItemTextWithTime
-            primary={song ? song.name : file.trackName}
+            primary={song ? song.name : (file?.trackName ?? "No title")}
             secondary={
               <>
                 {(song
                   ? formatArtistsPlainText(song.artists ?? [])
-                  : file.artistName) || <em>Various Artists</em>}
+                  : file?.artistName) || <em>Various Artists</em>}
                 {showAlbum && file && (
                   <>
                     {" / "}

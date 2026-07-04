@@ -1,4 +1,4 @@
-import * as React from "react";
+import type * as React from "react";
 import { cn } from "@lyricova/components/utils";
 import { formatTime } from "../../../frontendUtils/strings";
 
@@ -20,7 +20,7 @@ export default function ListItemTextWithTime({
   className,
   ...props
 }: Props) {
-  let timeStr: string = null;
+  let timeStr: string | null = null;
   if (time !== null) {
     timeStr = formatTime(time);
   }

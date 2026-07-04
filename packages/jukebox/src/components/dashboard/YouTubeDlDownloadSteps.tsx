@@ -32,7 +32,7 @@ import {
 import { Progress } from "@lyricova/components/components/ui/progress";
 import { Label } from "@lyricova/components/components/ui/label";
 import { cn } from "@lyricova/components/utils";
-import { PVContract, SongForApiContract } from "@/types/vocadb";
+import type { PVContract, SongForApiContract } from "@/types/vocadb";
 
 const YOUTUBE_DL_INFO_QUERY = graphql(`
   query YouTubeDlInfo($url: String!) {
@@ -242,7 +242,7 @@ export default function YouTubeDlDownloadSteps({
         },
         next(x) {
           console.log("subscription event", x);
-          const progress = x.data.youTubeDlDownloadProgress;
+          const progress = x.data?.youTubeDlDownloadProgress;
           if (progress?.__typename === "YouTubeDlProgressValue") {
             setDownloadProgress((progress.current / progress.total) * 100);
             setDownloadInfo(
@@ -266,8 +266,13 @@ export default function YouTubeDlDownloadSteps({
 
       const outcome = await outcomePromise;
       zenSubscription.unsubscribe();
-      const filePath = outcome.data.youtubeDlDownloadAudio;
+      const filePath = outcome.data?.youtubeDlDownloadAudio;
       if (filePath === null) {
+        toast.error(`Failed to download ${videoURL} as ${filename}`);
+        setDownloadState(-1);
+        return;
+      }
+      if (!filePath) {
         toast.error(`Failed to download ${videoURL} as ${filename}`);
         setDownloadState(-1);
         return;
@@ -278,7 +283,13 @@ export default function YouTubeDlDownloadSteps({
         mutation: SINGLE_FILE_SCAN_MUTATION,
         variables: { path: filePath },
       });
-      setDownloadState(scanOutcome.data.scanByPath.id);
+      const scanByPath = scanOutcome.data?.scanByPath;
+      if (!scanByPath) {
+        toast.error(`Failed to scan ${filePath}`);
+        setDownloadState(-1);
+        return;
+      }
+      setDownloadState(scanByPath.id);
 
       // Try to enrich metadata via VocaDB if possible.
       try {
@@ -343,7 +354,7 @@ export default function YouTubeDlDownloadSteps({
         setDownloadInfo(`Using song #${internalSongId}. Reading file tags…`);
 
         // 4) Read existing tag fields of the music file
-        const fileId = scanOutcome.data.scanByPath.id;
+        const fileId = scanByPath.id;
         const fileData = await apolloClient.query({
           query: MUSIC_FILE_FIELDS_QUERY,
           variables: { id: fileId },
@@ -380,13 +391,13 @@ export default function YouTubeDlDownloadSteps({
       }
 
       toast.success(
-        `File downloaded with database ID ${scanOutcome.data.scanByPath.id} and path ${filePath}.`,
+        `File downloaded with database ID ${scanByPath.id} and path ${filePath}.`,
         {
           action: {
             label: "Review file",
             onClick: () =>
               window.open(
-                `/dashboard/review/${scanOutcome.data.scanByPath.id}`,
+                `/dashboard/review/${scanByPath.id}`,
                 "_blank"
               ),
           },

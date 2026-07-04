@@ -12,6 +12,22 @@
         "dist/**"
       ]
     },
+    "typecheck": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "typecheck:native": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "lint": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": [],
+      "outputs": []
+    },
     "dev": {
       "persistent": true,
       "cache": false

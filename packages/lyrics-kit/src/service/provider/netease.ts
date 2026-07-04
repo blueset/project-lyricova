@@ -1,5 +1,5 @@
 import { LyricsProvider } from ".";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { Lyrics } from "../../core/lyrics";
 import { LyricsProviderSource } from "../lyricsProviderSource";
 import axios from "axios";
@@ -17,11 +17,11 @@ import {
   TIME_TAG,
 } from "../../core/lyricsLineAttachment";
 import { LyricsLine } from "../../core/lyricsLine";
-import {
+import type {
   NetEaseResponseSong,
   NetEaseResponseSearchResult,
 } from "../types/netease/searchResult";
-import { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
+import type { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
 
 const SEARCH_URL = "http://music.163.com/api/search/pc";
 const LYRICS_URL = "http://music.163.com/api/song/lyric";
@@ -194,7 +194,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
         return undefined;
       }
       const data = response.data;
-      let lyrics: Lyrics = undefined;
+      let lyrics: Lyrics | undefined = undefined;
       const transLrc = data?.tlyric?.lyric
         ? new Lyrics(data.tlyric.lyric)
         : null;
@@ -231,7 +231,9 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
         lyrics.idTags[ARTIST] = token.artists[0].name;
       }
       lyrics.idTags[ALBUM] = token.album.name;
-      lyrics.idTags[LRC_BY] = data.lyricUser?.nickname;
+      if (data.lyricUser?.nickname) {
+        lyrics.idTags[LRC_BY] = data.lyricUser.nickname;
+      }
 
       lyrics.length = token.duration / 1000;
       lyrics.metadata.source = LyricsProviderSource.netease;

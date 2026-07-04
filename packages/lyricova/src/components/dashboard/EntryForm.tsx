@@ -165,19 +165,22 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const initialFormValues = (data: EntryQuery): FormValues => ({
-  ...data.entry,
-  title: data.entry.title || "",
-  producersName: data.entry.producersName || "",
-  vocalistsName: data.entry.vocalistsName || "",
-  comment: data.entry.comment || "",
-  creationDate: new Date(data.entry.creationDate),
-  tags: data.entry.tags.map((tag) => tag.slug),
-  verses: data.entry.verses.map((verse) => ({
-    ...verse,
+const initialFormValues = (entry: NonNullable<EntryQuery["entry"]>): FormValues => ({
+  title: entry.title || "",
+  producersName: entry.producersName || "",
+  vocalistsName: entry.vocalistsName || "",
+  comment: entry.comment || "",
+  creationDate: new Date(entry.creationDate),
+  songs: entry.songs ?? [],
+  pulses: entry.pulses ?? [],
+  tags: (entry.tags ?? []).map((tag) => tag.slug),
+  verses: (entry.verses ?? []).map((verse) => ({
+    id: verse.id,
     language: verse.language || "",
     text: verse.text || "",
     translator: verse.translator || "",
+    isMain: verse.isMain,
+    isOriginal: verse.isOriginal,
     stylizedText: verse.stylizedText || "",
     html: verse.html || "",
     typingSequence: JSON.stringify(verse.typingSequence),
@@ -199,7 +202,7 @@ export function EntryForm({ id }: EntityFormProps) {
   const defaultValues = useMemo(
     () =>
       id && data?.entry
-        ? initialFormValues(data)
+        ? initialFormValues(data.entry)
         : {
             title: "",
             producersName: "",
@@ -209,7 +212,7 @@ export function EntryForm({ id }: EntityFormProps) {
             verses: [],
             tags: [],
             pulses: [],
-            creationDate: id ? null : new Date(),
+            creationDate: new Date(),
           },
     [data, id]
   );
@@ -319,7 +322,9 @@ export function EntryForm({ id }: EntityFormProps) {
           );
           const outcome = await refetch();
           if (outcome.data) {
-            form.reset(initialFormValues(outcome.data));
+            if (outcome.data.entry) {
+              form.reset(initialFormValues(outcome.data.entry));
+            }
           }
         }
       }
@@ -497,11 +502,11 @@ export function EntryForm({ id }: EntityFormProps) {
                         .map((s) =>
                           (s.artists || [])
                             .filter((a: SongArtist) =>
-                              a.ArtistOfSong.categories.includes("Producer")
+                              a.ArtistOfSong?.categories.includes("Producer")
                             )
                             .map(
                               (a: SongArtist) =>
-                                a.ArtistOfSong.customName || a.name
+                                a.ArtistOfSong?.customName || a.name
                             )
                         )
                         .flat()
@@ -514,13 +519,13 @@ export function EntryForm({ id }: EntityFormProps) {
                           (s.artists || [])
                             .filter(
                               (a: SongArtist) =>
-                                a.ArtistOfSong.categories.includes(
+                                a.ArtistOfSong?.categories.includes(
                                   "Vocalist"
                                 ) && !a.ArtistOfSong.isSupport
                             )
                             .map(
                               (a: SongArtist) =>
-                                a.ArtistOfSong.customName || a.name
+                                a.ArtistOfSong?.customName || a.name
                             )
                         )
                         .flat()
@@ -596,9 +601,11 @@ export function EntryForm({ id }: EntityFormProps) {
                               endAdornment={
                                 <>
                                   (
-                                  {formatDistanceToNow(value, {
-                                    addSuffix: true,
-                                  })}
+                                  {value
+                                    ? formatDistanceToNow(value, {
+                                        addSuffix: true,
+                                      })
+                                    : "unknown"}
                                   )
                                 </>
                               }
@@ -783,7 +790,7 @@ export function EntryForm({ id }: EntityFormProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input {...field} placeholder="Translator" />
+                          <Input {...field} value={field.value ?? ""} placeholder="Translator" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -807,7 +814,7 @@ export function EntryForm({ id }: EntityFormProps) {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Textarea {...field} />
+                                <Textarea {...field} value={field.value ?? ""} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -834,6 +841,7 @@ export function EntryForm({ id }: EntityFormProps) {
                               <FormControl>
                                 <Textarea
                                   {...field}
+                                  value={field.value ?? ""}
                                   style={{ fontFamily: monospacedFont }}
                                 />
                               </FormControl>
@@ -921,7 +929,7 @@ export function EntryForm({ id }: EntityFormProps) {
                 <FormItem>
                   <FormLabel>Comment</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -75,7 +75,10 @@ export default function Scan() {
     });
     const zenSubscription = subscription.subscribe({
       next(x) {
-        if (x.data.scanProgress !== null) {
+        if (
+          x.data?.scanProgress !== null &&
+          x.data?.scanProgress !== undefined
+        ) {
           const { total, added, deleted, updated, unchanged } =
             x.data.scanProgress;
           if (total > 0) {

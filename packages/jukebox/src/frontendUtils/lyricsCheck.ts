@@ -20,7 +20,7 @@ export interface LyricsAnalysisResult {
   lastTimestamp?: number;
 }
 
-export function lyricsAnalysis(lyrics: Lyrics): LyricsAnalysisResult {
+export function lyricsAnalysis(lyrics: Lyrics | null): LyricsAnalysisResult {
   let hasTranslation = false;
   let hasFurigana = false;
   let hasInlineTimeTags = false;
@@ -32,7 +32,6 @@ export function lyricsAnalysis(lyrics: Lyrics): LyricsAnalysisResult {
       hasFurigana,
       hasInlineTimeTags,
       hasSimplifiedJapanese,
-      lastTimestamp: null,
     };
   const lastTimestamp =
     lyrics.lines.reduce<number | null>((v, line) => {
@@ -40,7 +39,7 @@ export function lyricsAnalysis(lyrics: Lyrics): LyricsAnalysisResult {
         return v === null ? line.position : Math.max(v ?? 0, line.position);
       }
       return v;
-    }, null) ?? null;
+    }, null) ?? undefined;
   hasTranslation = hasTranslation || lyrics.metadata.hasTranslation;
 
   lyrics.lines.forEach((v) => {

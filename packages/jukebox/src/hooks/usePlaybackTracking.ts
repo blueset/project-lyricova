@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from "react";
-import { ApolloClient } from "@apollo/client";
+import type { ApolloClient } from "@apollo/client";
 import { graphql } from "@lyricova/components/gql";
 
 const BUMP_PLAY_COUNT_MUTATION = graphql(`

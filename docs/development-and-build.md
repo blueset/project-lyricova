@@ -301,20 +301,83 @@ cross-referenced with the canonical `lyricova-schema.sql` dump).
 
 ## 6. Verification
 
+Every package exposes `typecheck` (classic `tsc`), `typecheck:native` (the
+TypeScript 7 native compiler `tsgo`), and `lint`. The root wires them through
+Turbo, so the whole repo is validated with:
+
+```bash
+npm run lint              # turbo run lint            (ESLint flat config)
+npm run typecheck         # turbo run typecheck       (tsc 6.x, --noEmit)
+npm run typecheck:native  # turbo run typecheck:native (tsgo / TS 7 preview)
+npm run test              # turbo run test            (jest)
+```
+
 | Package | Type-check | Lint | Test | Schema |
 | --- | --- | --- | --- | --- |
-| `@lyricova/api` | `npm run build:ts` (or `npx tsc --noEmit`) | `npm run lint` | `npm test` (jest) | `npm run schema:check` |
-| `@lyricova/components` | `npm run codegen && npx tsc --noEmit` | — | — | — |
-| `@lyricova/jukebox` | `npx tsc --noEmit` | `npm run lint` | `npm test` | — |
-| `@lyricova/blog` (`packages/lyricova`) | `npx tsc --noEmit` | `npm run lint` | `npm test` | — |
+| `@lyricova/api` | `npm run typecheck` (or `build:ts`) | `npm run lint` | `npm test` (jest) | `npm run schema:check` |
+| `@lyricova/components` | `npm run typecheck` | `npm run lint` | — | — |
+| `@lyricova/jukebox` | `npm run typecheck` | `npm run lint` | `npm test` | — |
+| `@lyricova/blog` (`packages/lyricova`) | `npm run typecheck` | `npm run lint` | `npm test` | — |
 
 > Type-checking `components`, `jukebox`, or `lyricova` requires the generated
 > `@lyricova/components/gql` to exist — run `npm run codegen -w @lyricova/components`
-> first if you're on a clean tree.
+> first if you're on a clean tree. `jukebox`/`lyricova` also type-check against
+> `@lyricova/components`'s build output, so build it first on a clean tree.
+>
+> A ready-to-enable GitHub Actions workflow that runs the lint + `tsc` + `tsgo`
+> gates lives at `.github/workflows/typecheck.yml` (triggered on pull requests
+> and manual dispatch).
 
 ---
 
-## 7. Cheat sheet
+## 7. TypeScript configuration & TS 7 (`tsgo`) readiness
+
+The repo targets **TypeScript 6.0.x** (`typescript@^6.0.3`, pinned in the root
+and every package) and is kept compatible with the **TypeScript 7 native
+compiler** (`tsgo`, from `@typescript/native-preview`) so the eventual TS 7
+upgrade is a drop-in. `tsgo` is run as a non-authoritative gate via
+`npm run typecheck:native`; the build still uses classic `tsc` / `next`.
+
+### Shared base config
+
+All packages `extends` the root **`tsconfig.base.json`**, which holds the
+environment-agnostic options (`esModuleInterop`, `skipLibCheck`,
+`forceConsistentCasingInFileNames`, `resolveJsonModule`, `isolatedModules`,
+`target: ES2022`). Each package's `tsconfig.json` only sets what differs:
+
+| Package | `module` / `moduleResolution` | Emit | `strict` | `verbatimModuleSyntax` |
+| --- | --- | --- | --- | --- |
+| `@lyricova/api` | `nodenext` / `nodenext` | CJS → `dist/` | ✅ | ✗ (CJS emit) |
+| `lyrics-kit` | `nodenext` (main) + `esnext`/`bundler` (module) | dual CJS+ESM → `build/` | ✅ | ✗ (CJS emit) |
+| `@lyricova/components` | `esnext` / `bundler` | ESM → `build/` | ✅ | ✅ |
+| `@lyricova/jukebox` | `esnext` / `bundler` | `noEmit` (Next) | ✅ | ✅ |
+| `@lyricova/blog` (`lyricova`) | `esnext` / `bundler` | `noEmit` (Next) | ✅ | ✅ |
+
+- **`strict` is `true` everywhere.** (TS 6.0 flipped the `strict` default to
+  `true`; it is set explicitly in every package to be unambiguous.)
+- **`verbatimModuleSyntax` is on only for the ESM/bundler packages.** It is
+  incompatible with the CJS-emitting packages (`api`, `lyrics-kit`), which emit
+  CommonJS from ESM-syntax source — enabling it there raises TS1287/TS1295.
+- **`isolatedModules` is on everywhere**, and type-only imports are enforced by
+  ESLint's `@typescript-eslint/consistent-type-imports` (`import type` / inline
+  `type`), which `tsgo` and `verbatimModuleSyntax` both rely on.
+
+### TS 6 / TS 7 gotchas (already handled — don't reintroduce)
+
+- **No `baseUrl`** and **no `moduleResolution: "node"`/`node10`** — both are
+  deprecated in TS 6 (TS5101 / TS5107) and removed in TS 7. Use `paths` with
+  relative targets (`"@/*": ["./src/*"]`) and `nodenext`/`bundler` resolution.
+- **Jest globals need explicit `types`.** TS 6 no longer auto-includes hoisted
+  but undeclared `@types`, so packages with jest tests set
+  `compilerOptions.types` (e.g. `["node", "jest"]`) — otherwise `describe`/`it`/
+  `expect` fail to resolve. `ts-jest` must be `>= 29.4.11` for TS 6.
+- **Measuring strict errors:** an explicit `"strictNullChecks": false` in a
+  tsconfig overrides the `--strict` CLI flag, so `tsc --strict` under-reports.
+  Measure with the real config (strict on), not the CLI flag.
+
+---
+
+## 8. Cheat sheet
 
 ```bash
 # Everyday
@@ -322,6 +385,9 @@ npm run dev                                   # all apps + watchers (root, turbo
                                               #   → codegen + schema emit run on watch (see §3.1);
                                               #     editing docs/resolvers regenerates types automatically
 npm run build                                 # full topological build (root, turbo)
+npm run lint                                  # ESLint (flat config) across all packages
+npm run typecheck                             # tsc 6.x --noEmit across all packages
+npm run typecheck:native                      # tsgo (TS 7 preview) --noEmit across all packages
 
 # GraphQL client document added/changed  (manual — only needed OUTSIDE `npm run dev`)
 npm run codegen -w @lyricova/components        # regenerate typed graphql()

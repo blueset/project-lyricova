@@ -48,10 +48,12 @@ import { UtaiteDBSearchAlbumDialog } from "../dialogs/UtaiteDBSearchAlbumDialog"
 import { AlbumEntityDialog } from "../dialogs/AlbumEntityDialog";
 import { graphql } from "../../gql";
 import type { SelectAlbumEntryFragment } from "../../gql/graphql";
-import {
+import type {
   FieldValues,
   FieldPath,
   UseFormReturn,
+  FieldPathValue} from "react-hook-form";
+import {
   useController,
 } from "react-hook-form";
 
@@ -271,7 +273,7 @@ export function SelectAlbumEntityBox<
         toggleManualDialogOpen(true);
         setOpen(false);
         setInputValue("");
-        form.setValue(fieldName, null as any);
+        form.setValue(fieldName, null as FieldPathValue<TFieldValues, TName>);
         return;
       }
       return;
@@ -288,7 +290,7 @@ export function SelectAlbumEntityBox<
       setOpen(false);
       setInputValue("");
     } else {
-      form.setValue(fieldName, selectedOption as any, {
+      form.setValue(fieldName, selectedOption as FieldPathValue<TFieldValues, TName>, {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -485,7 +487,7 @@ export function SelectAlbumEntityBox<
                     <CommandGroup>
                       <CommandItem
                         onSelect={() => {
-                          form.setValue(fieldName, null as any, {
+                          form.setValue(fieldName, null as FieldPathValue<TFieldValues, TName>, {
                             shouldValidate: true,
                             shouldDirty: true,
                           });
@@ -596,7 +598,7 @@ export function SelectAlbumEntityBox<
           keyword={importDialogKeyword}
           setKeyword={setImportDialogKeyword}
           setAlbum={(v) =>
-            form.setValue(fieldName, v as any, {
+            form.setValue(fieldName, v as FieldPathValue<TFieldValues, TName>, {
               shouldValidate: true,
               shouldDirty: true,
             })
@@ -610,7 +612,7 @@ export function SelectAlbumEntityBox<
           keyword={utaiteDBDialogKeyword}
           setKeyword={setUtaiteDBDialogKeyword}
           setAlbum={(v) =>
-            form.setValue(fieldName, v as any, {
+            form.setValue(fieldName, v as FieldPathValue<TFieldValues, TName>, {
               shouldValidate: true,
               shouldDirty: true,
             })
@@ -626,7 +628,7 @@ export function SelectAlbumEntityBox<
           albumToEdit={value ?? undefined}
           create={isManualDialogForCreate}
           setAlbum={(v) =>
-            form.setValue(fieldName, v as any, {
+            form.setValue(fieldName, v as FieldPathValue<TFieldValues, TName>, {
               shouldValidate: true,
               shouldDirty: true,
             })

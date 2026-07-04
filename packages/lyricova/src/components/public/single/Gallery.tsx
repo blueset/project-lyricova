@@ -4,6 +4,21 @@ import { useEffect, useState } from "react";
 import { Divider } from "../Divider";
 import classes from "./Gallery.module.scss";
 
+interface GalleryApiResponse {
+  link: string;
+  title: {
+    rendered: string;
+  };
+  yoast_head_json: {
+    schema: {
+      "@graph": Array<{
+        "@type"?: string;
+        url?: string;
+      }>;
+    };
+  };
+}
+
 interface CommentProps {
   entryIds?: number[];
 }
@@ -13,23 +28,23 @@ export function Gallery({ entryIds }: CommentProps) {
     {
       title: string;
       url: string;
-      image: string;
+      image?: string;
     }[]
   >([]);
 
   useEffect(() => {
     async function fetchGalleryUrls() {
-      const promises = entryIds.map(async (v) =>
+      const promises = (entryIds ?? []).map(async (v) =>
         (
           await fetch(`https://1a23.com/wp-json/wp/v2/gallery?song_id=${v}`)
-        ).json(),
+        ).json() as Promise<GalleryApiResponse[]>,
       );
       const jsons = await Promise.all(promises);
       setGalleryUrls(
         jsons.flat().map((o) => ({
           url: o.link,
           image: o.yoast_head_json.schema["@graph"].find(
-            (g: any) => g["@type"] === "ImageObject",
+            (g) => g["@type"] === "ImageObject",
           )?.url,
           title: o.title.rendered,
         })),

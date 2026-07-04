@@ -43,6 +43,13 @@ function setIntersect<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter((val) => other.has(val)));
 }
 
+function musicFilePath(path: string | null): string {
+  if (path === null) {
+    throw new GraphQLError("Music file path is missing.");
+  }
+  return path;
+}
+
 const MusicFileInput = builder.inputType("MusicFileInput", {
   description: "Write metadata to music file.",
   fields: (t) => ({
@@ -99,10 +106,11 @@ async function writeLyricsToMusicFileImpl(
     where: eq(MusicFiles.id, fileId),
   });
   if (!file) return false;
-  const fullPath = fullPathOf(file.path);
+  const filePath = musicFilePath(file.path);
+  const fullPath = fullPathOf(filePath);
 
   try {
-    if (file.path.toLowerCase().endsWith(".flac")) {
+    if (filePath.toLowerCase().endsWith(".flac")) {
       const key = "LYRICS";
       const forceId3v2 = false;
       await ffMetadataWrite(
@@ -128,7 +136,7 @@ async function writeLyricsToMusicFileImpl(
     return false;
   }
 
-  await updateMD5(fileId, file.path);
+  await updateMD5(fileId, filePath);
   return true;
 }
 
@@ -150,12 +158,14 @@ builder.mutationField("scan", (t) =>
           hasLyrics: true,
         },
       });
-      const filePaths = glob.sync(`${MUSIC_FILES_PATH}**/*.{mp3,flac,aiff}`, {
+      const filePaths = glob.sync(`${MUSIC_FILES_PATH!}**/*.{mp3,flac,aiff}`, {
         nosort: true,
         nocase: true,
       });
       const knownPathsSet: Set<string> = new Set(
-        databaseEntries.map((entry) => MUSIC_FILES_PATH + entry.path)
+        databaseEntries.flatMap((entry) =>
+          entry.path === null ? [] : [MUSIC_FILES_PATH! + entry.path]
+        )
       );
       const filePathsSet: Set<string> = new Set(filePaths);
 
@@ -181,7 +191,7 @@ builder.mutationField("scan", (t) =>
         await db.delete(MusicFiles).where(
           inArray(
             MusicFiles.path,
-            [...toDelete].map((p) => p.replace(MUSIC_FILES_PATH, ""))
+            [...toDelete].map((p) => p.replace(MUSIC_FILES_PATH!, ""))
           )
         );
       }
@@ -209,7 +219,7 @@ builder.mutationField("scan", (t) =>
                 ...built.values,
                 creationDate: now,
                 updatedOn: now,
-              } as any);
+              });
               if (built.playlistSlugs.length > 0)
                 await replaceFilePlaylists(
                   inserted[0].insertId,
@@ -224,7 +234,7 @@ builder.mutationField("scan", (t) =>
       console.log("entries added.");
 
       const toUpdateEntries = databaseEntries.filter((entry) =>
-        toUpdate.has(MUSIC_FILES_PATH + entry.path)
+        entry.path !== null && toUpdate.has(MUSIC_FILES_PATH! + entry.path)
       );
 
       console.log("to Update Entries", toUpdateEntries.length);
@@ -233,19 +243,19 @@ builder.mutationField("scan", (t) =>
         await Promise.all(
           toUpdateEntries.map((entry) =>
             limit(async () => {
-              const updated = await updateSongEntry(entry as any);
+              const updated = await updateSongEntry(entry);
               if (!updated) progressObj.unchanged++;
               else progressObj.updated++;
               if (
                 sessionId &&
                 (progressObj.updated + progressObj.unchanged) % 10 === 0
               )
-                await publish({ sessionId, data: progressObj });
+                if (sessionId) await publish({ sessionId, data: progressObj });
             })
           )
         );
       }
-      await publish({ sessionId, data: progressObj });
+      if (sessionId) await publish({ sessionId, data: progressObj });
 
       console.log("entries updated.");
 
@@ -267,7 +277,7 @@ builder.mutationField("scanByPath", (t) =>
       }),
     },
     resolve: async (_root, { path }) => {
-      const fullPath = Path.resolve(MUSIC_FILES_PATH, path);
+      const fullPath = Path.resolve(MUSIC_FILES_PATH!, path);
       if (fs.existsSync(fullPath)) {
         const file = await db.query.MusicFiles.findFirst({
           where: eq(MusicFiles.path, path),
@@ -280,17 +290,17 @@ builder.mutationField("scanByPath", (t) =>
             ...built.values,
             creationDate: now,
             updatedOn: now,
-          } as any);
+          });
           fileId = inserted[0].insertId;
           if (built.playlistSlugs.length > 0)
             await replaceFilePlaylists(fileId, built.playlistSlugs);
         } else {
           fileId = file.id;
-          await updateSongEntry(file as any);
+          await updateSongEntry(file);
         }
         return (await db.query.MusicFiles.findFirst({
           where: eq(MusicFiles.id, fileId),
-        })) as any;
+        }))!;
       } else {
         await db.delete(MusicFiles).where(eq(MusicFiles.path, path));
         return null;
@@ -330,7 +340,7 @@ builder.queryField("musicFiles", (t) =>
         node: r,
       }));
       const endCursor =
-        edges.length > 0 ? edges[edges.length - 1].cursor : after;
+        edges.length > 0 ? edges[edges.length - 1]!.cursor : after;
       return {
         totalCount: count,
         edges,
@@ -350,7 +360,7 @@ builder.queryField("searchMusicFiles", (t) =>
     resolve: async (_root, { keywords }) =>
       db.query.MusicFiles.findMany({
         where: sql`match (path, trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder) against (${keywords} in boolean mode)`,
-      }) as any,
+      }),
   })
 );
 
@@ -360,7 +370,7 @@ builder.queryField("musicFile", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, id) })) ?? null) as any,
+      ((await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, id) })) ?? null),
   })
 );
 
@@ -377,19 +387,19 @@ builder.mutationField("writeTagsToMusicFile", (t) =>
         throw new GraphQLError(`Music file with id ${id} is not found.`);
       }
 
-      await writeMetadataToFile(song, data as any);
+      await writeMetadataToFile(song, data);
 
-      const hash = await hasha.fromFile(fullPathOf(song.path), {
+      const hash = await hasha.fromFile(fullPathOf(musicFilePath(song.path)), {
         algorithm: "md5",
       });
       await db
         .update(MusicFiles)
-        .set({ ...(data as any), hash, updatedOn: new Date() })
+        .set({ ...data, hash, updatedOn: new Date() })
         .where(eq(MusicFiles.id, id));
 
       return (await db.query.MusicFiles.findFirst({
         where: eq(MusicFiles.id, id),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -411,7 +421,10 @@ builder.mutationField("writeLyrics", (t) =>
         where: eq(MusicFiles.id, fileId),
       });
       if (!file) return false;
-      const lyricsPath = swapExt(Path.resolve(MUSIC_FILES_PATH, file.path), ext);
+      const lyricsPath = swapExt(
+        Path.resolve(MUSIC_FILES_PATH!, musicFilePath(file.path)),
+        ext ?? "lrc"
+      );
 
       try {
         fs.writeFileSync(lyricsPath, lyrics);
@@ -452,7 +465,7 @@ builder.mutationField("removeLyrics", (t) =>
         where: eq(MusicFiles.id, fileId),
       });
       if (!file) return false;
-      const fullPath = fullPathOf(file.path);
+      const fullPath = fullPathOf(musicFilePath(file.path));
       const lrcPath = swapExt(fullPath, "lrc");
       const lrcxPath = swapExt(fullPath, "lrcx");
 
@@ -516,7 +529,7 @@ builder.mutationField("setPlaylistsOfFile", (t) =>
       await updatePlaylistsOfFileAsTags(fileId);
       return (await db.query.MusicFiles.findFirst({
         where: eq(MusicFiles.id, fileId),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -545,7 +558,7 @@ builder.mutationField("toggleMusicFileReviewStatus", (t) =>
         .where(eq(MusicFiles.id, fileId));
       return (await db.query.MusicFiles.findFirst({
         where: eq(MusicFiles.id, fileId),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -595,7 +608,7 @@ builder.mutationField("updateMusicFileStats", (t) =>
         .where(eq(MusicFiles.id, fileId));
       return (await db.query.MusicFiles.findFirst({
         where: eq(MusicFiles.id, fileId),
-      })) as any;
+      }))!;
     },
   })
 );
@@ -610,7 +623,7 @@ builder.queryField("newMusicFiles", (t) =>
       return db.query.MusicFiles.findMany({
         where: gte(MusicFiles.creationDate, thirtyDaysAgo),
         orderBy: [desc(MusicFiles.creationDate)],
-      }) as any;
+      });
     },
   })
 );
@@ -625,7 +638,7 @@ builder.queryField("recentlyReviewedMusicFiles", (t) =>
       return db.query.MusicFiles.findMany({
         where: gte(MusicFiles.updatedOn, thirtyDaysAgo),
         orderBy: [desc(MusicFiles.updatedOn)],
-      }) as any;
+      });
     },
   })
 );
@@ -640,7 +653,7 @@ builder.queryField("recentMusicFiles", (t) =>
       return db.query.MusicFiles.findMany({
         where: gte(MusicFiles.lastPlayed, thirtyDaysAgo),
         orderBy: [desc(MusicFiles.lastPlayed)],
-      }) as any;
+      });
     },
   })
 );
@@ -655,6 +668,6 @@ builder.queryField("popularMusicFiles", (t) =>
         where: gt(MusicFiles.playCount, 0),
         orderBy: [desc(MusicFiles.playCount), desc(MusicFiles.lastPlayed)],
         limit,
-      }) as any,
+      }),
   })
 );

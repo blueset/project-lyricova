@@ -174,7 +174,9 @@ export class ArtistsController {
     const totalEntries = entryIdRows.length;
     if (totalEntries < 1) return; // preserves the original no-op on no entries
 
-    const distinctIds = [...new Set(entryIdRows.map((r) => r.entryId))];
+    const distinctIds = [
+      ...new Set(entryIdRows.flatMap((r) => (r.entryId === null ? [] : [r.entryId]))),
+    ];
     const ordered = await db
       .select({ id: Entries.id })
       .from(Entries)

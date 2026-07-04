@@ -79,12 +79,12 @@ type SongInfo = ResultOf<typeof SONG_INFO_LIST_QUERY>["songs"][number];
 
 type SongTableData = {
   id: number;
-  utaiteDbId?: number;
+  utaiteDbId: number | null;
   name: string;
   sortOrder: string;
-  artists: SongInfo["artists"];
+  artists: NonNullable<SongInfo["artists"]>;
   incomplete: boolean;
-  coverUrl: string;
+  coverUrl: string | null;
 };
 
 export default function SongInfoLayout({ children }: Props) {
@@ -290,7 +290,7 @@ export default function SongInfoLayout({ children }: Props) {
       utaiteDbId: v.utaiteDbId,
       name: v.name,
       sortOrder: v.sortOrder,
-      artists: v.artists,
+      artists: v.artists ?? [],
       incomplete: v.incomplete,
       coverUrl: v.coverUrl,
     }));

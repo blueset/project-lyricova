@@ -4,7 +4,7 @@ import {
   AvatarFallback,
 } from "@lyricova/components/components/ui/avatar";
 import { Music } from "lucide-react";
-import { FieldValues, FieldPath, UseFormReturn } from "react-hook-form";
+import type { FieldValues, FieldPath, UseFormReturn } from "react-hook-form";
 import { cn } from "@/utils";
 
 type AvatarFieldProps<

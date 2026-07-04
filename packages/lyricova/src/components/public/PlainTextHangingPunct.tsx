@@ -47,9 +47,9 @@ export function PlainTextHangingPunct({
       {lines.map((line, idx) => (
         <Fragment key={idx}>
           {idx > 0 && <br />}
-          <CollapsedSpan>{line[1]}</CollapsedSpan>
-          {line[2]}
-          {line[3] && <span className={classes.hangingRight}>{line[3]}</span>}
+          <CollapsedSpan>{line?.[1] ?? ""}</CollapsedSpan>
+          {line?.[2] ?? ""}
+          {line?.[3] && <span className={classes.hangingRight}>{line[3]}</span>}
         </Fragment>
       ))}
     </>

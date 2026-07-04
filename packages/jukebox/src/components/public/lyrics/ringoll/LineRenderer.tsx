@@ -5,9 +5,10 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
-import { LyricsAnimationRef } from "../components/AnimationRef.type";
-import { LineRenderer, TimedSpanProps } from "../components/RubyLineRenderer";
+import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
+import type { LyricsAnimationRef } from "../components/AnimationRef.type";
+import type { TimedSpanProps } from "../components/RubyLineRenderer";
+import { LineRenderer } from "../components/RubyLineRenderer";
 import { safeDuration } from "../../../../frontendUtils/safeDuration";
 
 const FILLED_OPACITY = 100;
@@ -18,7 +19,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
     // const spanRef = useRef<HTMLSpanElement>(null);
     const webAnimationRefs = useRef<Animation[]>([]);
     const refCallback = useCallback(
-      (node?: HTMLSpanElement) => {
+      (node: HTMLSpanElement | null) => {
         // webAnimationRefs.current.forEach(anim => anim.cancel());
         if (isStatic) {
           if (node && node.style.opacity !== "1") {
@@ -77,7 +78,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
         // console.log("Resume at %o, %o", time ?? "current time", webAnimationRefs.current);
         webAnimationRefs.current.forEach((anim) => {
           anim.currentTime = time ? time * 1000 : 0;
-          if (time <= endTime) anim.play();
+          if ((time ?? 0) <= endTime) anim.play();
           else anim.pause();
         });
       },

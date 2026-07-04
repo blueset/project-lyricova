@@ -38,7 +38,7 @@ export default function EditFuriganaLine() {
     useLyricsStore(
       useShallow((state) => {
         return {
-          line: state.lyrics?.lines[state.furigana.selectedLine],
+          line: state.lyrics?.lines[state.furigana.selectedLine ?? -1],
           addFuriganaToSelectedLine: state.furigana.addFuriganaToSelectedLine,
           removeFuriganaFromSelectedLine:
             state.furigana.removeFuriganaFromSelectedLine,
@@ -51,7 +51,7 @@ export default function EditFuriganaLine() {
       const content = line.content;
       let i = 0;
       if (line?.attachments?.[FURIGANA]) {
-        line.attachments[FURIGANA].attachment.forEach((elm) => {
+        for (const elm of line.attachments[FURIGANA].attachment) {
           if (elm.range[0] > i)
             renderableFurigana.push(content.substring(i, elm.range[0]));
           renderableFurigana.push({
@@ -59,7 +59,7 @@ export default function EditFuriganaLine() {
             value: elm.content,
           });
           i = elm.range[1];
-        });
+        }
       }
       if (i < content.length)
         renderableFurigana.push(content.substring(i, content.length));

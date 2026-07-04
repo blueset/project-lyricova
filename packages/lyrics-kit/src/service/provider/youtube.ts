@@ -5,11 +5,51 @@ import { ARTIST, TITLE } from "../../core/idTagKey";
 import { Lyrics } from "../../core/lyrics";
 import { LyricsLine } from "../../core/lyricsLine";
 import { LyricsProviderSource } from "../lyricsProviderSource";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { YouTubeSearchResult } from "../types/youtube/searchResult";
-import { YouTubeLyricsJSON3 } from "../types/youtube/singleLyrics";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import type { YouTubeSearchResult } from "../types/youtube/searchResult";
+import type { YouTubeLyricsJSON3 } from "../types/youtube/singleLyrics";
 
 const BASE_SEARCH_URL = "https://www.youtube.com/results";
+
+type YouTubeInitialPlayerResponse = {
+  captions?: {
+    playerCaptionsTracklistRenderer: {
+      captionTracks?: Array<{
+        languageCode: string;
+        baseUrl: string;
+      }>;
+    };
+  };
+};
+
+type YouTubeSearchInitialData = {
+  alerts?: Array<{
+    alertRenderer?: {
+      type?: string;
+    };
+  }>;
+  contents?: {
+    twoColumnSearchResultsRenderer: {
+      primaryContents: {
+        sectionListRenderer: {
+          contents: Array<{
+            itemSectionRenderer?: {
+              contents: Array<{
+                videoRenderer?: {
+                  videoId: string;
+                  title: { runs: Array<{ text: string }> };
+                  thumbnail: { thumbnails: Array<{ url: string }> };
+                  ownerText: { runs: Array<{ text: string }> };
+                  lengthText?: { simpleText?: string };
+                };
+              }>;
+            };
+          }>;
+        };
+      };
+    };
+  };
+};
 
 class YouTubeLyrics extends Lyrics {
   constructor(data: YouTubeLyricsJSON3) {
@@ -62,15 +102,16 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
       .filter((_, el) =>
         $(el)
           .html()
-          .startsWith("var ytInitialPlayerResponse = ")
+          ?.startsWith("var ytInitialPlayerResponse = ") ?? false
       )
       .first()
       .html();
+    if (dataTag === null) throw new Error("Cannot find ytInitialPlayerResponse");
     const dataJSON = dataTag.substring(
       "var ytInitialPlayerResponse = ".length,
       dataTag.length - 1
     );
-    const data = JSON.parse(dataJSON);
+    const data = JSON.parse(dataJSON) as YouTubeInitialPlayerResponse;
     const timedTextTracks =
       data.captions?.playerCaptionsTracklistRenderer.captionTracks ?? [];
     return timedTextTracks.map((track) => ({
@@ -96,15 +137,16 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
       .filter((_, el) =>
         $(el)
           .html()
-          .startsWith("var ytInitialData = ")
+          ?.startsWith("var ytInitialData = ") ?? false
       )
       .first()
       .html();
+    if (dataTag === null) throw new Error("Cannot find ytInitialData");
     const dataJSON = dataTag.substring(
       "var ytInitialData = ".length,
       dataTag.length - 1
     );
-    const data = JSON.parse(dataJSON);
+    const data = JSON.parse(dataJSON) as YouTubeSearchInitialData;
 
     if (data.alerts && !data.contents) {
       const error = data.alerts.find(
@@ -114,12 +156,12 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
     }
 
     const renderers =
-      data.contents.twoColumnSearchResultsRenderer.primaryContents
+      data.contents!.twoColumnSearchResultsRenderer.primaryContents
         .sectionListRenderer.contents;
-    const itemSection = renderers.find((r) => r.itemSectionRenderer)
-      .itemSectionRenderer.contents;
+    const itemSection = renderers.find((r) => r.itemSectionRenderer)!
+      .itemSectionRenderer!.contents;
     const items = itemSection
-      .filter((r) => r.videoRenderer)
+      .filter((r): r is typeof r & { videoRenderer: NonNullable<typeof r.videoRenderer> } => !!r.videoRenderer)
       .map((r) => r.videoRenderer);
 
     const searchResults: YouTubeSearchResult[] = [];

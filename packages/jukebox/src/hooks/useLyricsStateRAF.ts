@@ -1,36 +1,47 @@
 import _ from "lodash";
-import { RefObject, useRef, useCallback, useEffect } from "react";
+import type { RefObject} from "react";
+import { useRef, useCallback, useEffect } from "react";
 import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { useNamedState } from "./useNamedState";
-import { LyricsFrameCallback } from "./types";
+import type { LyricsFrameCallback } from "./types";
+
+type NullableLyricsFrameCallback = (
+  thisLine: number | null,
+  lyrics: Parameters<LyricsFrameCallback>[1],
+  player: Parameters<LyricsFrameCallback>[2],
+  start: Parameters<LyricsFrameCallback>[3],
+  end: Parameters<LyricsFrameCallback>[4],
+) => void;
 
 function getStartEnd(
   playerRef: RefObject<HTMLAudioElement>,
   lyrics: LyricsKitLyrics,
-  line: number
-): [number, number] {
+  line: number | null,
+): [number | null, number | null] {
   if (playerRef.current === null || lyrics.lines.length === 0) {
     return [null, null];
   }
   if (line === null || !lyrics.lines[line]) {
-    if (lyrics?.lines?.length > 0) {
-      return [0, lyrics.lines[0].position];
+    const firstLine = lyrics.lines[0];
+    if (firstLine) {
+      return [0, firstLine.position];
     }
     return [0, playerRef.current.duration];
   }
+  const currentLine = lyrics.lines[line]!;
   if (line + 1 >= lyrics.lines.length) {
-    return [lyrics.lines[line].position, playerRef.current.duration];
+    return [currentLine.position, playerRef.current.duration];
   }
-  return [lyrics.lines[line].position, lyrics.lines[line + 1].position];
+  return [currentLine.position, lyrics.lines[line + 1]?.position ?? playerRef.current.duration];
 }
 
 export function useLyricsStateRAF(
   playerRef: RefObject<HTMLAudioElement>,
   lyrics: LyricsKitLyrics,
-  callback?: LyricsFrameCallback
-): number {
+  callback?: NullableLyricsFrameCallback,
+): number | null {
   const [line, setLine] = useNamedState<number | null>(null, "line");
-  const lineRef = useRef<number>(line);
+  const lineRef = useRef<number | null>(line);
   lineRef.current = line;
 
   const onTimeUpdate = useCallback(
@@ -39,7 +50,7 @@ export function useLyricsStateRAF(
       if (player !== null) {
         const time = player.currentTime;
         const [start, end] = getStartEnd(playerRef, lyrics, lineRef.current);
-        if (start > time || time >= end) {
+        if (start === null || end === null || start > time || time >= end) {
           const thisLineIndex = _.sortedIndexBy<{ position: number }>(
             lyrics.lines,
             { position: time },
@@ -51,7 +62,7 @@ export function useLyricsStateRAF(
           } else {
             const thisLine =
               thisLineIndex >= lyrics.lines.length ||
-              lyrics.lines[thisLineIndex].position > time
+              (lyrics.lines[thisLineIndex]?.position ?? Infinity) > time
                 ? thisLineIndex - 1
                 : thisLineIndex;
             if (thisLine != lineRef.current) {

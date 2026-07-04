@@ -102,7 +102,9 @@ export function SiteMetaClient() {
       }
     } catch (error) {
       console.error("Error updating LLM Models:", error);
-      toast.error(`Error: ${error.message || "Failed to update LLM Models"}`);
+      toast.error(
+        `Error: ${error instanceof Error ? error.message : "Failed to update LLM Models"}`
+      );
     }
   };
 

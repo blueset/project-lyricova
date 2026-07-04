@@ -49,7 +49,7 @@ builder.queryField("transliterate", (t) =>
 builder.queryField("furiganaMappings", (t) =>
   t.field({
     type: [FuriganaMappingRef],
-    resolve: async () => db.query.FuriganaMappings.findMany() as any,
+    resolve: async () => db.query.FuriganaMappings.findMany(),
   })
 );
 
@@ -70,7 +70,7 @@ builder.queryField("computeFuriganaMappings", (t) =>
             segmentedFurigana: furiganaGroups.join(","),
           };
         })
-        .filter((a): a is NonNullable<typeof a> => !!a) as any,
+        .filter((a): a is NonNullable<typeof a> => !!a),
   })
 );
 

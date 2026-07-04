@@ -42,17 +42,17 @@ import type { User } from "./User";
 export class UserPublicKeyCredential {
   id?: number;
 
-  userId: number;
+  userId!: number;
 
   user?: User;
 
-  externalId: string;
+  externalId!: string;
 
-  publicKey: string;
+  publicKey!: string;
 
   remarks?: string;
 
-  creationDate: Date;
+  creationDate!: Date;
 
-  updatedOn: Date;
+  updatedOn!: Date;
 }

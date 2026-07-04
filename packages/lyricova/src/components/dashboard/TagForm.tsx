@@ -70,14 +70,14 @@ const formSchema = z.object({
 });
 
 export interface TagFormProps {
-  slug?: string;
+  slug?: string | null;
   onSubmit?: () => void;
 }
 
 export function TagForm({ slug = null, onSubmit }: TagFormProps) {
   const apolloClient = useApolloClient();
   const { data, loading, refetch } = useQuery(TAG_QUERY, {
-    variables: { slug },
+    variables: { slug: slug ?? "" },
   });
 
   const values = {
@@ -123,14 +123,14 @@ export function TagForm({ slug = null, onSubmit }: TagFormProps) {
               await apolloClient.mutate({
                 mutation: NEW_TAG_MUTATION,
                 variables: {
-                  data: values,
+                  data: values as { name: string; slug: string; color: string },
                 },
               });
               onSubmit?.();
               toast.success("Tag created");
             }
           } catch (error) {
-            toast.error(error.message);
+            toast.error(error instanceof Error ? error.message : String(error));
             console.error(error);
           }
         })}

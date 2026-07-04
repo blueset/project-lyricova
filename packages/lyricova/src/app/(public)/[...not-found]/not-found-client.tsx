@@ -84,6 +84,8 @@ export function NotFoundClient() {
     const message404 = messages?.querySelector('div[aria-hidden="false"]');
     const caption = container.querySelector(`.${classes.caption}`);
 
+    if (!codes || !messages || !code404 || !message404) return;
+
     const em = parseFloat(getComputedStyle(container).fontSize);
     const height = container.clientHeight;
     const lineHeight = code404.clientHeight;
