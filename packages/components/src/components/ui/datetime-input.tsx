@@ -491,7 +491,7 @@ function safeSetSelection(
     }
   });
 }
-export function useEventCallback<T extends (...args: never[]) => unknown>(
+export function useEventCallback<T extends (...args: any[]) => unknown>(
   fn: T,
   deps: React.DependencyList
 ) {

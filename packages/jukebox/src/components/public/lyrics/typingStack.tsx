@@ -10,15 +10,15 @@ interface Props {
 
 export function TypingStackedLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
-  const doneRef = useRef<HTMLSpanElement>(null);
-  const typingRef = useRef<HTMLSpanElement>(null);
+  const doneRef = useRef<HTMLElement>(null);
+  const typingRef = useRef<HTMLElement>(null);
 
   const { sequenceQuery, currentFrameId } = usePlayerLyricsTypingState(
     lyrics,
     playerRef,
     0.75,
-    doneRef as React.RefObject<HTMLElement>,
-    typingRef as React.RefObject<HTMLElement>,
+    doneRef,
+    typingRef,
   );
 
   let statusNode: React.ReactNode = null;

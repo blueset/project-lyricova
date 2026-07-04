@@ -81,9 +81,9 @@ export function usePlayerLyricsTypingState(
     [lyrics.lines],
   );
 
-  const sequenceQuery = useQuery(SEQUENCE_QUERY, {
+  const sequenceQuery = useQuery<SequenceQueryResult>(SEQUENCE_QUERY, {
     variables: { text, furigana },
-  }) as unknown as QueryResult<SequenceQueryResult>;
+  });
 
   const [timeline, setTimeline] = useState<Timeline | null>(null);
 

@@ -165,7 +165,6 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
     ) => {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.filter = "blur(20px)";
       // draw coverImage cover the canvas keeping aspect ratio
