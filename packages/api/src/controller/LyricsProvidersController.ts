@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { Router } from "express";
-import axios from "axios";
+import { getJson, getText, HttpError } from "../utils/httpFetch";
 import cheerio from "cheerio";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "../drizzle/client";
@@ -20,7 +20,7 @@ export class LyricsProvidersController {
     this.router.get(
       "/hmiku/:id(\\d+)",
       adminOnlyMiddleware,
-      this.hmikuAtWikiSingle
+      this.hmikuAtWikiSingle,
     );
     this.router.get("/vocadb/:id(\\d+)", this.vocaDBSingle);
     this.router.get("/lyrics-kit", adminOnlyMiddleware, this.lyricsKit);
@@ -30,7 +30,7 @@ export class LyricsProvidersController {
   public hmikuAtWiki = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
       const keyword = req.query.q;
@@ -40,11 +40,9 @@ export class LyricsProvidersController {
           error: "No keyword provided on parameter `q`.",
         });
       }
-      const response = await axios.get<string>("https://w.atwiki.jp/hmiku/", {
-        params: {
-          cmd: "wikisearch",
-          keyword: keyword,
-        },
+      const response = await getText("https://w.atwiki.jp/hmiku/", {
+        cmd: "wikisearch",
+        keyword: keyword,
       });
       if (response.status !== 200) {
         return res.status(500).json({
@@ -89,13 +87,19 @@ export class LyricsProvidersController {
   public hmikuAtWikiSingle = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
       const id = req.params.id;
-      const response = await axios.get<string>(
-        `https://w.atwiki.jp/hmiku/pages/${id}.html`
+      const response = await getText(
+        `https://w.atwiki.jp/hmiku/pages/${id}.html`,
       );
+      if (response.status === 404) {
+        return res.status(404).json({
+          status: 404,
+          error: "Not found",
+        });
+      }
       if (response.status !== 200) {
         return res.status(500).json({
           status: response.status,
@@ -139,12 +143,6 @@ export class LyricsProvidersController {
         lyrics: lyrics,
       });
     } catch (e) {
-      if (axios.isAxiosError(e) && e.response?.status === 404) {
-        return res.status(404).json({
-          status: 404,
-          error: "Not found",
-        });
-      }
       next(e);
     }
   };
@@ -152,7 +150,7 @@ export class LyricsProvidersController {
   public vocaDBSingle = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
       const id = req.params.id;
@@ -168,22 +166,20 @@ export class LyricsProvidersController {
         }
         return res.json([]);
       }
-      const resp = await axios.get<SongForApiContract>(
+      const resp = await getJson<SongForApiContract>(
         `https://vocadb.net/api/songs/${id}`,
-        {
-          params: { fields: "Lyrics" },
-        }
+        { fields: "Lyrics" },
       );
-      if (resp.data.lyrics && resp.data.lyrics.length) {
-        return res.json(resp.data.lyrics);
+      if (resp.lyrics && resp.lyrics.length) {
+        return res.json(resp.lyrics);
       } else {
-        if (resp.data.originalVersionId) {
-          return res.redirect(`${resp.data.originalVersionId}`);
+        if (resp.originalVersionId) {
+          return res.redirect(`${resp.originalVersionId}`);
         }
         return res.json([]);
       }
     } catch (e) {
-      if (axios.isAxiosError(e) && e.response?.status === 404) {
+      if (e instanceof HttpError && e.status === 404) {
         return res.status(404).json({
           status: 404,
           error: "Not found",
@@ -196,7 +192,7 @@ export class LyricsProvidersController {
   public lyricsKit = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
       const artists = req.query.artists as string,
@@ -210,7 +206,7 @@ export class LyricsProvidersController {
         });
       }
       const lyrics = await this.lyricsProvider.getLyrics(
-        LyricsSearchRequest.fromInfo(title, artists, duration)
+        LyricsSearchRequest.fromInfo(title, artists, duration),
       );
       return res.json(
         lyrics.map((lrc) => {
@@ -221,7 +217,7 @@ export class LyricsProvidersController {
             metadata: lrc.metadata,
             tags: lrc.idTags,
           };
-        })
+        }),
       );
     } catch (e) {
       next(e);

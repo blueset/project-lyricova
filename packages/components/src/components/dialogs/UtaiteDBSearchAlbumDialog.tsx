@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import { fetchJson } from "../../utils/httpFetch";
 import type {
   PartialFindResult,
   AlbumForApiContract,
@@ -97,7 +97,7 @@ export function UtaiteDBSearchAlbumDialog({
       if (result.data) {
         setAlbum(result.data.enrolAlbumFromUtaiteDB);
         toast.success(
-          `Album "${result.data.enrolAlbumFromUtaiteDB.name}" is successfully enrolled.`
+          `Album "${result.data.enrolAlbumFromUtaiteDB.name}" is successfully enrolled.`,
         );
         handleClose();
       } else {
@@ -106,10 +106,10 @@ export function UtaiteDBSearchAlbumDialog({
     } catch (e) {
       console.error(
         `Error occurred while importing album #${selectedAlbum}.`,
-        e
+        e,
       );
       toast.error(
-        `Error occurred while importing album #${selectedAlbum}. (${e})`
+        `Error occurred while importing album #${selectedAlbum}. (${e})`,
       );
       toggleImporting(false);
     }
@@ -121,22 +121,20 @@ export function UtaiteDBSearchAlbumDialog({
     let active = true;
 
     (async () => {
-      const response = await axios.get<PartialFindResult<AlbumForApiContract>>(
+      const response = await fetchJson<PartialFindResult<AlbumForApiContract>>(
         "https://utaitedb.net/api/albums",
         {
-          params: {
-            query: keyword,
-            sort: "Name",
-            nameMatchMode: "Auto",
-            fields: "MainPicture",
-          },
-        }
+          query: keyword,
+          sort: "Name",
+          nameMatchMode: "Auto",
+          fields: "MainPicture",
+        },
       );
 
       const idResponse = keyword.match(/^\d+$/)
-        ? await axios.get<AlbumForApiContract>(
+        ? await fetchJson<AlbumForApiContract>(
             `https://utaitedb.net/api/albums/${keyword}`,
-            { params: { fields: "MainPicture" } }
+            { fields: "MainPicture" },
           )
         : null;
 
@@ -151,10 +149,10 @@ export function UtaiteDBSearchAlbumDialog({
           setResults([]);
           console.error(
             "Error occurred while loading search results from UtaiteDB",
-            response
+            response,
           );
           toast.error(
-            `Error occurred while loading search results from UtaiteDB. (${response.status} ${response.statusText})`
+            `Error occurred while loading search results from UtaiteDB. (${response.status} ${response.statusText})`,
           );
         }
       }

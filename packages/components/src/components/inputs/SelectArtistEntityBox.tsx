@@ -43,7 +43,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import _ from "lodash";
-import axios from "axios";
+import { fetchJson } from "../../utils/httpFetch";
 import { useApolloClient } from "@apollo/client";
 import { VocaDBSearchArtistDialog } from "../dialogs/VocaDBSearchArtistDialog";
 import { UtaiteDBSearchArtistDialog } from "../dialogs/UtaiteDBSearchArtistDialog";
@@ -54,10 +54,9 @@ import type {
   FieldValues,
   FieldPath,
   UseFormReturn,
-  FieldPathValue} from "react-hook-form";
-import {
-  useController,
+  FieldPathValue,
 } from "react-hook-form";
+import { useController } from "react-hook-form";
 
 export type ExtendedArtist = Partial<SelectArtistEntryFragment> & {
   vocaDBSuggestion?: boolean;
@@ -77,7 +76,7 @@ const LOCAL_ARTIST_ENTITY_QUERY = graphql(`
 
 interface Props<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > {
   form: UseFormReturn<TFieldValues>;
   fieldName: TName;
@@ -87,7 +86,7 @@ interface Props<
 
 export function SelectArtistEntityBox<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({ fieldName, labelName, title, form }: Props<TFieldValues, TName>) {
   const apolloClient = useApolloClient();
   const { field, fieldState } = useController({
@@ -138,7 +137,7 @@ export function SelectArtistEntityBox<
         setIsApolloLoading(false);
       }
     }, 300),
-    [apolloClient]
+    [apolloClient],
   );
 
   const fetchVocaDBResults = useCallback(
@@ -151,14 +150,12 @@ export function SelectArtistEntityBox<
 
       setIsVocaDBLoading(true);
       try {
-        const vocaDBResult = await axios.get<string[]>(
+        const vocaDBResult = await fetchJson<string[]>(
           "https://vocadb.net/api/artists/names",
           {
-            params: {
-              query: searchText,
-              nameMatchMode: "Auto",
-            },
-          }
+            query: searchText,
+            nameMatchMode: "Auto",
+          },
         );
 
         if (vocaDBResult.status === 200 && vocaDBResult.data) {
@@ -168,7 +165,7 @@ export function SelectArtistEntityBox<
               name: v,
               sortOrder: `"${v}"`,
               vocaDBSuggestion: true,
-            }))
+            })),
           );
         }
       } catch (e) {
@@ -177,7 +174,7 @@ export function SelectArtistEntityBox<
         setIsVocaDBLoading(false);
       }
     }, 300),
-    []
+    [],
   );
 
   const fetchUtaiteDBResults = useCallback(
@@ -190,14 +187,12 @@ export function SelectArtistEntityBox<
 
       setIsUtaiteDBLoading(true);
       try {
-        const utaiteDBResult = await axios.get<string[]>(
+        const utaiteDBResult = await fetchJson<string[]>(
           "https://utaitedb.net/api/artists/names",
           {
-            params: {
-              query: searchText,
-              nameMatchMode: "Auto",
-            },
-          }
+            query: searchText,
+            nameMatchMode: "Auto",
+          },
         );
 
         if (utaiteDBResult.status === 200 && utaiteDBResult.data) {
@@ -207,7 +202,7 @@ export function SelectArtistEntityBox<
               name: v,
               sortOrder: `"${v}"`,
               utaiteDBSuggestion: true,
-            }))
+            })),
           );
         }
       } catch (e) {
@@ -216,7 +211,7 @@ export function SelectArtistEntityBox<
         setIsUtaiteDBLoading(false);
       }
     }, 300),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -249,9 +244,9 @@ export function SelectArtistEntityBox<
           option.vocaDBSuggestion
             ? "v"
             : option.utaiteDBSuggestion
-            ? "u"
-            : option.id
-        }` === selectedOptionValue
+              ? "u"
+              : option.id
+        }` === selectedOptionValue,
     );
 
     if (!selectedOption) {
@@ -293,10 +288,14 @@ export function SelectArtistEntityBox<
       setOpen(false);
       setInputValue("");
     } else {
-      form.setValue(fieldName, selectedOption as FieldPathValue<TFieldValues, TName>, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
+      form.setValue(
+        fieldName,
+        selectedOption as FieldPathValue<TFieldValues, TName>,
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+        },
+      );
       setOpen(false);
       setInputValue("");
     }
@@ -349,13 +348,13 @@ export function SelectArtistEntityBox<
                     {(apolloResults.length > 0 ||
                       (value &&
                         !apolloResults.some(
-                          (option) => option.id === value.id
+                          (option) => option.id === value.id,
                         ))) && (
                       <CommandGroup heading="Local artists">
                         {/* Current value if not found in Apollo results */}
                         {value &&
                           !apolloResults.some(
-                            (option) => option.id === value.id
+                            (option) => option.id === value.id,
                           ) && (
                             <CommandItem
                               key={value.id ?? value.name}
@@ -409,7 +408,7 @@ export function SelectArtistEntityBox<
                                     "ml-auto h-4 w-4",
                                     value?.id === option.id
                                       ? "opacity-100"
-                                      : "opacity-0"
+                                      : "opacity-0",
                                   )}
                                 />
                               )}
@@ -521,10 +520,14 @@ export function SelectArtistEntityBox<
                     <CommandGroup>
                       <CommandItem
                         onSelect={() => {
-                          form.setValue(fieldName, null as FieldPathValue<TFieldValues, TName>, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          });
+                          form.setValue(
+                            fieldName,
+                            null as FieldPathValue<TFieldValues, TName>,
+                            {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            },
+                          );
                           setOpen(false);
                           setInputValue("");
                         }}

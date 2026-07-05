@@ -1,4 +1,4 @@
-import got from "got-cjs";
+import { getJson } from "./httpFetch";
 import {
   SongForApiContract,
   ArtistForApiContract,
@@ -6,17 +6,16 @@ import {
 } from "../types/vocadb";
 
 export async function getSong(
-  songId: string | number
+  songId: string | number,
 ): Promise<SongForApiContract> {
   try {
-    const song = await got
-      .get(`https://vocadb.net/api/songs/${songId}`, {
-        searchParams: {
-          fields:
-            "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
-        },
-      })
-      .json<SongForApiContract>();
+    const song = await getJson<SongForApiContract>(
+      `https://vocadb.net/api/songs/${songId}`,
+      {
+        fields:
+          "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
+      },
+    );
     return song;
   } catch (error) {
     console.error(`Error fetching song with ID ${songId}:`, error);
@@ -25,17 +24,16 @@ export async function getSong(
 }
 
 export async function getArtist(
-  artistId: string | number
+  artistId: string | number,
 ): Promise<ArtistForApiContract> {
   try {
-    const artist = await got
-      .get(`https://vocadb.net/api/artists/${artistId}`, {
-        searchParams: {
-          fields:
-            "AdditionalNames,ArtistLinks,ArtistLinksReverse,BaseVoicebank,Description,MainPicture,Names,Tags,WebLinks",
-        },
-      })
-      .json<ArtistForApiContract>();
+    const artist = await getJson<ArtistForApiContract>(
+      `https://vocadb.net/api/artists/${artistId}`,
+      {
+        fields:
+          "AdditionalNames,ArtistLinks,ArtistLinksReverse,BaseVoicebank,Description,MainPicture,Names,Tags,WebLinks",
+      },
+    );
     return artist;
   } catch (error) {
     console.error(`Error fetching artist with ID ${artistId}:`, error);
@@ -44,19 +42,18 @@ export async function getArtist(
 }
 
 export async function getAlbum(
-  albumId: string | number
+  albumId: string | number,
 ): Promise<AlbumForApiContract> {
   try {
-    const album = await got
-      .get(`https://vocadb.net/api/albums/${albumId}`, {
-        searchParams: {
-          fields:
-            "AdditionalNames,Artists,Description,Discs,Identifiers,MainPicture,Names,PVs,ReleaseEvent,Tags,Tracks,WebLinks",
-          songFields:
-            "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags,WebLinks",
-        },
-      })
-      .json<AlbumForApiContract>();
+    const album = await getJson<AlbumForApiContract>(
+      `https://vocadb.net/api/albums/${albumId}`,
+      {
+        fields:
+          "AdditionalNames,Artists,Description,Discs,Identifiers,MainPicture,Names,PVs,ReleaseEvent,Tags,Tracks,WebLinks",
+        songFields:
+          "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags,WebLinks",
+      },
+    );
     return album;
   } catch (error) {
     console.error(`Error fetching album with ID ${albumId}:`, error);
@@ -65,17 +62,16 @@ export async function getAlbum(
 }
 
 export async function getUtaiteDbSong(
-  songId: string | number
+  songId: string | number,
 ): Promise<SongForApiContract> {
   try {
-    const song = await got
-      .get(`https://utaitedb.net/api/songs/${songId}`, {
-        searchParams: {
-          fields:
-            "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags,WebLinks",
-        },
-      })
-      .json<SongForApiContract>();
+    const song = await getJson<SongForApiContract>(
+      `https://utaitedb.net/api/songs/${songId}`,
+      {
+        fields:
+          "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags,WebLinks",
+      },
+    );
     return song;
   } catch (error) {
     console.error(`Error fetching UtaiteDB song with ID ${songId}:`, error);
@@ -84,17 +80,16 @@ export async function getUtaiteDbSong(
 }
 
 export async function getUtaiteDbArtist(
-  artistId: string | number
+  artistId: string | number,
 ): Promise<ArtistForApiContract> {
   try {
-    const artist = await got
-      .get(`https://utaitedb.net/api/artists/${artistId}`, {
-        searchParams: {
-          fields:
-            "AdditionalNames,ArtistLinks,ArtistLinksReverse,BaseVoicebank,Description,MainPicture,Names,Tags,WebLinks",
-        },
-      })
-      .json<ArtistForApiContract>();
+    const artist = await getJson<ArtistForApiContract>(
+      `https://utaitedb.net/api/artists/${artistId}`,
+      {
+        fields:
+          "AdditionalNames,ArtistLinks,ArtistLinksReverse,BaseVoicebank,Description,MainPicture,Names,Tags,WebLinks",
+      },
+    );
     return artist;
   } catch (error) {
     console.error(`Error fetching UtaiteDB artist with ID ${artistId}:`, error);
@@ -103,40 +98,38 @@ export async function getUtaiteDbArtist(
 }
 
 export async function getUtaiteDbArtistLite(
-  artistId: string | number
+  artistId: string | number,
 ): Promise<ArtistForApiContract> {
   try {
-    const artist = await got
-      .get(`https://utaitedb.net/api/artists/${artistId}`, {
-        searchParams: {
-          fields: "WebLinks",
-        },
-      })
-      .json<ArtistForApiContract>();
+    const artist = await getJson<ArtistForApiContract>(
+      `https://utaitedb.net/api/artists/${artistId}`,
+      {
+        fields: "WebLinks",
+      },
+    );
     return artist;
   } catch (error) {
     console.error(
       `Error fetching UtaiteDB artist (lite) with ID ${artistId}:`,
-      error
+      error,
     );
     throw error;
   }
 }
 
 export async function getUtaiteDbAlbum(
-  albumId: string | number
+  albumId: string | number,
 ): Promise<AlbumForApiContract> {
   try {
-    const album = await got
-      .get(`https://utaitedb.net/api/albums/${albumId}`, {
-        searchParams: {
-          fields:
-            "AdditionalNames,Artists,Description,Discs,Identifiers,MainPicture,Names,PVs,ReleaseEvent,Tags,Tracks,WebLinks",
-          songFields:
-            "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags,WebLinks",
-        },
-      })
-      .json<AlbumForApiContract>();
+    const album = await getJson<AlbumForApiContract>(
+      `https://utaitedb.net/api/albums/${albumId}`,
+      {
+        fields:
+          "AdditionalNames,Artists,Description,Discs,Identifiers,MainPicture,Names,PVs,ReleaseEvent,Tags,Tracks,WebLinks",
+        songFields:
+          "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags,WebLinks",
+      },
+    );
     return album;
   } catch (error) {
     console.error(`Error fetching UtaiteDB album with ID ${albumId}:`, error);
@@ -145,28 +138,27 @@ export async function getUtaiteDbAlbum(
 }
 
 export async function getUtaiteDbAlbumLite(
-  albumId: string | number
+  albumId: string | number,
 ): Promise<AlbumForApiContract> {
   try {
-    const album = await got
-      .get(`https://utaitedb.net/api/albums/${albumId}`, {
-        searchParams: {
-          fields: "WebLinks",
-        },
-      })
-      .json<AlbumForApiContract>();
+    const album = await getJson<AlbumForApiContract>(
+      `https://utaitedb.net/api/albums/${albumId}`,
+      {
+        fields: "WebLinks",
+      },
+    );
     return album;
   } catch (error) {
     console.error(
       `Error fetching UtaiteDB album (lite) with ID ${albumId}:`,
-      error
+      error,
     );
     throw error;
   }
 }
 
 export function getVocaDbId(
-  entity: SongForApiContract | ArtistForApiContract | AlbumForApiContract
+  entity: SongForApiContract | ArtistForApiContract | AlbumForApiContract,
 ): number | undefined {
   for (const link of entity.webLinks ?? []) {
     const match = link.url.match(/https?:\/\/vocadb\.net\/(?:S|Ar|Al)\/(\d+)/);
@@ -181,7 +173,7 @@ export function getVocaDbId(
  * @param song Leaf song to retrieve from
  */
 export async function getOriginalSong(
-  song: SongForApiContract
+  song: SongForApiContract,
 ): Promise<SongForApiContract | null> {
   if (!(song.songType !== "Original" && song.originalVersionId)) return null;
   do {
@@ -191,7 +183,7 @@ export async function getOriginalSong(
 }
 
 export async function getUtaiteDbOriginalSong(
-  song: SongForApiContract
+  song: SongForApiContract,
 ): Promise<SongForApiContract | null> {
   if (!(song.songType !== "Original" && song.originalVersionId)) return null;
   do {
@@ -205,7 +197,7 @@ export async function getUtaiteDbOriginalSong(
  * @param voicebank Leaf voicebank to retrieve from
  */
 export async function getBaseVoiceBank(
-  voicebank: ArtistForApiContract
+  voicebank: ArtistForApiContract,
 ): Promise<ArtistForApiContract | null> {
   if (!voicebank.baseVoicebank) return null;
   do {
@@ -219,7 +211,7 @@ export async function getBaseVoiceBank(
  * @param voicebank Leaf voicebank to retrieve from
  */
 export async function getUtaiteDbBaseVoiceBank(
-  voicebank: ArtistForApiContract
+  voicebank: ArtistForApiContract,
 ): Promise<ArtistForApiContract | null> {
   if (!voicebank.baseVoicebank) return null;
   do {

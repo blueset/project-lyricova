@@ -18,9 +18,8 @@ import _ from "lodash";
 import crypto from "crypto";
 import multer from "multer";
 import { swapExt } from "../utils/path";
-import axios from "axios";
 import mime from "mime";
-import type * as Stream from "stream";
+import { Readable } from "stream";
 import { downloadFromStream } from "../utils/download";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 import tempy from "tempy";
@@ -70,7 +69,7 @@ export class MusicFileController {
         filename: (req, file, callback) => {
           callback(
             null,
-            MusicFileController.randomName() + Path.extname(file.originalname)
+            MusicFileController.randomName() + Path.extname(file.originalname),
           );
         },
       }),
@@ -78,7 +77,7 @@ export class MusicFileController {
         callback(
           null,
           file.originalname.match(/\.(gif|jpg|png|webp|bmp|tif|jpeg)$/gi) !==
-            null
+            null,
         );
       },
     });
@@ -93,7 +92,7 @@ export class MusicFileController {
       "/:id(\\d+)/cover",
       adminOnlyMiddleware,
       coverUpload.single("cover"),
-      this.uploadCoverArt
+      this.uploadCoverArt,
     );
     this.router.get("/:id(\\d+)", this.getSong);
     this.router.patch("/:id(\\d+)", adminOnlyMiddleware, this.writeToSong);
@@ -165,7 +164,7 @@ export class MusicFileController {
 
   /** Make a new MusicFile object from file path. */
   private async buildSongEntry(
-    path: string
+    path: string,
   ): Promise<typeof MusicFiles.$inferInsert> {
     const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
     const metadataPromise = this.getSongMetadata(path);
@@ -186,7 +185,7 @@ export class MusicFileController {
 
   /** Update an existing MusicFile object with data in file. */
   private async updateSongEntry(
-    entry: Pick<MusicFile, "id" | "path" | "hasLyrics" | "hash">
+    entry: Pick<MusicFile, "id" | "path" | "hasLyrics" | "hash">,
   ): Promise<MusicFile | null> {
     let needUpdate = false;
     const path = entry.path;
@@ -246,7 +245,7 @@ export class MusicFileController {
         [SONG_ID_TAG]: `${data.songId}`,
         [ALBUM_ID_TAG]: `${data.albumId}`,
       },
-      { preserveStreams: true, forceId3v2: forceId3v2 }
+      { preserveStreams: true, forceId3v2: forceId3v2 },
     );
   }
 
@@ -311,8 +310,8 @@ export class MusicFileController {
       });
       const knownPathsSet: Set<string> = new Set(
         databaseEntries.flatMap((entry) =>
-          entry.path === null ? [] : [entry.path]
-        )
+          entry.path === null ? [] : [entry.path],
+        ),
       );
       const filePathsSet: Set<string> = new Set(filePaths);
 
@@ -321,7 +320,7 @@ export class MusicFileController {
       const toDelete = setDifference(knownPathsSet, filePathsSet);
 
       console.log(
-        `toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`
+        `toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`,
       );
 
       // Remove records from database for removed files
@@ -339,8 +338,8 @@ export class MusicFileController {
       if (!dryRun) {
         const entriesToAdd = await Promise.all(
           [...toAdd].map((path) =>
-            limit(async () => this.buildSongEntry(path))
-          )
+            limit(async () => this.buildSongEntry(path)),
+          ),
         );
 
         console.log("entries_to_add done.");
@@ -357,20 +356,20 @@ export class MusicFileController {
 
       const toUpdateEntries = databaseEntries.filter(
         (entry): entry is typeof entry & { path: string } =>
-          entry.path !== null && toUpdate.has(entry.path)
+          entry.path !== null && toUpdate.has(entry.path),
       );
       let updateResults: (MusicFile | null)[] = [];
       if (!dryRun) {
         updateResults = await Promise.all(
           toUpdateEntries.map((entry) =>
-            limit(async () => this.updateSongEntry(entry))
-          )
+            limit(async () => this.updateSongEntry(entry)),
+          ),
         );
       }
 
       const updatedCount = updateResults.reduce(
         (prev: number, curr) => prev + (curr === null ? 0 : 1),
-        0
+        0,
       );
       res.send({
         status: "ok",
@@ -407,7 +406,7 @@ export class MusicFileController {
     try {
       const songs = await db.query.MusicFiles.findMany();
       return res.json(
-        songs.map((s) => ({ fullPath: fullPathOf(s.path!), ...s }))
+        songs.map((s) => ({ fullPath: fullPathOf(s.path!), ...s })),
       );
     } catch (e) {
       next(e);
@@ -446,7 +445,9 @@ export class MusicFileController {
    */
   public getSong = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      const song = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, parseInt(req.params.id)),
+      });
       if (!song) {
         return res.status(404).json({ status: 404, message: "Not found" });
       }
@@ -503,10 +504,12 @@ export class MusicFileController {
   public getSongFile = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
-      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      const song = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, parseInt(req.params.id)),
+      });
       if (!song) {
         return res
           .status(404)
@@ -571,10 +574,12 @@ export class MusicFileController {
   public getSongLRC = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
-      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      const song = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, parseInt(req.params.id)),
+      });
       if (!song) {
         return res
           .status(404)
@@ -639,10 +644,12 @@ export class MusicFileController {
   public getSongLRCX = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
-      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      const song = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, parseInt(req.params.id)),
+      });
       if (!song) {
         return res
           .status(404)
@@ -726,10 +733,12 @@ export class MusicFileController {
   public writeToSong = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
-      const song = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      const song = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, parseInt(req.params.id)),
+      });
       if (!song) {
         return res.status(404).json({ status: 404, message: "Not found" });
       }
@@ -816,7 +825,9 @@ export class MusicFileController {
    *                   description: Error message
    */
   public getCoverArt = async (req: Request, res: Response) => {
-    const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+    const musicFile = await db.query.MusicFiles.findFirst({
+      where: eq(MusicFiles.id, parseInt(req.params.id)),
+    });
     if (!musicFile) {
       return res
         .status(404)
@@ -837,7 +848,9 @@ export class MusicFileController {
 
     const coverUrl = tempy.file({ extension: "png" });
     try {
-      await ffmetadata.readAsync(fullPathOf(musicFile.path), { coverUrl: coverUrl });
+      await ffmetadata.readAsync(fullPathOf(musicFile.path), {
+        coverUrl: coverUrl,
+      });
     } catch (e) {
       console.log("Error while extracting cover art from file", e);
       return res.status(500).json({ status: 404, message: e });
@@ -977,7 +990,9 @@ export class MusicFileController {
     let coverPath = "";
 
     try {
-      const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(req.params.id)) });
+      const musicFile = await db.query.MusicFiles.findFirst({
+        where: eq(MusicFiles.id, parseInt(req.params.id)),
+      });
       if (!musicFile) {
         return res
           .status(404)
@@ -991,17 +1006,14 @@ export class MusicFileController {
 
       try {
         if (req.body.url) {
-          const response = await axios.get<Stream>(req.body.url, {
-            responseType: "stream",
-          });
-          if (response.status !== 200) {
+          const response = await fetch(req.body.url);
+          if (!response.ok || !response.body) {
             return res.status(504).json({
               status: 504,
               message: `Request to download the cover has returned a ${response.status} error.`,
             });
           }
-          const contentType = (response.headers?.["content-type"] ??
-            "") as string;
+          const contentType = response.headers.get("content-type") ?? "";
           if (!contentType.startsWith("image/")) {
             return res.status(415).json({
               status: 415,
@@ -1011,10 +1023,17 @@ export class MusicFileController {
           coverPath = Path.join(
             this.uploadDirectory,
             `${MusicFileController.randomName()}.${mime.getExtension(
-              contentType
-            )}`
+              contentType,
+            )}`,
           );
-          await downloadFromStream(response.data, coverPath);
+          await downloadFromStream(
+            Readable.fromWeb(
+              response.body as unknown as Parameters<
+                typeof Readable.fromWeb
+              >[0],
+            ),
+            coverPath,
+          );
         } else if (req.file) {
           coverPath = req.file.path;
         } else {
@@ -1030,7 +1049,7 @@ export class MusicFileController {
           {
             forceId3v2: musicFile.path.toLowerCase().endsWith(".aiff"),
             attachments: [coverPath],
-          }
+          },
         );
       } catch (e) {
         console.log("Error while saving cover art to file", e);

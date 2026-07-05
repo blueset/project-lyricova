@@ -2,7 +2,6 @@ import { toast } from "sonner";
 import { useNamedState } from "../../../hooks/useNamedState";
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect } from "react";
-import axios from "axios";
 import { useDropzone } from "react-dropzone";
 import { useAuthContext } from "@lyricova/components";
 import { Music, ImageOff } from "lucide-react";
@@ -38,25 +37,25 @@ export default function CoverArtPanel({
 }: Props) {
   const [selectedImage, setSelectedImage] = useNamedState<SelectedImage | null>(
     null,
-    "selectedImage"
+    "selectedImage",
   );
   const [urlField, setUrlField] = useNamedState<string>("", "urlField");
   const [isSubmitting, toggleSubmitting] = useNamedState(false, "isSubmitting");
   const [cacheBustingToken, setCacheBustingToken] = useNamedState(
     new Date().getTime(),
-    "cacheBustingToken"
+    "cacheBustingToken",
   );
 
   // Apply URL.
   const setImageUrl = useCallback(
     (url: string) => () => setSelectedImage({ url }),
-    [setSelectedImage]
+    [setSelectedImage],
   );
   const handleUrlFieldOnChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       setUrlField(event.target.value);
     },
-    [setUrlField]
+    [setUrlField],
   );
 
   // Apply file selection
@@ -67,7 +66,7 @@ export default function CoverArtPanel({
         setSelectedImage({ blob: file });
       }
     },
-    [setSelectedImage]
+    [setSelectedImage],
   );
 
   // Drag and drop file
@@ -77,7 +76,7 @@ export default function CoverArtPanel({
         setSelectedImage({ blob: acceptedFiles[0] });
       }
     },
-    [setSelectedImage]
+    [setSelectedImage],
   );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     noClick: true,
@@ -99,7 +98,7 @@ export default function CoverArtPanel({
         break;
       }
     },
-    [setSelectedImage]
+    [setSelectedImage],
   );
   useEffect(() => {
     const thisOnPaste = onPaste;
@@ -127,11 +126,12 @@ export default function CoverArtPanel({
     }
 
     try {
-      const result = await axios.patch(`/api/files/${fileId}/cover`, data, {
+      const result = await fetch(`/api/files/${fileId}/cover`, {
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
+        body: data,
       });
 
       if (result.status === 200) {
@@ -140,7 +140,10 @@ export default function CoverArtPanel({
         setCacheBustingToken(new Date().getTime());
         toggleSubmitting(false);
       } else {
-        toast.error(result.data.message);
+        const body = await result
+          .json()
+          .catch(() => ({ message: result.statusText }));
+        toast.error(body.message);
         toggleSubmitting(false);
       }
     } catch (e) {
@@ -184,7 +187,7 @@ export default function CoverArtPanel({
         <Button asChild variant="outline" className="w-full">
           <a
             href={`https://www.google.com/search?q=${encodeURIComponent(
-              trackName
+              trackName,
             )}`}
             target="_blank"
             rel="noreferrer"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import { fetchJson } from "../../utils/httpFetch";
 import type {
   PartialFindResult,
   SongForApiContract,
@@ -97,7 +97,7 @@ export function UtaiteDBSearchSongDialog({
       if (result.data) {
         setSong(result.data.enrolSongFromUtaiteDB);
         toast.success(
-          `Song "${result.data.enrolSongFromUtaiteDB.name}" is successfully enrolled.`
+          `Song "${result.data.enrolSongFromUtaiteDB.name}" is successfully enrolled.`,
         );
         handleClose();
       } else {
@@ -106,7 +106,7 @@ export function UtaiteDBSearchSongDialog({
     } catch (e) {
       console.error(`Error occurred while importing song #${selectedSong}.`, e);
       toast.error(
-        `Error occurred while importing song #${selectedSong}. (${e})`
+        `Error occurred while importing song #${selectedSong}. (${e})`,
       );
       toggleImporting(false);
     }
@@ -118,22 +118,20 @@ export function UtaiteDBSearchSongDialog({
     let active = true;
 
     (async () => {
-      const response = await axios.get<PartialFindResult<SongForApiContract>>(
+      const response = await fetchJson<PartialFindResult<SongForApiContract>>(
         "https://utaitedb.net/api/songs",
         {
-          params: {
-            query: keyword,
-            sort: "FavoritedTimes",
-            nameMatchMode: "Auto",
-            fields: "ThumbUrl",
-          },
-        }
+          query: keyword,
+          sort: "FavoritedTimes",
+          nameMatchMode: "Auto",
+          fields: "ThumbUrl",
+        },
       );
 
       const idResponse = keyword.match(/^\d+$/)
-        ? await axios.get<SongForApiContract>(
+        ? await fetchJson<SongForApiContract>(
             `https://utaitedb.net/api/songs/${keyword}`,
-            { params: { fields: "ThumbUrl" } }
+            { fields: "ThumbUrl" },
           )
         : null;
 
@@ -148,10 +146,10 @@ export function UtaiteDBSearchSongDialog({
           setResults([]);
           console.error(
             "Error occurred while loading search results from UtaiteDB",
-            response
+            response,
           );
           toast.error(
-            `Error occurred while loading search results from UtaiteDB. (${response.status} ${response.statusText})`
+            `Error occurred while loading search results from UtaiteDB. (${response.status} ${response.statusText})`,
           );
         }
       }

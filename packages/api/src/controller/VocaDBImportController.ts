@@ -1,8 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { Router } from "express";
 import type { SongForApiContract } from "../types/vocadb";
-import type { AxiosInstance } from "axios";
-import axios from "axios";
+import { getJson } from "../utils/httpFetch";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 import { saveSongFromVocaDB } from "../utils/vocadbImport";
 import { Songs } from "../drizzle/schema";
@@ -10,30 +9,25 @@ import { Songs } from "../drizzle/schema";
 type SongRow = typeof Songs.$inferSelect;
 
 export class VocaDBImportController {
-  private axios: AxiosInstance;
   public router: Router;
 
   constructor() {
-    this.axios = axios.create({ responseType: "json" });
     this.router = Router();
     this.router.get(
       "/enrolSong/:id(\\d+)",
       adminOnlyMiddleware,
-      this.enrolSong
+      this.enrolSong,
     );
   }
 
   private async getSong(songId: string | number): Promise<SongForApiContract> {
-    const song = await this.axios.get<SongForApiContract>(
+    return getJson<SongForApiContract>(
       `https://vocadb.net/api/songs/${songId}`,
       {
-        params: {
-          fields:
-            "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
-        },
-      }
+        fields:
+          "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
+      },
     );
-    return song.data;
   }
 
   /**
@@ -41,7 +35,7 @@ export class VocaDBImportController {
    * @param song Leaf song to retrieve from
    */
   private async getOriginalSong(
-    song: SongForApiContract
+    song: SongForApiContract,
   ): Promise<SongForApiContract | null> {
     if (!(song.songType !== "Original" && song.originalVersionId)) return null;
     do {
@@ -53,7 +47,7 @@ export class VocaDBImportController {
   public enrolSong = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
       const songId = req.params.id;
