@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 import { OPENAI_MODEL } from "../utils/secret";
 import { getTranslationAlignmentLLMPrompt } from "../utils/llmPrompt";
-import { ModelMessage, streamText } from "ai";
+import { streamText } from "ai";
 import { createAzure } from "@ai-sdk/azure";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 
@@ -15,7 +15,7 @@ export class LLMController {
     this.router.post(
       "/translation-alignment",
       adminOnlyMiddleware,
-      this.translationAlignment
+      this.translationAlignment,
     );
   }
 
@@ -43,10 +43,7 @@ export class LLMController {
       abortController.abort();
     });
 
-    const messages = getTranslationAlignmentLLMPrompt(
-      original,
-      translation
-    ) as ModelMessage[];
+    const messages = getTranslationAlignmentLLMPrompt(original, translation);
 
     try {
       const result = await streamText({
@@ -82,7 +79,7 @@ export class LLMController {
         console.log("incoming chunk", chunk);
         if (chunk.type === "start-step") {
           res.write(
-            `data: ${JSON.stringify({ reasoning: chunk.request.body })}\n\n`
+            `data: ${JSON.stringify({ reasoning: chunk.request.body })}\n\n`,
           );
           res.flush();
         } else if (chunk.type === "text-delta") {
@@ -159,7 +156,7 @@ export class LLMController {
         res.write(
           `data: ${JSON.stringify({
             error: `Error parsing response: ${e}`,
-          })}\n\n`
+          })}\n\n`,
         );
         res.flush();
         res.end();

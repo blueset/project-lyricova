@@ -1,9 +1,9 @@
-import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import type { ModelMessage } from "ai";
 
 export function getTranslationAlignmentLLMPrompt(
   original: string,
-  translation: string
-): ChatCompletionMessageParam[] {
+  translation: string,
+): ModelMessage[] {
   return [
     {
       role: "system",
@@ -60,7 +60,7 @@ export function getTranslationAlignmentLLMPrompt(
           ],
         },
         undefined,
-        2
+        2,
       ),
     },
     {
@@ -117,7 +117,7 @@ export function getTranslationAlignmentLLMPrompt(
           },
         ],
         undefined,
-        2
+        2,
       ),
     },
     {
@@ -140,7 +140,7 @@ export function getTranslationAlignmentLLMPrompt(
           ],
         },
         undefined,
-        2
+        2,
       ),
     },
     {
@@ -162,7 +162,7 @@ export function getTranslationAlignmentLLMPrompt(
           },
         ],
         undefined,
-        2
+        2,
       ),
     },
     {
@@ -181,7 +181,7 @@ export function getTranslationAlignmentLLMPrompt(
           ],
         },
         undefined,
-        2
+        2,
       ),
     },
     {
@@ -206,7 +206,7 @@ export function getTranslationAlignmentLLMPrompt(
           },
         ],
         undefined,
-        2
+        2,
       ),
     },
     {
@@ -217,8 +217,8 @@ export function getTranslationAlignmentLLMPrompt(
           translation: translation.split("\n"),
         },
         undefined,
-        2
+        2,
       ),
     },
-  ] as ChatCompletionMessageParam[];
+  ] as ModelMessage[];
 }

@@ -93,7 +93,6 @@
     "node-id3": "^0.2.1",
     "notistack": "^3.0.2",
     "novel-segment": "^2.7.53",
-    "openai": "^4.57.3",
     "p-limit": "^3.1.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
