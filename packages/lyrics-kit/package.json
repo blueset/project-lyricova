@@ -51,7 +51,6 @@
   "devDependencies": {
     "@swc/core": "^1.11.9",
     "@swc/jest": "^0.2.37",
-    "@types/cheerio": "^0.22.16",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.14.149",
     "@types/request-promise-native": "^1.0.17",
