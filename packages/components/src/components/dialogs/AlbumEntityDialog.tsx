@@ -106,7 +106,8 @@ const formSchema = z.object({
     z.object({
       song: z
         .any()
-        .refine((val) => val !== null, "Song entity must be selected"),
+        .refine((val) => val !== null, "Song entity must be selected")
+        .optional(),
       diskNumber: z.number().positive().int().optional(),
       trackNumber: z.number().positive().int().optional(),
       name: z.string().optional(),

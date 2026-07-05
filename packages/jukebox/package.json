@@ -39,7 +39,7 @@
     "@emotion/styled": "^11.10.6",
     "@graphql-typed-document-node/core": "^3.2.0",
     "@hello-pangea/dnd": "^18.0.1",
-    "@hookform/resolvers": "^5.0.1",
+    "@hookform/resolvers": "^5.4.0",
     "@lyricova/components": "^0.1.0",
     "@next/bundle-analyzer": "^15.3.1",
     "@pixi/app": "^7.4.3",
@@ -130,7 +130,7 @@
     "ws": "^8.21.0",
     "yup": "^1.6.1",
     "zen-observable-ts": "^1.2.5",
-    "zod": "^3.23.8",
+    "zod": "^4.4.3",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
