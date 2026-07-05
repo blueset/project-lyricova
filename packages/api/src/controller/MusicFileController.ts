@@ -6,7 +6,6 @@ import { fullPathOf } from "../utils/musicFileScan";
 type MusicFile = typeof MusicFiles.$inferSelect;
 import type { Request, Response, NextFunction } from "express";
 import { Router } from "express";
-import glob from "glob";
 import { MUSIC_FILES_PATH } from "../utils/secret";
 import ffprobe from "ffprobe-client";
 import ffmetadata from "../utils/ffmetadata";
@@ -304,10 +303,12 @@ export class MusicFileController {
           hasLyrics: true,
         },
       });
-      const filePaths = glob.sync(`${MUSIC_FILES_PATH}/**/*.{mp3,flac,aiff}`, {
-        nosort: true,
-        nocase: true,
-      });
+      // Native fs.glob has no `nocase` option, so the audio extensions are
+      // spelled out as case-insensitive character classes (mp3/flac/aiff in any
+      // case). Results are absolute paths; order is irrelevant (used as a Set).
+      const filePaths = fs.globSync(
+        `${MUSIC_FILES_PATH}/**/*.{[mM][pP]3,[fF][lL][aA][cC],[aA][iI][fF][fF]}`,
+      );
       const knownPathsSet: Set<string> = new Set(
         databaseEntries.flatMap((entry) =>
           entry.path === null ? [] : [entry.path],
