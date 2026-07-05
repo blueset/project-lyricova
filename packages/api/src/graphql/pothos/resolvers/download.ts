@@ -1,7 +1,7 @@
 import Path from "path";
 import { MUSIC_FILES_PATH, YTDLP_PATH } from "../../../utils/secret";
 import { swapExt } from "../../../utils/path";
-import YTDlpWrap from "yt-dlp-wrap";
+import YTDlpWrap from "yt-dlp-wrap-plus";
 import { builder } from "../builder";
 import {
   pubsub,
