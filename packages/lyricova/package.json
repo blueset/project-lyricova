@@ -38,7 +38,7 @@
     "@mui/material-nextjs": "^7.0.0",
     "@mui/x-data-grid": "^7.22.2",
     "@next/bundle-analyzer": "15.3.1",
-    "@posthog/nextjs-config": "^1.0.0",
+    "@posthog/nextjs-config": "^1.9.68",
     "@radix-ui/react-portal": "^1.1.9",
     "@resvg/resvg-js": "^2.4.1",
     "@tailwindcss/postcss": "^4.1.3",

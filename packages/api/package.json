@@ -64,7 +64,7 @@
     "@emotion/styled": "^11.10.5",
     "@graphql-tools/schema": "^8.5.1",
     "@openrouter/ai-sdk-provider": "^1.4.1",
-    "@posthog/cli": "^0.5.16",
+    "@posthog/cli": "^0.7.34",
     "@pothos/core": "^4.13.0",
     "@pothos/plugin-drizzle": "^0.8.0",
     "@pothos/plugin-scope-auth": "^4.1.6",
