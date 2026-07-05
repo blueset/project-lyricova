@@ -83,7 +83,7 @@
     "concat-stream": "^2.0.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.0.3",
     "drizzle-orm": "^0.45.2",
     "errorhandler": "^1.5.1",
     "eslint": "^9.39.2",

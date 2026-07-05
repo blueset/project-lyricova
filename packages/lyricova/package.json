@@ -46,7 +46,7 @@
     "@vercel/og": "^0.4.0",
     "base64url": "^3.0.1",
     "body-scroll-lock": "^4.0.0-beta.0",
-    "clsx": "^1.2.1",
+    "clsx": "^2.1.1",
     "colorjs.io": "^0.5.2",
     "date-fns": "^2.30.0",
     "dotenv": "^16.0.3",
