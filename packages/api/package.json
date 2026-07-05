@@ -87,7 +87,7 @@
     "drizzle-orm": "^0.45.2",
     "errorhandler": "^1.5.1",
     "eslint": "^9.39.2",
-    "esm": "^3.2.25",
+
     "express": "^4.22.2",
     "express-flash": "0.0.2",
     "express-mysql-session": "^3.0.3",
@@ -105,7 +105,6 @@
     "graphql": "^16.12.0",
     "graphql-scalars": "^1.25.0",
     "graphql-subscriptions": "^2.0.0",
-    "graphql-type-json": "^0.3.1",
     "graphql-ws": "^6.0.4",
     "hasha": "^5.1.0",
     "jsdom": "^26.0.0",
