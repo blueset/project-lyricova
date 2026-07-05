@@ -4,7 +4,7 @@ import { graphql } from "@lyricova/components/gql";
 import { useAuthContext, NextComposedLink } from "@lyricova/components";
 import React from "react";
 import _ from "lodash";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import {
   playTrack,
   toggleShuffle,

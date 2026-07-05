@@ -10,7 +10,7 @@ import {
 } from "@lyricova/components";
 import React, { Fragment } from "react";
 import _ from "lodash";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import type { LibraryAlbumDetailsQuery } from "@lyricova/components/gql/graphql";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, playTrack, toggleShuffle } from "@/redux/public/playlist";

@@ -10,7 +10,7 @@ import {
 } from "@lyricova/components";
 import React, { Fragment } from "react";
 import _ from "lodash";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, playTrack, toggleShuffle } from "@/redux/public/playlist";
 import TrackListRow from "@/components/public/library/TrackListRow";

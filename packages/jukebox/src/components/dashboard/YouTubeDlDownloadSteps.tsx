@@ -9,7 +9,7 @@ import { useCallback } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
 import { useApolloClient, useLazyQuery } from "@apollo/client/react";
 import { toast } from "sonner";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import { ExternalLink } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";
 import { swapExt } from "@/frontendUtils/path";

@@ -6,12 +6,12 @@ export const ENVIRONMENT = process.env.NODE_ENV;
 const prod = ENVIRONMENT === "production"; // Anything else is treated as 'dev'
 
 if (fs.existsSync(".env")) {
-  dotenv.config({ path: ".env" });
+  dotenv.config({ path: ".env", quiet: true });
   if (!prod) {
     logger.debug("Using .env file to supply config environment variables");
   }
 } else {
-  dotenv.config({ path: ".env.example" }); // you can delete this after you create your own .env file!
+  dotenv.config({ path: ".env.example", quiet: true }); // you can delete this after you create your own .env file!
   if (!prod) {
     logger.warn(
       "No .env file found. Using .env.example file to supply config environment variables"

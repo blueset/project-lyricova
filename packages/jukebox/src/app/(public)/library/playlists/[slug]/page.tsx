@@ -12,7 +12,7 @@ import type {
   PlaylistRecentlyReviewedMusicFilesQuery,
 } from "@lyricova/components/gql/graphql";
 import _ from "lodash";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import React from "react";
 import PlaylistAvatar, { gradients, hash } from "@/components/PlaylistAvatar";
 import { useAppDispatch } from "@/redux/public/store";
