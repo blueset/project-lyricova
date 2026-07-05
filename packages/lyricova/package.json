@@ -25,7 +25,6 @@
   "homepage": "https://github.com/blueset/project-lyricova#readme",
   "dependencies": {
     "@apollo/client": "^4.2.5",
-    "@as-integrations/express4": "^1.1.2",
     "@emotion/cache": "^11.13.1",
     "@emotion/react": "^11.10.6",
     "@emotion/server": "^11.11.0",
@@ -46,7 +45,6 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.0.3",
     "eslint": "^9.39.2",
-    "express": "^4.22.2",
     "framer-motion": "^12.7.4",
     "graphql": "^16.12.0",
     "gsap": "^3.6.1",

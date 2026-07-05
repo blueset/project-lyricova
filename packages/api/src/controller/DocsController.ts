@@ -3,6 +3,7 @@ import { Router } from "express";
 import swaggerJsdoc from "swagger-jsdoc";
 import { apiReference } from "@scalar/express-api-reference";
 import { ENVIRONMENT } from "../utils/secret";
+import { compat } from "../utils/expressCompat";
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -90,11 +91,13 @@ export class DocsController {
     this.router.get("/swagger.json", this.swaggerJson);
     this.router.use(
       "/docs",
-      apiReference({
-        content: this.swaggerSpec,
-        pageTitle: "Lyricova API Documentation",
-        title: "Lyricova API Documentation",
-      })
+      compat(
+        apiReference({
+          content: this.swaggerSpec,
+          pageTitle: "Lyricova API Documentation",
+          title: "Lyricova API Documentation",
+        }),
+      ),
     );
   }
 

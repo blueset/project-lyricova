@@ -1,7 +1,6 @@
 import express from "express";
 import type { Request, Response } from "express";
 import compression from "compression";
-import bodyParser from "body-parser";
 import flash from "express-flash";
 import session from "express-session";
 import passport from "passport";
@@ -12,6 +11,7 @@ import expressMySQLSession from "express-mysql-session";
 import { pool as drizzlePool } from "./drizzle/client";
 import { postHog } from "./utils/posthog";
 import { setupExpressErrorHandler } from "posthog-node";
+import { compat } from "./utils/expressCompat";
 
 const MySQLStore = expressMySQLSession(session);
 
@@ -19,23 +19,25 @@ export default () => {
   const app = express();
 
   app.set("port", process.env.API_PORT || 8083);
-  app.use(compression());
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(bodyParser.text({ type: "text/*" }));
+  app.use(compat(compression()));
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.text({ type: "text/*" }));
   app.use(
-    session({
-      resave: false,
-      saveUninitialized: false,
-      proxy: true,
-      secret: SESSION_SECRET,
-      // Reuse the Drizzle mysql2 pool (shares the DB_URI connection settings).
-      store: new MySQLStore({}, drizzlePool.pool),
-    })
+    compat(
+      session({
+        resave: false,
+        saveUninitialized: false,
+        proxy: true,
+        secret: SESSION_SECRET,
+        // Reuse the Drizzle mysql2 pool (shares the DB_URI connection settings).
+        store: new MySQLStore({}, drizzlePool.pool),
+      }),
+    ),
   );
-  app.use(passport.initialize());
-  app.use(passport.session());
-  app.use(flash());
+  app.use(compat(passport.initialize()));
+  app.use(compat(passport.session()));
+  app.use(compat(flash()));
 
   registerRoutes(app);
   if (postHog) {

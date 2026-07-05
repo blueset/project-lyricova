@@ -59,7 +59,7 @@ export class PlaylistController {
    */
   public buildPlaylist = async (req: Request, res: Response) => {
     const playlist = await db.query.Playlists.findFirst({
-      where: eq(Playlists.slug, req.params.slug),
+      where: eq(Playlists.slug, req.params.slug as string),
     });
     if (!playlist) {
       return res

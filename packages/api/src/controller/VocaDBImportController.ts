@@ -1,4 +1,5 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
+import { requireNumericParams } from "../utils/numericParam";
 import { Router } from "express";
 import type { SongForApiContract } from "../types/vocadb";
 import { getJson } from "../utils/httpFetch";
@@ -13,11 +14,8 @@ export class VocaDBImportController {
 
   constructor() {
     this.router = Router();
-    this.router.get(
-      "/enrolSong/:id(\\d+)",
-      adminOnlyMiddleware,
-      this.enrolSong,
-    );
+    requireNumericParams(this.router, "id");
+    this.router.get("/enrolSong/:id", adminOnlyMiddleware, this.enrolSong);
   }
 
   private async getSong(songId: string | number): Promise<SongForApiContract> {
@@ -44,28 +42,20 @@ export class VocaDBImportController {
     return song;
   }
 
-  public enrolSong = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const songId = req.params.id;
-      // Fetch song data
-      const song = await this.getSong(songId);
-      // Recursively get original song
-      const originalSong = await this.getOriginalSong(song);
-      let originalSongEntity: SongRow | null = null;
+  public enrolSong = async (req: Request, res: Response) => {
+    const songId = req.params.id as string;
+    // Fetch song data
+    const song = await this.getSong(songId);
+    // Recursively get original song
+    const originalSong = await this.getOriginalSong(song);
+    let originalSongEntity: SongRow | null = null;
 
-      if (originalSong !== null) {
-        originalSongEntity = await saveSongFromVocaDB(originalSong, null);
-      }
-      console.dir(originalSongEntity);
-      const songEntity = await saveSongFromVocaDB(song, originalSongEntity);
-
-      res.json({ status: "OK", data: songEntity });
-    } catch (e) {
-      next(e);
+    if (originalSong !== null) {
+      originalSongEntity = await saveSongFromVocaDB(originalSong, null);
     }
+    console.dir(originalSongEntity);
+    const songEntity = await saveSongFromVocaDB(song, originalSongEntity);
+
+    res.json({ status: "OK", data: songEntity });
   };
 }

@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { requireNumericParams } from "../utils/numericParam";
 import { and, eq, isNull, like, or } from "drizzle-orm";
 import shuffle from "lodash/shuffle";
 import { db } from "../drizzle/client";
@@ -14,9 +15,8 @@ function deriveVideoUrl(vocaDbJson: unknown): { has: boolean; url?: string } {
   const url =
     pvs.find((pv) => pv.service === "Youtube" && pv.pvType === "Original")
       ?.url ??
-    pvs.find(
-      (pv) => pv.service === "NicoNicoDouga" && pv.pvType === "Original"
-    )?.url ??
+    pvs.find((pv) => pv.service === "NicoNicoDouga" && pv.pvType === "Original")
+      ?.url ??
     pvs.find((pv) => pv.pvType === "Original")?.url ??
     pvs.find((pv) => pv.service === "Youtube")?.url ??
     pvs.find((pv) => pv.service === "NicoNicoDouga")?.url ??
@@ -29,9 +29,10 @@ export class EntriesController {
   public router: Router;
   constructor() {
     this.router = Router();
+    requireNumericParams(this.router, "entryId");
     this.router.get("/", this.getEntries);
     this.router.get("/screensaver", this.getScreensaver);
-    this.router.get("/:entryId(\\d+)", this.getEntry);
+    this.router.get("/:entryId", this.getEntry);
   }
 
   /**
@@ -204,7 +205,7 @@ export class EntriesController {
    *                   const: "Entry not found"
    */
   private async getEntry(req: Request, res: Response) {
-    const entryId = parseInt(req.params.entryId);
+    const entryId = parseInt(req.params.entryId as string);
     const entry = await db.query.Entries.findFirst({
       where: eq(Entries.id, entryId),
       with: {
@@ -277,7 +278,7 @@ export class EntriesController {
                     },
                   },
                 ]
-              : []
+              : [],
           )
           .sort((a, b) => a.id - b.id);
         const { has, url } = deriveVideoUrl(s.vocaDbJson);
@@ -386,7 +387,7 @@ export class EntriesController {
             type === "main" ? eq(Verses.isMain, true) : undefined,
             languages.length
               ? or(...languages.map((l) => like(Verses.language, `${l}%`)))
-              : undefined
+              : undefined,
           ),
         },
         tagOfEntries: {
@@ -402,7 +403,7 @@ export class EntriesController {
     const matched = rows.filter(
       (e) =>
         (!verseWhereActive || e.verses.length > 0) &&
-        (tags.length === 0 || e.tagOfEntries.length > 0)
+        (tags.length === 0 || e.tagOfEntries.length > 0),
     );
 
     if (matched.length < 1) {
@@ -417,12 +418,13 @@ export class EntriesController {
           typingSequence: v.typingSequence,
           language: v.language,
           entryId: v.entryId,
-        }))
-      )
+        })),
+      ),
     );
 
-    const entriesObj = matched.reduce<{ [id: number]: Record<string, unknown> }>(
-      (acc, entry) => {
+    const entriesObj = matched.reduce<{
+      [id: number]: Record<string, unknown>;
+    }>((acc, entry) => {
       const { verses: _verses, tagOfEntries, ...cols } = entry;
       acc[entry.id] = {
         ...cols,

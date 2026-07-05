@@ -1,7 +1,13 @@
 import { Router, Request, Response } from "express";
+import { requireNumericParams } from "../utils/numericParam";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "../drizzle/client";
-import { Artists, ArtistOfSongs, SongOfEntries, Entries } from "../drizzle/schema";
+import {
+  Artists,
+  ArtistOfSongs,
+  SongOfEntries,
+  Entries,
+} from "../drizzle/schema";
 import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
 import { entriesPerPage } from "../utils/consts";
 
@@ -10,8 +16,9 @@ export class ArtistsController {
 
   constructor() {
     this.router = Router();
-    this.router.get("/:artistId(\\d+)", this.getArtist);
-    this.router.get("/:artistId(\\d+)/entries", this.getArtistEntries);
+    requireNumericParams(this.router, "artistId");
+    this.router.get("/:artistId", this.getArtist);
+    this.router.get("/:artistId/entries", this.getArtistEntries);
   }
 
   /**
@@ -51,7 +58,7 @@ export class ArtistsController {
    *                 message: "Artist not found"
    */
   private getArtist = async (req: Request, res: Response) => {
-    const artistId = parseInt(req.params.artistId);
+    const artistId = parseInt(req.params.artistId as string);
     const artist = await db.query.Artists.findFirst({
       where: and(eq(Artists.id, artistId), isNull(Artists.deletionDate)),
       columns: { id: true, name: true, type: true },
@@ -153,7 +160,7 @@ export class ArtistsController {
    *                 message: "Artist not found"
    */
   private getArtistEntries = async (req: Request, res: Response) => {
-    const artistId = parseInt(req.params.artistId);
+    const artistId = parseInt(req.params.artistId as string);
     const page = parseInt(req.query.page as string) || 1;
     const artist = await db.query.Artists.findFirst({
       where: and(eq(Artists.id, artistId), isNull(Artists.deletionDate)),
@@ -175,7 +182,9 @@ export class ArtistsController {
     if (totalEntries < 1) return; // preserves the original no-op on no entries
 
     const distinctIds = [
-      ...new Set(entryIdRows.flatMap((r) => (r.entryId === null ? [] : [r.entryId]))),
+      ...new Set(
+        entryIdRows.flatMap((r) => (r.entryId === null ? [] : [r.entryId])),
+      ),
     ];
     const ordered = await db
       .select({ id: Entries.id })
@@ -184,8 +193,8 @@ export class ArtistsController {
         and(
           inArray(Entries.id, distinctIds),
           isNull(Entries.deletionDate),
-          entryHasMainVerse
-        )
+          entryHasMainVerse,
+        ),
       )
       .orderBy(desc(Entries.recentActionDate))
       .limit(entriesPerPage)

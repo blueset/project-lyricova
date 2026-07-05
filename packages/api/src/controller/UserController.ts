@@ -15,7 +15,7 @@ export class UserController {
   async one(request: Request, response: Response, next: NextFunction) {
     try {
       return await db.query.Users.findFirst({
-        where: eq(Users.id, parseInt(request.params.id)),
+        where: eq(Users.id, parseInt(request.params.id as string)),
       });
     } catch (e) {
       next(e);
@@ -38,7 +38,9 @@ export class UserController {
 
   async remove(request: Request, response: Response, next: NextFunction) {
     try {
-      await db.delete(Users).where(eq(Users.id, parseInt(request.params.id)));
+      await db
+        .delete(Users)
+        .where(eq(Users.id, parseInt(request.params.id as string)));
     } catch (e) {
       next(e);
     }

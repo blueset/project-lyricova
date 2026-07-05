@@ -122,14 +122,14 @@ export class TagsController {
   private async getTag(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
     const tag = await db.query.Tags.findFirst({
-      where: eq(Tags.slug, req.params.slug),
+      where: eq(Tags.slug, req.params.slug as string),
     });
 
     if (!tag) return res.status(404).send("Tag not found");
 
     const totalEntries = await db.$count(
       TagOfEntries,
-      eq(TagOfEntries.tagId, tag.slug)
+      eq(TagOfEntries.tagId, tag.slug),
     );
 
     const junctionRows = await db
@@ -147,14 +147,16 @@ export class TagsController {
         and(
           eq(TagOfEntries.tagId, tag.slug),
           isNull(Entries.deletionDate),
-          entryHasMainVerse
-        )
+          entryHasMainVerse,
+        ),
       )
       .orderBy(desc(Entries.recentActionDate))
       .limit(entriesPerPage)
       .offset((page - 1) * entriesPerPage);
 
-    const listing = await fetchEntriesListing(junctionRows.map((r) => r.entryId));
+    const listing = await fetchEntriesListing(
+      junctionRows.map((r) => r.entryId),
+    );
     const throughByEntry = new Map(
       junctionRows.map((r) => [
         r.entryId,
@@ -165,7 +167,7 @@ export class TagsController {
           creationDate: r.toeCreationDate,
           updatedOn: r.toeUpdatedOn,
         },
-      ])
+      ]),
     );
     const entries = listing.map((e) => ({
       ...e,

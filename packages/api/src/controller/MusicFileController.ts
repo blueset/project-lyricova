@@ -4,7 +4,9 @@ import { MusicFiles } from "../drizzle/schema";
 import { fullPathOf } from "../utils/musicFileScan";
 
 type MusicFile = typeof MusicFiles.$inferSelect;
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
+import { requireNumericParams } from "../utils/numericParam";
+import { compat } from "../utils/expressCompat";
 import { Router } from "express";
 import { MUSIC_FILES_PATH } from "../utils/secret";
 import ffprobe from "ffprobe-client";
@@ -81,20 +83,21 @@ export class MusicFileController {
       },
     });
     this.router = Router();
+    requireNumericParams(this.router, "id");
     this.router.get("/scan", this.scan);
     this.router.get("/", this.getSongs);
-    this.router.get("/:id(\\d+)/file", this.getSongFile);
-    this.router.get("/:id(\\d+)/lrc", this.getSongLRC);
-    this.router.get("/:id(\\d+)/lrcx", this.getSongLRCX);
-    this.router.get("/:id(\\d+)/cover", this.getCoverArt);
+    this.router.get("/:id/file", this.getSongFile);
+    this.router.get("/:id/lrc", this.getSongLRC);
+    this.router.get("/:id/lrcx", this.getSongLRCX);
+    this.router.get("/:id/cover", this.getCoverArt);
     this.router.patch(
-      "/:id(\\d+)/cover",
+      "/:id/cover",
       adminOnlyMiddleware,
-      coverUpload.single("cover"),
+      compat(coverUpload.single("cover")),
       this.uploadCoverArt,
     );
-    this.router.get("/:id(\\d+)", this.getSong);
-    this.router.patch("/:id(\\d+)", adminOnlyMiddleware, this.writeToSong);
+    this.router.get("/:id", this.getSong);
+    this.router.patch("/:id", adminOnlyMiddleware, this.writeToSong);
   }
 
   /**
@@ -290,100 +293,94 @@ export class MusicFileController {
    *       401:
    *         $ref: '#/components/responses/Unauthorized'
    */
-  public scan = async (req: Request, res: Response, next: NextFunction) => {
+  public scan = async (req: Request, res: Response) => {
     const dryRun = false;
-    try {
-      // Load
-      const databaseEntries = await db.query.MusicFiles.findMany({
-        columns: {
-          id: true,
-          path: true,
-          fileSize: true,
-          hash: true,
-          hasLyrics: true,
-        },
-      });
-      // Native fs.glob has no `nocase` option, so the audio extensions are
-      // spelled out as case-insensitive character classes (mp3/flac/aiff in any
-      // case). Results are absolute paths; order is irrelevant (used as a Set).
-      const filePaths = fs.globSync(
-        `${MUSIC_FILES_PATH}/**/*.{[mM][pP]3,[fF][lL][aA][cC],[aA][iI][fF][fF]}`,
+    // Load
+    const databaseEntries = await db.query.MusicFiles.findMany({
+      columns: {
+        id: true,
+        path: true,
+        fileSize: true,
+        hash: true,
+        hasLyrics: true,
+      },
+    });
+    // Native fs.glob has no `nocase` option, so the audio extensions are
+    // spelled out as case-insensitive character classes (mp3/flac/aiff in any
+    // case). Results are absolute paths; order is irrelevant (used as a Set).
+    const filePaths = fs.globSync(
+      `${MUSIC_FILES_PATH}/**/*.{[mM][pP]3,[fF][lL][aA][cC],[aA][iI][fF][fF]}`,
+    );
+    const knownPathsSet: Set<string> = new Set(
+      databaseEntries.flatMap((entry) =>
+        entry.path === null ? [] : [entry.path],
+      ),
+    );
+    const filePathsSet: Set<string> = new Set(filePaths);
+
+    const toAdd = setDifference(filePathsSet, knownPathsSet);
+    const toUpdate = setIntersect(knownPathsSet, filePathsSet);
+    const toDelete = setDifference(knownPathsSet, filePathsSet);
+
+    console.log(
+      `toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`,
+    );
+
+    // Remove records from database for removed files
+    if (toDelete.size && !dryRun) {
+      await db
+        .delete(MusicFiles)
+        .where(inArray(MusicFiles.path, [...toDelete]));
+    }
+
+    console.log("entries deleted.");
+
+    // Add new files to database
+    const limit = pLimit(10);
+
+    if (!dryRun) {
+      const entriesToAdd = await Promise.all(
+        [...toAdd].map((path) => limit(async () => this.buildSongEntry(path))),
       );
-      const knownPathsSet: Set<string> = new Set(
-        databaseEntries.flatMap((entry) =>
-          entry.path === null ? [] : [entry.path],
+
+      console.log("entries_to_add done.");
+
+      for (const chunk of chunkArray(entriesToAdd)) {
+        await db.insert(MusicFiles).values(chunk);
+      }
+    }
+
+    console.log("entries added.");
+
+    // update songs into database
+    console.log("entries updated.");
+
+    const toUpdateEntries = databaseEntries.filter(
+      (entry): entry is typeof entry & { path: string } =>
+        entry.path !== null && toUpdate.has(entry.path),
+    );
+    let updateResults: (MusicFile | null)[] = [];
+    if (!dryRun) {
+      updateResults = await Promise.all(
+        toUpdateEntries.map((entry) =>
+          limit(async () => this.updateSongEntry(entry)),
         ),
       );
-      const filePathsSet: Set<string> = new Set(filePaths);
-
-      const toAdd = setDifference(filePathsSet, knownPathsSet);
-      const toUpdate = setIntersect(knownPathsSet, filePathsSet);
-      const toDelete = setDifference(knownPathsSet, filePathsSet);
-
-      console.log(
-        `toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`,
-      );
-
-      // Remove records from database for removed files
-      if (toDelete.size && !dryRun) {
-        await db
-          .delete(MusicFiles)
-          .where(inArray(MusicFiles.path, [...toDelete]));
-      }
-
-      console.log("entries deleted.");
-
-      // Add new files to database
-      const limit = pLimit(10);
-
-      if (!dryRun) {
-        const entriesToAdd = await Promise.all(
-          [...toAdd].map((path) =>
-            limit(async () => this.buildSongEntry(path)),
-          ),
-        );
-
-        console.log("entries_to_add done.");
-
-        for (const chunk of chunkArray(entriesToAdd)) {
-          await db.insert(MusicFiles).values(chunk);
-        }
-      }
-
-      console.log("entries added.");
-
-      // update songs into database
-      console.log("entries updated.");
-
-      const toUpdateEntries = databaseEntries.filter(
-        (entry): entry is typeof entry & { path: string } =>
-          entry.path !== null && toUpdate.has(entry.path),
-      );
-      let updateResults: (MusicFile | null)[] = [];
-      if (!dryRun) {
-        updateResults = await Promise.all(
-          toUpdateEntries.map((entry) =>
-            limit(async () => this.updateSongEntry(entry)),
-          ),
-        );
-      }
-
-      const updatedCount = updateResults.reduce(
-        (prev: number, curr) => prev + (curr === null ? 0 : 1),
-        0,
-      );
-      res.send({
-        status: "ok",
-        data: {
-          added: toAdd.size,
-          deleted: toDelete.size,
-          updated: updatedCount,
-          unchanged: toUpdate.size - updatedCount,
-        },
-      });
-    } catch (e) {
-      next(e);
     }
+
+    const updatedCount = updateResults.reduce(
+      (prev: number, curr) => prev + (curr === null ? 0 : 1),
+      0,
+    );
+    res.send({
+      status: "ok",
+      data: {
+        added: toAdd.size,
+        deleted: toDelete.size,
+        updated: updatedCount,
+        unchanged: toUpdate.size - updatedCount,
+      },
+    });
   };
 
   /**
@@ -403,15 +400,11 @@ export class MusicFileController {
    *               items:
    *                 $ref: '#/components/schemas/MusicFile'
    */
-  public getSongs = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const songs = await db.query.MusicFiles.findMany();
-      return res.json(
-        songs.map((s) => ({ fullPath: fullPathOf(s.path!), ...s })),
-      );
-    } catch (e) {
-      next(e);
-    }
+  public getSongs = async (req: Request, res: Response) => {
+    const songs = await db.query.MusicFiles.findMany();
+    return res.json(
+      songs.map((s) => ({ fullPath: fullPathOf(s.path!), ...s })),
+    );
   };
 
   /**
@@ -444,21 +437,17 @@ export class MusicFileController {
    *                 status: 404
    *                 message: "Not found"
    */
-  public getSong = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const song = await db.query.MusicFiles.findFirst({
-        where: eq(MusicFiles.id, parseInt(req.params.id)),
-      });
-      if (!song) {
-        return res.status(404).json({ status: 404, message: "Not found" });
-      }
-      if (song.path === null) {
-        return res.status(404).json({ status: 404, message: "File not found" });
-      }
-      return res.json({ fullPath: fullPathOf(song.path), ...song });
-    } catch (e) {
-      next(e);
+  public getSong = async (req: Request, res: Response) => {
+    const song = await db.query.MusicFiles.findFirst({
+      where: eq(MusicFiles.id, parseInt(req.params.id as string)),
+    });
+    if (!song) {
+      return res.status(404).json({ status: 404, message: "Not found" });
     }
+    if (song.path === null) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
+    return res.json({ fullPath: fullPathOf(song.path), ...song });
   };
 
   /**
@@ -502,35 +491,25 @@ export class MusicFileController {
    *                   type: string
    *                   enum: ["Entry not found", "File not found"]
    */
-  public getSongFile = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const song = await db.query.MusicFiles.findFirst({
-        where: eq(MusicFiles.id, parseInt(req.params.id)),
-      });
-      if (!song) {
-        return res
-          .status(404)
-          .json({ status: 404, message: "Entry not found" });
-      }
-      if (song.path === null) {
-        return res.status(404).json({ status: 404, message: "File not found" });
-      }
-      const path = fullPathOf(song.path);
-      if (!fs.existsSync(path)) {
-        return res.status(404).json({ status: 404, message: "File not found" });
-      }
-      res.header("Cache-Control", "public, max-age=604800");
-      if (req.query.download !== undefined) {
-        res.attachment(Path.basename(path));
-      }
-      res.sendFile(path);
-    } catch (e) {
-      next(e);
+  public getSongFile = async (req: Request, res: Response) => {
+    const song = await db.query.MusicFiles.findFirst({
+      where: eq(MusicFiles.id, parseInt(req.params.id as string)),
+    });
+    if (!song) {
+      return res.status(404).json({ status: 404, message: "Entry not found" });
     }
+    if (song.path === null) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
+    const path = fullPathOf(song.path);
+    if (!fs.existsSync(path)) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
+    res.header("Cache-Control", "public, max-age=604800");
+    if (req.query.download !== undefined) {
+      res.attachment(Path.basename(path));
+    }
+    res.sendFile(path);
   };
 
   /**
@@ -572,35 +551,25 @@ export class MusicFileController {
    *                   type: string
    *                   enum: ["Entry not found", "File not found"]
    */
-  public getSongLRC = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const song = await db.query.MusicFiles.findFirst({
-        where: eq(MusicFiles.id, parseInt(req.params.id)),
-      });
-      if (!song) {
-        return res
-          .status(404)
-          .json({ status: 404, message: "Entry not found" });
-      }
-      if (song.path === null) {
-        return res.status(404).json({ status: 404, message: "File not found" });
-      }
-      const path = swapExt(fullPathOf(song.path), "lrc");
-      if (!fs.existsSync(path)) {
-        return res.status(404).json({ status: 404, message: "File not found" });
-      }
-
-      if (req.query.download !== undefined) {
-        res.attachment(Path.basename(path));
-      }
-      res.contentType("text/lrc").sendFile(path);
-    } catch (e) {
-      next(e);
+  public getSongLRC = async (req: Request, res: Response) => {
+    const song = await db.query.MusicFiles.findFirst({
+      where: eq(MusicFiles.id, parseInt(req.params.id as string)),
+    });
+    if (!song) {
+      return res.status(404).json({ status: 404, message: "Entry not found" });
     }
+    if (song.path === null) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
+    const path = swapExt(fullPathOf(song.path), "lrc");
+    if (!fs.existsSync(path)) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
+
+    if (req.query.download !== undefined) {
+      res.attachment(Path.basename(path));
+    }
+    res.contentType("text/lrc").sendFile(path);
   };
 
   /**
@@ -642,35 +611,25 @@ export class MusicFileController {
    *                   type: string
    *                   enum: ["Entry not found", "File not found"]
    */
-  public getSongLRCX = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const song = await db.query.MusicFiles.findFirst({
-        where: eq(MusicFiles.id, parseInt(req.params.id)),
-      });
-      if (!song) {
-        return res
-          .status(404)
-          .json({ status: 404, message: "Entry not found" });
-      }
-      if (song.path === null) {
-        return res.status(404).json({ status: 404, message: "File not found" });
-      }
-      const path = swapExt(fullPathOf(song.path), "lrcx");
-      if (!fs.existsSync(path)) {
-        return res.status(404).json({ status: 404, message: "File not found" });
-      }
-
-      if (req.query.download !== undefined) {
-        res.attachment(Path.basename(path));
-      }
-      res.contentType("text/lrcx").sendFile(path);
-    } catch (e) {
-      next(e);
+  public getSongLRCX = async (req: Request, res: Response) => {
+    const song = await db.query.MusicFiles.findFirst({
+      where: eq(MusicFiles.id, parseInt(req.params.id as string)),
+    });
+    if (!song) {
+      return res.status(404).json({ status: 404, message: "Entry not found" });
     }
+    if (song.path === null) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
+    const path = swapExt(fullPathOf(song.path), "lrcx");
+    if (!fs.existsSync(path)) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
+
+    if (req.query.download !== undefined) {
+      res.attachment(Path.basename(path));
+    }
+    res.contentType("text/lrcx").sendFile(path);
   };
 
   /**
@@ -731,46 +690,38 @@ export class MusicFileController {
    *       401:
    *         $ref: '#/components/responses/Unauthorized'
    */
-  public writeToSong = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const song = await db.query.MusicFiles.findFirst({
-        where: eq(MusicFiles.id, parseInt(req.params.id)),
-      });
-      if (!song) {
-        return res.status(404).json({ status: 404, message: "Not found" });
-      }
-      if (song.path === null) {
-        return res.status(404).json({ status: 404, message: "File not found" });
-      }
-
-      const data = _.pick(req.body, [
-        "songId",
-        "albumId",
-        "trackName",
-        "trackSortOrder",
-        "albumName",
-        "albumSortOrder",
-        "artistName",
-        "artistSortOrder",
-      ]);
-
-      // write song file
-      await this.writeToFile(song, data);
-
-      const now = new Date();
-      _.assign(song, data, { updatedOn: now });
-      await db
-        .update(MusicFiles)
-        .set({ ...data, updatedOn: now })
-        .where(eq(MusicFiles.id, song.id));
-      return res.json({ fullPath: fullPathOf(song.path), ...song });
-    } catch (e) {
-      next(e);
+  public writeToSong = async (req: Request, res: Response) => {
+    const song = await db.query.MusicFiles.findFirst({
+      where: eq(MusicFiles.id, parseInt(req.params.id as string)),
+    });
+    if (!song) {
+      return res.status(404).json({ status: 404, message: "Not found" });
     }
+    if (song.path === null) {
+      return res.status(404).json({ status: 404, message: "File not found" });
+    }
+
+    const data = _.pick(req.body, [
+      "songId",
+      "albumId",
+      "trackName",
+      "trackSortOrder",
+      "albumName",
+      "albumSortOrder",
+      "artistName",
+      "artistSortOrder",
+    ]);
+
+    // write song file
+    await this.writeToFile(song, data);
+
+    const now = new Date();
+    _.assign(song, data, { updatedOn: now });
+    await db
+      .update(MusicFiles)
+      .set({ ...data, updatedOn: now })
+      .where(eq(MusicFiles.id, song.id));
+    return res.json({ fullPath: fullPathOf(song.path), ...song });
   };
 
   /**
@@ -827,7 +778,7 @@ export class MusicFileController {
    */
   public getCoverArt = async (req: Request, res: Response) => {
     const musicFile = await db.query.MusicFiles.findFirst({
-      where: eq(MusicFiles.id, parseInt(req.params.id)),
+      where: eq(MusicFiles.id, parseInt(req.params.id as string)),
     });
     if (!musicFile) {
       return res
@@ -992,7 +943,7 @@ export class MusicFileController {
 
     try {
       const musicFile = await db.query.MusicFiles.findFirst({
-        where: eq(MusicFiles.id, parseInt(req.params.id)),
+        where: eq(MusicFiles.id, parseInt(req.params.id as string)),
       });
       if (!musicFile) {
         return res

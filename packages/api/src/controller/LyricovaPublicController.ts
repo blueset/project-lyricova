@@ -1,8 +1,24 @@
 import type { Request, Response } from "express";
+import { requireNumericParams } from "../utils/numericParam";
 import { Router } from "express";
-import { and, desc, eq, inArray, isNull, like, or, sql, type SQL } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  like,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 import { db } from "../drizzle/client";
-import { Entries, Verses, SongOfEntries, TagOfEntries } from "../drizzle/schema";
+import {
+  Entries,
+  Verses,
+  SongOfEntries,
+  TagOfEntries,
+} from "../drizzle/schema";
 import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
 import { resolve } from "path";
 import { readFile } from "node:fs/promises";
@@ -13,40 +29,43 @@ import satori from "satori";
 import { shiftinPuncts } from "../utils/typography";
 
 const sourceHanExtraLight = readFile(
-  resolve(__dirname, "../../src/fonts/SourceHanSans-ExtraLight-Subset-hhea.otf")
+  resolve(
+    __dirname,
+    "../../src/fonts/SourceHanSans-ExtraLight-Subset-hhea.otf",
+  ),
 );
 const sourceHanExtraLightZh = readFile(
   resolve(
     __dirname,
-    "../../src/fonts/SourceHanSansSC-ExtraLight-Subset-hhea.otf"
-  )
+    "../../src/fonts/SourceHanSansSC-ExtraLight-Subset-hhea.otf",
+  ),
 );
 const sourceHanRegular = readFile(
-  resolve(__dirname, "../../src/fonts/SourceHanSans-Regular-Subset.otf")
+  resolve(__dirname, "../../src/fonts/SourceHanSans-Regular-Subset.otf"),
 );
 const sourceHanMedium = readFile(
-  resolve(__dirname, "../../src/fonts/SourceHanSans-Medium-Subset.otf")
+  resolve(__dirname, "../../src/fonts/SourceHanSans-Medium-Subset.otf"),
 );
 const tsimExtraLightPalt = readFile(
-  resolve(__dirname, "../../src/fonts/TsimSans-J-ExtraLight-Palt-hhea.otf")
+  resolve(__dirname, "../../src/fonts/TsimSans-J-ExtraLight-Palt-hhea.otf"),
 );
 const tsimRegularPalt = readFile(
-  resolve(__dirname, "../../src/fonts/TsimSans-J-Regular-Palt.otf")
+  resolve(__dirname, "../../src/fonts/TsimSans-J-Regular-Palt.otf"),
 );
 const tsimMediumPalt = readFile(
-  resolve(__dirname, "../../src/fonts/TsimSans-J-Medium-Palt.otf")
+  resolve(__dirname, "../../src/fonts/TsimSans-J-Medium-Palt.otf"),
 );
 const monaUltraLight = readFile(
-  resolve(__dirname, "../../src/fonts/Mona-Sans-UltraLight-hhea.otf")
+  resolve(__dirname, "../../src/fonts/Mona-Sans-UltraLight-hhea.otf"),
 );
 const monaRegular = readFile(
-  resolve(__dirname, "../../src/fonts/Mona-Sans-Regular.otf")
+  resolve(__dirname, "../../src/fonts/Mona-Sans-Regular.otf"),
 );
 const monaMedium = readFile(
-  resolve(__dirname, "../../src/fonts/Mona-Sans-Medium.otf")
+  resolve(__dirname, "../../src/fonts/Mona-Sans-Medium.otf"),
 );
 const hubotNarrow = readFile(
-  resolve(__dirname, "../../src/fonts/Hubot-Sans-RegularNarrow.otf")
+  resolve(__dirname, "../../src/fonts/Hubot-Sans-RegularNarrow.otf"),
 );
 const bg = readFile(resolve(__dirname, "../../src/images/og-cover-bg.png"));
 
@@ -55,10 +74,11 @@ export class LyricovaPublicApiController {
 
   constructor() {
     this.router = Router();
+    requireNumericParams(this.router, "entryId");
     this.router.get("/search", this.search);
     this.router.get("/verse", this.verse);
     this.router.get("/versesBySong", this.versesBySong);
-    this.router.get("/og/:entryId(\\d+)", this.og);
+    this.router.get("/og/:entryId", this.og);
   }
 
   /**
@@ -114,9 +134,9 @@ export class LyricovaPublicApiController {
           or(
             like(Entries.title, `%${query}%`),
             like(Entries.producersName, `%${query}%`),
-            like(Entries.vocalistsName, `%${query}%`)
-          )
-        )
+            like(Entries.vocalistsName, `%${query}%`),
+          ),
+        ),
       );
     const verseMatches = await db
       .select({ entryId: Verses.entryId })
@@ -141,13 +161,13 @@ export class LyricovaPublicApiController {
         and(
           inArray(Entries.id, distinctIds),
           isNull(Entries.deletionDate),
-          entryHasMainVerse
-        )
+          entryHasMainVerse,
+        ),
       )
       .orderBy(desc(Entries.recentActionDate));
     const result = await fetchEntriesListing(
       ordered.map((r) => r.id),
-      "asc"
+      "asc",
     );
 
     res.status(200).json(result);
@@ -211,12 +231,16 @@ export class LyricovaPublicApiController {
    */
   public verse = async (req: Request, res: Response) => {
     const type = String(req.query.type);
-    const languages = (Array.isArray(req.query.languages)
-      ? req.query.languages
-      : (req.query.languages as string)?.split(",")) as string[] | undefined;
-    const tags = (Array.isArray(req.query.tags)
-      ? req.query.tags
-      : (req.query.tags as string)?.split(",")) as string[] | undefined;
+    const languages = (
+      Array.isArray(req.query.languages)
+        ? req.query.languages
+        : (req.query.languages as string)?.split(",")
+    ) as string[] | undefined;
+    const tags = (
+      Array.isArray(req.query.tags)
+        ? req.query.tags
+        : (req.query.tags as string)?.split(",")
+    ) as string[] | undefined;
 
     const conds: (SQL | undefined)[] = [isNull(Verses.deletionDate)];
     if (type === "original") conds.push(eq(Verses.isOriginal, true));
@@ -229,7 +253,7 @@ export class LyricovaPublicApiController {
       .from(Verses)
       .innerJoin(
         Entries,
-        and(eq(Entries.id, Verses.entryId), isNull(Entries.deletionDate))
+        and(eq(Entries.id, Verses.entryId), isNull(Entries.deletionDate)),
       )
       .$dynamic();
     if (tags?.length) {
@@ -237,8 +261,8 @@ export class LyricovaPublicApiController {
         TagOfEntries,
         and(
           eq(TagOfEntries.entryId, Verses.entryId),
-          inArray(TagOfEntries.tagId, tags)
-        )
+          inArray(TagOfEntries.tagId, tags),
+        ),
       );
     }
     const picked = await picker
@@ -282,8 +306,7 @@ export class LyricovaPublicApiController {
           with: { tag: { columns: { name: true, slug: true, color: true } } },
           ...(tags?.length
             ? {
-                where: (toe, { inArray }) =>
-                  inArray(toe.tagId, tags),
+                where: (toe, { inArray }) => inArray(toe.tagId, tags),
               }
             : {}),
         },
@@ -368,17 +391,14 @@ export class LyricovaPublicApiController {
         and(
           eq(SongOfEntries.songId, parseInt(songId as string)),
           isNull(Entries.deletionDate),
-          entryHasMainVerse
-        )
+          entryHasMainVerse,
+        ),
       )
       .orderBy(desc(Entries.recentActionDate));
     const distinctIds = [...new Set(idRows.map((r) => r.id))];
     const result = await fetchEntriesListing(distinctIds, "asc");
 
-    res
-      .status(200)
-      .header("Access-Control-Allow-Origin", "*")
-      .json(result);
+    res.status(200).header("Access-Control-Allow-Origin", "*").json(result);
   };
 
   /**
@@ -412,7 +432,7 @@ export class LyricovaPublicApiController {
    *                   example: "123 is not found."
    */
   public og = async (req: Request, res: Response) => {
-    const id: number = parseInt(req.params.entryId);
+    const id: number = parseInt(req.params.entryId as string);
 
     const entryRow = await db.query.Entries.findFirst({
       where: and(eq(Entries.id, id), isNull(Entries.deletionDate)),
@@ -427,15 +447,15 @@ export class LyricovaPublicApiController {
     const entry = {
       ...entryRow,
       tags: (entryRow.tagOfEntries ?? []).flatMap((t) =>
-        t.tag ? [t.tag] : []
+        t.tag ? [t.tag] : [],
       ),
     };
 
     const artistString = !entry.producersName
       ? entry.vocalistsName
       : !entry.vocalistsName
-      ? entry.producersName
-      : `${entry.producersName} feat. ${entry.vocalistsName}`;
+        ? entry.producersName
+        : `${entry.producersName} feat. ${entry.vocalistsName}`;
     const mainVerse = entry.verses.find((v) => v.isMain);
     if (!mainVerse?.text || !mainVerse.language) {
       return res.status(404).json({ message: "No verse found" });
@@ -493,7 +513,7 @@ export class LyricovaPublicApiController {
             height: "100%",
             fontFamily: "Mona Sans, Tsim Sans Palt, Tsim Sans",
             backgroundImage: `url(data:image/png;base64,${bgData.toString(
-              "base64"
+              "base64",
             )})`,
           },
         },
@@ -530,15 +550,15 @@ export class LyricovaPublicApiController {
                     justifyContent: "flex-end",
                   },
                 },
-                l[1]
+                l[1],
               ),
               React.createElement(
                 "div",
                 { style: { flexGrow: 1, width: 0, textWrap: "balance" } },
-                l[2]
-              )
-            )
-          )
+                l[2],
+              ),
+            ),
+          ),
         ),
         React.createElement(
           "div",
@@ -581,11 +601,11 @@ export class LyricovaPublicApiController {
                           padding: "3px 3px 0",
                         },
                       },
-                      t.name.toUpperCase()
+                      t.name.toUpperCase(),
                     ),
                   ]
-                : []
-            )
+                : [],
+            ),
           ),
           React.createElement(
             "div",
@@ -599,7 +619,7 @@ export class LyricovaPublicApiController {
                 alignItems: "flex-end",
               },
             },
-            entry.title
+            entry.title,
           ),
           React.createElement(
             "div",
@@ -613,9 +633,9 @@ export class LyricovaPublicApiController {
                 alignItems: "flex-end",
               },
             },
-            artistString
-          )
-        )
+            artistString,
+          ),
+        ),
       ),
       {
         width: 1200,
@@ -673,7 +693,7 @@ export class LyricovaPublicApiController {
             weight: 400,
           },
         ],
-      }
+      },
     );
 
     console.info("Satori:", performance.now() - t, "ms");

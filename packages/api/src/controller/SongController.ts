@@ -1,4 +1,5 @@
 import { NextFunction, Router, Request, Response } from "express";
+import { requireNumericParams } from "../utils/numericParam";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { promises as fs } from "node:fs";
 import { Lyrics } from "lyrics-kit/core";
@@ -16,9 +17,10 @@ export class SongController {
 
   constructor() {
     this.router = Router();
-    this.router.get("/:songId(\\d+)", this.getSong);
-    this.router.get("/:songId(\\d+)/lyrics", this.getSongLyrics);
-    this.router.get("/:songId(\\d+)/entries", this.getSongEntries);
+    requireNumericParams(this.router, "songId");
+    this.router.get("/:songId", this.getSong);
+    this.router.get("/:songId/lyrics", this.getSongLyrics);
+    this.router.get("/:songId/entries", this.getSongEntries);
   }
 
   /**
@@ -80,8 +82,8 @@ export class SongController {
     try {
       const song = await db.query.Songs.findFirst({
         where: and(
-          eq(Songs.id, parseInt(req.params.songId)),
-          isNull(Songs.deletionDate)
+          eq(Songs.id, parseInt(req.params.songId as string)),
+          isNull(Songs.deletionDate),
         ),
         columns: { vocaDbJson: false },
         with: {
@@ -120,9 +122,7 @@ export class SongController {
           return { ...album!, SongInAlbum: junction };
         })
         .sort((x, y) => x.id - y.id);
-      const filesSorted = [...(files ?? [])].sort(
-        (x, y) => x.id - y.id
-      );
+      const filesSorted = [...(files ?? [])].sort((x, y) => x.id - y.id);
 
       res.json({ ...songCols, artists, albums, files: filesSorted });
     } catch (e) {
@@ -176,13 +176,13 @@ export class SongController {
   public getSongLyrics = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
       const song = await db.query.Songs.findFirst({
         where: and(
-          eq(Songs.id, parseInt(req.params.songId)),
-          isNull(Songs.deletionDate)
+          eq(Songs.id, parseInt(req.params.songId as string)),
+          isNull(Songs.deletionDate),
         ),
         columns: { id: true },
         with: { files: { columns: { path: true } } },
@@ -204,7 +204,7 @@ export class SongController {
               return fs.readFile(lrcPath, "utf8");
             }
             return null;
-          })
+          }),
         )
       )
         .filter((l): l is string => l !== null)
@@ -277,10 +277,10 @@ export class SongController {
   public getSongEntries = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
-      const songId = parseInt(req.params.songId);
+      const songId = parseInt(req.params.songId as string);
       const page = parseInt(req.query.page as string) || 1;
       const song = await db.query.Songs.findFirst({
         where: and(eq(Songs.id, songId), isNull(Songs.deletionDate)),
@@ -291,7 +291,7 @@ export class SongController {
       }
       const totalEntries = await db.$count(
         SongOfEntries,
-        eq(SongOfEntries.songId, songId)
+        eq(SongOfEntries.songId, songId),
       );
       if (totalEntries < 1) {
         return res.status(404).json({ status: 404, message: "Song not found" });
@@ -312,15 +312,15 @@ export class SongController {
           and(
             eq(SongOfEntries.songId, songId),
             isNull(Entries.deletionDate),
-            entryHasMainVerse
-          )
+            entryHasMainVerse,
+          ),
         )
         .orderBy(desc(Entries.recentActionDate))
         .limit(entriesPerPage)
         .offset((page - 1) * entriesPerPage);
 
       const listing = await fetchEntriesListing(
-        junctionRows.map((r) => r.entryId)
+        junctionRows.map((r) => r.entryId),
       );
       const throughByEntry = new Map(
         junctionRows.map((r) => [
@@ -332,7 +332,7 @@ export class SongController {
             creationDate: r.soeCreationDate,
             updatedOn: r.soeUpdatedOn,
           },
-        ])
+        ]),
       );
       const entries = listing.map((e) => ({
         ...e,

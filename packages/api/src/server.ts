@@ -4,6 +4,7 @@ import "reflect-metadata";
 import App from "./app";
 import { applyApollo } from "./graphql/index";
 import { postHog } from "./utils/posthog";
+import { compat } from "./utils/expressCompat";
 
 (async () => {
   const app = await App();
@@ -12,7 +13,7 @@ import { postHog } from "./utils/posthog";
 
   const httpServer = await applyApollo(app);
 
-  app.use(errorHandler());
+  app.use(compat(errorHandler()));
 
   // Graceful shutdown handling
   const gracefulShutdown = (signal: string) => {
@@ -62,7 +63,7 @@ import { postHog } from "./utils/posthog";
     console.log(
       "  App is running at http://localhost:%d in %s mode",
       app.get("port"),
-      app.get("env")
+      app.get("env"),
     );
     console.log("  Press CTRL-C to stop\n");
   });
