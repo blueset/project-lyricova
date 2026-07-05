@@ -1,7 +1,6 @@
 "use client";
-
 import { Fragment, useCallback } from "react";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "../../gql";
 import type { SelectSongEntryFragment } from "../../gql/graphql";
 import { toast } from "sonner";
@@ -97,7 +96,7 @@ const formSchema = z.object({
       categories: z.array(z.string()),
       customName: z.string().optional().or(z.literal("")),
       isSupport: z.boolean(),
-    })
+    }),
   ),
   albums: z.array(
     z.object({
@@ -107,7 +106,7 @@ const formSchema = z.object({
       diskNumber: z.number().positive().int().optional(),
       trackNumber: z.number().positive().int().optional().or(z.literal("")),
       name: z.string().min(1, "Required"),
-    })
+    }),
   ),
 });
 
@@ -231,7 +230,7 @@ export function SongEntityDialog({
         if (result.data) {
           setSong(result.data.newSong);
           toast.success(
-            `Song "${result.data.newSong.name}" is successfully created.`
+            `Song "${result.data.newSong.name}" is successfully created.`,
           );
           handleClose();
         }
@@ -247,7 +246,7 @@ export function SongEntityDialog({
         if (result.data) {
           setSong(result.data.updateSong);
           toast.success(
-            `Song "${result.data.updateSong.name}" is successfully updated.`
+            `Song "${result.data.updateSong.name}" is successfully updated.`,
           );
           apolloClient.cache.evict({ id: `Song:${songId}` });
           handleClose();
@@ -258,12 +257,12 @@ export function SongEntityDialog({
         `Error occurred while ${create ? "creating" : "updating"} song ${
           values?.name
         }.`,
-        e
+        e,
       );
       toast.error(
         `Error occurred while ${create ? "creating" : "updating"} song ${
           values?.name
-        }. (${e})`
+        }. (${e})`,
       );
     }
   }
@@ -400,14 +399,14 @@ export function SongEntityDialog({
                                     field.onChange(
                                       selected
                                         ? selected.map((option) => option.value)
-                                        : []
+                                        : [],
                                     );
                                   }}
                                   value={field.value.map((v) => ({
                                     value: v,
                                     label:
                                       rolesChoices.find(
-                                        (option) => option.value === v
+                                        (option) => option.value === v,
                                       )?.label ?? v,
                                   }))}
                                   placeholder="Select roles"
@@ -432,14 +431,14 @@ export function SongEntityDialog({
                                     field.onChange(
                                       selected
                                         ? selected.map((option) => option.value)
-                                        : []
+                                        : [],
                                     );
                                   }}
                                   value={field.value.map((v) => ({
                                     value: v,
                                     label:
                                       artistRolesChoices.find(
-                                        (option) => option.value === v
+                                        (option) => option.value === v,
                                       )?.label ?? v,
                                   }))}
                                   placeholder="Select categories"
@@ -465,11 +464,11 @@ export function SongEntityDialog({
                                   onClick={() => {
                                     form.setValue(
                                       `artists.${index}.artistRoles`,
-                                      ["Composer", "Lyricist"]
+                                      ["Composer", "Lyricist"],
                                     );
                                     form.setValue(
                                       `artists.${index}.categories`,
-                                      ["Producer"]
+                                      ["Producer"],
                                     );
                                   }}
                                 >
@@ -496,11 +495,11 @@ export function SongEntityDialog({
                                   onClick={() => {
                                     form.setValue(
                                       `artists.${index}.artistRoles`,
-                                      ["Vocalist"]
+                                      ["Vocalist"],
                                     );
                                     form.setValue(
                                       `artists.${index}.categories`,
-                                      ["Vocalist"]
+                                      ["Vocalist"],
                                     );
                                   }}
                                 >

@@ -1,5 +1,4 @@
 "use client";
-
 // Shadcn & RHF imports needed for SelectArtistEntityBoxRHF
 import {
   Command,
@@ -44,7 +43,7 @@ import {
 import { useEffect, useState, useCallback } from "react";
 import _ from "lodash";
 import { fetchJson } from "../../utils/httpFetch";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { VocaDBSearchArtistDialog } from "../dialogs/VocaDBSearchArtistDialog";
 import { UtaiteDBSearchArtistDialog } from "../dialogs/UtaiteDBSearchArtistDialog";
 import { ArtistEntityDialog } from "../dialogs/ArtistEntityDialog";

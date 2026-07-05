@@ -1,9 +1,8 @@
 "use client";
-
 import { useEffect } from "react";
 import { LS_JWT_KEY } from "@lyricova/components";
 import { useRouter } from "next/navigation";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 
 export default function Logout() {
   const router = useRouter();

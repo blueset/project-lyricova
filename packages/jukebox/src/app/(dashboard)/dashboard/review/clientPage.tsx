@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
@@ -164,7 +163,7 @@ export default function Review() {
 
   const totalCount = needReviewQuery.data?.musicFiles.totalCount;
   const needReviewCount = needReviewQuery.data?.musicFiles.edges.filter(
-    (v) => v.node.needReview
+    (v) => v.node.needReview,
   ).length;
   const edges = needReviewQuery.data?.musicFiles.edges;
 
@@ -179,7 +178,7 @@ export default function Review() {
       edges
         ?.filter((v) => showAll || v.node.needReview)
         .map((v) => ({ ...v.node })) ?? [],
-    [edges, showAll]
+    [edges, showAll],
   );
 
   return (

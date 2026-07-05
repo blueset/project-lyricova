@@ -1,6 +1,6 @@
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { useCallback } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@lyricova/components";
@@ -41,16 +41,13 @@ export default function HMikuWikiResultDialog({
     (open: boolean) => {
       toggleOpen(open);
     },
-    [toggleOpen]
+    [toggleOpen],
   );
 
-  const query = useQuery(
-    HMIKU_LYRICS_QUERY,
-    {
-      variables: { id: articleId || "" },
-      skip: !isOpen || !articleId, // Skip query if dialog is not open or no articleId
-    }
-  );
+  const query = useQuery(HMIKU_LYRICS_QUERY, {
+    variables: { id: articleId || "" },
+    skip: !isOpen || !articleId, // Skip query if dialog is not open or no articleId
+  });
 
   const copyText = useCallback(async (text: string) => {
     try {

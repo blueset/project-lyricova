@@ -1,11 +1,7 @@
 "use client";
-
 import { useParams } from "next/navigation";
-import {
-  useAuthContext,
-  NextComposedLink,
-} from "@lyricova/components";
-import { useQuery } from "@apollo/client";
+import { useAuthContext, NextComposedLink } from "@lyricova/components";
+import { useQuery } from "@apollo/client/react";
 import type { TypedDocumentNode } from "@graphql-typed-document-node/core";
 import { graphql } from "@lyricova/components/gql";
 import type {
@@ -122,12 +118,12 @@ export default function PlaylistDetails() {
     slug === "new"
       ? NEW_QUERY
       : slug === "recent"
-      ? RECENT_QUERY
-      : slug === "popular"
-      ? POPULAR_QUERY
-      : slug === "recently-reviewed"
-      ? RECENTLY_REVIEWED_QUERY
-      : PLAYLIST_DETAILS_QUERY
+        ? RECENT_QUERY
+        : slug === "popular"
+          ? POPULAR_QUERY
+          : slug === "recently-reviewed"
+            ? RECENTLY_REVIEWED_QUERY
+            : PLAYLIST_DETAILS_QUERY
   ) as TypedDocumentNode<PlaylistPageQuery, { slug?: string }>;
   const query = useQuery(selectedQuery, {
     variables: !isPredefined ? { slug } : undefined,
@@ -193,22 +189,22 @@ export default function PlaylistDetails() {
       slug === "new"
         ? "Recently Added"
         : slug === "recent"
-        ? "Recently Played"
-        : slug === "popular"
-        ? "Most Played"
-        : slug === "recently-reviewed"
-        ? "Recently Reviewed"
-        : playlistData?.name ?? slug;
+          ? "Recently Played"
+          : slug === "popular"
+            ? "Most Played"
+            : slug === "recently-reviewed"
+              ? "Recently Reviewed"
+              : (playlistData?.name ?? slug);
     const displaySlug =
       slug === "new"
         ? "Track added in 30 days"
         : slug === "recent"
-        ? "Track played in 30 days"
-        : slug === "popular"
-        ? "Most played tracks"
-        : slug === "recently-reviewed"
-        ? "Tracks reviewed in 30 days"
-        : playlistData?.slug ?? slug;
+          ? "Track played in 30 days"
+          : slug === "popular"
+            ? "Most played tracks"
+            : slug === "recently-reviewed"
+              ? "Tracks reviewed in 30 days"
+              : (playlistData?.slug ?? slug);
 
     const playAll = () => dispatch(loadTracks(files));
     const shuffleAll = () => {
@@ -228,19 +224,19 @@ export default function PlaylistDetails() {
           ) : (
             <Avatar
               className={cn(
-                "h-24 w-24 mr-4 text-3xl text-white rounded-md items-center justify-center"
+                "h-24 w-24 mr-4 text-3xl text-white rounded-md items-center justify-center",
               )}
               style={{
                 backgroundImage: `linear-gradient(225deg, ${gradients[
                   slug === "new"
                     ? 1
                     : slug === "recent"
-                    ? 2
-                    : slug === "popular"
-                    ? 3
-                    : slug === "recently-reviewed"
-                    ? 4
-                    : hash(slug) % gradients.length
+                      ? 2
+                      : slug === "popular"
+                        ? 3
+                        : slug === "recently-reviewed"
+                          ? 4
+                          : hash(slug) % gradients.length
                 ].colors.join(", ")})`,
               }}
             >

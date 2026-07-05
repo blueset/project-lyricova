@@ -9,7 +9,7 @@ import type {
 } from "../../../hooks/types";
 import { usePlayerLyricsState } from "../../../hooks/usePlayerLyricsState";
 import _ from "lodash";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import type { RefObject } from "react";
 import { useEffect, useMemo, useRef } from "react";
 import type { MeasuredComponentProps } from "react-measure";
@@ -189,8 +189,8 @@ function useNicokaraLyricsState(
         (idx + 1 < pages.length
           ? pages[idx + 1].start // Has next page
           : playerRef.current?.duration
-          ? playerRef.current.duration // Has duration
-          : v.end + COUNTDOWN_DURATION + 1) - v.end; // fallback to 11
+            ? playerRef.current.duration // Has duration
+            : v.end + COUNTDOWN_DURATION + 1) - v.end; // fallback to 11
 
       if (v.countdown) {
         if (
@@ -295,12 +295,11 @@ function LyricsLine({
     elm.style.clipPath = "inset(-50% 102% -10% -2%)";
   }
 
-  const content =
-    furiganaLine ? (
-      <FuriganaLyricsLine transliterationLine={furiganaLine} />
-    ) : (
-      <span>{textLine}</span>
-    );
+  const content = furiganaLine ? (
+    <FuriganaLyricsLine transliterationLine={furiganaLine} />
+  ) : (
+    <span>{textLine}</span>
+  );
   return (
     <div
       className="relative font-extrabold font-serif whitespace-nowrap group/line"
@@ -354,19 +353,17 @@ function buildPageClasses(
   furigana: [string, string][][] | null | undefined,
   containerWidth: number,
 ) {
-  const lineWidths = lines.map(
-    (v) => {
-      const line = lyrics.lines[v];
-      return line
-        ? measureElement(
-        LyricsLineHTML({
-          textLine: line.content,
-          furiganaLine: furigana?.[v],
-        }),
-      ).width
-        : 0;
-    },
-  );
+  const lineWidths = lines.map((v) => {
+    const line = lyrics.lines[v];
+    return line
+      ? measureElement(
+          LyricsLineHTML({
+            textLine: line.content,
+            furiganaLine: furigana?.[v],
+          }),
+        ).width
+      : 0;
+  });
 
   const classes: string[] = lines.map(
     (v, idx) => `line-${lines.length}-${idx + 1}`,
@@ -498,9 +495,7 @@ function LyricsScreen({
           rowClass,
         )}
       >
-        {lineInfo.left !== null && (
-          <div style={{ flexGrow: lineInfo.left }} />
-        )}
+        {lineInfo.left !== null && <div style={{ flexGrow: lineInfo.left }} />}
         {firstNotNull === rowIndex && countdown}
         <LyricsLine
           textLine={lyricLine.content}
@@ -561,7 +556,9 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
       if (currentFrame !== null && lineIdx === null) {
         const firstLineIndex = page.lines[0];
         const firstLine =
-          firstLineIndex !== undefined ? lyrics.lines[firstLineIndex] : undefined;
+          firstLineIndex !== undefined
+            ? lyrics.lines[firstLineIndex]
+            : undefined;
         if (!firstLine) return [null, null, null, null];
         return [
           null,
@@ -588,7 +585,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
       const end =
         lineIdx + 1 === page.lines.length
           ? page.end
-          : nextLine?.position ?? page.end;
+          : (nextLine?.position ?? page.end);
       return [line, start, end, end];
     }, [pageIdx, pages, lineIdx, currentFrame, lyrics.lines]);
   const currentLineStartRef = useRef<number | null>(null);
@@ -742,8 +739,8 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     node = null;
   }
 
-  const page = pageIdx !== null ? pages[pageIdx] ?? null : null;
-  const nextPage = pageIdx !== null ? pages[pageIdx + 1] ?? null : null;
+  const page = pageIdx !== null ? (pages[pageIdx] ?? null) : null;
+  const nextPage = pageIdx !== null ? (pages[pageIdx + 1] ?? null) : null;
   const karaokeFurigana: [string, string][][] | null =
     sequenceQuery.data?.transliterate.karaoke?.map((line) =>
       line.flatMap((pair) => {
@@ -767,9 +764,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
           )}
           // Add group/page for conditional countdown styles based on parent state
           data-done={
-            lineIdx !== null &&
-            page &&
-            lineIdx >= page.lines.length
+            lineIdx !== null && page && lineIdx >= page.lines.length
               ? "true"
               : undefined
           }

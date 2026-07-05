@@ -1,25 +1,24 @@
 "use client";
-
 import {
   ApolloClient,
   InMemoryCache,
-  createHttpLink,
-  split,
   HttpLink,
+  ApolloLink,
+  CombinedGraphQLErrors,
 } from "@apollo/client";
-import { onError } from "@apollo/client/link/error";
-import { setContext } from "@apollo/client/link/context";
+import { ErrorLink } from "@apollo/client/link/error";
+import { SetContextLink } from "@apollo/client/link/context";
 import { LS_JWT_KEY } from "./localStorage";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from "graphql-ws";
 import posthog from "posthog-js";
 
-const httpLink = createHttpLink({
+const httpLink = new HttpLink({
   uri: "/graphql",
 });
 
-const authLink = setContext((_, { headers }) => {
+const authLink = new SetContextLink(({ headers }) => {
   // get the authentication token from local storage if it exists
   const token = localStorage?.getItem(LS_JWT_KEY) ?? null;
   // return the headers to the context so httpLink can read them
@@ -31,11 +30,11 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path }) => {
+const errorLink = new ErrorLink(({ error }) => {
+  if (CombinedGraphQLErrors.is(error)) {
+    error.errors.forEach(({ message, locations, path }) => {
       console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
       );
       posthog?.captureException(new Error(message), {
         extra: {
@@ -44,10 +43,11 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         },
       });
     });
-  }
-  if (networkError) {
-    console.error(`[Network error]: ${networkError}`);
-    posthog?.captureException(networkError);
+  } else {
+    console.error(`[Network error]: ${error}`);
+    posthog?.captureException(
+      error instanceof Error ? error : new Error(String(error)),
+    );
   }
 });
 
@@ -70,14 +70,14 @@ const link = (() => {
         connectionParams: {
           authToken: localStorage?.getItem(LS_JWT_KEY) ?? null,
         },
-      })
+      }),
     );
     // The split function takes three parameters:
     //
     // * A function that's called for each operation to execute
     // * The Link to use for an operation if the function returns a "truthy" value
     // * The Link to use for an operation if the function returns a "falsy" value
-    const splitLink = split(
+    const splitLink = ApolloLink.split(
       ({ query }) => {
         const definition = getMainDefinition(query);
         return (
@@ -86,7 +86,7 @@ const link = (() => {
         );
       },
       wsLink,
-      baseLink
+      baseLink,
     );
 
     return splitLink;

@@ -1,7 +1,6 @@
 "use client";
-
 import { useParams } from "next/navigation";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import {
   formatArtists,
@@ -127,10 +126,10 @@ export default function LibrarySingleAlbum() {
         ({
           ...v,
           foundFile: files.find((f) => f.songId === v.id) ?? null,
-        } as ConvertedTrack)
+        }) as ConvertedTrack,
     ),
     (v) => v.SongInAlbum?.diskNumber,
-    (v) => v.SongInAlbum?.trackNumber
+    (v) => v.SongInAlbum?.trackNumber,
   );
 
   // Load tracks into playlist in order
@@ -206,7 +205,7 @@ export default function LibrarySingleAlbum() {
                       {artist.name}
                     </Link>
                   </Fragment>
-                ))
+                )),
               )}
             </h2>
 

@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
@@ -93,7 +92,7 @@ export default function PlaylistsList() {
             className="h-16 w-16 mr-4 rounded-md flex items-center justify-center text-2xl text-white"
             style={{
               backgroundImage: `linear-gradient(225deg, ${gradients[1].colors.join(
-                ", "
+                ", ",
               )})`,
             }}
           >
@@ -113,11 +112,11 @@ export default function PlaylistsList() {
         >
           <div
             className={cn(
-              "h-16 w-16 mr-4 rounded-md flex items-center justify-center text-2xl text-white"
+              "h-16 w-16 mr-4 rounded-md flex items-center justify-center text-2xl text-white",
             )}
             style={{
               backgroundImage: `linear-gradient(225deg, ${gradients[2].colors.join(
-                ", "
+                ", ",
               )})`,
             }}
           >
@@ -139,7 +138,7 @@ export default function PlaylistsList() {
             className="h-16 w-16 mr-4 rounded-md flex items-center justify-center text-2xl text-white"
             style={{
               backgroundImage: `linear-gradient(225deg, ${gradients[3].colors.join(
-                ", "
+                ", ",
               )})`,
             }}
           >
@@ -159,7 +158,7 @@ export default function PlaylistsList() {
             className="h-16 w-16 mr-4 rounded-md flex items-center justify-center text-2xl text-white"
             style={{
               backgroundImage: `linear-gradient(225deg, ${gradients[4].colors.join(
-                ", "
+                ", ",
               )})`,
             }}
           >

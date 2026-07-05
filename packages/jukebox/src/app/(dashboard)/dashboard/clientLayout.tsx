@@ -1,5 +1,4 @@
 "use client";
-
 import { type ReactNode } from "react";
 import {
   AuthContext,
@@ -8,7 +7,7 @@ import {
   apolloClient,
 } from "@lyricova/components";
 import { useRouter, usePathname } from "next/navigation";
-import { ApolloProvider } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client/react";
 import {
   Sidebar,
   SidebarContent,

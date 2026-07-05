@@ -1,10 +1,9 @@
 "use client";
-
 import Player from "@/components/public/Player";
 import DetailsPanel from "@/components/public/DetailsPanel";
 import type { ReactNode, CSSProperties } from "react";
 import React, { useEffect, useRef, useCallback } from "react";
-import { useApolloClient, useLazyQuery } from "@apollo/client";
+import { useApolloClient, useLazyQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import type { Track } from "@/components/public/AppContext";
 import { AppContext } from "@/components/public/AppContext";
@@ -52,7 +51,7 @@ function getTrackCoverURL(track: Track): string {
 
 function generateBackgroundStyle(
   track: Track,
-  texture: string | null
+  texture: string | null,
 ): CSSProperties {
   if (texture) {
     return {
@@ -83,7 +82,7 @@ function IndexLayout({ children }: Props) {
       playNow: s.playlist.playNow,
       isFullscreen: s.display.isFullscreen,
     }),
-    shallowEqual
+    shallowEqual,
   );
   const currentSong = useAppSelector(currentSongSelector);
 
@@ -164,7 +163,7 @@ function IndexLayout({ children }: Props) {
         if (playerRef.current?.src) {
           const newValue = Math.min(
             playerRef.current.currentTime + 5,
-            playerRef.current.duration
+            playerRef.current.duration,
           );
           if (playerRef.current.fastSeek) {
             playerRef.current.fastSeek(newValue);
@@ -301,7 +300,7 @@ function IndexLayout({ children }: Props) {
     if (randomTextureQuery?.data?.randomTexture) {
       const texture = randomTextureQuery.data.randomTexture;
       console.log(
-        `Texture background ${texture.name} by ${texture.author} (${texture.authorUrl}) from https://www.transparenttextures.com/.`
+        `Texture background ${texture.name} by ${texture.author} (${texture.authorUrl}) from https://www.transparenttextures.com/.`,
       );
       dispatch(setTextureUrl(texture.url));
     }
@@ -333,7 +332,7 @@ function IndexLayout({ children }: Props) {
                 className={cn(
                   "z-10",
                   "group-data-collapsed/player:order-1 group-data-collapsed/player:w-full",
-                  "group-not-data-collapsed/player:md:w-[clamp(25em,33%,45em)] group-not-data-collapsed/player:md:p-6 group-not-data-collapsed/player:h-lvh group-not-data-collapsed/player:md:h-full group-not-data-collapsed/player:absolute group-not-data-collapsed/player:md:static group-not-data-collapsed/player:inset-0"
+                  "group-not-data-collapsed/player:md:w-[clamp(25em,33%,45em)] group-not-data-collapsed/player:md:p-6 group-not-data-collapsed/player:h-lvh group-not-data-collapsed/player:md:h-full group-not-data-collapsed/player:absolute group-not-data-collapsed/player:md:static group-not-data-collapsed/player:inset-0",
                 )}
               >
                 <Card
@@ -349,7 +348,7 @@ function IndexLayout({ children }: Props) {
               className={cn(
                 "grow sm:max-h-none @container/details",
                 "group-data-collapsed/player:h-0",
-                "group-not-data-collapsed/player:h-full group-not-data-collapsed/player:w-0"
+                "group-not-data-collapsed/player:h-full group-not-data-collapsed/player:w-0",
               )}
             >
               <DetailsPanel

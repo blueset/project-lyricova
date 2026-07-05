@@ -1,5 +1,4 @@
 "use client";
-
 import { useCallback, useEffect, useState } from "react";
 import { fetchJson } from "../../utils/httpFetch";
 import type {
@@ -7,7 +6,7 @@ import type {
   SongForApiContract,
 } from "@lyricova/api/vocadb";
 import _ from "lodash";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "../../gql";
 import type { SelectSongEntryFragment } from "../../gql/graphql";
 import { toast } from "sonner";

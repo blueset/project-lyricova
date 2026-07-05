@@ -1,8 +1,7 @@
 "use client";
-
 import type { ReactNode } from "react";
 import { createContext, useEffect, useContext } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "../gql";
 import type { CurrentUserQuery } from "../gql/graphql";
 import { useRouter } from "next/navigation";

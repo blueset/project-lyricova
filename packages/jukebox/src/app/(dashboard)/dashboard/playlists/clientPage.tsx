@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { Badge } from "@lyricova/components/components/ui/badge";
 import { Button } from "@lyricova/components/components/ui/button";

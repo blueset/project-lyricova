@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import type { HmikuAtWikiSearchResultEntry } from "@lyricova/components/gql/schema";
 import { useNamedState } from "../../../../../hooks/useNamedState";
 import HMikuWikiResultDialog from "./HMikuWikiResultDialog";
@@ -68,7 +68,7 @@ export default function HMikuWikiSearchDialog({
   >(null, "selectedArticleId");
   const [showSingleDialog, toggleShowSingleDialog] = useNamedState<boolean>(
     false,
-    "showSingleDialog"
+    "showSingleDialog",
   );
 
   const form = useForm<FormValues>({
@@ -83,7 +83,7 @@ export default function HMikuWikiSearchDialog({
       setSelectedArticleId(articleId);
       toggleShowSingleDialog(true);
     },
-    [setSelectedArticleId, toggleShowSingleDialog]
+    [setSelectedArticleId, toggleShowSingleDialog],
   );
 
   const onSubmit = async (values: FormValues) => {

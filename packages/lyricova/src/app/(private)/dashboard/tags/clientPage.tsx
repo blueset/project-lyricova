@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery, useApolloClient } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import {
   Alert,
   AlertDescription,

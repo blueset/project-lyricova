@@ -1,8 +1,7 @@
 "use client";
-
 import type { ReactNode } from "react";
 import React from "react";
-import { useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
@@ -176,8 +175,8 @@ export default function SongInfoLayout({ children }: Props) {
           if (result.data?.enrolSongFromVocaDB) {
             const updated = result.data.enrolSongFromVocaDB;
             query.updateQuery((prev) => ({
-              songs: prev.songs.map((v) =>
-                v.id === updated.id ? updated : v
+              songs: (prev.songs ?? []).map((v) =>
+                v.id === updated.id ? updated : (v as typeof updated),
               ),
             }));
           }

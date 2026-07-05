@@ -1,6 +1,5 @@
 "use client";
-
-import { useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import {
   Alert,
@@ -71,11 +70,11 @@ declare module "@tanstack/react-table" {
     handleCancelClick: () => void;
     handleInputChange: (
       e: React.ChangeEvent<HTMLInputElement>,
-      field: keyof EditFormData
+      field: keyof EditFormData,
     ) => void;
     handleValueChange: (
       field: keyof EditFormData,
-      value: string | null
+      value: string | null,
     ) => void;
   }
 }
@@ -103,7 +102,9 @@ export default function FuriganaManager() {
   }>({});
   const apolloClient = useApolloClient();
 
-  const { data, loading, error, refetch } = useQuery(GET_FURIGANA_MAPPING_QUERY);
+  const { data, loading, error, refetch } = useQuery(
+    GET_FURIGANA_MAPPING_QUERY,
+  );
 
   const rows = useMemo(() => {
     if (!data?.furiganaMappings) return [];
@@ -111,7 +112,7 @@ export default function FuriganaManager() {
     const mappings = showAll
       ? data.furiganaMappings
       : data.furiganaMappings.filter(
-          (i) => !i.segmentedText || !i.segmentedFurigana
+          (i) => !i.segmentedText || !i.segmentedFurigana,
         );
 
     return mappings.map(
@@ -126,7 +127,7 @@ export default function FuriganaManager() {
             mapping.segmentedText && mapping.segmentedFurigana
               ? "complete"
               : "incomplete",
-        } as FuriganaMappingRow)
+        }) as FuriganaMappingRow,
     );
   }, [data, showAll]);
 
@@ -157,7 +158,7 @@ export default function FuriganaManager() {
       setValidationErrors(errors);
       return Object.keys(errors).length === 0;
     },
-    [setValidationErrors]
+    [setValidationErrors],
   );
 
   const handleEditClick = useCallback((row: FuriganaMappingRow) => {
@@ -184,7 +185,7 @@ export default function FuriganaManager() {
         return { ...currentData, [field]: e.target.value || null };
       });
     },
-    [setEditFormData]
+    [setEditFormData],
   );
 
   const processRowUpdate = useCallback(
@@ -204,8 +205,8 @@ export default function FuriganaManager() {
           },
         });
 
-        if (result.errors) {
-          throw new Error(result.errors[0].message);
+        if (result.error) {
+          throw result.error;
         }
         if (!result.data?.updateFuriganaMappings) {
           throw new Error(`Failed to update ${newRow.text}.`);
@@ -215,13 +216,13 @@ export default function FuriganaManager() {
         toast.success(
           `Updated ${newRow.text} to ${newRow.segmentedText ?? "null"}, ${
             newRow.segmentedFurigana ?? "null"
-          }.`
+          }.`,
         );
       } catch (error) {
         handleProcessRowUpdateError(error as Error);
       }
     },
-    [apolloClient, refetch]
+    [apolloClient, refetch],
   );
 
   const handleSaveClick = useCallback(async () => {
@@ -272,7 +273,7 @@ export default function FuriganaManager() {
         toast.error(err instanceof Error ? err.message : String(err));
       }
     },
-    [apolloClient, refetch]
+    [apolloClient, refetch],
   );
 
   const handlePredictMapping = useCallback(async () => {
@@ -293,7 +294,7 @@ export default function FuriganaManager() {
         setBulkUpdateInput(
           result.data.computeFuriganaMappings
             .map((i) => `${i.segmentedText};${i.segmentedFurigana}`)
-            .join("\n")
+            .join("\n"),
         );
       }
     } catch (err) {
@@ -329,7 +330,7 @@ ${data.furiganaMappings
 Output:
 `
         : null,
-    [data]
+    [data],
   );
 
   // Define the type for the editable form data if it's not already accessible
@@ -399,7 +400,7 @@ Output:
       // Optional: Trigger validation on blur if desired
       // setValidationErrors({}); // Clear previous errors for this field potentially
     },
-    [setEditFormData]
+    [setEditFormData],
   );
 
   // Pass handleValueChange down via table meta in FuriganaManager
@@ -552,7 +553,7 @@ Output:
         },
       },
     ],
-    [] // Dependencies for useMemo should include anything external used inside,
+    [], // Dependencies for useMemo should include anything external used inside,
     // but since column definitions are usually static or depend on stable functions,
     // an empty array might be acceptable if handlers passed via meta are stable refs.
     // If handlers change, they should be included or wrapped in useCallback.
@@ -578,7 +579,7 @@ Output:
       handleCancelClick,
       handleInputChange,
       handleValueChange,
-    ]
+    ],
   );
 
   const tableControls = useMemo(() => {

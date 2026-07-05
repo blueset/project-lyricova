@@ -1,7 +1,6 @@
 "use client";
-
 import { Fragment, useCallback } from "react";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "../../gql";
 import type {
   SelectAlbumEntryFragment,
@@ -101,7 +100,7 @@ const formSchema = z.object({
       roles: z.array(z.string()),
       effectiveRoles: z.array(z.string()),
       categories: z.string(),
-    })
+    }),
   ),
   songs: z.array(
     z.object({
@@ -111,7 +110,7 @@ const formSchema = z.object({
       diskNumber: z.number().positive().int().optional(),
       trackNumber: z.number().positive().int().optional(),
       name: z.string().optional(),
-    })
+    }),
   ),
 });
 
@@ -216,8 +215,8 @@ export function AlbumEntityDialog({
         },
       });
       apolloClient.cache.evict({ id: `Album:${albumId}` });
-      if (result.data.album) {
-        const album = result.data.album;
+      const album = result.data?.album;
+      if (album) {
         form.reset({
           name: album.name,
           sortOrder: album.sortOrder,
@@ -275,7 +274,7 @@ export function AlbumEntityDialog({
         if (result.data) {
           setAlbum(result.data.newAlbum);
           toast.success(
-            `Album "${result.data.newAlbum.name}" is successfully created.`
+            `Album "${result.data.newAlbum.name}" is successfully created.`,
           );
           handleClose();
         }
@@ -288,7 +287,7 @@ export function AlbumEntityDialog({
         if (result.data) {
           setAlbum(result.data.updateAlbum);
           toast.success(
-            `Album "${result.data.updateAlbum.name}" is successfully updated.`
+            `Album "${result.data.updateAlbum.name}" is successfully updated.`,
           );
           apolloClient.cache.evict({ id: `Album:${albumId}` });
           handleClose();
@@ -299,12 +298,12 @@ export function AlbumEntityDialog({
         `Error occurred while ${create ? "creating" : "updating"} album ${
           values?.name
         }.`,
-        e
+        e,
       );
       toast.error(
         `Error occurred while ${create ? "creating" : "updating"} album ${
           values.name
-        }. (${e})`
+        }. (${e})`,
       );
     }
   }
@@ -450,14 +449,14 @@ export function AlbumEntityDialog({
                                     field.onChange(
                                       selected
                                         ? selected.map((option) => option.value)
-                                        : []
+                                        : [],
                                     );
                                   }}
                                   value={field.value.map((v) => ({
                                     value: v,
                                     label:
                                       rolesChoices.find(
-                                        (option) => option.value === v
+                                        (option) => option.value === v,
                                       )?.label ?? v,
                                   }))}
                                   placeholder="Select roles"
@@ -482,14 +481,14 @@ export function AlbumEntityDialog({
                                     field.onChange(
                                       selected
                                         ? selected.map((option) => option.value)
-                                        : []
+                                        : [],
                                     );
                                   }}
                                   value={field.value.map((v) => ({
                                     value: v,
                                     label:
                                       rolesChoices.find(
-                                        (option) => option.value === v
+                                        (option) => option.value === v,
                                       )?.label ?? v,
                                   }))}
                                   placeholder="Select effective roles"
@@ -512,7 +511,7 @@ export function AlbumEntityDialog({
                               <MultiSelect
                                 onChange={(selected) => {
                                   field.onChange(
-                                    selected ? selected[0].value : "Nothing"
+                                    selected ? selected[0].value : "Nothing",
                                   );
                                 }}
                                 value={[
@@ -520,7 +519,8 @@ export function AlbumEntityDialog({
                                     value: field.value,
                                     label:
                                       artistCategoryChoices.find(
-                                        (option) => option.value === field.value
+                                        (option) =>
+                                          option.value === field.value,
                                       )?.label ?? field.value,
                                   },
                                 ]}
@@ -676,7 +676,7 @@ export function AlbumEntityDialog({
                               );
                             }
                             return (a.diskNumber ?? 0) - (b.diskNumber ?? 0);
-                          })
+                          }),
                         );
                       }}
                     >

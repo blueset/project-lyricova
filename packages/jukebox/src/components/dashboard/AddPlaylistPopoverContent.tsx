@@ -1,9 +1,8 @@
 "use client";
-
 import { useForm } from "react-hook-form";
 import PlaylistAvatar from "../PlaylistAvatar";
 import { SlugifyAdornment } from "@lyricova/components";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { toast } from "sonner";
 import {

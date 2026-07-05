@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/blueset/project-lyricova#readme",
   "dependencies": {
-    "@apollo/client": "^3.13.6",
+    "@apollo/client": "^4.2.5",
     "@as-integrations/express4": "^1.1.2",
     "@emotion/cache": "^11.13.1",
     "@emotion/react": "^11.10.6",
@@ -61,6 +61,7 @@
     "posthog-js": "^1.249.3",
     "react-hook-form": "^7.55.0",
     "rss": "^1.2.2",
+    "rxjs": "^7.8.2",
     "sonner": "^2.0.3",
     "tailwindcss": "^4.1.3",
     "yup": "^1.6.1",

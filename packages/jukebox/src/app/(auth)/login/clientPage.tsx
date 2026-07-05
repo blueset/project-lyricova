@@ -1,8 +1,7 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { AuthContext, LS_JWT_KEY } from "@lyricova/components";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { useCallback, useEffect, useState } from "react";
 import base64url from "base64url";
 import { useForm } from "react-hook-form";
@@ -61,7 +60,7 @@ export default function Login() {
       const credential = (await navigator.credentials.get({
         publicKey: {
           challenge: base64url.toBuffer(
-            json.challenge
+            json.challenge,
           ) as unknown as ArrayBuffer,
           // allowCredentials: [], // You might need to specify allowed credentials if required by your RP
           // userVerification: "preferred", // Or "required" or "discouraged"
@@ -78,21 +77,21 @@ export default function Login() {
         response: {
           clientDataJSON: base64url.encode(
             (credential.response as AuthenticatorAssertionResponse)
-              .clientDataJSON as unknown as Buffer
+              .clientDataJSON as unknown as Buffer,
           ),
           authenticatorData: base64url.encode(
             (credential.response as AuthenticatorAssertionResponse)
-              .authenticatorData as unknown as Buffer
+              .authenticatorData as unknown as Buffer,
           ),
           signature: base64url.encode(
             (credential.response as AuthenticatorAssertionResponse)
-              .signature as unknown as Buffer
+              .signature as unknown as Buffer,
           ),
           userHandle: (credential.response as AuthenticatorAssertionResponse)
             .userHandle
             ? base64url.encode(
                 (credential.response as AuthenticatorAssertionResponse)
-                  .userHandle as unknown as Buffer
+                  .userHandle as unknown as Buffer,
               )
             : null, // Use null or omit if userHandle is not present
         },
@@ -114,7 +113,7 @@ export default function Login() {
       if (!loginReq.ok) {
         const errorData = await loginReq.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Passkey login failed: ${loginReq.statusText}`
+          errorData.message || `Passkey login failed: ${loginReq.statusText}`,
         );
       }
 
@@ -127,7 +126,7 @@ export default function Login() {
     } catch (error) {
       console.error("Passkey login failed:", error);
       toast.error(
-        `Passkey Login Failed: ${error instanceof Error ? error.message : "An unknown error occurred."}`
+        `Passkey Login Failed: ${error instanceof Error ? error.message : "An unknown error occurred."}`,
       );
     }
   }, [apolloClient, router]);
@@ -175,7 +174,7 @@ export default function Login() {
         message: "An unexpected error occurred during login.",
       });
       toast.error(
-        `Login Error: ${error instanceof Error ? error.message : "An unexpected error occurred."}`
+        `Login Error: ${error instanceof Error ? error.message : "An unexpected error occurred."}`,
       );
     }
   };

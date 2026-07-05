@@ -53,7 +53,6 @@
   "dependencies": {
     "@ai-sdk/azure": "^2.0.79",
     "@ai-sdk/openai": "^2.0.77",
-    "@apollo/client": "^3.13.6",
     "@apollo/server": "^5.5.0",
     "@applemusic-like-lyrics/react": "^0.1.5",
     "@as-integrations/express4": "^1.1.2",

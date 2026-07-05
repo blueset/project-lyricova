@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { useState } from "react";
-import { useQuery, useApolloClient } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { toast } from "sonner";
 import { SlugifyAdornment } from "@lyricova/components";

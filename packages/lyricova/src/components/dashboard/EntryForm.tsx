@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery, useApolloClient } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { toast } from "sonner";
 import { SelectSongEntityBox } from "@lyricova/components";
 import { graphql } from "@lyricova/components/gql";
@@ -131,7 +130,7 @@ const formSchema = z.object({
   vocalistsName: z.string().optional(),
   comment: z.string().nullable(),
   songs: z.array(
-    z.any().refine((val) => val !== null, "Song entity must be selected")
+    z.any().refine((val) => val !== null, "Song entity must be selected"),
   ),
   verses: z
     .array(
@@ -145,7 +144,7 @@ const formSchema = z.object({
         stylizedText: z.string().nullable(),
         html: z.string().nullable(),
         typingSequence: z.string(),
-      })
+      }),
     )
     .min(1, "At least one verse is required")
     .refine((list) => list.filter((item) => item.isMain).length === 1, {
@@ -158,14 +157,16 @@ const formSchema = z.object({
     }),
   tags: z.array(z.string()),
   pulses: z.array(
-    z.any().refine((val) => val !== null, "Pulse entity must be selected")
+    z.any().refine((val) => val !== null, "Pulse entity must be selected"),
   ),
   creationDate: z.date(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const initialFormValues = (entry: NonNullable<EntryQuery["entry"]>): FormValues => ({
+const initialFormValues = (
+  entry: NonNullable<EntryQuery["entry"]>,
+): FormValues => ({
   title: entry.title || "",
   producersName: entry.producersName || "",
   vocalistsName: entry.vocalistsName || "",
@@ -214,7 +215,7 @@ export function EntryForm({ id }: EntityFormProps) {
             pulses: [],
             creationDate: new Date(),
           },
-    [data, id]
+    [data, id],
   );
 
   const form = useForm<FormValues>({
@@ -306,7 +307,7 @@ export function EntryForm({ id }: EntityFormProps) {
         });
         if (result.data) {
           toast.success(
-            `Entry ${result.data.newEntry.title} is successfully created.`
+            `Entry ${result.data.newEntry.title} is successfully created.`,
           );
           router.push(`/dashboard/entries/${result.data.newEntry.id}`);
         }
@@ -318,7 +319,7 @@ export function EntryForm({ id }: EntityFormProps) {
         });
         if (result.data) {
           toast.success(
-            `Entry ${result.data.updateEntry.title} is successfully updated.`
+            `Entry ${result.data.updateEntry.title} is successfully updated.`,
           );
           const outcome = await refetch();
           if (outcome.data) {
@@ -333,12 +334,12 @@ export function EntryForm({ id }: EntityFormProps) {
         `Error occurred while ${!id ? "creating" : "updating"} entry ${
           values?.title
         }.`,
-        e
+        e,
       );
       toast.error(
         `Error occurred while ${!id ? "creating" : "updating"} Entry ${
           values?.title
-        }. (${e})`
+        }. (${e})`,
       );
     }
   }
@@ -415,7 +416,7 @@ export function EntryForm({ id }: EntityFormProps) {
                 }));
                 const selectedOptions =
                   tagOptions?.filter((option) =>
-                    field.value?.includes(option.value)
+                    field.value?.includes(option.value),
                   ) || [];
 
                 return (
@@ -430,7 +431,7 @@ export function EntryForm({ id }: EntityFormProps) {
                           field.onChange(
                             selected
                               ? selected.map((option) => option.value)
-                              : []
+                              : [],
                           );
                         }}
                         getOptionValue={(option) => option.value}
@@ -502,15 +503,15 @@ export function EntryForm({ id }: EntityFormProps) {
                         .map((s) =>
                           (s.artists || [])
                             .filter((a: SongArtist) =>
-                              a.ArtistOfSong?.categories.includes("Producer")
+                              a.ArtistOfSong?.categories.includes("Producer"),
                             )
                             .map(
                               (a: SongArtist) =>
-                                a.ArtistOfSong?.customName || a.name
-                            )
+                                a.ArtistOfSong?.customName || a.name,
+                            ),
                         )
                         .flat()
-                        .join(", ")
+                        .join(", "),
                     );
                     form.setValue(
                       "vocalistsName",
@@ -520,16 +521,16 @@ export function EntryForm({ id }: EntityFormProps) {
                             .filter(
                               (a: SongArtist) =>
                                 a.ArtistOfSong?.categories.includes(
-                                  "Vocalist"
-                                ) && !a.ArtistOfSong.isSupport
+                                  "Vocalist",
+                                ) && !a.ArtistOfSong.isSupport,
                             )
                             .map(
                               (a: SongArtist) =>
-                                a.ArtistOfSong?.customName || a.name
-                            )
+                                a.ArtistOfSong?.customName || a.name,
+                            ),
                         )
                         .flat()
-                        .join(", ")
+                        .join(", "),
                     );
                   }}
                 >
@@ -696,7 +697,7 @@ export function EntryForm({ id }: EntityFormProps) {
                                           if (idx !== index) {
                                             form.setValue(
                                               `verses.${idx}.isMain`,
-                                              false
+                                              false,
                                             );
                                           }
                                         });
@@ -738,7 +739,7 @@ export function EntryForm({ id }: EntityFormProps) {
                                           if (idx !== index) {
                                             form.setValue(
                                               `verses.${idx}.isOriginal`,
-                                              false
+                                              false,
                                             );
                                           }
                                         });
@@ -790,7 +791,11 @@ export function EntryForm({ id }: EntityFormProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ""} placeholder="Translator" />
+                          <Input
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="Translator"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -814,7 +819,10 @@ export function EntryForm({ id }: EntityFormProps) {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Textarea {...field} value={field.value ?? ""} />
+                                <Textarea
+                                  {...field}
+                                  value={field.value ?? ""}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -888,7 +896,7 @@ export function EntryForm({ id }: EntityFormProps) {
                                 variables: {
                                   text: form.getValues(`verses.${index}.text`),
                                   language: form.getValues(
-                                    `verses.${index}.language`
+                                    `verses.${index}.language`,
                                   ),
                                 },
                                 fetchPolicy: "no-cache",
@@ -896,7 +904,7 @@ export function EntryForm({ id }: EntityFormProps) {
                               updateVerse(index, {
                                 ...form.getValues(`verses.${index}`),
                                 typingSequence: JSON.stringify(
-                                  result.data.transliterate.typing
+                                  result.data!.transliterate.typing,
                                 ),
                               });
                             } catch (e) {

@@ -1,9 +1,8 @@
 "use client";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useQuery, useApolloClient } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -54,7 +53,7 @@ const formSchema = z.object({
       {
         message:
           'Must be a valid JSON array of strings (e.g., ["model1", "model2"])',
-      }
+      },
     ),
 });
 
@@ -103,7 +102,7 @@ export function SiteMetaClient() {
     } catch (error) {
       console.error("Error updating LLM Models:", error);
       toast.error(
-        `Error: ${error instanceof Error ? error.message : "Failed to update LLM Models"}`
+        `Error: ${error instanceof Error ? error.message : "Failed to update LLM Models"}`,
       );
     }
   };

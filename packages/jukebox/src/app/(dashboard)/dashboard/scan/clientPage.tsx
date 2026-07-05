@@ -1,8 +1,7 @@
 "use client";
-
 import { Progress } from "@lyricova/components/components/ui/progress";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
-import { useApolloClient, useMutation } from "@apollo/client";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import { useCallback } from "react";
 import { graphql } from "@lyricova/components/gql";
 import { useNamedState } from "@/hooks/useNamedState";
@@ -83,7 +82,7 @@ export default function Scan() {
             x.data.scanProgress;
           if (total > 0) {
             setProgress(
-              ((added + deleted + updated + unchanged) / total) * 100
+              ((added + deleted + updated + unchanged) / total) * 100,
             );
           }
         }

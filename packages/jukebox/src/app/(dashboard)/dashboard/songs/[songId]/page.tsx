@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { useRouter, useParams } from "next/navigation";
 import { SongEntityDialog } from "@lyricova/components";

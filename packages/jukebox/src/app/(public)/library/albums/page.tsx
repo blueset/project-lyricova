@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import React from "react";
 import { NextComposedLink, formatArtistsPlainText } from "@lyricova/components";

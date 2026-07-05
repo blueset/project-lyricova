@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { Lyrics } from "lyrics-kit/core";
 import { useNamedState } from "../../../hooks/useNamedState";
 import LyricsEditDialog from "./LyricsEditDialog";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@lyricova/components/components/ui/button";
@@ -44,7 +44,7 @@ export default function LyricsPanel({
 
   const [isLyricsEditDialogOpen, toggleLyricsEditDialogOpen] = useNamedState(
     false,
-    "isLyricsEditDialogOpen"
+    "isLyricsEditDialogOpen",
   );
 
   const handleOpenLyricsEditDialog = useCallback(() => {
@@ -91,7 +91,7 @@ export default function LyricsPanel({
 
   const analysisResult = useMemo(
     () => (lyrics ? lyricsAnalysis(lyrics) : null),
-    [lyrics]
+    [lyrics],
   );
 
   return (

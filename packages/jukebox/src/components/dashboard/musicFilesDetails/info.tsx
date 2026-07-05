@@ -1,6 +1,5 @@
 "use client";
-
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import type { Song as SongModel } from "@lyricova/components/gql/schema";
 import {
   SelectSongEntityBox,
@@ -90,10 +89,9 @@ type SongArtist = Pick<
 };
 
 type Song = Pick<SongModel, "id" | "name" | "sortOrder"> & {
-  albums?: Pick<
-    SongAlbum,
-    "id" | "utaiteDbId" | "name" | "sortOrder" | "coverUrl"
-  >[] | null;
+  albums?:
+    | Pick<SongAlbum, "id" | "utaiteDbId" | "name" | "sortOrder" | "coverUrl">[]
+    | null;
   artists?: SongArtist[] | null;
 };
 
@@ -196,7 +194,7 @@ export default function InfoPanel({
 
       if (result.data) {
         toast.success(
-          `Album “${result.data.enrolAlbumFromVocaDB.name}” is successfully enrolled.`
+          `Album “${result.data.enrolAlbumFromVocaDB.name}” is successfully enrolled.`,
         );
       }
       toggleImporting(false);
@@ -231,17 +229,17 @@ export default function InfoPanel({
 
       if (result.data) {
         toast.success(
-          `Album “${result.data.enrolAlbumFromUtaiteDB.name}” is successfully enrolled.`
+          `Album “${result.data.enrolAlbumFromUtaiteDB.name}” is successfully enrolled.`,
         );
       }
       toggleImporting(false);
     } catch (e) {
       console.error(
         `Error occurred while importing album #${utaiteDbId} (${albumId}).`,
-        e
+        e,
       );
       toast.error(
-        `Error occurred while importing album #${utaiteDbId} (${albumId}). (${e})`
+        `Error occurred while importing album #${utaiteDbId} (${albumId}). (${e})`,
       );
       toggleImporting(false);
     }
@@ -424,8 +422,8 @@ export default function InfoPanel({
                           value === "-"
                             ? null
                             : value
-                            ? parseInt(value, 10)
-                            : null
+                              ? parseInt(value, 10)
+                              : null,
                         )
                       }
                       value={field.value?.toString() ?? ""}
@@ -440,25 +438,25 @@ export default function InfoPanel({
                           </SelectTrigger>
                         </FormControl>
                         {(form.getValues("albumId") ?? 0) > 0 && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <ProgressButton
-                                  variant="outline"
-                                  size="icon"
-                                  progress={isImporting}
-                                  className="text-teal-300 dark:border-teal-300 dark:disabled:border-teal-400"
-                                  onClick={handleRefreshAlbum}
-                                >
-                                  <Download />
-                                </ProgressButton>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {isImporting
-                                  ? "Importing..."
-                                  : "Import album from VocaDB"}
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <ProgressButton
+                                variant="outline"
+                                size="icon"
+                                progress={isImporting}
+                                className="text-teal-300 dark:border-teal-300 dark:disabled:border-teal-400"
+                                onClick={handleRefreshAlbum}
+                              >
+                                <Download />
+                              </ProgressButton>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {isImporting
+                                ? "Importing..."
+                                : "Import album from VocaDB"}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                         {(form
                           .watch("song")
                           ?.albums?.find((a) => a.id === form.watch("albumId"))
@@ -504,7 +502,7 @@ export default function InfoPanel({
                           !form
                             .watch("song")
                             ?.albums?.some(
-                              (v: { id: number }) => v.id === field.value
+                              (v: { id: number }) => v.id === field.value,
                             ) && (
                             <SelectItem
                               value={field.value?.toString() ?? ""}
@@ -547,7 +545,7 @@ export default function InfoPanel({
                     const producers = song.artists.filter(
                       (v) =>
                         (v.ArtistOfSong?.categories.indexOf("Producer") ??
-                          -1) >= 0 && !v.ArtistOfSong?.isSupport
+                          -1) >= 0 && !v.ArtistOfSong?.isSupport,
                     );
                     artistName += producers
                       .map((v) => v.ArtistOfSong?.customName || v.name)
@@ -559,7 +557,7 @@ export default function InfoPanel({
                     const vocalists = song.artists.filter(
                       (v) =>
                         (v.ArtistOfSong?.categories.indexOf("Vocalist") ??
-                          -1) >= 0 && !v.ArtistOfSong?.isSupport
+                          -1) >= 0 && !v.ArtistOfSong?.isSupport,
                     );
                     if (vocalists.length > 0) {
                       artistName +=

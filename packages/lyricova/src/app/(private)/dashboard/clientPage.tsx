@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { useEffect, useState } from "react";
 import { CountCard, CountUpCard } from "@lyricova/components";
 import { graphql } from "@lyricova/components/gql";

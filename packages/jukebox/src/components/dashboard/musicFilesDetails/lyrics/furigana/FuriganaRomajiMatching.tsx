@@ -1,5 +1,5 @@
-import type { ApolloClient} from "@apollo/client";
-import { useQuery } from "@apollo/client";
+import type { ApolloClient } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { kanaToHira, romaToHira } from "@lyricova/components";
 import type { LyricsLine } from "lyrics-kit/core";
 import { FURIGANA } from "lyrics-kit/core";
@@ -42,11 +42,11 @@ export function useVocaDBFurigana(songId: number) {
 
 export function generateDiffLines(
   kanaLines: string[],
-  romajiHiraLines: string[]
+  romajiHiraLines: string[],
 ): [number, string][][] {
   const diffs: [number, string][] = diff(
     kanaLines.join("\n"),
-    romajiHiraLines.join("").replaceAll(" ", "")
+    romajiHiraLines.join("").replaceAll(" ", ""),
   ).reduce<[number, string][]>((acc, [type, text]) => {
     acc.push([type, text]);
     if (
@@ -102,7 +102,7 @@ export function generateDiffLines(
         acc[acc.length - 1][1] += text;
       }
       return acc;
-    }, [])
+    }, []),
   );
 
   return diffLines;
@@ -113,7 +113,7 @@ export async function furiganaRomajiMatching({
   lines,
   songId,
 }: {
-  apolloClient: ApolloClient<object>;
+  apolloClient: ApolloClient;
   lines: LyricsLine[];
   songId: number;
 }): Promise<[number, string][][]> {
@@ -139,7 +139,7 @@ export async function furiganaRomajiMatching({
     variables: { id: songId },
   });
   const romajiLines =
-    vocaDBLyrics.data.vocaDBLyrics
+    vocaDBLyrics.data?.vocaDBLyrics
       .find((v) => v.translationType === "Romanized")
       ?.value?.split("\n") ?? [];
 
@@ -174,7 +174,7 @@ const vowelMapping = {
 function mergeDiff(
   beforeDiff: string,
   lastMinusOne: string,
-  lastPlusOne: string
+  lastPlusOne: string,
 ): [number, string][] {
   let merged = "";
   let changed = true;

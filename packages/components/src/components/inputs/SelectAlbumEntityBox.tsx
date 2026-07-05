@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Command,
   CommandEmpty,
@@ -42,7 +41,7 @@ import {
 import { useEffect, useState, useCallback } from "react";
 import _ from "lodash";
 import { fetchJson } from "../../utils/httpFetch";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { VocaDBSearchAlbumDialog } from "../dialogs/VocaDBSearchAlbumDialog";
 import { UtaiteDBSearchAlbumDialog } from "../dialogs/UtaiteDBSearchAlbumDialog";
 import { AlbumEntityDialog } from "../dialogs/AlbumEntityDialog";

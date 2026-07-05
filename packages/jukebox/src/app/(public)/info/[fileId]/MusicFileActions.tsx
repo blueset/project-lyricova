@@ -1,6 +1,6 @@
 import { addTrackToNext } from "@/redux/public/playlist";
 import { useAppDispatch } from "@/redux/public/store";
-import { useLazyQuery, useQuery } from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
