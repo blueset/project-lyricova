@@ -5,7 +5,7 @@ import {
   disableBodyScroll,
   enableBodyScroll,
   clearAllBodyScrollLocks,
-} from "body-scroll-lock";
+} from "body-scroll-lock-upgrade";
 import classes from "./TransitionCover.module.scss";
 const IS_SERVER = typeof window === "undefined";
 const useIsomorphicLayoutEffect = IS_SERVER ? useEffect : useLayoutEffect;

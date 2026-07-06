@@ -11,7 +11,7 @@ import {
   disableBodyScroll,
   enableBodyScroll,
   clearAllBodyScrollLocks,
-} from "body-scroll-lock";
+} from "body-scroll-lock-upgrade";
 import { usePathname } from "next/navigation";
 import { Link } from "../Link";
 import {

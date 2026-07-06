@@ -112,7 +112,7 @@
     "passport-fido2-webauthn": "^0.1.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "pinyin": "^4.0.0-alpha.2",
+    "pinyin": "^4.0.0",
     "posthog-node": "^5.39.4",
     "prop-types": "^15.7.2",
     "reflect-metadata": "^0.1.13",
