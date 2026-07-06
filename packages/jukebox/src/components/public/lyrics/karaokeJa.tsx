@@ -12,8 +12,7 @@ import _ from "lodash";
 import { useQuery } from "@apollo/client/react";
 import type { RefObject } from "react";
 import { useEffect, useMemo, useRef } from "react";
-import type { MeasuredComponentProps } from "react-measure";
-import Measure from "react-measure";
+import { useResizeObserver } from "../../../hooks/useResizeObserver";
 import measureElement, {
   measureTextWidths,
 } from "../../../frontendUtils/measure";
@@ -527,6 +526,8 @@ interface Props {
 
 export function KaraokeJaLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
+  const { ref: measureRef, width: containerWidth } =
+    useResizeObserver<HTMLDivElement>();
 
   // Page should only be rebuild if the 2 parameters change
 
@@ -752,42 +753,38 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     ) ?? null;
 
   return (
-    <Measure bounds>
-      {({ contentRect, measureRef }: MeasuredComponentProps) => (
-        <div
-          lang="ja"
-          ref={measureRef}
-          className={cn(
-            "p-16 size-full flex flex-col justify-end text-white",
-            "lg:text-6xl sm:text-4xl text-3xl", // Font sizes
-            "[&_rt]:text-[max(0.35em,1.125rem)]", // Ruby text styles
-          )}
-          // Add group/page for conditional countdown styles based on parent state
-          data-done={
-            lineIdx !== null && page && lineIdx >= page.lines.length
-              ? "true"
-              : undefined
-          }
-          data-pending={lineIdx === null ? "true" : undefined}
-          data-active={lineIdx !== null ? "true" : undefined}
-        >
-          {node}
-          <LyricsScreen
-            thisPage={page}
-            nextPage={nextPage}
-            showNext={showNext}
-            lineIdx={lineIdx}
-            lyrics={lyrics}
-            furigana={karaokeFurigana}
-            activeRef={activeRef}
-            containerWidth={contentRect.bounds?.width ?? 0}
-          />
-          <div
-            id="measure-layer"
-            className="absolute inset-0 size-full opacity-0 -z-10 pointer-events-none"
-          />
-        </div>
+    <div
+      lang="ja"
+      ref={measureRef}
+      className={cn(
+        "p-16 size-full flex flex-col justify-end text-white",
+        "lg:text-6xl sm:text-4xl text-3xl", // Font sizes
+        "[&_rt]:text-[max(0.35em,1.125rem)]", // Ruby text styles
       )}
-    </Measure>
+      // Add group/page for conditional countdown styles based on parent state
+      data-done={
+        lineIdx !== null && page && lineIdx >= page.lines.length
+          ? "true"
+          : undefined
+      }
+      data-pending={lineIdx === null ? "true" : undefined}
+      data-active={lineIdx !== null ? "true" : undefined}
+    >
+      {node}
+      <LyricsScreen
+        thisPage={page}
+        nextPage={nextPage}
+        showNext={showNext}
+        lineIdx={lineIdx}
+        lyrics={lyrics}
+        furigana={karaokeFurigana}
+        activeRef={activeRef}
+        containerWidth={containerWidth}
+      />
+      <div
+        id="measure-layer"
+        className="absolute inset-0 size-full opacity-0 -z-10 pointer-events-none"
+      />
+    </div>
   );
 }

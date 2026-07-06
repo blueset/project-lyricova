@@ -1,12 +1,6 @@
 import { spawn } from "child_process";
 import fs from "fs";
-import through from "through";
-import concat from "concat-stream";
 import path from "path";
-import combine from "stream-combiner";
-import filter from "stream-filter";
-import split from "split";
-import { Writable } from "stream";
 
 const ffmpeg = spawn.bind(null, process.env.FFMPEG_PATH || "ffmpeg");
 
@@ -138,37 +132,31 @@ function getWriteArgs(
 
 // -- Parse ini
 
-function parseini(callback?: (data: object) => void) {
-  // eslint-disable-next-line prefer-const
-  let parseLine: (data: string) => void;
-  const stream = combine(
-    split(),
-    filter(Boolean),
-    filter(isNotComment),
-    through(function(data: string) {
-      data = unescapeini(data);
-      const index = data.indexOf("=");
+/**
+ * Parse ffmpeg's `ffmetadata` (INI-like) output into a {@link Metadata} object.
+ * Blank lines and `;` comments are skipped; a line without `=` continues the
+ * previous value (ffmetadata escapes a hard line break as a trailing `\`).
+ */
+function parseIni(content: string): Metadata {
+  const data: Metadata = {};
+  let key: string | undefined;
 
-      if (index === -1) {
-        stream.data[key] += data.slice(index + 1);
-        stream.data[key] = stream.data[key].replace("\\", "\n");
-      } else {
-        key = data.slice(0, index);
-        stream.data[key] = data.slice(index + 1);
+  for (let line of content.split(/\r?\n/)) {
+    if (!line || !isNotComment(line)) continue;
+    line = unescapeini(line);
+    const index = line.indexOf("=");
+
+    if (index === -1) {
+      if (key !== undefined) {
+        data[key] = ((data[key] ?? "") + line).replace("\\", "\n");
       }
-    })
-  );
-
-  // Object to store INI data in
-  stream.data = {};
-
-  if (callback) {
-    stream.on("end", callback.bind(null, stream.data));
+    } else {
+      key = line.slice(0, index);
+      data[key] = line.slice(index + 1);
+    }
   }
 
-  let key: string;
-
-  return stream;
+  return data;
 }
 
 export function read(src: string, callback: ReadCallback): void;
@@ -198,39 +186,23 @@ export function read(
     return args;
   }
 
-  const proc = spawnRead(args),
-    stream = through(),
-    output = parseini(),
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    error = concat(() => {}) as Writable & {
-      getBody: () => {
-        toString: () => string;
-      };
-    };
+  const proc = spawnRead(args);
+  const stdout: Buffer[] = [];
+  const stderr: Buffer[] = [];
+
+  proc.stdout?.on("data", (chunk: Buffer) => stdout.push(chunk));
+  proc.stderr?.on("data", (chunk: Buffer) => stderr.push(chunk));
 
   // Proxy any child process error events along
-  proc.on("error", stream.emit.bind(stream, "error"));
-
-  // Parse ffmetadata "ini" output
-  proc.stdout?.pipe(output);
-
-  // Capture stderr
-  proc.stderr?.pipe(error);
+  proc.on("error", (err) => callback?.(err));
 
   proc.on("close", function(code: number) {
     if (code === 0) {
-      stream.emit("metadata", output.data);
+      callback?.(undefined, parseIni(Buffer.concat(stdout).toString()));
     } else {
-      stream.emit("error", new Error(error.getBody().toString()));
+      callback?.(new Error(Buffer.concat(stderr).toString()));
     }
   });
-
-  if (callback) {
-    stream.on("metadata", callback.bind(null, undefined));
-    stream.on("error", callback);
-  }
-
-  return stream;
 }
 
 export function readAsync(
@@ -287,18 +259,14 @@ export function write(
     return args;
   }
 
-  const proc = ffmpeg(args, {}),
-    stream = through(),
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    error = concat(() => {}) as Writable & {
-      getBody: () => {
-        toString: () => string;
-      };
-    };
+  const proc = ffmpeg(args, {});
+  const stderr: Buffer[] = [];
+
+  proc.stderr?.on("data", (chunk: Buffer) => stderr.push(chunk));
 
   function handleError(err: unknown) {
     fs.unlink(dst, function() {
-      stream.emit("error", err);
+      callback?.(err as Error);
     });
   }
 
@@ -307,35 +275,21 @@ export function write(
       if (err) {
         handleError(err);
       } else {
-        stream.emit("end");
+        callback?.();
       }
     });
   }
 
   // Proxy any child process error events
-  proc.on("error", stream.emit.bind(stream, "error"));
-
-  // Proxy child process stdout but don't end the stream until we know
-  // the process exits with a zero exit code
-  proc.stdout?.on("data", stream.emit.bind(stream, "data"));
-
-  // Capture stderr (to use in case of non-zero exit code)
-  proc.stderr?.pipe(error);
+  proc.on("error", (err) => callback?.(err));
 
   proc.on("close", function(code: number) {
     if (code === 0) {
       finish();
     } else {
-      handleError(new Error(error.getBody().toString()));
+      handleError(new Error(Buffer.concat(stderr).toString()));
     }
   });
-
-  if (callback) {
-    stream.on("end", callback);
-    stream.on("error", callback);
-  }
-
-  // return stream;
 }
 
 export function writeAsync(src: string, data: Metadata): Promise<void>;
