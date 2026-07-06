@@ -54,7 +54,6 @@
     "@swc/jest": "^0.2.37",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.14.149",
-    "@types/request-promise-native": "^1.0.17",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30.4.2",
