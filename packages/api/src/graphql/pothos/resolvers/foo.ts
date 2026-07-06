@@ -2,11 +2,7 @@ import bcrypt from "bcryptjs";
 import _ from "lodash";
 import { withFilter } from "graphql-subscriptions";
 import { builder } from "../builder";
-import {
-  pubsub,
-  TOPIC_LENGTHY_TASK,
-  PubSubSessionPayload,
-} from "../pubsub";
+import { pubsub, TOPIC_LENGTHY_TASK, PubSubSessionPayload } from "../pubsub";
 
 interface FooShape {
   bar: number;
@@ -31,7 +27,7 @@ builder.queryField("hash", (t) =>
   t.string({
     args: { plaintext: t.arg.string() },
     resolve: (_root, { plaintext }) => bcrypt.hash(plaintext, 10),
-  })
+  }),
 );
 
 builder.queryField("foo", (t) =>
@@ -39,7 +35,7 @@ builder.queryField("foo", (t) =>
     type: FooRef,
     authScopes: { admin: true },
     resolve: () => ({ name: "Hello world!", bar: 42 }),
-  })
+  }),
 );
 
 builder.queryField("foos", (t) =>
@@ -49,7 +45,7 @@ builder.queryField("foos", (t) =>
       { name: "Hello world!", bar: 42 },
       { name: "Another world", bar: 0 },
     ],
-  })
+  }),
 );
 
 builder.queryField("startALengthyTask", (t) =>
@@ -72,7 +68,7 @@ builder.queryField("startALengthyTask", (t) =>
       await pubsub.publish(TOPIC_LENGTHY_TASK, { sessionId, data: null });
       return results;
     },
-  })
+  }),
 );
 
 builder.subscriptionField("aLengthyTask", (t) =>
@@ -80,13 +76,20 @@ builder.subscriptionField("aLengthyTask", (t) =>
     nullable: true,
     args: { sessionId: t.arg.string() },
     subscribe: (root, args, ctx, info) =>
-      withFilter(
-        () => pubsub.asyncIterator(TOPIC_LENGTHY_TASK),
-        (payload: PubSubSessionPayload<string>, a: { sessionId: string }) =>
-          a.sessionId === payload.sessionId
-      )(root, args, ctx, info) as unknown as AsyncIterable<
-        PubSubSessionPayload<string>
-      >,
+      (
+        withFilter(
+          () => pubsub.asyncIterableIterator(TOPIC_LENGTHY_TASK),
+          (
+            payload: PubSubSessionPayload<string> | undefined,
+            a: { sessionId: string } | undefined,
+          ) => a?.sessionId === payload?.sessionId,
+        ) as unknown as (
+          root: unknown,
+          args: { sessionId: string },
+          ctx: unknown,
+          info: unknown,
+        ) => AsyncIterable<PubSubSessionPayload<string>>
+      )(root, args, ctx, info),
     resolve: (payload: PubSubSessionPayload<string>) => payload.data,
-  })
+  }),
 );
