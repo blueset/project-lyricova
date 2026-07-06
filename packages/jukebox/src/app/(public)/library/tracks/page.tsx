@@ -16,7 +16,7 @@ import {
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 import { cn } from "@lyricova/components/utils";
-import AutoResizer from "react-virtualized-auto-sizer";
+import { AutoSizer as AutoResizer } from "react-virtualized-auto-sizer";
 import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { Link, NextComposedLink, useAuthContext } from "@lyricova/components";
@@ -284,8 +284,8 @@ export default function LibraryTracks() {
 
   return (
     <div className="px-4 h-full relative overflow-hidden">
-      <AutoResizer>
-        {({ height, width }) => (
+      <AutoResizer
+        renderProp={({ height, width }) => (
           <>
             <TooltipProvider>
               <Tooltip delayDuration={0} open={isDragging}>
@@ -296,7 +296,7 @@ export default function LibraryTracks() {
                     onValueChange={onScrollSliderChange}
                     onValueCommit={() => setIsDragging(false)}
                     value={[scrollLength - scrollDistance]}
-                    min={height}
+                    min={height ?? 0}
                     max={scrollLength}
                     track={false}
                     renderThumb={(index) => (
@@ -357,7 +357,7 @@ export default function LibraryTracks() {
             </div>
           </>
         )}
-      </AutoResizer>
+      />
     </div>
   );
 }
