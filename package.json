@@ -12,7 +12,9 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "typecheck:native": "turbo run typecheck:native"
+    "typecheck:native": "turbo run typecheck:native",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "workspaces": [
     "packages/*"
