@@ -111,8 +111,10 @@ describe("YouTubeProvider yt-dlp integration", () => {
     const lyrics = await provider.fetchLyrics(token);
     const args = mockExecPromise.mock.calls[0][0] as string[];
 
-    expect(args.slice(0, 8)).toEqual([
+    expect(args.slice(0, 10)).toEqual([
       token.url,
+      "--js-runtimes",
+      "node",
       "--skip-download",
       "--write-auto-subs",
       "--sub-langs",
@@ -121,7 +123,7 @@ describe("YouTubeProvider yt-dlp integration", () => {
       "json3",
       "-o",
     ]);
-    expect(Path.basename(args[8])).toBe("%(id)s");
+    expect(Path.basename(args[10])).toBe("%(id)s");
     expect(lyrics.lines[0].content).toBe("hello world");
     expect(lyrics.lines[0].position).toBe(1.2);
     expect(lyrics.idTags[TITLE]).toBe(token.title);
