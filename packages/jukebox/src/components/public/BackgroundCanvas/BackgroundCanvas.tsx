@@ -11,11 +11,10 @@ import type { Pixel } from "./utils";
 import { normalizeColor } from "./utils";
 import { BUILDIN_RENDER_METHODS, CanvasBackgroundRender } from "./render";
 import convert from "color-convert";
-import ColorThief from "colorthief";
+import { getColorSync, getPaletteSync } from "colorthief";
 import { FBMWaveMethod } from "./fbm-wave";
 import dynamic from "next/dynamic";
 import { usePlayerState } from "../../../hooks/usePlayerState";
-import Color from "colorjs.io";
 
 const BackgroundRenderNoSSR = dynamic(
   () => import("../compat/amllBackground").then((m) => m.BackgroundRender),
@@ -66,10 +65,9 @@ export function BackgroundCanvas({
       (async () => {
         try {
           await albumImageLoaded;
-          const colorThief = new ColorThief();
-          const [r, g, b] = colorThief.getColor(image);
-          const color = new Color("sRGB", [r / 255, g / 255, b / 255]);
-          const hue = color.oklch.h;
+          const dominant = getColorSync(image);
+          if (!dominant) return;
+          const hue = dominant.oklch().h;
           if (canceled) return;
           document.body.style.setProperty("--brand-hue", `${hue}`);
         } catch (err) {
@@ -253,8 +251,9 @@ export function BackgroundCanvasRender({ coverUrl }: RenderProps) {
     (async () => {
       try {
         await albumImageLoaded;
-        const colorThief = new ColorThief();
-        const palette = colorThief.getPalette(image);
+        const palette = (getPaletteSync(image) ?? []).map(
+          (color): Pixel => color.array()
+        );
         setAlbumImageMainColors(palette);
         const renderer = rendererRef.current;
         if (renderer && !canceled) {
