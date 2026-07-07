@@ -54,7 +54,7 @@ export default tseslint.config(
         "error",
         { allowInterfaces: "with-single-extends" },
       ],
-      "@typescript-eslint/consistent-type-imports": "warn",
+      "@typescript-eslint/consistent-type-imports": "error",
     },
   },
   {
