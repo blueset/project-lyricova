@@ -13,12 +13,7 @@ interface Props {
   className?: string;
 }
 
-export function TimeSlider({
-  playerRef,
-  disabled,
-  isCollapsed,
-  className,
-}: Props) {
+export function TimeSlider({ playerRef, disabled, className }: Props) {
   const [time, setTime] = useNamedState(0, "time");
   const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
   const [duration, setDuration] = useNamedState(0, "duration");
@@ -34,7 +29,7 @@ export function TimeSlider({
       setTime(newValue[0]);
       setIsDragging(true);
     },
-    [setIsDragging, setTime]
+    [setIsDragging, setTime],
   );
 
   const onSliderChangeCommitted = useCallback(
@@ -49,7 +44,7 @@ export function TimeSlider({
         setIsDragging(false);
       }
     },
-    [playerRef, setIsDragging, setTime]
+    [playerRef, setIsDragging, setTime],
   );
 
   const updateDuration = useCallback(() => {
@@ -78,7 +73,7 @@ export function TimeSlider({
     <div
       className={cn(
         "w-full group-data-[collapsed]/player:md:flex-grow group-data-[collapsed]/player:md:w-auto",
-        className
+        className,
       )}
       id="player-time-slider"
     >

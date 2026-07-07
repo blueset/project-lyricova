@@ -8,7 +8,6 @@ import {
 } from "@lyricova/components/components/ui/alert";
 import { cn } from "@lyricova/components/utils";
 import { NextComposedLink } from "@lyricova/components";
-import React from "react";
 import PlaylistAvatar, { gradients } from "@/components/PlaylistAvatar";
 import { Sparkles, Play, Flame, FilePenLine } from "lucide-react";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";

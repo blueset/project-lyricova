@@ -103,7 +103,7 @@ export function NotFoundClient() {
         duration: 6,
         top: -codeTop + height / 2 - lineHeight / 2,
         ease: "elastic(1, 0.5)",
-      }
+      },
     );
     tl.fromTo(
       messages,
@@ -113,13 +113,13 @@ export function NotFoundClient() {
         bottom: -messageBottom + height / 2 - lineHeight / 2,
         ease: "elastic(1, 0.5)",
       },
-      "<"
+      "<",
     );
     tl.fromTo(
       caption,
       { x: "-120%", opacity: 0 },
       { x: 0, opacity: 1, duration: 1, ease: "power4.out" },
-      ">-0.5"
+      ">-0.5",
     );
     tl.set(codes, { top: `calc(${-codeTop / em}em + 50% - 0.55em)` });
     tl.set(messages, {

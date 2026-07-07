@@ -15,7 +15,7 @@ const PLAYLIST_IDS_TAG = "LyricovaPlaylistIDs";
  * lookup and hash persistence go through the Drizzle client.
  */
 export async function updatePlaylistsOfFileAsTags(
-  fileId: number
+  fileId: number,
 ): Promise<void> {
   const file = await db.query.MusicFiles.findFirst({
     where: eq(MusicFiles.id, fileId),
@@ -35,8 +35,11 @@ export async function updatePlaylistsOfFileAsTags(
         .flatMap((r) => (r.playlist ? [r.playlist.slug] : []))
         .join(","),
     },
-    { preserveStreams: true, forceId3v2 }
+    { preserveStreams: true, forceId3v2 },
   );
   const md5 = await hasha.fromFile(fullPath, { algorithm: "md5" });
-  await db.update(MusicFiles).set({ hash: md5 }).where(eq(MusicFiles.id, fileId));
+  await db
+    .update(MusicFiles)
+    .set({ hash: md5 })
+    .where(eq(MusicFiles.id, fileId));
 }

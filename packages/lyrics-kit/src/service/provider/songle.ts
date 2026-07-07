@@ -1,15 +1,33 @@
 import axios from "axios";
 import { LyricsProvider } from ".";
 import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import type { SongleResponseLyricsList, SongleResponseSearch, SongleResponseSearchResult } from "../types/songle/searchResult";
-import type { SongleError, SongleLicenseResponse, SongleLyricsObject, SongleTimeTagData } from "../types/songle/lyricsResult";
-import { ARTIST, Attachments, Lyrics, LyricsLine, TIME_TAG, TITLE, WordTimeTag, WordTimeTagLabel } from "../../core";
+import type {
+  SongleResponseLyricsList,
+  SongleResponseSearch,
+  SongleResponseSearchResult,
+} from "../types/songle/searchResult";
+import type {
+  SongleError,
+  SongleLicenseResponse,
+  SongleLyricsObject,
+  SongleTimeTagData,
+} from "../types/songle/lyricsResult";
+import {
+  ARTIST,
+  Attachments,
+  Lyrics,
+  LyricsLine,
+  TIME_TAG,
+  TITLE,
+  WordTimeTag,
+  WordTimeTagLabel,
+} from "../../core";
 import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { Element } from "cheerio";
 import cheerio from "cheerio";
 
 const CHORD_PROGRESSION_REGEXP = new RegExp(
-  "\\b([CDEFGAB](?:b|bb)*(?:#|##|sus|maj|min|aug|m|M)*[\\d/]*(?:[CDEFGAB](?:b|bb)*(?:#|##|sus|maj|min|aug|m|M)*[\\d/]*)*\\-){2}"
+  "\\b([CDEFGAB](?:b|bb)*(?:#|##|sus|maj|min|aug|m|M)*[\\d/]*(?:[CDEFGAB](?:b|bb)*(?:#|##|sus|maj|min|aug|m|M)*[\\d/]*)*\\-){2}",
 );
 
 type ScraperOptions = Partial<{
@@ -24,7 +42,6 @@ type SongleJamendoResponse = {
 
 /** @url https://songle.jp/lyric_parsers/98.js */
 class SongleLyricsScraper {
-
   private parseFn!: (data: unknown, options?: ScraperOptions) => string;
   private cache: { [url: string]: string } = {};
 
@@ -60,7 +77,7 @@ class SongleLyricsScraper {
       this.parseFn = (data) => this.parsePiapro(data as string);
     } else if (
       (matched = url.match(
-        /^https?:\/\/www\.jamendo\.com\/track\/(\d+)\/[^\/]+\/lyrics/
+        /^https?:\/\/www\.jamendo\.com\/track\/(\d+)\/[^\/]+\/lyrics/,
       )) !== null
     ) {
       format = "json";
@@ -73,7 +90,8 @@ class SongleLyricsScraper {
     } else if (url.match(/\.(txt|lrc)$/)) {
       format = "plain";
       restQuery = url;
-      this.parseFn = (data, options) => this.parseRawPlainText(data as string, options);
+      this.parseFn = (data, options) =>
+        this.parseRawPlainText(data as string, options);
     } else {
       throw new Error(`unsupported url: ${url}`);
     }
@@ -150,7 +168,8 @@ class SongleLyricsScraper {
       throw new Error("lyric not found");
     }
 
-    const h3 = doc.find("div > h3, div > div > h3")
+    const h3 = doc
+      .find("div > h3, div > div > h3")
       .filter((_idx, element) => $(element).text() === "歌詞");
 
     if (h3.length === 0) {
@@ -174,10 +193,7 @@ class SongleLyricsScraper {
 
     const parsed = elements
       .filter(function (el) {
-        return (
-          $("a", el).length === 0 &&
-          $("form", el).length === 0
-        );
+        return $("a", el).length === 0 && $("form", el).length === 0;
       })
       .map(function (el) {
         const content = $(el).text();
@@ -221,10 +237,7 @@ class SongleLyricsScraper {
 
   private format(content: string): string {
     content = this.preFilter(content);
-    content = content
-      .split(/\n/)
-      .filter(this.filter)
-      .join("\n");
+    content = content.split(/\n/).filter(this.filter).join("\n");
     content = this.applyReprise(content);
     content = content
       .split(/\n/)
@@ -319,7 +332,7 @@ class SongleLyricsScraper {
         content = content
           .replace(
             new RegExp("[（\\(]?" + mark + "繰り返し[\\)）]?", "g"),
-            phrase
+            phrase,
           )
           .replace(new RegExp("^" + mark, "m"), "");
       }
@@ -338,12 +351,17 @@ class SongleLyrics extends Lyrics {
     const lines: LyricsLine[] = [];
     for (const textLine of textLines) {
       const labels: WordTimeTagLabel[] = [];
-      let lastChar = -1, lastEnd = -1;
+      let lastChar = -1,
+        lastEnd = -1;
       [...textLine].forEach((char, index) => {
         if (char.match(/[\s\r\n]/)) return;
         const tag = flatternedTimeTags[charPointer];
         if (tag) {
-          if (tag.start_time !== null && tag.end_time !== null && (labels.length === 0 || labels.at(-1)!.timeTag !== tag.start_time)) {
+          if (
+            tag.start_time !== null &&
+            tag.end_time !== null &&
+            (labels.length === 0 || labels.at(-1)!.timeTag !== tag.start_time)
+          ) {
             labels.push(new WordTimeTagLabel(tag.start_time, index));
             lastChar = index;
             lastEnd = tag.end_time;
@@ -354,12 +372,27 @@ class SongleLyrics extends Lyrics {
       if (lastChar !== -1) {
         labels.push(new WordTimeTagLabel(lastEnd, lastChar + 1));
       }
-      const lastValidLine = !lines.length ? undefined : lines.findLast(line => (line?.attachments?.timeTag?.tags?.length ?? 0) > 0);
-      const lineStart = labels.length ? labels[0].timeTag : lastValidLine ? lastValidLine.position + (lastValidLine.attachments.timeTag?.tags.at(-1)?.timeTag ?? 0) : 0;
-      labels.forEach(label => label.timeTag -= lineStart);
-      const attachments = labels.length ? new Attachments({ [TIME_TAG]: new WordTimeTag(labels) }) : undefined;
+      const lastValidLine = !lines.length
+        ? undefined
+        : lines.findLast(
+            (line) => (line?.attachments?.timeTag?.tags?.length ?? 0) > 0,
+          );
+      const lineStart = labels.length
+        ? labels[0].timeTag
+        : lastValidLine
+          ? lastValidLine.position +
+            (lastValidLine.attachments.timeTag?.tags.at(-1)?.timeTag ?? 0)
+          : 0;
+      labels.forEach((label) => (label.timeTag -= lineStart));
+      const attachments = labels.length
+        ? new Attachments({ [TIME_TAG]: new WordTimeTag(labels) })
+        : undefined;
       const line = new LyricsLine(textLine, lineStart, attachments);
-      if (lines.length && !lines.at(-1)!.content.trim() && lines.at(-1)!.position === line.position) {
+      if (
+        lines.length &&
+        !lines.at(-1)!.content.trim() &&
+        lines.at(-1)!.position === line.position
+      ) {
         lines.at(-1)!.position -= 0.001;
       }
       lines.push(line);
@@ -379,7 +412,7 @@ export class SongleProvider extends LyricsProvider<SongleResponseSearchResult> {
   }
 
   public async searchLyrics(
-    request: LyricsSearchRequest
+    request: LyricsSearchRequest,
   ): Promise<SongleResponseSearchResult[]> {
     try {
       let query = "";
@@ -389,15 +422,26 @@ export class SongleProvider extends LyricsProvider<SongleResponseSearchResult> {
       } else if (request.searchTerm.state === "keyword") {
         query = request.searchTerm.keyword;
       }
-      const searchResult = await axios.get<SongleResponseSearch[]>("https://widget.songle.jp/api/v1/songs/search.json", {
-        params: {
-          q: query
-        }
-      });
-      const lyrics = (await Promise.all(searchResult.data.map(async (result) => {
-        const response = await axios.get<SongleResponseLyricsList>(`https://songle.jp/songs/${result.code}/lyrics.json`);
-        return response.data.lyrics;
-      }))).flat().filter(lyrics => !lyrics.processing && !lyrics.failed);
+      const searchResult = await axios.get<SongleResponseSearch[]>(
+        "https://widget.songle.jp/api/v1/songs/search.json",
+        {
+          params: {
+            q: query,
+          },
+        },
+      );
+      const lyrics = (
+        await Promise.all(
+          searchResult.data.map(async (result) => {
+            const response = await axios.get<SongleResponseLyricsList>(
+              `https://songle.jp/songs/${result.code}/lyrics.json`,
+            );
+            return response.data.lyrics;
+          }),
+        )
+      )
+        .flat()
+        .filter((lyrics) => !lyrics.processing && !lyrics.failed);
       return lyrics.map((lyric) => ({
         name: lyric.song.name,
         artist: lyric.song.artist.name,
@@ -427,7 +471,7 @@ export class SongleProvider extends LyricsProvider<SongleResponseSearchResult> {
   private async fetchLyricsTextFromScrapper(
     token: SongleResponseSearchResult,
     url: string,
-    data: SongleTimeTagData
+    data: SongleTimeTagData,
   ) {
     try {
       const lyricsResponse = await this.scraper.url2Lyric(url);
@@ -442,28 +486,49 @@ export class SongleProvider extends LyricsProvider<SongleResponseSearchResult> {
   }
 
   public async fetchLyrics(
-    token: SongleResponseSearchResult
+    token: SongleResponseSearchResult,
   ): Promise<Lyrics | undefined> {
     try {
-      const response = await axios.get<SongleLyricsObject>(`https://songle.jp/songs/${token.code}/lyrics/${token.id}.json`);
+      const response = await axios.get<SongleLyricsObject>(
+        `https://songle.jp/songs/${token.code}/lyrics/${token.id}.json`,
+      );
       let lyrics = "";
       let lyricsObj: SongleLyrics;
-      const licenseResponse = await axios.get<SongleLicenseResponse | SongleError>("https://api.textalive.jp/etc/license", {
+      const licenseResponse = await axios.get<
+        SongleLicenseResponse | SongleError
+      >("https://api.textalive.jp/etc/license", {
         params: {
           url: response.data.url,
           token: this.computeToken("ta" + response.data.url),
           skipOptoutCheck: true,
-        }
+        },
       });
       // console.log("licenseResponse.data:", licenseResponse.data, "token:", token);
       if ("error" in licenseResponse.data) {
-        console.error("Error getting license result", licenseResponse.data.error);
-        return this.fetchLyricsTextFromScrapper(token, response.data.url, response.data.data);
-      } else if (!licenseResponse.data.contentUrl.startsWith("data:text/plain;base64,")) {
-        console.error("Unknown content URL type: " + licenseResponse.data.contentUrl);
-        return this.fetchLyricsTextFromScrapper(token, response.data.url, response.data.data);
+        console.error(
+          "Error getting license result",
+          licenseResponse.data.error,
+        );
+        return this.fetchLyricsTextFromScrapper(
+          token,
+          response.data.url,
+          response.data.data,
+        );
+      } else if (
+        !licenseResponse.data.contentUrl.startsWith("data:text/plain;base64,")
+      ) {
+        console.error(
+          "Unknown content URL type: " + licenseResponse.data.contentUrl,
+        );
+        return this.fetchLyricsTextFromScrapper(
+          token,
+          response.data.url,
+          response.data.data,
+        );
       } else {
-        const base64 = licenseResponse.data.contentUrl.slice("data:text/plain;base64,".length);
+        const base64 = licenseResponse.data.contentUrl.slice(
+          "data:text/plain;base64,".length,
+        );
         lyrics = Buffer.from(base64, "base64").toString("utf-8");
         lyricsObj = new SongleLyrics(lyrics, response.data.data);
         lyricsObj.idTags[TITLE] = licenseResponse.data.name;
@@ -473,7 +538,6 @@ export class SongleProvider extends LyricsProvider<SongleResponseSearchResult> {
       lyricsObj.length = token.durationSeconds;
       lyricsObj.metadata.source = LyricsProviderSourceId.songle;
       lyricsObj.metadata.providerToken = token.code;
-
 
       return lyricsObj;
     } catch (e) {

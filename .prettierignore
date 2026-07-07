@@ -1,0 +1,25 @@
+# Dependencies
+**/node_modules
+
+# Build outputs
+**/dist
+**/build
+**/.next
+**/coverage
+**/*.tsbuildinfo
+
+# Generated code (do not hand-format)
+packages/components/src/gql
+packages/api/src/openapi/schema.ts
+packages/api/schema.graphql
+packages/api/drizzle/migrations
+
+# Ambient / declaration files
+**/*.d.ts
+
+# Lockfiles & logs
+package-lock.json
+**/*.log
+
+# Env files
+.env*

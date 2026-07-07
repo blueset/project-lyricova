@@ -8,7 +8,7 @@ export type Pixel = [number, number, number];
 export function resizeImage(
   img: HTMLImageElement,
   width: number,
-  height: number
+  height: number,
 ): ImageData {
   let canvas: HTMLCanvasElement | OffscreenCanvas;
   let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;

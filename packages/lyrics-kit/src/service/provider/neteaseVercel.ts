@@ -2,7 +2,10 @@ import axios from "axios";
 import { LyricsProvider } from ".";
 import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import { ALBUM, ARTIST, LRC_BY, Lyrics, TITLE } from "../../core";
-import type { NetEaseResponseSearchResult, NetEaseResponseSong } from "../types/netease/searchResult";
+import type {
+  NetEaseResponseSearchResult,
+  NetEaseResponseSong,
+} from "../types/netease/searchResult";
 import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
 import type { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
 import { NeteaseKLyrics, NeteaseYLyrics } from "./netease";
@@ -11,7 +14,9 @@ const SEARCH_URL = "https://neteasecloudmusicapi-ten-wine.vercel.app/search";
 const FETCH_URL = "https://neteasecloudmusicapi-ten-wine.vercel.app/lyric/new";
 
 export class NetEaseVercelProvider extends LyricsProvider<NetEaseResponseSong> {
-  public async searchLyrics(request: LyricsSearchRequest): Promise<NetEaseResponseSong[]> {
+  public async searchLyrics(
+    request: LyricsSearchRequest,
+  ): Promise<NetEaseResponseSong[]> {
     let parameters;
     if (request.searchTerm.state === "info") {
       const { title, artist } = request.searchTerm;
@@ -27,9 +32,12 @@ export class NetEaseVercelProvider extends LyricsProvider<NetEaseResponseSong> {
     }
 
     try {
-      const response = await axios.get<NetEaseResponseSearchResult>(SEARCH_URL, {
-        params: parameters,
-      });
+      const response = await axios.get<NetEaseResponseSearchResult>(
+        SEARCH_URL,
+        {
+          params: parameters,
+        },
+      );
       if (response.status !== 200) {
         console.error(response.data);
         return [];
@@ -45,7 +53,9 @@ export class NetEaseVercelProvider extends LyricsProvider<NetEaseResponseSong> {
     }
   }
 
-  public async fetchLyrics(token: NetEaseResponseSong): Promise<Lyrics | undefined> {
+  public async fetchLyrics(
+    token: NetEaseResponseSong,
+  ): Promise<Lyrics | undefined> {
     try {
       const response = await axios.get<NetEaseResponseSingleLyrics>(FETCH_URL, {
         params: { id: token.id },
@@ -61,7 +71,9 @@ export class NetEaseVercelProvider extends LyricsProvider<NetEaseResponseSong> {
         : data?.tlyric?.lyric
           ? new Lyrics(data.tlyric.lyric)
           : null;
-      const kLrc = data?.klyric?.lyric ? new NeteaseKLyrics(data.klyric.lyric) : null;
+      const kLrc = data?.klyric?.lyric
+        ? new NeteaseKLyrics(data.klyric.lyric)
+        : null;
       const yLrc = data?.yrc?.lyric ? new NeteaseYLyrics(data.yrc.lyric) : null;
       if (yLrc) {
         if (transLrc) {

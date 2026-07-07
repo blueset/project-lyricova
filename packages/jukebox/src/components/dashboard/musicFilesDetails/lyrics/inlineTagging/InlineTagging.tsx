@@ -75,7 +75,7 @@ export default function InlineTagging({ fileId }: Props) {
         linesCount: state.lyrics?.lines.length ?? 0,
         autoApplyIdentical: state.inlineTagging.autoApplyIdentical,
         setAutoApplyIdentical: state.inlineTagging.setAutoApplyIdentical,
-      }))
+      })),
     );
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function InlineTagging({ fileId }: Props) {
 
   const [playbackProgress, setPlaybackProgress] = useNamedState(
     0,
-    "playbackProgress"
+    "playbackProgress",
   );
   const section = playerStatus.state === "playing" ? "tag" : "mark";
 
@@ -304,7 +304,12 @@ export default function InlineTagging({ fileId }: Props) {
           }
           return p;
         },
-        { indices: [], start: -Infinity, end: Infinity, borderIndex: -Infinity }
+        {
+          indices: [],
+          start: -Infinity,
+          end: Infinity,
+          borderIndex: -Infinity,
+        },
       );
       setCurrentLine(record);
     }
@@ -396,7 +401,7 @@ export default function InlineTagging({ fileId }: Props) {
         event.preventDefault();
       }
     },
-    []
+    [],
   );
 
   const handlePopulateMarksJa = useCallback(() => {

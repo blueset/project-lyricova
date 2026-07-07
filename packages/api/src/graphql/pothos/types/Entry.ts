@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { builder } from "../builder";
 import { db } from "../../../drizzle/client";
 import { SongOfEntries, TagOfEntries } from "../../../drizzle/schema";
-import { UserRef, PulseRef, SongRef, TagRef, VerseRef } from "./refs";
+import { SongRef, TagRef } from "./refs";
 
 builder.drizzleObjectFields("Entries", (t) => {
   const col = (type: any, name: string, nullable = false) =>
@@ -14,7 +14,10 @@ builder.drizzleObjectFields("Entries", (t) => {
     vocalistsName: col("String", "vocalistsName"),
     authorId: col("Float", "authorId"),
     comment: col("String", "comment", true),
-    creationDate: t.field({ type: "Timestamp", resolve: (e: any) => e.creationDate }),
+    creationDate: t.field({
+      type: "Timestamp",
+      resolve: (e: any) => e.creationDate,
+    }),
     recentActionDate: t.field({
       type: "Timestamp",
       resolve: (e: any) => e.recentActionDate,

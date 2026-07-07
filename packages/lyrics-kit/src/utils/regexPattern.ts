@@ -39,7 +39,8 @@ export const lyricsLineRegex =
 
 export const base60TimeRegex = /^\s*(?:(\d+):)?(\d+(?:.\d+)?)\s*$/;
 
-export const lyricsLineAttachmentRegex = /^(\[[+-]?\d+:\d+(?:\.\d+)?\])+\[(.+?)\](.*)/gm;
+export const lyricsLineAttachmentRegex =
+  /^(\[[+-]?\d+:\d+(?:\.\d+)?\])+\[(.+?)\](.*)/gm;
 
 export const timeLineAttachmentRegex = /<(\d+,\d+)>/g;
 

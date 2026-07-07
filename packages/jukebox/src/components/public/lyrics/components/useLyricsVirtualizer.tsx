@@ -1,4 +1,4 @@
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useMemo } from "react";
 import { useContainerSize } from "./useContainerSize";
 import { useRowMeasurement } from "./useRowMeasurement";
@@ -21,7 +21,7 @@ export function useLyricsVirtualizer({
   alignAnchor,
   rowRenderer,
   estimatedRowHeight,
-  rowCount
+  rowCount,
 }: {
   containerRef: RefObject<HTMLDivElement>;
   startRow: number;
@@ -63,15 +63,26 @@ export function useLyricsVirtualizer({
       renderedRows.push(
         rowRenderer({
           index: i,
-          absoluteIndex: i < startRow ? i - startRow : i >= endRow ? i - endRow + 1 : 0,
+          absoluteIndex:
+            i < startRow ? i - startRow : i >= endRow ? i - endRow + 1 : 0,
           top: rowAccumulateHeight[i] - scrollOffset,
           isActiveScroll,
           rowRefHandler: rowRefHandler(i),
-        })
+        }),
       );
     }
     return renderedRows;
-  }, [renderStartRow, renderEndRow, rowRenderer, startRow, endRow, rowAccumulateHeight, scrollOffset, isActiveScroll, rowRefHandler]);
+  }, [
+    renderStartRow,
+    renderEndRow,
+    rowRenderer,
+    startRow,
+    endRow,
+    rowAccumulateHeight,
+    scrollOffset,
+    isActiveScroll,
+    rowRefHandler,
+  ]);
 
   return { renderedRows, isActiveScroll };
 }

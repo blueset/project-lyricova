@@ -47,7 +47,7 @@
     overflow-y: auto;
     overflow-x: visible;
     scrollbar-width: none;
-    &::-webkit-scrollbar{
+    &::-webkit-scrollbar {
       display: none;
     }
 
@@ -65,13 +65,14 @@
         }
       }
 
-      .line:last-child::after, &.done .line.prevLine:nth-last-child(2)::after {
+      .line:last-child::after,
+      &.done .line.prevLine:nth-last-child(2)::after {
         content: "";
         margin-left: 0.25rem;
         border-right: 1px solid $primary-text;
         animation: 1s linear 0s infinite blink;
       }
-      
+
       @keyframes blink {
         0% {
           opacity: 1;

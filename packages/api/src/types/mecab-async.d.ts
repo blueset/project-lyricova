@@ -1,6 +1,6 @@
 declare module "mecab-async" {
 
-  import { ExecOptions } from "child_process";
+  import type { ExecOptions } from "child_process";
 
   export interface ParsedEntry {
     kanji: string;

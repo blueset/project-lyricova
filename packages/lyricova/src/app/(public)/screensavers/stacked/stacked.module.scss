@@ -47,7 +47,11 @@
   left: 0;
   right: 0;
   height: 75%;
-  background: linear-gradient(to bottom, $background-color 10%, rgba(0, 0, 0, 0));
+  background: linear-gradient(
+    to bottom,
+    $background-color 10%,
+    rgba(0, 0, 0, 0)
+  );
   z-index: 3;
 }
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { GroupBase} from "react-select";
+import type { GroupBase } from "react-select";
 import Select, { type Props as SelectProps } from "react-select";
 import { cn } from "@lyricova/components/utils";
 import { ChevronDownIcon, XIcon } from "lucide-react";
@@ -8,7 +8,7 @@ import { Button } from "@lyricova/components/components/ui/button";
 type MultiSelectProps<
   Option = unknown,
   IsMulti extends boolean = false,
-  Group extends GroupBase<Option> = GroupBase<Option>
+  Group extends GroupBase<Option> = GroupBase<Option>,
 > = SelectProps<Option, IsMulti, Group> & {
   size?: "sm" | "default";
 };
@@ -16,7 +16,7 @@ type MultiSelectProps<
 function MultiSelect<
   Option = unknown,
   IsMulti extends boolean = true,
-  Group extends GroupBase<Option> = GroupBase<Option>
+  Group extends GroupBase<Option> = GroupBase<Option>,
 >({
   size = "default",
   className,
@@ -31,7 +31,7 @@ function MultiSelect<
             "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
             size === "default" ? "min-h-9" : "min-h-8",
             state.isFocused && "border-ring ring-ring/50 ring-[3px]",
-            className
+            className,
           ),
         valueContainer: () => "flex flex-wrap gap-1 py-0.5",
         multiValue: () =>
@@ -51,7 +51,7 @@ function MultiSelect<
           cn(
             "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 px-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
             state.isFocused && "bg-accent text-accent-foreground",
-            state.isSelected && "bg-accent/50 font-semibold"
+            state.isSelected && "bg-accent/50 font-semibold",
           ),
         input: () => "text-foreground m-0 p-0",
         placeholder: () => "text-muted-foreground",
@@ -60,7 +60,7 @@ function MultiSelect<
           "text-muted-foreground px-2 py-1.5 text-xs font-semibold",
       }}
       components={{
-        DropdownIndicator: (props) => (
+        DropdownIndicator: () => (
           <ChevronDownIcon className="size-4 opacity-50" />
         ),
         ClearIndicator: (props) => (

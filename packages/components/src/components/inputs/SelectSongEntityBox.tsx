@@ -132,7 +132,7 @@ export function SelectSongEntityBox<
         if (apolloResult.data?.searchSongs) {
           setApolloResults(apolloResult.data.searchSongs);
         }
-      } catch (e) {
+      } catch {
         setApolloResults([]);
       } finally {
         setIsApolloLoading(false);
@@ -169,7 +169,7 @@ export function SelectSongEntityBox<
             })),
           );
         }
-      } catch (e) {
+      } catch {
         setVocaDBResults([]);
       } finally {
         setIsVocaDBLoading(false);
@@ -206,7 +206,7 @@ export function SelectSongEntityBox<
             })),
           );
         }
-      } catch (e) {
+      } catch {
         setUtaiteDBResults([]);
       } finally {
         setIsUtaiteDBLoading(false);

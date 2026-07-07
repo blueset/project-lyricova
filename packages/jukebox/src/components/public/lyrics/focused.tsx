@@ -277,8 +277,8 @@ export function FocusedLyrics({
     variant === "plain"
       ? PlainLineElement
       : variant === "glow"
-      ? GlowLineElement
-      : GlowPerSyllableLineElement;
+        ? GlowLineElement
+        : GlowPerSyllableLineElement;
 
   const setRef = useCallback(
     (index: number) => (ref: LyricsAnimationRef | null) => {

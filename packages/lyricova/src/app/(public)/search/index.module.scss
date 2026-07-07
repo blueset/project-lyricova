@@ -11,7 +11,7 @@
   border: 1px solid #ffffff30;
   transition-property: background-color, color;
   transition-duration: 0.2s;
-  transition-timing-function: cubic-bezier(0,0,.3,1);
+  transition-timing-function: cubic-bezier(0, 0, 0.3, 1);
 
   @include media-breakpoint-down(mobile) {
     padding: 0.5rem 0.5rem;
@@ -37,7 +37,7 @@
   @include media-breakpoint-down(mobile) {
     font-size: 2rem;
   }
-  
+
   &:focus {
     outline: none;
   }

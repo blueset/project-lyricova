@@ -18,7 +18,7 @@ import type {
 type Props<
   TFieldValues extends FieldValues = FieldValues,
   TSourceName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-  TDestName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TDestName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   form: UseFormReturn<TFieldValues>;
   sourceName: TSourceName;
@@ -28,7 +28,7 @@ type Props<
 export function TrackNameAdornment<
   TFieldValues extends FieldValues = FieldValues,
   TSourceName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-  TDestName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TDestName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   form,
   sourceName,
@@ -46,7 +46,7 @@ export function TrackNameAdornment<
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
-        }
+        },
       );
     } else {
       form.setValue(destinationName, "" as PathValue<TFieldValues, TDestName>, {

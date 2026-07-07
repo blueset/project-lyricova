@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import {
   useAuthContext,
   formatArtistsPlainText,
@@ -59,7 +59,7 @@ export default function TrackListRow({ song, file, files, showAlbum }: Props) {
         <div
           className={cn(
             "flex flex-1 items-center text-left",
-            file === null && "text-muted-foreground"
+            file === null && "text-muted-foreground",
           )}
         >
           {showTrackNumber && (

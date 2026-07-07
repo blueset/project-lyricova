@@ -23,7 +23,7 @@ const LIGHTEN_L = 0.15;
  */
 export function generateColorGradient(
   tags: Pick<Tag, "color">[],
-  forceGradient = true
+  forceGradient = true,
 ) {
   if (tags.length === 0) return "";
   if (tags.length === 1 && !forceGradient) return tags[0].color;
@@ -45,7 +45,7 @@ export function generateColorGradient(
  */
 export function generateColorGradientFunction(
   tags: Pick<Tag, "color">[],
-  forceGradient = true
+  forceGradient = true,
 ): (pos: number) => string {
   if (tags.length === 0) return () => "white";
   if (tags.length === 1 && !forceGradient) return () => tags[0].color;
@@ -54,7 +54,9 @@ export function generateColorGradientFunction(
   return (pos: number) => {
     const scaled = pos * segments;
     const idx = Math.min(Math.max(Math.floor(scaled), 0), segments - 1);
-    return oklchToRgbString(mixOklch(colors[idx], colors[idx + 1], scaled - idx));
+    return oklchToRgbString(
+      mixOklch(colors[idx], colors[idx + 1], scaled - idx),
+    );
   };
 }
 
@@ -68,7 +70,7 @@ interface Oklch {
 
 function toOklchStops(
   tags: Pick<Tag, "color">[],
-  forceGradient: boolean
+  forceGradient: boolean,
 ): Oklch[] {
   const colors = tags.map((tag) => rgbToOklch(parseColor(tag.color)));
   if (forceGradient && colors.length === 1) {
@@ -98,9 +100,15 @@ function rgbToOklch([r, g, b]: [number, number, number]): Oklch {
   const lg = srgbToLinear(g / 255);
   const lb = srgbToLinear(b / 255);
 
-  const l = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
-  const m = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
-  const s = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
+  const l = Math.cbrt(
+    0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb,
+  );
+  const m = Math.cbrt(
+    0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb,
+  );
+  const s = Math.cbrt(
+    0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb,
+  );
 
   const L = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
   const A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
@@ -124,9 +132,15 @@ function oklchToRgbString({ l: L, c, h }: Oklch): string {
   const m = m_ * m_ * m_;
   const s = s_ * s_ * s_;
 
-  const r = linearToSrgb(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s);
-  const g = linearToSrgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s);
-  const b = linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s);
+  const r = linearToSrgb(
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+  );
+  const g = linearToSrgb(
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+  );
+  const b = linearToSrgb(
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  );
 
   return `rgb(${to255(r)}, ${to255(g)}, ${to255(b)})`;
 }

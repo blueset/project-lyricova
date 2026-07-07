@@ -44,7 +44,7 @@ export async function enrolSongFromVocaDB(songId: number): Promise<SongRow> {
 }
 
 export async function enrolArtistFromVocaDB(
-  artistId: number
+  artistId: number,
 ): Promise<ArtistRow> {
   const artist = await getArtist(artistId);
   const baseVoicebank = await getBaseVoiceBank(artist);
@@ -92,7 +92,7 @@ export async function enrolSongFromUtaiteDB(songId: number): Promise<SongRow> {
 }
 
 export async function enrolArtistFromUtaiteDB(
-  artistId: number
+  artistId: number,
 ): Promise<ArtistRow> {
   const artist = await getUtaiteDbArtist(artistId);
 
@@ -123,12 +123,12 @@ export async function enrolArtistFromUtaiteDB(
   }
   return (await saveArtistFromUtaiteDB(
     artist,
-    baseVoicebankEntity
+    baseVoicebankEntity,
   )) as ArtistRow;
 }
 
 export async function enrolAlbumFromUtaiteDB(
-  albumId: number
+  albumId: number,
 ): Promise<AlbumRow> {
   const album = await getUtaiteDbAlbum(albumId);
 
@@ -147,7 +147,7 @@ export async function enrolAlbumFromUtaiteDB(
     await Promise.all(
       album.tracks
         ?.filter((track) => !!track?.song?.id)
-        ?.map((track) => enrolSongFromUtaiteDB(track.song.id)) ?? []
+        ?.map((track) => enrolSongFromUtaiteDB(track.song.id)) ?? [],
     )
   ).filter((t): t is SongRow => !!t);
 

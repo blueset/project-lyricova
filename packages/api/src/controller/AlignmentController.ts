@@ -1,4 +1,5 @@
-import { NextFunction, Router, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
+import { Router } from "express";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 import { YOHANE_SERVER_URL } from "../utils/secret";
 import { eq } from "drizzle-orm";
@@ -23,7 +24,7 @@ export class AlignmentController {
     path: string,
     lyricsText: string,
     endpoint: string,
-    serverLabel: string
+    serverLabel: string,
   ): Promise<void> => {
     // Build a native multipart body: global FormData + a Blob backed by the
     // audio file (fs.openAsBlob streams it lazily). Do NOT set Content-Type —
@@ -44,7 +45,7 @@ export class AlignmentController {
     if (!proxyRes.ok) {
       const errorBody = await proxyRes.text();
       console.error(
-        `${serverLabel} alignment error: (${proxyRes.status}) ${errorBody}`
+        `${serverLabel} alignment error: (${proxyRes.status}) ${errorBody}`,
       );
       res.status(proxyRes.status).json({
         error: `Alignment request failed on ${serverLabel}: ${errorBody}`,
@@ -57,7 +58,7 @@ export class AlignmentController {
     if (!contentType || !contentType.includes("text/event-stream")) {
       const responseBody = await proxyRes.text();
       console.error(
-        `Yohane server returned unexpected content type: ${contentType}. Body: ${responseBody}`
+        `Yohane server returned unexpected content type: ${contentType}. Body: ${responseBody}`,
       );
       res.status(500).json({
         error: `Yohane server returned unexpected response type. Expected text/event-stream, got ${contentType}.`,
@@ -79,7 +80,7 @@ export class AlignmentController {
       // node:stream/web type that Readable.fromWeb expects (they are runtime
       // compatible but nominally distinct in TS).
       const bodyStream = Readable.fromWeb(
-        proxyRes.body as unknown as Parameters<typeof Readable.fromWeb>[0]
+        proxyRes.body as unknown as Parameters<typeof Readable.fromWeb>[0],
       );
       bodyStream.on("data", (chunk: Buffer) => {
         res.write(chunk);
@@ -102,7 +103,7 @@ export class AlignmentController {
     }
   };
 
-  public align = async (req: Request, res: Response, next: NextFunction) => {
+  public align = async (req: Request, res: Response, _next: NextFunction) => {
     if (!YOHANE_SERVER_URL) {
       return res.status(500).json({ error: "Yohane server URL is not set" });
     }
@@ -111,7 +112,9 @@ export class AlignmentController {
     if (!fileId || isNaN(fileId)) {
       return res.status(400).json({ error: "Invalid fileId" });
     }
-    const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(fileId)) });
+    const musicFile = await db.query.MusicFiles.findFirst({
+      where: eq(MusicFiles.id, parseInt(fileId)),
+    });
     if (!musicFile) {
       return res.status(404).json({ error: "Music file not found" });
     }
@@ -131,7 +134,7 @@ export class AlignmentController {
     try {
       // Optional: Ping check (already exists)
       const pingResponse = await fetch(
-        new URL("/api/ping", YOHANE_SERVER_URL).toString()
+        new URL("/api/ping", YOHANE_SERVER_URL).toString(),
       );
       if (!pingResponse.ok) {
         // More robust check
@@ -149,7 +152,13 @@ export class AlignmentController {
       }
 
       // --- Proxy Logic (native fetch + FormData; see streamAlignmentProxy) ---
-      await this.streamAlignmentProxy(res, path, lyricsText, "/api/align", "Yohane server");
+      await this.streamAlignmentProxy(
+        res,
+        path,
+        lyricsText,
+        "/api/align",
+        "Yohane server",
+      );
     } catch (error) {
       console.error("Error during alignment request proxy:", error);
       // Avoid sending detailed internal errors to the client unless necessary
@@ -164,7 +173,7 @@ export class AlignmentController {
         res.write(
           `data: ${JSON.stringify({
             error: `Internal server error during streaming: ${error}`,
-          })}\n\n`
+          })}\n\n`,
         );
         res.flush(); // Ensure the error message is sent immediately
         res.end(); // End the stream
@@ -175,7 +184,7 @@ export class AlignmentController {
   public customAlign = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction,
   ) => {
     if (!YOHANE_SERVER_URL) {
       return res.status(500).json({ error: "Alignment server URL is not set" });
@@ -185,7 +194,9 @@ export class AlignmentController {
     if (!fileId || isNaN(fileId)) {
       return res.status(400).json({ error: "Invalid fileId" });
     }
-    const musicFile = await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, parseInt(fileId)) });
+    const musicFile = await db.query.MusicFiles.findFirst({
+      where: eq(MusicFiles.id, parseInt(fileId)),
+    });
     if (!musicFile) {
       return res.status(404).json({ error: "Music file not found" });
     }
@@ -205,7 +216,7 @@ export class AlignmentController {
     try {
       // Optional: Ping check (already exists)
       const pingResponse = await fetch(
-        new URL("/api/ping", YOHANE_SERVER_URL).toString()
+        new URL("/api/ping", YOHANE_SERVER_URL).toString(),
       );
       if (!pingResponse.ok) {
         // More robust check
@@ -223,7 +234,13 @@ export class AlignmentController {
       }
 
       // --- Proxy Logic (native fetch + FormData; see streamAlignmentProxy) ---
-      await this.streamAlignmentProxy(res, path, lyricsText, "/api/custom", "Alignment server");
+      await this.streamAlignmentProxy(
+        res,
+        path,
+        lyricsText,
+        "/api/custom",
+        "Alignment server",
+      );
     } catch (error) {
       console.error("Error during alignment request proxy:", error);
       // Avoid sending detailed internal errors to the client unless necessary
@@ -238,7 +255,7 @@ export class AlignmentController {
         res.write(
           `data: ${JSON.stringify({
             error: `Internal server error during streaming: ${error}`,
-          })}\n\n`
+          })}\n\n`,
         );
         res.flush(); // Ensure the error message is sent immediately
         res.end(); // End the stream

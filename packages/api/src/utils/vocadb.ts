@@ -1,5 +1,5 @@
 import { getJson } from "./httpFetch";
-import {
+import type {
   SongForApiContract,
   ArtistForApiContract,
   AlbumForApiContract,

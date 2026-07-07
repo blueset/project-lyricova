@@ -6,11 +6,8 @@ import {
   useActiveLyrcsRanges,
 } from "../../../../hooks/useActiveLyricsRanges";
 import { useAppContext } from "../../AppContext";
-import type {
-  VirtualizerRowRenderProps} from "./useLyricsVirtualizer";
-import {
-  useLyricsVirtualizer,
-} from "./useLyricsVirtualizer";
+import type { VirtualizerRowRenderProps } from "./useLyricsVirtualizer";
+import { useLyricsVirtualizer } from "./useLyricsVirtualizer";
 import type { LyricsAnimationRef } from "./AnimationRef.type";
 
 export interface RowRendererProps<T> {
@@ -28,7 +25,7 @@ export interface RowRendererProps<T> {
 
 export interface LyricsVirtualizerProps<
   T,
-  TELement extends React.ElementType = React.ElementType
+  TELement extends React.ElementType = React.ElementType,
 > {
   children: (props: RowRendererProps<T>) => React.ReactNode;
   rows: T[];
@@ -54,7 +51,7 @@ export function LyricsVirtualizer({
   const { playerRef } = useAppContext();
   const { currentFrame, segments, playerState } = useActiveLyrcsRanges(
     rows,
-    playerRef
+    playerRef,
   );
   const playerStateRef = useRef(playerState);
   playerStateRef.current = playerState;
@@ -98,7 +95,7 @@ export function LyricsVirtualizer({
         }
       }
     },
-    []
+    [],
   );
 
   const virtualizerRowRender = useCallback(
@@ -127,7 +124,7 @@ export function LyricsVirtualizer({
           }
         },
       }),
-    [playerRef, rowRenderer, rows, segments, setRef]
+    [playerRef, rowRenderer, rows, segments, setRef],
   );
 
   const { renderedRows, isActiveScroll } = useLyricsVirtualizer({

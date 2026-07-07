@@ -12,7 +12,9 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "typecheck:native": "turbo run typecheck:native"
+    "typecheck:native": "turbo run typecheck:native",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "workspaces": [
     "packages/*"
@@ -33,6 +35,7 @@
     "@typescript/native-preview": "7.0.0-dev.20260703.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "prettier": "^3.9.4",
     "ts-jest": "^29.4.11",
     "turbo": "^2.9.14",

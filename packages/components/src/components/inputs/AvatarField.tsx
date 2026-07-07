@@ -9,7 +9,7 @@ import { cn } from "@/utils";
 
 type AvatarFieldProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   form: UseFormReturn<TFieldValues>; // Replace with the correct type for your form
   name: TName;
@@ -18,7 +18,7 @@ type AvatarFieldProps<
 
 export function AvatarField<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({ form, name, className }: AvatarFieldProps<TFieldValues, TName>) {
   const src = form.watch(name);
   return (

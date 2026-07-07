@@ -6,8 +6,8 @@ const SONG = "初音ミクの消失",
   DURATION = 290.0;
 const REQ = LyricsSearchRequest.fromInfo(SONG, ARTIST, DURATION);
 
-describe('LrcLibLyricsProvider', () => {
-  it('should search and return lyrics results', async () => {
+describe("LrcLibLyricsProvider", () => {
+  it("should search and return lyrics results", async () => {
     const lrclib = new LrcLibLyricsProvider();
     const result = await lrclib.getLyrics(REQ);
     expect(Array.isArray(result)).toBeTruthy();
@@ -15,6 +15,6 @@ describe('LrcLibLyricsProvider', () => {
     console.log("Hits:", result);
     console.log("Item 0:", result[0].toString());
     expect(result.length).toBeGreaterThan(0);
-    expect(result.some(i => i.isMatched())).toBeTruthy();
+    expect(result.some((i) => i.isMatched())).toBeTruthy();
   });
 });

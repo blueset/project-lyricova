@@ -1,18 +1,11 @@
-import {
-  Lyrics,
-  LyricsLine,
-  METADATA_MINOR,
-  METADATA_ROLE,
-} from "lyrics-kit/core";
-import { toast } from "sonner";
-import { useMemo, useEffect, memo, useCallback } from "react";
+import { METADATA_MINOR, METADATA_ROLE } from "lyrics-kit/core";
+import { memo, useCallback } from "react";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@lyricova/components/components/ui/toggle-group";
 import { cn } from "@lyricova/components/utils";
-import { useNamedStateWithRef } from "@/hooks/useNamedStateWithRef";
 import { Toggle } from "@lyricova/components/components/ui/toggle";
 import { useLyricsStore } from "./state/editorState";
 import { useShallow } from "zustand/shallow";
@@ -39,13 +32,13 @@ const RowItem = memo(function RowItem({ idx }: { idx: number }) {
       setMinorByIndex: state.role.setMinorByIndex,
       setMinorOfSelectedLines: state.role.setMinorOfSelectedLines,
       setRoleOfSelectedLines: state.role.setRoleOfSelectedLines,
-    }))
+    })),
   );
 
   const onClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       const index = parseInt(
-        event.currentTarget.getAttribute("data-index") ?? "-1"
+        event.currentTarget.getAttribute("data-index") ?? "-1",
       );
       const shiftKey = event.shiftKey;
       const ctrlCmdKey = event.ctrlKey || event.metaKey;
@@ -56,7 +49,7 @@ const RowItem = memo(function RowItem({ idx }: { idx: number }) {
           newSelectedLines = prevSelectedLines.filter((i) => i !== index);
         } else {
           newSelectedLines = [...prevSelectedLines, index].sort(
-            (a, b) => a - b
+            (a, b) => a - b,
           );
         }
       } else if (shiftKey) {
@@ -71,7 +64,7 @@ const RowItem = memo(function RowItem({ idx }: { idx: number }) {
             ...prevSelectedLines.filter((i) => i < rangeStart || i > rangeEnd),
             ...Array.from(
               { length: rangeEnd - rangeStart + 1 },
-              (_, i) => i + rangeStart
+              (_, i) => i + rangeStart,
             ),
           ];
         }
@@ -80,7 +73,7 @@ const RowItem = memo(function RowItem({ idx }: { idx: number }) {
       }
       setSelectedLines(newSelectedLines);
     },
-    [setSelectedLines]
+    [setSelectedLines],
   );
 
   const handleRoleChangeInternal = useCallback(
@@ -94,7 +87,7 @@ const RowItem = memo(function RowItem({ idx }: { idx: number }) {
         setRoleByIndex(idx, parseInt(value) || 0);
       }
     },
-    [idx, setRoleByIndex, setRoleOfSelectedLines]
+    [idx, setRoleByIndex, setRoleOfSelectedLines],
   );
 
   const handleMinorChangeInternal = useCallback(() => {
@@ -115,7 +108,7 @@ const RowItem = memo(function RowItem({ idx }: { idx: number }) {
         variant="ghost"
         className={cn(
           "w-full justify-start h-auto py-1 px-2 data-[selected=true]:bg-info data-[selected=true]:text-accent-foreground rounded-none pl-36",
-          selected && "bg-accent text-accent-foreground"
+          selected && "bg-accent text-accent-foreground",
         )}
         data-index={idx}
         data-selected={selected}
@@ -148,7 +141,7 @@ const RowItem = memo(function RowItem({ idx }: { idx: number }) {
           size="sm"
           className={cn(
             "py-0 px-2 h-auto",
-            lineMinor && "bg-secondary text-secondary-foreground"
+            lineMinor && "bg-secondary text-secondary-foreground",
           )}
           pressed={lineMinor === "1"}
           onClick={handleMinorChangeInternal}
@@ -168,7 +161,7 @@ export default function Roles({ fileId }: Props) {
   const { linesCount } = useLyricsStore(
     useShallow((state) => ({
       linesCount: state.lyrics?.lines.length ?? 0,
-    }))
+    })),
   );
 
   return (

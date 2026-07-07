@@ -3,7 +3,6 @@ import type { VDBArtistType } from "../../../types/vocadb";
 import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import type { ResultOf } from "@graphql-typed-document-node/core";
-import React from "react";
 import { SquareUserRound } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";
 import {
@@ -11,7 +10,6 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@lyricova/components/components/ui/alert";
-import { cn } from "@lyricova/components/utils";
 import {
   Avatar,
   AvatarFallback,

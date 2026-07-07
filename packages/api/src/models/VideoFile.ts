@@ -73,13 +73,13 @@ export class VideoFile {
   sourceUrl?: string;
 
   type!:
-      | "Original"
-      | "PV"
-      | "Derived"
-      | "Subtitled"
-      | "OnVocal"
-      | "OffVocal"
-      | "Other";
+    | "Original"
+    | "PV"
+    | "Derived"
+    | "Subtitled"
+    | "OnVocal"
+    | "OffVocal"
+    | "Other";
 
   creationDate!: Date;
 

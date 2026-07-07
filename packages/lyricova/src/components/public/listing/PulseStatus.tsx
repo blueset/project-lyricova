@@ -18,15 +18,15 @@ export function PulseStatus({ entry }: PulseStatusProps) {
   const lastPulseTime = Math.max(
     0,
     ...entry.pulses.map((pulse) =>
-      pulse.creationDate ? new Date(pulse.creationDate).getTime() : 0
-    )
+      pulse.creationDate ? new Date(pulse.creationDate).getTime() : 0,
+    ),
   );
   const creationDate = entry.creationDate ? new Date(entry.creationDate) : 0;
   return (
     <div suppressHydrationWarning>
       {lastPulseTime
         ? `Last bumped ${formatTime(lastPulseTime)}, first posted ${formatTime(
-            creationDate
+            creationDate,
           )}.`
         : `First posted ${formatTime(creationDate)}.`}
     </div>

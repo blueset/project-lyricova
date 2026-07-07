@@ -180,11 +180,11 @@ builder.drizzleObjectFields("MusicFiles", (t) => ({
         if (usedType === "lrc") {
           content = content.replace(
             /^((?:\[[0-9:.-]+])+)(.+?) \/ (.+)$/gm,
-            "$1$2\n$1[tr]$3"
+            "$1$2\n$1[tr]$3",
           );
           content = content.replace(
             /^((?:\[[0-9:.-]+])+)(.+?)[\/／](.+)$/gm,
-            "$1$2\n$1[tr]〝$3〟"
+            "$1$2\n$1[tr]〝$3〟",
           );
         }
 

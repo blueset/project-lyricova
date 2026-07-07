@@ -18,7 +18,6 @@ import { graphql } from "@lyricova/components/gql";
 import type { TagsQuery } from "@lyricova/components/gql/graphql";
 import { DataTableColumnHeader } from "@lyricova/components";
 import { Pencil, Plus, Trash, XCircle } from "lucide-react";
-import React from "react";
 import {
   Tooltip,
   TooltipTrigger,

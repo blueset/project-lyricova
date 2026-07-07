@@ -36,7 +36,7 @@ async () => {
   const request = Request.fromInfo(
     "Song title",
     "Artist name",
-    /* duration in seconds */ 320.1
+    /* duration in seconds */ 320.1,
   );
   // Get lyrics from all sources.
   let manager = new Manager();
@@ -101,18 +101,18 @@ Taken from
 
 Predefind attachment tags:
 
-| Tag | Key | Value Type | Attachment type | Description |
-| --- | --- | --- | --- | --- |
-| Translation | `tr` | [RFC 4646](https://www.ietf.org/rfc/rfc4646.txt) | plain text | |
-| Word time tag | `tt` | - | index based | Timestamp in millisecond |
-| Furigana / Ruby | `fu` | - | range based | |
-| Romaji | `ro` | - | range based | (Not used in Lyricova.) |
+| Tag             | Key  | Value Type                                       | Attachment type | Description              |
+| --------------- | ---- | ------------------------------------------------ | --------------- | ------------------------ |
+| Translation     | `tr` | [RFC 4646](https://www.ietf.org/rfc/rfc4646.txt) | plain text      |                          |
+| Word time tag   | `tt` | -                                                | index based     | Timestamp in millisecond |
+| Furigana / Ruby | `fu` | -                                                | range based     |                          |
+| Romaji          | `ro` | -                                                | range based     | (Not used in Lyricova.)  |
 
 Lyricova’s extension:
 
-| Tag | Key | Value Type | Attachment type | Description |
-| --- | --- | --- | --- | --- |
-| Metadata | `meta` | `role`, `minor` | plain text | `role` (int ≥ 0): specifies the singer of the line, where the default value 0 is usually the main singer. Up to 3 roles (0, 1, 2) are supported in Lyricova Jukebox. <br/> `minor` (`0`, `1`): specifies if the line should be rendered in a smaller size. Default is `0`. |
+| Tag      | Key    | Value Type      | Attachment type | Description                                                                                                                                                                                                                                                                |
+| -------- | ------ | --------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Metadata | `meta` | `role`, `minor` | plain text      | `role` (int ≥ 0): specifies the singer of the line, where the default value 0 is usually the main singer. Up to 3 roles (0, 1, 2) are supported in Lyricova Jukebox. <br/> `minor` (`0`, `1`): specifies if the line should be rendered in a smaller size. Default is `0`. |
 
 <details>
 <summary>My previous intepretation</summary>

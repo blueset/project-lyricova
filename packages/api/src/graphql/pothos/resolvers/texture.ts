@@ -7,5 +7,5 @@ builder.queryField("randomTexture", (t) =>
   t.field({
     type: TextureRef,
     resolve: () => _.sample(TEXTURE_DATA) ?? TEXTURE_DATA[0],
-  })
+  }),
 );

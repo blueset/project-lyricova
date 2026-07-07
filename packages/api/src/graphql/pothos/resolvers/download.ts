@@ -3,12 +3,9 @@ import { MUSIC_FILES_PATH, YTDLP_PATH } from "../../../utils/secret";
 import { swapExt } from "../../../utils/path";
 import YTDlpWrap from "yt-dlp-wrap-plus";
 import { builder } from "../builder";
-import {
-  pubsub,
-  TOPIC_YOUTUBE_DL_PROGRESS,
-  PubSubSessionPayload,
-} from "../pubsub";
-import { YouTubeDlProgressShape } from "../types/download";
+import type { PubSubSessionPayload } from "../pubsub";
+import { pubsub, TOPIC_YOUTUBE_DL_PROGRESS } from "../pubsub";
+import type { YouTubeDlProgressShape } from "../types/download";
 
 const YouTubeDlDownloadOptions = builder.inputType("YouTubeDlDownloadOptions", {
   fields: (t) => ({
@@ -28,10 +25,10 @@ function publishDownloadProgress(
   current: number,
   total: number,
   speed: string | null = null,
-  eta: string | null = null
+  eta: string | null = null,
 ): Promise<void> {
   console.log(
-    `Download progress of ${sessionId}: ${current} / ${total} @ ${speed} ETA: ${eta}}`
+    `Download progress of ${sessionId}: ${current} / ${total} @ ${speed} ETA: ${eta}}`,
   );
   return pubsub.publish(TOPIC_YOUTUBE_DL_PROGRESS, {
     sessionId,
@@ -56,7 +53,7 @@ function publishDownloadSuccess(sessionId: string): Promise<void> {
 
 function publishDownloadMessage(
   sessionId: string,
-  message: string
+  message: string,
 ): Promise<void> {
   console.log(`Download message: ${sessionId}, ${message}`);
   return pubsub.publish(TOPIC_YOUTUBE_DL_PROGRESS, {
@@ -65,10 +62,7 @@ function publishDownloadMessage(
   } as PubSubSessionPayload<YouTubeDlProgressShape>);
 }
 
-function publishDownloadFail(
-  sessionId: string,
-  error: unknown
-): Promise<void> {
+function publishDownloadFail(sessionId: string, error: unknown): Promise<void> {
   console.error(`Download failed: ${sessionId}`, error);
   return pubsub.publish(TOPIC_YOUTUBE_DL_PROGRESS, {
     sessionId,
@@ -131,7 +125,7 @@ builder.mutationField("youtubeDlDownloadAudio", (t) =>
               progress.percent ?? 0,
               100,
               progress.currentSpeed,
-              progress.eta
+              progress.eta,
             );
           }
         });
@@ -152,7 +146,7 @@ builder.mutationField("youtubeDlDownloadAudio", (t) =>
         });
       });
     },
-  })
+  }),
 );
 
 builder.queryField("youtubeDlGetInfo", (t) =>
@@ -168,5 +162,5 @@ builder.queryField("youtubeDlGetInfo", (t) =>
         throw new Error("Playlist download is not supported yet");
       return info;
     },
-  })
+  }),
 );

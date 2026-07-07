@@ -9,7 +9,7 @@ export const createTaggingSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   TaggingSlice
-> = (set, get, api) => {
+> = (set, get, _api) => {
   return {
     tagging: {
       cursor: 0,
@@ -97,7 +97,7 @@ export const createTaggingSlice: StateCreator<
         const { m, b } = linearRegressionResult;
         set(
           (state) => {
-            state.lyrics?.lines.forEach((line, index) => {
+            state.lyrics?.lines.forEach((line) => {
               line.position = Math.max(0, m * line.position + b);
               if (line?.attachments?.[TIME_TAG]) {
                 line.attachments[TIME_TAG].tags = line.attachments[

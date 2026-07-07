@@ -11,7 +11,10 @@ builder.drizzleObjectFields("Users", (t) => ({
   emailMD5: t.field({
     type: "String",
     resolve: (u: any) =>
-      crypto.createHash("md5").update(u.email || "").digest("hex"),
+      crypto
+        .createHash("md5")
+        .update(u.email || "")
+        .digest("hex"),
   }),
   id: t.field({ type: "Float", resolve: (u: any) => u.id }),
   role: t.field({ type: "String", resolve: (u: any) => u.role }),
@@ -24,7 +27,11 @@ builder.drizzleObjectFields("UserPublicKeyCredentials", (t) => ({
     resolve: (c: any) => c.creationDate,
   }),
   id: t.field({ type: "Float", resolve: (c: any) => c.id }),
-  remarks: t.field({ type: "String", nullable: true, resolve: (c: any) => c.remarks }),
+  remarks: t.field({
+    type: "String",
+    nullable: true,
+    resolve: (c: any) => c.remarks,
+  }),
   updatedOn: t.field({ type: "Timestamp", resolve: (c: any) => c.updatedOn }),
   userId: t.field({ type: "Float", resolve: (c: any) => c.userId }),
 }));

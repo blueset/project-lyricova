@@ -8,7 +8,7 @@
   font-family: $headings-font;
   color: $brand-color;
   line-height: 1;
-} 
+}
 
 .headerRow {
   display: flex;
@@ -25,13 +25,15 @@
   gap: 0.5rem;
 }
 
-.left, .right {
+.left,
+.right {
   flex-grow: 1;
   width: 0;
   text-transform: uppercase;
   font-weight: 300;
 
-  div, a {
+  div,
+  a {
     width: min-content;
   }
 }
@@ -68,7 +70,7 @@
       }
     }
   }
-  
+
   strong {
     font-weight: 700;
   }
@@ -113,7 +115,8 @@
     flex-grow: 0;
   }
 
-  .left, .right {
+  .left,
+  .right {
     align-self: center;
     width: fit-content;
     font-size: 0.7rem;
@@ -137,7 +140,7 @@
 
 @include media-breakpoint-down(mobile) {
   .headerRow {
-    [data-nav-icon=search] {
+    [data-nav-icon="search"] {
       display: none;
     }
   }

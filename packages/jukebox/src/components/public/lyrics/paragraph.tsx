@@ -12,7 +12,7 @@ interface Props {
 
 const lineClasses = cn(
   "font-normal text-[2.5em] opacity-50 mb-1",
-  "data-active:opacity-100 data-active:font-medium"
+  "data-active:opacity-100 data-active:font-medium",
 );
 
 export function ParagraphLyrics({ lyrics }: Props) {

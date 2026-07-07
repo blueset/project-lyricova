@@ -1,4 +1,4 @@
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import type { PlayerState } from "./types";
 import { useNamedState } from "./useNamedState";
@@ -6,7 +6,7 @@ import { useNamedState } from "./useNamedState";
 export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
   const [playerState, setPlayerState] = useNamedState<PlayerState>(
     { state: "paused", progress: 0 },
-    "playerState"
+    "playerState",
   );
   const playerStateRef = useRef<PlayerState>(playerState);
   playerStateRef.current = playerState;

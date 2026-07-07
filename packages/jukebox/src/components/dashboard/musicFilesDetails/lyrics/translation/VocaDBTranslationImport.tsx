@@ -20,7 +20,7 @@ export default function VocaDBTranslationImport({
     useShallow((state) => ({
       setSelectedLanguage: state.translations.setSelectedLanguage,
       setTextareaValue: state.translations.setTextareaValue,
-    }))
+    })),
   );
 
   const handleImportTranslation = useCallback(
@@ -34,7 +34,7 @@ export default function VocaDBTranslationImport({
       setSelectedLanguage(newLanguage);
       setTextareaValue(translation.value ?? "");
     },
-    [setSelectedLanguage, setTextareaValue]
+    [setSelectedLanguage, setTextareaValue],
   );
 
   if (vocaDBTranslations.length === 0) {

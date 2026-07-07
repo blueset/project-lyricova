@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { host, siteName, tagLine1, tagLine2 } from "@/utils/consts";
 import SearchClient from "./client";
 import { Suspense } from "react";

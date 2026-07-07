@@ -30,7 +30,7 @@ interface StepperProps extends React.HTMLAttributes<HTMLDivElement> {
 const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
   (
     { activeStep = 0, orientation = "vertical", className, children, ...props },
-    ref
+    ref,
   ) => {
     // Clone children and inject index
     const childrenWithProps = React.Children.map(children, (child, index) => {
@@ -40,7 +40,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
           {
             ...(child as React.ReactElement<StepProps>).props,
             index: index,
-          }
+          },
         );
       }
       return child;
@@ -53,7 +53,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
           className={cn(
             "flex",
             orientation === "vertical" ? "flex-col" : "flex-row",
-            className
+            className,
           )}
           {...props}
         >
@@ -61,7 +61,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
         </div>
       </StepperContext.Provider>
     );
-  }
+  },
 );
 Stepper.displayName = "Stepper";
 
@@ -77,12 +77,12 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
 
     const isActive = React.useMemo(
       () => index === activeStep,
-      [index, activeStep]
+      [index, activeStep],
     );
 
     const isCompleted = React.useMemo(
       () => index < activeStep,
-      [index, activeStep]
+      [index, activeStep],
     );
 
     return (
@@ -92,7 +92,7 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
           className={cn(
             "relative flex",
             orientation === "vertical" ? "flex-col" : "flex-row",
-            className
+            className,
           )}
           data-active={isActive ? true : undefined}
           data-completed={isCompleted ? true : undefined}
@@ -107,8 +107,8 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
                   isActive
                     ? "bg-primary border-primary text-primary-foreground"
                     : isCompleted
-                    ? "bg-primary/80 border-primary/80 text-primary-foreground"
-                    : "bg-muted border-muted text-muted-foreground"
+                      ? "bg-primary/80 border-primary/80 text-primary-foreground"
+                      : "bg-muted border-muted text-muted-foreground",
                 )}
               >
                 {isCompleted ? <Check /> : <span>{index + 1}</span>}
@@ -120,7 +120,7 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
         </div>
       </StepContext.Provider>
     );
-  }
+  },
 );
 Step.displayName = "Step";
 
@@ -143,7 +143,7 @@ const StepLabel = React.forwardRef<HTMLDivElement, StepLabelProps>(
             "font-medium",
             isActive || isCompleted
               ? "text-foreground"
-              : "text-muted-foreground"
+              : "text-muted-foreground",
           )}
         >
           {children}
@@ -153,7 +153,7 @@ const StepLabel = React.forwardRef<HTMLDivElement, StepLabelProps>(
         )}
       </div>
     );
-  }
+  },
 );
 StepLabel.displayName = "StepLabel";
 
@@ -170,7 +170,7 @@ const StepContent = React.forwardRef<HTMLDivElement, StepContentProps>(
         {children}
       </div>
     );
-  }
+  },
 );
 StepContent.displayName = "StepContent";
 

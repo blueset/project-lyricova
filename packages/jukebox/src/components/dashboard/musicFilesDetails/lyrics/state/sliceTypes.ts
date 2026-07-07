@@ -68,7 +68,7 @@ export interface FuriganaSlice {
     addFuriganaToSelectedLine: (
       start: number,
       end: number,
-      furigana: string
+      furigana: string,
     ) => void;
     removeFuriganaFromSelectedLine: (start: number, end: number) => void;
     applyPatternToAllLines: (base: string, furigana: string) => void;
@@ -124,7 +124,8 @@ export interface InlineTaggingSlice {
 }
 
 export interface LyricsState
-  extends MainSlice,
+  extends
+    MainSlice,
     TaggingSlice,
     TranslationSlice,
     FuriganaSlice,

@@ -24,7 +24,7 @@ export function LyricsSwitchButton<T extends ReactNode>({
     (option: T) => {
       setModule(option);
     },
-    [setModule]
+    [setModule],
   );
 
   return (

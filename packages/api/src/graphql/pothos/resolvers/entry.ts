@@ -97,7 +97,7 @@ builder.queryField("entries", (t) =>
       db.query.Entries.findMany({
         orderBy: (e, { desc }) => [desc(e.recentActionDate)],
       }),
-  })
+  }),
 );
 
 builder.queryField("entry", (t) =>
@@ -106,9 +106,8 @@ builder.queryField("entry", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.Entries.findFirst({ where: eq(Entries.id, id) })) ??
-        null),
-  })
+      (await db.query.Entries.findFirst({ where: eq(Entries.id, id) })) ?? null,
+  }),
 );
 
 builder.mutationField("newEntry", (t) =>
@@ -181,7 +180,7 @@ builder.mutationField("newEntry", (t) =>
         where: eq(Entries.id, entryId),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("updateEntry", (t) =>
@@ -211,8 +210,8 @@ builder.mutationField("updateEntry", (t) =>
       const recentActionDate = new Date(
         Math.max(
           creationDate!.valueOf(),
-          ...(pulses ?? []).map((p) => p.creationDate.valueOf())
-        )
+          ...(pulses ?? []).map((p) => p.creationDate.valueOf()),
+        ),
       );
 
       await db.transaction(async (tx) => {
@@ -254,7 +253,7 @@ builder.mutationField("updateEntry", (t) =>
           .where(
             verseIds.length
               ? and(eq(Verses.entryId, id), notInArray(Verses.id, verseIds))
-              : eq(Verses.entryId, id)
+              : eq(Verses.entryId, id),
           );
 
         // Replace song + tag associations.
@@ -300,7 +299,7 @@ builder.mutationField("updateEntry", (t) =>
           .where(
             pulseIds.length
               ? and(eq(Pulses.entryId, id), notInArray(Pulses.id, pulseIds))
-              : eq(Pulses.entryId, id)
+              : eq(Pulses.entryId, id),
           );
       });
 
@@ -312,7 +311,7 @@ builder.mutationField("updateEntry", (t) =>
         where: eq(Entries.id, id),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("deleteEntry", (t) =>
@@ -330,7 +329,7 @@ builder.mutationField("deleteEntry", (t) =>
       await db.delete(Entries).where(eq(Entries.id, id));
       return true;
     },
-  })
+  }),
 );
 
 builder.mutationField("bumpEntry", (t) =>
@@ -352,7 +351,7 @@ builder.mutationField("bumpEntry", (t) =>
         .where(eq(Entries.id, id));
       return true;
     },
-  })
+  }),
 );
 
 builder.mutationField("pulseEntry", (t) =>
@@ -372,7 +371,7 @@ builder.mutationField("pulseEntry", (t) =>
         where: eq(Entries.id, id),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("unpulseEntry", (t) =>
@@ -398,8 +397,8 @@ builder.mutationField("unpulseEntry", (t) =>
       const recentActionDate = new Date(
         Math.max(
           entry.creationDate.valueOf(),
-          ...remaining.map((p) => p.creationDate.valueOf())
-        )
+          ...remaining.map((p) => p.creationDate.valueOf()),
+        ),
       );
       await db
         .update(Entries)
@@ -409,5 +408,5 @@ builder.mutationField("unpulseEntry", (t) =>
         where: eq(Entries.id, id),
       }))!;
     },
-  })
+  }),
 );

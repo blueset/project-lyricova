@@ -9,10 +9,7 @@
  * Fallback: phonotactic analysis of the romanization itself.
  */
 
-import {
-  alignSegments,
-  extractScoringCore,
-} from "./normalize";
+import { alignSegments, extractScoringCore } from "./normalize";
 import { phonotacticClassify } from "./phonotactics";
 import { reconcile } from "./reconciliation";
 
@@ -116,7 +113,12 @@ export async function classifyNameLanguage(
     // Boost if phonotactics agrees
     if (phonoResult.label === label) {
       reasons.push("Phonotactics confirms reconciliation result");
-      return { label, confidence: Math.min(1, confidence + 0.1), reasons, signals };
+      return {
+        label,
+        confidence: Math.min(1, confidence + 0.1),
+        reasons,
+        signals,
+      };
     }
 
     return { label, confidence, reasons, signals };
@@ -132,7 +134,10 @@ export async function classifyNameLanguage(
       reasons.push(
         `Phonotactic tie-breaker: ${phonoResult.label} (confidence=${phonoResult.confidence.toFixed(2)})`,
       );
-      const confidence = Math.min(1, phonoResult.confidence * 0.8 + bestScore * 0.2);
+      const confidence = Math.min(
+        1,
+        phonoResult.confidence * 0.8 + bestScore * 0.2,
+      );
       return { label: phonoResult.label, confidence, reasons, signals };
     }
   }

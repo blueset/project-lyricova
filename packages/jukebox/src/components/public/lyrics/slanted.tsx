@@ -2,10 +2,8 @@ import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import { useTrackwiseTimelineControl } from "../../../hooks/useTrackwiseTimelineControl";
-import type { CSSProperties } from "react";
 import { useMemo, useRef } from "react";
 import gsap from "gsap";
-import _ from "lodash";
 import { cn } from "@lyricova/components/utils";
 
 interface Props {
@@ -49,7 +47,7 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
               duration: endTimes[i + 1] - startTimes[i],
               ease: "none",
             },
-            startTimes[i]
+            startTimes[i],
           );
         }
       }
@@ -69,7 +67,7 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
               duration: endTimes[i + 1] - startTimes[i],
               ease: "none",
             },
-            startTimes[i]
+            startTimes[i],
           );
         }
       }
@@ -113,7 +111,7 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
                 key={idx}
                 className={cn(
                   "font-semibold opacity-50 pr-4",
-                  idx === currentFrameId && "opacity-100"
+                  idx === currentFrameId && "opacity-100",
                 )}
                 ref={idx === currentFrameId ? currentLine : null}
               >
@@ -140,7 +138,7 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
                   key={idx}
                   className={cn(
                     "font-semibold opacity-50 pr-4",
-                    idx === currentFrameId && "opacity-100"
+                    idx === currentFrameId && "opacity-100",
                   )}
                   ref={idx === currentFrameId ? currentTranslation : null}
                 >

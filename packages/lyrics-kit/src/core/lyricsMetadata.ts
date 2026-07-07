@@ -1,7 +1,6 @@
 import { isTranslationTag } from "./lyricsLineAttachment";
 import type { LyricsProviderSourceId } from "../service/lyricsProviderSourceId";
 import type { LyricsSearchRequest } from "../service/lyricsSearchRequest";
-import _ from "lodash";
 
 export interface LyricsMetadataJSON {
   attachmentTags?: string[];
@@ -29,7 +28,7 @@ export class LyricsMetadata {
   /* Lyrics.Metadata.Key is mapped to string */
   public toString(): string {
     return Object.entries(this)
-      .map(v => `[${v[0]}:${v[1]}]`)
+      .map((v) => `[${v[0]}:${v[1]}]`)
       .join("\n");
   }
 

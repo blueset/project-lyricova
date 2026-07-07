@@ -29,9 +29,8 @@ interface AnimatedWordShape {
   sequence: string[];
 }
 
-export const AnimatedWordRef = builder.objectRef<AnimatedWordShape>(
-  "AnimatedWord"
-);
+export const AnimatedWordRef =
+  builder.objectRef<AnimatedWordShape>("AnimatedWord");
 AnimatedWordRef.implement({
   description: "Describes the animation sequence for a word.",
   fields: (t) => ({
@@ -58,7 +57,9 @@ TransliterationResultRef.implement({
   fields: (t) => ({
     text: t.exposeString("text", { description: "Original text." }),
     plain: t.string({
-      args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
+      args: {
+        language: t.arg.string({ description: LANGUAGE_DESC, required: false }),
+      },
       resolve: async (parent, { language }) =>
         (
           await segmentedTransliteration(parent.text, {
@@ -73,7 +74,9 @@ TransliterationResultRef.implement({
     }),
     plainSegmented: t.field({
       type: t.listRef(t.listRef(t.listRef("String"))),
-      args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
+      args: {
+        language: t.arg.string({ description: LANGUAGE_DESC, required: false }),
+      },
       resolve: (parent, { language }) =>
         segmentedTransliteration(parent.text, {
           language: asLang(language),
@@ -84,7 +87,9 @@ TransliterationResultRef.implement({
     }),
     karaoke: t.field({
       type: t.listRef(t.listRef(t.listRef("String"))),
-      args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
+      args: {
+        language: t.arg.string({ description: LANGUAGE_DESC, required: false }),
+      },
       resolve: (parent, { language }) =>
         segmentedTransliteration(parent.text, {
           language: asLang(language),
@@ -95,7 +100,9 @@ TransliterationResultRef.implement({
     }),
     typing: t.field({
       type: t.listRef(t.listRef(t.listRef("String"))),
-      args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
+      args: {
+        language: t.arg.string({ description: LANGUAGE_DESC, required: false }),
+      },
       resolve: (parent, { language }) =>
         segmentedTransliteration(parent.text, {
           language: asLang(language),
@@ -105,7 +112,9 @@ TransliterationResultRef.implement({
         }),
     }),
     romaji: t.stringList({
-      args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
+      args: {
+        language: t.arg.string({ description: LANGUAGE_DESC, required: false }),
+      },
       resolve: async (parent, { language }) => {
         const lines = await segmentedTransliteration(parent.text, {
           language: asLang(language),
@@ -119,9 +128,7 @@ TransliterationResultRef.implement({
               const roma = hiraToRoma(kanaToHira(reading));
               if (
                 base === reading &&
-                !base.match(
-                  /^[\s\p{Script=Hiragana}\p{Script=Katakana}ー]+$/gu
-                )
+                !base.match(/^[\s\p{Script=Hiragana}\p{Script=Katakana}ー]+$/gu)
               ) {
                 if (acc.length > 0) {
                   acc[acc.length - 1] += roma;
@@ -134,13 +141,15 @@ TransliterationResultRef.implement({
               return acc;
             }, [])
             .join(" ")
-            .replaceAll(/\s+/gu, " ")
+            .replaceAll(/\s+/gu, " "),
         );
       },
     }),
     typingSequence: t.field({
       type: t.listRef(t.listRef(AnimatedWordRef)),
-      args: { language: t.arg.string({ description: LANGUAGE_DESC, required: false }) },
+      args: {
+        language: t.arg.string({ description: LANGUAGE_DESC, required: false }),
+      },
       resolve: async (parent, { language }) => {
         const lang = asLang(language) ?? getLanguage(parent.text);
         const lines = await segmentedTransliteration(parent.text, {

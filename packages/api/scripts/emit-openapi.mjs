@@ -12,7 +12,11 @@ const options = {
   definition: {
     openapi: "3.1.1",
     info: { title: "Lyricova API", version: "1.0.0" },
-    components: { securitySchemes: { bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" } } },
+    components: {
+      securitySchemes: {
+        bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+      },
+    },
   },
   apis: [
     "./src/controller/*.ts",

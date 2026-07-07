@@ -4,7 +4,8 @@ import DrizzlePlugin from "@pothos/plugin-drizzle";
 import { GraphQLJSONObject } from "graphql-scalars";
 import type { Request } from "express";
 import type { User } from "../../models/User";
-import { db, fullSchema } from "../../drizzle/client";
+import type { fullSchema } from "../../drizzle/client";
+import { db } from "../../drizzle/client";
 
 /**
  * Pothos schema builder (replaced the former TypeGraphQL setup).

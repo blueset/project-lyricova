@@ -46,7 +46,7 @@ describe("YouTubeProvider yt-dlp integration", () => {
 
     const provider = new YouTubeProvider();
     const results = await provider.searchLyrics(
-      LyricsSearchRequest.fromInfo("Manual Song", "Uploader", 65)
+      LyricsSearchRequest.fromInfo("Manual Song", "Uploader", 65),
     );
 
     expect(mockGetVideoInfo).toHaveBeenCalledWith([
@@ -92,7 +92,7 @@ describe("YouTubeProvider yt-dlp integration", () => {
               segs: [{ utf8: "hello" }, { utf8: "world" }],
             },
           ],
-        })
+        }),
       );
     });
 

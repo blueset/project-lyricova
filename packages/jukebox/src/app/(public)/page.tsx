@@ -25,7 +25,6 @@ import { LyricsTranslationLanguageSwitchButton } from "@/components/public/Lyric
 import TooltipIconButton from "@/components/dashboard/TooltipIconButton";
 import { Maximize, Minimize } from "lucide-react";
 import { cn } from "@lyricova/components/utils";
-import _ from "lodash";
 
 const args = new URLSearchParams(
   typeof window === "object" ? (window?.location?.search ?? "") : "",
@@ -85,13 +84,13 @@ const MODULE_LIST = {
   "Plain": (lyrics: LyricsKitLyrics, transLangIdx = 0) => <PlainLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
   "Ringoll": (lyrics: LyricsKitLyrics, transLangIdx = 0) => <RingollLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
   "AMLL": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <AMLLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
-  "Nicokara": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <KaraokeJaLyrics lyrics={lyrics} />,
+  "Nicokara": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <KaraokeJaLyrics lyrics={lyrics} />,
   "Slanted": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <SlantedLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
-  "Paragraph": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <ParagraphLyrics lyrics={lyrics} />,
-  "Typing/Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <TypingFocusedLyrics lyrics={lyrics} />,
-  "Typing/Stacked": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <TypingStackedLyrics lyrics={lyrics} />,
-  "Stroke": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <StrokeLyrics lyrics={lyrics} />,
-  "PIP (Alpha)": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <PictureInPictureLyrics lyrics={lyrics} />,
+  "Paragraph": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <ParagraphLyrics lyrics={lyrics} />,
+  "Typing/Focused": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <TypingFocusedLyrics lyrics={lyrics} />,
+  "Typing/Stacked": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <TypingStackedLyrics lyrics={lyrics} />,
+  "Stroke": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <StrokeLyrics lyrics={lyrics} />,
+  "PIP (Alpha)": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <PictureInPictureLyrics lyrics={lyrics} />,
 } as const;
 
 export default function Index() {

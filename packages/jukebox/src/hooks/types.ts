@@ -5,7 +5,7 @@ export type LyricsFrameCallback = (
   lyrics: LyricsKitLyrics,
   player: HTMLAudioElement,
   start: number | null,
-  end: number | null
+  end: number | null,
 ) => void;
 
 export type PlayerState =

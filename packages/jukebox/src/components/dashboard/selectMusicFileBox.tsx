@@ -101,7 +101,7 @@ export default function SelectMusicFileBox<
           if (apolloResult.data?.searchMusicFiles) {
             result = result.concat(apolloResult.data?.searchMusicFiles);
           }
-        } catch (e) {
+        } catch {
           /* No-Op. */
         }
 

@@ -37,10 +37,21 @@ export function useRenderRange({
   rowAccumulateHeight: number[];
   containerSize: { width: number; height: number };
 }) {
-  const startRow = binarySearch(rowAccumulateHeight, scrollOffset, /* isEnd */ false);
-  const endRow = binarySearch(rowAccumulateHeight, scrollOffset + containerSize.height, /* isEnd */ true);
+  const startRow = binarySearch(
+    rowAccumulateHeight,
+    scrollOffset,
+    /* isEnd */ false,
+  );
+  const endRow = binarySearch(
+    rowAccumulateHeight,
+    scrollOffset + containerSize.height,
+    /* isEnd */ true,
+  );
   const renderStartRow = Math.max(0, startRow - BUFFER_ROWS);
-  const renderEndRow = Math.min(rowAccumulateHeight.length - 1, endRow + BUFFER_ROWS);
+  const renderEndRow = Math.min(
+    rowAccumulateHeight.length - 1,
+    endRow + BUFFER_ROWS,
+  );
   return {
     renderStartRow,
     renderEndRow,

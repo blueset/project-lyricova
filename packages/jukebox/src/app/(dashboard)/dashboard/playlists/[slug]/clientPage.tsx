@@ -442,7 +442,7 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                 <FormField
                   control={form.control}
                   name="selectedTrack"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
                       <FormControl>
                         <SelectMusicFileBox

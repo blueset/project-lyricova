@@ -14,12 +14,12 @@ requires. It focuses on the four things that changed the day-to-day workflow:
 
 ## 1. What changed
 
-| Area | Before | Now |
-| --- | --- | --- |
-| ORM | Sequelize (`sequelize.sync()`) | **Drizzle ORM** — schema in `packages/api/src/drizzle/schema.ts`, migrations via **drizzle-kit** |
-| GraphQL server | TypeGraphQL decorators on models | **Pothos** builder in `packages/api/src/graphql/pothos/` |
-| GraphQL client | Apollo `` gql`…` `` tagged templates (untyped) | **graphql-codegen client preset** — `` graphql(`…`) `` from `@lyricova/components/gql` (fully typed) |
-| Schema source of truth | (implicit, from decorators) | committed **`packages/api/schema.graphql`** (emitted from Pothos) |
+| Area                   | Before                                         | Now                                                                                                |
+| ---------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| ORM                    | Sequelize (`sequelize.sync()`)                 | **Drizzle ORM** — schema in `packages/api/src/drizzle/schema.ts`, migrations via **drizzle-kit**   |
+| GraphQL server         | TypeGraphQL decorators on models               | **Pothos** builder in `packages/api/src/graphql/pothos/`                                           |
+| GraphQL client         | Apollo `` gql`…` `` tagged templates (untyped) | **graphql-codegen client preset** — ``graphql(`…`)`` from `@lyricova/components/gql` (fully typed) |
+| Schema source of truth | (implicit, from decorators)                    | committed **`packages/api/schema.graphql`** (emitted from Pothos)                                  |
 
 The practical consequence: a few artifacts are now **generated** (and
 git-ignored), so some changes require a regeneration step before types line up.
@@ -70,12 +70,12 @@ lyrics-kit ─┐
 
 ### What each package's `build` / `dev` does
 
-| Package | `build` | `dev` |
-| --- | --- | --- |
-| `@lyricova/api` | `build:ts` (tsc) → `lint` → `posthog` sourcemaps | `nodemon dist/server.js` + `tsc -w` + **`pothos:emit:watch`** (re-emits `schema.graphql`) |
-| `@lyricova/components` | **`codegen`** → `tsc` → `tsc-alias` | **`codegen:watch`** (regenerates typed docs + schema types) + `tsc -w` + `tsc-alias -w` |
-| `@lyricova/jukebox` | `next build` | `next dev` (PORT 8082) |
-| `@lyricova/blog` (`packages/lyricova`) | `next build` | `next dev` (PORT 8081) |
+| Package                                | `build`                                          | `dev`                                                                                     |
+| -------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `@lyricova/api`                        | `build:ts` (tsc) → `lint` → `posthog` sourcemaps | `nodemon dist/server.js` + `tsc -w` + **`pothos:emit:watch`** (re-emits `schema.graphql`) |
+| `@lyricova/components`                 | **`codegen`** → `tsc` → `tsc-alias`              | **`codegen:watch`** (regenerates typed docs + schema types) + `tsc -w` + `tsc-alias -w`   |
+| `@lyricova/jukebox`                    | `next build`                                     | `next dev` (PORT 8082)                                                                    |
+| `@lyricova/blog` (`packages/lyricova`) | `next build`                                     | `next dev` (PORT 8081)                                                                    |
 
 ---
 
@@ -137,7 +137,7 @@ How it's wired (and why):
   The inner `--watch` handles **document** edits incrementally (fast, and it
   works across packages). Wrapping it in `nodemon` is deliberate:
   graphql-codegen caches the schema for the life of a `--watch` process and does
-  **not** reload it when the schema *file* changes, so a schema change restarts
+  **not** reload it when the schema _file_ changes, so a schema change restarts
   the whole codegen — reloading the fresh schema and re-emitting
   `src/gql/schema.ts` too. This needs **`@parcel/watcher`** (a root devDependency;
   without it `graphql-codegen --watch` silently no-ops) and **`nodemon`**.
@@ -148,7 +148,7 @@ How it's wired (and why):
 Practical notes:
 
 - **No churn for internal-only edits.** The emit is deterministic and only the
-  *interface* (types, fields, args, nullability, descriptions, directives) lands
+  _interface_ (types, fields, args, nullability, descriptions, directives) lands
   in the SDL — not resolver bodies. Refactor a resolver's logic and
   `schema.graphql` is rewritten byte-identically, so `git status` stays clean.
   `schema.graphql` only shows as modified when you actually change the GraphQL
@@ -164,13 +164,13 @@ Practical notes:
 
 Know these so you don't hunt for "missing" files or commit generated output:
 
-| Path | Produced by | Committed? |
-| --- | --- | --- |
-| `packages/components/src/gql/**` | `npm run codegen -w @lyricova/components` | **No** (git-ignored) |
-| `packages/api/schema.pothos.graphql` | `npm run pothos:emit` | **No** (transient emit) |
-| `packages/api/dist/**` | `tsc` | **No** |
-| `packages/api/schema.graphql` | *hand-updated* from the Pothos emit | **Yes** — codegen source of truth |
-| `packages/api/drizzle/migrations/**` | `npm run db:generate` | **Yes** |
+| Path                                 | Produced by                               | Committed?                        |
+| ------------------------------------ | ----------------------------------------- | --------------------------------- |
+| `packages/components/src/gql/**`     | `npm run codegen -w @lyricova/components` | **No** (git-ignored)              |
+| `packages/api/schema.pothos.graphql` | `npm run pothos:emit`                     | **No** (transient emit)           |
+| `packages/api/dist/**`               | `tsc`                                     | **No**                            |
+| `packages/api/schema.graphql`        | _hand-updated_ from the Pothos emit       | **Yes** — codegen source of truth |
+| `packages/api/drizzle/migrations/**` | `npm run db:generate`                     | **Yes**                           |
 
 ---
 
@@ -191,8 +191,12 @@ Anywhere in `components`, `jukebox`, or `lyricova`:
    import { graphql } from "@lyricova/components/gql";
 
    const MY_QUERY = graphql(`
-     query MyThing($id: Int!) {    # ← every operation MUST be named
-       musicFile(id: $id) { id trackName }
+     query MyThing($id: Int!) {
+       # ← every operation MUST be named
+       musicFile(id: $id) {
+         id
+         trackName
+       }
      }
    `);
    ```
@@ -235,20 +239,21 @@ server schema is a multi-step operation:
    npm run pothos:emit          # writes schema.pothos.graphql
    ```
 
-   > **Note — `drizzle-orm` is declared in the *root* `package.json` on purpose.**
+   > **Note — `drizzle-orm` is declared in the _root_ `package.json` on purpose.**
    > `@pothos/plugin-drizzle` `require`s `drizzle-orm` without declaring it and is
    > hoisted to the repo-root `node_modules`, so `drizzle-orm` is pinned as a root
    > dependency (next to `graphql`) to keep a single copy at the root where the
    > plugin — and anything that loads the Pothos schema, **including the API
    > server** — can resolve it. **Don't remove that root dependency.** If an
    > install ever leaves `drizzle-orm` nested under `packages/api` again you'll see
-   > `Cannot find module 'drizzle-orm'` from `pothos:emit` *and* `node dist/server.js`;
+   > `Cannot find module 'drizzle-orm'` from `pothos:emit` _and_ `node dist/server.js`;
    > fix it with `npm install --legacy-peer-deps` (the repo has a pre-existing peer
    > conflict, so plain `npm install` needs that flag), or as a stopgap run node
    > with `NODE_PATH=$PWD/node_modules`.
    >
-   > `pothos:emit` (like the server) loads the real app, so a *parseable* `DB_URI`
+   > `pothos:emit` (like the server) loads the real app, so a _parseable_ `DB_URI`
    > is required (a reachable database is not — the pool is created lazily).
+
 3. Promote the emit to the codegen source:
 
    ```bash
@@ -310,12 +315,12 @@ npm run typecheck:native  # turbo run typecheck:native (tsgo / TS 7 preview)
 npm run test              # turbo run test            (jest)
 ```
 
-| Package | Type-check | Lint | Test | Schema |
-| --- | --- | --- | --- | --- |
-| `@lyricova/api` | `npm run typecheck` (or `build:ts`) | `npm run lint` | `npm test` (jest) | `npm run pothos:emit` |
-| `@lyricova/components` | `npm run typecheck` | `npm run lint` | — | — |
-| `@lyricova/jukebox` | `npm run typecheck` | `npm run lint` | `npm test` | — |
-| `@lyricova/blog` (`packages/lyricova`) | `npm run typecheck` | `npm run lint` | `npm test` | — |
+| Package                                | Type-check                          | Lint           | Test              | Schema                |
+| -------------------------------------- | ----------------------------------- | -------------- | ----------------- | --------------------- |
+| `@lyricova/api`                        | `npm run typecheck` (or `build:ts`) | `npm run lint` | `npm test` (jest) | `npm run pothos:emit` |
+| `@lyricova/components`                 | `npm run typecheck`                 | `npm run lint` | —                 | —                     |
+| `@lyricova/jukebox`                    | `npm run typecheck`                 | `npm run lint` | `npm test`        | —                     |
+| `@lyricova/blog` (`packages/lyricova`) | `npm run typecheck`                 | `npm run lint` | `npm test`        | —                     |
 
 > Type-checking `components`, `jukebox`, or `lyricova` requires the generated
 > `@lyricova/components/gql` to exist — run `npm run codegen -w @lyricova/components`
@@ -343,13 +348,13 @@ environment-agnostic options (`esModuleInterop`, `skipLibCheck`,
 `forceConsistentCasingInFileNames`, `resolveJsonModule`, `isolatedModules`,
 `target: ES2022`). Each package's `tsconfig.json` only sets what differs:
 
-| Package | `module` / `moduleResolution` | Emit | `strict` | `verbatimModuleSyntax` |
-| --- | --- | --- | --- | --- |
-| `@lyricova/api` | `nodenext` / `nodenext` | CJS → `dist/` | ✅ | ✗ (CJS emit) |
-| `lyrics-kit` | `nodenext` (main) + `esnext`/`bundler` (module) | dual CJS+ESM → `build/` | ✅ | ✗ (CJS emit) |
-| `@lyricova/components` | `esnext` / `bundler` | ESM → `build/` | ✅ | ✅ |
-| `@lyricova/jukebox` | `esnext` / `bundler` | `noEmit` (Next) | ✅ | ✅ |
-| `@lyricova/blog` (`lyricova`) | `esnext` / `bundler` | `noEmit` (Next) | ✅ | ✅ |
+| Package                       | `module` / `moduleResolution`                   | Emit                    | `strict` | `verbatimModuleSyntax` |
+| ----------------------------- | ----------------------------------------------- | ----------------------- | -------- | ---------------------- |
+| `@lyricova/api`               | `nodenext` / `nodenext`                         | CJS → `dist/`           | ✅       | ✗ (CJS emit)           |
+| `lyrics-kit`                  | `nodenext` (main) + `esnext`/`bundler` (module) | dual CJS+ESM → `build/` | ✅       | ✗ (CJS emit)           |
+| `@lyricova/components`        | `esnext` / `bundler`                            | ESM → `build/`          | ✅       | ✅                     |
+| `@lyricova/jukebox`           | `esnext` / `bundler`                            | `noEmit` (Next)         | ✅       | ✅                     |
+| `@lyricova/blog` (`lyricova`) | `esnext` / `bundler`                            | `noEmit` (Next)         | ✅       | ✅                     |
 
 - **`strict` is `true` everywhere.** (TS 6.0 flipped the `strict` default to
   `true`; it is set explicitly in every package to be unambiguous.)

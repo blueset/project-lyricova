@@ -14,8 +14,8 @@ export function MainVerse({ entry }: MainVerseProps) {
   const artistString = !entry.producersName
     ? entry.vocalistsName
     : !entry.vocalistsName
-    ? entry.producersName
-    : `${entry.producersName} feat. ${entry.vocalistsName}`;
+      ? entry.producersName
+      : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
   return (
     <section

@@ -35,8 +35,8 @@ export async function generateMetadata({
   const artistString = !entry.producersName
     ? entry.vocalistsName
     : !entry.vocalistsName
-    ? entry.producersName
-    : `${entry.producersName} feat. ${entry.vocalistsName}`;
+      ? entry.producersName
+      : `${entry.producersName} feat. ${entry.vocalistsName}`;
   const verse = entry.verses.find((verse) => verse.isMain);
   const description = verse?.text ?? "";
 

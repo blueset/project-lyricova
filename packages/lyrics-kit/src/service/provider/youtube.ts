@@ -93,7 +93,7 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
   }
 
   private static normalizeVideoInfo(
-    data: YTDlpVideoInfo | YTDlpVideoInfo[]
+    data: YTDlpVideoInfo | YTDlpVideoInfo[],
   ): YTDlpVideoInfo[] {
     if (Array.isArray(data)) return data;
     return data.entries ?? [data];
@@ -119,7 +119,7 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
   }
 
   private static getJson3Caption(
-    formats: YTDlpCaptionFormat[]
+    formats: YTDlpCaptionFormat[],
   ): YTDlpCaptionFormat | undefined {
     return formats.find((format) => format.ext === SUBTITLE_FORMAT);
   }
@@ -127,7 +127,7 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
   private static mapCaptionTracks(
     subtitles: YTDlpCaptionMap | undefined,
     automaticCaptions: YTDlpCaptionMap | undefined,
-    url: string
+    url: string,
   ): YouTubeTimedTextTrack[] {
     const tracks: YouTubeTimedTextTrack[] = [];
     const manualLanguages = new Set<string>();
@@ -136,14 +136,24 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
       const caption = YouTubeProvider.getJson3Caption(formats);
       if (!caption) continue;
       manualLanguages.add(language);
-      tracks.push({ language, url, captionUrl: caption.url, isAutomatic: false });
+      tracks.push({
+        language,
+        url,
+        captionUrl: caption.url,
+        isAutomatic: false,
+      });
     }
 
     for (const [language, formats] of Object.entries(automaticCaptions ?? {})) {
       if (manualLanguages.has(language)) continue;
       const caption = YouTubeProvider.getJson3Caption(formats);
       if (!caption) continue;
-      tracks.push({ language, url, captionUrl: caption.url, isAutomatic: true });
+      tracks.push({
+        language,
+        url,
+        captionUrl: caption.url,
+        isAutomatic: true,
+      });
     }
 
     return tracks;
@@ -151,7 +161,7 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
 
   private async getTimedTextTracks(
     id: string,
-    url = YouTubeProvider.watchUrl(id)
+    url = YouTubeProvider.watchUrl(id),
   ): Promise<YouTubeTimedTextTrack[]> {
     const info = (await this.ytdlp.getVideoInfo([
       url,
@@ -163,12 +173,12 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
     return YouTubeProvider.mapCaptionTracks(
       info.subtitles,
       info.automatic_captions,
-      info.webpage_url ?? url
+      info.webpage_url ?? url,
     );
   }
 
   async getTimedTextUrls(
-    id: string
+    id: string,
   ): Promise<{ language: string; url: string }[]> {
     const tracks = await this.getTimedTextTracks(id);
     return tracks.map(({ language, url, captionUrl }) => ({
@@ -178,7 +188,7 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
   }
 
   public async searchLyrics(
-    request: LyricsSearchRequest
+    request: LyricsSearchRequest,
   ): Promise<YouTubeSearchResult[]> {
     const data = (await this.ytdlp.getVideoInfo([
       `ytsearch${SEARCH_RESULT_LIMIT}:${request.title} ${request.artist}`,
@@ -202,7 +212,7 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
       let tracks = YouTubeProvider.mapCaptionTracks(
         item.subtitles,
         item.automatic_captions,
-        url
+        url,
       );
       if (tracks.length === 0) {
         tracks = await this.getTimedTextTracks(base.id, url);
@@ -231,7 +241,9 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
     return duration;
   }
 
-  private async fetchLyricsJSON(token: YouTubeSearchResult): Promise<YouTubeLyricsJSON3> {
+  private async fetchLyricsJSON(
+    token: YouTubeSearchResult,
+  ): Promise<YouTubeLyricsJSON3> {
     const tempDir = await mkdtemp(Path.join(tmpdir(), "lyrics-kit-youtube-"));
 
     try {
@@ -252,10 +264,12 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
       const files = await readdir(tempDir);
       const file = files.find((name) => name.endsWith(`.${SUBTITLE_FORMAT}`));
       if (!file) {
-        console.error(`No ${SUBTITLE_FORMAT} captions found for ${token.id} ${token.language}`);
+        console.error(
+          `No ${SUBTITLE_FORMAT} captions found for ${token.id} ${token.language}`,
+        );
         console.error(stdout);
         throw new Error(
-          `Cannot find ${SUBTITLE_FORMAT} captions for ${token.id} ${token.language}`
+          `Cannot find ${SUBTITLE_FORMAT} captions for ${token.id} ${token.language}`,
         );
       }
 

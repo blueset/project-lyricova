@@ -6,13 +6,12 @@ import { SingleEntry } from "@/components/public/listing/SingleEntry";
 import { SubArchiveHeader } from "@/components/public/listing/SubArchiveHeader";
 import { apiBaseUrl, host, siteName, tagLine1, tagLine2 } from "@/utils/consts";
 import classes from "./SongListings.module.scss";
-import Head from "next/head";
 import type { Artist, Entry } from "@/frontendUtils/restTypes";
 import type { Metadata } from "next";
 
 export async function generateMetadataData(
   artistId: string,
-  page: string
+  page: string,
 ): Promise<Metadata> {
   const response = await fetch(`${apiBaseUrl}/artists/${artistId}`, {
     cache: "no-store",
@@ -56,7 +55,7 @@ export async function ArtistArchivePageComponent({
 }) {
   const response = await fetch(
     `${apiBaseUrl}/artists/${artistId}/entries?page=${page}`,
-    { cache: "no-store" }
+    { cache: "no-store" },
   );
   const { entries, artist, totalPages }: ArtistArchivePageProps =
     await response.json();

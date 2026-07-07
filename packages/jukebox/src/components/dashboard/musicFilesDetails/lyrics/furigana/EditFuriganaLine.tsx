@@ -1,4 +1,3 @@
-import type { LyricsLine } from "lyrics-kit/core";
 import { FURIGANA } from "lyrics-kit/core";
 import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
@@ -43,7 +42,7 @@ export default function EditFuriganaLine() {
           removeFuriganaFromSelectedLine:
             state.furigana.removeFuriganaFromSelectedLine,
         };
-      })
+      }),
     );
   const renderableFurigana = useMemo(() => {
     const renderableFurigana: RenderableFuriganaElement[] = [];
@@ -71,7 +70,7 @@ export default function EditFuriganaLine() {
     useNamedState<FloatingWindowProps | null>(null, "floatingWindow");
   const [floatingWindowInput, setFloatingWindowInput] = useNamedState(
     "",
-    "floatingWindowInput"
+    "floatingWindowInput",
   );
   const lineContainerRef = useRef<HTMLDivElement>(null);
 
@@ -92,7 +91,7 @@ export default function EditFuriganaLine() {
         }, 0);
       addFuriganaToSelectedLine(offset + start, offset + end, value);
     },
-    [addFuriganaToSelectedLine, renderableFurigana]
+    [addFuriganaToSelectedLine, renderableFurigana],
   );
 
   const onSelect = useCallback(() => {
@@ -142,7 +141,7 @@ export default function EditFuriganaLine() {
       removeFuriganaFromSelectedLine(start, end);
       onSelect();
     },
-    [onSelect, removeFuriganaFromSelectedLine, renderableFurigana]
+    [onSelect, removeFuriganaFromSelectedLine, renderableFurigana],
   );
 
   useEffect(() => {
@@ -158,7 +157,7 @@ export default function EditFuriganaLine() {
     (event: ChangeEvent<HTMLInputElement>) => {
       setFloatingWindowInput(event.target.value);
     },
-    [setFloatingWindowInput]
+    [setFloatingWindowInput],
   );
 
   const handleFloatingInputConfirm = useCallback(
@@ -176,14 +175,14 @@ export default function EditFuriganaLine() {
       floatingWindowInput,
       setFloatingWindow,
       setFloatingWindowInput,
-    ]
+    ],
   );
 
   const floatingWindowBaseText = floatingWindow
-    ? (renderableFurigana[floatingWindow.nodeIdx] as string)?.slice?.(
+    ? ((renderableFurigana[floatingWindow.nodeIdx] as string)?.slice?.(
         floatingWindow.start,
-        floatingWindow.end
-      ) ?? "❓"
+        floatingWindow.end,
+      ) ?? "❓")
     : "";
 
   return (
@@ -203,13 +202,13 @@ export default function EditFuriganaLine() {
                 data-index={idx}
                 className={cn(
                   "group inline-flex flex-col items-center",
-                  "focus-within:outline-none"
+                  "focus-within:outline-none",
                 )}
               >
                 <ruby
                   className={cn(
                     "my-0.5 p-0.5 border border-border rounded",
-                    "text-center"
+                    "text-center",
                   )}
                 >
                   {v.base}

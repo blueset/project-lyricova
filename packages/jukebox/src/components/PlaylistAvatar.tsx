@@ -731,14 +731,14 @@ export default function PlaylistAvatar(props: Props) {
   const initial = useMemo(() => initials(name), [name]);
   const gradient = useMemo(
     () => gradients[hash(slug) % gradients.length].colors.join(", "),
-    [slug]
+    [slug],
   );
   return (
     <div
       style={{ background: `linear-gradient(135deg, ${gradient})` }}
       className={cn(
         "rounded-md text-white flex items-center justify-center",
-        className
+        className,
       )}
       {...others}
     >

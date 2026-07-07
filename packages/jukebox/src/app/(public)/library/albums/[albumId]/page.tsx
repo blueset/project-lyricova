@@ -8,7 +8,7 @@ import {
   useAuthContext,
   NextComposedLink,
 } from "@lyricova/components";
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import _ from "lodash";
 import { filesize } from "filesize";
 import type { LibraryAlbumDetailsQuery } from "@lyricova/components/gql/graphql";

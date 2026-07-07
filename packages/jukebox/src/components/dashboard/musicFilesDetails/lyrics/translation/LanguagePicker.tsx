@@ -25,14 +25,14 @@ export default function LanguagePicker() {
       setSelectedLanguage: state.translations.setSelectedLanguage,
       renameSelectedLanguage: state.translations.renameSelectedLanguage,
       removeLanguageByIndex: state.translations.removeLanguageByIndex,
-    }))
+    })),
   );
 
   const handleLanguageChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       renameSelectedLanguage(event.target.value);
     },
-    [renameSelectedLanguage]
+    [renameSelectedLanguage],
   );
 
   const handleLanguageSwitch = useCallback(
@@ -42,7 +42,7 @@ export default function LanguagePicker() {
       const languageToSelect = languages[parseInt(value)];
       setSelectedLanguage(languageToSelect);
     },
-    [setSelectedLanguage]
+    [setSelectedLanguage],
   );
 
   const handleDeleteLanguage = useCallback(
@@ -50,7 +50,7 @@ export default function LanguagePicker() {
       event.stopPropagation();
       removeLanguageByIndex(idx);
     },
-    [removeLanguageByIndex]
+    [removeLanguageByIndex],
   );
 
   const handleAddLanguage = useCallback(() => {

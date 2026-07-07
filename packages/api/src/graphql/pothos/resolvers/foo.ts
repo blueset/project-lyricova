@@ -2,7 +2,8 @@ import bcrypt from "bcryptjs";
 import _ from "lodash";
 import { withFilter } from "graphql-subscriptions";
 import { builder } from "../builder";
-import { pubsub, TOPIC_LENGTHY_TASK, PubSubSessionPayload } from "../pubsub";
+import type { PubSubSessionPayload } from "../pubsub";
+import { pubsub, TOPIC_LENGTHY_TASK } from "../pubsub";
 
 interface FooShape {
   bar: number;

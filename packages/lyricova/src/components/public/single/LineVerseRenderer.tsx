@@ -35,7 +35,7 @@ export function LineVerseRenderer({
       const tl = gsap.timeline({ paused: !isMain });
       const stepDuration = language.match(/^(zh|ja)/) ? 1 / 15 : 1 / 30;
       const sequence = baseTypingSequence.map((i) =>
-        buildAnimationSequence(i, language)
+        buildAnimationSequence(i, language),
       );
       let i = 0;
       for (let lineIdx = 0; lineIdx < sequence.length; lineIdx++) {
@@ -65,7 +65,7 @@ export function LineVerseRenderer({
               tl.set(
                 committedEl,
                 { text: committed + frame },
-                i * stepDuration
+                i * stepDuration,
               );
               i++;
             }
@@ -82,7 +82,7 @@ export function LineVerseRenderer({
         tl.kill();
       };
     },
-    [baseTypingSequence, isMain, language]
+    [baseTypingSequence, isMain, language],
   );
 
   return (
@@ -90,7 +90,7 @@ export function LineVerseRenderer({
       className={clsx(
         classes.container,
         renderMode === "stylized" && classes.stylized,
-        isMain && classes.main
+        isMain && classes.main,
       )}
       onClick={(evt) => {
         timelineRef.current?.isActive() === false &&

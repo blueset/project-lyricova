@@ -57,7 +57,9 @@
       text-transform: uppercase;
       font-size: 1rem;
       align-self: center;
-      font-variation-settings: "XTRA" 600, "wdth" 150;
+      font-variation-settings:
+        "XTRA" 600,
+        "wdth" 150;
       overflow: hidden;
       width: 100%;
       font-stretch: 150%;
@@ -103,7 +105,8 @@
     flex-grow: 1;
     max-width: 80ch;
 
-    h2, h3 {
+    h2,
+    h3 {
       font-family: $headings-font;
       font-stretch: expanded;
       margin-bottom: 0;

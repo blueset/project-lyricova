@@ -43,14 +43,8 @@ import {
   XCircle,
   Calendar,
 } from "lucide-react";
-import type {
-  DayPickerProps,
-  Matcher,
-  PropsSingle} from "react-day-picker";
-import {
-  DayPicker,
-  TZDate,
-} from "react-day-picker";
+import type { DayPickerProps, Matcher, PropsSingle } from "react-day-picker";
+import { DayPicker, TZDate } from "react-day-picker";
 
 import { cn } from "@lyricova/components/utils";
 import {
@@ -174,7 +168,7 @@ export function DateTimePicker({
   >(false);
   const initDate = useMemo(
     () => new TZDate(value || new Date(), timezone),
-    [value, timezone]
+    [value, timezone],
   );
 
   const [month, setMonth] = useState<Date>(initDate);
@@ -185,11 +179,11 @@ export function DateTimePicker({
   }, [month]);
   const minDate = useMemo(
     () => (min ? new TZDate(min, timezone) : undefined),
-    [min, timezone]
+    [min, timezone],
   );
   const maxDate = useMemo(
     () => (max ? new TZDate(max, timezone) : undefined),
-    [max, timezone]
+    [max, timezone],
   );
 
   const onDayChanged = useCallback(
@@ -203,7 +197,7 @@ export function DateTimePicker({
       }
       setDate(d);
     },
-    [setDate, setMonth]
+    [setDate, setMonth],
   );
   const onSubmit = useCallback(() => {
     onChange(new Date(date));
@@ -219,7 +213,7 @@ export function DateTimePicker({
         setMonthYearPicker(false);
       }
     },
-    [setMonth, setMonthYearPicker]
+    [setMonth, setMonthYearPicker],
   );
   const onNextMonth = useCallback(() => {
     setMonth(addMonths(month, 1));
@@ -247,7 +241,7 @@ export function DateTimePicker({
       displayValue,
       `${!hideTime ? "MMM" : "MMMM"} d, yyyy${
         !hideTime ? (use12HourFormat ? " hh:mm:ss a" : " HH:mm:ss") : ""
-      }`
+      }`,
     );
   }, [displayValue, hideTime, use12HourFormat]);
 
@@ -270,7 +264,7 @@ export function DateTimePicker({
               !displayValue && "text-muted-foreground",
               (!clearable || !value) && "pe-3",
               disabled && "opacity-50 cursor-not-allowed",
-              classNames?.trigger
+              classNames?.trigger,
             )}
             tabIndex={0}
           >
@@ -306,7 +300,7 @@ export function DateTimePicker({
               <span
                 onClick={() =>
                   setMonthYearPicker(
-                    monthYearPicker === "month" ? false : "month"
+                    monthYearPicker === "month" ? false : "month",
                   )
                 }
               >
@@ -316,7 +310,7 @@ export function DateTimePicker({
                 className="ms-1"
                 onClick={() =>
                   setMonthYearPicker(
-                    monthYearPicker === "year" ? false : "year"
+                    monthYearPicker === "year" ? false : "year",
                   )
                 }
               >
@@ -374,7 +368,7 @@ export function DateTimePicker({
               day: "h-9 w-9 text-center text-sm p-0 relative flex items-center justify-center [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 rounded-1",
               day_button: cn(
                 buttonVariants({ variant: "ghost" }),
-                "size-9 rounded-md p-0 font-normal aria-selected:opacity-100"
+                "size-9 rounded-md p-0 font-normal aria-selected:opacity-100",
               ),
               range_end: "day-range-end",
               selected:
@@ -393,7 +387,7 @@ export function DateTimePicker({
           <div
             className={cn(
               "absolute top-0 left-0 bottom-0 right-0",
-              monthYearPicker ? "bg-popover" : "hidden"
+              monthYearPicker ? "bg-popover" : "hidden",
             )}
           ></div>
           <MonthYearPicker
@@ -404,7 +398,7 @@ export function DateTimePicker({
             maxDate={maxDate}
             className={cn(
               "absolute top-0 left-0 bottom-0 right-0",
-              monthYearPicker ? "" : "hidden"
+              monthYearPicker ? "" : "hidden",
             )}
           />
         </div>
@@ -488,7 +482,7 @@ function MonthYearPicker({
       }
       onChange(newDate, "year");
     },
-    [onChange, value, minDate, maxDate]
+    [onChange, value, minDate, maxDate],
   );
 
   useEffect(() => {
@@ -569,13 +563,13 @@ function TimePicker({
       use12HourFormat
         ? "yyyy-MM-dd hh:mm:ss.SSS a xxxx"
         : "yyyy-MM-dd HH:mm:ss.SSS xxxx",
-    [use12HourFormat]
+    [use12HourFormat],
   );
   const [ampm, setAmpm] = useState(
-    format(value, "a") === "AM" ? AM_VALUE : PM_VALUE
+    format(value, "a") === "AM" ? AM_VALUE : PM_VALUE,
   );
   const [hour, setHour] = useState(
-    use12HourFormat ? +format(value, "hh") : value.getHours()
+    use12HourFormat ? +format(value, "hh") : value.getHours(),
   );
   const [minute, setMinute] = useState(value.getMinutes());
   const [second, setSecond] = useState(value.getSeconds());
@@ -590,7 +584,7 @@ function TimePicker({
         minute,
         second,
         ampm,
-      })
+      }),
     );
   }, [hour, minute, second, ampm, formatStr, use12HourFormat]);
 
@@ -617,7 +611,7 @@ function TimePicker({
           disabled,
         };
       }),
-    [value, min, max, use12HourFormat, ampm]
+    [value, min, max, use12HourFormat, ampm],
   );
   const minutes: TimeOption[] = useMemo(() => {
     const anchorDate = setHours(value, _hourIn24h);
@@ -638,7 +632,7 @@ function TimePicker({
   const seconds: TimeOption[] = useMemo(() => {
     const anchorDate = setMilliseconds(
       setMinutes(setHours(value, _hourIn24h), minute),
-      0
+      0,
     );
     const _min = min ? setMilliseconds(min, 0) : undefined;
     const _max = max ? setMilliseconds(max, 0) : undefined;
@@ -721,7 +715,7 @@ function TimePicker({
       }
       setHour(v.value);
     },
-    [setHour, use12HourFormat, value, formatStr, minute, second, ampm]
+    [setHour, use12HourFormat, value, formatStr, minute, second, ampm],
   );
 
   const onMinuteChange = useCallback(
@@ -756,7 +750,7 @@ function TimePicker({
       }
       setMinute(v.value);
     },
-    [setMinute, use12HourFormat, value, formatStr, hour, second, ampm]
+    [setMinute, use12HourFormat, value, formatStr, hour, second, ampm],
   );
 
   const onAmpmChange = useCallback(
@@ -797,7 +791,17 @@ function TimePicker({
       }
       setAmpm(v.value);
     },
-    [setAmpm, use12HourFormat, value, formatStr, hour, minute, second, min, max]
+    [
+      setAmpm,
+      use12HourFormat,
+      value,
+      formatStr,
+      hour,
+      minute,
+      second,
+      min,
+      max,
+    ],
   );
 
   const display = useMemo(() => {

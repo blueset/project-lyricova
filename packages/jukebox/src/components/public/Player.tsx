@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import React from "react";
 import { CardContent } from "@lyricova/components/components/ui/card";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
@@ -40,7 +39,7 @@ function generateBackgroundStyle(track: Track | null): CSSProperties {
     };
   } else {
     console.log(
-      "Disk photo by Giorgio Trovato on Unsplash (https://unsplash.com/photos/_H4uyF7ZlV0)."
+      "Disk photo by Giorgio Trovato on Unsplash (https://unsplash.com/photos/_H4uyF7ZlV0).",
     );
     return {
       backgroundImage: "url(/images/disk-256.jpg)",
@@ -64,7 +63,7 @@ export default function Player() {
       isCollapsed: s.playlist.isCollapsed,
       tracksLength: s.playlist.tracks.length,
     }),
-    shallowEqual
+    shallowEqual,
   );
   const currentSong = useAppSelector(currentSongSelector);
   const { playerRef } = useAppContext();

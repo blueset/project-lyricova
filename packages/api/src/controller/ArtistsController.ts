@@ -1,4 +1,5 @@
-import { Router, Request, Response } from "express";
+import type { Request, Response } from "express";
+import { Router } from "express";
 import { requireNumericParams } from "../utils/numericParam";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "../drizzle/client";

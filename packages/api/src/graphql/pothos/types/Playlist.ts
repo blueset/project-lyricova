@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { builder } from "../builder";
 import { db } from "../../../drizzle/client";
 import { FileInPlaylists } from "../../../drizzle/schema";
-import { PlaylistRef, MusicFileRef } from "./refs";
+import { MusicFileRef } from "./refs";
 
 builder.drizzleObjectFields("Playlists", (t) => ({
   slug: t.field({

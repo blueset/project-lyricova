@@ -1,4 +1,4 @@
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useEffect } from "react";
 import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import type { LyricsFrameCallback } from "./types";
@@ -8,7 +8,7 @@ import { useNamedState } from "./useNamedState";
 export function useLyricsState(
   playerRef: RefObject<HTMLAudioElement>,
   lyrics: LyricsKitLyrics,
-  callback?: LyricsFrameCallback
+  callback?: LyricsFrameCallback,
 ): number | null {
   const [line, setLine] = useNamedState<number | null>(null, "line");
 
@@ -48,7 +48,7 @@ export function useLyricsState(
         const cue = new VTTCue(
           line.position,
           nextLine,
-          `${index},${line.position},${line.content}`
+          `${index},${line.position},${line.content}`,
         );
         cue.addEventListener("enter", () => {
           setLine(index);

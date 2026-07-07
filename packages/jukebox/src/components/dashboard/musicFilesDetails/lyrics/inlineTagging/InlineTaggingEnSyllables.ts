@@ -1,10 +1,4 @@
-import type {
-  LyricsLineJSON} from "lyrics-kit/core";
-import {
-  FURIGANA,
-  LyricsLine,
-  RangeAttributeLabel,
-} from "lyrics-kit/core";
+import type { LyricsLineJSON } from "lyrics-kit/core";
 
 /**
  * @author nlp-compromise <https://github.com/nlp-compromise/nlp-syllables/blob/master/src/syllables.js>
@@ -135,7 +129,6 @@ export function syllables(str: string): string[] {
 
   //method is nested because it's called recursively
   const doer = function (w: string): null {
-    const vow = /[aeiouy]$/;
     const chars = w.split("");
     let before = "";
     let after = "";
@@ -201,7 +194,7 @@ export function syllables(str: string): string[] {
 }
 
 const syllableOverrides = import("./enSyllableOverrides").then(
-  (m) => m.enSyllableOverrides
+  (m) => m.enSyllableOverrides,
 ) as Promise<{ [word: string]: number[] }>;
 
 export async function populateDotsEn(lines: LyricsLineJSON[]) {
@@ -209,7 +202,7 @@ export async function populateDotsEn(lines: LyricsLineJSON[]) {
   return lines.map((line) => {
     if (!line.content) return [0];
     const matches = line.content.matchAll(
-      /(\p{sc=Latin}+(?:['’]\p{sc=Latin}{1,2})?)/gu
+      /(\p{sc=Latin}+(?:['’]\p{sc=Latin}{1,2})?)/gu,
     );
     const dots = Array(line.content.length + 1).fill(0);
     dots[line.content.length] = -1;

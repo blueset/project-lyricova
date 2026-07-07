@@ -39,7 +39,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@lyricova/components/components/ui/avatar";
-import { Music, Download, X, DiscAlbum } from "lucide-react";
+import { Music, Download, DiscAlbum } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,

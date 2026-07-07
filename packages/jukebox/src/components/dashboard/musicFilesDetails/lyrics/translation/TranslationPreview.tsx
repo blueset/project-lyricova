@@ -13,7 +13,7 @@ function BaseTranslationPreviewLine({ index }: { index: number }) {
         state.lyrics?.lines[index].attachments[
           languageToTag(state.translations.selectedLanguage)
         ]?.text ?? "",
-    }))
+    })),
   );
   return (
     <div className="text-sm leading-relaxed">
@@ -21,7 +21,7 @@ function BaseTranslationPreviewLine({ index }: { index: number }) {
         className={cn(
           content && !translated
             ? "text-error-foreground"
-            : "text-muted-foreground"
+            : "text-muted-foreground",
         )}
         lang="ja"
       >
@@ -30,7 +30,7 @@ function BaseTranslationPreviewLine({ index }: { index: number }) {
       <span className="text-muted-foreground/50"> ✲ </span>
       <span
         className={cn(
-          translated && !content ? "text-error-foreground" : "text-foreground"
+          translated && !content ? "text-error-foreground" : "text-foreground",
         )}
         lang={selectedLanguage || "zh"}
       >
@@ -44,12 +44,12 @@ const TranslationPreviewLine = memo(
   BaseTranslationPreviewLine,
   (prevProps, nextProps) => {
     return prevProps.index === nextProps.index;
-  }
+  },
 );
 
 export default function TranslationPreview() {
   const lyricsLineCount = useLyricsStore(
-    (state) => state.lyrics?.lines.length ?? 0
+    (state) => state.lyrics?.lines.length ?? 0,
   );
 
   return (

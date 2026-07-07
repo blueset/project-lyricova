@@ -40,7 +40,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           MonaSans.variable,
           HubotSans.variable,
           SourceHanSans.variable,
-          SourceHanSansPunct.variable
+          SourceHanSansPunct.variable,
         )}
       >
         <TelemetryProvider

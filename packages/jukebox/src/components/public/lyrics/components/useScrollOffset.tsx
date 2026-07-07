@@ -1,13 +1,6 @@
 import _ from "lodash";
-import type {
-  RefObject} from "react";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import type { RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useScrollOffset({
   containerRef,
@@ -54,7 +47,7 @@ export function useScrollOffset({
 
   const debounceReset = useCallback(
     _.debounce(() => setActiveScrollOffset(undefined), 5000),
-    [setActiveScrollOffset]
+    [setActiveScrollOffset],
   );
 
   useEffect(() => {
@@ -96,14 +89,14 @@ export function useScrollOffset({
       } else {
         // TODO: fix scroll bound
         setActiveScrollOffset((v) =>
-          Math.max(0, Math.min(bottom, (v ?? scrollOffsetRef.current) - delta))
+          Math.max(0, Math.min(bottom, (v ?? scrollOffsetRef.current) - delta)),
         );
       }
       debounceReset();
       lastMoveY = touchScreenY;
     }
 
-    function touchEndListener(event: TouchEvent) {
+    function touchEndListener(_event: TouchEvent) {
       // event.preventDefault();
       debounceReset();
     }
@@ -127,7 +120,14 @@ export function useScrollOffset({
         container?.removeEventListener("touchend", touchEndListener);
       };
     }
-  }, [containerRef, debounceReset, rowAccumulateHeight, scorllOffsetMin, scrollOffsetMax, setActiveScrollOffset]);
+  }, [
+    containerRef,
+    debounceReset,
+    rowAccumulateHeight,
+    scorllOffsetMin,
+    scrollOffsetMax,
+    setActiveScrollOffset,
+  ]);
 
   return {
     scrollOffset:

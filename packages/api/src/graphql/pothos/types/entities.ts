@@ -45,8 +45,14 @@ builder.drizzleObjectFields("Songs", (t) => {
     originalId: col("Int", "originalId", true),
     incomplete: col("Boolean", "incomplete"),
     utaiteDbId: col("Float", "utaiteDbId", true),
-    vocaDbJson: t.field({ type: "JSONObject", resolve: (s: any) => s.vocaDbJson }),
-    creationDate: t.field({ type: "Timestamp", resolve: (s: any) => s.creationDate }),
+    vocaDbJson: t.field({
+      type: "JSONObject",
+      resolve: (s: any) => s.vocaDbJson,
+    }),
+    creationDate: t.field({
+      type: "Timestamp",
+      resolve: (s: any) => s.creationDate,
+    }),
     updatedOn: t.field({ type: "Timestamp", resolve: (s: any) => s.updatedOn }),
     original: t.relation("original", { nullable: true }),
     derivedSongs: t.relation("derivedSongs", { nullable: true }),
@@ -92,9 +98,15 @@ builder.drizzleObjectFields("Albums", (t) => {
     coverUrl: col("String", "coverUrl", true),
     incomplete: col("Boolean", "incomplete"),
     utaiteDbId: col("Float", "utaiteDbId", true),
-    creationDate: t.field({ type: "Timestamp", resolve: (a: any) => a.creationDate }),
+    creationDate: t.field({
+      type: "Timestamp",
+      resolve: (a: any) => a.creationDate,
+    }),
     updatedOn: t.field({ type: "Timestamp", resolve: (a: any) => a.updatedOn }),
-    deletionDate: t.field({ type: "Timestamp", resolve: (a: any) => a.deletionDate }),
+    deletionDate: t.field({
+      type: "Timestamp",
+      resolve: (a: any) => a.deletionDate,
+    }),
     files: t.relation("files", { nullable: true }),
     songs: t.field({
       type: [SongRef],
@@ -137,8 +149,14 @@ builder.drizzleObjectFields("Artists", (t) => {
     type: col("String", "type"),
     incomplete: col("Boolean", "incomplete"),
     utaiteDbId: col("Float", "utaiteDbId", true),
-    vocaDbJson: t.field({ type: "JSONObject", resolve: (a: any) => a.vocaDbJson }),
-    creationDate: t.field({ type: "Timestamp", resolve: (a: any) => a.creationDate }),
+    vocaDbJson: t.field({
+      type: "JSONObject",
+      resolve: (a: any) => a.vocaDbJson,
+    }),
+    creationDate: t.field({
+      type: "Timestamp",
+      resolve: (a: any) => a.creationDate,
+    }),
     updatedOn: t.field({ type: "Timestamp", resolve: (a: any) => a.updatedOn }),
     baseVoiceBank: t.relation("baseVoiceBank", { nullable: true }),
     derivedVoiceBanks: t.relation("derivedVoiceBanks", { nullable: true }),

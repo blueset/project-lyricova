@@ -21,7 +21,6 @@ import {
   CardAction,
   CardFooter,
 } from "@lyricova/components/components/ui/card";
-import { Button } from "@lyricova/components/components/ui/button";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import { Separator } from "@lyricova/components/components/ui/separator";
 import {

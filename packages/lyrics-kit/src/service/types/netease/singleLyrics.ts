@@ -1,14 +1,14 @@
 export interface NetEaseLyrics {
-    lyric?: string;
+  lyric?: string;
 }
 
 export interface NetEaseResponseSingleLyrics {
-    lrc?: NetEaseLyrics;
-    klyric?: NetEaseLyrics;
-    tlyric?: NetEaseLyrics;
-    ytlrc?: NetEaseLyrics;
-    yrc?: NetEaseLyrics;
-    lyricUser?: {
-        nickname: string;
-    };
+  lrc?: NetEaseLyrics;
+  klyric?: NetEaseLyrics;
+  tlyric?: NetEaseLyrics;
+  ytlrc?: NetEaseLyrics;
+  yrc?: NetEaseLyrics;
+  lyricUser?: {
+    nickname: string;
+  };
 }

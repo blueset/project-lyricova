@@ -15,7 +15,7 @@ builder.queryField("getSiteMeta", (t) =>
       });
       return row?.value ?? defaultValue;
     },
-  })
+  }),
 );
 
 builder.mutationField("setSiteMeta", (t) =>
@@ -38,5 +38,5 @@ builder.mutationField("setSiteMeta", (t) =>
         return false;
       }
     },
-  })
+  }),
 );

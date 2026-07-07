@@ -16,12 +16,6 @@ interface CountUpCardProps {
   className?: string;
 }
 
-const COUNT_UP_LEVELS: ("years" | "months" | "days")[] = [
-  "years",
-  "months",
-  "days",
-];
-
 export function CountUpCard({ title, now, time, className }: CountUpCardProps) {
   let countUpValue = <>...</>;
   if (time) {

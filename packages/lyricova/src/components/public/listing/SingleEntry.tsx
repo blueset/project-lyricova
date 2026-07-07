@@ -31,8 +31,8 @@ export function SingleEntry({ entry }: SingleEntryProps) {
   const artistString = !entry.producersName
     ? entry.vocalistsName
     : !entry.vocalistsName
-    ? entry.producersName
-    : `${entry.producersName} feat. ${entry.vocalistsName}`;
+      ? entry.producersName
+      : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
   const verseRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLAnchorElement>(null);
@@ -54,7 +54,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
     const verseRefEl = verseRef.current;
     if (verseRefEl) {
       applyMask(verseRefEl);
-      const resizeObserver = new ResizeObserver((entries) => {
+      const resizeObserver = new ResizeObserver(() => {
         applyMask(verseRefEl);
       });
       resizeObserver.observe(document.body);

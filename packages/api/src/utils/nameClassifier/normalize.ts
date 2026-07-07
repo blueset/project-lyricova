@@ -67,7 +67,8 @@ export interface AlignedSegment {
 
 const HAN_REGEX = /\p{Script=Han}/u;
 const LATIN_REGEX = /^[\p{Script=Latin}\p{N}\p{P}\p{S}\s]+$/u;
-const META_ANNOTATIONS = /^\s*\((unknown|english\s+dnn|japanese|chinese|korean)\)\s*$/i;
+const META_ANNOTATIONS =
+  /^\s*\((unknown|english\s+dnn|japanese|chinese|korean)\)\s*$/i;
 
 /**
  * Check if a character is a CJK/Han character
@@ -95,26 +96,6 @@ function tokenize(s: string): string[] {
   }
   if (current.trim()) tokens.push(current);
   return tokens;
-}
-
-/**
- * Split romanization by common delimiters (spaces, @, parenthetical boundaries)
- * while preserving the delimiters' semantic role.
- */
-function splitRomanization(roman: string): string[] {
-  // Split on spaces, but keep @-delimited and parenthetical parts together
-  const parts: string[] = [];
-  // Split by @ first, then by spaces within each part
-  const atParts = roman.split("@");
-  for (let i = 0; i < atParts.length; i++) {
-    const subparts = atParts[i].split(/\s+/).filter(Boolean);
-    if (i > 0 && subparts.length > 0) {
-      // Prefix with @ to indicate it was an @-segment
-      subparts[0] = "@" + subparts[0];
-    }
-    parts.push(...subparts);
-  }
-  return parts;
 }
 
 /**
@@ -218,9 +199,7 @@ export function alignSegments(
   for (const seg of segments) {
     if (seg.isPassthrough && seg.roman) {
       // Remove the passthrough part (case-insensitive)
-      const idx = remainingRoman
-        .toLowerCase()
-        .indexOf(seg.roman.toLowerCase());
+      const idx = remainingRoman.toLowerCase().indexOf(seg.roman.toLowerCase());
       if (idx !== -1) {
         remainingRoman =
           remainingRoman.slice(0, idx) +

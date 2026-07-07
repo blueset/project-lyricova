@@ -10,7 +10,6 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Badge } from "@lyricova/components/components/ui/badge";
-import { cn } from "@lyricova/components/utils";
 import { graphql } from "@lyricova/components/gql";
 
 const REMOVE_LYRICS_MUTATION = graphql(`

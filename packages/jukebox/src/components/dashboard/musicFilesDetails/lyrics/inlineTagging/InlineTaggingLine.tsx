@@ -1,13 +1,6 @@
 import { DOTS, FURIGANA, TAGS } from "lyrics-kit/core";
-import type {
-  RefObject} from "react";
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import type { RefObject } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { measureTextWidths } from "../../../../../frontendUtils/measure";
 import type { WebAudioPlayerState } from "../../../../../hooks/types";
 import gsap from "gsap";
@@ -29,7 +22,7 @@ function ApplyMarksToAllButton({ index }: { index: number }) {
       lineContent: state.lyrics?.lines[index]?.content ?? "",
       applyMarksToIdenticalLines:
         state.inlineTagging.applyMarksToIdenticalLines,
-    }))
+    })),
   );
   const applyMarksToAll = useCallback(() => {
     applyMarksToIdenticalLines(index);
@@ -58,7 +51,7 @@ function ApplyMarksToAllButton({ index }: { index: number }) {
 }
 const ApplyMarksToAllButtonMemo = memo(
   ApplyMarksToAllButton,
-  (prev, next) => prev.index === next.index
+  (prev, next) => prev.index === next.index,
 );
 
 interface InlineTaggingLineProps {
@@ -114,9 +107,9 @@ export function InlineTaggingLine({
         state.inlineTagging.currentLine.borderIndex === index
           ? 0
           : state.inlineTagging.currentLine.borderIndex >= index
-          ? -1
-          : 1,
-    }))
+            ? -1
+            : 1,
+    })),
   );
   const centerRowRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<number[]>([]);
@@ -130,7 +123,7 @@ export function InlineTaggingLine({
       setCursorPosition([index, cursorIdx]);
       setDotCursorPosition([index, cursorIdx, 0]);
     },
-    [index]
+    [index],
   );
 
   useEffect(() => {
@@ -180,7 +173,7 @@ export function InlineTaggingLine({
                 ease: "none",
                 duration: 0,
               },
-              x
+              x,
             );
           } else {
             tl.to(
@@ -190,7 +183,7 @@ export function InlineTaggingLine({
                 ease: "none",
                 duration: x - start,
               },
-              start
+              start,
             );
           }
           start = x;
@@ -217,7 +210,7 @@ export function InlineTaggingLine({
       centerRow.style.backgroundSize = `${coords[coords.length - 1]}px 100%`;
       const flatternTags = tags.flat().filter(Boolean);
       const areTagsIncreasing = flatternTags.every((x, idx, arr) =>
-        idx === 0 ? true : x > arr[idx - 1]
+        idx === 0 ? true : x > arr[idx - 1],
       );
       setIsValid(areTagsIncreasing);
       if (timelinesRef.current?.[index]) {
@@ -247,8 +240,7 @@ export function InlineTaggingLine({
             style={{
               left: coords[t.range[0] - 1] ?? 0,
               width:
-                (coords[t.range[1] - 1] ?? 0) -
-                (coords[t.range[0] - 1] ?? 0),
+                (coords[t.range[1] - 1] ?? 0) - (coords[t.range[0] - 1] ?? 0),
             }}
             ref={(el) => {
               if (el && el.scrollWidth > el.clientWidth) {
@@ -283,7 +275,7 @@ export function InlineTaggingLine({
           data-row-index={index}
           className={cn(
             "inline-block w-[1em] h-[1em] relative align-baseline",
-            !isValid && "before:content-['⚠️'] before:text-warning-foreground"
+            !isValid && "before:content-['⚠️'] before:text-warning-foreground",
           )}
         ></span>
       </div>
@@ -302,7 +294,7 @@ export function InlineTaggingLine({
                     hasDotCursor &&
                       dotCursorIndex1 === idx &&
                       dotCursorIndex2 === 0 &&
-                      "text-error-foreground"
+                      "text-error-foreground",
                   )}
                 >
                   □
@@ -317,7 +309,7 @@ export function InlineTaggingLine({
                         hasDotCursor &&
                           dotCursorIndex1 === idx &&
                           dotCursorIndex2 === i &&
-                          "text-error-foreground"
+                          "text-error-foreground",
                       )}
                     >
                       {i === 0 ? "◣" : "❚"}
@@ -325,7 +317,7 @@ export function InlineTaggingLine({
                   ))
               )}
             </span>
-          ) : null
+          ) : null,
         )}
         {hasCursor && (
           <span

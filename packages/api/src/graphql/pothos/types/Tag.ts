@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { builder } from "../builder";
 import { db } from "../../../drizzle/client";
 import { TagOfEntries } from "../../../drizzle/schema";
-import { TagRef, EntryRef } from "./refs";
+import { EntryRef } from "./refs";
 
 builder.drizzleObjectFields("Tags", (t) => ({
   color: t.field({ type: "String", resolve: (tag: any) => tag.color }),

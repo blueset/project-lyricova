@@ -9,14 +9,14 @@ export default function TranslationTextarea() {
       textareaValue: state.translations.textareaValue,
       setTextareaValue: state.translations.setTextareaValue,
       selectedLanguage: state.translations.selectedLanguage,
-    }))
+    })),
   );
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       setTextareaValue(event.target.value);
     },
-    [setTextareaValue]
+    [setTextareaValue],
   );
 
   return (

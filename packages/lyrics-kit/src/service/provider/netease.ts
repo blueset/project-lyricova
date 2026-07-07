@@ -54,7 +54,7 @@ export class NeteaseKLyrics extends Lyrics {
       let lineContent = "";
       const attachment = new WordTimeTag(
         [new WordTimeTagLabel(0, 0)],
-        duration
+        duration,
       );
       let dt = 0;
       const inlineTagMatches = match[3].matchAll(netEaseInlineTagRegex);
@@ -109,14 +109,16 @@ export class NeteaseYLyrics extends Lyrics {
       let lineContent = "";
       const attachment = new WordTimeTag(
         [new WordTimeTagLabel(0, 0)],
-        duration
+        duration,
       );
       const inlineTagMatches = match[3].matchAll(netEaseYrcInlineTagRegex);
       for (const m of inlineTagMatches) {
         const [_full, startStr, _durationStr, _unknown, fragment] = m;
         const wordStart = parseFloat(startStr) / 1000;
         lineContent += fragment;
-        attachment.tags.push(new WordTimeTagLabel(wordStart - timeTag, lineContent.length));
+        attachment.tags.push(
+          new WordTimeTagLabel(wordStart - timeTag, lineContent.length),
+        );
       }
       attachment.tags.push(new WordTimeTagLabel(duration, lineContent.length));
 
@@ -144,7 +146,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
   }
 
   async searchLyrics(
-    request: LyricsSearchRequest
+    request: LyricsSearchRequest,
   ): Promise<NetEaseResponseSong[]> {
     try {
       const parameters = {
@@ -159,7 +161,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
         {
           params: parameters,
           headers,
-        }
+        },
       );
       if (outcome.status !== 200) {
         console.error(outcome.data);
@@ -173,7 +175,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
   }
 
   public async fetchLyrics(
-    token: NetEaseResponseSong
+    token: NetEaseResponseSong,
   ): Promise<Lyrics | undefined> {
     try {
       const parameters = {
@@ -187,7 +189,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
         {
           params: parameters,
           headers,
-        }
+        },
       );
       if (response.status !== 200) {
         console.error(response.data);
@@ -201,9 +203,7 @@ export class NetEaseProvider extends LyricsProvider<NetEaseResponseSong> {
       const kLrc = data?.klyric?.lyric
         ? new NeteaseKLyrics(data.klyric.lyric)
         : null;
-      const yLrc = data?.yrc?.lyric
-        ? new NeteaseYLyrics(data.yrc.lyric)
-        : null;
+      const yLrc = data?.yrc?.lyric ? new NeteaseYLyrics(data.yrc.lyric) : null;
       if (yLrc) {
         if (transLrc) {
           yLrc.forceMerge(transLrc, "zh");

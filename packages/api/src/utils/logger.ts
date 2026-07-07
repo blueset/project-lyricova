@@ -10,10 +10,10 @@ const options: winston.LoggerOptions = {
         winston.format.cli(),
         winston.format.printf(({ timestamp, level, message }) => {
           return `${timestamp} ${level}: ${message}`;
-        })
-      )
+        }),
+      ),
     }),
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: "debug.log",
       level: "debug",
       maxsize: 10 * 1024 * 1024, // 10MB
@@ -21,10 +21,10 @@ const options: winston.LoggerOptions = {
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.errors({ stack: true }),
-        winston.format.json()
-      )
-     })
-  ]
+        winston.format.json(),
+      ),
+    }),
+  ],
 };
 
 const logger = winston.createLogger(options);

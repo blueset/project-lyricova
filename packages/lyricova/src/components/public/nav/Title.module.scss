@@ -1,7 +1,6 @@
 @import "../../../styles/variables";
 @import "../../../styles/mixins";
 
-
 @mixin title-common {
   font-family: $headings-font;
   margin: 0;
@@ -33,7 +32,8 @@
   }
 
   @include media-breakpoint-down(mobile) {
-    span, strong {
+    span,
+    strong {
       display: block;
     }
   }

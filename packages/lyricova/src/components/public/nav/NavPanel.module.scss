@@ -35,13 +35,12 @@
   max-height: calc(100vh - $vertical-gutter);
   overflow-y: auto;
 
-
   @include media-breakpoint-down(desktop) {
     flex-direction: column;
     gap: 4rem;
     align-items: flex-start;
   }
-  
+
   .open & {
     transform: translateY(0);
   }
@@ -119,7 +118,8 @@
     position: absolute;
   }
 
-  .mainNavText, .subNavText {
+  .mainNavText,
+  .subNavText {
     transition: font-weight 0.6s cubic-bezier(0.33, 1, 0.68, 1);
     white-space: nowrap;
   }

@@ -1,10 +1,9 @@
 import type { Playlist } from "@lyricova/components/gql/schema";
 import { useApolloClient, useQuery } from "@apollo/client/react";
-import _ from "lodash";
 import type { ReactNode } from "react";
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import { PlusCircle, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useNamedState } from "../../../hooks/useNamedState";
 import PlaylistAvatar from "../../PlaylistAvatar";
 import AddPlaylistPopoverContent from "../AddPlaylistPopoverContent";

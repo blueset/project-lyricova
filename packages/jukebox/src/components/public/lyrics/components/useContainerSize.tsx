@@ -1,4 +1,4 @@
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useLayoutEffect, useState } from "react";
 
 export function useContainerSize({

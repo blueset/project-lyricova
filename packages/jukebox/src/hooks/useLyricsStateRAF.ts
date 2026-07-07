@@ -1,5 +1,5 @@
 import _ from "lodash";
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useRef, useCallback, useEffect } from "react";
 import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { useNamedState } from "./useNamedState";
@@ -32,7 +32,10 @@ function getStartEnd(
   if (line + 1 >= lyrics.lines.length) {
     return [currentLine.position, playerRef.current.duration];
   }
-  return [currentLine.position, lyrics.lines[line + 1]?.position ?? playerRef.current.duration];
+  return [
+    currentLine.position,
+    lyrics.lines[line + 1]?.position ?? playerRef.current.duration,
+  ];
 }
 
 export function useLyricsStateRAF(
@@ -54,7 +57,7 @@ export function useLyricsStateRAF(
           const thisLineIndex = _.sortedIndexBy<{ position: number }>(
             lyrics.lines,
             { position: time },
-            "position"
+            "position",
           );
           if (thisLineIndex === 0) {
             if (lineRef.current !== null) setLine(null);
@@ -80,7 +83,7 @@ export function useLyricsStateRAF(
         setLine(null);
       }
     },
-    [playerRef, lyrics, setLine, callback]
+    [playerRef, lyrics, setLine, callback],
   );
 
   const onPlay = useCallback(() => {

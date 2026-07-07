@@ -19,7 +19,7 @@ import { InputGroupButton } from "@lyricova/components/components/ui/input-group
 
 type Props<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   form: UseFormReturn<TFieldValues>;
   sourceName: TName;
@@ -27,7 +27,7 @@ type Props<
 };
 
 export function SlugifyAdornment<
-  TFieldValues extends FieldValues = FieldValues
+  TFieldValues extends FieldValues = FieldValues,
 >({ form, sourceName, destinationName }: Props<TFieldValues>) {
   const { setValue, resetField } = form;
   const sourceValue = form.watch(sourceName);

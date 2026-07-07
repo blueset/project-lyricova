@@ -8,14 +8,14 @@ import type {
   RowData,
   GlobalFilterTableState,
   TableMeta,
-  ColumnMeta} from "@tanstack/react-table";
+} from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable
+  useReactTable,
 } from "@tanstack/react-table";
 
 import {
@@ -32,6 +32,7 @@ import { useState } from "react";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 
 declare module "@tanstack/react-table" {
+  // eslint-disable-next-line unused-imports/no-unused-vars -- generics required to match the augmented interface signature
   interface ColumnMeta<TData extends RowData, TValue> {
     width?: string;
   }
@@ -54,7 +55,7 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    defaultColumnVisibility
+    defaultColumnVisibility,
   );
   const [globalFilter, setGlobalFilter] = useState<
     GlobalFilterTableState["globalFilter"]
@@ -122,7 +123,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -145,7 +146,7 @@ export function DataTable<TData, TValue>({
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

@@ -1,4 +1,4 @@
-import { GraphQLResolveInfo, FieldNode } from "graphql";
+import type { GraphQLResolveInfo, FieldNode } from "graphql";
 
 export function getFields(info: GraphQLResolveInfo): string[] {
   const fields: string[] = [];
@@ -13,8 +13,8 @@ export function getFields(info: GraphQLResolveInfo): string[] {
           fields.push(
             ...getFields({
               ...info,
-              fieldNodes: [(fragment as unknown) as FieldNode],
-            })
+              fieldNodes: [fragment as unknown as FieldNode],
+            }),
           );
         }
       }

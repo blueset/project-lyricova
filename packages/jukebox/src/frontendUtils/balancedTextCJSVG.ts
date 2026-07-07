@@ -105,7 +105,7 @@ let breakMatches: number[] | null;
 /**
  * Object for tracking next whitespace params
  */
- 
+
 class NextWS_params {
   public index = 0;
   public width = 0;
@@ -128,7 +128,7 @@ class NextWS_params {
 function removeTags(el: SVGTextElement) {
   // Remove soft-hyphen breaks
   const lines = el.querySelectorAll<SVGTSpanElement>(
-    'tspan[data-owner^="balance-text-line"]'
+    'tspan[data-owner^="balance-text-line"]',
   );
   lines.forEach((line) => {
     line.outerHTML = line.innerHTML;
@@ -136,7 +136,7 @@ function removeTags(el: SVGTextElement) {
 
   // Restore hyphens inserted for soft-hyphens
   const spans = el.querySelectorAll<SVGTSpanElement>(
-    'tspan[data-owner="balance-text-softhyphen"]'
+    'tspan[data-owner="balance-text-softhyphen"]',
   );
   spans.forEach((span) => {
     span.outerHTML = "\u00ad";
@@ -158,7 +158,7 @@ function justify(
   txt: string,
   conWidth: number,
   x?: string,
-  dy?: number
+  dy?: number,
 ): string {
   txt = txt.trim();
   const words = txt.split(" ").length;
@@ -268,7 +268,7 @@ function findBreakOpportunity(
   desWidth: number,
   dir: number,
   c: number,
-  ret: BreakOpportunity
+  ret: BreakOpportunity,
 ) {
   let w = 0;
 
@@ -323,14 +323,14 @@ function preprocessCJ(text: string): [string, boolean] {
   ) {
     return [text, false];
   }
-   
+
   text = text.replace(
     new RegExp(`([${cj}${notBefore}])([^${notBefore}])`, "ug"),
-    "$1\u200B$2"
+    "$1\u200B$2",
   );
   text = text.replace(
     new RegExp(`([${ascIINonSpace}])([${cj}${notAfter}])`, "ug"),
-    "$1\u200B$2"
+    "$1\u200B$2",
   );
   return [text, true];
 }
@@ -349,7 +349,7 @@ export function balanceText(
   el: SVGTextElement,
   containerWidth: number,
   lineHeightFactor: number = 1,
-  shouldJustify: boolean = false
+  shouldJustify: boolean = false,
 ): void {
   // In a lower level language, this algorithm takes time
   // comparable to normal text layout other than the fact
@@ -424,7 +424,7 @@ export function balanceText(
         desiredWidth,
         -1,
         guessIndex,
-        le
+        le,
       );
 
       // Find first breaking char after (or equal to) desired width.
@@ -437,7 +437,7 @@ export function balanceText(
         desiredWidth,
         +1,
         guessIndex,
-        ge
+        ge,
       );
 
       // Find first breaking char before (or equal to) desired width.
@@ -450,7 +450,7 @@ export function balanceText(
         desiredWidth,
         -1,
         guessIndex,
-        le
+        le,
       );
 
       // Find closest string to desired length
@@ -473,7 +473,7 @@ export function balanceText(
         // Replace soft-hyphen causing break with explicit hyphen
         lineText = lineText.replace(
           /\u00ad$/,
-          '<tspan data-owner="balance-text-softhyphen">-</tspan>'
+          '<tspan data-owner="balance-text-softhyphen">-</tspan>',
         );
       }
 
@@ -481,7 +481,13 @@ export function balanceText(
         if (newText.length > 0) {
           newText += justify(el, lineText, containerWidth, xCoord, lineHeight);
         } else {
-          newText += justify(el, lineText, containerWidth, undefined, undefined);
+          newText += justify(
+            el,
+            lineText,
+            containerWidth,
+            undefined,
+            undefined,
+          );
         }
       } else {
         const posAttr = newText.length > 0 ? " " + positioning : "";

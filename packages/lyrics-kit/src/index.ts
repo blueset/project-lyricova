@@ -23,4 +23,12 @@ export {
   ARTWORK_URL,
   PROVIDER_TOKEN,
 } from "./core/lyricsMetadata";
-export { TITLE, ALBUM, ARTIST, AUTHOR, LRC_BY, OFFSET, LENGTH } from "./core/idTagKey";
+export {
+  TITLE,
+  ALBUM,
+  ARTIST,
+  AUTHOR,
+  LRC_BY,
+  OFFSET,
+  LENGTH,
+} from "./core/idTagKey";

@@ -2,7 +2,8 @@ import { and, eq } from "drizzle-orm";
 import { builder } from "../builder";
 import { UserRef, UserPublicKeyCredentialRef } from "../types/refs";
 import { db } from "../../../drizzle/client";
-import { Users, UserPublicKeyCredentials } from "../../../drizzle/schema";
+import type { Users } from "../../../drizzle/schema";
+import { UserPublicKeyCredentials } from "../../../drizzle/schema";
 
 builder.queryField("currentUser", (t) =>
   t.field({
@@ -13,7 +14,7 @@ builder.queryField("currentUser", (t) =>
     // differ only in optional-vs-null of `provider`/`provider_id`.
     resolve: (_root, _args, ctx) =>
       (ctx.user ?? null) as unknown as typeof Users.$inferSelect | null,
-  })
+  }),
 );
 
 builder.queryField("currentCredentials", (t) =>
@@ -25,7 +26,7 @@ builder.queryField("currentCredentials", (t) =>
         where: eq(UserPublicKeyCredentials.userId, ctx.user.id),
       });
     },
-  })
+  }),
 );
 
 builder.mutationField("deleteCredential", (t) =>
@@ -36,7 +37,7 @@ builder.mutationField("deleteCredential", (t) =>
       const cred = await db.query.UserPublicKeyCredentials.findFirst({
         where: and(
           eq(UserPublicKeyCredentials.id, id),
-          eq(UserPublicKeyCredentials.userId, ctx.user.id)
+          eq(UserPublicKeyCredentials.userId, ctx.user.id),
         ),
       });
       if (!cred) return false;
@@ -45,5 +46,5 @@ builder.mutationField("deleteCredential", (t) =>
         .where(eq(UserPublicKeyCredentials.id, id));
       return true;
     },
-  })
+  }),
 );

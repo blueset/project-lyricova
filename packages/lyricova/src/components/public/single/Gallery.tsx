@@ -34,10 +34,11 @@ export function Gallery({ entryIds }: CommentProps) {
 
   useEffect(() => {
     async function fetchGalleryUrls() {
-      const promises = (entryIds ?? []).map(async (v) =>
-        (
-          await fetch(`https://1a23.com/wp-json/wp/v2/gallery?song_id=${v}`)
-        ).json() as Promise<GalleryApiResponse[]>,
+      const promises = (entryIds ?? []).map(
+        async (v) =>
+          (
+            await fetch(`https://1a23.com/wp-json/wp/v2/gallery?song_id=${v}`)
+          ).json() as Promise<GalleryApiResponse[]>,
       );
       const jsons = await Promise.all(promises);
       setGalleryUrls(

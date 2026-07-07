@@ -1,11 +1,5 @@
-import type {
-  ComponentProps,
-  ReactNode} from "react";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import type { ComponentProps, ReactNode } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
 import { useAppContext } from "./AppContext";
 import { Button } from "@lyricova/components/components/ui/button";
@@ -14,14 +8,7 @@ import {
   ToggleGroupItem,
 } from "@lyricova/components/components/ui/toggle-group";
 import { cn } from "@lyricova/components/utils";
-import {
-  Maximize,
-  Rewind,
-  Forward,
-  Pause,
-  Play,
-  FastForward,
-} from "lucide-react";
+import { Maximize, Rewind, Pause, Play, FastForward } from "lucide-react";
 
 interface SO extends ScreenOrientation {
   lock(orientation: string): Promise<void>;
@@ -35,7 +22,7 @@ export function LyricsFullScreenOverlay({
   const { playerRef } = useAppContext();
   const [isPlaying, setIsPlaying] = useNamedState(
     !playerRef.current?.paused,
-    "isPlaying"
+    "isPlaying",
   );
   const [isVisible, setIsVisible] = useNamedState(false, "isVisible");
   const [fullscreenMode, setFullscreenMode] = useNamedState<
@@ -62,7 +49,7 @@ export function LyricsFullScreenOverlay({
         playerRef.current.pause();
       }
     },
-    [playerRef]
+    [playerRef],
   );
 
   const rewind5 = useCallback(
@@ -74,7 +61,7 @@ export function LyricsFullScreenOverlay({
       }
       playerRef.current.currentTime -= 5;
     },
-    [playerRef]
+    [playerRef],
   );
   const forward5 = useCallback(
     (event: { stopPropagation: () => void }) => {
@@ -84,7 +71,7 @@ export function LyricsFullScreenOverlay({
       }
       playerRef.current.currentTime += 5;
     },
-    [playerRef]
+    [playerRef],
   );
 
   const toggleVisible: ComponentProps<"div">["onClick"] = useCallback(
@@ -113,7 +100,7 @@ export function LyricsFullScreenOverlay({
       }
       lastClickTime.current = now;
     },
-    [forward5, rewind5, setIsVisible]
+    [forward5, rewind5, setIsVisible],
   );
 
   useEffect(() => {
@@ -145,14 +132,14 @@ export function LyricsFullScreenOverlay({
     <div
       className={cn(
         "absolute inset-0 bg-black/50 transition-opacity duration-500 flex flex-row items-center justify-evenly",
-        isVisible ? "opacity-100" : "opacity-0"
+        isVisible ? "opacity-100" : "opacity-0",
       )}
       onClick={toggleVisible}
     >
       <div
         className={cn(
           "fixed inset-0",
-          isVisible ? "pointer-events-auto" : "pointer-events-none"
+          isVisible ? "pointer-events-auto" : "pointer-events-none",
         )}
       >
         {children}
@@ -164,7 +151,7 @@ export function LyricsFullScreenOverlay({
             onClick={(e) => e.stopPropagation()}
             aria-label="Fullscreen"
             onValueChange={async (
-              value: "web" | "0" | "90" | "180" | "270"
+              value: "web" | "0" | "90" | "180" | "270",
             ) => {
               if (value) {
                 if (value === "web") {
@@ -219,7 +206,7 @@ export function LyricsFullScreenOverlay({
         size="icon"
         className={cn(
           "text-2xl size-14 bg-black/40 rounded-full z-10",
-          isVisible ? "pointer-events-auto" : "pointer-events-none"
+          isVisible ? "pointer-events-auto" : "pointer-events-none",
         )}
         onClick={rewind5}
         aria-label="Rewind 5 seconds"
@@ -231,7 +218,7 @@ export function LyricsFullScreenOverlay({
         size="icon"
         className={cn(
           "size-20 text-4xl bg-black/40 rounded-full z-10 hover:bg-foreground/50",
-          isVisible ? "pointer-events-auto" : "pointer-events-none"
+          isVisible ? "pointer-events-auto" : "pointer-events-none",
         )}
         onClick={togglePlay}
         aria-label={!isPlaying ? "Play" : "Pause"}
@@ -247,7 +234,7 @@ export function LyricsFullScreenOverlay({
         size="icon"
         className={cn(
           "text-2xl size-14 bg-black/40 rounded-full z-10",
-          isVisible ? "pointer-events-auto" : "pointer-events-none"
+          isVisible ? "pointer-events-auto" : "pointer-events-none",
         )}
         onClick={forward5}
         aria-label="Forward 5 seconds"

@@ -91,7 +91,7 @@ const LineListItem = ({
       isCurrent: s.tagging.currentLine.index === lineIdx,
       isCursorOn: s.tagging.cursor === lineIdx,
       extrapolateTag: s.tagging.extrapolateTags?.[lineIdx],
-    }))
+    })),
   );
   const lineText = useMemo(() => {
     if (!line) return "";
@@ -103,7 +103,7 @@ const LineListItem = ({
     <li
       className={cn(
         "flex items-center hover:bg-accent px-2 py-1 text-sm cursor-pointer",
-        isCurrent && "bg-accent text-accent-foreground"
+        isCurrent && "bg-accent text-accent-foreground",
       )}
       onClickCapture={onClickCapture}
       onDoubleClickCapture={onDoubleClickCapture}
@@ -168,12 +168,12 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
       setExtrapolateTagsAtCursor: s.tagging.setExtrapolateTagsAtCursor,
       linearRegressionResult: s.tagging.linearRegressionResult,
       applyExtrapolation: s.tagging.applyExtrapolation,
-    }))
+    })),
   );
 
   const [playbackProgress, setPlaybackProgress] = useNamedState(
     0,
-    "playbackProgress"
+    "playbackProgress",
   );
 
   const listRef = useRef<HTMLUListElement>(null);
@@ -217,7 +217,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
           index: -Infinity,
           start: -Infinity,
           end: Infinity,
-        }
+        },
       );
       setCurrentLine(record);
     }
@@ -235,7 +235,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
     (checked: boolean) => {
       setIsInExtrapolateMode(checked);
     },
-    [setIsInExtrapolateMode]
+    [setIsInExtrapolateMode],
   );
 
   const moveCursor = useCallback(
@@ -255,7 +255,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
       setCursor(nidx);
       return;
     },
-    [setCursor]
+    [setCursor],
   );
 
   const onLineClick = useCallback(
@@ -263,7 +263,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
       ev.stopPropagation();
       moveCursor(idx);
     },
-    [moveCursor]
+    [moveCursor],
   );
 
   const onLineDoubleClick = useCallback(
@@ -282,7 +282,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
         requestAnimationFrame(onFrame);
       }
     },
-    [audioBuffer, moveCursor, onFrame, seek]
+    [audioBuffer, moveCursor, onFrame, seek],
   );
 
   // Register key press listeners
@@ -357,14 +357,14 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
         moveCursor((cursor) => cursor + 1);
       } else if (
         ["ArrowUp", "KeyW", "KeyJ", "Up", "W", "w", "J", "j"].includes(
-          codeOrKey
+          codeOrKey,
         )
       ) {
         ev.preventDefault();
         moveCursor((cursor) => (cursor || 1) - 1);
       } else if (
         ["ArrowDown", "KeyR", "KeyK", "Down", "r", "R", "K", "k"].includes(
-          codeOrKey
+          codeOrKey,
         )
       ) {
         ev.preventDefault();
@@ -384,7 +384,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
         moveCursor((cursor) => (cursor || 0) + 10);
       } else if (
         ["ArrowLeft", "KeyA", "KeyH", "Left", "A", "a", "H", "h"].includes(
-          codeOrKey
+          codeOrKey,
         )
       ) {
         ev.preventDefault();
@@ -393,7 +393,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
         seek(time - 5);
       } else if (
         ["ArrowRight", "KeyS", "KeyL", "Right", "S", "s", "L", "l"].includes(
-          codeOrKey
+          codeOrKey,
         )
       ) {
         ev.preventDefault();
@@ -427,7 +427,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
       <div
         className={cn(
           "top-0 left-0 z-10 sticky py-1", // Basic sticky positioning
-          "bg-background/80 backdrop-blur-sm" // Background with transparency and blur
+          "bg-background/80 backdrop-blur-sm", // Background with transparency and blur
         )}
       >
         <InstructionsMemo />
@@ -452,7 +452,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
             <span className="my-2 text-sm">
               {extrapolateTags.reduce<number>(
                 (prev, curr) => prev + (curr == null ? 0 : 1),
-                0
+                0,
               )}{" "}
               tags added, formula:{" "}
               <span className="font-serif">

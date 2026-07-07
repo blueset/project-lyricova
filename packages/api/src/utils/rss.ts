@@ -1,4 +1,4 @@
-import { desc, isNull } from "drizzle-orm";
+import { isNull } from "drizzle-orm";
 import RSS from "rss";
 import { db } from "../drizzle/client";
 import { Entries } from "../drizzle/schema";
@@ -34,16 +34,17 @@ export default async function generateRssFeed() {
     const mainVerse = entry.verses.find((v) => v.isMain);
     if (!mainVerse) return;
     const tags = (entry.tagOfEntries ?? []).flatMap((t) =>
-      t.tag ? [t.tag] : []
+      t.tag ? [t.tag] : [],
     );
     feed.item({
       title: entry.title ?? "",
       description:
         `<img src="${host}/api/og/${entry.id}" alt="${entry.title}" />` +
-        (mainVerse.html || mainVerse.stylizedText || (mainVerse.text ?? "")).replace(
-          /\n/g,
-          "<br />"
-        ),
+        (
+          mainVerse.html ||
+          mainVerse.stylizedText ||
+          (mainVerse.text ?? "")
+        ).replace(/\n/g, "<br />"),
       date: entry.recentActionDate,
       url: `${host}/entries/${entry.id}`,
       categories: tags.flatMap((t) => (t.name === null ? [] : [t.name])),

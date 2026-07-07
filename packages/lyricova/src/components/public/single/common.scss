@@ -25,24 +25,27 @@
     left: 0;
     top: 0;
     white-space: nowrap;
-  
+
     .typing {
       background: $brand-color;
       color: $background-color;
     }
   }
 
-  b, strong {
+  b,
+  strong {
     font-weight: 500;
     font-stretch: expanded;
   }
 
-  i, em {
+  i,
+  em {
     font-style: normal;
     @include font-style(italic);
   }
 
-  pre, p {
+  pre,
+  p {
     margin: 0;
   }
 }

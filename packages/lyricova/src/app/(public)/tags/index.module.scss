@@ -27,7 +27,7 @@
   justify-content: center;
   text-decoration: none;
   letter-spacing: -0.05em;
-  transition: all 0.2s cubic-bezier(0,0,.6,1);
+  transition: all 0.2s cubic-bezier(0, 0, 0.6, 1);
   min-height: calc(1.5em + 4rem);
   position: relative;
 
@@ -52,7 +52,7 @@
     .text span {
       display: inline-block;
       white-space: pre;
-      transition: transform 0.2s cubic-bezier(0,0,.6,1);
+      transition: transform 0.2s cubic-bezier(0, 0, 0.6, 1);
     }
     &:hover {
       background-color: var(--tag-color);
@@ -65,7 +65,7 @@
       .text span:nth-child(2n) {
         transform: translateY(0.1em);
       }
-      .text span:nth-child(2n+1) {
+      .text span:nth-child(2n + 1) {
         transform: translateY(-0.1em);
       }
     }

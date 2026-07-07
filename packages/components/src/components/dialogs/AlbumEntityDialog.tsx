@@ -7,7 +7,7 @@ import type {
   FullAlbumEntryFragment,
 } from "../../gql/graphql";
 import { toast } from "sonner";
-import { Plus, X, Disc3, Music, Trash, RefreshCw } from "lucide-react";
+import { Plus, Disc3, Music, Trash, RefreshCw } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

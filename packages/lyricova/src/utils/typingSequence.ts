@@ -139,7 +139,7 @@ function animateEn(words: [string, string][]): AnimatedWord[] {
 
 export function buildAnimationSequence(
   text: [string, string][],
-  language: string
+  language: string,
 ): AnimatedWord[] {
   if (language.startsWith("ja")) {
     return animateJa(text);

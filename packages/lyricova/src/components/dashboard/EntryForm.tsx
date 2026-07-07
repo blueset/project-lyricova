@@ -53,6 +53,7 @@ const monospacedFont =
 /** Artist as embedded under a selected song (form `songs` are loosely typed). */
 type SongArtist = NonNullable<SelectSongEntryFragment["artists"]>[number];
 
+// eslint-disable-next-line unused-imports/no-unused-vars -- registers the `EntryFragment` fragment used via `...EntryFragment` spreads below (consumed by graphql-codegen)
 const ENTRY_FRAGMENT = graphql(`
   fragment EntryFragment on Entry {
     id
@@ -249,7 +250,6 @@ export function EntryForm({ id }: EntityFormProps) {
     fields: pulseFields,
     append: appendPulse,
     remove: removePulse,
-    update: updatePulse,
   } = useFieldArray({
     control: form.control,
     name: "pulses",

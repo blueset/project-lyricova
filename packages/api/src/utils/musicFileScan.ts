@@ -43,7 +43,7 @@ export function fullPathOf(relPath: string): string {
 }
 
 export async function getSongMetadata(
-  fullPath: string
+  fullPath: string,
 ): Promise<GenericMetadata> {
   const metadata = await ffprobe(fullPath);
   const tags = metadata.format?.tags ?? {};
@@ -85,13 +85,18 @@ export interface BuiltSongEntry {
 
 /** Build the insert values for a new music file at `fullPath`. */
 export async function buildSongEntry(
-  fullPath: string
+  fullPath: string,
 ): Promise<BuiltSongEntry> {
   const md5Promise = hasha.fromFile(fullPath, { algorithm: "md5" });
   const metadataPromise = getSongMetadata(fullPath);
   const md5 = await md5Promise;
-  const { songId, albumId, playlists, lyrics: _lyrics, ...metadata } =
-    await metadataPromise;
+  const {
+    songId,
+    albumId,
+    playlists,
+    lyrics: _lyrics,
+    ...metadata
+  } = await metadataPromise;
   const lrcPath = fullPath.substr(0, fullPath.lastIndexOf(".")) + ".lrc";
   const hasLyrics = fs.existsSync(lrcPath);
 
@@ -112,7 +117,7 @@ export async function buildSongEntry(
 /** Replace the FileInPlaylist rows for a file with the given playlist slugs. */
 export async function replaceFilePlaylists(
   fileId: number,
-  slugs: string[]
+  slugs: string[],
 ): Promise<void> {
   await db.delete(FileInPlaylists).where(eq(FileInPlaylists.fileId, fileId));
   const now = new Date();
@@ -133,7 +138,7 @@ export async function replaceFilePlaylists(
  * row was updated, false if unchanged (mirrors the model's null return).
  */
 export async function updateSongEntry(
-  file: Pick<MusicFileRow, "id" | "path" | "hasLyrics" | "hash">
+  file: Pick<MusicFileRow, "id" | "path" | "hasLyrics" | "hash">,
 ): Promise<boolean> {
   try {
     if (file.path === null) return false;
@@ -146,8 +151,13 @@ export async function updateSongEntry(
     needUpdate = needUpdate || md5 !== file.hash;
     if (!needUpdate) return false;
 
-    const { songId, albumId, playlists, lyrics: _lyrics, ...metadata } =
-      await getSongMetadata(fullPath);
+    const {
+      songId,
+      albumId,
+      playlists,
+      lyrics: _lyrics,
+      ...metadata
+    } = await getSongMetadata(fullPath);
     const set: Record<string, unknown> = {
       path: Path.relative(MUSIC_FILES_PATH!, fullPath),
       hasLyrics,
@@ -171,7 +181,7 @@ export async function updateSongEntry(
 /** Write partial metadata (ID3 tags) to the audio file. */
 export async function writeMetadataToFile(
   file: Pick<MusicFileRow, "path">,
-  data: Partial<MusicFileRow>
+  data: Partial<MusicFileRow>,
 ): Promise<void> {
   if (file.path === null) {
     throw new Error("Music file path is missing.");
@@ -207,14 +217,14 @@ export async function writeMetadataToFile(
       [SONG_ID_TAG]: `${data.songId}`,
       [ALBUM_ID_TAG]: `${data.albumId}`,
     },
-    { preserveStreams: true, forceId3v2 }
+    { preserveStreams: true, forceId3v2 },
   );
 }
 
 /** Recompute + persist the file's MD5 hash. */
 export async function updateMD5(
   fileId: number,
-  relPath: string
+  relPath: string,
 ): Promise<void> {
   const md5 = await hasha.fromFile(fullPathOf(relPath), { algorithm: "md5" });
   await db

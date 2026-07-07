@@ -2,7 +2,7 @@ import { siteName, tagLine1, tagLine2 } from "../../../utils/consts";
 import classes from "./Title.module.scss";
 
 const args = new URLSearchParams(
-  typeof window === "object" ? window?.location?.search ?? "" : ""
+  typeof window === "object" ? (window?.location?.search ?? "") : "",
 );
 const useYuuruka =
   args.get("yuuruka") === "true" ||
@@ -16,10 +16,7 @@ export function Title() {
   return useYuuruka ? (
     <>
       <div className={classes.yuurukaTitle}>
-        <img
-          src="/images/yuuruka.svg"
-          alt="Project Lyricova"
-        />
+        <img src="/images/yuuruka.svg" alt="Project Lyricova" />
         <div className={classes.subtitle}>
           <strong>{tagLine1}</strong> <span>{tagLine2}</span>
         </div>

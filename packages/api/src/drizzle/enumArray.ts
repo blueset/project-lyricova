@@ -7,15 +7,13 @@
  */
 
 export function serializeEnumArray(
-  value: string[] | null | undefined
+  value: string[] | null | undefined,
 ): string | null {
   if (value === null || value === undefined) return null;
   return value.join(",");
 }
 
-export function parseEnumArray(
-  value: string | null | undefined
-): string[] {
+export function parseEnumArray(value: string | null | undefined): string[] {
   if (value === null || value === undefined) return [];
   return value.split(",");
 }

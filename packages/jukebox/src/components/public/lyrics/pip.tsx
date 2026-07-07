@@ -23,7 +23,7 @@ function renderLine(
   ctx: CanvasRenderingContext2D,
   line: LyricsKitLyricsLine,
   textMeasurement: number[],
-  offsetPx: number
+  offsetPx: number,
 ) {
   ctx.font = LyricsTextFont;
   ctx.fillText(line.content, offsetPx, lyricsBase);
@@ -38,7 +38,7 @@ function renderLine(
       ctx.fillText(
         furigana.content,
         offsetPx + left + furiganaOffset,
-        furiganaBase
+        furiganaBase,
       );
     });
     ctx.font = LyricsTextFont;
@@ -50,7 +50,7 @@ function renderLines(
   lines: LyricsKitLyricsLine[],
   textMeasurement: number[][],
   currentFrameId: number,
-  offsetPx: number
+  offsetPx: number,
 ) {
   const center = ctx.canvas.width / 2;
   ctx.textBaseline = "bottom";
@@ -73,7 +73,7 @@ function renderLines(
         ctx,
         currentLine,
         textMeasurement[currentFrameId],
-        center - offsetPx
+        center - offsetPx,
       );
       ctx.restore();
       ctx.save();
@@ -87,7 +87,7 @@ function renderLines(
         ctx,
         currentLine,
         textMeasurement[currentFrameId],
-        center - offsetPx
+        center - offsetPx,
       );
       // Clear clip
       ctx.restore();
@@ -97,7 +97,7 @@ function renderLines(
         ctx,
         currentLine,
         textMeasurement[currentFrameId],
-        center - offsetPx
+        center - offsetPx,
       );
     }
     const currentWidths = textMeasurement[currentFrameId];
@@ -135,11 +135,11 @@ interface Props {
   blur?: boolean;
 }
 
-export function PictureInPictureLyrics({ lyrics, blur }: Props) {
+export function PictureInPictureLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const { playerState, endTimes } = usePlainPlayerLyricsState(
     lyrics,
-    playerRef
+    playerRef,
   );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -161,7 +161,7 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
       canvas: HTMLCanvasElement,
       frameId: number,
       offset: number,
-      textMeasurement: number[][]
+      textMeasurement: number[][],
     ) => {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
@@ -184,7 +184,7 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
         (canvas.width - coverWidth) / 2,
         (canvas.height - coverHeight) / 2,
         coverWidth,
-        coverHeight
+        coverHeight,
       );
       ctx.filter = "none";
       ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
@@ -201,11 +201,11 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
       ctx.fillText(
         ` / ${currentSong?.artistName ?? "Unknowe artist"}`,
         20 + textWidth,
-        20
+        20,
       );
       renderLines(ctx, lines, textMeasurement, frameId, offset);
     },
-    [coverImage, currentSong?.artistName, currentSong?.trackName, lines]
+    [coverImage, currentSong?.artistName, currentSong?.trackName, lines],
   );
 
   const [timeline, setTimeline] = useState<gsap.core.Timeline | null>(null);
@@ -253,7 +253,7 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
               duration: endTime - startTime,
               ease: "none",
             },
-            line.position + startTime
+            line.position + startTime,
           );
           lastPosition = tag.timeTag;
         });
@@ -266,7 +266,7 @@ export function PictureInPictureLyrics({ lyrics, blur }: Props) {
             duration: endTime - line.position,
             ease: "none",
           },
-          line.position
+          line.position,
         );
       }
     });

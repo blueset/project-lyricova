@@ -37,7 +37,7 @@ function PopoverContent({
           "data-[side=right]:slide-in-from-left-2 data-[side=right]:slide-in-from-top-0",
           "data-[side=top]:slide-in-from-bottom-2 data-[side=top]:slide-in-from-right-0",
           "z-50 w-72 rounded-md border p-4 shadow-md outline-hidden",
-          className
+          className,
         )}
         onWheel={(e) => {
           e.stopPropagation();

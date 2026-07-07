@@ -22,7 +22,7 @@ const UpdateTagInput = builder.inputType("UpdateTagInput", {
 });
 
 builder.queryField("tags", (t) =>
-  t.field({ type: [TagRef], resolve: async () => db.query.Tags.findMany() })
+  t.field({ type: [TagRef], resolve: async () => db.query.Tags.findMany() }),
 );
 
 builder.queryField("tag", (t) =>
@@ -31,9 +31,8 @@ builder.queryField("tag", (t) =>
     nullable: true,
     args: { slug: t.arg.string() },
     resolve: async (_root, { slug }) =>
-      ((await db.query.Tags.findFirst({ where: eq(Tags.slug, slug) })) ??
-        null),
-  })
+      (await db.query.Tags.findFirst({ where: eq(Tags.slug, slug) })) ?? null,
+  }),
 );
 
 builder.mutationField("newTag", (t) =>
@@ -54,7 +53,7 @@ builder.mutationField("newTag", (t) =>
         where: eq(Tags.slug, data.slug),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("updateTag", (t) =>
@@ -70,13 +69,14 @@ builder.mutationField("updateTag", (t) =>
       const set: Record<string, unknown> = { updatedAt: new Date() };
       if (data.name !== undefined && data.name !== null) set.name = data.name;
       if (data.slug !== undefined && data.slug !== null) set.slug = data.slug;
-      if (data.color !== undefined && data.color !== null) set.color = data.color;
+      if (data.color !== undefined && data.color !== null)
+        set.color = data.color;
       await db.update(Tags).set(set).where(eq(Tags.slug, slug));
       return (await db.query.Tags.findFirst({
         where: eq(Tags.slug, data.slug ?? slug),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("deleteTag", (t) =>
@@ -91,5 +91,5 @@ builder.mutationField("deleteTag", (t) =>
       await db.delete(Tags).where(eq(Tags.slug, slug));
       return true;
     },
-  })
+  }),
 );

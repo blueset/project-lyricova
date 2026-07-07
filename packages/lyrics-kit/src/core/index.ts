@@ -30,5 +30,13 @@ export {
   ARTWORK_URL,
   PROVIDER_TOKEN,
 } from "./lyricsMetadata";
-export { TITLE, ALBUM, ARTIST, AUTHOR, LRC_BY, OFFSET, LENGTH } from "./idTagKey";
+export {
+  TITLE,
+  ALBUM,
+  ARTIST,
+  AUTHOR,
+  LRC_BY,
+  OFFSET,
+  LENGTH,
+} from "./idTagKey";
 export { buildTimeTag, resolveTimeTag } from "../utils/regexPattern";

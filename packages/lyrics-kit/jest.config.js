@@ -5,7 +5,7 @@ module.exports = {
     "^.+\\.(t|j)sx?$": "@swc/jest",
   },
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1"
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
   testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$",
 };

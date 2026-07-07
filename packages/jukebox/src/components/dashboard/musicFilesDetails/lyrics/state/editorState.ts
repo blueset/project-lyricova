@@ -19,7 +19,7 @@ export const useLyricsStore = create<LyricsState>()(
         ...createFuriganaSlice(...a),
         ...createRoleSlice(...a),
         ...createInlineTaggingSlice(...a),
-      }))
-    )
-  )
+      })),
+    ),
+  ),
 );

@@ -104,7 +104,7 @@ export function NavPanel() {
       const tl = gsap.timeline({
         delay: 0.1,
       });
-      navEl.querySelectorAll("a").forEach((elm, i) => {
+      navEl.querySelectorAll("a").forEach((elm) => {
         tl.fromTo(
           elm.querySelectorAll("[data-animate-char]"),
           // Reveal from bottom

@@ -62,7 +62,7 @@ export const VerseRef = builder.drizzleObject("Verses", { name: "Verse" });
 export const UserRef = builder.drizzleObject("Users", { name: "User" });
 export const UserPublicKeyCredentialRef = builder.drizzleObject(
   "UserPublicKeyCredentials",
-  { name: "UserPublicKeyCredential" }
+  { name: "UserPublicKeyCredential" },
 );
 
 // --- Misc (Sequelize/Drizzle-row backed) ---

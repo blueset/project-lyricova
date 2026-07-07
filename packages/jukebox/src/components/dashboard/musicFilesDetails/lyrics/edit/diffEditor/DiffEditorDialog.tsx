@@ -9,9 +9,7 @@ import { Button } from "@lyricova/components/components/ui/button";
 import { useCallback, useEffect, useState } from "react";
 import DiffEditorTextarea from "./DiffEditorBox";
 import diff from "fast-diff";
-import type {
-  Range,
-  RangeAttributeLabel} from "lyrics-kit/core";
+import type { Range, RangeAttributeLabel } from "lyrics-kit/core";
 import {
   FURIGANA,
   Lyrics,
@@ -85,7 +83,7 @@ function applyDiff(source: string, edited: string): string {
           if (firstTimeTag) {
             const eolTimeTag = new WordTimeTagLabel(
               firstTimeTag.timeTag,
-              firstTimeTag.index + resultLine.content.length - ptr
+              firstTimeTag.index + resultLine.content.length - ptr,
             );
             resultTimeTags.push(eolTimeTag);
           }
@@ -96,7 +94,7 @@ function applyDiff(source: string, edited: string): string {
         }
         if (resultFurigana.length > 0) {
           resultLine.attachments.content[FURIGANA] = new RangeAttribute(
-            resultFurigana.map((v): [string, Range] => [v.content, v.range])
+            resultFurigana.map((v): [string, Range] => [v.content, v.range]),
           );
           resultFurigana = [];
         }
@@ -120,10 +118,7 @@ function applyDiff(source: string, edited: string): string {
           const baseOffset = resultLine.content.length - ptr;
           if (text !== "\0") resultLine.content += text;
           ptr += text.length;
-          while (
-            timeTagQueue.length > 0 &&
-            timeTagQueue[0]?.index < ptr
-          ) {
+          while (timeTagQueue.length > 0 && timeTagQueue[0]?.index < ptr) {
             const tag = timeTagQueue.shift();
             if (!tag) break;
             tag.index += baseOffset;
@@ -159,8 +154,7 @@ function applyDiff(source: string, edited: string): string {
         } else if (op === 1 && text === "\n") {
           finalizeLine();
           const nextTimeTag = timeTagQueue[0]?.timeTag ?? 0.001;
-          resultLine.position =
-            resultLine.position + nextTimeTag;
+          resultLine.position = resultLine.position + nextTimeTag;
           relativeTimeOffset -= nextTimeTag;
         } else if (op === -1) {
           ptr += text.length;
@@ -199,7 +193,7 @@ export default function DiffEditorDialog({ isOpen, toggleOpen }: Props) {
       }
       toggleOpen(open);
     },
-    [editedValue, toggleOpen]
+    [editedValue, toggleOpen],
   );
 
   useEffect(() => {

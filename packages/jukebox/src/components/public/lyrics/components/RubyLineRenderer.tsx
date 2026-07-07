@@ -3,13 +3,9 @@ import type {
   FC,
   PropsWithChildren,
   ReactElement,
-  RefAttributes} from "react";
-import {
-  forwardRef,
-  memo,
-  useImperativeHandle,
-  useRef,
+  RefAttributes,
 } from "react";
+import { forwardRef, memo, useImperativeHandle, useRef } from "react";
 import type { LyricsAnimationRef } from "./AnimationRef.type";
 import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
@@ -39,9 +35,7 @@ function lineToTimeSegments(
     let segmentIndex = tag.index;
     let segmentStart = tag.timeTag;
     const nextTag = timeTags[idx + 1];
-    const segmentEnd = nextTag
-      ? nextTag.timeTag
-      : lineEnd - lineStart;
+    const segmentEnd = nextTag ? nextTag.timeTag : lineEnd - lineStart;
 
     while (rubyBoundaries.length && tag.index === rubyBoundaries[0]!) {
       rubyBoundaries.shift();
@@ -126,7 +120,7 @@ function buildTimeSpans(
           ref={setRef(segment.index + 1)}
         >
           {child}
-        </TimedSpan>
+        </TimedSpan>,
       );
     }
   }
@@ -152,9 +146,11 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
       timedSpan: TimedSpan,
       lineContainerProps,
     },
-    ref
+    ref,
   ) {
-    const animationRefs = useRef<{ [idx: number]: LyricsAnimationRef | null }>({});
+    const animationRefs = useRef<{ [idx: number]: LyricsAnimationRef | null }>(
+      {},
+    );
     const setRef = (idx: number) => (ref: LyricsAnimationRef | null) => {
       animationRefs.current[idx] = ref;
     };
@@ -171,13 +167,13 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
           Object.values(animationRefs.current).forEach((ref) =>
             ref
               ? ref?.resume(currentTime - start)
-              : console.log("ref is not found", ref)
+              : console.log("ref is not found", ref),
           );
         } else {
           Object.values(animationRefs.current).forEach((ref) =>
             ref
               ? ref?.pause(currentTime - start)
-              : console.log("ref is not found", ref)
+              : console.log("ref is not found", ref),
           );
         }
       },
@@ -189,7 +185,9 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
 
         const currentTime = time ?? 0;
         Object.values(animationRefs.current).forEach((ref) =>
-          ref ? ref?.pause(currentTime - start) : console.log("ref is not found", ref)
+          ref
+            ? ref?.pause(currentTime - start)
+            : console.log("ref is not found", ref),
         );
       },
     }));
@@ -216,8 +214,8 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
           line.content,
           timeSegments,
           setRef,
-          ruby.leftIndex
-        )
+          ruby.leftIndex,
+        ),
       );
       // console.log("rubyBoundaries, before ruby", ruby, timeSegments[0]);
       const rubyStartTime = timeSegments[0]?.start ?? 0;
@@ -226,7 +224,7 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
         line.content,
         timeSegments,
         setRef,
-        tillIdx
+        tillIdx,
       );
       // console.log("rubyBoundaries, in ruby", ruby, tillIdx, inRubySpans, timeSegments[0]);
       const rubyEndTime = timeSegments[0]?.start ?? end;
@@ -244,15 +242,15 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
             </TimedSpan>
           </rt>
           <rp>)</rp>
-        </ruby>
+        </ruby>,
       );
     });
     spans.push(
-      ...buildTimeSpans(TimedSpan, line.content, timeSegments, setRef)
+      ...buildTimeSpans(TimedSpan, line.content, timeSegments, setRef),
     );
 
     return <LineContainer {...lineContainerProps}>{spans}</LineContainer>;
-  }
+  },
 );
 
 export const LineRenderer = memo(
@@ -260,7 +258,7 @@ export const LineRenderer = memo(
   (prev, next) =>
     prev.line === next.line &&
     prev.start === next.start &&
-    prev.end === next.end
+    prev.end === next.end,
 );
 
 LineRenderer.displayName = "LineRenderer";

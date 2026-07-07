@@ -130,7 +130,7 @@ export function SelectArtistEntityBox<
         if (apolloResult.data?.searchArtists) {
           setApolloResults(apolloResult.data.searchArtists);
         }
-      } catch (e) {
+      } catch {
         setApolloResults([]);
       } finally {
         setIsApolloLoading(false);
@@ -167,7 +167,7 @@ export function SelectArtistEntityBox<
             })),
           );
         }
-      } catch (e) {
+      } catch {
         setVocaDBResults([]);
       } finally {
         setIsVocaDBLoading(false);
@@ -204,7 +204,7 @@ export function SelectArtistEntityBox<
             })),
           );
         }
-      } catch (e) {
+      } catch {
         setUtaiteDBResults([]);
       } finally {
         setIsUtaiteDBLoading(false);
