@@ -5,6 +5,18 @@
       "dependsOn": [
         "^build"
       ],
+      "env": [
+        "POSTHOG_SOURCEMAPS",
+        "POSTHOG_ENV_ID",
+        "POSTHOG_API_KEY",
+        "CI"
+      ],
+      "passThroughEnv": [
+        "POSTHOG_CLI_API_KEY",
+        "POSTHOG_CLI_PROJECT_ID",
+        "POSTHOG_CLI_HOST",
+        "POSTHOG_CLI_DRY_RUN"
+      ],
       "outputs": [
         ".next/**",
         "!.next/cache/**",

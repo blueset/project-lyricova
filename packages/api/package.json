@@ -21,7 +21,7 @@
     "dev:node-debug": "nodemon --inspect dist/server.js",
     "dev:debug-b": "npm run dev serve-debug",
     "dev:debug": "concurrently -n node,tscr -c green,blue npm:dev:node-debug npm:dev:ts",
-    "posthog": "posthog-cli sourcemap inject --directory dist && posthog-cli sourcemap upload --directory dist",
+    "posthog": "node scripts/posthog-sourcemaps.mjs",
     "schema:check": "node scripts/schema-parity.mjs",
     "openapi": "node scripts/emit-openapi.mjs && openapi-typescript openapi.json -o src/openapi/schema.ts",
     "pothos:emit": "tsc ; node scripts/emit-pothos-schema.mjs",
