@@ -12,7 +12,7 @@ type ClarityWindow = Window & {
     options: {
       ad_Storage: "granted";
       analytics_Storage: "granted";
-    }
+    },
   ) => void;
 };
 

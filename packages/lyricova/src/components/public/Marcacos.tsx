@@ -41,7 +41,7 @@ const buildContext =
         v.text
           .split("\n")
           .map((l) => l.trim())
-          .filter((v) => v).length >= 1
+          .filter((v) => v).length >= 1,
     );
     const verseLines = verses.map((v) =>
       v.text
@@ -49,7 +49,7 @@ const buildContext =
         .replace(/\p{Zs}/gu, " ")
         .split("\n")
         .map((l) => l.trim())
-        .filter((v) => v)
+        .filter((v) => v),
     );
 
     let font: p5.Font;
@@ -78,7 +78,7 @@ const buildContext =
       if (gravity) {
         Matter.Body.setPosition(
           gravity,
-          Matter.Vector.create(sketch.width * 0.5, sketch.height * 0.5)
+          Matter.Vector.create(sketch.width * 0.5, sketch.height * 0.5),
         );
       }
     };
@@ -173,7 +173,7 @@ const buildContext =
 
       id10 = new RegExp(
         String.fromCharCode(font.font.glyphs.glyphs[10].unicode),
-        "g"
+        "g",
       );
       const targetAdvWdth = font.font.glyphs.glyphs[10].advanceWidth;
       id10Replace = (
@@ -202,8 +202,8 @@ const buildContext =
             c,
             typeSize,
             sketch.random(sketch.width),
-            sketch.random(sketch.height)
-          )
+            sketch.random(sketch.height),
+          ),
         );
       }
 
@@ -294,7 +294,7 @@ const buildContext =
           this.char.replace(id10, id10Replace),
           0,
           0,
-          this.size
+          this.size,
         ) as {
           x: number;
           y: number;
@@ -319,7 +319,7 @@ const buildContext =
           y + this.midY,
           w,
           h,
-          options
+          options,
         );
         console.log(this.char, this.box.x, w);
         Matter.Body.setMass(this.body, 3);
@@ -346,13 +346,13 @@ const buildContext =
             sketch.lerp(
               this.body.position.x,
               this.posD.x + this.posC.x,
-              this.speed
+              this.speed,
             ),
             sketch.lerp(
               this.body.position.y,
               this.posD.y + this.posC.y,
-              this.speed
-            )
+              this.speed,
+            ),
           );
           const speed = Matter.Vector.sub(newPos, this.body.position);
           const newAng = sketch.lerp(this.body.angle, 0, this.speed);
@@ -460,12 +460,12 @@ const buildContext =
         this.letters.push(letter);
         this.pos[lineIdx][charIdx] = Matter.Vector.add(
           this.pos[lineIdx][charIdx],
-          Matter.Vector.create(wletter * 0.5 + 1, 0)
+          Matter.Vector.create(wletter * 0.5 + 1, 0),
         );
         // letter.activate(mouse.body.position, this.pos[lineIdx][charIdx]);
         letter.activate(
           { x: sketch.width / 2, y: sketch.height / 2 },
-          this.pos[lineIdx][charIdx]
+          this.pos[lineIdx][charIdx],
         );
         // this.pos[lineIdx][charIdx + 1] = Matter.Vector.add(
         //   this.pos[lineIdx][charIdx],
@@ -525,7 +525,7 @@ const buildContext =
             }
             return acc;
           },
-          []
+          [],
         );
         // console.log(coordinates, coordinatesByRow);
 
@@ -536,7 +536,7 @@ const buildContext =
           row.forEach(([char, rect], charIdx) => {
             this.pos[rowIdx][charIdx] = Matter.Vector.create(rect.x, rect.y);
             let lIdx = letters.findIndex(
-              (l) => l.free && l.char === char && checkPos(l.body, 0)
+              (l) => l.free && l.char === char && checkPos(l.body, 0),
             );
             if (lIdx >= 0) {
               this.newLetra(letters[lIdx], rowIdx, charIdx);
@@ -692,7 +692,7 @@ const buildContext =
         const v = 0.7;
         const newPos = Matter.Vector.create(
           sketch.lerp(this.body.position.x, m.x, v),
-          sketch.lerp(this.body.position.y, m.y, v)
+          sketch.lerp(this.body.position.y, m.y, v),
         );
         Matter.Body.setPosition(this.body, newPos);
         const vm = Matter.Vector.sub(newPos, prevPos);
@@ -705,7 +705,7 @@ const buildContext =
         sketch.circle(
           this.body.position.x,
           this.body.position.y,
-          (this.body.circleRadius ?? 0) * 2
+          (this.body.circleRadius ?? 0) * 2,
         );
       }
     }
@@ -713,7 +713,10 @@ const buildContext =
 
 // let skch = new p5(p, "p5-sketch");
 export const buildSketch = (props: ContextProps) =>
-  new p5(buildContext(props), document.getElementById("p5-sketch") ?? undefined);
+  new p5(
+    buildContext(props),
+    document.getElementById("p5-sketch") ?? undefined,
+  );
 
 export default function Marcacos(props: ContextProps) {
   useIsomorphicLayoutEffect(() => {

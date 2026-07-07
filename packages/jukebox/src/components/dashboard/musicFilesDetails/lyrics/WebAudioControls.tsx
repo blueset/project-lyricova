@@ -113,7 +113,7 @@ function Forward5({
             disabled={!audioBuffer}
             onClick={() =>
               seek(
-                Math.min(audioBuffer?.duration ?? Infinity, getProgress() + 5)
+                Math.min(audioBuffer?.duration ?? Infinity, getProgress() + 5),
               )
             }
           >
@@ -213,7 +213,7 @@ function Seekbar({
 >) {
   const [seekBarValue, setSeekBarValue] = useNamedState<number[]>(
     [0],
-    "seekBarValue"
+    "seekBarValue",
   );
   const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
 
@@ -222,7 +222,7 @@ function Seekbar({
       setIsDragging(true);
       setSeekBarValue(newValue);
     },
-    [setIsDragging, setSeekBarValue]
+    [setIsDragging, setSeekBarValue],
   );
 
   const handleValueCommit = useCallback(
@@ -230,7 +230,7 @@ function Seekbar({
       seek(newValue[0]);
       setIsDragging(false);
     },
-    [seek, setIsDragging]
+    [seek, setIsDragging],
   );
 
   const displayValue = !isDragging ? [playbackProgress] : seekBarValue;

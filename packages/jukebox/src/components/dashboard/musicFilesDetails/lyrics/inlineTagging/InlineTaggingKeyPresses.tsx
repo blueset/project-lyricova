@@ -139,7 +139,7 @@ export const MoveDotCursorRight =
 
 export function setDot(
   setDots: (dots: SetStateAction<number[][]>) => void,
-  setCursorPos: (pos: SetStateAction<[number, number]>) => void
+  setCursorPos: (pos: SetStateAction<[number, number]>) => void,
 ) {
   setCursorPos((cursorPos) => {
     setDots((prev) =>
@@ -147,9 +147,9 @@ export function setDot(
         idx !== cursorPos[0]
           ? i
           : i.map((j, jdx) =>
-              jdx !== cursorPos[1] ? j : Math.max(1, Math.min(j + 1, 8))
-            )
-      )
+              jdx !== cursorPos[1] ? j : Math.max(1, Math.min(j + 1, 8)),
+            ),
+      ),
     );
     return cursorPos;
   });
@@ -157,15 +157,15 @@ export function setDot(
 
 export function setHoldDot(
   setDots: (dots: SetStateAction<number[][]>) => void,
-  setCursorPos: (pos: SetStateAction<[number, number]>) => void
+  setCursorPos: (pos: SetStateAction<[number, number]>) => void,
 ) {
   setCursorPos((cursorPos) => {
     setDots((prev) =>
       prev.map((i, idx) =>
         idx !== cursorPos[0]
           ? i
-          : i.map((j, jdx) => (jdx !== cursorPos[1] ? j : -1))
-      )
+          : i.map((j, jdx) => (jdx !== cursorPos[1] ? j : -1)),
+      ),
     );
     return cursorPos;
   });
@@ -174,14 +174,14 @@ export function setHoldDot(
 export function setDropDot(
   lines: LyricsLine[],
   setDots: (dots: SetStateAction<number[][]>) => void,
-  setCursorPos: (pos: SetStateAction<[number, number]>) => void
+  setCursorPos: (pos: SetStateAction<[number, number]>) => void,
 ) {
   setCursorPos((cursorPos) => {
     setDots((prev) => {
       const result = prev.map((i, idx) =>
         idx !== cursorPos[0]
           ? i
-          : i.map((j, jdx) => (jdx !== cursorPos[1] ? j : Math.max(j - 1, 0)))
+          : i.map((j, jdx) => (jdx !== cursorPos[1] ? j : Math.max(j - 1, 0))),
       );
       if (prev[cursorPos[0]][cursorPos[1]] === 0) {
         setCursorPos(MoveCursorLeft(lines));
@@ -195,7 +195,7 @@ export function setDropDot(
 export function setMark(
   time: number,
   setTags: (dots: SetStateAction<number[][][]>) => void,
-  setDotCursorPos: (pos: SetStateAction<[number, number, number]>) => void
+  setDotCursorPos: (pos: SetStateAction<[number, number, number]>) => void,
 ) {
   time += KEY_PRESS_OFFSET_SEC;
   setDotCursorPos((dotCursorPos) => {
@@ -206,9 +206,9 @@ export function setMark(
           : i.map((j, jdx) =>
               jdx !== dotCursorPos[1]
                 ? j
-                : ((j = [...j]), (j[dotCursorPos[2]] = time), j)
-            )
-      )
+                : ((j = [...j]), (j[dotCursorPos[2]] = time), j),
+            ),
+      ),
     );
     return dotCursorPos;
   });
@@ -218,7 +218,7 @@ export function setDropMark(
   dots: number[][],
   setTags: (dots: SetStateAction<number[][][]>) => void,
   setDotCursorPos: (pos: SetStateAction<[number, number, number]>) => void,
-  seek: (time: number) => void
+  seek: (time: number) => void,
 ) {
   setDotCursorPos((dotCursorPos) => {
     const pos = dotCursorPos;
@@ -230,7 +230,7 @@ export function setDropMark(
       const time = prev?.[pos[0]]?.[pos[1]]?.[pos[2]] ?? null;
       if (time !== null) seek(Math.max(0, time - 3));
       const result = prev.map((i, idx) =>
-        idx !== pos[0] ? i : i.map((j, jdx) => (jdx !== pos[1] ? j : []))
+        idx !== pos[0] ? i : i.map((j, jdx) => (jdx !== pos[1] ? j : [])),
       );
       setDotCursorPos([pos[0], pos[1], 0]);
       return result;

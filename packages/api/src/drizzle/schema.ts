@@ -51,7 +51,7 @@ export const Albums = mysqlTable(
     updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
     creationDate: datetime("creationDate", { mode: "date" }).notNull(),
   },
-  (t) => [index("Album_sortOredr_index").on(t.sortOrder)]
+  (t) => [index("Album_sortOredr_index").on(t.sortOrder)],
 );
 
 export const Artists = mysqlTable(
@@ -89,10 +89,13 @@ export const Artists = mysqlTable(
       "Instrumentalist",
       "Designer",
     ]),
-    baseVoiceBankId: int("baseVoiceBankId").references((): AnyMySqlColumn => Artists.id, {
-      onDelete: "set null",
-      onUpdate: "cascade",
-    }),
+    baseVoiceBankId: int("baseVoiceBankId").references(
+      (): AnyMySqlColumn => Artists.id,
+      {
+        onDelete: "set null",
+        onUpdate: "cascade",
+      },
+    ),
     utaiteDbId: int("utaiteDbId"),
     vocaDbJson: json("vocaDbJson"),
     incomplete: boolean("incomplete").default(true),
@@ -100,7 +103,7 @@ export const Artists = mysqlTable(
     updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
     deletionDate: datetime("deletionDate", { mode: "date" }),
   },
-  (t) => [index("baseVoiceBankId").on(t.baseVoiceBankId)]
+  (t) => [index("baseVoiceBankId").on(t.baseVoiceBankId)],
 );
 
 export const Songs = mysqlTable(
@@ -121,7 +124,7 @@ export const Songs = mysqlTable(
     updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
     deletionDate: datetime("deletionDate", { mode: "date" }),
   },
-  (t) => [index("originalId").on(t.originalId)]
+  (t) => [index("originalId").on(t.originalId)],
 );
 
 export const MusicFiles = mysqlTable(
@@ -158,7 +161,7 @@ export const MusicFiles = mysqlTable(
     uniqueIndex("path").on(t.path),
     index("songId").on(t.songId),
     index("albumId").on(t.albumId),
-  ]
+  ],
 );
 
 export const VideoFiles = mysqlTable(
@@ -185,7 +188,7 @@ export const VideoFiles = mysqlTable(
     updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
     deletionDate: datetime("deletionDate", { mode: "date" }),
   },
-  (t) => [uniqueIndex("path").on(t.path), index("songId").on(t.songId)]
+  (t) => [uniqueIndex("path").on(t.path), index("songId").on(t.songId)],
 );
 
 // --- Junctions (with attributes) -----------------------------------------
@@ -223,10 +226,10 @@ export const ArtistOfAlbums = mysqlTable(
   (t) => [
     uniqueIndex("ArtistOfAlbums_artistId_albumId_unique").on(
       t.albumId,
-      t.artistId
+      t.artistId,
     ),
     index("artistId").on(t.artistId),
-  ]
+  ],
 );
 
 export const ArtistOfSongs = mysqlTable(
@@ -252,9 +255,12 @@ export const ArtistOfSongs = mysqlTable(
   },
   (t) => [
     uniqueIndex("vocaDbId").on(t.vocaDbId),
-    uniqueIndex("ArtistOfSongs_songId_artistId_unique").on(t.songId, t.artistId),
+    uniqueIndex("ArtistOfSongs_songId_artistId_unique").on(
+      t.songId,
+      t.artistId,
+    ),
     index("artistId").on(t.artistId),
-  ]
+  ],
 );
 
 export const SongInAlbums = mysqlTable(
@@ -280,7 +286,7 @@ export const SongInAlbums = mysqlTable(
     uniqueIndex("vocaDbId").on(t.vocaDbId),
     uniqueIndex("SongInAlbums_songId_albumId_unique").on(t.songId, t.albumId),
     index("albumId").on(t.albumId),
-  ]
+  ],
 );
 
 // --- Blog (Entries/Verses/Pulses/Tags) -----------------------------------
@@ -303,7 +309,7 @@ export const Users = mysqlTable(
   (t) => [
     uniqueIndex("username").on(t.username),
     uniqueIndex("email").on(t.email),
-  ]
+  ],
 );
 
 export const UserPublicKeyCredentials = mysqlTable(
@@ -322,7 +328,7 @@ export const UserPublicKeyCredentials = mysqlTable(
   (t) => [
     uniqueIndex("externalId").on(t.externalId),
     index("userId").on(t.userId),
-  ]
+  ],
 );
 
 export const Entries = mysqlTable(
@@ -346,7 +352,7 @@ export const Entries = mysqlTable(
   (t) => [
     index("authorId").on(t.authorId),
     index("recentActionDateIndex").on(t.recentActionDate),
-  ]
+  ],
 );
 
 export const Pulses = mysqlTable(
@@ -359,7 +365,7 @@ export const Pulses = mysqlTable(
     }),
     creationDate: datetime("creationDate", { mode: "date" }).notNull(),
   },
-  (t) => [index("pulses_ibfk_1").on(t.entryId)]
+  (t) => [index("pulses_ibfk_1").on(t.entryId)],
 );
 
 export const Verses = mysqlTable(
@@ -382,7 +388,7 @@ export const Verses = mysqlTable(
     updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
     deletionDate: datetime("deletionDate", { mode: "date" }),
   },
-  (t) => [index("entryId").on(t.entryId)]
+  (t) => [index("entryId").on(t.entryId)],
 );
 
 export const Tags = mysqlTable("Tags", {
@@ -411,17 +417,20 @@ export const SongOfEntries = mysqlTable(
   (t) => [
     uniqueIndex("SongOfEntries_songId_entryId_unique").on(t.songId, t.entryId),
     index("entryId").on(t.entryId),
-  ]
+  ],
 );
 
 export const TagOfEntries = mysqlTable(
   "TagOfEntries",
   {
     id: int("id").primaryKey().autoincrement(),
-    tagId: varchar("tagId", { length: 512 }).references((): AnyMySqlColumn => Tags.slug, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
+    tagId: varchar("tagId", { length: 512 }).references(
+      (): AnyMySqlColumn => Tags.slug,
+      {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      },
+    ),
     entryId: int("entryId").references((): AnyMySqlColumn => Entries.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
@@ -432,7 +441,7 @@ export const TagOfEntries = mysqlTable(
   (t) => [
     uniqueIndex("TagOfEntries_tagId_entryId_unique").on(t.tagId, t.entryId),
     index("entryId").on(t.entryId),
-  ]
+  ],
 );
 
 // --- Jukebox playlists ---------------------------------------------------
@@ -454,7 +463,7 @@ export const FileInPlaylists = mysqlTable(
     }),
     playlistId: varchar("playlistId", { length: 512 }).references(
       (): AnyMySqlColumn => Playlists.slug,
-      { onDelete: "cascade", onUpdate: "cascade" }
+      { onDelete: "cascade", onUpdate: "cascade" },
     ),
     sortOrder: int("sortOrder").notNull().default(0),
     creationDate: datetime("creationDate", { mode: "date" }).notNull(),
@@ -463,10 +472,10 @@ export const FileInPlaylists = mysqlTable(
   (t) => [
     uniqueIndex("FileInPlaylists_playlistId_fileId_unique").on(
       t.fileId,
-      t.playlistId
+      t.playlistId,
     ),
     index("playlistId").on(t.playlistId),
-  ]
+  ],
 );
 
 // --- Misc ----------------------------------------------------------------
@@ -486,5 +495,5 @@ export const FuriganaMappings = mysqlTable(
     segmentedText: varchar("segmentedText", { length: 128 }),
     segmentedFurigana: varchar("segmentedFurigana", { length: 128 }),
   },
-  (t) => [primaryKey({ columns: [t.text, t.furigana] })]
+  (t) => [primaryKey({ columns: [t.text, t.furigana] })],
 );

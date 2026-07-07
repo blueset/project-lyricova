@@ -44,7 +44,7 @@ function Link(props: LinkProps) {
 
   const className = cn(
     "text-primary underline-offset-4 hover:underline data-[active]:font-semibold data-[active]:text-primary",
-    classNameProps
+    classNameProps,
   );
 
   return (

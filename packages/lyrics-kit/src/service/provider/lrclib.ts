@@ -10,7 +10,7 @@ const FETCH_URL = "https://lrclib.net/api/get/";
 
 export class LrcLibLyricsProvider extends LyricsProvider<LrcLibSearchResult> {
   public async searchLyrics(
-    request: LyricsSearchRequest
+    request: LyricsSearchRequest,
   ): Promise<LrcLibSearchResult[]> {
     let parameters;
     if (request.searchTerm.state === "info") {
@@ -50,7 +50,7 @@ export class LrcLibLyricsProvider extends LyricsProvider<LrcLibSearchResult> {
   }
 
   public async fetchLyrics(
-    token: LrcLibSearchResult
+    token: LrcLibSearchResult,
   ): Promise<Lyrics | undefined> {
     try {
       const lyrics = new Lyrics(token.syncedLyrics);

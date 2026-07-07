@@ -5,7 +5,11 @@ import pLimit from "p-limit";
 import hasha from "hasha";
 import { and, desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
 import { db } from "../../../drizzle/client";
-import { MusicFiles, Playlists, FileInPlaylists } from "../../../drizzle/schema";
+import {
+  MusicFiles,
+  Playlists,
+  FileInPlaylists,
+} from "../../../drizzle/schema";
 import { updatePlaylistsOfFileAsTags } from "../../../utils/musicFileTags";
 import {
   ID3_LYRICS_LANGUAGE,
@@ -99,7 +103,7 @@ const MusicFilesQueryOptions = builder.inputType("MusicFilesQueryOptions", {
 
 async function writeLyricsToMusicFileImpl(
   fileId: number,
-  lyrics: string
+  lyrics: string,
 ): Promise<boolean> {
   const file = await db.query.MusicFiles.findFirst({
     where: eq(MusicFiles.id, fileId),
@@ -115,7 +119,7 @@ async function writeLyricsToMusicFileImpl(
       await ffMetadataWrite(
         fullPath,
         { [key]: lyrics },
-        { preserveStreams: true, forceId3v2 }
+        { preserveStreams: true, forceId3v2 },
       );
     } else {
       const tags: NodeID3.Tags = {
@@ -145,8 +149,9 @@ builder.mutationField("scan", (t) =>
     authScopes: { admin: true },
     args: { sessionId: t.arg.string({ required: false }) },
     resolve: async (_root, { sessionId }) => {
-      const publish = (payload: PubSubSessionPayload<MusicFilesScanOutcomeShape>) =>
-        pubsub.publish(TOPIC_MUSIC_FILE_SCAN_PROGRESS, payload);
+      const publish = (
+        payload: PubSubSessionPayload<MusicFilesScanOutcomeShape>,
+      ) => pubsub.publish(TOPIC_MUSIC_FILE_SCAN_PROGRESS, payload);
       const dryRun = false;
       const databaseEntries = await db.query.MusicFiles.findMany({
         columns: {
@@ -161,12 +166,12 @@ builder.mutationField("scan", (t) =>
       // spelled out as case-insensitive character classes (mp3/flac/aiff in any
       // case). Results are absolute paths; order is irrelevant (used as a Set).
       const filePaths = fs.globSync(
-        `${MUSIC_FILES_PATH!}**/*.{[mM][pP]3,[fF][lL][aA][cC],[aA][iI][fF][fF]}`
+        `${MUSIC_FILES_PATH!}**/*.{[mM][pP]3,[fF][lL][aA][cC],[aA][iI][fF][fF]}`,
       );
       const knownPathsSet: Set<string> = new Set(
         databaseEntries.flatMap((entry) =>
-          entry.path === null ? [] : [MUSIC_FILES_PATH! + entry.path]
-        )
+          entry.path === null ? [] : [MUSIC_FILES_PATH! + entry.path],
+        ),
       );
       const filePathsSet: Set<string> = new Set(filePaths);
 
@@ -185,15 +190,15 @@ builder.mutationField("scan", (t) =>
       if (sessionId) await publish({ sessionId, data: progressObj });
 
       console.log(
-        `toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`
+        `toAdd: ${toAdd.size}, toUpdate: ${toUpdate.size}, toDelete: ${toDelete.size}`,
       );
 
       if (toDelete.size && !dryRun) {
         await db.delete(MusicFiles).where(
           inArray(
             MusicFiles.path,
-            [...toDelete].map((p) => p.replace(MUSIC_FILES_PATH!, ""))
-          )
+            [...toDelete].map((p) => p.replace(MUSIC_FILES_PATH!, "")),
+          ),
         );
       }
 
@@ -206,8 +211,8 @@ builder.mutationField("scan", (t) =>
       if (!dryRun) {
         const entriesToAdd = await Promise.all(
           [...toAdd].map((filePath) =>
-            limit(async () => buildSongEntry(filePath))
-          )
+            limit(async () => buildSongEntry(filePath)),
+          ),
         );
 
         console.log("entries_to_add done.");
@@ -224,18 +229,19 @@ builder.mutationField("scan", (t) =>
               if (built.playlistSlugs.length > 0)
                 await replaceFilePlaylists(
                   inserted[0].insertId,
-                  built.playlistSlugs
+                  built.playlistSlugs,
                 );
-            })
-          )
+            }),
+          ),
         );
         progressObj.added += entriesToAdd.length;
       }
 
       console.log("entries added.");
 
-      const toUpdateEntries = databaseEntries.filter((entry) =>
-        entry.path !== null && toUpdate.has(MUSIC_FILES_PATH! + entry.path)
+      const toUpdateEntries = databaseEntries.filter(
+        (entry) =>
+          entry.path !== null && toUpdate.has(MUSIC_FILES_PATH! + entry.path),
       );
 
       console.log("to Update Entries", toUpdateEntries.length);
@@ -252,8 +258,8 @@ builder.mutationField("scan", (t) =>
                 (progressObj.updated + progressObj.unchanged) % 10 === 0
               )
                 if (sessionId) await publish({ sessionId, data: progressObj });
-            })
-          )
+            }),
+          ),
         );
       }
       if (sessionId) await publish({ sessionId, data: progressObj });
@@ -262,7 +268,7 @@ builder.mutationField("scan", (t) =>
 
       return progressObj;
     },
-  })
+  }),
 );
 
 builder.mutationField("scanByPath", (t) =>
@@ -307,7 +313,7 @@ builder.mutationField("scanByPath", (t) =>
         return null;
       }
     },
-  })
+  }),
 );
 
 builder.queryField("musicFiles", (t) =>
@@ -326,7 +332,9 @@ builder.queryField("musicFiles", (t) =>
       const offset = parseInt(after) + 1;
 
       const whereClause =
-        options && options.needReview !== undefined && options.needReview !== null
+        options &&
+        options.needReview !== undefined &&
+        options.needReview !== null
           ? eq(MusicFiles.needReview, options.needReview)
           : undefined;
 
@@ -351,7 +359,7 @@ builder.queryField("musicFiles", (t) =>
         },
       };
     },
-  })
+  }),
 );
 
 builder.queryField("searchMusicFiles", (t) =>
@@ -362,7 +370,7 @@ builder.queryField("searchMusicFiles", (t) =>
       db.query.MusicFiles.findMany({
         where: sql`match (path, trackName, trackSortOrder, artistName, artistSortOrder, albumName, albumSortOrder) against (${keywords} in boolean mode)`,
       }),
-  })
+  }),
 );
 
 builder.queryField("musicFile", (t) =>
@@ -371,8 +379,9 @@ builder.queryField("musicFile", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, id) })) ?? null),
-  })
+      (await db.query.MusicFiles.findFirst({ where: eq(MusicFiles.id, id) })) ??
+      null,
+  }),
 );
 
 builder.mutationField("writeTagsToMusicFile", (t) =>
@@ -402,7 +411,7 @@ builder.mutationField("writeTagsToMusicFile", (t) =>
         where: eq(MusicFiles.id, id),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("writeLyrics", (t) =>
@@ -424,7 +433,7 @@ builder.mutationField("writeLyrics", (t) =>
       if (!file) return false;
       const lyricsPath = swapExt(
         Path.resolve(MUSIC_FILES_PATH!, musicFilePath(file.path)),
-        ext ?? "lrc"
+        ext ?? "lrc",
       );
 
       try {
@@ -440,7 +449,7 @@ builder.mutationField("writeLyrics", (t) =>
 
       return true;
     },
-  })
+  }),
 );
 
 builder.mutationField("writeLyricsToMusicFile", (t) =>
@@ -453,7 +462,7 @@ builder.mutationField("writeLyricsToMusicFile", (t) =>
     },
     resolve: (_root, { fileId, lyrics }) =>
       writeLyricsToMusicFileImpl(fileId, lyrics),
-  })
+  }),
 );
 
 builder.mutationField("removeLyrics", (t) =>
@@ -488,7 +497,7 @@ builder.mutationField("removeLyrics", (t) =>
 
       return true;
     },
-  })
+  }),
 );
 
 builder.mutationField("setPlaylistsOfFile", (t) =>
@@ -512,12 +521,16 @@ builder.mutationField("setPlaylistsOfFile", (t) =>
         where: inArray(Playlists.slug, playlistSlugs),
       });
       if (playlists.length !== playlistSlugs.length) {
-        throw new Error("Some or all playlist slugs are not found in database.");
+        throw new Error(
+          "Some or all playlist slugs are not found in database.",
+        );
       }
 
       // Replace the file's playlist memberships (mirrors Sequelize $set).
       const now = new Date();
-      await db.delete(FileInPlaylists).where(eq(FileInPlaylists.fileId, fileId));
+      await db
+        .delete(FileInPlaylists)
+        .where(eq(FileInPlaylists.fileId, fileId));
       for (const slug of playlistSlugs) {
         await db.insert(FileInPlaylists).values({
           fileId,
@@ -532,7 +545,7 @@ builder.mutationField("setPlaylistsOfFile", (t) =>
         where: eq(MusicFiles.id, fileId),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("toggleMusicFileReviewStatus", (t) =>
@@ -561,7 +574,7 @@ builder.mutationField("toggleMusicFileReviewStatus", (t) =>
         where: eq(MusicFiles.id, fileId),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("bumpPlayCount", (t) =>
@@ -582,7 +595,7 @@ builder.mutationField("bumpPlayCount", (t) =>
         .where(eq(MusicFiles.id, fileId));
       return playCount;
     },
-  })
+  }),
 );
 
 builder.mutationField("updateMusicFileStats", (t) =>
@@ -605,13 +618,17 @@ builder.mutationField("updateMusicFileStats", (t) =>
       if (!file) throw new Error("Music file is not found.");
       await db
         .update(MusicFiles)
-        .set({ playCount, lastPlayed: lastPlayed ?? null, updatedOn: new Date() })
+        .set({
+          playCount,
+          lastPlayed: lastPlayed ?? null,
+          updatedOn: new Date(),
+        })
         .where(eq(MusicFiles.id, fileId));
       return (await db.query.MusicFiles.findFirst({
         where: eq(MusicFiles.id, fileId),
       }))!;
     },
-  })
+  }),
 );
 
 builder.queryField("newMusicFiles", (t) =>
@@ -626,7 +643,7 @@ builder.queryField("newMusicFiles", (t) =>
         orderBy: [desc(MusicFiles.creationDate)],
       });
     },
-  })
+  }),
 );
 
 builder.queryField("recentlyReviewedMusicFiles", (t) =>
@@ -641,7 +658,7 @@ builder.queryField("recentlyReviewedMusicFiles", (t) =>
         orderBy: [desc(MusicFiles.updatedOn)],
       });
     },
-  })
+  }),
 );
 
 builder.queryField("recentMusicFiles", (t) =>
@@ -656,7 +673,7 @@ builder.queryField("recentMusicFiles", (t) =>
         orderBy: [desc(MusicFiles.lastPlayed)],
       });
     },
-  })
+  }),
 );
 
 builder.queryField("popularMusicFiles", (t) =>
@@ -670,5 +687,5 @@ builder.queryField("popularMusicFiles", (t) =>
         orderBy: [desc(MusicFiles.playCount), desc(MusicFiles.lastPlayed)],
         limit,
       }),
-  })
+  }),
 );

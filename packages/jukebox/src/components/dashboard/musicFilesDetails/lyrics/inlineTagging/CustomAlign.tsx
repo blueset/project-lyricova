@@ -8,15 +8,8 @@ import {
 import { useCallback, useState } from "react";
 import { useLyricsStore } from "../state/editorState";
 import { toast } from "sonner";
-import type {
-  LyricsJSON,
-  WordTimeTagLabelJSON} from "lyrics-kit/core";
-import {
-  DOTS,
-  FURIGANA,
-  TAGS,
-  TIME_TAG
-} from "lyrics-kit/core";
+import type { LyricsJSON, WordTimeTagLabelJSON } from "lyrics-kit/core";
+import { DOTS, FURIGANA, TAGS, TIME_TAG } from "lyrics-kit/core";
 import { fetchEventData } from "fetch-sse";
 import {
   HoverCard,
@@ -63,10 +56,13 @@ function assToInlineTags(lyrics: LyricsJSON, alignmentResult: AlignmentResult) {
   const hiraKataRegex =
     /[\p{Script=Hira}\p{Script=Kana}ー][ぁぃぅぇぉゃゅょァィゥェォャュョ]?/gu;
 
-  const fullTokens = alignmentResult.alignedTokens.reduce((acc, token) => {
-    acc.push(...token);
-    return acc;
-  }, [] as [string, number, number][]);
+  const fullTokens = alignmentResult.alignedTokens.reduce(
+    (acc, token) => {
+      acc.push(...token);
+      return acc;
+    },
+    [] as [string, number, number][],
+  );
   const lineTokens = alignmentResult.segmentResults.line_tokens.map(
     (tokens) => {
       const line = [];
@@ -79,7 +75,7 @@ function assToInlineTags(lyrics: LyricsJSON, alignmentResult: AlignmentResult) {
         line.push(fullTokens.shift()!);
       }
       return line;
-    }
+    },
   );
 
   const lines = lineTokens.map((l) => {
@@ -123,7 +119,7 @@ function assToInlineTags(lyrics: LyricsJSON, alignmentResult: AlignmentResult) {
           .forEach((match) => {
             charQueueStart = Math.min(
               charQueueStart,
-              charQueuePtr + match.index
+              charQueuePtr + match.index,
             );
             charQueue.push({
               start: charQueuePtr + match.index,
@@ -177,7 +173,7 @@ function assToInlineTags(lyrics: LyricsJSON, alignmentResult: AlignmentResult) {
           "No more characters to process",
           hira,
           lyricsLine.content,
-          segments
+          segments,
         );
         break;
       }
@@ -210,7 +206,7 @@ function assToInlineTags(lyrics: LyricsJSON, alignmentResult: AlignmentResult) {
           head.char,
           hira,
           lyricsLine.content,
-          JSON.stringify(segments)
+          JSON.stringify(segments),
         );
         continue;
       }
@@ -364,7 +360,9 @@ export function CustomAlign({ fileId }: { fileId: number }) {
               size="sm"
               variant="outline"
               onClick={handleGenerateTagging}
-              progress={isAlignmentLoading ? progress?.progress ?? true : false}
+              progress={
+                isAlignmentLoading ? (progress?.progress ?? true) : false
+              }
             >
               Custom
             </ProgressButton>

@@ -6,12 +6,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  transition: all 0.2s cubic-bezier(0,0,.6,1);
+  transition: all 0.2s cubic-bezier(0, 0, 0.6, 1);
   --effective-background-color: #{$background-color};
   color: $primary-text;
   text-decoration: none;
   position: relative;
-  background-image: url(https://grainy-gradients.vercel.app/noise.svg), linear-gradient($background-color, $background-color);
+  background-image:
+    url(https://grainy-gradients.vercel.app/noise.svg),
+    linear-gradient($background-color, $background-color);
   background-blend-mode: soft-light;
 
   // Disable grainy pattern on Safari mobile
@@ -21,7 +23,9 @@
 
   @media (hover: hover) {
     &:hover {
-      background: url(https://grainy-gradients.vercel.app/noise.svg), var(--tags-gradient, linear-gradient($brand-color, $brand-color));
+      background:
+        url(https://grainy-gradients.vercel.app/noise.svg),
+        var(--tags-gradient, linear-gradient($brand-color, $brand-color));
       --effective-background-color: var(--tags-foreground, #{$brand-color});
       color: $primary-text-on-brand;
       --primary-text: #{$primary-text-on-brand};
@@ -29,8 +33,12 @@
       --tag-color-override: #{$secondary-text-on-brand};
 
       // Disable grainy pattern on Safari mobile
-      @supports (-webkit-text-size-adjust:none) and (not (-ms-ime-align:auto)) and (not (-moz-appearance:none)) {
-        background: var(--tags-gradient, linear-gradient($brand-color, $brand-color));
+      @supports (-webkit-text-size-adjust: none) and (not (-ms-ime-align: auto))
+        and (not (-moz-appearance: none)) {
+        background: var(
+          --tags-gradient,
+          linear-gradient($brand-color, $brand-color)
+        );
       }
     }
   }
@@ -59,7 +67,8 @@
   }
 }
 
-.title, .artists {
+.title,
+.artists {
   display: inline-block;
 }
 
@@ -90,7 +99,8 @@
   }
 }
 
-.verse, .cyclingVerse {
+.verse,
+.cyclingVerse {
   font-weight: 100;
   white-space: nowrap;
 }
@@ -110,7 +120,12 @@
 
   /* This is webkit only. An absolute block is set below for Firefox */
   &.mask {
-    mask: linear-gradient(to right, rgba(0, 0, 0, 1) calc(100% - 2rem), rgba(0, 0, 0, 0) 100%) no-repeat;
+    mask: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 1) calc(100% - 2rem),
+        rgba(0, 0, 0, 0) 100%
+      )
+      no-repeat;
   }
 }
 
@@ -133,7 +148,6 @@
 .cyclingRepeats {
   opacity: 0.25;
 }
-
 
 .pulse {
   color: $secondary-text;

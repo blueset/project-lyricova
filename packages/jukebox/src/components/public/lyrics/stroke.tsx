@@ -187,7 +187,7 @@ function LyricsLineElement({
             [...line]
               .map((chr) => `<tspan class="char">${chr}</tspan>`)
               .join("") +
-            "</tspan>"
+            "</tspan>",
         )
         .join("");
       textRef.current.innerHTML = segmentedLines;
@@ -197,11 +197,11 @@ function LyricsLineElement({
         const size = textRef.current.getBBox();
         canvasRef.current.width.baseVal.newValueSpecifiedUnits(
           SVGLength.SVG_LENGTHTYPE_PX,
-          size.width
+          size.width,
         );
         canvasRef.current.height.baseVal.newValueSpecifiedUnits(
           SVGLength.SVG_LENGTHTYPE_PX,
-          size.height
+          size.height,
         );
       }
 
@@ -257,7 +257,7 @@ function LyricsLineElement({
           lang="zh"
           className={cn(
             "block text-4xl leading-tight font-semibold text-white/60",
-            translationClassName
+            translationClassName,
           )}
         >
           <Balancer>{line.attachments.translation}</Balancer>

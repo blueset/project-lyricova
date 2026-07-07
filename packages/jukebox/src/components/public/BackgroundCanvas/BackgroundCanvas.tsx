@@ -20,7 +20,7 @@ const BackgroundRenderNoSSR = dynamic(
   () => import("../compat/amllBackground").then((m) => m.BackgroundRender),
   {
     ssr: false,
-  }
+  },
 );
 
 interface Props {
@@ -124,13 +124,13 @@ export function BackgroundCanvasRender({ coverUrl }: RenderProps) {
           if (renderer && renderer.canvas === canvas) {
             renderer.resize(
               entry.contentRect.width * renderScale,
-              entry.contentRect.height * renderScale
+              entry.contentRect.height * renderScale,
             );
             renderer.shouldRedraw();
           }
         }
       }
-    })
+    }),
   );
 
   useEffect(() => {
@@ -149,7 +149,7 @@ export function BackgroundCanvasRender({ coverUrl }: RenderProps) {
       const renderScale = Math.max(0.01, Number(backgroundRenderScale) || 1);
       renderer.resize(
         canvas.clientWidth * renderScale,
-        canvas.clientHeight * renderScale
+        canvas.clientHeight * renderScale,
       );
       renderer.shouldRedraw();
     }
@@ -159,7 +159,7 @@ export function BackgroundCanvasRender({ coverUrl }: RenderProps) {
     const renderer = rendererRef.current;
     if (renderer) {
       const m = BUILDIN_RENDER_METHODS.find(
-        (v) => v.value === backgroundRenderMethod
+        (v) => v.value === backgroundRenderMethod,
       );
       if (m) {
         renderer.setRenderMethod(m);
@@ -176,7 +176,7 @@ export function BackgroundCanvasRender({ coverUrl }: RenderProps) {
         obsRef.current.observe(canvas);
         const renderer = new CanvasBackgroundRender(canvas);
         const m = BUILDIN_RENDER_METHODS.find(
-          (v) => v.value === backgroundRenderMethod
+          (v) => v.value === backgroundRenderMethod,
         );
         if (m) {
           renderer.setRenderMethod(m);
@@ -251,8 +251,8 @@ export function BackgroundCanvasRender({ coverUrl }: RenderProps) {
     (async () => {
       try {
         await albumImageLoaded;
-        const palette = (getPaletteSync(image) ?? []).map(
-          (color): Pixel => color.array()
+        const palette = (getPaletteSync(image) ?? []).map((color): Pixel =>
+          color.array(),
         );
         setAlbumImageMainColors(palette);
         const renderer = rendererRef.current;

@@ -12,7 +12,7 @@ import { useLyricsStore } from "../state/editorState";
 
 function replaceWithPattern(
   lines: [string, string][],
-  pattern: RegExp
+  pattern: RegExp,
 ): string | null {
   const linesMatchPattern = lines
     .map((v) => (v[1].match(pattern) ? 1 : 0))
@@ -62,19 +62,19 @@ export default function EditLyrics({ songId, title }: Props) {
     useShallow((s) => ({
       lyrics: s.lrcx,
       setLyrics: s.setLrcx,
-    }))
+    })),
   );
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setLyrics(event.target.value);
     },
-    [setLyrics]
+    [setLyrics],
   );
 
   const trimSpaces = useCallback(() => {
     setLyrics(
-      lyrics.replace(/^(\[.+\])?(?:[ 　\t]*)(.*?)(?:[ 　\t]*)$/gm, "$1$2")
+      lyrics.replace(/^(\[.+\])?(?:[ 　\t]*)(.*?)(?:[ 　\t]*)$/gm, "$1$2"),
     );
   }, [lyrics, setLyrics]);
 
@@ -84,15 +84,15 @@ export default function EditLyrics({ songId, title }: Props) {
 
   const [showVocaDBDialog, toggleVocaDBDialog] = useNamedState(
     false,
-    "showVocaDBDialog"
+    "showVocaDBDialog",
   );
   const [showHMikuWikiDialog, toggleHMikuWikiDialog] = useNamedState(
     false,
-    "showHMikuWikiDialog"
+    "showHMikuWikiDialog",
   );
   const [showDiffDialog, toggleDiffDialog] = useNamedState(
     false,
-    "showDiffDialog"
+    "showDiffDialog",
   );
 
   return (

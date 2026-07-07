@@ -13,15 +13,8 @@ import {
 import { useCallback, useState } from "react";
 import { useLyricsStore } from "../state/editorState";
 import { toast } from "sonner";
-import type {
-  LyricsJSON,
-  WordTimeTagLabelJSON} from "lyrics-kit/core";
-import {
-  DOTS,
-  FURIGANA,
-  TAGS,
-  TIME_TAG
-} from "lyrics-kit/core";
+import type { LyricsJSON, WordTimeTagLabelJSON } from "lyrics-kit/core";
+import { DOTS, FURIGANA, TAGS, TIME_TAG } from "lyrics-kit/core";
 import { fetchEventData } from "fetch-sse";
 import {
   HoverCard,
@@ -112,7 +105,7 @@ function assToInlineTags(lyrics: LyricsJSON, ass: string) {
           .forEach((match) => {
             charQueueStart = Math.min(
               charQueueStart,
-              charQueuePtr + match.index
+              charQueuePtr + match.index,
             );
             charQueue.push({
               start: charQueuePtr + match.index,
@@ -165,7 +158,7 @@ function assToInlineTags(lyrics: LyricsJSON, ass: string) {
           "No more characters to process",
           hira,
           lyricsLine.content,
-          segments
+          segments,
         );
         break;
       }
@@ -199,7 +192,7 @@ function assToInlineTags(lyrics: LyricsJSON, ass: string) {
           head.char,
           hira,
           lyricsLine.content,
-          segments
+          segments,
         );
         continue;
       }
@@ -347,7 +340,9 @@ export function YohaneAlign({ fileId }: { fileId: number }) {
               size="sm"
               variant="outline"
               onClick={handleGenerateTagging}
-              progress={isAlignmentLoading ? progress?.progress ?? true : false}
+              progress={
+                isAlignmentLoading ? (progress?.progress ?? true) : false
+              }
             >
               Yohane
             </ProgressButton>

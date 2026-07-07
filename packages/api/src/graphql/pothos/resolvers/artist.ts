@@ -32,8 +32,8 @@ builder.queryField("artist", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.Artists.findFirst({ where: eq(Artists.id, id) })) ?? null),
-  })
+      (await db.query.Artists.findFirst({ where: eq(Artists.id, id) })) ?? null,
+  }),
 );
 
 builder.queryField("artists", (t) =>
@@ -43,7 +43,7 @@ builder.queryField("artists", (t) =>
       db.query.Artists.findMany({
         orderBy: (a, { asc }) => [asc(a.sortOrder)],
       }),
-  })
+  }),
 );
 
 builder.queryField("artistsHasFiles", (t) =>
@@ -82,9 +82,15 @@ builder.queryField("artistsHasFiles", (t) =>
     resolve: async (_root, { types }) =>
       db.query.Artists.findMany({
         orderBy: (a, { asc }) => [asc(a.sortOrder)],
-        where: and(inArray(Artists.type, types as NonNullable<(typeof Artists.$inferInsert)["type"]>[]), FILES_FOR_ARTIST),
+        where: and(
+          inArray(
+            Artists.type,
+            types as NonNullable<(typeof Artists.$inferInsert)["type"]>[],
+          ),
+          FILES_FOR_ARTIST,
+        ),
       }),
-  })
+  }),
 );
 
 builder.queryField("searchArtists", (t) =>
@@ -95,7 +101,7 @@ builder.queryField("searchArtists", (t) =>
       db.query.Artists.findMany({
         where: sql`match (name, sortOrder) against (${keywords} in boolean mode)`,
       }),
-  })
+  }),
 );
 
 builder.queryField("artistsWithFilesNeedEnrol", (t) =>
@@ -109,12 +115,12 @@ builder.queryField("artistsWithFilesNeedEnrol", (t) =>
         where: and(
           gt(Artists.id, 0),
           eq(Artists.incomplete, true),
-          FILES_FOR_ARTIST
+          FILES_FOR_ARTIST,
         ),
       });
       return rows.map((a) => a.id);
     },
-  })
+  }),
 );
 
 builder.mutationField("newArtist", (t) =>
@@ -139,7 +145,7 @@ builder.mutationField("newArtist", (t) =>
         where: eq(Artists.id, id),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("updateArtist", (t) =>
@@ -168,5 +174,5 @@ builder.mutationField("updateArtist", (t) =>
         where: eq(Artists.id, id),
       }))!;
     },
-  })
+  }),
 );

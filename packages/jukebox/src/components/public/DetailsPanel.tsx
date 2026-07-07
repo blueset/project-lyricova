@@ -60,7 +60,7 @@ export default function DetailsPanel({ coverUrl = null, children }: Props) {
     <div
       className={cn(
         "inset-0 overflow-hidden w-full h-full flex flex-col",
-        isFullscreen ? "fixed z-10" : "relative z-0"
+        isFullscreen ? "fixed z-10" : "relative z-0",
       )}
     >
       {backgroundNode}

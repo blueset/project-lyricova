@@ -12,6 +12,7 @@
 packages/components/src/gql
 packages/api/src/openapi/schema.ts
 packages/api/schema.graphql
+packages/api/drizzle/migrations
 
 # Ambient / declaration files
 **/*.d.ts

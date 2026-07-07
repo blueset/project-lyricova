@@ -11,9 +11,8 @@ import {
   Tags,
 } from "../../../drizzle/schema";
 
-const DashboardStatsRef = builder.objectRef<Record<string, never>>(
-  "DashboardStats"
-);
+const DashboardStatsRef =
+  builder.objectRef<Record<string, never>>("DashboardStats");
 
 DashboardStatsRef.implement({
   fields: (t) => ({
@@ -49,5 +48,5 @@ builder.queryField("dashboardStats", (t) =>
     type: DashboardStatsRef,
     authScopes: { loggedIn: true },
     resolve: () => ({}),
-  })
+  }),
 );

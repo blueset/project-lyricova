@@ -12,14 +12,15 @@ const SliderThumb = React.forwardRef<
     data-slot="slider-thumb"
     className={cn(
       "border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50",
-      className
+      className,
     )}
     {...props}
   />
 ));
 
-interface SliderProps
-  extends React.ComponentProps<typeof SliderPrimitive.Root> {
+interface SliderProps extends React.ComponentProps<
+  typeof SliderPrimitive.Root
+> {
   track?: boolean;
   renderThumb?: (index: number) => React.ReactNode;
 }
@@ -39,9 +40,9 @@ function Slider({
       Array.isArray(value)
         ? value
         : Array.isArray(defaultValue)
-        ? defaultValue
-        : [min, max],
-    [value, defaultValue, min, max]
+          ? defaultValue
+          : [min, max],
+    [value, defaultValue, min, max],
   );
 
   return (
@@ -53,27 +54,27 @@ function Slider({
       max={max}
       className={cn(
         "relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
-        className
+        className,
       )}
       {...props}
     >
       <SliderPrimitive.Track
         data-slot="slider-track"
         className={cn(
-          "bg-muted relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5"
+          "bg-muted relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5",
         )}
       >
         {track && (
           <SliderPrimitive.Range
             data-slot="slider-range"
             className={cn(
-              "bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"
+              "bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full",
             )}
           />
         )}
       </SliderPrimitive.Track>
       {Array.from({ length: _values.length }, (_, index) =>
-        renderThumb ? renderThumb(index) : <SliderThumb key={index} />
+        renderThumb ? renderThumb(index) : <SliderThumb key={index} />,
       )}
     </SliderPrimitive.Root>
   );

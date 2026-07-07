@@ -23,7 +23,7 @@ export function PlayButton({ playerRef, className }: Props) {
       tracksHaveContent: s.playlist.tracks.length > 0,
       isCollapsed: s.playlist.isCollapsed,
     }),
-    shallowEqual
+    shallowEqual,
   );
   const isFlatPlayer = useMediaQuery("(min-width: 640px)") && isCollapsed;
 

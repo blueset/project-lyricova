@@ -1,7 +1,7 @@
 import { usePlayerLyricsState } from "./usePlayerLyricsState";
 import type { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
 import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useMemo } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 
@@ -33,8 +33,8 @@ export function lyricsToSegments(
         lastTag
           ? start + lastTag.timeTag
           : nextLine
-          ? nextLine.position
-          : start + 1,
+            ? nextLine.position
+            : start + 1,
         start,
       );
       return {

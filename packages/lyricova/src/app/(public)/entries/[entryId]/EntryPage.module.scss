@@ -24,7 +24,7 @@
   transition: transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
   overflow: hidden;
   text-transform: uppercase;
-  
+
   span {
     position: relative;
     display: inline-block;
@@ -37,7 +37,8 @@
     font-weight: 600;
     line-height: 1;
 
-    &::before, &::after {
+    &::before,
+    &::after {
       content: "Project Lyricova Project Lyricova Project Lyricova Project Lyricova Project Lyricova Project Lyricova Project Lyricova";
       position: absolute;
       white-space: nowrap;
@@ -57,7 +58,7 @@
       transform: translateX(100%);
     }
   }
-  
+
   @media (hover: hover) {
     &:hover {
       transform: scaleY(20);

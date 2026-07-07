@@ -4,7 +4,11 @@ import pLimit from "p-limit";
 import { builder } from "../builder";
 import { PlaylistRef } from "../types/refs";
 import { db } from "../../../drizzle/client";
-import { Playlists, FileInPlaylists, MusicFiles } from "../../../drizzle/schema";
+import {
+  Playlists,
+  FileInPlaylists,
+  MusicFiles,
+} from "../../../drizzle/schema";
 import { updatePlaylistsOfFileAsTags } from "../../../utils/musicFileTags";
 
 const NewPlaylistInput = builder.inputType("NewPlaylistInput", {
@@ -25,7 +29,7 @@ builder.queryField("playlists", (t) =>
   t.field({
     type: [PlaylistRef],
     resolve: async () => db.query.Playlists.findMany(),
-  })
+  }),
 );
 
 builder.queryField("playlist", (t) =>
@@ -34,10 +38,10 @@ builder.queryField("playlist", (t) =>
     nullable: true,
     args: { slug: t.arg.string() },
     resolve: async (_root, { slug }) =>
-      ((await db.query.Playlists.findFirst({
+      (await db.query.Playlists.findFirst({
         where: eq(Playlists.slug, slug),
-      })) ?? null),
-  })
+      })) ?? null,
+  }),
 );
 
 builder.mutationField("newPlaylist", (t) =>
@@ -57,7 +61,7 @@ builder.mutationField("newPlaylist", (t) =>
         where: eq(Playlists.slug, data.slug),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("updatePlaylist", (t) =>
@@ -71,7 +75,7 @@ builder.mutationField("updatePlaylist", (t) =>
       });
       if (!playlist) {
         throw new GraphQLError(
-          `Playlist with slug ${slug} is not found in database.`
+          `Playlist with slug ${slug} is not found in database.`,
         );
       }
       const set: Record<string, unknown> = { updatedAt: new Date() };
@@ -87,15 +91,15 @@ builder.mutationField("updatePlaylist", (t) =>
         const limit = pLimit(10);
         await Promise.all(
           files.map((i) =>
-            limit(async () => updatePlaylistsOfFileAsTags(i.fileId!))
-          )
+            limit(async () => updatePlaylistsOfFileAsTags(i.fileId!)),
+          ),
         );
       }
       return (await db.query.Playlists.findFirst({
         where: eq(Playlists.slug, newSlug),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("addFileToPlaylist", (t) =>
@@ -109,7 +113,7 @@ builder.mutationField("addFileToPlaylist", (t) =>
       });
       if (!playlist) {
         throw new GraphQLError(
-          `Playlist with slug ${slug} is not found in database.`
+          `Playlist with slug ${slug} is not found in database.`,
         );
       }
       const musicFile = await db.query.MusicFiles.findFirst({
@@ -117,22 +121,22 @@ builder.mutationField("addFileToPlaylist", (t) =>
       });
       if (!musicFile) {
         throw new GraphQLError(
-          `Music file with ID ${fileId} is not found in database.`
+          `Music file with ID ${fileId} is not found in database.`,
         );
       }
       const existing = await db.query.FileInPlaylists.findFirst({
         where: and(
           eq(FileInPlaylists.playlistId, slug),
-          eq(FileInPlaylists.fileId, fileId)
+          eq(FileInPlaylists.fileId, fileId),
         ),
       });
       if (existing)
         throw new GraphQLError(
-          `Music file ${fileId} is already in playlist ${slug}.`
+          `Music file ${fileId} is already in playlist ${slug}.`,
         );
       const count = await db.$count(
         FileInPlaylists,
-        eq(FileInPlaylists.playlistId, slug)
+        eq(FileInPlaylists.playlistId, slug),
       );
       const now = new Date();
       await db.insert(FileInPlaylists).values({
@@ -145,7 +149,7 @@ builder.mutationField("addFileToPlaylist", (t) =>
       await updatePlaylistsOfFileAsTags(fileId);
       return playlist;
     },
-  })
+  }),
 );
 
 builder.mutationField("removeFileFromPlaylist", (t) =>
@@ -159,7 +163,7 @@ builder.mutationField("removeFileFromPlaylist", (t) =>
       });
       if (!playlist) {
         throw new GraphQLError(
-          `Playlist with slug ${slug} is not found in database.`
+          `Playlist with slug ${slug} is not found in database.`,
         );
       }
       const musicFile = await db.query.MusicFiles.findFirst({
@@ -167,37 +171,37 @@ builder.mutationField("removeFileFromPlaylist", (t) =>
       });
       if (!musicFile) {
         throw new GraphQLError(
-          `Music file with ID ${fileId} is not found in database.`
+          `Music file with ID ${fileId} is not found in database.`,
         );
       }
       const existing = await db.query.FileInPlaylists.findFirst({
         where: and(
           eq(FileInPlaylists.playlistId, slug),
-          eq(FileInPlaylists.fileId, fileId)
+          eq(FileInPlaylists.fileId, fileId),
         ),
       });
       if (!existing)
         throw new GraphQLError(
-          `Music file ${fileId} is not in playlist ${slug}.`
+          `Music file ${fileId} is not in playlist ${slug}.`,
         );
       await db
         .delete(FileInPlaylists)
         .where(
           and(
             eq(FileInPlaylists.playlistId, slug),
-            eq(FileInPlaylists.fileId, fileId)
-          )
+            eq(FileInPlaylists.fileId, fileId),
+          ),
         );
       await updatePlaylistsOfFileAsTags(fileId);
       return playlist;
     },
-  })
+  }),
 );
 
 async function upsertFileSortOrder(
   slug: string,
   fileId: number,
-  sortOrder: number
+  sortOrder: number,
 ) {
   const now = new Date();
   await db
@@ -223,7 +227,7 @@ builder.mutationField("updatePlaylistSortOrder", (t) =>
       });
       if (!playlist) {
         throw new GraphQLError(
-          `Playlist with slug ${slug} is not found in database.`
+          `Playlist with slug ${slug} is not found in database.`,
         );
       }
       for (let idx = 0; idx < fileIds.length; idx++) {
@@ -231,7 +235,7 @@ builder.mutationField("updatePlaylistSortOrder", (t) =>
       }
       return playlist;
     },
-  })
+  }),
 );
 
 builder.mutationField("removePlaylist", (t) =>
@@ -256,12 +260,12 @@ builder.mutationField("removePlaylist", (t) =>
       const limit = pLimit(10);
       await Promise.all(
         files.map((i) =>
-          limit(async () => updatePlaylistsOfFileAsTags(i.fileId!))
-        )
+          limit(async () => updatePlaylistsOfFileAsTags(i.fileId!)),
+        ),
       );
       return true;
     },
-  })
+  }),
 );
 
 builder.mutationField("updatePlaylistFiles", (t) =>
@@ -275,7 +279,7 @@ builder.mutationField("updatePlaylistFiles", (t) =>
       });
       if (!playlist) {
         throw new GraphQLError(
-          `Playlist with slug ${slug} is not found in database.`
+          `Playlist with slug ${slug} is not found in database.`,
         );
       }
       const oldRows = await db.query.FileInPlaylists.findMany({
@@ -296,12 +300,14 @@ builder.mutationField("updatePlaylistFiles", (t) =>
           .where(
             and(
               eq(FileInPlaylists.playlistId, slug),
-              inArray(FileInPlaylists.fileId, toRemove)
-            )
+              inArray(FileInPlaylists.fileId, toRemove),
+            ),
           );
       }
       await Promise.all(
-        toRemove.map((id) => limit(async () => updatePlaylistsOfFileAsTags(id)))
+        toRemove.map((id) =>
+          limit(async () => updatePlaylistsOfFileAsTags(id)),
+        ),
       );
 
       // Add / update sort order for the desired set.
@@ -312,10 +318,10 @@ builder.mutationField("updatePlaylistFiles", (t) =>
       // Update tags only for newly added files (mirrors original).
       const toAdd = fileIds.filter((v) => !oldFilesIdSet.has(v));
       await Promise.all(
-        toAdd.map((id) => limit(async () => updatePlaylistsOfFileAsTags(id)))
+        toAdd.map((id) => limit(async () => updatePlaylistsOfFileAsTags(id))),
       );
 
       return playlist;
     },
-  })
+  }),
 );

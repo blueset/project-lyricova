@@ -34,7 +34,7 @@ export function useWebAudio(mediaUrl: string) {
 
   // File-scope variables
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(
-    cachedWebAudioBuffer[mediaUrl] ?? null
+    cachedWebAudioBuffer[mediaUrl] ?? null,
   );
   useEffect(() => {
     let active = true;
@@ -72,9 +72,8 @@ export function useWebAudio(mediaUrl: string) {
         if (!active) return;
         const arrayBuffer = await response.arrayBuffer();
         if (!active) return;
-        cachedWebAudioBuffer[mediaUrl] = await audioContext.decodeAudioData(
-          arrayBuffer
-        );
+        cachedWebAudioBuffer[mediaUrl] =
+          await audioContext.decodeAudioData(arrayBuffer);
       }
       if (!active) return;
       setAudioBuffer(cachedWebAudioBuffer[mediaUrl]);
@@ -165,7 +164,7 @@ export function useWebAudio(mediaUrl: string) {
         setPlayerStatus({ state: "paused", rate: playerStatus.rate, progress });
       }
     },
-    [audioBuffer, audioContext, getBufferSource]
+    [audioBuffer, audioContext, getBufferSource],
   );
 
   const setRate = useCallback(
@@ -194,7 +193,7 @@ export function useWebAudio(mediaUrl: string) {
         });
       }
     },
-    [audioContext]
+    [audioContext],
   );
 
   const getProgress = useCallback(() => {

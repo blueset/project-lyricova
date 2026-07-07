@@ -42,8 +42,8 @@ builder.queryField("song", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.Songs.findFirst({ where: eq(Songs.id, id) })) ?? null),
-  })
+      (await db.query.Songs.findFirst({ where: eq(Songs.id, id) })) ?? null,
+  }),
 );
 
 builder.queryField("searchSongs", (t) =>
@@ -57,7 +57,7 @@ builder.queryField("searchSongs", (t) =>
         : sql`match (name, sortOrder) against (${keywords} in boolean mode) OR id = ${numericKeywords}`;
       return db.query.Songs.findMany({ where: whereClause });
     },
-  })
+  }),
 );
 
 builder.queryField("songs", (t) =>
@@ -67,7 +67,7 @@ builder.queryField("songs", (t) =>
       db.query.Songs.findMany({
         orderBy: (s, { asc }) => [asc(s.sortOrder)],
       }),
-  })
+  }),
 );
 
 builder.mutationField("newSong", (t) =>
@@ -76,8 +76,14 @@ builder.mutationField("newSong", (t) =>
     authScopes: { admin: true },
     args: { data: t.arg({ type: SongInput }) },
     resolve: async (_root, { data }) => {
-      const { name, sortOrder, coverUrl, originalId, artistsOfSong, songInAlbums } =
-        data;
+      const {
+        name,
+        sortOrder,
+        coverUrl,
+        originalId,
+        artistsOfSong,
+        songInAlbums,
+      } = data;
       const id = _.random(-2147483648, -1, false);
       const now = new Date();
       await db.insert(Songs).values({
@@ -117,7 +123,7 @@ builder.mutationField("newSong", (t) =>
         where: eq(Songs.id, id),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("updateSong", (t) =>
@@ -126,8 +132,14 @@ builder.mutationField("updateSong", (t) =>
     authScopes: { admin: true },
     args: { id: t.arg.int(), data: t.arg({ type: SongInput }) },
     resolve: async (_root, { id, data }) => {
-      const { name, sortOrder, coverUrl, originalId, artistsOfSong, songInAlbums } =
-        data;
+      const {
+        name,
+        sortOrder,
+        coverUrl,
+        originalId,
+        artistsOfSong,
+        songInAlbums,
+      } = data;
       const existing = await db.query.Songs.findFirst({
         where: eq(Songs.id, id),
       });
@@ -180,5 +192,5 @@ builder.mutationField("updateSong", (t) =>
         where: eq(Songs.id, id),
       }))!;
     },
-  })
+  }),
 );

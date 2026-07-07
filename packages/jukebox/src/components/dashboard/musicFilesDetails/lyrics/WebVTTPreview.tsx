@@ -77,7 +77,7 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
             time: _.round(
               lastTimeTag
                 ? lastTimeTag + line.position
-                : arr[idx + 1]?.position ?? line.position + 10,
+                : (arr[idx + 1]?.position ?? line.position + 10),
               3,
             ),
             offset: -1,
@@ -123,9 +123,7 @@ export default function LyricsPreviewPanel({ fileId }: Props) {
         const endTag = !Number.isNaN(nextPosition)
           ? buildTimeTag(nextPosition)
           : null;
-        const end = endTag
-          ? endTag.substring(0, 10)
-          : "99:59.999";
+        const end = endTag ? endTag.substring(0, 10) : "99:59.999";
         const vttOffsiteLine = (trackNumbers[idx] ?? 0) * 4;
         const role = parseInt(v.attachments?.[METADATA_ROLE]?.text ?? "0") % 3;
         const align = role === 0 ? "start" : role === 1 ? "end" : "middle";

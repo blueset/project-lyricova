@@ -1,11 +1,11 @@
-import type { Dispatch, SetStateAction} from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../hooks/useNamedState";
 
 export function useClientPersistentState<T>(
   defaultValue: T,
   name: string,
-  namespace: string
+  namespace: string,
 ): [T, Dispatch<SetStateAction<T>>] {
   // const [isMounted, toggleIsMounted] = useState(false);
   const key = `${namespace}.${name}`;
@@ -35,7 +35,7 @@ export function useClientPersistentState<T>(
       setValue(val);
       window.localStorage.setItem(key, JSON.stringify(val));
     },
-    [key, setValue, value]
+    [key, setValue, value],
   );
 
   return [value, setValueWrap];

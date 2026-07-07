@@ -57,12 +57,12 @@ async function transliterate(text: string): Promise<string> {
 
 /** Mirrors Song.selectPreferredThumbUrl. */
 function selectPreferredThumbUrl(
-  vocaDbJson: SongForApiContract | undefined
+  vocaDbJson: SongForApiContract | undefined,
 ): string | undefined {
   if (vocaDbJson === undefined) return undefined;
   if (vocaDbJson.pvs?.length) {
     const candidate = vocaDbJson.pvs.find(
-      (p) => p.service === "Youtube" && p.pvType === "Original" && p.thumbUrl
+      (p) => p.service === "Youtube" && p.pvType === "Original" && p.thumbUrl,
     )?.thumbUrl;
     if (candidate) return candidate;
   }
@@ -70,7 +70,7 @@ function selectPreferredThumbUrl(
 }
 
 async function findUnusedNegativeId(
-  table: "song" | "artist" | "album"
+  table: "song" | "artist" | "album",
 ): Promise<number> {
   while (true) {
     const id = _.random(-2147483648, -1, false);
@@ -78,8 +78,8 @@ async function findUnusedNegativeId(
       table === "song"
         ? await db.query.Songs.findFirst({ where: eq(Songs.id, id) })
         : table === "artist"
-        ? await db.query.Artists.findFirst({ where: eq(Artists.id, id) })
-        : await db.query.Albums.findFirst({ where: eq(Albums.id, id) });
+          ? await db.query.Artists.findFirst({ where: eq(Artists.id, id) })
+          : await db.query.Albums.findFirst({ where: eq(Albums.id, id) });
     if (!existing) return id;
   }
 }
@@ -90,7 +90,7 @@ async function findUnusedNegativeId(
 
 /** incomplete build (Artist.fromVocaDBArtistContract). */
 async function artistFromVocaDBContract(
-  artist: ArtistContract
+  artist: ArtistContract,
 ): Promise<ArtistRow> {
   const existing = await db.query.Artists.findFirst({
     where: and(eq(Artists.id, artist.id), isNull(Artists.deletionDate)),
@@ -113,7 +113,7 @@ async function artistFromVocaDBContract(
 
 export async function saveArtistFromVocaDB(
   entity: ArtistForApiContract,
-  baseVoiceBank: ArtistRow | null
+  baseVoiceBank: ArtistRow | null,
 ): Promise<ArtistRow | null> {
   const now = new Date();
   const values = {
@@ -144,7 +144,7 @@ export async function saveArtistFromVocaDB(
 
 /** incomplete build (Artist.fromUtaiteDBArtistContract). */
 async function artistFromUtaiteDBContract(
-  entity: ArtistContract
+  entity: ArtistContract,
 ): Promise<ArtistRow> {
   const byUtaite = await db.query.Artists.findFirst({
     where: eq(Artists.utaiteDbId, entity.id),
@@ -174,7 +174,7 @@ async function artistFromUtaiteDBContract(
 
 export async function saveArtistFromUtaiteDB(
   entity: ArtistForApiContract,
-  baseVoiceBank: ArtistRow | null
+  baseVoiceBank: ArtistRow | null,
 ): Promise<ArtistRow | null> {
   const byUtaite = await db.query.Artists.findFirst({
     where: eq(Artists.utaiteDbId, entity.id),
@@ -214,7 +214,7 @@ export async function saveArtistFromUtaiteDB(
 
 /** incomplete build (Album.fromVocaDBAlbumContract). */
 async function albumFromVocaDBContract(
-  entity: AlbumContract
+  entity: AlbumContract,
 ): Promise<AlbumRow> {
   const existing = await db.query.Albums.findFirst({
     where: and(eq(Albums.id, entity.id), isNull(Albums.deletionDate)),
@@ -236,7 +236,7 @@ async function albumFromVocaDBContract(
 
 /** incomplete build (Album.fromUtaiteDBAlbumContract). */
 async function albumFromUtaiteDBContract(
-  entity: AlbumContract
+  entity: AlbumContract,
 ): Promise<AlbumRow> {
   const byUtaite = await db.query.Albums.findFirst({
     where: eq(Albums.utaiteDbId, entity.id),
@@ -262,7 +262,7 @@ async function albumFromUtaiteDBContract(
 }
 
 export async function saveAlbumFromVocaDB(
-  entity: AlbumForApiContract
+  entity: AlbumForApiContract,
 ): Promise<AlbumRow | null> {
   const now = new Date();
   const values = {
@@ -281,14 +281,14 @@ export async function saveAlbumFromVocaDB(
     await Promise.all(
       (entity.artists ?? [])
         .filter((x) => x.artist)
-        .map((x) => artistOfAlbumFromVocaDB(x))
+        .map((x) => artistOfAlbumFromVocaDB(x)),
     )
   ).filter((x): x is ArtistOfAlbumEntry => x !== null);
   const tracks = (
     await Promise.all(
       (entity.tracks ?? [])
         .filter((x) => x.song)
-        .map((x) => songInAlbumSongFromVocaDB(x))
+        .map((x) => songInAlbumSongFromVocaDB(x)),
     )
   ).filter((t): t is SongInAlbumTrackEntry => t !== null);
 
@@ -303,7 +303,7 @@ export async function saveAlbumFromVocaDB(
 
 export async function saveAlbumFromUtaiteDB(
   entity: AlbumForApiContract,
-  tracks: SongRow[]
+  tracks: SongRow[],
 ): Promise<AlbumRow | null> {
   const byUtaite = await db.query.Albums.findFirst({
     where: eq(Albums.utaiteDbId, entity.id),
@@ -342,7 +342,7 @@ export async function saveAlbumFromUtaiteDB(
               .where(eq(Artists.id, result.artistId));
           }
           return result;
-        })
+        }),
     )
   ).filter((x): x is ArtistOfAlbumEntry => x !== null);
 
@@ -373,7 +373,7 @@ export async function saveAlbumFromUtaiteDB(
 export async function saveSongFromVocaDB(
   entity: SongForApiContract,
   original: SongRow | null,
-  intermediate = false
+  intermediate = false,
 ): Promise<SongRow | null> {
   const now = new Date();
   const values = {
@@ -397,12 +397,12 @@ export async function saveSongFromVocaDB(
 
   const artists = (
     await Promise.all(
-      (entity.artists ?? []).map((x) => artistOfSongFromVocaDB(x))
+      (entity.artists ?? []).map((x) => artistOfSongFromVocaDB(x)),
     )
   ).filter((x): x is ArtistOfSongEntry => x !== null);
   const albums = (
     await Promise.all(
-      (entity.albums ?? []).map((x) => songInAlbumAlbumFromVocaDB(entity, x))
+      (entity.albums ?? []).map((x) => songInAlbumAlbumFromVocaDB(entity, x)),
     )
   ).filter((x): x is SongInAlbumAlbumEntry => x !== null);
 
@@ -418,7 +418,7 @@ export async function saveSongFromVocaDB(
 export async function saveSongFromUtaiteDB(
   entity: SongForApiContract,
   original: SongRow | null,
-  intermediate = false
+  intermediate = false,
 ): Promise<SongRow | null> {
   const byUtaite = await db.query.Songs.findFirst({
     where: eq(Songs.utaiteDbId, entity.id),
@@ -464,7 +464,7 @@ export async function saveSongFromUtaiteDB(
               .where(eq(Artists.id, result.artistId));
           }
           return result;
-        })
+        }),
     )
   ).filter((x): x is ArtistOfSongEntry => x !== null);
 
@@ -483,7 +483,7 @@ export async function saveSongFromUtaiteDB(
             .where(eq(Albums.id, result.albumId));
         }
         return result;
-      })
+      }),
     )
   ).filter((x): x is SongInAlbumAlbumEntry => x !== null);
 
@@ -507,7 +507,7 @@ interface ArtistOfSongEntry {
 }
 
 async function artistOfSongFromVocaDB(
-  entity: ArtistForSongContract
+  entity: ArtistForSongContract,
 ): Promise<ArtistOfSongEntry | null> {
   if (entity.artist === undefined) return null;
   const artist = await artistFromVocaDBContract(entity.artist);
@@ -521,7 +521,7 @@ async function artistOfSongFromVocaDB(
 }
 
 async function artistOfSongFromUtaiteDB(
-  entity: ArtistForSongContract
+  entity: ArtistForSongContract,
 ): Promise<ArtistOfSongEntry | null> {
   if (entity.artist === undefined) return null;
   const artist = await artistFromUtaiteDBContract(entity.artist);
@@ -542,7 +542,7 @@ interface ArtistOfAlbumEntry {
 }
 
 async function artistOfAlbumFromVocaDB(
-  entity: ArtistForAlbumForApiContract
+  entity: ArtistForAlbumForApiContract,
 ): Promise<ArtistOfAlbumEntry | null> {
   const artist = await artistFromVocaDBContract(entity.artist);
   return {
@@ -554,7 +554,7 @@ async function artistOfAlbumFromVocaDB(
 }
 
 async function artistOfAlbumFromUtaiteDB(
-  entity: ArtistForAlbumForApiContract
+  entity: ArtistForAlbumForApiContract,
 ): Promise<ArtistOfAlbumEntry | null> {
   const artist = await artistFromUtaiteDBContract(entity.artist);
   return {
@@ -572,7 +572,7 @@ interface SongInAlbumAlbumEntry {
 
 async function songInAlbumAlbumFromVocaDB(
   song: SongForApiContract,
-  entity: AlbumContract
+  entity: AlbumContract,
 ): Promise<SongInAlbumAlbumEntry> {
   const album = await albumFromVocaDBContract(entity);
   return { albumId: album.id, name: song.name };
@@ -580,7 +580,7 @@ async function songInAlbumAlbumFromVocaDB(
 
 async function songInAlbumAlbumFromUtaiteDB(
   song: SongForApiContract,
-  entity: AlbumContract
+  entity: AlbumContract,
 ): Promise<SongInAlbumAlbumEntry> {
   const album = await albumFromUtaiteDBContract(entity);
   return { albumId: album.id, name: song.name };
@@ -595,7 +595,7 @@ interface SongInAlbumTrackEntry {
 }
 
 async function songInAlbumSongFromVocaDB(
-  entity: SongInAlbumForApiContract
+  entity: SongInAlbumForApiContract,
 ): Promise<SongInAlbumTrackEntry | null> {
   const song = await saveSongFromVocaDB(entity.song, null, true);
   if (!song) return null;
@@ -614,7 +614,7 @@ async function songInAlbumSongFromVocaDB(
 
 async function setArtistsOfSong(
   songId: number,
-  entries: ArtistOfSongEntry[]
+  entries: ArtistOfSongEntry[],
 ): Promise<void> {
   await db.delete(ArtistOfSongs).where(eq(ArtistOfSongs.songId, songId));
   entries = _.uniqBy(entries, (e) => e.artistId);
@@ -630,13 +630,13 @@ async function setArtistsOfSong(
       isSupport: e.isSupport,
       creationDate: now,
       updatedOn: now,
-    }))
+    })),
   );
 }
 
 async function setAlbumsOfSong(
   songId: number,
-  entries: SongInAlbumAlbumEntry[]
+  entries: SongInAlbumAlbumEntry[],
 ): Promise<void> {
   await db.delete(SongInAlbums).where(eq(SongInAlbums.songId, songId));
   entries = _.uniqBy(entries, (e) => e.albumId);
@@ -649,13 +649,13 @@ async function setAlbumsOfSong(
       name: e.name,
       creationDate: now,
       updatedOn: now,
-    }))
+    })),
   );
 }
 
 async function setArtistsOfAlbum(
   albumId: number,
-  entries: ArtistOfAlbumEntry[]
+  entries: ArtistOfAlbumEntry[],
 ): Promise<void> {
   await db.delete(ArtistOfAlbums).where(eq(ArtistOfAlbums.albumId, albumId));
   entries = _.uniqBy(entries, (e) => e.artistId);
@@ -670,13 +670,13 @@ async function setArtistsOfAlbum(
       categories: e.categories as AoaCategoriesInsert,
       creationDate: now,
       updatedOn: now,
-    }))
+    })),
   );
 }
 
 async function setSongsOfAlbum(
   albumId: number,
-  entries: SongInAlbumTrackEntry[]
+  entries: SongInAlbumTrackEntry[],
 ): Promise<void> {
   await db.delete(SongInAlbums).where(eq(SongInAlbums.albumId, albumId));
   entries = _.uniqBy(entries, (e) => e.songId);
@@ -692,7 +692,7 @@ async function setSongsOfAlbum(
       vocaDbId: e.vocaDbId,
       creationDate: now,
       updatedOn: now,
-    }))
+    })),
   );
 }
 
@@ -709,7 +709,11 @@ export async function processUtaiteDbArtist(artist: ArtistContract): Promise<{
     where: eq(Artists.utaiteDbId, artist.id),
   });
   if (existing) {
-    return { artist: { ...artist, id: existing.id }, type: "vocaDb", isNew: false };
+    return {
+      artist: { ...artist, id: existing.id },
+      type: "vocaDb",
+      isNew: false,
+    };
   }
   const artistLite = await getUtaiteDbArtistLite(artist.id);
   const vocaDbId = getVocaDbId(artistLite);
@@ -728,7 +732,11 @@ export async function processUtaiteDbAlbum(album: AlbumContract): Promise<{
     where: eq(Albums.utaiteDbId, album.id),
   });
   if (existing) {
-    return { album: { ...album, id: existing.id }, type: "vocaDb", isNew: false };
+    return {
+      album: { ...album, id: existing.id },
+      type: "vocaDb",
+      isNew: false,
+    };
   }
   const albumLite = await getUtaiteDbAlbumLite(album.id);
   const vocaDbId = getVocaDbId(albumLite);

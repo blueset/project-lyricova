@@ -16,7 +16,7 @@ builder.mutationField("enrolSongFromVocaDB", (t) =>
     authScopes: { admin: true },
     args: { songId: t.arg.int({ description: "Song ID in VocaDB" }) },
     resolve: (_root, { songId }) => enrolSongFromVocaDB(songId),
-  })
+  }),
 );
 
 builder.mutationField("enrolArtistFromVocaDB", (t) =>
@@ -26,22 +26,21 @@ builder.mutationField("enrolArtistFromVocaDB", (t) =>
     authScopes: { admin: true },
     args: { artistId: t.arg.int({ description: "Artist ID in VocaDB" }) },
     resolve: (_root, { artistId }) => enrolArtistFromVocaDB(artistId),
-  })
+  }),
 );
 
 builder.mutationField("enrolArtistsFromVocaDB", (t) =>
   t.field({
     type: [ArtistRef],
-    description: "Insert or update multiple artists from VocaDB in one request.",
+    description:
+      "Insert or update multiple artists from VocaDB in one request.",
     authScopes: { admin: true },
     args: {
       artistIds: t.arg.intList({ description: "Artist IDs in VocaDB" }),
     },
     resolve: (_root, { artistIds }) =>
-      Promise.all(
-        artistIds.map((artistId) => enrolArtistFromVocaDB(artistId))
-      ),
-  })
+      Promise.all(artistIds.map((artistId) => enrolArtistFromVocaDB(artistId))),
+  }),
 );
 
 builder.mutationField("enrolAlbumFromVocaDB", (t) =>
@@ -51,7 +50,7 @@ builder.mutationField("enrolAlbumFromVocaDB", (t) =>
     authScopes: { admin: true },
     args: { albumId: t.arg.int({ description: "Album ID in VocaDB" }) },
     resolve: (_root, { albumId }) => enrolAlbumFromVocaDB(albumId),
-  })
+  }),
 );
 
 builder.mutationField("enrolSongFromUtaiteDB", (t) =>
@@ -61,7 +60,7 @@ builder.mutationField("enrolSongFromUtaiteDB", (t) =>
     authScopes: { admin: true },
     args: { songId: t.arg.int({ description: "Song ID in UtaiteDB" }) },
     resolve: (_root, { songId }) => enrolSongFromUtaiteDB(songId),
-  })
+  }),
 );
 
 builder.mutationField("enrolArtistFromUtaiteDB", (t) =>
@@ -71,7 +70,7 @@ builder.mutationField("enrolArtistFromUtaiteDB", (t) =>
     authScopes: { admin: true },
     args: { artistId: t.arg.int({ description: "Artist ID in UtaiteDB" }) },
     resolve: (_root, { artistId }) => enrolArtistFromUtaiteDB(artistId),
-  })
+  }),
 );
 
 builder.mutationField("enrolAlbumFromUtaiteDB", (t) =>
@@ -81,5 +80,5 @@ builder.mutationField("enrolAlbumFromUtaiteDB", (t) =>
     authScopes: { admin: true },
     args: { albumId: t.arg.int({ description: "Album ID in UtaiteDB" }) },
     resolve: (_root, { albumId }) => enrolAlbumFromUtaiteDB(albumId),
-  })
+  }),
 );

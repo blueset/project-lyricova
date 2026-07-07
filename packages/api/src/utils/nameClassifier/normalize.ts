@@ -67,7 +67,8 @@ export interface AlignedSegment {
 
 const HAN_REGEX = /\p{Script=Han}/u;
 const LATIN_REGEX = /^[\p{Script=Latin}\p{N}\p{P}\p{S}\s]+$/u;
-const META_ANNOTATIONS = /^\s*\((unknown|english\s+dnn|japanese|chinese|korean)\)\s*$/i;
+const META_ANNOTATIONS =
+  /^\s*\((unknown|english\s+dnn|japanese|chinese|korean)\)\s*$/i;
 
 /**
  * Check if a character is a CJK/Han character
@@ -218,9 +219,7 @@ export function alignSegments(
   for (const seg of segments) {
     if (seg.isPassthrough && seg.roman) {
       // Remove the passthrough part (case-insensitive)
-      const idx = remainingRoman
-        .toLowerCase()
-        .indexOf(seg.roman.toLowerCase());
+      const idx = remainingRoman.toLowerCase().indexOf(seg.roman.toLowerCase());
       if (idx !== -1) {
         remainingRoman =
           remainingRoman.slice(0, idx) +

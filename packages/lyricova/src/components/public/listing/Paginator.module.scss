@@ -16,9 +16,12 @@
   opacity: 0.25;
 }
 
-.prevLink, .nextLink {
+.prevLink,
+.nextLink {
   color: $primary-text;
-  transition: transform 0.2s cubic-bezier(0,0,.3,1), color 0.2s cubic-bezier(0,0,.3,1);
+  transition:
+    transform 0.2s cubic-bezier(0, 0, 0.3, 1),
+    color 0.2s cubic-bezier(0, 0, 0.3, 1);
 }
 
 .prevLink:hover {
@@ -38,7 +41,7 @@
   justify-content: center;
   max-width: 500px;
   gap: 0.5rem;
-  
+
   @include media-breakpoint-down(mobile) {
     display: none;
   }

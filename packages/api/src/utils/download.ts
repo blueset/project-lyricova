@@ -1,8 +1,11 @@
 import fs from "fs";
 import type Stream from "stream";
 
-export function downloadFromStream(stream: Stream, destination: string): Promise<void> {
-  return new Promise<void>(((resolve, reject) => {
+export function downloadFromStream(
+  stream: Stream,
+  destination: string,
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     const file = fs.createWriteStream(destination);
     if (!file.writable) return reject(`File ${destination} is not writable.`);
     const pipe = stream.pipe(file);
@@ -14,5 +17,5 @@ export function downloadFromStream(stream: Stream, destination: string): Promise
       fs.unlinkSync(destination);
       reject(err.message);
     });
-  }));
+  });
 }

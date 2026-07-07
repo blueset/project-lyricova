@@ -1,4 +1,4 @@
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useMemo, useEffect } from "react";
 import type { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
 import { useNamedState } from "./useNamedState";
@@ -7,7 +7,7 @@ import { usePlayerState } from "./usePlayerState";
 /** Refactor usePlayerLyricsState using WebVTT Cue callbacks. */
 export function usePlayerLyricsState<T>(
   keyframes: PlayerLyricsKeyframe<T>[],
-  playerRef: RefObject<HTMLAudioElement>
+  playerRef: RefObject<HTMLAudioElement>,
 ): PlayerLyricsState<T> {
   const playerState = usePlayerState(playerRef);
 
@@ -17,7 +17,7 @@ export function usePlayerLyricsState<T>(
    */
   const [currentFrameId, setCurrentFrameId] = useNamedState(
     -1,
-    "currentFrameId"
+    "currentFrameId",
   );
 
   /**
@@ -78,7 +78,7 @@ export function usePlayerLyricsState<T>(
         const cue = new VTTCue(
           startTime,
           endTime,
-          `${index},${startTime},${endTime}`
+          `${index},${startTime},${endTime}`,
         );
         cue.addEventListener("enter", () => {
           setCurrentFrameId(index);
@@ -105,7 +105,8 @@ export function usePlayerLyricsState<T>(
   return {
     playerState,
     currentFrameId,
-    currentFrame: currentFrameId >= 0 ? keyframes[currentFrameId] ?? null : null,
+    currentFrame:
+      currentFrameId >= 0 ? (keyframes[currentFrameId] ?? null) : null,
     endTime: endTimes[currentFrameId + 1] ?? 0,
     startTimes,
     endTimes,

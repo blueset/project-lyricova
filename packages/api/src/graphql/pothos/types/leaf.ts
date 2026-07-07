@@ -10,7 +10,11 @@ import {
 // --- Blog leaves (Drizzle-backed) ---
 
 builder.drizzleObjectFields("Verses", (t) => ({
-  html: t.field({ type: "String", nullable: true, resolve: (v: any) => v.html }),
+  html: t.field({
+    type: "String",
+    nullable: true,
+    resolve: (v: any) => v.html,
+  }),
   id: t.field({ type: "Float", resolve: (v: any) => v.id }),
   isMain: t.field({ type: "Boolean", resolve: (v: any) => v.isMain }),
   isOriginal: t.field({ type: "Boolean", resolve: (v: any) => v.isOriginal }),

@@ -111,7 +111,7 @@ export class LyricsKitWordTimeAttachment {
   constructor(wordTime: WordTimeTag) {
     this.duration = wordTime.duration;
     this.tags = wordTime.tags.map(
-      (v: WordTimeTagLabel) => new LyricsKitWordTimeTag(v)
+      (v: WordTimeTagLabel) => new LyricsKitWordTimeTag(v),
     );
   }
 
@@ -180,12 +180,12 @@ export class LyricsKitAttachment {
     this.furigana = null;
     if (attachment.content[FURIGANA]) {
       this.furigana = attachment.content[FURIGANA].attachment.map(
-        (v) => new LyricsKitRangeAttachment(v)
+        (v) => new LyricsKitRangeAttachment(v),
       );
     }
     if (attachment.content[ROMAJI]) {
       this.romaji = attachment.content[ROMAJI].attachment.map(
-        (v) => new LyricsKitRangeAttachment(v)
+        (v) => new LyricsKitRangeAttachment(v),
       );
     }
     this.role = attachment.role;
@@ -285,10 +285,10 @@ export class LyricsKitLyrics {
     this.quality = lyrics.quality;
     this.length = lyrics.length;
     this.lines = lyrics.lines.map(
-      (v) => new LyricsKitLyricsLine(v, lyrics.timeDelay)
+      (v) => new LyricsKitLyricsLine(v, lyrics.timeDelay),
     );
     this.translationLanguages = lyrics.translationLanguages.filter(
-      (language): language is string => language !== undefined
+      (language): language is string => language !== undefined,
     );
   }
 

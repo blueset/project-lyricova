@@ -21,7 +21,7 @@ export class SpotifyProvider extends LyricsProvider<SpotifySearchResult> {
   }
 
   public async searchLyrics(
-    request: LyricsSearchRequest
+    request: LyricsSearchRequest,
   ): Promise<SpotifySearchResult[]> {
     const token = await this.getTokens();
     const res = await axios.get<SpotifySearchResponse>(SEARCH_URL, {
@@ -50,7 +50,7 @@ export class SpotifyProvider extends LyricsProvider<SpotifySearchResult> {
     return res.data.data.searchV2?.tracksV2.items ?? [];
   }
   public async fetchLyrics(
-    token: SpotifySearchResult
+    token: SpotifySearchResult,
   ): Promise<Lyrics | undefined> {
     const trackid = token.item.data.id;
     const res = await axios.get<SpotifyLyricsJSON>(LYRICS_URL, {
@@ -65,7 +65,7 @@ export class SpotifyProvider extends LyricsProvider<SpotifySearchResult> {
 
     const lyrics = new Lyrics();
     lyrics.lines = res.data.lines.map(
-      (l) => new LyricsLine(l.words, parseFloat(l.startTimeMs) / 1000)
+      (l) => new LyricsLine(l.words, parseFloat(l.startTimeMs) / 1000),
     );
     lyrics.idTags[TITLE] = token.item.data.name;
     lyrics.idTags[ARTIST] = token.item.data.artists.items

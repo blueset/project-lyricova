@@ -11,15 +11,13 @@ import type { ViewLyricsResponseSearchResult } from "../types/viewLyrics/searchR
 const SEARCH_URL = "http://search.crintsoft.com/searchlyrics.htm";
 const LYRICS_URL = "http://viewlyrics.com/";
 
-export class ViewLyricsProvider extends LyricsProvider<
-  ViewLyricsResponseSearchResult
-> {
+export class ViewLyricsProvider extends LyricsProvider<ViewLyricsResponseSearchResult> {
   // static source = LyricsProviderSource.viewLyrics;
 
   private static assembleQuery(
     artist: string,
     title: string,
-    page: number = 0
+    page: number = 0,
   ): Buffer {
     const watermark = "Mlv1clt4.0",
       queryForm = `<?xml version='1.0' encoding='utf-8'?><searchV1 artist='${artist}' title='${title}' OnlyMatched='1' client='MiniLyrics' RequestPage='${page}'/>`,
@@ -29,7 +27,7 @@ export class ViewLyricsProvider extends LyricsProvider<
   }
 
   public async searchLyrics(
-    request: LyricsSearchRequest
+    request: LyricsSearchRequest,
   ): Promise<ViewLyricsResponseSearchResult[]> {
     if (request.searchTerm.state !== "info") {
       console.error("ViewLyrics cannot search by keyword.");
@@ -102,7 +100,7 @@ export class ViewLyricsProvider extends LyricsProvider<
   }
 
   public async fetchLyrics(
-    token: ViewLyricsResponseSearchResult
+    token: ViewLyricsResponseSearchResult,
   ): Promise<Lyrics | undefined> {
     try {
       const url = LYRICS_URL + token.link;

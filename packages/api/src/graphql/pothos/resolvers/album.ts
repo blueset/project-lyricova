@@ -2,11 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { builder } from "../builder";
 import { AlbumRef } from "../types/refs";
 import { db } from "../../../drizzle/client";
-import {
-  Albums,
-  ArtistOfAlbums,
-  SongInAlbums,
-} from "../../../drizzle/schema";
+import { Albums, ArtistOfAlbums, SongInAlbums } from "../../../drizzle/schema";
 import { serializeEnumArray } from "../../../drizzle/enumArray";
 import _ from "lodash";
 
@@ -44,8 +40,8 @@ builder.queryField("album", (t) =>
     nullable: true,
     args: { id: t.arg.int() },
     resolve: async (_root, { id }) =>
-      ((await db.query.Albums.findFirst({ where: eq(Albums.id, id) })) ?? null),
-  })
+      (await db.query.Albums.findFirst({ where: eq(Albums.id, id) })) ?? null,
+  }),
 );
 
 builder.queryField("albums", (t) =>
@@ -55,7 +51,7 @@ builder.queryField("albums", (t) =>
       db.query.Albums.findMany({
         orderBy: (a, { asc }) => [asc(a.sortOrder)],
       }),
-  })
+  }),
 );
 
 builder.queryField("albumsHasFiles", (t) =>
@@ -76,7 +72,7 @@ builder.queryField("albumsHasFiles", (t) =>
           SongInAlbums.albumId = Albums.id and MusicFiles.albumId = Albums.id 
       ) > 0`,
       }),
-  })
+  }),
 );
 
 builder.queryField("searchAlbums", (t) =>
@@ -87,7 +83,7 @@ builder.queryField("searchAlbums", (t) =>
       db.query.Albums.findMany({
         where: sql`match (name, sortOrder) against (${keywords} in boolean mode)`,
       }),
-  })
+  }),
 );
 
 builder.mutationField("newAlbum", (t) =>
@@ -113,7 +109,8 @@ builder.mutationField("newAlbum", (t) =>
         await db.insert(ArtistOfAlbums).values({
           albumId: id,
           artistId: v.artistId,
-          categories: v.categories as (typeof ArtistOfAlbums.$inferInsert)["categories"],
+          categories:
+            v.categories as (typeof ArtistOfAlbums.$inferInsert)["categories"],
           roles: serializeEnumArray(v.roles),
           effectiveRoles: serializeEnumArray(v.effectiveRoles),
           creationDate: now,
@@ -136,7 +133,7 @@ builder.mutationField("newAlbum", (t) =>
         where: eq(Albums.id, id),
       }))!;
     },
-  })
+  }),
 );
 
 builder.mutationField("updateAlbum", (t) =>
@@ -165,7 +162,8 @@ builder.mutationField("updateAlbum", (t) =>
         await db.insert(ArtistOfAlbums).values({
           albumId: id,
           artistId: v.artistId,
-          categories: v.categories as (typeof ArtistOfAlbums.$inferInsert)["categories"],
+          categories:
+            v.categories as (typeof ArtistOfAlbums.$inferInsert)["categories"],
           roles: serializeEnumArray(v.roles),
           effectiveRoles: serializeEnumArray(v.effectiveRoles),
           creationDate: now,
@@ -191,5 +189,5 @@ builder.mutationField("updateAlbum", (t) =>
         where: eq(Albums.id, id),
       }))!;
     },
-  })
+  }),
 );

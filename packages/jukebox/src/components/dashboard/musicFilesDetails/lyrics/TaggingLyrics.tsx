@@ -40,7 +40,7 @@ const LineListItem = ({
       isCurrent: s.tagging.currentLine.index === lineIdx,
       isCursorOn: s.tagging.cursor === lineIdx,
       extrapolateTag: s.tagging.extrapolateTags?.[lineIdx],
-    }))
+    })),
   );
 
   const lineText = useMemo(() => {
@@ -54,7 +54,7 @@ const LineListItem = ({
     <li
       className={cn(
         "flex items-center px-2 py-1 text-sm cursor-pointer hover:bg-accent",
-        isCurrent && "bg-accent text-accent-foreground"
+        isCurrent && "bg-accent text-accent-foreground",
       )}
       onClickCapture={onClickCapture}
       onDoubleClickCapture={onDoubleClickCapture}
@@ -169,7 +169,7 @@ export default function TaggingLyrics({ fileId }: Props) {
       linearRegressionResult: s.tagging.linearRegressionResult,
       applyExtrapolation: s.tagging.applyExtrapolation,
       reset: s.tagging.reset,
-    }))
+    })),
   );
 
   const playerRef = useRef<HTMLAudioElement>(null!);
@@ -219,7 +219,7 @@ export default function TaggingLyrics({ fileId }: Props) {
             index: -Infinity,
             start: -Infinity,
             end: Infinity,
-          }
+          },
         );
         setCurrentLine(record);
       }
@@ -228,7 +228,7 @@ export default function TaggingLyrics({ fileId }: Props) {
         requestAnimationFrame(onFrame);
       }
     },
-    [setCurrentLine]
+    [setCurrentLine],
   );
 
   useEffect(() => {
@@ -239,7 +239,7 @@ export default function TaggingLyrics({ fileId }: Props) {
     (checked: boolean) => {
       setIsInExtrapolateMode(checked);
     },
-    [setIsInExtrapolateMode]
+    [setIsInExtrapolateMode],
   );
 
   const moveCursor = useCallback(
@@ -259,7 +259,7 @@ export default function TaggingLyrics({ fileId }: Props) {
       setCursor(nidx);
       return;
     },
-    [setCursor]
+    [setCursor],
   );
 
   const onLineClick = useCallback(
@@ -267,7 +267,7 @@ export default function TaggingLyrics({ fileId }: Props) {
       ev.stopPropagation();
       moveCursor(idx);
     },
-    [moveCursor]
+    [moveCursor],
   );
 
   const onLineDoubleClick = useCallback(
@@ -286,7 +286,7 @@ export default function TaggingLyrics({ fileId }: Props) {
         requestAnimationFrame(onFrame);
       }
     },
-    [moveCursor, onFrame]
+    [moveCursor, onFrame],
   );
 
   // Register key press listeners
@@ -326,7 +326,7 @@ export default function TaggingLyrics({ fileId }: Props) {
           if (playerRef.current) {
             const rate = playerRef.current.playbackRate;
             playerRef.current.playbackRate = Math.exp(
-              Math.min(Math.log(rate) + 0.2, 1)
+              Math.min(Math.log(rate) + 0.2, 1),
             );
             setPlaybackRate(playerRef.current.playbackRate);
           }
@@ -337,7 +337,7 @@ export default function TaggingLyrics({ fileId }: Props) {
           if (playerRef.current) {
             const rate = playerRef.current.playbackRate;
             playerRef.current.playbackRate = Math.exp(
-              Math.max(Math.log(rate) - 0.2, -1)
+              Math.max(Math.log(rate) - 0.2, -1),
             );
             setPlaybackRate(playerRef.current.playbackRate);
           }
@@ -370,14 +370,14 @@ export default function TaggingLyrics({ fileId }: Props) {
         moveCursor((cursor) => cursor + 1);
       } else if (
         ["ArrowUp", "KeyW", "KeyJ", "Up", "W", "w", "J", "j"].includes(
-          codeOrKey
+          codeOrKey,
         )
       ) {
         ev.preventDefault();
         moveCursor((cursor) => (cursor || 1) - 1);
       } else if (
         ["ArrowDown", "KeyR", "KeyK", "Down", "r", "r", "K", "k"].includes(
-          codeOrKey
+          codeOrKey,
         )
       ) {
         ev.preventDefault();
@@ -397,14 +397,14 @@ export default function TaggingLyrics({ fileId }: Props) {
         moveCursor((cursor) => (cursor || 0) + 10);
       } else if (
         ["ArrowLeft", "KeyA", "KeyH", "Left", "A", "a", "H", "h"].includes(
-          codeOrKey
+          codeOrKey,
         )
       ) {
         ev.preventDefault();
         if (playerRef.current) playerRef.current.currentTime -= 5;
       } else if (
         ["ArrowRight", "KeyS", "KeyL", "Right", "S", "s", "L", "l"].includes(
-          codeOrKey
+          codeOrKey,
         )
       ) {
         ev.preventDefault();
@@ -434,7 +434,7 @@ export default function TaggingLyrics({ fileId }: Props) {
       <div
         className={cn(
           "sticky top-0 left-0 z-10 py-1",
-          "bg-background/80 backdrop-blur-sm"
+          "bg-background/80 backdrop-blur-sm",
         )}
       >
         <InstructionsMemo />
@@ -456,7 +456,7 @@ export default function TaggingLyrics({ fileId }: Props) {
             <span className="my-2 text-sm">
               {extrapolateTags.reduce<number>(
                 (prev, curr) => prev + (curr == null ? 0 : 1),
-                0
+                0,
               )}{" "}
               tags added, formula:{" "}
               <span className="font-serif">

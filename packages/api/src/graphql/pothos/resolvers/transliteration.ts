@@ -14,8 +14,7 @@ const FuriganaLabelInput = builder.inputType("FuriganaLabel", {
         "Starting character per Extended Grapheme Cluster (including)",
     }),
     rightIndex: t.int({
-      description:
-        "Ending character per Extended Grapheme Cluster (excluding)",
+      description: "Ending character per Extended Grapheme Cluster (excluding)",
     }),
   }),
 });
@@ -41,16 +40,20 @@ builder.queryField("transliterate", (t) =>
     },
     resolve: (_root, { text, furigana }) => ({
       text,
-      furigana: (furigana ?? []) as { content: string; leftIndex: number; rightIndex: number }[][],
+      furigana: (furigana ?? []) as {
+        content: string;
+        leftIndex: number;
+        rightIndex: number;
+      }[][],
     }),
-  })
+  }),
 );
 
 builder.queryField("furiganaMappings", (t) =>
   t.field({
     type: [FuriganaMappingRef],
     resolve: async () => db.query.FuriganaMappings.findMany(),
-  })
+  }),
 );
 
 builder.queryField("computeFuriganaMappings", (t) =>
@@ -71,7 +74,7 @@ builder.queryField("computeFuriganaMappings", (t) =>
           };
         })
         .filter((a): a is NonNullable<typeof a> => !!a),
-  })
+  }),
 );
 
 builder.mutationField("updateFuriganaMappings", (t) =>
@@ -121,5 +124,5 @@ builder.mutationField("updateFuriganaMappings", (t) =>
       }
       return true;
     },
-  })
+  }),
 );

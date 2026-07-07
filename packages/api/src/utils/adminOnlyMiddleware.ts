@@ -16,7 +16,7 @@ import type { User } from "../models/User";
 export function adminOnlyMiddleware(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   passport.authenticate("jwt", function (err: unknown, user: User | null) {
     if (err) {

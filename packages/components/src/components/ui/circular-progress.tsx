@@ -41,7 +41,7 @@ const CircularProgress = React.forwardRef<SVGSVGElement, CircularProgressProps>(
           value === undefined && "animate-spin",
           // Rotate for determinate progress to start from the top
           value !== undefined && "-rotate-90 transform",
-          className
+          className,
         )}
         // Disable spin animation if value is provided (determinate)
         style={value !== undefined ? { animation: "none" } : {}}
@@ -72,7 +72,7 @@ const CircularProgress = React.forwardRef<SVGSVGElement, CircularProgressProps>(
         />
       </svg>
     );
-  }
+  },
 );
 
 CircularProgress.displayName = "CircularProgress";

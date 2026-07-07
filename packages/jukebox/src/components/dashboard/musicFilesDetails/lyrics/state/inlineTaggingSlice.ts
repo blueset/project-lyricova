@@ -568,27 +568,27 @@ export const createInlineTaggingSlice: StateCreator<
               const nextStartTime = nextTags?.length
                 ? Math.min(...nextTags)
                 : !Number.isNaN(arr[idx + 1]?.position ?? NaN)
-                ? arr[idx + 1]?.position ?? null
-                : null;
+                  ? (arr[idx + 1]?.position ?? null)
+                  : null;
               const firstTag = line?.attachments?.[TAGS]?.values?.flat()[0];
               const fallbackStartTime =
                 isNaN(line.position) && !prevEndTime
                   ? NaN
                   : isNaN(line.position)
-                  ? prevEndTime
-                  : !prevEndTime
-                  ? line.position
-                  : line.content
-                  ? Math.max(
-                      isNaN(line.position) ? 0 : line.position,
-                      prevEndTime ?? 0,
-                    )
-                  : // Force empty line to use prevEndTime or NextStartTime, whichever is earlier
-                    (prevEndTime &&
-                      nextStartTime &&
-                      Math.min(prevEndTime, nextStartTime - 0.001)) ??
-                    nextStartTime ??
-                    prevEndTime;
+                    ? prevEndTime
+                    : !prevEndTime
+                      ? line.position
+                      : line.content
+                        ? Math.max(
+                            isNaN(line.position) ? 0 : line.position,
+                            prevEndTime ?? 0,
+                          )
+                        : // Force empty line to use prevEndTime or NextStartTime, whichever is earlier
+                          ((prevEndTime &&
+                            nextStartTime &&
+                            Math.min(prevEndTime, nextStartTime - 0.001)) ??
+                          nextStartTime ??
+                          prevEndTime);
               const newTime = firstTag || fallbackStartTime;
               if (
                 newTime != null &&
@@ -618,7 +618,10 @@ export const createInlineTaggingSlice: StateCreator<
                       }
                       return null;
                     })
-                    .filter((tag): tag is { index: number; timeTag: number } => tag !== null);
+                    .filter(
+                      (tag): tag is { index: number; timeTag: number } =>
+                        tag !== null,
+                    );
                 }
               }
             });

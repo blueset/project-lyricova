@@ -61,7 +61,7 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
       const oneKana = remainingHira[0];
       const secondKana = remainingHira[1];
       if (remainingHira.length >= 2 && twoKanas in JA_MAP.romanMapDouble) {
-        const key = twoKanas as keyof typeof JA_MAP["romanMapDouble"];
+        const key = twoKanas as keyof (typeof JA_MAP)["romanMapDouble"];
         const romajiSeq = JA_MAP.romanMapDouble[key];
         for (let i = 1; i <= romajiSeq.length; i++) {
           sequence.push(done + romajiSeq.substring(0, i));
@@ -74,16 +74,16 @@ function animateJa(words: [string, string][]): AnimatedWord[] {
         remainingHira[0] == "っ" &&
         secondKana in JA_MAP.romanMapSingle &&
         JA_MAP.romanMapSingle[
-          secondKana as keyof typeof JA_MAP["romanMapSingle"]
+          secondKana as keyof (typeof JA_MAP)["romanMapSingle"]
         ]
       ) {
-        const key = secondKana as keyof typeof JA_MAP["romanMapSingle"];
+        const key = secondKana as keyof (typeof JA_MAP)["romanMapSingle"];
         sequence.push(done + JA_MAP.romanMapSingle[key][0]);
         done += "っ";
         remainingHira = remainingHira.substring(1, remainingHira.length);
         // matching single char
       } else if (oneKana in JA_MAP.romanMapSingle) {
-        const key = oneKana as keyof typeof JA_MAP["romanMapSingle"];
+        const key = oneKana as keyof (typeof JA_MAP)["romanMapSingle"];
         for (let i = 1; i <= JA_MAP.romanMapSingle[key].length; i++) {
           sequence.push(done + JA_MAP.romanMapSingle[key].substr(0, i));
         }
@@ -139,7 +139,7 @@ function animateEn(words: [string, string][]): AnimatedWord[] {
 
 export function buildAnimationSequence(
   text: [string, string][],
-  language: string
+  language: string,
 ): AnimatedWord[] {
   if (language.startsWith("ja")) {
     return animateJa(text);

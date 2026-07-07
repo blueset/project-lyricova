@@ -45,13 +45,13 @@ export function TagNode({ tag }: { tag: TagWithCount }) {
               .then(() => {
                 const promises: Promise<any>[] = [];
                 document.fonts.forEach(
-                  (f) => f.family.match(/Hubot/gi) && promises.push(f.loaded)
+                  (f) => f.family.match(/Hubot/gi) && promises.push(f.loaded),
                 );
                 return Promise.all(promises);
               })
               .then(() => {
                 const fontSize = parseFloat(
-                  window.getComputedStyle(elm).getPropertyValue("font-size")
+                  window.getComputedStyle(elm).getPropertyValue("font-size"),
                 );
                 const spans = Array.from(elm.querySelectorAll("span"));
                 spans.forEach((span) => {

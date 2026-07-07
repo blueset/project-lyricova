@@ -68,7 +68,7 @@ export class CanvasBackgroundRender {
       this.setAlbumColorMap([[0, 0, 0]]);
     } else {
       throw new TypeError(
-        "你的网易云不支持 WebGL ！有可能是需要开启 GPU 硬件加速或电脑硬件不支持！"
+        "你的网易云不支持 WebGL ！有可能是需要开启 GPU 硬件加速或电脑硬件不支持！",
       );
     }
   }
@@ -87,7 +87,7 @@ export class CanvasBackgroundRender {
   resize(
     width = this.canvas.width,
     height = this.canvas.height,
-    renderScale = 1
+    renderScale = 1,
   ) {
     const canvas = this.canvas;
     canvas.width = width * renderScale;
@@ -143,7 +143,7 @@ export class CanvasBackgroundRender {
       new Float32Array([
         -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
       ]),
-      gl.STATIC_DRAW
+      gl.STATIC_DRAW,
     );
 
     this.vertexBuffer = buffer;
@@ -152,7 +152,7 @@ export class CanvasBackgroundRender {
   private fshader: WebGLShader | null = null;
   private rebuildShader(
     fragmentSource: string,
-    vertexSource = DEFAULT_VERTEX_SHADER
+    vertexSource = DEFAULT_VERTEX_SHADER,
   ) {
     const gl = this.gl;
     if (this.vshader) gl.deleteShader(this.vshader);
@@ -251,7 +251,7 @@ export class CanvasBackgroundRender {
       this.gl.TEXTURE1,
       this.albumColorMapSize,
       new Uint8Array(pixelsData),
-      this.albumColorMapTex
+      this.albumColorMapTex,
     );
     this.updateAllUniforms();
   }
@@ -262,7 +262,7 @@ export class CanvasBackgroundRender {
     this.albumImageSize = [image.width, image.height];
     const fitImageSize = Math.min(
       this.gl.getParameter(this.gl.MAX_TEXTURE_SIZE),
-      Math.pow(2, Math.round(Math.log2(Math.max(image.width, image.height))))
+      Math.pow(2, Math.round(Math.log2(Math.max(image.width, image.height)))),
     );
     const resized = resizeImage(image, fitImageSize, fitImageSize);
     // console.log(
@@ -280,14 +280,14 @@ export class CanvasBackgroundRender {
       this.gl.TEXTURE2,
       fitImageSize,
       resized.data,
-      this.albumImageTex
+      this.albumImageTex,
     );
     this.updateAllUniforms();
   }
   private rebuildTextureFromImage(
     id: GLenum,
     image: HTMLImageElement,
-    existTexture?: WebGLTexture
+    existTexture?: WebGLTexture,
   ) {
     const gl = this.gl;
     if (existTexture) gl.deleteTexture(existTexture);
@@ -302,7 +302,7 @@ export class CanvasBackgroundRender {
     id: GLenum,
     size: number,
     pixelsData: Uint8Array | Uint8ClampedArray,
-    existTexture?: WebGLTexture
+    existTexture?: WebGLTexture,
   ) {
     if (!Number.isInteger(Math.log2(size)))
       throw new TypeError("材质大小不是二的次幂！");
@@ -321,7 +321,7 @@ export class CanvasBackgroundRender {
       0,
       gl.RGBA,
       gl.UNSIGNED_BYTE,
-      pixelsData
+      pixelsData,
     );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);

@@ -122,7 +122,7 @@ export const userPublicKeyCredentialsRelations = relations(
       fields: [UserPublicKeyCredentials.userId],
       references: [Users.id],
     }),
-  })
+  }),
 );
 
 export const entriesRelations = relations(Entries, ({ one, many }) => ({
@@ -191,5 +191,5 @@ export const fileInPlaylistsRelations = relations(
       fields: [FileInPlaylists.playlistId],
       references: [Playlists.slug],
     }),
-  })
+  }),
 );

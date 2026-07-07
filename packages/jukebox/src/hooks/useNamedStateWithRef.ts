@@ -9,7 +9,7 @@ import {
 
 export function useNamedStateWithRef<T>(
   initialValue: T | (() => T),
-  name: string
+  name: string,
 ): [T, Dispatch<SetStateAction<T>>, React.RefObject<T>] {
   const [state, _setState] = useState<T>(initialValue);
   const ref = useRef<T>(state);
@@ -28,7 +28,7 @@ export function useNamedStateWithRef<T>(
         return newValue;
       });
     },
-    [_setState]
+    [_setState],
   );
   return [state, setState, ref];
 }

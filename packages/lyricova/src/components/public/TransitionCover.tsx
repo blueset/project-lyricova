@@ -14,13 +14,13 @@ const useIsomorphicLayoutEffect = IS_SERVER ? useEffect : useLayoutEffect;
 
 function buildTimeline(
   elm: HTMLDivElement,
-  top: number
+  top: number,
 ): [gsap.core.Timeline, gsap.core.Timeline] {
   const cover1 = elm.querySelector<HTMLDivElement>("." + classes.cover1);
   const cover2 = elm.querySelector<HTMLDivElement>("." + classes.cover2);
   const cover3 = elm.querySelector<HTMLDivElement>("." + classes.cover3);
   const logoContainer = elm.querySelector<HTMLDivElement>(
-    "." + classes.logoContainer
+    "." + classes.logoContainer,
   );
   if (!logoContainer) {
     throw new Error("Transition cover logo is missing");
@@ -48,19 +48,19 @@ function buildTimeline(
     .fromTo(
       cover1,
       { y: "-50%", scaleY: 0, transformOrigin: "center" },
-      { scaleY: 2 }
+      { scaleY: 2 },
     )
     .fromTo(
       cover2,
       { y: "-50%", scaleY: 0, transformOrigin: "center" },
       { scaleY: 2 },
-      "<+0.1"
+      "<+0.1",
     )
     .fromTo(
       cover3,
       { y: "-50%", scaleY: 0, transformOrigin: "center" },
       { scaleY: 2 },
-      "<+0.1"
+      "<+0.1",
     )
     .addLabel("revealLogo")
     .set(logoContainer, { y: -top, opacity: 1 })
@@ -68,7 +68,7 @@ function buildTimeline(
       paths,
       { strokeDashoffset: (idx, target) => target.getTotalLength() },
       { strokeDashoffset: 0, duration: 0.5, stagger: 0.025 },
-      "+1.5"
+      "+1.5",
     )
     .fromTo(
       paths,
@@ -78,12 +78,12 @@ function buildTimeline(
         duration: 1,
         stagger: 0.025,
       },
-      "<-0.2"
+      "<-0.2",
     )
     .to(
       paths,
       { attr: { "fill-opacity": 0 }, duration: 1, stagger: 0.025 },
-      ">+0.5"
+      ">+0.5",
     );
 
   const endTimeline = gsap
@@ -98,13 +98,13 @@ function buildTimeline(
     .set(
       [cover1, cover2, cover3],
       { y: "50%", scaleY: 2, transformOrigin: "bottom" },
-      0
+      0,
     )
     .fromTo(
       logoContainer,
       { y: 0, opacity: 1 },
       { opacity: 0, duration: 0.25 },
-      0
+      0,
     )
     .to(cover3, { scaleY: 0 }, "<")
     .to(cover2, { scaleY: 0 }, "<+0.1")
@@ -125,7 +125,7 @@ export function TransitionCover() {
   useIsomorphicLayoutEffect(() => {
     const handleRouteChange = (
       path: string,
-      { shallow }: { shallow: boolean }
+      { shallow }: { shallow: boolean },
     ) => {
       // console.log("handleRouteChange", window.lastClickTop);
       if (coverRef.current) {
@@ -140,7 +140,7 @@ export function TransitionCover() {
         }
         timelineRef.current = buildTimeline(
           coverRef.current,
-          window.lastClickTop ?? window.innerHeight / 2
+          window.lastClickTop ?? window.innerHeight / 2,
         );
         timelineRef.current[0].play();
         disableBodyScroll(document.body);
@@ -148,7 +148,7 @@ export function TransitionCover() {
     };
     const handleRouteChangeComplete = (
       path: string,
-      { shallow }: { shallow: boolean }
+      { shallow }: { shallow: boolean },
     ) => {
       if (timelineRef.current) {
         const timeout =
@@ -191,7 +191,7 @@ export function TransitionCover() {
 
     timelineRef.current = buildTimeline(
       elm,
-      window.lastClickTop ?? window.innerHeight / 2
+      window.lastClickTop ?? window.innerHeight / 2,
     );
     // console.log("startTimeline", timelineRef.current);
     timelineRef.current[0].play("revealLogo");
@@ -226,7 +226,7 @@ export function TransitionCover() {
       if (typeof document !== "undefined") {
         isLoaded = true;
         document.fonts.forEach(
-          (f) => (isLoaded = isLoaded && f.status === "loaded")
+          (f) => (isLoaded = isLoaded && f.status === "loaded"),
         );
       }
       // console.log("isLoaded", isLoaded);

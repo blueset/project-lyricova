@@ -13,7 +13,7 @@
   font-family: $headings-font;
   font-weight: 500;
   font-stretch: expanded;
-  
+
   .label {
     width: 0;
     flex-grow: 1;
@@ -26,7 +26,6 @@
     &:last-child {
       text-align: right;
     }
-    
   }
 
   a.label {
@@ -51,7 +50,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      
+
       .label {
         display: block;
         width: fit-content;

@@ -1,12 +1,15 @@
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useMemo } from "react";
-import type { LyricsKitLyrics, LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
+import type {
+  LyricsKitLyrics,
+  LyricsKitLyricsLine,
+} from "@lyricova/components/gql/schema";
 import type { PlayerLyricsState, PlayerLyricsKeyframe } from "./types";
 import { usePlayerLyricsState } from "./usePlayerLyricsState";
 
 export function usePlainPlayerLyricsState(
   lyrics: LyricsKitLyrics,
-  playerRef: RefObject<HTMLAudioElement>
+  playerRef: RefObject<HTMLAudioElement>,
 ): PlayerLyricsState<LyricsKitLyricsLine> {
   const keyFrames: PlayerLyricsKeyframe<LyricsKitLyricsLine>[] = useMemo(
     () =>
@@ -14,7 +17,7 @@ export function usePlainPlayerLyricsState(
         start: v.position,
         data: v,
       })),
-    [lyrics]
+    [lyrics],
   );
   return usePlayerLyricsState<LyricsKitLyricsLine>(keyFrames, playerRef);
 }

@@ -70,7 +70,8 @@
   }
 }
 
-.songTitle a, .songArtists a {
+.songTitle a,
+.songArtists a {
   color: $primary-text;
   text-decoration: none;
   display: inline-block;
@@ -78,7 +79,7 @@
   transition: color 0.25s ease-out;
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     width: 100%;
     transform: scaleX(0);

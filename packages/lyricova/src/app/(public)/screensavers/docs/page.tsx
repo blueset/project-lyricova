@@ -79,8 +79,8 @@ export default async function ScreensaverDocs() {
               {idx + 2 == tags.length
                 ? ", and "
                 : idx + 1 == tags.length
-                ? ""
-                : ", "}
+                  ? ""
+                  : ", "}
             </Fragment>
           ))}
           . By default it includes entries of all tags.

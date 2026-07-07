@@ -1,4 +1,4 @@
 export interface KugouResponseSingleLyrics {
-    content: string;
-    fmt: "lrc" | "krc";
+  content: string;
+  fmt: "lrc" | "krc";
 }

@@ -59,7 +59,7 @@ export function mapEntryListing(e: Record<string, any>): Record<string, any> {
  */
 export async function fetchEntriesListing(
   entryIds: number[],
-  pulseOrder: "asc" | "desc" = "desc"
+  pulseOrder: "asc" | "desc" = "desc",
 ): Promise<Record<string, any>[]> {
   if (!entryIds.length) return [];
   const rows = await db.query.Entries.findMany({

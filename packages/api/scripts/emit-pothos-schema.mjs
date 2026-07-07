@@ -20,7 +20,5 @@ import { buildPothosSchema } from "../dist/graphql/pothos/schema.js";
 const outPath = process.argv[2] ?? "schema.pothos.graphql";
 const sdl = printSchema(buildPothosSchema());
 writeFileSync(outPath, sdl);
-console.log(
-  `[emit-pothos] wrote ${outPath} (${sdl.split("\n").length} lines)`
-);
+console.log(`[emit-pothos] wrote ${outPath} (${sdl.split("\n").length} lines)`);
 process.exit(0);

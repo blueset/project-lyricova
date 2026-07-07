@@ -10,5 +10,5 @@ builder.queryField("translationAlignment", (t) =>
     },
     resolve: (_root, { original, translation }) =>
       translationAlignment(original, translation),
-  })
+  }),
 );

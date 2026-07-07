@@ -1,11 +1,11 @@
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useRef, useCallback, useEffect } from "react";
 import type { PlayerState } from "./types";
 import { usePlayerState } from "./usePlayerState";
 
 export function usePlayerStateRAF(
   playerRef: RefObject<HTMLAudioElement>,
-  callback: (time: number, state: "playing" | "paused") => void
+  callback: (time: number, state: "playing" | "paused") => void,
 ) {
   const playerState = usePlayerState(playerRef);
   const playerStateRef = useRef<PlayerState>(playerState);
@@ -37,7 +37,7 @@ export function usePlayerStateRAF(
         frameCallbackRef.current = requestAnimationFrame(onFrame);
       }
     },
-    [callback]
+    [callback],
   );
 
   // Search for the frame for current time

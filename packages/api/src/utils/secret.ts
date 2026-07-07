@@ -14,7 +14,7 @@ if (fs.existsSync(".env")) {
   dotenv.config({ path: ".env.example", quiet: true }); // you can delete this after you create your own .env file!
   if (!prod) {
     logger.warn(
-      "No .env file found. Using .env.example file to supply config environment variables"
+      "No .env file found. Using .env.example file to supply config environment variables",
     );
   }
 }
@@ -37,7 +37,7 @@ export const DB_URI = process.env["DB_URI"] as string;
 
 if (!DB_URI) {
   console.error(
-    "Database connection string is not set. Set DB_URI environment variable."
+    "Database connection string is not set. Set DB_URI environment variable.",
   );
   process.exit(1);
 }
@@ -46,7 +46,7 @@ export const YTDLP_PATH = process.env["YTDLP_PATH"];
 
 if (!YTDLP_PATH) {
   logger.error(
-    "Path to yt-dlp is not set. Set YTDLP_PATH environment variable."
+    "Path to yt-dlp is not set. Set YTDLP_PATH environment variable.",
   );
   process.exit(1);
 }
@@ -54,7 +54,7 @@ if (!YTDLP_PATH) {
 const musicFilesPath = process.env["MUSIC_FILES_PATH"];
 if (!musicFilesPath) {
   logger.error(
-    "Music files path is not set. Set MUSIC_FILES_PATH environment variable."
+    "Music files path is not set. Set MUSIC_FILES_PATH environment variable.",
   );
   process.exit(1);
 }

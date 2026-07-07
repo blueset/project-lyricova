@@ -26,8 +26,8 @@ export function TopEntry({ entry }: TopEntryProps) {
   const artistString = !entry.producersName
     ? entry.vocalistsName
     : !entry.vocalistsName
-    ? entry.producersName
-    : `${entry.producersName} feat. ${entry.vocalistsName}`;
+      ? entry.producersName
+      : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
   const tagsGradient = useMemo(
     () => generateColorGradient(entry.tags, true),

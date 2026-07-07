@@ -6,8 +6,10 @@ import {
 } from "@lyricova/components/components/ui/tooltip";
 import type { ComponentProps, ReactNode } from "react";
 
-interface TooltipIconButtonProps
-  extends Omit<ComponentProps<typeof Button>, "title"> {
+interface TooltipIconButtonProps extends Omit<
+  ComponentProps<typeof Button>,
+  "title"
+> {
   title: ReactNode;
 }
 

@@ -38,7 +38,9 @@ export const YouTubeDlProgressValueRef =
 YouTubeDlProgressValueRef.implement({
   description: "youtube-dl download progress object.",
   fields: (t) => ({
-    type: t.exposeString("type", { description: 'Type of update, "progress".' }),
+    type: t.exposeString("type", {
+      description: 'Type of update, "progress".',
+    }),
     current: t.exposeFloat("current"),
     total: t.exposeFloat("total"),
     speed: t.exposeString("speed", { nullable: true }),

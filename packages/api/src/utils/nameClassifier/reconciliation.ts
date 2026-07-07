@@ -87,10 +87,7 @@ function commonPrefixLength(a: string, b: string): number {
 function commonSuffixLength(a: string, b: string): number {
   const limit = Math.min(a.length, b.length);
   let index = 0;
-  while (
-    index < limit &&
-    a[a.length - 1 - index] === b[b.length - 1 - index]
-  ) {
+  while (index < limit && a[a.length - 1 - index] === b[b.length - 1 - index]) {
     index++;
   }
   return index;

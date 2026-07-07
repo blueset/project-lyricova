@@ -1,15 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { classifyNameLanguage } from "./index";
-import {
-  alignSegments,
-  nfkcNormalize,
-  phoneticSkeleton,
-} from "./normalize";
-import {
-  phonotacticClassify,
-  scorePinyin,
-  scoreRomaji,
-} from "./phonotactics";
+import { alignSegments, nfkcNormalize, phoneticSkeleton } from "./normalize";
+import { phonotacticClassify, scorePinyin, scoreRomaji } from "./phonotactics";
 import {
   reconcile,
   romanizeAsJapanese,
@@ -59,9 +51,7 @@ describe("nameClassifier normalization utilities", () => {
   });
 
   it("marks trailing meta-annotations separately", () => {
-    expect(
-      alignSegments("Yuezheng Longya (Unknown)", "乐正龙牙"),
-    ).toEqual([
+    expect(alignSegments("Yuezheng Longya (Unknown)", "乐正龙牙")).toEqual([
       {
         roman: "Yuezheng Longya",
         original: "乐正龙牙",
@@ -131,21 +121,27 @@ describe("nameClassifier reconciliation", () => {
 
 describe("classifyNameLanguage", () => {
   it("classifies Minato Takahiro / 湊貴大 as Japanese", async () => {
-    await expect(classifyNameLanguage("Minato Takahiro", "湊貴大")).resolves.toMatchObject({
+    await expect(
+      classifyNameLanguage("Minato Takahiro", "湊貴大"),
+    ).resolves.toMatchObject({
       label: "ja",
     });
   });
 
   it("classifies Ruiqing / 芮晴 as Chinese", async () => {
-    await expect(classifyNameLanguage("Ruiqing", "芮晴")).resolves.toMatchObject({
+    await expect(
+      classifyNameLanguage("Ruiqing", "芮晴"),
+    ).resolves.toMatchObject({
       label: "zh",
     });
   });
 
   it("classifies Zi San / 籽三 as Chinese", async () => {
-    await expect(classifyNameLanguage("Zi San", "籽三")).resolves.toMatchObject({
-      label: "zh",
-    });
+    await expect(classifyNameLanguage("Zi San", "籽三")).resolves.toMatchObject(
+      {
+        label: "zh",
+      },
+    );
   });
 
   it("classifies cosMo@BousouP / cosMo@暴走P as Japanese", async () => {
@@ -157,7 +153,9 @@ describe("classifyNameLanguage", () => {
   });
 
   it("classifies HachioujiP / 八王子P as Japanese", async () => {
-    await expect(classifyNameLanguage("HachioujiP", "八王子P")).resolves.toMatchObject({
+    await expect(
+      classifyNameLanguage("HachioujiP", "八王子P"),
+    ).resolves.toMatchObject({
       label: "ja",
     });
   });
@@ -179,7 +177,9 @@ describe("classifyNameLanguage", () => {
   });
 
   it("classifies Hikarisyuyo / 光収容 as Japanese", async () => {
-    await expect(classifyNameLanguage("Hikarisyuyo", "光収容")).resolves.toMatchObject({
+    await expect(
+      classifyNameLanguage("Hikarisyuyo", "光収容"),
+    ).resolves.toMatchObject({
       label: "ja",
     });
   });

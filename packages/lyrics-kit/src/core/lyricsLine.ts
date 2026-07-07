@@ -35,7 +35,11 @@ export class LyricsLine {
     return buildTimeTag(this.position);
   }
 
-  constructor(content: string, position: number, attachments: Attachments = new Attachments()) {
+  constructor(
+    content: string,
+    position: number,
+    attachments: Attachments = new Attachments(),
+  ) {
     this.content = content;
     this.position = position;
     this.attachments = attachments;
@@ -57,10 +61,10 @@ export class LyricsLine {
     return [
       this.content,
       ...Object.entries(this.attachments.content).map(
-        v => `[${v[0].toString()}]${v[1]?.toString() ?? ""}`
+        (v) => `[${v[0].toString()}]${v[1]?.toString() ?? ""}`,
       ),
     ]
-      .map(v => `${timeLabel}${v}`)
+      .map((v) => `${timeLabel}${v}`)
       .join("\n");
   }
 
@@ -68,7 +72,7 @@ export class LyricsLine {
     const { before, after, useFurigana, translationLanguage } = Object.assign(
       {},
       DefaultToLegacyStringOptions,
-      options
+      options,
     );
     let translation = this.attachments.translation(translationLanguage);
     if (translation) {
@@ -83,7 +87,8 @@ export class LyricsLine {
       const base = this.content;
       let lastIndex = 0;
       for (const label of this.attachments.content[FURIGANA].attachment) {
-        content += base.substring(lastIndex, label.range[1]) + `(${label.content})`;
+        content +=
+          base.substring(lastIndex, label.range[1]) + `(${label.content})`;
         lastIndex = label.range[1];
       }
       if (lastIndex < base.length) {
@@ -113,7 +118,7 @@ export class LyricsLine {
     const line = new LyricsLine(
       json.content,
       json.position,
-      Attachments.fromJSON(json.attachments)
+      Attachments.fromJSON(json.attachments),
     );
     line.enabled = json.enabled;
     return line;

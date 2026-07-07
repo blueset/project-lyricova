@@ -47,7 +47,7 @@ function furiganaFromDom(elm: Node): FuriganaGroup[] {
   const result: FuriganaGroup[] = [];
   const walker = document.createTreeWalker(
     elm,
-    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT
+    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
   );
   let currentNode: Node | null = walker.nextNode();
 
@@ -111,12 +111,12 @@ export function ApplyAllFurigana() {
   const { applyPatternToAllLines } = useLyricsStore(
     useShallow((state) => ({
       applyPatternToAllLines: state.furigana.applyPatternToAllLines,
-    }))
+    })),
   );
   const [baseText, setBaseText] = useNamedState<string>("", "baseText");
   const [furiganaText, setFuriganaText] = useNamedState<string>(
     "",
-    "furiganaText"
+    "furiganaText",
   );
   const [isOpen, setIsOpen] = useState(false);
 
@@ -138,7 +138,7 @@ export function ApplyAllFurigana() {
       event.preventDefault();
       event.stopPropagation();
     },
-    [setBaseText, setFuriganaText]
+    [setBaseText, setFuriganaText],
   );
 
   const handleApply = useCallback(() => {
@@ -170,7 +170,7 @@ export function ApplyAllFurigana() {
               </ruby>
             ) : (
               <span key={index}>{group}</span>
-            )
+            ),
           )}
         </div>
         <div className="grid gap-2">

@@ -13,8 +13,8 @@ export function getFields(info: GraphQLResolveInfo): string[] {
           fields.push(
             ...getFields({
               ...info,
-              fieldNodes: [(fragment as unknown) as FieldNode],
-            })
+              fieldNodes: [fragment as unknown as FieldNode],
+            }),
           );
         }
       }

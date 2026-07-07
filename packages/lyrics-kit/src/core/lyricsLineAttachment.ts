@@ -111,7 +111,7 @@ export class WordTimeTag extends LyricsLineAttachment {
     if (typeof arg0 === "string") {
       const description = arg0;
       const tags = [...description.matchAll(timeLineAttachmentRegex)].map(
-        v => new WordTimeTagLabel(v[1])
+        (v) => new WordTimeTagLabel(v[1]),
       );
       this.tags = tags;
 
@@ -134,13 +134,13 @@ export class WordTimeTag extends LyricsLineAttachment {
   }
 
   public toString(): string {
-    return this.tags.map(x => x.toString()).join("");
+    return this.tags.map((x) => x.toString()).join("");
   }
 
   public toJSON(): WordTimeTagJSON {
     return {
       type: "time_tag",
-      tags: this.tags.map(tag => ({
+      tags: this.tags.map((tag) => ({
         timeTag: tag.timeTag,
         index: tag.index,
       })),
@@ -149,7 +149,9 @@ export class WordTimeTag extends LyricsLineAttachment {
   }
 
   public static fromJSON(json: WordTimeTagJSON): WordTimeTag {
-    const tags = json.tags.map(tag => new WordTimeTagLabel(tag.timeTag, tag.index));
+    const tags = json.tags.map(
+      (tag) => new WordTimeTagLabel(tag.timeTag, tag.index),
+    );
     return new WordTimeTag(tags, json.duration);
   }
 }
@@ -168,12 +170,16 @@ export class RangeAttributeLabel {
       const description = arg0;
       const components = description.split(",");
       if (components.length !== 3) {
-        throw new Error(`Range attribute tag doesn't have 3 components: ${description}`);
+        throw new Error(
+          `Range attribute tag doesn't have 3 components: ${description}`,
+        );
       }
       const lb = parseInt(components[1]),
         ub = parseInt(components[2]);
       if (lb >= ub) {
-        throw new Error(`Range attribute tag has an invalid range: ${description}`);
+        throw new Error(
+          `Range attribute tag has an invalid range: ${description}`,
+        );
       }
       this.content = components[0];
       this.range = [lb, ub];
@@ -212,7 +218,7 @@ export class RangeAttribute extends LyricsLineAttachment {
   public toJSON(): RangeAttributeJSON {
     return {
       type: "range",
-      attachment: this.attachment.map(label => ({
+      attachment: this.attachment.map((label) => ({
         content: label.content,
         range: label.range,
       })),
@@ -220,7 +226,7 @@ export class RangeAttribute extends LyricsLineAttachment {
   }
 
   public static fromJSON(json: RangeAttributeJSON): RangeAttribute {
-    const attachments: [string, Range][] = json.attachment.map(label => [
+    const attachments: [string, Range][] = json.attachment.map((label) => [
       label.content,
       label.range,
     ]);
@@ -236,14 +242,16 @@ export class NumberArray extends LyricsLineAttachment {
   constructor(value: string | number[]) {
     super();
     if (typeof value === "string") {
-      this.attachment = value.split(",").map(v => (v ? parseInt(v) : 0));
+      this.attachment = value.split(",").map((v) => (v ? parseInt(v) : 0));
     } else {
       this.attachment = value;
     }
   }
 
   public toString(): string {
-    return this.attachment.map(v => (v !== undefined ? v.toString() : "0")).join(",");
+    return this.attachment
+      .map((v) => (v !== undefined ? v.toString() : "0"))
+      .join(",");
   }
 
   public toJSON(): NumberArrayJson {
@@ -264,14 +272,16 @@ export class Number2DArray extends LyricsLineAttachment {
     if (typeof value === "string") {
       this.attachment = value
         .split(",")
-        .map(v => (v ? v.split("/").map(v2 => parseInt(v2) / 1000) : []));
+        .map((v) => (v ? v.split("/").map((v2) => parseInt(v2) / 1000) : []));
     } else {
       this.attachment = value;
     }
   }
 
   public toString(): string {
-    return this.attachment.map(arr => arr.map(v => Math.floor(v * 1000)).join("/")).join(",");
+    return this.attachment
+      .map((arr) => arr.map((v) => Math.floor(v * 1000)).join("/"))
+      .join(",");
   }
 
   public toJSON(): Number2DArrayJson {

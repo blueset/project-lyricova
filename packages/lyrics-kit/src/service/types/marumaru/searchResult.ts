@@ -6,8 +6,8 @@
 //
 
 export interface MarumaruEntry {
-    songPK: string;
-    title: string;
-    artist: string;
-    cover: string;
+  songPK: string;
+  title: string;
+  artist: string;
+  cover: string;
 }

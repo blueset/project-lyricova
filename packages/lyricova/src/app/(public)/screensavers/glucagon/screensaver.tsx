@@ -124,7 +124,7 @@ class Particle {
         this.y,
         Particle.width,
         Particle.height,
-        Particle.width / 2
+        Particle.width / 2,
       );
     } else {
       ctx.ellipse(
@@ -134,7 +134,7 @@ class Particle {
         Particle.height / 2,
         0,
         0,
-        2 * Math.PI
+        2 * Math.PI,
       );
     }
     ctx.fill();
@@ -199,7 +199,7 @@ class Glucagon {
     backCanvas: HTMLCanvasElement,
     verses: Verse[],
     entries: Record<number, Entry>,
-    onNewVerse?: (entryId: number) => void
+    onNewVerse?: (entryId: number) => void,
   ) {
     this.canvas = canvas;
     this.backCanvas = backCanvas;
@@ -226,12 +226,12 @@ class Glucagon {
         .replace(/\p{Zs}/gu, " ")
         .split("\n")
         .map((l) => l.trim())
-        .filter((v) => v)
+        .filter((v) => v),
     );
     this.onNewVerse = onNewVerse;
 
     this.animiationFrame = requestAnimationFrame(
-      this.renderParticles.bind(this)
+      this.renderParticles.bind(this),
     );
   }
 
@@ -263,7 +263,7 @@ class Glucagon {
       this.verseIndex = (this.verseIndex + 1) % this.verseLines.length;
       this.onNewVerse?.(this.verses[this.verseIndex].entryId);
       this.gradient = generateColorGradientFunction(
-        this.entries[this.verses[this.verseIndex].entryId].tags
+        this.entries[this.verses[this.verseIndex].entryId].tags,
       );
       this.lineIndex = -1;
     }
@@ -286,7 +286,7 @@ class Glucagon {
       const fontFamilies: string[] = [];
       document.fonts.forEach(
         (f) =>
-          f.family.match(/(Mona|SourceHan)/g) && fontFamilies.push(f.family)
+          f.family.match(/(Mona|SourceHan)/g) && fontFamilies.push(f.family),
       );
       if (fontFamilies) fontFamily = fontFamilies.join(", ");
     }
@@ -312,7 +312,7 @@ class Glucagon {
         right = Math.max(right, currLeft + metrics.width);
         bottom = Math.max(
           bottom,
-          currBottom + metrics.actualBoundingBoxDescent
+          currBottom + metrics.actualBoundingBoxDescent,
         );
         this.backCtx.fillText(text, currLeft, currBottom);
       }
@@ -327,7 +327,7 @@ class Glucagon {
       left,
       top,
       right - left,
-      bottom - top
+      bottom - top,
     );
     const data = image.data;
 
@@ -343,7 +343,7 @@ class Glucagon {
     left: number,
     top: number,
     right: number,
-    bottom: number
+    bottom: number,
   ) {
     // console.log("ltrb", left, top, right, bottom);
     const { width, height } = this.canvas;
@@ -351,7 +351,7 @@ class Glucagon {
 
     for (let x = 0; x < right - left; x += pWidth) {
       let color: string | null = null;
-      for (let y = 0; y < bottom - top; ) {
+      for (let y = 0; y < bottom - top;) {
         // const alpha = Math.max(
         //   ...[...Array(pWidth).keys()].map((i) =>
         //     this.getPixelAlpha(data, x + i, y, width)
@@ -381,7 +381,7 @@ class Glucagon {
       this.particles = this.particles.filter((p) => p.active);
     }
     this.animiationFrame = requestAnimationFrame(
-      this.renderParticles.bind(this)
+      this.renderParticles.bind(this),
     );
   }
 }
@@ -400,10 +400,10 @@ export default function GlucagonScreensaver({
   const artistString = !entry
     ? "Unknown artists"
     : !entry.producersName
-    ? entry.vocalistsName
-    : !entry.vocalistsName
-    ? entry.producersName
-    : `${entry.producersName} feat. ${entry.vocalistsName}`;
+      ? entry.vocalistsName
+      : !entry.vocalistsName
+        ? entry.producersName
+        : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
   useEffect(() => {
     const now = new Date();
@@ -433,7 +433,7 @@ export default function GlucagonScreensaver({
         backUpCanvasRef.current,
         verses,
         entries,
-        setEntryId
+        setEntryId,
       );
       glucagon.bumpLine();
       glucagon.lastLineTime = performance.now();

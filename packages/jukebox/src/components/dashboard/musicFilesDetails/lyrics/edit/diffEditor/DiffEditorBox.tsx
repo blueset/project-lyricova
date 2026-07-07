@@ -2,7 +2,7 @@ import { Textarea } from "@lyricova/components/components/ui/textarea";
 import { Button } from "@lyricova/components/components/ui/button";
 import { CornerDownLeft } from "lucide-react";
 import { createRef, useMemo, useState } from "react";
-import type { LyricsLine} from "lyrics-kit/core";
+import type { LyricsLine } from "lyrics-kit/core";
 import { FURIGANA, Lyrics, TIME_TAG } from "lyrics-kit/core";
 import { cn } from "@lyricova/components/utils";
 import {
@@ -42,7 +42,7 @@ function PreviewLine({ line }: { line: LyricsLine }) {
   const hasTagMapping = useMemo(() => {
     return new Set([
       ...(line.attachments?.content?.[TIME_TAG]?.tags ?? []).map(
-        (t) => t.index
+        (t) => t.index,
       ),
     ]);
   }, [line]);
@@ -54,7 +54,7 @@ function PreviewLine({ line }: { line: LyricsLine }) {
             key={idx}
             className={cn(
               "border-secondary",
-              hasTagMapping.has(idx + count) && "border-s"
+              hasTagMapping.has(idx + count) && "border-s",
             )}
           >
             {v}
@@ -72,7 +72,7 @@ function PreviewLine({ line }: { line: LyricsLine }) {
       {hasTagMapping.has(line.content.length) && (
         <span
           className={cn(
-            "border-secondary border-s text-muted-foreground opacity-50"
+            "border-secondary border-s text-muted-foreground opacity-50",
           )}
         >
           ¶

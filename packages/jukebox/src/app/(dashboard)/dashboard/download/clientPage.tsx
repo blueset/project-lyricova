@@ -25,7 +25,7 @@ export default function DownloadMusicFile() {
   const [step, setStep] = useNamedState(0, "step");
   const [chosenSource, setChosenSource] = useNamedState<"yt-dlp" | null>(
     null,
-    "chosenSource"
+    "chosenSource",
   );
 
   const chooseSource = useCallback(
@@ -33,7 +33,7 @@ export default function DownloadMusicFile() {
       setChosenSource(sourceName);
       setStep(1);
     },
-    [setStep, setChosenSource]
+    [setStep, setChosenSource],
   );
 
   const firstStep = (

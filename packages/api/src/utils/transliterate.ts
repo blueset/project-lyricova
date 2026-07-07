@@ -196,7 +196,9 @@ async function applyFuriganaMapping(
   let created = false;
   if (!mapping) {
     await db.insert(FuriganaMappings).values({ text, furigana });
-    mapping = await db.query.FuriganaMappings.findFirst({ where: whereMapping });
+    mapping = await db.query.FuriganaMappings.findFirst({
+      where: whereMapping,
+    });
     created = true;
   }
   let segmentedText = mapping?.segmentedText ?? null;
@@ -466,8 +468,8 @@ export async function segmentedTransliteration(
                   prev.reading === "*"
                     ? x.reading
                     : x.reading === "*"
-                    ? prev.reading
-                    : prev.reading + x.reading;
+                      ? prev.reading
+                      : prev.reading + x.reading;
                 prev.charEnd = charPos + len;
               } else {
                 wordEntries.push({
@@ -483,7 +485,7 @@ export async function segmentedTransliteration(
             // Merge MeCab words that overlap with explicit furigana labels
             const lineOffset = lineCharOffsets[lineIdx] ?? 0;
             const lineFurigana = hasFurigana
-              ? options?.furigana?.[lineIdx] ?? []
+              ? (options?.furigana?.[lineIdx] ?? [])
               : [];
 
             const mergedEntries: WordEntry[] = [];
@@ -509,8 +511,8 @@ export async function segmentedTransliteration(
                       merged.reading === "*"
                         ? wordEntries[j].reading
                         : wordEntries[j].reading === "*"
-                        ? merged.reading
-                        : merged.reading + wordEntries[j].reading,
+                          ? merged.reading
+                          : merged.reading + wordEntries[j].reading,
                     charStart: merged.charStart,
                     charEnd: wordEntries[j].charEnd,
                   };

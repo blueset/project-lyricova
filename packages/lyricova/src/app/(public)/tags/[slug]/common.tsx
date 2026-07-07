@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 
 export async function generateMetadataData(
   tagSlug: string,
-  page: string
+  page: string,
 ): Promise<Metadata> {
   const response = await fetch(`${apiBaseUrl}/tags/${tagSlug}`, {
     cache: "no-store",

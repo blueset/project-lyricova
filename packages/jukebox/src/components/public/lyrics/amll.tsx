@@ -12,7 +12,7 @@ const LyricPlayer = dynamic(
   () => import("../compat/amllLyricsPlayer").then((m) => m.LyricPlayer),
   {
     ssr: false,
-  }
+  },
 );
 
 interface Props {
@@ -39,7 +39,7 @@ export function AMLLyrics({ lyrics, transLangIdx }: Props) {
           startTime +
             line.attachments.timeTag.tags[
               line.attachments.timeTag.tags.length - 1
-            ].timeTag
+            ].timeTag,
         );
         const tags = [...line.attachments.timeTag.tags];
         if (tags[0].index !== 0) tags.unshift({ timeTag: 0, index: 0 });
@@ -90,7 +90,7 @@ export function AMLLyrics({ lyrics, transLangIdx }: Props) {
   }, [lang, lyrics.lines, playerRef]);
 
   const [playbackProgressMs, setPlaybackProgressMs] = useState(
-    Math.floor(playerRef.current.currentTime * 1000)
+    Math.floor(playerRef.current.currentTime * 1000),
   );
   const updatePlaybackProgressMs = useCallback(() => {
     setPlaybackProgressMs(Math.floor(playerRef.current.currentTime * 1000));

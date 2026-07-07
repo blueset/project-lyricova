@@ -6,8 +6,8 @@ const SONG = "マシンガンポエムドール",
   DURATION = 140.0;
 const REQ = LyricsSearchRequest.fromInfo(SONG, ARTIST, DURATION);
 
-describe('SpotifyProvider', () => {
-  it('should search and return lyrics results', async () => {
+describe("SpotifyProvider", () => {
+  it("should search and return lyrics results", async () => {
     const spotifyProvider = new SpotifyProvider();
 
     const result = await spotifyProvider.getLyrics(REQ);
@@ -15,6 +15,6 @@ describe('SpotifyProvider', () => {
     console.log("Number of hits:", result.length);
     console.log("Hits:", result);
     expect(result.length).toBeGreaterThan(0);
-    expect(result.some(i => i.isMatched())).toBeTruthy();
+    expect(result.some((i) => i.isMatched())).toBeTruthy();
   });
 });

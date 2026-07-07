@@ -47,7 +47,7 @@ export default function TypingStackedScreensaver({
   const entry = entries[verse.entryId];
   const gradient = useMemo(
     () => generateColorGradient(entry.tags, false),
-    [entry]
+    [entry],
   );
   const hasGradient = entry.tags.length > 1;
   const soloColor = entry.tags.length === 1 ? entry.tags[0].color : undefined;
@@ -60,8 +60,8 @@ export default function TypingStackedScreensaver({
   const artistString = !entry.producersName
     ? entry.vocalistsName
     : !entry.vocalistsName
-    ? entry.producersName
-    : `${entry.producersName} feat. ${entry.vocalistsName}`;
+      ? entry.producersName
+      : `${entry.producersName} feat. ${entry.vocalistsName}`;
 
   const timelineRef = useRef<gsap.core.Timeline>(null);
   const typingLineRef = useRef<HTMLDivElement>(null);
@@ -79,7 +79,7 @@ export default function TypingStackedScreensaver({
       const stepDuration = verse.language.startsWith("ja") ? 1 / 8 : 1 / 10;
       // const stepDuration = verse.language.match(/^(zh|ja)/) ? 1 / 15 : 1 / 30;
       const sequence = (verse.typingSequence ?? []).map((i) =>
-        buildAnimationSequence(i, verse.language)
+        buildAnimationSequence(i, verse.language),
       );
 
       const typingEl = lineEl.querySelector(".typing");
@@ -107,7 +107,7 @@ export default function TypingStackedScreensaver({
               tl.set(
                 committedEl,
                 { text: committed + frame },
-                i * stepDuration
+                i * stepDuration,
               );
               i++;
             }
@@ -122,13 +122,13 @@ export default function TypingStackedScreensaver({
                 [verseLines[lineIdx], verse.id, verse.language] as [
                   string,
                   number,
-                  string
+                  string,
                 ],
-              ].slice(-50)
+              ].slice(-50),
             );
           },
           [lineIdx],
-          i * stepDuration
+          i * stepDuration,
         );
         tl.set(committedEl, { text: "" }, i * stepDuration);
         tl.set(typingEl, { text: "" }, i * stepDuration);
@@ -146,11 +146,11 @@ export default function TypingStackedScreensaver({
                   verse.id,
                   verse.language,
                 ]),
-              ].slice(-50)
+              ].slice(-50),
             );
           },
           [verseLines.slice(sequence.length)],
-          ">"
+          ">",
         );
       }
 
@@ -162,11 +162,11 @@ export default function TypingStackedScreensaver({
           buildTimeline(lineEl, newCursor);
         },
         [],
-        ">+1"
+        ">+1",
       );
       timelineRef.current = tl;
     },
-    [verses]
+    [verses],
   );
 
   useEffect(() => {
@@ -212,7 +212,7 @@ export default function TypingStackedScreensaver({
           <div
             className={clsx(
               classes.line,
-              id === verse.id && classes.lineActive
+              id === verse.id && classes.lineActive,
             )}
             key={`${line}${idx}`}
             lang={language}

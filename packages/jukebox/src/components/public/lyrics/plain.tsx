@@ -11,11 +11,8 @@ import {
   useRef,
 } from "react";
 import { cn } from "@lyricova/components/utils";
-import type {
-  RowRendererProps} from "./components/LyricsVirtualizer";
-import {
-  LyricsVirtualizer
-} from "./components/LyricsVirtualizer";
+import type { RowRendererProps } from "./components/LyricsVirtualizer";
+import { LyricsVirtualizer } from "./components/LyricsVirtualizer";
 import type { TimedSpanProps } from "./components/RubyLineRenderer";
 import { LineRenderer } from "./components/RubyLineRenderer";
 import { safeDuration } from "../../../frontendUtils/safeDuration";

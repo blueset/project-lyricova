@@ -60,7 +60,7 @@ export const playlistSlice = createSlice({
     },
     playTrack: (
       state,
-      action: PayloadAction<number | { track: number; playNow: boolean }>
+      action: PayloadAction<number | { track: number; playNow: boolean }>,
     ) => {
       if (typeof action.payload === "number") {
         state.nowPlaying = action.payload;
@@ -111,7 +111,7 @@ export const playlistSlice = createSlice({
         const realIndex = state.shuffleMapping[index];
         state.shuffleMapping.splice(index, 1);
         state.shuffleMapping = state.shuffleMapping.map((i) =>
-          i > realIndex ? i - 1 : i
+          i > realIndex ? i - 1 : i,
         );
         index = realIndex;
       }

@@ -13,7 +13,7 @@ const RingollContainerDiv = (props: ComponentProps<"div">) => (
     className={cn(
       "relative p-4 px-8 size-full overflow-clip transition-[mask-image,var(--tw-mask-bottom-from-position)] duration-0",
       "mask-t-from-[calc(100%_-_5em)] mask-t-to-100% mask-b-from-70% mask-b-to-100%",
-      "hover:mask-b-from-100%"
+      "hover:mask-b-from-100%",
     )}
     style={{}}
   />

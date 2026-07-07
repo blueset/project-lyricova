@@ -11,7 +11,7 @@ import classes from "./SongListings.module.scss";
 
 export async function generateMetadataData(
   songId: string,
-  page: string
+  page: string,
 ): Promise<Metadata> {
   const response = await fetch(`${apiBaseUrl}/songs/${songId}`, {
     cache: "no-store",
@@ -45,7 +45,7 @@ export async function SongArchivePageComponent({
 }) {
   const response = await fetch(
     `${apiBaseUrl}/songs/${songId}/entries?page=${page}`,
-    { cache: "no-store" }
+    { cache: "no-store" },
   );
   const { entries, song, totalPages }: SongArchivePageProps =
     await response.json();

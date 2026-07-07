@@ -41,10 +41,10 @@ export default function MarcacosScreensaver({
   const artistString = !entry
     ? "Unknown artists"
     : !entry.producersName
-    ? entry.vocalistsName
-    : !entry.vocalistsName
-    ? entry.producersName
-    : `${entry.producersName} feat. ${entry.vocalistsName}`;
+      ? entry.vocalistsName
+      : !entry.vocalistsName
+        ? entry.producersName
+        : `${entry.producersName} feat. ${entry.vocalistsName}`;
   return (
     <div className={classes.marcacos}>
       <div className={classes.metaRow}>

@@ -17,7 +17,7 @@ interface ArtistLike {
 }
 
 function splitArtists<T extends ArtistLike>(
-  artists: T[]
+  artists: T[],
 ): {
   producers: T[];
   vocalists: T[];
@@ -49,7 +49,7 @@ function splitArtists<T extends ArtistLike>(
 
 export function formatArtists<T extends ArtistLike>(
   artists: T[],
-  renderer: (artists: T[], isProducer: boolean) => ReactNode
+  renderer: (artists: T[], isProducer: boolean) => ReactNode,
 ): ReactNode {
   const { producers, vocalists } = splitArtists(artists);
 
@@ -70,7 +70,7 @@ export function formatArtists<T extends ArtistLike>(
 }
 
 export function formatArtistsString<T extends ArtistLike & { name: string }>(
-  artists: T[]
+  artists: T[],
 ): string {
   const { producers, vocalists } = splitArtists(artists);
 
@@ -87,7 +87,7 @@ export function formatArtistsString<T extends ArtistLike & { name: string }>(
 }
 
 export function formatArtistsPlainText<T extends ArtistLike & { name: string }>(
-  artists: T[]
+  artists: T[],
 ): ReactNode {
   return formatArtists(artists, (v) => v.map((i) => i.name).join(", "));
 }

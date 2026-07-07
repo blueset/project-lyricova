@@ -6,7 +6,10 @@ import axiosJsonp from "../../utils/axiosJsonp";
 import _ from "lodash";
 import { TITLE, ARTIST, ALBUM } from "../../core/idTagKey";
 import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
-import type { QQSongItem, QQResponseSearchResult } from "../types/qqMusic/searchResult";
+import type {
+  QQSongItem,
+  QQResponseSearchResult,
+} from "../types/qqMusic/searchResult";
 import type { QQResponseSinglePlainLyrics } from "../types/qqMusic/singleLyrics";
 import type { Range } from "../../core/lyricsLineAttachment";
 import {
@@ -24,7 +27,8 @@ import { LyricsLine } from "../../core";
 
 const SEARCH_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg";
 const LYRICS_URL = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg";
-const DETAILED_LYRICS_URL = "https://c.y.qq.com/qqmusic/fcgi-bin/lyric_download.fcg";
+const DETAILED_LYRICS_URL =
+  "https://c.y.qq.com/qqmusic/fcgi-bin/lyric_download.fcg";
 const MUSICU_CLIENT_VERSION = "1003006";
 const headers = {
   Cookie:
@@ -100,10 +104,11 @@ function hasValidLyricTimestamp(value: number | string | undefined): boolean {
 }
 
 function makeSearchId(): string {
-  return `${(Math.floor(Math.random() * 20) + 1) * 18014398509481984 +
+  return `${
+    (Math.floor(Math.random() * 20) + 1) * 18014398509481984 +
     Math.floor(Math.random() * 4194304) * 4294967296 +
     (Date.now() % 86400000)
-    }`;
+  }`;
 }
 
 function stripSearchHighlights(value: string | undefined): string {
@@ -113,13 +118,15 @@ function stripSearchHighlights(value: string | undefined): string {
 class QQMusicQLyrics extends Lyrics {
   constructor(content: string) {
     super();
-    const linesString = content.split("\n").filter(l => l.match(timeTagPattern));
+    const linesString = content
+      .split("\n")
+      .filter((l) => l.match(timeTagPattern));
 
     if (linesString.length === 0) {
       throw new Error("Lyrics are empty");
     }
 
-    const lines = linesString.map<[number, number, string]>(line => {
+    const lines = linesString.map<[number, number, string]>((line) => {
       const timeTag = line.match(timeTagPattern);
       if (!timeTag) throw new Error("Malformed lyrics line");
       const start = parseInt(timeTag[1]);
@@ -146,7 +153,9 @@ class QQMusicQLyrics extends Lyrics {
       if (!hasWordTimeTags) {
         lineContent = line;
       }
-      attachment.tags.push(new WordTimeTagLabel(duration / 1000, lineContent.length));
+      attachment.tags.push(
+        new WordTimeTagLabel(duration / 1000, lineContent.length),
+      );
 
       const att = new Attachments({ [TIME_TAG]: attachment });
       const lineObj = new LyricsLine(lineContent, start / 1000, att);
@@ -154,7 +163,10 @@ class QQMusicQLyrics extends Lyrics {
 
       lineObjs.push(lineObj);
 
-      if (idx == lines.length - 1 || lines[idx + 1][0] - start - duration > 500) {
+      if (
+        idx == lines.length - 1 ||
+        lines[idx + 1][0] - start - duration > 500
+      ) {
         const blankLine = new LyricsLine("", (start + duration) / 1000);
         blankLine.lyrics = this;
         lineObjs.push(blankLine);
@@ -179,9 +191,9 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
     v: MUSICU_CLIENT_VERSION,
     os_ver: "15",
     phonetype: "24122RKC7C",
-    rom: `Redmi/miro/miro:15/AE3A.240806.005/OS2.0.10${["5", "4", "2"][
-      Math.floor(Math.random() * 3)
-    ]}.0.VOMCNXM:user/release-keys`,
+    rom: `Redmi/miro/miro:15/AE3A.240806.005/OS2.0.10${
+      ["5", "4", "2"][Math.floor(Math.random() * 3)]
+    }.0.VOMCNXM:user/release-keys`,
     tmeAppID: "qqmusiclight",
     nettype: "NETWORK_WIFI",
     udid: "0",
@@ -197,8 +209,8 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         "GetSession",
         "music.getSession.session",
         { caller: 0, uid: "0", vkey: 0 },
-        false
-      ).then(data => {
+        false,
+      ).then((data) => {
         this.comm = {
           ...this.comm,
           uid: data.session.uid,
@@ -221,7 +233,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
     method: string,
     module: string,
     param: Record<string, unknown>,
-    initSession = true
+    initSession = true,
   ): Promise<T> {
     if (initSession) {
       await this.initMusicuSession();
@@ -239,7 +251,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       },
       {
         headers: musicuHeaders,
-      }
+      },
     );
     if (response.status !== 200) {
       throw new Error(`QQ Music request failed with HTTP ${response.status}`);
@@ -248,7 +260,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
     const data = response.data;
     if (data.code !== 0 || data.request.code !== 0) {
       throw new Error(
-        `QQ Music API request failed with code ${data.code !== 0 ? data.code : data.request.code}`
+        `QQ Music API request failed with code ${data.code !== 0 ? data.code : data.request.code}`,
       );
     }
     return data.request.data;
@@ -256,7 +268,8 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
 
   private applyTokenMetadata(lrc: Lyrics, token: QQSongItem): void {
     lrc.idTags[TITLE] = token.title;
-    if (token.singer.length > 0) lrc.idTags[ARTIST] = token.singer.map(s => s.title).join(", ");
+    if (token.singer.length > 0)
+      lrc.idTags[ARTIST] = token.singer.map((s) => s.title).join(", ");
     lrc.idTags[ALBUM] = token.album?.title;
 
     lrc.length = token.interval;
@@ -271,13 +284,15 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
   private parseQqLyrics(content: string): Lyrics {
     const $ = cheerio.load(content, { xmlMode: true });
     const lyricContent = $("Lyric_1").attr("LyricContent") || content;
-    if (lyricContent.split("\n").some(line => line.match(timeTagPattern))) {
+    if (lyricContent.split("\n").some((line) => line.match(timeTagPattern))) {
       return new QQMusicQLyrics(lyricContent);
     }
     return new Lyrics(lyricContent);
   }
 
-  private async searchLyricsLegacy(request: LyricsSearchRequest): Promise<QQSongItem[]> {
+  private async searchLyricsLegacy(
+    request: LyricsSearchRequest,
+  ): Promise<QQSongItem[]> {
     const response = await axios.post<QQResponseSearchResult>(
       SEARCH_URL,
       {
@@ -294,7 +309,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       },
       {
         headers,
-      }
+      },
     );
     if (response.status !== 200) {
       console.error(response.data);
@@ -309,7 +324,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       id: song.id,
       mid: song.mid,
       interval: song.interval,
-      singer: song.singer.map(singer => ({
+      singer: song.singer.map((singer) => ({
         title: stripSearchHighlights(singer.title || singer.name),
       })),
       album: {
@@ -318,7 +333,9 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
     };
   }
 
-  public async searchLyrics(request: LyricsSearchRequest): Promise<QQSongItem[]> {
+  public async searchLyrics(
+    request: LyricsSearchRequest,
+  ): Promise<QQSongItem[]> {
     try {
       const data = await this.musicuRequest<QQMusicuSearchData>(
         "DoSearchForQQMusicLite",
@@ -334,9 +351,11 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
           nqc_flag: 0,
           page_id: 1,
           grp: 1,
-        }
+        },
       );
-      return data.body.item_song.map(song => this.normalizeSearchResult(song));
+      return data.body.item_song.map((song) =>
+        this.normalizeSearchResult(song),
+      );
     } catch {
       try {
         return await this.searchLyricsLegacy(request);
@@ -381,8 +400,8 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
               "content-type": "application/x-www-form-urlencoded",
             },
           },
-          axiosJsonp
-        )
+          axiosJsonp,
+        ),
       );
 
       if (response.status !== 200) {
@@ -399,7 +418,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
       const transLrcContent = data.trans ? decodeLyrics(data.trans) : null;
       if (transLrcContent) {
         const transLrc = new Lyrics(transLrcContent);
-        transLrc.lines.forEach(line => {
+        transLrc.lines.forEach((line) => {
           if (line.content.trim() === "//") {
             line.content = "";
           }
@@ -417,7 +436,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
 
   async fetchLyricsQrc(token: QQSongItem): Promise<Lyrics | undefined> {
     try {
-      const artist = token.singer.map(s => s.title).join(", ");
+      const artist = token.singer.map((s) => s.title).join(", ");
       const data = await this.musicuRequest<QQMusicuPlayLyricData>(
         "GetPlayLyricInfo",
         "music.musichallSong.PlayLyricInfo",
@@ -438,10 +457,12 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
           trans: 1,
           trans_t: 0,
           type: 0,
-        }
+        },
       );
 
-      const lyricTimestamp = hasValidLyricTimestamp(data.qrc_t) ? data.qrc_t : data.lrc_t;
+      const lyricTimestamp = hasValidLyricTimestamp(data.qrc_t)
+        ? data.qrc_t
+        : data.lrc_t;
       if (!data.lyric || !hasValidLyricTimestamp(lyricTimestamp)) {
         throw new Error("lyric is empty");
       }
@@ -451,7 +472,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
 
       if (data.trans && hasValidLyricTimestamp(data.trans_t)) {
         const transLrc = this.parseQqLyrics(decodeQrc(data.trans));
-        transLrc.lines.forEach(line => {
+        transLrc.lines.forEach((line) => {
           if (line.content.trim() === "//") {
             line.content = "";
           }
@@ -478,12 +499,16 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         lrctype: "4",
         musicid: token.id.toString(),
       });
-      const response = await axios.post<string>(DETAILED_LYRICS_URL, payload.toString(), {
-        headers: {
-          ...headers,
-          "content-type": "application/x-www-form-urlencoded",
+      const response = await axios.post<string>(
+        DETAILED_LYRICS_URL,
+        payload.toString(),
+        {
+          headers: {
+            ...headers,
+            "content-type": "application/x-www-form-urlencoded",
+          },
         },
-      });
+      );
 
       if (response.status !== 200) {
         console.error(response.data);
@@ -512,7 +537,7 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         if (contentHexTs) {
           const transLrcContent = decodeQrc(contentHexTs);
           const transLrc = new Lyrics(transLrcContent);
-          transLrc.lines.forEach(line => {
+          transLrc.lines.forEach((line) => {
             if (line.content.trim() === "//") {
               line.content = "";
             }
@@ -541,7 +566,9 @@ export class QQMusicProvider extends LyricsProvider<QQSongItem> {
         if (furiganaReplacements.length < 1) break;
 
         // Matches either single kanji or a group of full-width digits together.
-        const kanjis = [...line.content.matchAll(/(\p{Script=Han}|[０-９0-9]+)/gu)];
+        const kanjis = [
+          ...line.content.matchAll(/(\p{Script=Han}|[０-９0-9]+)/gu),
+        ];
         const furigana: [string, Range][] = [];
 
         while (kanjis.length > 0 && furiganaReplacements.length > 0) {

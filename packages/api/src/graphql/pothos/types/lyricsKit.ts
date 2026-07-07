@@ -27,8 +27,9 @@ LyricsKitRangeAttachmentRef.implement({
   }),
 });
 
-export const LyricsKitWordTimeTagRef =
-  builder.objectRef<LyricsKitWordTimeTag>("LyricsKitWordTimeTag");
+export const LyricsKitWordTimeTagRef = builder.objectRef<LyricsKitWordTimeTag>(
+  "LyricsKitWordTimeTag",
+);
 
 LyricsKitWordTimeTagRef.implement({
   description: "Time tag per word to a lyrics line.",
@@ -62,8 +63,9 @@ LyricsKitWordTimeAttachmentRef.implement({
   }),
 });
 
-export const LyricsKitAttachmentRef =
-  builder.objectRef<LyricsKitAttachment>("LyricsKitAttachment");
+export const LyricsKitAttachmentRef = builder.objectRef<LyricsKitAttachment>(
+  "LyricsKitAttachment",
+);
 
 LyricsKitAttachmentRef.implement({
   description: "Attachments to a lyrics line.",
@@ -93,8 +95,9 @@ LyricsKitAttachmentRef.implement({
   }),
 });
 
-export const LyricsKitLyricsLineRef =
-  builder.objectRef<LyricsKitLyricsLine>("LyricsKitLyricsLine");
+export const LyricsKitLyricsLineRef = builder.objectRef<LyricsKitLyricsLine>(
+  "LyricsKitLyricsLine",
+);
 
 LyricsKitLyricsLineRef.implement({
   description: "A line of parsed lyrics.",

@@ -18,7 +18,7 @@ import type {
 
 type Props<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   form: UseFormReturn<TFieldValues>;
   name: TName;
@@ -26,7 +26,7 @@ type Props<
 
 export function VideoThumbnailAdornment<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({ form, name }: Props<TFieldValues, TName>) {
   const value = form.watch(name);
 
@@ -46,13 +46,13 @@ export function VideoThumbnailAdornment<
             shouldValidate: true,
             shouldDirty: true,
             shouldTouch: true,
-          }
+          },
         );
         return;
       }
     } else if (value.match(/(youtu.be\/|youtube.com\/watch\?\S*?v=)\S{11}/g)) {
       const id = /(youtu.be\/|youtube.com\/watch\?\S*?v=)(\S{11})/g.exec(
-        value
+        value,
       )!;
       form.setValue(
         name,
@@ -64,7 +64,7 @@ export function VideoThumbnailAdornment<
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
-        }
+        },
       );
       return;
     } else if (
@@ -80,7 +80,7 @@ export function VideoThumbnailAdornment<
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
-        }
+        },
       );
       return;
     } else if (
@@ -96,7 +96,7 @@ export function VideoThumbnailAdornment<
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
-        }
+        },
       );
       return;
     }

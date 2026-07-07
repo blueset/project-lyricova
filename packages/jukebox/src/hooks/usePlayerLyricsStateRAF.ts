@@ -1,5 +1,5 @@
 import _ from "lodash";
-import type { RefObject} from "react";
+import type { RefObject } from "react";
 import { useRef, useMemo, useCallback, useEffect } from "react";
 import type { PlayerLyricsKeyframe, PlayerLyricsState } from "./types";
 import { useNamedState } from "./useNamedState";
@@ -9,7 +9,7 @@ import { usePlayerStateRAF } from "./usePlayerStateRAF";
 /** Use player lyrics state backed by `requireAnimationFrame` */
 export function usePlayerLyricsStateRAF<T>(
   keyframes: PlayerLyricsKeyframe<T>[],
-  playerRef: RefObject<HTMLAudioElement>
+  playerRef: RefObject<HTMLAudioElement>,
 ): PlayerLyricsState<T> {
   const playerState = usePlayerState(playerRef);
 
@@ -19,7 +19,7 @@ export function usePlayerLyricsStateRAF<T>(
    */
   const [currentFrameId, setCurrentFrameId] = useNamedState(
     -1,
-    "currentFrameId"
+    "currentFrameId",
   );
   const currentFrameIdRef = useRef<number>(currentFrameId);
   currentFrameIdRef.current = currentFrameId;
@@ -55,7 +55,7 @@ export function usePlayerLyricsStateRAF<T>(
         setCurrentFrameId(currentFrameId + 1);
       }
     },
-    [endTimes, setCurrentFrameId]
+    [endTimes, setCurrentFrameId],
   );
 
   usePlayerStateRAF(playerRef, onFrame);

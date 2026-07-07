@@ -35,13 +35,14 @@ interface PlainTextHangingPunctProps {
 export function PlainTextHangingPunct({
   children,
 }: PlainTextHangingPunctProps) {
-  const lines = children?.split("\n")?.map((line) => {
-    let match = line.match(/^([\p{Ps}\p{Pi}"]*)(.*?)(\p{Po}*)$/u);
-    match = shiftinPuncts(line, match, "「", "」");
-    match = shiftinPuncts(line, match, "『", "』");
-    match = shiftinPuncts(line, match, "｢", "｣");
-    return match;
-  }) ?? [];
+  const lines =
+    children?.split("\n")?.map((line) => {
+      let match = line.match(/^([\p{Ps}\p{Pi}"]*)(.*?)(\p{Po}*)$/u);
+      match = shiftinPuncts(line, match, "「", "」");
+      match = shiftinPuncts(line, match, "『", "』");
+      match = shiftinPuncts(line, match, "｢", "｣");
+      return match;
+    }) ?? [];
   return (
     <>
       {lines.map((line, idx) => (

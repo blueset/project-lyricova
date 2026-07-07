@@ -14,7 +14,10 @@ builder.drizzleObjectFields("Entries", (t) => {
     vocalistsName: col("String", "vocalistsName"),
     authorId: col("Float", "authorId"),
     comment: col("String", "comment", true),
-    creationDate: t.field({ type: "Timestamp", resolve: (e: any) => e.creationDate }),
+    creationDate: t.field({
+      type: "Timestamp",
+      resolve: (e: any) => e.creationDate,
+    }),
     recentActionDate: t.field({
       type: "Timestamp",
       resolve: (e: any) => e.recentActionDate,

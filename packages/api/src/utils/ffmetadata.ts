@@ -87,7 +87,7 @@ function getWriteArgs(
   src: string,
   dst: string,
   data: Metadata,
-  options: WriteOptions
+  options: WriteOptions,
 ) {
   // ffmpeg options
   const inputs = ["-i", src], // src input
@@ -95,7 +95,7 @@ function getWriteArgs(
   let args = ["-y"]; // overwrite file
 
   // Attach additional input files if included
-  getAttachments(options).forEach(function(el) {
+  getAttachments(options).forEach(function (el) {
     const inputIndex = inputs.length / 2;
     inputs.push("-i", el);
     maps.push("-map", inputIndex + ":0");
@@ -117,7 +117,7 @@ function getWriteArgs(
   }
 
   // append metadata
-  Object.keys(data).forEach(function(name) {
+  Object.keys(data).forEach(function (name) {
     const value = data[name];
     if (value) {
       args.push("-metadata");
@@ -163,17 +163,17 @@ export function read(src: string, callback: ReadCallback): void;
 export function read(
   src: string,
   options: ReadOptions & { dryRun: true },
-  callback: ReadCallback
+  callback: ReadCallback,
 ): string[];
 export function read(
   src: string,
   options: ReadOptions,
-  callback: ReadCallback
+  callback: ReadCallback,
 ): void;
 export function read(
   src: string,
   options: ReadOptions | ReadCallback,
-  callback?: ReadCallback
+  callback?: ReadCallback,
 ) {
   if (typeof options === "function") {
     callback = options;
@@ -196,7 +196,7 @@ export function read(
   // Proxy any child process error events along
   proc.on("error", (err) => callback?.(err));
 
-  proc.on("close", function(code: number) {
+  proc.on("close", function (code: number) {
     if (code === 0) {
       callback?.(undefined, parseIni(Buffer.concat(stdout).toString()));
     } else {
@@ -207,7 +207,7 @@ export function read(
 
 export function readAsync(
   src: string,
-  options?: ReadOptions
+  options?: ReadOptions,
 ): Promise<Metadata> {
   return new Promise((resolve, reject) => {
     const callback = (err?: Error, data?: Metadata) => {
@@ -227,25 +227,25 @@ type WriteCallback = (err?: Error) => void;
 export function write(
   src: string,
   data: Metadata,
-  callback: WriteCallback
+  callback: WriteCallback,
 ): void;
 export function write(
   src: string,
   data: Metadata,
   options: WriteOptions & { dryRun: true },
-  callback: WriteCallback
+  callback: WriteCallback,
 ): string[];
 export function write(
   src: string,
   data: Metadata,
   options: WriteOptions,
-  callback: WriteCallback
+  callback: WriteCallback,
 ): void;
 export function write(
   src: string,
   data: Metadata,
   options: WriteOptions | WriteCallback,
-  callback?: WriteCallback
+  callback?: WriteCallback,
 ): string[] | void {
   if (typeof options === "function") {
     callback = options;
@@ -265,13 +265,13 @@ export function write(
   proc.stderr?.on("data", (chunk: Buffer) => stderr.push(chunk));
 
   function handleError(err: unknown) {
-    fs.unlink(dst, function() {
+    fs.unlink(dst, function () {
       callback?.(err as Error);
     });
   }
 
   function finish() {
-    fs.rename(dst, src, function(err) {
+    fs.rename(dst, src, function (err) {
       if (err) {
         handleError(err);
       } else {
@@ -283,7 +283,7 @@ export function write(
   // Proxy any child process error events
   proc.on("error", (err) => callback?.(err));
 
-  proc.on("close", function(code: number) {
+  proc.on("close", function (code: number) {
     if (code === 0) {
       finish();
     } else {
@@ -296,12 +296,12 @@ export function writeAsync(src: string, data: Metadata): Promise<void>;
 export function writeAsync(
   src: string,
   data: Metadata,
-  options: WriteOptions
+  options: WriteOptions,
 ): Promise<void>;
 export function writeAsync(
   src: string,
   data: Metadata,
-  options?: WriteOptions
+  options?: WriteOptions,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const callback = (err?: Error) => {

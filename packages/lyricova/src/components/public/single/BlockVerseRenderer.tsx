@@ -43,13 +43,13 @@ export function BlockVerseRenderer({
 
       const stepDuration = language.match(/^(zh|ja)/) ? 1 / 15 : 1 / 30;
       const sequence = baseTypingSequence.map((i) =>
-        buildAnimationSequence(i, language)
+        buildAnimationSequence(i, language),
       );
       const preAnimDuration = 0.3;
       tl.fromTo(
         coverEl,
         { transformOrigin: "top", scaleY: 0 },
-        { scaleY: 1, duration: preAnimDuration / 2 }
+        { scaleY: 1, duration: preAnimDuration / 2 },
       )
         .set(baseEl, { visibility: "hidden" }, ">")
         .set(animationEl, { visibility: "visible" }, ">")
@@ -73,7 +73,7 @@ export function BlockVerseRenderer({
               tl.set(
                 typingEl,
                 { text: frame },
-                preAnimDuration + i * stepDuration
+                preAnimDuration + i * stepDuration,
               );
               i++;
             }
@@ -81,7 +81,7 @@ export function BlockVerseRenderer({
             tl.set(
               committedEl,
               { text: committed },
-              preAnimDuration + i * stepDuration
+              preAnimDuration + i * stepDuration,
             );
             tl.set(typingEl, { text: "" }, preAnimDuration + i * stepDuration);
             i++;
@@ -90,7 +90,7 @@ export function BlockVerseRenderer({
               tl.set(
                 committedEl,
                 { text: committed + frame },
-                preAnimDuration + i * stepDuration
+                preAnimDuration + i * stepDuration,
               );
               i++;
             }
@@ -105,7 +105,7 @@ export function BlockVerseRenderer({
         .fromTo(
           coverEl,
           { scaleY: 0 },
-          { scaleY: 1, duration: preAnimDuration / 2 }
+          { scaleY: 1, duration: preAnimDuration / 2 },
         )
         .set(baseEl, { visibility: "visible" }, ">")
         .set(animationEl, { visibility: "hidden" }, ">")
@@ -114,7 +114,7 @@ export function BlockVerseRenderer({
 
       timelineRef.current = tl;
     },
-    [baseTypingSequence, isMain, language]
+    [baseTypingSequence, isMain, language],
   );
 
   return (

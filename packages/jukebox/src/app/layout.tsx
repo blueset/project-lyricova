@@ -38,7 +38,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           Inter.variable,
           SourceHanSans.variable,
           SourceHanSansPunct.variable,
-          SourceHanSerif.variable
+          SourceHanSerif.variable,
         )}
       >
         <ClientProviders>{props.children}</ClientProviders>

@@ -15,7 +15,7 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
   // static source = LyricsProviderSource.syair;
 
   public async searchLyrics(
-    request: LyricsSearchRequest
+    request: LyricsSearchRequest,
   ): Promise<SyairResponseSearchResult[]> {
     try {
       const parameters: Record<string, string | number> = {
@@ -38,11 +38,9 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
       const data: string = response.data;
       const $ = cheerio.load(data);
       return $(".li > a.title")
-        .map(
-          (_, x): SyairResponseSearchResult => {
-            return { url: $(x).attr("href") ?? "", name: $(x).text() };
-          }
-        )
+        .map((_, x): SyairResponseSearchResult => {
+          return { url: $(x).attr("href") ?? "", name: $(x).text() };
+        })
         .get();
     } catch (e) {
       console.error(e);
@@ -50,7 +48,7 @@ export class SyairProvider extends LyricsProvider<SyairResponseSearchResult> {
     }
   }
   public async fetchLyrics(
-    token: SyairResponseSearchResult
+    token: SyairResponseSearchResult,
   ): Promise<Lyrics | undefined> {
     try {
       const response = await axios.get<string>(token.url, {

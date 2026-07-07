@@ -49,7 +49,8 @@ describe("Lyrics Kit Serialization", () => {
         { content: "ruby2", range: [3, 5] },
       ],
     });
-    const deserializedRangeAttribute = RangeAttribute.fromJSON(rangeAttributeJson);
+    const deserializedRangeAttribute =
+      RangeAttribute.fromJSON(rangeAttributeJson);
     expect(deserializedRangeAttribute.attachment.length).toBe(2);
     expect(deserializedRangeAttribute.attachment[0].content).toBe("ruby1");
     expect(deserializedRangeAttribute.attachment[1].content).toBe("ruby2");
@@ -125,8 +126,12 @@ describe("Lyrics Kit Serialization", () => {
     expect(deserializedLine1.content).toBe("Test Line 1");
     expect(deserializedLine1.position).toBe(1.5);
     expect(deserializedLine1.enabled).toBe(true);
-    expect(deserializedLine1.attachments.translation("en")).toBe("Translation 1");
-    expect(deserializedLine1.attachments.getTag("custom_tag")).toBe("Custom Value");
+    expect(deserializedLine1.attachments.translation("en")).toBe(
+      "Translation 1",
+    );
+    expect(deserializedLine1.attachments.getTag("custom_tag")).toBe(
+      "Custom Value",
+    );
     expect(deserializedLine1.attachments.getTag(FURIGANA)).toBe("<ruby,0,2>");
     expect(deserializedLine1.lyrics).toBe(deserialized);
 
@@ -135,7 +140,9 @@ describe("Lyrics Kit Serialization", () => {
     expect(deserializedLine2.content).toBe("Test Line 2");
     expect(deserializedLine2.position).toBe(3.0);
     expect(deserializedLine2.enabled).toBe(false);
-    expect(deserializedLine2.attachments.translation("fr")).toBe("Translation 2");
+    expect(deserializedLine2.attachments.translation("fr")).toBe(
+      "Translation 2",
+    );
     expect(deserializedLine2.lyrics).toBe(deserialized);
   });
 
