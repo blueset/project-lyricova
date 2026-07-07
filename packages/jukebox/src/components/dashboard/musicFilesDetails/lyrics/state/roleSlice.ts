@@ -7,7 +7,7 @@ export const createRoleSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   RoleSlice
-> = (set, get, api) => {
+> = (set, get, _api) => {
   return {
     role: {
       selectedLines: [],

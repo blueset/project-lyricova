@@ -123,54 +123,7 @@ export function TransitionCover() {
   currentRouteRef.current = pathname;
 
   useIsomorphicLayoutEffect(() => {
-    const handleRouteChange = (
-      path: string,
-      { shallow }: { shallow: boolean },
-    ) => {
-      // console.log("handleRouteChange", window.lastClickTop);
-      if (coverRef.current) {
-        if (timelineRef.current) {
-          timelineRef.current[0].kill();
-          timelineRef.current[1].kill();
-        }
-        console.log(path, currentRouteRef.current, shallow);
-        if (path === currentRouteRef.current || shallow) {
-          timelineRef.current = null;
-          return;
-        }
-        timelineRef.current = buildTimeline(
-          coverRef.current,
-          window.lastClickTop ?? window.innerHeight / 2,
-        );
-        timelineRef.current[0].play();
-        disableBodyScroll(document.body);
-      }
-    };
-    const handleRouteChangeComplete = (
-      path: string,
-      { shallow }: { shallow: boolean },
-    ) => {
-      if (timelineRef.current) {
-        const timeout =
-          Math.max(0, 0.75 - timelineRef.current[0].progress()) * 1000;
-        // console.log("timeout", timeout);
-        setTimeout(() => {
-          timelineRef.current?.[0].pause();
-          timelineRef.current?.[1].play();
-          enableBodyScroll(document.body);
-        }, timeout);
-      }
-      window.lastClickTop = undefined;
-    };
-
-    // router.events.on("routeChangeStart", handleRouteChange);
-    // router.events.on("routeChangeComplete", handleRouteChangeComplete);
-    // router.events.on("routeChangeError", handleRouteChangeComplete);
-
     return () => {
-      // router.events.off("routeChangeStart", handleRouteChange);
-      // router.events.off("routeChangeComplete", handleRouteChangeComplete);
-      // router.events.off("routeChangeError", handleRouteChangeComplete);
       clearAllBodyScrollLocks();
     };
   }, [router]);

@@ -167,7 +167,7 @@ function assToInlineTags(lyrics: LyricsJSON, alignmentResult: AlignmentResult) {
     let prevChar = "";
     let accumulatedTime = 0;
 
-    for (const { hira, start, end } of segments) {
+    for (const { hira, end } of segments) {
       if (!charQueue.length) {
         console.warn(
           "No more characters to process",

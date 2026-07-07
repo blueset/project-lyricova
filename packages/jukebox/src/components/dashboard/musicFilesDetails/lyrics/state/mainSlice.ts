@@ -8,7 +8,7 @@ export const createMainSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   MainSlice
-> = (set, get, api) => {
+> = (set, get, _api) => {
   const initialState: Omit<
     MainSlice,
     "debouncedGenerate" | "debouncedParse" | "parse" | "generate"

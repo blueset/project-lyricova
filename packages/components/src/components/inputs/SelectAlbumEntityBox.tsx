@@ -128,7 +128,7 @@ export function SelectAlbumEntityBox<
         if (apolloResult.data?.searchAlbums) {
           setApolloResults(apolloResult.data.searchAlbums);
         }
-      } catch (e) {
+      } catch {
         setApolloResults([]);
       } finally {
         setIsApolloLoading(false);
@@ -165,7 +165,7 @@ export function SelectAlbumEntityBox<
             })),
           );
         }
-      } catch (e) {
+      } catch {
         setVocaDBResults([]);
       } finally {
         setIsVocaDBLoading(false);
@@ -202,7 +202,7 @@ export function SelectAlbumEntityBox<
             })),
           );
         }
-      } catch (e) {
+      } catch {
         setUtaiteDBResults([]);
       } finally {
         setIsUtaiteDBLoading(false);

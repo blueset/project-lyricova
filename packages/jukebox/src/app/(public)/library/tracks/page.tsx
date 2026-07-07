@@ -22,7 +22,6 @@ import React, { useCallback, useMemo, useRef } from "react";
 import type { GetMusicFilesQuery } from "@lyricova/components/gql/graphql";
 import _ from "lodash";
 import { useNamedState } from "@/hooks/useNamedState";
-import { useRouter } from "next/navigation";
 import ListItemTextWithTime from "@/components/public/library/ListItemTextWithTime";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAppDispatch } from "@/redux/public/store";
@@ -69,7 +68,6 @@ const Row = React.memo(
     const item = index == 0 ? null : data[index - 1];
     const dispatch = useAppDispatch();
     const { user } = useAuthContext();
-    const router = useRouter();
 
     if (item === null) {
       const playAll = () => {

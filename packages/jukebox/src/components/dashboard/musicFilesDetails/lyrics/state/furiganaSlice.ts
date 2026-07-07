@@ -72,7 +72,7 @@ export const createFuriganaSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   FuriganaSlice
-> = (set, get, api) => {
+> = (set, get, _api) => {
   return {
     furigana: {
       autoApplyIdentical: true,

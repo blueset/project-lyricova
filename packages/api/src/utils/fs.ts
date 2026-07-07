@@ -14,7 +14,7 @@ export function findFilesModifiedAfter(
       try {
         const stats = statSync(path.join(directory, v));
         return { path: v, include: stats.mtime >= date };
-      } catch (e) {
+      } catch {
         return { path: v, include: false };
       }
     })

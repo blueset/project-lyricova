@@ -189,7 +189,7 @@ class Glucagon {
   onNewVerse?: (entryId: number) => void;
 
   particles: Particle[] = [];
-  gradient = (pos: number) => "rgba(0,255,0,0.5)";
+  gradient = (_pos: number) => "rgba(0,255,0,0.5)";
 
   lastLineTime = 0;
 
@@ -346,7 +346,7 @@ class Glucagon {
     bottom: number,
   ) {
     // console.log("ltrb", left, top, right, bottom);
-    const { width, height } = this.canvas;
+    const { width } = this.canvas;
     const { width: pWidth, height: pHeight } = Particle;
 
     for (let x = 0; x < right - left; x += pWidth) {

@@ -17,7 +17,6 @@ import { JWT_SECRET } from "../utils/secret";
 import cors from "cors";
 import type { VerifiedFunction } from "passport-fido2-webauthn";
 import base64url from "base64url";
-import { v4 as uuid } from "uuid";
 
 type User = typeof Users.$inferSelect;
 
@@ -89,8 +88,6 @@ export class AuthController {
         if (!req.user) {
           return next(new Error("User not logged in"));
         }
-        let handle = Buffer.alloc(16);
-        handle = uuid({}, handle);
         const userObj = req.user as User;
         const user = {
           id: userObj.id.toString(),
@@ -272,14 +269,14 @@ export class AuthController {
   public postLogin = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    _next: NextFunction,
   ) => {
     // res.redirect("/dashboard");
     // console.log(req.user);
     res.json(req.user);
   };
 
-  public emitJWT = async (req: Request, res: Response, next: NextFunction) => {
+  public emitJWT = async (req: Request, res: Response, _next: NextFunction) => {
     const user = req.user as User;
 
     const token = jwt.sign(

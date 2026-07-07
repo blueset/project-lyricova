@@ -127,7 +127,7 @@ export class LLMController {
               }
 
               currentPos = arrayStart + 1;
-            } catch (e) {
+            } catch {
               currentPos++;
               continue;
             }

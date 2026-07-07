@@ -22,7 +22,7 @@ export const createInlineTaggingSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   InlineTaggingSlice
-> = (set, get, api) => {
+> = (set, get, _api) => {
   // Helper to get the dots array for a given row
   function getRowDots(
     lines: LyricsJSON["lines"] | undefined,

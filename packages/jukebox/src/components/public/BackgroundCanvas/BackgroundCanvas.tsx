@@ -34,13 +34,8 @@ interface RenderProps {
   coverUrl?: string;
 }
 
-export function BackgroundCanvas({
-  coverUrl,
-  textureUrl,
-  playerRef,
-  hasLyrics,
-}: Props) {
-  const playerState = usePlayerState(playerRef);
+export function BackgroundCanvas({ coverUrl, textureUrl, playerRef }: Props) {
+  const _playerState = usePlayerState(playerRef);
 
   useEffect(() => {
     if (textureUrl) {
@@ -111,7 +106,7 @@ export function BackgroundCanvasRender({ coverUrl }: RenderProps) {
   const lyricPageOpened = false;
   const backgroundRenderMethod = FBMWaveMethod.value;
   const backgroundRenderSkipFrames = 0;
-  const [canvasError, setCanvasError] = useState("");
+  const [, setCanvasError] = useState("");
 
   const obsRef = useRef(
     new ResizeObserver((entries) => {

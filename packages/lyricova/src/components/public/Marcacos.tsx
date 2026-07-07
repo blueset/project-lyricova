@@ -34,7 +34,7 @@ type ContextProps = ScreensaverProps & {
 };
 
 const buildContext =
-  ({ entries, verses, onNewVerse }: ContextProps) =>
+  ({ verses, onNewVerse }: ContextProps) =>
   (sketch: p5) => {
     verses = verses.filter(
       (v) =>
@@ -134,7 +134,7 @@ const buildContext =
       const div = document.getElementById("p5-sketch");
       const sizer = document.getElementById("sizer");
       if (!div || !sizer) return;
-      const cnv = sketch.createCanvas(div.offsetWidth, div.offsetHeight);
+      sketch.createCanvas(div.offsetWidth, div.offsetHeight);
       // div.style.setProperty("height", sketch.height + "px", "important");
 
       // mobile = sketch.width < sketch.height

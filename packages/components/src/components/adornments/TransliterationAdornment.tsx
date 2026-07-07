@@ -67,7 +67,7 @@ export function TransliterationAdornment<
             shouldTouch: true,
           },
         );
-      } catch (e) {
+      } catch {
         // No-op.
       }
     },

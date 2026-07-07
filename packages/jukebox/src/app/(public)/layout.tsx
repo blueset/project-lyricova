@@ -1,7 +1,7 @@
 "use client";
 import Player from "@/components/public/Player";
 import DetailsPanel from "@/components/public/DetailsPanel";
-import type { ReactNode, CSSProperties } from "react";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useCallback } from "react";
 import { useApolloClient, useLazyQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
@@ -47,26 +47,6 @@ const TEXTURE_QUERY = graphql(`
 
 function getTrackCoverURL(track: Track): string {
   return `/api/files/${track.id}/cover`;
-}
-
-function generateBackgroundStyle(
-  track: Track,
-  texture: string | null,
-): CSSProperties {
-  if (texture) {
-    return {
-      backgroundImage: `url("/textures/${texture}")`,
-    };
-  } else if (track) {
-    return {
-      backgroundImage: `url("${getTrackCoverURL(track)}")`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundAttachment: "fixed",
-    };
-  } else {
-    return {};
-  }
 }
 
 function IndexLayout({ children }: Props) {
@@ -184,7 +164,7 @@ function IndexLayout({ children }: Props) {
         navigator.mediaSession.setActionHandler("stop", function () {
           dispatch(stop());
         });
-      } catch (error) {}
+      } catch {}
 
       try {
         navigator.mediaSession.setActionHandler("seekto", function (event) {
@@ -196,7 +176,7 @@ function IndexLayout({ children }: Props) {
             playerRef.current.currentTime = event.seekTime;
           }
         });
-      } catch (error) {}
+      } catch {}
     }
   });
 

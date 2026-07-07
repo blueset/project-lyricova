@@ -88,7 +88,6 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
       value: _value,
       timezone,
       endAdornment,
-      ...rest
     } = options;
     const value = useMemo(
       () => (_value ? new TZDate(_value, timezone) : undefined),

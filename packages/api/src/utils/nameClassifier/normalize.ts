@@ -99,26 +99,6 @@ function tokenize(s: string): string[] {
 }
 
 /**
- * Split romanization by common delimiters (spaces, @, parenthetical boundaries)
- * while preserving the delimiters' semantic role.
- */
-function splitRomanization(roman: string): string[] {
-  // Split on spaces, but keep @-delimited and parenthetical parts together
-  const parts: string[] = [];
-  // Split by @ first, then by spaces within each part
-  const atParts = roman.split("@");
-  for (let i = 0; i < atParts.length; i++) {
-    const subparts = atParts[i].split(/\s+/).filter(Boolean);
-    if (i > 0 && subparts.length > 0) {
-      // Prefix with @ to indicate it was an @-segment
-      subparts[0] = "@" + subparts[0];
-    }
-    parts.push(...subparts);
-  }
-  return parts;
-}
-
-/**
  * Align romanization segments to the original text.
  *
  * Strategy: tokenize the original into Han / non-Han runs, split the

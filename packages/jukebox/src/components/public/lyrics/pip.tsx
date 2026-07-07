@@ -135,7 +135,7 @@ interface Props {
   blur?: boolean;
 }
 
-export function PictureInPictureLyrics({ lyrics, blur }: Props) {
+export function PictureInPictureLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const { playerState, endTimes } = usePlainPlayerLyricsState(
     lyrics,

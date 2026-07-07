@@ -121,16 +121,6 @@ export interface SegmentedTransliterationOptions extends TransliterateOptions {
   convertMonoruby?: (text: string, furigana: string) => [string[], string[]];
 }
 
-function notPunct(text: string): boolean {
-  return Boolean(text.match(/\p{Letter}/gu));
-}
-
-interface LevenshteinCellState {
-  distance: number;
-  prev: [number, number];
-  type?: "insert" | "remove" | "replace";
-}
-
 /**
  * @author mkpoli
  * @url https://zenn.dev/mkpoli/articles/8269f2f3ce71c9

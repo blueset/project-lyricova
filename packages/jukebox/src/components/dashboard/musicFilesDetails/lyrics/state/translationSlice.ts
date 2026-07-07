@@ -15,7 +15,7 @@ export const createTranslationSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   TranslationSlice
-> = (set, get, api) => {
+> = (set, get, _api) => {
   return {
     translations: {
       selectedLanguageIndex: 0,

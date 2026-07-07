@@ -57,6 +57,7 @@ const UPDATE_FURIGANA_MAPPINGS_MUTATION = graphql(`
 `);
 
 declare module "@tanstack/react-table" {
+  // eslint-disable-next-line unused-imports/no-unused-vars -- generic required to match the augmented interface signature
   interface TableMeta<TData> {
     editingRowId: string | null;
     editFormData: EditFormData | null;

@@ -96,7 +96,7 @@ export function useScrollOffset({
       lastMoveY = touchScreenY;
     }
 
-    function touchEndListener(event: TouchEvent) {
+    function touchEndListener(_event: TouchEvent) {
       // event.preventDefault();
       debounceReset();
     }

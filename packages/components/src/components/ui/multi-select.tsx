@@ -60,7 +60,7 @@ function MultiSelect<
           "text-muted-foreground px-2 py-1.5 text-xs font-semibold",
       }}
       components={{
-        DropdownIndicator: (props) => (
+        DropdownIndicator: () => (
           <ChevronDownIcon className="size-4 opacity-50" />
         ),
         ClearIndicator: (props) => (

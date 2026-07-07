@@ -54,7 +54,7 @@ export function SingleEntry({ entry }: SingleEntryProps) {
     const verseRefEl = verseRef.current;
     if (verseRefEl) {
       applyMask(verseRefEl);
-      const resizeObserver = new ResizeObserver((entries) => {
+      const resizeObserver = new ResizeObserver(() => {
         applyMask(verseRefEl);
       });
       resizeObserver.observe(document.body);

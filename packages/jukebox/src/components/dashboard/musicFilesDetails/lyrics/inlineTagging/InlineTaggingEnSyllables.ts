@@ -129,7 +129,6 @@ export function syllables(str: string): string[] {
 
   //method is nested because it's called recursively
   const doer = function (w: string): null {
-    const vow = /[aeiouy]$/;
     const chars = w.split("");
     let before = "";
     let after = "";

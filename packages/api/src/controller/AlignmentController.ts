@@ -103,7 +103,7 @@ export class AlignmentController {
     }
   };
 
-  public align = async (req: Request, res: Response, next: NextFunction) => {
+  public align = async (req: Request, res: Response, _next: NextFunction) => {
     if (!YOHANE_SERVER_URL) {
       return res.status(500).json({ error: "Yohane server URL is not set" });
     }
@@ -184,7 +184,7 @@ export class AlignmentController {
   public customAlign = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    _next: NextFunction,
   ) => {
     if (!YOHANE_SERVER_URL) {
       return res.status(500).json({ error: "Alignment server URL is not set" });

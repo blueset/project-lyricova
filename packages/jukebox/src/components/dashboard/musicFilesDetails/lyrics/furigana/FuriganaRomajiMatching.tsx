@@ -70,7 +70,7 @@ export function generateDiffLines(
   // console.log("diffs", diffs);
 
   let diffLines: [number, string][][] = [[]];
-  diffs.forEach(([type, text], idx) => {
+  diffs.forEach(([type, text]) => {
     if (type === 0) {
       diffLines[diffLines.length - 1].push([type, text]);
     } else if (type === -1) {

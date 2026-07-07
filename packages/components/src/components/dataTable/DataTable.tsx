@@ -32,6 +32,7 @@ import { useState } from "react";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 
 declare module "@tanstack/react-table" {
+  // eslint-disable-next-line unused-imports/no-unused-vars -- generics required to match the augmented interface signature
   interface ColumnMeta<TData extends RowData, TValue> {
     width?: string;
   }

@@ -13,12 +13,7 @@ interface Props {
   className?: string;
 }
 
-export function TimeSlider({
-  playerRef,
-  disabled,
-  isCollapsed,
-  className,
-}: Props) {
+export function TimeSlider({ playerRef, disabled, className }: Props) {
   const [time, setTime] = useNamedState(0, "time");
   const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
   const [duration, setDuration] = useNamedState(0, "duration");

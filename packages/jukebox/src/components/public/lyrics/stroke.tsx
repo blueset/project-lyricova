@@ -100,8 +100,6 @@ function extractLinesFromTextNode(textNode: Text) {
     return characters.join("").trim().replace(/\s+/g, " ");
   });
 
-  const rects = range.getClientRects();
-
   return linesText;
 }
 
