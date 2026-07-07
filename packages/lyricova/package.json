@@ -2,7 +2,6 @@
   "name": "@lyricova/blog",
   "version": "2.0.0",
   "description": "A lyrics-focused blog for Project Lyricova",
-  "main": "index.js",
   "scripts": {
     "dev": "cross-env PORT=8081 next dev",
     "build": "next build",

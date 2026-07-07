@@ -96,5 +96,3 @@ export const FuriganaLineButton = memo(
     return prevProps.idx === nextProps.idx;
   },
 );
-
-export default FuriganaLineButton;

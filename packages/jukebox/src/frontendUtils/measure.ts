@@ -4,7 +4,7 @@
  * Note: requires a `div` with ID `measure-layer` present in the current DOM
  * for it to apply proper styles.
  */
-export function measureElement(element: string): {
+function measureElement(element: string): {
   height: number;
   width: number;
 } {

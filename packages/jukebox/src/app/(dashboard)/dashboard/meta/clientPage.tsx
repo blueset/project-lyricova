@@ -199,5 +199,3 @@ export function SiteMetaClient() {
     </>
   );
 }
-
-export default SiteMetaClient;
