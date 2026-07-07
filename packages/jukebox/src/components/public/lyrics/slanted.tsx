@@ -2,10 +2,8 @@ import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import { useTrackwiseTimelineControl } from "../../../hooks/useTrackwiseTimelineControl";
-import type { CSSProperties } from "react";
 import { useMemo, useRef } from "react";
 import gsap from "gsap";
-import _ from "lodash";
 import { cn } from "@lyricova/components/utils";
 
 interface Props {

@@ -15,11 +15,10 @@ import {
 import { DataTable } from "@lyricova/components";
 import type { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
-import _ from "lodash";
 import { graphql } from "@lyricova/components/gql";
 import { DataTableColumnHeader, NextComposedLink } from "@lyricova/components";
 import { Pencil, Plus, Trash, SquareArrowUp, XCircle } from "lucide-react";
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import {
   Tooltip,
   TooltipTrigger,

@@ -8,7 +8,7 @@ import {
   NextComposedLink,
   useAuthContext,
 } from "@lyricova/components";
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import _ from "lodash";
 import { filesize } from "filesize";
 import { useAppDispatch } from "@/redux/public/store";

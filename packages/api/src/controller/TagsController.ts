@@ -1,4 +1,5 @@
-import { Router, Request, Response } from "express";
+import type { Request, Response } from "express";
+import { Router } from "express";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../drizzle/client";
 import { Tags, TagOfEntries, Entries } from "../drizzle/schema";

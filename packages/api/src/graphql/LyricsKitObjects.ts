@@ -7,7 +7,6 @@ import type {
   RangeAttributeLabel,
 } from "lyrics-kit/core";
 import { FURIGANA, ROMAJI } from "lyrics-kit/core";
-import { GraphQLJSONObject } from "graphql-scalars";
 
 /**
  * @openapi

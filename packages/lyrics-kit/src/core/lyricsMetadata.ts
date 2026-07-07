@@ -1,7 +1,6 @@
 import { isTranslationTag } from "./lyricsLineAttachment";
 import type { LyricsProviderSourceId } from "../service/lyricsProviderSourceId";
 import type { LyricsSearchRequest } from "../service/lyricsSearchRequest";
-import _ from "lodash";
 
 export interface LyricsMetadataJSON {
   attachmentTags?: string[];

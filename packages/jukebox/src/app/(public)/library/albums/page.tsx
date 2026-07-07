@@ -1,7 +1,6 @@
 "use client";
 import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
-import React from "react";
 import { NextComposedLink, formatArtistsPlainText } from "@lyricova/components";
 import {
   Alert,
@@ -9,8 +8,6 @@ import {
   AlertTitle,
 } from "@lyricova/components/components/ui/alert";
 import { Button } from "@lyricova/components/components/ui/button";
-import { cn } from "@lyricova/components/utils";
-import { Loader2 } from "lucide-react";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
 
 const ALBUMS_QUERY = graphql(`

@@ -25,7 +25,6 @@ import { LyricsTranslationLanguageSwitchButton } from "@/components/public/Lyric
 import TooltipIconButton from "@/components/dashboard/TooltipIconButton";
 import { Maximize, Minimize } from "lucide-react";
 import { cn } from "@lyricova/components/utils";
-import _ from "lodash";
 
 const args = new URLSearchParams(
   typeof window === "object" ? (window?.location?.search ?? "") : "",

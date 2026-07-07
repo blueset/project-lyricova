@@ -1,6 +1,6 @@
 declare module "satori" {
-  import { ReactNode } from "react";
-  import * as yoga_layout from "yoga-layout";
+  import type { ReactNode } from "react";
+  import type * as yoga_layout from "yoga-layout";
 
   declare const code: {
     readonly "ja-JP": RegExp;

@@ -3,7 +3,6 @@ import classes from "./SubArchiveHeader.module.scss";
 import { NavPanel } from "../nav/NavPanel";
 import { Search } from "../nav/Search";
 import type { ReactNode } from "react";
-import _ from "lodash";
 import { Link } from "../Link";
 
 // const resizer = _.debounce((elm: HTMLElement) => {

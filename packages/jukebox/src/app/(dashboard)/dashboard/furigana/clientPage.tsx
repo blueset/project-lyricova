@@ -26,7 +26,6 @@ import {
 } from "@lyricova/components/components/ui/tooltip";
 import { Edit, Eye, EyeOff, Database, Save, X } from "lucide-react";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Textarea } from "@lyricova/components/components/ui/textarea";
 import { Input } from "@lyricova/components/components/ui/input";

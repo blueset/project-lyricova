@@ -3,7 +3,7 @@ import { writeAsync as ffMetadataWrite } from "../../../utils/ffmetadata";
 import fs from "fs";
 import pLimit from "p-limit";
 import hasha from "hasha";
-import { and, desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
+import { desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
 import { db } from "../../../drizzle/client";
 import {
   MusicFiles,
@@ -26,17 +26,16 @@ import NodeID3 from "node-id3";
 import { swapExt } from "../../../utils/path";
 import { builder } from "../builder";
 import { MusicFileRef } from "../types/refs";
-import {
-  MusicFilesPaginationRef,
-  MusicFilesScanOutcomeRef,
+import type {
   MusicFilesScanOutcomeShape,
   MusicFilesPaginationEdgeShape,
 } from "../types/pagination";
 import {
-  pubsub,
-  TOPIC_MUSIC_FILE_SCAN_PROGRESS,
-  PubSubSessionPayload,
-} from "../pubsub";
+  MusicFilesPaginationRef,
+  MusicFilesScanOutcomeRef,
+} from "../types/pagination";
+import type { PubSubSessionPayload } from "../pubsub";
+import { pubsub, TOPIC_MUSIC_FILE_SCAN_PROGRESS } from "../pubsub";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter((val) => !other.has(val)));

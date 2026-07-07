@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import { Divider } from "@/components/public/Divider";
 import { Footer } from "@/components/public/Footer";
 import { IndexHeader } from "@/components/public/IndexHeader";

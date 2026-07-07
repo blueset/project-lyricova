@@ -1,18 +1,11 @@
-import {
-  Lyrics,
-  LyricsLine,
-  METADATA_MINOR,
-  METADATA_ROLE,
-} from "lyrics-kit/core";
-import { toast } from "sonner";
-import { useMemo, useEffect, memo, useCallback } from "react";
+import { METADATA_MINOR, METADATA_ROLE } from "lyrics-kit/core";
+import { memo, useCallback } from "react";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@lyricova/components/components/ui/toggle-group";
 import { cn } from "@lyricova/components/utils";
-import { useNamedStateWithRef } from "@/hooks/useNamedStateWithRef";
 import { Toggle } from "@lyricova/components/components/ui/toggle";
 import { useLyricsStore } from "./state/editorState";
 import { useShallow } from "zustand/shallow";

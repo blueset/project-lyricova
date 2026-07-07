@@ -1,5 +1,4 @@
 import type { LyricsLineJSON } from "lyrics-kit/core";
-import { FURIGANA, LyricsLine, RangeAttributeLabel } from "lyrics-kit/core";
 
 /**
  * @author nlp-compromise <https://github.com/nlp-compromise/nlp-syllables/blob/master/src/syllables.js>

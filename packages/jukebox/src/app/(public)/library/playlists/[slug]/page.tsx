@@ -13,7 +13,6 @@ import type {
 } from "@lyricova/components/gql/graphql";
 import _ from "lodash";
 import { filesize } from "filesize";
-import React from "react";
 import PlaylistAvatar, { gradients, hash } from "@/components/PlaylistAvatar";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, toggleShuffle } from "@/redux/public/playlist";
@@ -33,7 +32,6 @@ import {
 } from "@lyricova/components/components/ui/alert";
 import TrackListRow from "@/components/public/library/TrackListRow";
 import {
-  AlertCircle,
   ChevronLeft,
   ExternalLink,
   MoreVertical,

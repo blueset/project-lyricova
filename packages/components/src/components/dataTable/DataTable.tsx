@@ -8,7 +8,6 @@ import type {
   RowData,
   GlobalFilterTableState,
   TableMeta,
-  ColumnMeta,
 } from "@tanstack/react-table";
 import {
   flexRender,

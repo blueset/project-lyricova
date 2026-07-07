@@ -1,4 +1,3 @@
-import type { LyricsLine } from "lyrics-kit/core";
 import { FURIGANA } from "lyrics-kit/core";
 import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";

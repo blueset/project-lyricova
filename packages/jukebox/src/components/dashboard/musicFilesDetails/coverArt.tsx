@@ -7,7 +7,6 @@ import { useAuthContext } from "@lyricova/components";
 import { Music, ImageOff } from "lucide-react";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Input } from "@lyricova/components/components/ui/input";
-import { cn } from "@lyricova/components/utils";
 
 interface SelectedImage {
   url?: string;

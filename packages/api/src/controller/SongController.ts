@@ -1,4 +1,5 @@
-import { NextFunction, Router, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
+import { Router } from "express";
 import { requireNumericParams } from "../utils/numericParam";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { promises as fs } from "node:fs";

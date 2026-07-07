@@ -1,4 +1,3 @@
-import React from "react";
 import { Divider } from "@/components/public/Divider";
 import { Footer } from "@/components/public/Footer";
 import { IndexHeader } from "@/components/public/IndexHeader";

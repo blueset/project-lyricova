@@ -1,4 +1,5 @@
-import { Router, Request, Response } from "express";
+import type { Request, Response } from "express";
+import { Router } from "express";
 import { requireNumericParams } from "../utils/numericParam";
 import { and, eq, isNull, like, or } from "drizzle-orm";
 import shuffle from "lodash/shuffle";
@@ -6,7 +7,7 @@ import { db } from "../drizzle/client";
 import { Entries, Verses } from "../drizzle/schema";
 import { parseEnumArray } from "../drizzle/enumArray";
 import { entriesPerPage } from "../utils/consts";
-import { PVContract } from "../types/vocadb";
+import type { PVContract } from "../types/vocadb";
 
 /** Pick the preferred playback URL from a song's VocaDB PV list. */
 function deriveVideoUrl(vocaDbJson: unknown): { has: boolean; url?: string } {

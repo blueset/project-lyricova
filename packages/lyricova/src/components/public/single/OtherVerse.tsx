@@ -5,7 +5,6 @@ import { Star } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 

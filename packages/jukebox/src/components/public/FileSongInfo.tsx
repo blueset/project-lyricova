@@ -1,9 +1,8 @@
 "use client";
 import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
-import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import React, { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import type { ResultOf } from "@graphql-typed-document-node/core";
 import { NextComposedLink } from "@lyricova/components";
 import { formatTime } from "../../frontendUtils/strings";

@@ -1,11 +1,11 @@
 import { withFilter } from "graphql-subscriptions";
 import { builder } from "../builder";
+import type { PubSubSessionPayload } from "../pubsub";
 import {
   pubsub,
   TOPIC_MUSIC_FILE_SCAN_PROGRESS,
   TOPIC_LYRICS_KIT_RESULT,
   TOPIC_YOUTUBE_DL_PROGRESS,
-  PubSubSessionPayload,
 } from "../pubsub";
 import { MusicFilesScanOutcomeRef } from "../types/pagination";
 import { YouTubeDlProgressRef } from "../types/download";

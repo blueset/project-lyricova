@@ -1,7 +1,6 @@
 "use client";
 import { AlertCircle, MoreVertical, PlaySquare, Shuffle } from "lucide-react";
 import { Button } from "@lyricova/components/components/ui/button";
-import { Badge } from "@lyricova/components/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,11 +14,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
-import { cn } from "@lyricova/components/utils";
 import { AutoSizer as AutoResizer } from "react-virtualized-auto-sizer";
 import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
-import { Link, NextComposedLink, useAuthContext } from "@lyricova/components";
+import { NextComposedLink, useAuthContext } from "@lyricova/components";
 import React, { useCallback, useMemo, useRef } from "react";
 import type { GetMusicFilesQuery } from "@lyricova/components/gql/graphql";
 import _ from "lodash";

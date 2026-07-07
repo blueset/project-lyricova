@@ -7,7 +7,7 @@ import {
   AlertTitle,
 } from "@lyricova/components/components/ui/alert";
 import type { ResultOf } from "@graphql-typed-document-node/core";
-import React, { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useNamedState } from "@/hooks/useNamedState";
 import { DataTableColumnHeader, NextComposedLink } from "@lyricova/components";
 import { CircleX } from "lucide-react";

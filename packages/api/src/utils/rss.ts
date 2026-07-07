@@ -1,4 +1,4 @@
-import { desc, isNull } from "drizzle-orm";
+import { isNull } from "drizzle-orm";
 import RSS from "rss";
 import { db } from "../drizzle/client";
 import { Entries } from "../drizzle/schema";

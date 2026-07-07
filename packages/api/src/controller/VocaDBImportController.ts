@@ -5,7 +5,7 @@ import type { SongForApiContract } from "../types/vocadb";
 import { getJson } from "../utils/httpFetch";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 import { saveSongFromVocaDB } from "../utils/vocadbImport";
-import { Songs } from "../drizzle/schema";
+import type { Songs } from "../drizzle/schema";
 
 type SongRow = typeof Songs.$inferSelect;
 

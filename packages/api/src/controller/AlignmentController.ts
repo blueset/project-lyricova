@@ -1,4 +1,5 @@
-import { NextFunction, Router, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
+import { Router } from "express";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 import { YOHANE_SERVER_URL } from "../utils/secret";
 import { eq } from "drizzle-orm";

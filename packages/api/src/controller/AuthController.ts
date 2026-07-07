@@ -1,9 +1,11 @@
-import { Router, Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
+import { Router } from "express";
 import passport from "passport";
-import { Strategy as LocalStrategy, IVerifyOptions } from "passport-local";
+import type { IVerifyOptions } from "passport-local";
+import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
+import type { RegisteredFunction } from "passport-fido2-webauthn";
 import WebAuthnStrategy, {
-  RegisteredFunction,
   SessionChallengeStore,
 } from "passport-fido2-webauthn";
 import jwt from "jsonwebtoken";
@@ -13,7 +15,7 @@ import { db } from "../drizzle/client";
 import { Users, UserPublicKeyCredentials } from "../drizzle/schema";
 import { JWT_SECRET } from "../utils/secret";
 import cors from "cors";
-import { VerifiedFunction } from "passport-fido2-webauthn";
+import type { VerifiedFunction } from "passport-fido2-webauthn";
 import base64url from "base64url";
 import { v4 as uuid } from "uuid";
 

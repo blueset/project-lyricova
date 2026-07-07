@@ -1,5 +1,5 @@
-import { Request } from "express";
-import { User } from "../models/User";
+import type { Request } from "express";
+import type { User } from "../models/User";
 
 export type ContextType = {
   user?: User;

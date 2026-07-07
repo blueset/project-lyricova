@@ -8,14 +8,7 @@ import {
   ToggleGroupItem,
 } from "@lyricova/components/components/ui/toggle-group";
 import { cn } from "@lyricova/components/utils";
-import {
-  Maximize,
-  Rewind,
-  Forward,
-  Pause,
-  Play,
-  FastForward,
-} from "lucide-react";
+import { Maximize, Rewind, Pause, Play, FastForward } from "lucide-react";
 
 interface SO extends ScreenOrientation {
   lock(orientation: string): Promise<void>;

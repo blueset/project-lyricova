@@ -2,7 +2,6 @@
 
 import { useAuthContext } from "@lyricova/components";
 import { Button } from "@lyricova/components/components/ui/button";
-import React from "react";
 import FileSongInfo from "@/components/public/FileSongInfo";
 import { useAppSelector } from "@/redux/public/store";
 import { currentSongSelector } from "@/redux/public/playlist";

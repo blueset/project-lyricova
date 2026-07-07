@@ -8,7 +8,6 @@ export class LyricsProviderManager {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public providers: LyricsProvider<any>[];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(
     sources: LyricsProviderSource<any>[] = LyricsProviderSource.allCases,
   ) {

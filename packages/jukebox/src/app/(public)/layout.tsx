@@ -2,7 +2,7 @@
 import Player from "@/components/public/Player";
 import DetailsPanel from "@/components/public/DetailsPanel";
 import type { ReactNode, CSSProperties } from "react";
-import React, { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useApolloClient, useLazyQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import type { Track } from "@/components/public/AppContext";

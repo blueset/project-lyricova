@@ -1,4 +1,4 @@
-import { GraphQLResolveInfo, FieldNode } from "graphql";
+import type { GraphQLResolveInfo, FieldNode } from "graphql";
 
 export function getFields(info: GraphQLResolveInfo): string[] {
   const fields: string[] = [];

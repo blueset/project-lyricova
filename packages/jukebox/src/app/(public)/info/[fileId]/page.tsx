@@ -2,7 +2,6 @@
 
 import { NextComposedLink, useAuthContext } from "@lyricova/components";
 import { Button } from "@lyricova/components/components/ui/button";
-import React from "react";
 import FileSongInfo from "@/components/public/FileSongInfo";
 import { useParams } from "next/navigation";
 import { MusicFileActions } from "./MusicFileActions";

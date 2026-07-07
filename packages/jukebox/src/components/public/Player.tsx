@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import React from "react";
 import { CardContent } from "@lyricova/components/components/ui/card";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
