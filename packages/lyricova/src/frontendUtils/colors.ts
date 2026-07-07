@@ -5,11 +5,10 @@ import type { Tag } from "@/frontendUtils/restTypes";
  *
  * `generateColorGradient` emits a CSS string, so it can lean on the native
  * `color-interpolation-method` (`linear-gradient(in oklch …)`) and let the
- * browser do the interpolation. The other two helpers feed consumers that the
- * browser cannot interpolate in OKLCH for us — SVG `<linearGradient>` stops
- * (whose `color-interpolation` only supports sRGB/linearRGB) and `<canvas>`
- * `fillStyle` — so they precompute concrete stops via a small self-contained
- * OKLCH implementation. Either way, no external colour library is needed.
+ * browser do the interpolation. `generateColorGradientFunction` feeds a
+ * `<canvas>` `fillStyle`, which needs a concrete colour value per position, so
+ * it samples the gradient via a small self-contained OKLCH implementation.
+ * Either way, no external colour library is needed.
  */
 
 const LIGHTEN_L = 0.15;
@@ -36,31 +35,6 @@ export function generateColorGradient(
         ]
       : tags.map((tag) => tag.color);
   return `linear-gradient(in oklch to right, ${stops.join(", ")})`;
-}
-
-/**
- * Discrete OKLCH-interpolated stops (5 per segment) as `rgb(…)` strings.
- *
- * Needed because the consumer renders SVG gradient stops, which cannot
- * interpolate in OKLCH themselves.
- */
-export function generateColorGradientSteps(
-  tags: Pick<Tag, "color">[],
-  forceGradient = true
-): string[] {
-  if (tags.length === 0) return [];
-  if (tags.length === 1 && !forceGradient) return [tags[0].color];
-  const colors = toOklchStops(tags, forceGradient);
-  const STEPS = 5;
-  const out: string[] = [];
-  for (let i = 1; i < colors.length; i++) {
-    for (let s = 0; s < STEPS; s++) {
-      out.push(
-        oklchToRgbString(mixOklch(colors[i - 1], colors[i], s / (STEPS - 1)))
-      );
-    }
-  }
-  return out;
 }
 
 /**
