@@ -1,8 +1,7 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery, skipToken } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { useMemo, useRef, useState } from "react";
 import { FocusedLyrics } from "@/components/public/lyrics/focused";
 import { PlainLyrics } from "@/components/public/lyrics/plain";
@@ -29,7 +28,7 @@ import { cn } from "@lyricova/components/utils";
 import _ from "lodash";
 
 const args = new URLSearchParams(
-  typeof window === "object" ? window?.location?.search ?? "" : ""
+  typeof window === "object" ? (window?.location?.search ?? "") : "",
 );
 const useYuuruka =
   args.get("yuuruka") === "true" ||
@@ -110,16 +109,16 @@ export default function Index() {
   const isFullscreen = useAppSelector((s) => s.display.isFullscreen);
   const dispatch = useAppDispatch();
 
-  const lyricsQuery = useQuery(LYRICS_QUERY, {
-    variables: currentSong?.id ? { id: currentSong.id } : undefined,
-    skip: !currentSong?.id,
-  });
+  const lyricsQuery = useQuery(
+    LYRICS_QUERY,
+    currentSong?.id ? { variables: { id: currentSong.id } } : skipToken,
+  );
 
   const languages = useMemo(() => {
     const languages =
       lyricsQuery.data?.musicFile?.lyrics?.translationLanguages ?? [];
     setTranslationLanguageIdx((idx) =>
-      Math.max(0, Math.min(idx, languages.length - 1))
+      Math.max(0, Math.min(idx, languages.length - 1)),
     );
     return languages;
   }, [lyricsQuery.data?.musicFile?.lyrics?.translationLanguages]);
@@ -128,7 +127,7 @@ export default function Index() {
     <div
       className={cn(
         "flex flex-col items-center justify-center w-full h-full font-semibold italic p-4",
-        useYuuruka ? "text-2xl" : "text-4xl"
+        useYuuruka ? "text-2xl" : "text-4xl",
       )}
     >
       {useYuuruka && (
@@ -151,10 +150,13 @@ export default function Index() {
     } else {
       node = <MessageBox>No track.</MessageBox>;
     }
-  } else if (lyricsQuery?.data?.musicFile?.lyrics) {
+  } else if (
+    lyricsQuery?.dataState === "complete" &&
+    lyricsQuery.data.musicFile?.lyrics
+  ) {
     node = moduleNode(
       lyricsQuery.data.musicFile.lyrics,
-      translationLanguageIdx
+      translationLanguageIdx,
     );
   } else {
     node = <MessageBox>No lyrics.</MessageBox>;
@@ -164,7 +166,7 @@ export default function Index() {
     <div
       className={cn(
         "absolute top-0 right-4 flex flex-row gap-2",
-        isFullscreen && "pt-2"
+        isFullscreen && "pt-2",
       )}
       onClick={(evt) => evt.stopPropagation()}
     >

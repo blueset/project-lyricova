@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { Link } from "@lyricova/components";
 import { Button } from "@lyricova/components/components/ui/button";
 import {
@@ -48,13 +48,10 @@ export default function VocaDBLyricsDialog({
     toggleOpen(false);
   }, [toggleOpen]);
 
-  const query = useQuery(
-    VOCADB_LYRICS_QUERY,
-    {
-      variables: { id: songId ?? 0 },
-      skip: !isOpen || !songId, // Skip query if dialog is not open or songId is missing
-    }
-  );
+  const query = useQuery(VOCADB_LYRICS_QUERY, {
+    variables: { id: songId ?? 0 },
+    skip: !isOpen || !songId, // Skip query if dialog is not open or songId is missing
+  });
 
   const copyText = useCallback(
     (text?: string | null) => async () => {
@@ -66,10 +63,10 @@ export default function VocaDBLyricsDialog({
         function (err) {
           console.error("Could not copy text: ", err);
           toast.error(`Failed to copy: ${err}`);
-        }
+        },
       );
     },
-    []
+    [],
   );
 
   let content = <DialogDescription>Loading...</DialogDescription>;

@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { useParams } from "next/navigation";
 import {
@@ -11,7 +10,7 @@ import {
 } from "@lyricova/components";
 import React, { Fragment } from "react";
 import _ from "lodash";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import { useAppDispatch } from "@/redux/public/store";
 import { loadTracks, playTrack, toggleShuffle } from "@/redux/public/playlist";
 import TrackListRow from "@/components/public/library/TrackListRow";
@@ -123,7 +122,7 @@ export default function LibrarySingleSong() {
       <div
         className={cn(
           "mt-2 grid grid-cols-1 gap-6",
-          song.coverUrl && "@3xl/details:grid-cols-[1fr_2fr]"
+          song.coverUrl && "@3xl/details:grid-cols-[1fr_2fr]",
         )}
       >
         {song.coverUrl && (
@@ -153,7 +152,7 @@ export default function LibrarySingleSong() {
                     {artist.name}
                   </Link>
                 </Fragment>
-              ))
+              )),
             )}
           </h2>
           <div className="flex items-center mt-2">
@@ -328,7 +327,7 @@ export default function LibrarySingleSong() {
                                     {artist.ArtistOfSong?.customName ||
                                       artist.name}
                                   </Fragment>
-                                ))
+                                )),
                               )}
                             </div>
                           </div>

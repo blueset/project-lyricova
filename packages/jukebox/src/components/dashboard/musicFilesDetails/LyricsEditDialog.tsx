@@ -8,7 +8,7 @@ import TaggingLyrics from "./lyrics/TaggingLyrics";
 import EditPlainLyrics from "./lyrics/EditPlainLyrics";
 import EditTranslations from "./lyrics/translation/EditTranslations";
 import EditFurigana from "./lyrics/furigana/EditFurigana";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import LyricsPreviewPanel from "./lyrics/WebVTTPreview";
 import WebAudioTaggingLyrics from "./lyrics/WebAudioTaggingLyrics";
 import InlineTagging from "./lyrics/inlineTagging/InlineTagging";
@@ -43,7 +43,7 @@ function PreviewPanel({ fileId }: { fileId: number }) {
     useShallow((s) => ({
       lrcx: s.lrcx,
       lrc: s.lrc,
-    }))
+    })),
   );
   const lyricsString = lrcx || lrc;
   const lyricsObj = useMemo(() => {
@@ -91,7 +91,7 @@ export default function LyricsEditDialog({
     useShallow((s) => ({
       hasLrc: !!s.lrc,
       hasLrcx: !!s.lrcx,
-    }))
+    })),
   );
 
   const apolloClient = useApolloClient();
@@ -129,7 +129,7 @@ export default function LyricsEditDialog({
         apolloClient.mutate({
           mutation: WRITE_LYRICS_MUTATION,
           variables: { fileId, lyrics: lrc, ext: "lrc" },
-        })
+        }),
       );
     }
     if (lrcx && lrcx !== lrc) {
@@ -137,7 +137,7 @@ export default function LyricsEditDialog({
         apolloClient.mutate({
           mutation: WRITE_LYRICS_MUTATION,
           variables: { fileId, lyrics: lrcx, ext: "lrcx" },
-        })
+        }),
       );
     }
     try {

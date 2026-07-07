@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -8,7 +7,7 @@ import React, { useCallback, useMemo } from "react";
 import type { ResultOf } from "@graphql-typed-document-node/core";
 import { NextComposedLink } from "@lyricova/components";
 import { formatTime } from "../../frontendUtils/strings";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import { cn } from "@lyricova/components/utils";
 import { Avatar, AvatarImage } from "@lyricova/components/components/ui/avatar";
 import { Button } from "@lyricova/components/components/ui/button";
@@ -60,9 +59,7 @@ const SINGLE_FILE_SONG_QUERY = graphql(`
 type FileData = NonNullable<
   ResultOf<typeof SINGLE_FILE_SONG_QUERY>["musicFile"]
 >;
-type SongArtist = NonNullable<
-  NonNullable<FileData["song"]>["artists"]
->[number];
+type SongArtist = NonNullable<NonNullable<FileData["song"]>["artists"]>[number];
 
 interface Props {
   partialFile?: Partial<FileData>;
@@ -119,7 +116,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
         <Separator className="@3xl/details:hidden" />
       </div>
     ),
-    []
+    [],
   );
 
   const [producers, vocalists] = useMemo((): [SongArtist[], SongArtist[]] => {
@@ -129,8 +126,8 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
 
     if (song?.artists) {
       for (const i of song.artists) {
-        const categories: (string | string[] | null | undefined)[] =
-          i.ArtistOfSong?.categories ?? [i.ArtistOfAlbum?.categories];
+        const categories: (string | string[] | null | undefined)[] = i
+          .ArtistOfSong?.categories ?? [i.ArtistOfAlbum?.categories];
         if (
           categories.indexOf("Producer") >= 0 ||
           categories.indexOf("Circle") >= 0
@@ -179,7 +176,7 @@ export default function FileSongInfo({ partialFile, fileId }: Props) {
         <div
           className={cn(
             "col-span-12",
-            file.hasCover && file.id != null && "@3xl/details:col-span-8"
+            file.hasCover && file.id != null && "@3xl/details:col-span-8",
           )}
         >
           <span className="text-xs uppercase tracking-wider text-muted-foreground">

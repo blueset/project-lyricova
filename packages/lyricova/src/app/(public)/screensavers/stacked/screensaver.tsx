@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TagRow } from "@/components/public/TagRow";
-import { generateColorGradientSteps } from "@/frontendUtils/colors";
+import { generateColorGradient } from "@/frontendUtils/colors";
 import classes from "./stacked.module.scss";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/dist/TextPlugin";
@@ -45,10 +45,12 @@ export default function TypingStackedScreensaver({
 
   const verse = verses[cursor];
   const entry = entries[verse.entryId];
-  const colors = useMemo(
-    () => generateColorGradientSteps(entry.tags, false),
+  const gradient = useMemo(
+    () => generateColorGradient(entry.tags, false),
     [entry]
   );
+  const hasGradient = entry.tags.length > 1;
+  const soloColor = entry.tags.length === 1 ? entry.tags[0].color : undefined;
 
   const [lines, setLines] = useState<[string, number, string][]>([
     ["Project Lyricova Screensaver", -1, "en"],
@@ -192,72 +194,17 @@ export default function TypingStackedScreensaver({
         <div
           className={classes.curtainBar}
           style={{
-            backgroundImage:
-              colors.length > 1
-                ? `linear-gradient(to right, ${colors.join(", ")})`
-                : undefined,
-            backgroundColor: colors.length === 1 ? colors[0] : undefined,
+            backgroundImage: hasGradient ? gradient : undefined,
+            backgroundColor: soloColor,
           }}
         />
-        <svg
-          width="100%"
-          height="100%"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <mask
-            id="mask0_180_743"
-            style={{ maskType: "alpha" }}
-            maskUnits="userSpaceOnUse"
-            x="0"
-            y="0"
-            width="100%"
-            height="100%"
-          >
-            <rect
-              width="100%"
-              height="100%"
-              fill="url(#paint0_linear_180_743)"
-            />
-          </mask>
-          <g mask="url(#mask0_180_743)">
-            <rect
-              width="100%"
-              height="100%"
-              fill="url(#paint1_linear_180_743)"
-            />
-          </g>
-          <defs>
-            <linearGradient
-              id="paint0_linear_180_743"
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="100%"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#000" stopOpacity="0.3" />
-              <stop offset="0.666" stopColor="#000" stopOpacity="0.05" />
-              <stop offset="1" stopColor="#000" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient
-              id="paint1_linear_180_743"
-              x1="0"
-              y1="0"
-              x2="100%"
-              y2="0"
-              gradientUnits="userSpaceOnUse"
-            >
-              {colors.map((color, i) => (
-                <stop
-                  key={color}
-                  offset={i / (colors.length - 1) || 0}
-                  stopColor={color}
-                />
-              ))}
-            </linearGradient>
-          </defs>
-        </svg>
+        <div
+          className={classes.curtainGlow}
+          style={{
+            backgroundImage: hasGradient ? gradient : undefined,
+            backgroundColor: soloColor,
+          }}
+        />
       </div>
       <div className={classes.fadeCurtain} />
       <div className={classes.lines}>

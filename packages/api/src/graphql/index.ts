@@ -1,13 +1,13 @@
 import type { Application } from "express";
 import { ApolloServer } from "@apollo/server";
-import { expressMiddleware } from "@as-integrations/express4";
+import { expressMiddleware } from "@as-integrations/express5";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import type { Server } from "http";
 import { createServer } from "http";
 import { ServerOptions, WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
 import cors from "cors";
-import bodyParser from "body-parser";
+import { json } from "express";
 import { printSchema } from "graphql";
 import { writeFileSync } from "fs";
 import { buildPothosSchema } from "./pothos/schema";
@@ -44,7 +44,7 @@ export async function applyApollo(app: Application): Promise<Server> {
   wsConfig.server = httpServer;
 
   const wsServer = new WebSocketServer(wsConfig, () =>
-    console.log("Websocket server started")
+    console.log("Websocket server started"),
   );
 
   const serverCleanup = useServer(
@@ -54,7 +54,7 @@ export async function applyApollo(app: Application): Promise<Server> {
         return { user: null };
       },
     },
-    wsServer
+    wsServer,
   );
 
   const apolloServer = new ApolloServer<Context>({
@@ -114,7 +114,7 @@ export async function applyApollo(app: Application): Promise<Server> {
                 query: requestContext.request?.query,
                 variables: requestContext.request?.variables,
               },
-            }
+            },
           );
         },
       },
@@ -127,13 +127,13 @@ export async function applyApollo(app: Application): Promise<Server> {
   app.use(
     "/graphql",
     cors<cors.CorsRequest>(),
-    bodyParser.json(),
+    json(),
     expressMiddleware(apolloServer, {
       context: async ({ req }): Promise<Context> => ({
         user: req.user as Context["user"],
         req,
       }),
-    })
+    }),
   );
 
   return httpServer;

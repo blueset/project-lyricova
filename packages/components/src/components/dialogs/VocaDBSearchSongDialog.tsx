@@ -1,13 +1,12 @@
 "use client";
-
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import { fetchJson } from "../../utils/httpFetch";
 import type {
   PartialFindResult,
   SongForApiContract,
 } from "@lyricova/api/vocadb";
 import _ from "lodash";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "../../gql";
 import type { SelectSongEntryFragment } from "../../gql/graphql";
 import { toast } from "sonner";
@@ -97,7 +96,7 @@ export function VocaDBSearchSongDialog({
       if (result.data) {
         setSong(result.data.enrolSongFromVocaDB);
         toast.success(
-          `Song "${result.data.enrolSongFromVocaDB.name}" is successfully enrolled.`
+          `Song "${result.data.enrolSongFromVocaDB.name}" is successfully enrolled.`,
         );
         handleClose();
       } else {
@@ -106,7 +105,7 @@ export function VocaDBSearchSongDialog({
     } catch (e) {
       console.error(`Error occurred while importing song #${selectedSong}.`, e);
       toast.error(
-        `Error occurred while importing song #${selectedSong}. (${e})`
+        `Error occurred while importing song #${selectedSong}. (${e})`,
       );
       toggleImporting(false);
     }
@@ -118,22 +117,20 @@ export function VocaDBSearchSongDialog({
     let active = true;
 
     (async () => {
-      const response = await axios.get<PartialFindResult<SongForApiContract>>(
+      const response = await fetchJson<PartialFindResult<SongForApiContract>>(
         "https://vocadb.net/api/songs",
         {
-          params: {
-            query: keyword,
-            sort: "FavoritedTimes",
-            nameMatchMode: "Auto",
-            fields: "ThumbUrl",
-          },
-        }
+          query: keyword,
+          sort: "FavoritedTimes",
+          nameMatchMode: "Auto",
+          fields: "ThumbUrl",
+        },
       );
 
       const idResponse = keyword.match(/^\d+$/)
-        ? await axios.get<SongForApiContract>(
+        ? await fetchJson<SongForApiContract>(
             `https://vocadb.net/api/songs/${keyword}`,
-            { params: { fields: "ThumbUrl" } }
+            { fields: "ThumbUrl" },
           )
         : null;
 
@@ -148,10 +145,10 @@ export function VocaDBSearchSongDialog({
           setResults([]);
           console.error(
             "Error occurred while loading search results from VocaDB",
-            response
+            response,
           );
           toast.error(
-            `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`
+            `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`,
           );
         }
       }

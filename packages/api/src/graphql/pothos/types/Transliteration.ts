@@ -12,8 +12,9 @@ const LANGUAGE_DESC =
   'Language of the query, choose from "ja", "zh", and "en". Leave blank for auto detection.';
 
 // Pothos type inference degrades under the api's non-strict tsconfig (the
-// `notStrict` builder warning). Runtime output is parity-verified by
-// schema:check, so the localized casts below only satisfy tsc.
+// `notStrict` builder warning). Runtime output is reflected in the committed
+// `schema.graphql` (`npm run pothos:emit`), so the localized casts below only
+// satisfy tsc.
 type Lang = "zh" | "ja" | "en" | undefined;
 const asLang = (l?: string | null): Lang => (l ?? undefined) as Lang;
 

@@ -1,9 +1,8 @@
 "use client";
-
 import type { ReactNode } from "react";
 import { useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { Alert, AlertTitle } from "@lyricova/components/components/ui/alert";
 import { Button } from "@lyricova/components/components/ui/button";
@@ -54,7 +53,6 @@ export default function ReviewLayout({ children }: Props) {
     </Alert>
   );
 
-   
   const goToFile = useCallback(
     (index: number) => async () => {
       if (edges) {
@@ -62,7 +60,7 @@ export default function ReviewLayout({ children }: Props) {
         await router.push(`/dashboard/review/${fileId}`);
       }
     },
-    [router, edges]
+    [router, edges],
   );
 
   if (edges) {

@@ -1,14 +1,10 @@
 "use client";
-
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
-import {
-  useAuthContext,
-  NextComposedLink,
-} from "@lyricova/components";
+import { useAuthContext, NextComposedLink } from "@lyricova/components";
 import React from "react";
 import _ from "lodash";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import {
   playTrack,
   toggleShuffle,
@@ -232,7 +228,7 @@ export default function ArtistDetails({ id, type }: Props) {
         <div className="mt-4">
           {_.sortBy(
             songs.filter((v) => (v.files ?? []).length),
-            "sortOrder"
+            "sortOrder",
           ).map((v) => (
             <TrackListRow
               song={v}

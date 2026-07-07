@@ -28,8 +28,8 @@ export function TypingStackedLyrics({ lyrics }: Props) {
   else if (!sequenceQuery.data) {
     statusNode = (
       <span>
-        {lyrics.lines.length} lines, starting at {lyrics.lines[0]?.position ?? 0}{" "}
-        second.
+        {lyrics.lines.length} lines, starting at{" "}
+        {lyrics.lines[0]?.position ?? 0} second.
       </span>
     );
   }
@@ -44,7 +44,7 @@ export function TypingStackedLyrics({ lyrics }: Props) {
         <span ref={doneRef} />
         <span ref={typingRef} className="bg-white/50" />
       </div>
-      {sequenceQuery.data &&
+      {sequenceQuery.dataState === "complete" &&
         sequenceQuery.data.transliterate.typingSequence
           .map((v, idx) => {
             if (idx >= currentFrameId || idx < currentFrameId - 30) return null;

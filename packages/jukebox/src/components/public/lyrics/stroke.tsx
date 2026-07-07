@@ -8,8 +8,7 @@ import Balancer from "react-wrap-balancer";
 import type { RefObject } from "react";
 import type React from "react";
 import { useRef, useEffect } from "react";
-import type { MeasuredComponentProps } from "react-measure";
-import Measure from "react-measure";
+import { useResizeObserver } from "../../../hooks/useResizeObserver";
 import { Scene } from "react-scenejs";
 import { cn } from "@lyricova/components/utils";
 
@@ -274,6 +273,7 @@ interface Props {
 
 export function StrokeLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
+  const { ref: measureRef, width } = useResizeObserver<HTMLDivElement>();
   const progressorRef = useRef<Scene>(null);
 
   const { currentFrame, currentFrameId, endTime, playerState } =
@@ -318,11 +318,7 @@ export function StrokeLyrics({ lyrics }: Props) {
 
   return (
     <div className="p-8 w-full h-full flex flex-col justify-center">
-      <Measure bounds>
-        {({ contentRect, measureRef }: MeasuredComponentProps) => (
-          <div ref={measureRef}>{lineElement(contentRect.bounds?.width ?? 0)}</div>
-        )}
-      </Measure>
+      <div ref={measureRef}>{lineElement(width)}</div>
     </div>
   );
 }

@@ -1,9 +1,8 @@
 "use client";
-
-import { useQuery, useApolloClient } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { Button } from "@lyricova/components/components/ui/button";
 import { graphql } from "../gql";
-import type { MouseEvent} from "react";
+import type { MouseEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import base64url from "base64url";
 import { LS_JWT_KEY } from "../utils/localStorage";
@@ -59,13 +58,13 @@ export function WebAuthnCredManager() {
         },
         user: {
           id: Uint8Array.from(respJson.user.id as string, (c) =>
-            c.charCodeAt(0)
+            c.charCodeAt(0),
           ),
           name: respJson.user.name,
           displayName: respJson.user.displayName,
         },
         challenge: base64url.toBuffer(
-          respJson.challenge
+          respJson.challenge,
         ) as unknown as ArrayBuffer,
         pubKeyCredParams: [
           {
@@ -86,13 +85,13 @@ export function WebAuthnCredManager() {
       const body = {
         response: {
           clientDataJSON: base64url.encode(
-            Buffer.from(credential.response.clientDataJSON)
+            Buffer.from(credential.response.clientDataJSON),
           ),
           attestationObject: base64url.encode(
             Buffer.from(
               (credential.response as AuthenticatorAttestationResponse)
-                .attestationObject
-            )
+                .attestationObject,
+            ),
           ),
           transports: undefined as string[] | undefined,
         },
@@ -118,7 +117,7 @@ export function WebAuthnCredManager() {
 
       await refetch();
     },
-    [refetch]
+    [refetch],
   );
 
   const removeCredential = useCallback(
@@ -129,7 +128,7 @@ export function WebAuthnCredManager() {
       });
       await refetch();
     },
-    [apolloClient, refetch]
+    [apolloClient, refetch],
   );
 
   return (

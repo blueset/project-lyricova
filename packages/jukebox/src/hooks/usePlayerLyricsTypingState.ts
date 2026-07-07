@@ -1,6 +1,5 @@
-import type { QueryResult} from "@apollo/client";
-import { useQuery } from "@apollo/client";
-import type { RefObject} from "react";
+import { useQuery } from "@apollo/client/react";
+import type { RefObject } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useTrackwiseTimelineControl } from "./useTrackwiseTimelineControl";
 import type {
@@ -38,9 +37,8 @@ export interface SequenceQueryResult {
 /** Maximum time in second for one key stroke to take in the typing animation */
 const LONGEST_STEP_SECONDS = 1;
 
-interface PlayerLyricsTypingState
-  extends PlayerLyricsState<LyricsKitLyricsLine> {
-  sequenceQuery: QueryResult<SequenceQueryResult>;
+interface PlayerLyricsTypingState extends PlayerLyricsState<LyricsKitLyricsLine> {
+  sequenceQuery: useQuery.Result<SequenceQueryResult>;
   timeline: Timeline | null;
 }
 

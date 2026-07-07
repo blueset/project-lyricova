@@ -1,5 +1,5 @@
 import type { Playlist } from "@lyricova/components/gql/schema";
-import { useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import _ from "lodash";
 import type { ReactNode } from "react";
 import { useCallback, useEffect } from "react";
@@ -69,7 +69,7 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
   const [isOpen, setIsOpen] = useNamedState(false, "isOpen");
   const [checkedPlaylists, setCheckedPlaylists] = useNamedState<string[]>(
     [],
-    "checkedPlaylists"
+    "checkedPlaylists",
   );
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
       });
       if (result.data) {
         setCheckedPlaylists(
-          result.data.setPlaylistsOfFile.playlists.map((v) => v.slug)
+          result.data.setPlaylistsOfFile.playlists.map((v) => v.slug),
         );
         toast.success("Playlists saved");
         await refresh();
@@ -103,7 +103,7 @@ export default function PlaylistsPanel({ fileId, playlists, refresh }: Props) {
         setCheckedPlaylists(checkedPlaylists.filter((v) => v !== value));
       }
     },
-    [checkedPlaylists, setCheckedPlaylists]
+    [checkedPlaylists, setCheckedPlaylists],
   );
 
   let content: ReactNode = Array.from({ length: 5 }, (_, index) => (

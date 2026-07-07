@@ -18,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@lyricova/components/components/ui/form";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import type { LyricsKitLyricsEntry } from "@lyricova/components/gql/schema";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ import { Check, Copy, Images, Loader2, Music, X } from "lucide-react";
 import type { LyricsAnalysisResult } from "@/frontendUtils/lyricsCheck";
 import { lyricsAnalysis } from "@/frontendUtils/lyricsCheck";
 import { Lyrics } from "lyrics-kit/core";
-import type { ComponentProps} from "react";
+import type { ComponentProps } from "react";
 import { useCallback, useMemo, useState } from "react";
 import {
   Tooltip,
@@ -34,7 +34,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
-import type { Subscription } from "zen-observable-ts";
 import { cn } from "@lyricova/components/utils";
 import {
   InputGroup,
@@ -162,17 +161,18 @@ function InlineAnalysisResult({
         Simplified Japanese
       </AnalysisBadge>
     );
-    const lastTimestamp = timestamp === undefined || Number.isNaN(timestamp) ? (
-      <AnalysisBadge variant="outline">Last line: N/A</AnalysisBadge>
-    ) : timestamp < duration ? (
-      <AnalysisBadge variant="success">
-        Last line: {timestamp.toFixed(2)} seconds
-      </AnalysisBadge>
-    ) : (
-      <AnalysisBadge variant="outline">
-        Last line: {timestamp.toFixed(2)} seconds
-      </AnalysisBadge>
-    );
+    const lastTimestamp =
+      timestamp === undefined || Number.isNaN(timestamp) ? (
+        <AnalysisBadge variant="outline">Last line: N/A</AnalysisBadge>
+      ) : timestamp < duration ? (
+        <AnalysisBadge variant="success">
+          Last line: {timestamp.toFixed(2)} seconds
+        </AnalysisBadge>
+      ) : (
+        <AnalysisBadge variant="outline">
+          Last line: {timestamp.toFixed(2)} seconds
+        </AnalysisBadge>
+      );
 
     return (
       <div className="mt-1 flex flex-wrap items-center">
@@ -288,7 +288,7 @@ export default function SearchLyrics({
           return null;
         }
       }),
-    [searchResults]
+    [searchResults],
   );
 
   const copyText = useCallback(
@@ -301,10 +301,10 @@ export default function SearchLyrics({
         function (err) {
           console.error("Could not copy text: ", err);
           toast.error(`Failed to copy: ${err}`);
-        }
+        },
       );
     },
-    []
+    [],
   );
 
   const onSubmit = async (values: FormValues) => {
@@ -330,9 +330,6 @@ export default function SearchLyrics({
       });
 
       const zenSubscription = subscription.subscribe({
-        start(subscription: Subscription) {
-          console.log("subscription started", subscription);
-        },
         next(x) {
           console.log("subscription event", x);
           const entry = x.data?.lyricsKitSearchIncremental;
@@ -342,7 +339,10 @@ export default function SearchLyrics({
               if (results.some((r) => r.lyrics === entry.lyrics)) {
                 return results;
               }
-              const arr = [...results, { ...entry, quality: entry.quality ?? 0 }];
+              const arr = [
+                ...results,
+                { ...entry, quality: entry.quality ?? 0 },
+              ];
               arr.sort((a, b) => (b.quality ?? 0) - (a.quality ?? 0));
               return arr;
             });
@@ -365,8 +365,8 @@ export default function SearchLyrics({
           const newResults = (result.data?.lyricsKitSearch ?? []).filter(
             (newItem) =>
               !currentResults.some(
-                (existing) => existing.lyrics === newItem.lyrics
-              )
+                (existing) => existing.lyrics === newItem.lyrics,
+              ),
           );
           const combined = [...currentResults, ...newResults];
           combined.sort((a, b) => (b.quality ?? 0) - (a.quality ?? 0));
@@ -376,7 +376,7 @@ export default function SearchLyrics({
     } catch (e) {
       console.error(`Error while loading search result; ${e}`);
       toast.error(
-        `Failed to load search results: ${e instanceof Error ? e.message : String(e)}`
+        `Failed to load search results: ${e instanceof Error ? e.message : String(e)}`,
       );
     } finally {
       setIsSubmitting(false);

@@ -59,7 +59,7 @@ export default (app: express.Express) => {
   app.use("/", authController.injectionRouter);
 
   apiRouter.get("/transliterate/:text", (req: Request, res: Response) => {
-    res.send(transliterate(req.params.text));
+    res.send(transliterate(req.params.text as string));
   });
 
   apiRouter.get("/segTransliterate", async (req: Request, res: Response) => {

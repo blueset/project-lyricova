@@ -1,4 +1,4 @@
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import LanguagePicker from "./LanguagePicker";
 import LyricsTools from "./LyricsTools";
 import VocaDBTranslationImport from "./VocaDBTranslationImport";

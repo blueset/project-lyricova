@@ -1,5 +1,4 @@
 "use client";
-
 import { AlertCircle, MoreVertical, PlaySquare, Shuffle } from "lucide-react";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Badge } from "@lyricova/components/components/ui/badge";
@@ -17,14 +16,10 @@ import {
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
 import { cn } from "@lyricova/components/utils";
-import AutoResizer from "react-virtualized-auto-sizer";
-import { useQuery } from "@apollo/client";
+import { AutoSizer as AutoResizer } from "react-virtualized-auto-sizer";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
-import {
-  Link,
-  NextComposedLink,
-  useAuthContext,
-} from "@lyricova/components";
+import { Link, NextComposedLink, useAuthContext } from "@lyricova/components";
 import React, { useCallback, useMemo, useRef } from "react";
 import type { GetMusicFilesQuery } from "@lyricova/components/gql/graphql";
 import _ from "lodash";
@@ -187,7 +182,7 @@ const Row = React.memo(
         </DropdownMenu>
       </div>
     );
-  }
+  },
 );
 Row.displayName = "Row";
 
@@ -195,11 +190,13 @@ export default function LibraryTracks() {
   const query = useQuery(MUSIC_FILES_COUNT_QUERY);
   const parentRef = useRef<HTMLDivElement>(null);
 
-  const entries = useMemo<GetMusicFilesQuery["musicFiles"]["edges"][number]["node"][]>(() => {
+  const entries = useMemo<
+    GetMusicFilesQuery["musicFiles"]["edges"][number]["node"][]
+  >(() => {
     if (query.data) {
       return _.sortBy(
         query.data.musicFiles.edges.map((v) => v.node),
-        (n) => n?.trackSortOrder?.toLocaleLowerCase()
+        (n) => n?.trackSortOrder?.toLocaleLowerCase(),
       );
     } else {
       return [];
@@ -209,7 +206,7 @@ export default function LibraryTracks() {
 
   const [scrollDistance, setScrollDistance] = useNamedState(
     0,
-    "scrollDistance"
+    "scrollDistance",
   );
   const [isDragging, setIsDragging] = useNamedState(false, "isDragging");
 
@@ -287,8 +284,8 @@ export default function LibraryTracks() {
 
   return (
     <div className="px-4 h-full relative overflow-hidden">
-      <AutoResizer>
-        {({ height, width }) => (
+      <AutoResizer
+        renderProp={({ height, width }) => (
           <>
             <TooltipProvider>
               <Tooltip delayDuration={0} open={isDragging}>
@@ -299,7 +296,7 @@ export default function LibraryTracks() {
                     onValueChange={onScrollSliderChange}
                     onValueCommit={() => setIsDragging(false)}
                     value={[scrollLength - scrollDistance]}
-                    min={height}
+                    min={height ?? 0}
                     max={scrollLength}
                     track={false}
                     renderThumb={(index) => (
@@ -321,7 +318,7 @@ export default function LibraryTracks() {
                           index: scrollLength - (scrollLength - scrollDistance),
                           name: "",
                         },
-                        "index"
+                        "index",
                       ) - 1;
                     return sliderLookup[Math.max(0, index)]?.name ?? "#";
                   })()}
@@ -360,7 +357,7 @@ export default function LibraryTracks() {
             </div>
           </>
         )}
-      </AutoResizer>
+      />
     </div>
   );
 }

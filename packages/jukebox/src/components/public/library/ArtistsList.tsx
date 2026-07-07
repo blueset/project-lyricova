@@ -1,7 +1,6 @@
 "use client";
-
 import type { VDBArtistType } from "../../../types/vocadb";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import type { ResultOf } from "@graphql-typed-document-node/core";
 import React from "react";

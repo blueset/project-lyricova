@@ -1,5 +1,7 @@
-import axios from "axios";
-import cheerio from "cheerio";
+import { mkdtemp, readdir, readFile, rm } from "fs/promises";
+import { tmpdir } from "os";
+import Path from "path";
+import YTDlpWrap from "yt-dlp-wrap-plus";
 import { LyricsProvider } from ".";
 import { ARTIST, TITLE } from "../../core/idTagKey";
 import { Lyrics } from "../../core/lyrics";
@@ -9,46 +11,37 @@ import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import type { YouTubeSearchResult } from "../types/youtube/searchResult";
 import type { YouTubeLyricsJSON3 } from "../types/youtube/singleLyrics";
 
-const BASE_SEARCH_URL = "https://www.youtube.com/results";
+const SEARCH_RESULT_LIMIT = 5;
+const SUBTITLE_FORMAT = "json3";
+const YOUTUBE_WATCH_URL = "https://www.youtube.com/watch?v=";
 
-type YouTubeInitialPlayerResponse = {
-  captions?: {
-    playerCaptionsTracklistRenderer: {
-      captionTracks?: Array<{
-        languageCode: string;
-        baseUrl: string;
-      }>;
-    };
-  };
+type YTDlpCaptionFormat = {
+  ext?: string;
+  url?: string;
 };
 
-type YouTubeSearchInitialData = {
-  alerts?: Array<{
-    alertRenderer?: {
-      type?: string;
-    };
-  }>;
-  contents?: {
-    twoColumnSearchResultsRenderer: {
-      primaryContents: {
-        sectionListRenderer: {
-          contents: Array<{
-            itemSectionRenderer?: {
-              contents: Array<{
-                videoRenderer?: {
-                  videoId: string;
-                  title: { runs: Array<{ text: string }> };
-                  thumbnail: { thumbnails: Array<{ url: string }> };
-                  ownerText: { runs: Array<{ text: string }> };
-                  lengthText?: { simpleText?: string };
-                };
-              }>;
-            };
-          }>;
-        };
-      };
-    };
-  };
+type YTDlpCaptionMap = Record<string, YTDlpCaptionFormat[]>;
+
+type YTDlpVideoInfo = {
+  id?: string;
+  title?: string;
+  thumbnail?: string;
+  thumbnails?: Array<{ url?: string }>;
+  uploader?: string;
+  channel?: string;
+  duration?: number;
+  duration_string?: string;
+  webpage_url?: string;
+  subtitles?: YTDlpCaptionMap;
+  automatic_captions?: YTDlpCaptionMap;
+  entries?: YTDlpVideoInfo[];
+};
+
+type YouTubeTimedTextTrack = {
+  language: string;
+  url: string;
+  captionUrl?: string;
+  isAutomatic: boolean;
 };
 
 class YouTubeLyrics extends Lyrics {
@@ -93,92 +86,135 @@ class YouTubeLyrics extends Lyrics {
 }
 
 export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
+  private readonly ytdlp = new YTDlpWrap(process.env.YTDLP_PATH);
+
+  private static watchUrl(id: string): string {
+    return `${YOUTUBE_WATCH_URL}${id}`;
+  }
+
+  private static normalizeVideoInfo(
+    data: YTDlpVideoInfo | YTDlpVideoInfo[]
+  ): YTDlpVideoInfo[] {
+    if (Array.isArray(data)) return data;
+    return data.entries ?? [data];
+  }
+
+  private static formatDuration(duration?: number): string {
+    if (duration === undefined || !Number.isFinite(duration)) return "";
+
+    const totalSeconds = Math.floor(duration);
+    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(totalSeconds / 60) % 60;
+    const hours = Math.floor(totalSeconds / 3600);
+
+    const paddedSeconds = seconds.toString().padStart(2, "0");
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${paddedSeconds}`;
+    }
+    return `${minutes}:${paddedSeconds}`;
+  }
+
+  private static getThumbnail(info: YTDlpVideoInfo): string {
+    return info.thumbnail ?? info.thumbnails?.at(-1)?.url ?? "";
+  }
+
+  private static getJson3Caption(
+    formats: YTDlpCaptionFormat[]
+  ): YTDlpCaptionFormat | undefined {
+    return formats.find((format) => format.ext === SUBTITLE_FORMAT);
+  }
+
+  private static mapCaptionTracks(
+    subtitles: YTDlpCaptionMap | undefined,
+    automaticCaptions: YTDlpCaptionMap | undefined,
+    url: string
+  ): YouTubeTimedTextTrack[] {
+    const tracks: YouTubeTimedTextTrack[] = [];
+    const manualLanguages = new Set<string>();
+
+    for (const [language, formats] of Object.entries(subtitles ?? {})) {
+      const caption = YouTubeProvider.getJson3Caption(formats);
+      if (!caption) continue;
+      manualLanguages.add(language);
+      tracks.push({ language, url, captionUrl: caption.url, isAutomatic: false });
+    }
+
+    for (const [language, formats] of Object.entries(automaticCaptions ?? {})) {
+      if (manualLanguages.has(language)) continue;
+      const caption = YouTubeProvider.getJson3Caption(formats);
+      if (!caption) continue;
+      tracks.push({ language, url, captionUrl: caption.url, isAutomatic: true });
+    }
+
+    return tracks;
+  }
+
+  private async getTimedTextTracks(
+    id: string,
+    url = YouTubeProvider.watchUrl(id)
+  ): Promise<YouTubeTimedTextTrack[]> {
+    const info = (await this.ytdlp.getVideoInfo([
+      url,
+      "--skip-download",
+      "--sub-format",
+      SUBTITLE_FORMAT,
+    ])) as YTDlpVideoInfo;
+
+    return YouTubeProvider.mapCaptionTracks(
+      info.subtitles,
+      info.automatic_captions,
+      info.webpage_url ?? url
+    );
+  }
+
   async getTimedTextUrls(
     id: string
   ): Promise<{ language: string; url: string }[]> {
-    const res = await axios.get(`https://www.youtube.com/watch?v=${id}`);
-    const $ = cheerio.load(res.data);
-    const dataTag = $("script")
-      .filter((_, el) =>
-        $(el)
-          .html()
-          ?.startsWith("var ytInitialPlayerResponse = ") ?? false
-      )
-      .first()
-      .html();
-    if (dataTag === null) throw new Error("Cannot find ytInitialPlayerResponse");
-    const dataJSON = dataTag.substring(
-      "var ytInitialPlayerResponse = ".length,
-      dataTag.length - 1
-    );
-    const data = JSON.parse(dataJSON) as YouTubeInitialPlayerResponse;
-    const timedTextTracks =
-      data.captions?.playerCaptionsTracklistRenderer.captionTracks ?? [];
-    return timedTextTracks.map((track) => ({
-      language: track.languageCode,
-      url: track.baseUrl,
+    const tracks = await this.getTimedTextTracks(id);
+    return tracks.map(({ language, url, captionUrl }) => ({
+      language,
+      url: captionUrl ?? url,
     }));
   }
 
   public async searchLyrics(
     request: LyricsSearchRequest
   ): Promise<YouTubeSearchResult[]> {
-    const query = {
-      search_query: `${request.title} ${request.artist}`,
-      sp: "EgIoAQ%3D%3D",
-    };
-
-    const res = await axios.get(BASE_SEARCH_URL, {
-      params: query,
-    });
-
-    const $ = cheerio.load(res.data);
-    const dataTag = $("script")
-      .filter((_, el) =>
-        $(el)
-          .html()
-          ?.startsWith("var ytInitialData = ") ?? false
-      )
-      .first()
-      .html();
-    if (dataTag === null) throw new Error("Cannot find ytInitialData");
-    const dataJSON = dataTag.substring(
-      "var ytInitialData = ".length,
-      dataTag.length - 1
-    );
-    const data = JSON.parse(dataJSON) as YouTubeSearchInitialData;
-
-    if (data.alerts && !data.contents) {
-      const error = data.alerts.find(
-        (a) => a.alertRenderer && a.alertRenderer.type === "ERROR"
-      );
-      if (error) throw new Error(`API error: ${JSON.stringify(error)}`);
-    }
-
-    const renderers =
-      data.contents!.twoColumnSearchResultsRenderer.primaryContents
-        .sectionListRenderer.contents;
-    const itemSection = renderers.find((r) => r.itemSectionRenderer)!
-      .itemSectionRenderer!.contents;
-    const items = itemSection
-      .filter((r): r is typeof r & { videoRenderer: NonNullable<typeof r.videoRenderer> } => !!r.videoRenderer)
-      .map((r) => r.videoRenderer);
+    const data = (await this.ytdlp.getVideoInfo([
+      `ytsearch${SEARCH_RESULT_LIMIT}:${request.title} ${request.artist}`,
+      "--skip-download",
+    ])) as YTDlpVideoInfo | YTDlpVideoInfo[];
+    const items = YouTubeProvider.normalizeVideoInfo(data);
 
     const searchResults: YouTubeSearchResult[] = [];
-    for (const item of items.slice(0, 5)) {
+    for (const item of items.slice(0, SEARCH_RESULT_LIMIT)) {
+      if (!item.id) continue;
+
+      const url = item.webpage_url ?? YouTubeProvider.watchUrl(item.id);
       const base = {
-        id: item.videoId,
-        title: item.title.runs[0].text,
-        thumbnail: item.thumbnail.thumbnails[0].url,
-        uploader: item.ownerText.runs[0].text,
-        durationText: item.lengthText?.simpleText ?? "",
+        id: item.id,
+        title: item.title ?? "",
+        thumbnail: YouTubeProvider.getThumbnail(item),
+        uploader: item.uploader ?? item.channel ?? "",
+        durationText:
+          item.duration_string ?? YouTubeProvider.formatDuration(item.duration),
       };
-      for (const language of await this.getTimedTextUrls(base.id)) {
+      let tracks = YouTubeProvider.mapCaptionTracks(
+        item.subtitles,
+        item.automatic_captions,
+        url
+      );
+      if (tracks.length === 0) {
+        tracks = await this.getTimedTextTracks(base.id, url);
+      }
+
+      for (const track of tracks) {
         searchResults.push({
           ...base,
-          title: `${base.title} (${language.language})`,
-          language: language.language,
-          url: language.url + "&fmt=json3",
+          title: `${base.title} (${track.language})`,
+          language: track.language,
+          url: track.url,
+          isAutomatic: track.isAutomatic,
         });
       }
     }
@@ -195,9 +231,44 @@ export class YouTubeProvider extends LyricsProvider<YouTubeSearchResult> {
     return duration;
   }
 
+  private async fetchLyricsJSON(token: YouTubeSearchResult): Promise<YouTubeLyricsJSON3> {
+    const tempDir = await mkdtemp(Path.join(tmpdir(), "lyrics-kit-youtube-"));
+
+    try {
+      const stdout = await this.ytdlp.execPromise([
+        token.url,
+        "--js-runtimes",
+        "node",
+        "--skip-download",
+        token.isAutomatic ? "--write-auto-subs" : "--write-subs",
+        "--sub-langs",
+        token.language,
+        "--sub-format",
+        SUBTITLE_FORMAT,
+        "-o",
+        Path.join(tempDir, "%(id)s"),
+      ]);
+
+      const files = await readdir(tempDir);
+      const file = files.find((name) => name.endsWith(`.${SUBTITLE_FORMAT}`));
+      if (!file) {
+        console.error(`No ${SUBTITLE_FORMAT} captions found for ${token.id} ${token.language}`);
+        console.error(stdout);
+        throw new Error(
+          `Cannot find ${SUBTITLE_FORMAT} captions for ${token.id} ${token.language}`
+        );
+      }
+
+      const json = await readFile(Path.join(tempDir, file), "utf8");
+      return JSON.parse(json) as YouTubeLyricsJSON3;
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  }
+
   public async fetchLyrics(token: YouTubeSearchResult): Promise<Lyrics> {
-    const data = await axios.get<YouTubeLyricsJSON3>(token.url);
-    const lyrics = new YouTubeLyrics(data.data);
+    const data = await this.fetchLyricsJSON(token);
+    const lyrics = new YouTubeLyrics(data);
     lyrics.idTags[TITLE] = token.title;
     lyrics.idTags[ARTIST] = token.uploader;
     lyrics.metadata.source = LyricsProviderSourceId.youtube;

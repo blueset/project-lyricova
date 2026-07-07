@@ -1,6 +1,5 @@
 "use client";
-
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { useCallback } from "react";
 import { graphql } from "../../gql";
 import type {
@@ -33,7 +32,7 @@ const TRANSLITRATION_QUERY = graphql(`
 
 type Props<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   form: UseFormReturn<TFieldValues>;
   sourceName: TName;
@@ -42,7 +41,7 @@ type Props<
 
 export function TransliterationAdornment<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({ form, sourceName, destinationName }: Props<TFieldValues, TName>) {
   const apolloClient = useApolloClient();
   const sourceValue = form.watch(sourceName);
@@ -61,18 +60,18 @@ export function TransliterationAdornment<
 
         form.setValue(
           destinationName,
-          result.data.transliterate.plain as PathValue<TFieldValues, TName>,
+          result.data!.transliterate.plain as PathValue<TFieldValues, TName>,
           {
             shouldValidate: true,
             shouldDirty: true,
             shouldTouch: true,
-          }
+          },
         );
       } catch (e) {
         // No-op.
       }
     },
-    [apolloClient, destinationName, form, sourceValue]
+    [apolloClient, destinationName, form, sourceValue],
   );
 
   return (

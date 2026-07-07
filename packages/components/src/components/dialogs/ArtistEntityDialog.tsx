@@ -1,7 +1,6 @@
 "use client";
-
 import { useCallback } from "react";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "../../gql";
 import type { SelectArtistEntryFragment } from "../../gql/graphql";
 import { TransliterationAdornment } from "../adornments/TransliterationAdornment";
@@ -131,7 +130,7 @@ export function ArtistEntityDialog({
         if (result.data) {
           setArtist(result.data.newArtist);
           toast.success(
-            `Artist "${result.data.newArtist.name}" is successfully created.`
+            `Artist "${result.data.newArtist.name}" is successfully created.`,
           );
           handleClose();
         }
@@ -144,7 +143,7 @@ export function ArtistEntityDialog({
         if (result.data) {
           setArtist(result.data.updateArtist);
           toast.success(
-            `Artist "${result.data.updateArtist.name}" is successfully updated.`
+            `Artist "${result.data.updateArtist.name}" is successfully updated.`,
           );
           apolloClient.cache.evict({ id: `Artist:${artistId}` });
           handleClose();
@@ -155,12 +154,12 @@ export function ArtistEntityDialog({
         `Error occurred while ${create ? "creating" : "updating"} artist #${
           data.name
         }.`,
-        e
+        e,
       );
       toast.error(
         `Error occurred while ${create ? "creating" : "updating"} artist #${
           data.name
-        }. (${e})`
+        }. (${e})`,
       );
     }
   };

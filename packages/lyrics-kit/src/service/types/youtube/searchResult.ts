@@ -6,4 +6,5 @@ export interface YouTubeSearchResult {
     durationText: string;
     language: string;
     url: string;
+    isAutomatic?: boolean;
 }

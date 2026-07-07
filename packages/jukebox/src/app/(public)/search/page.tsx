@@ -1,9 +1,8 @@
 "use client";
-
 import { useNamedState } from "@/hooks/useNamedState";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import React, { useCallback } from "react";
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import TrackListRow from "@/components/public/library/TrackListRow";
 import { Search as SearchIcon } from "lucide-react";
@@ -29,7 +28,7 @@ export default function Search() {
     (event: ChangeEvent<HTMLInputElement>) => {
       setSearchKeyword(event.target.value);
     },
-    [setSearchKeyword]
+    [setSearchKeyword],
   );
 
   const [searchFiles, searchFilesQuery] = useLazyQuery(MUSIC_FILE_SEARCH_QUERY);
@@ -40,7 +39,7 @@ export default function Search() {
       await searchFiles({ variables: { keywords: searchKeyword } });
       return false;
     },
-    [searchKeyword, searchFiles]
+    [searchKeyword, searchFiles],
   );
 
   let content: ReactNode;
@@ -68,13 +67,7 @@ export default function Search() {
   else {
     const files = searchFilesQuery.data?.searchMusicFiles ?? [];
     content = files.map((v) => (
-      <TrackListRow
-        song={null}
-        file={v}
-        files={files}
-        key={v.id}
-        showAlbum
-      />
+      <TrackListRow song={null} file={v} files={files} key={v.id} showAlbum />
     ));
   }
 

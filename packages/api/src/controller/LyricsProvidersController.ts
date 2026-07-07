@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
+import { requireNumericParams } from "../utils/numericParam";
 import { Router } from "express";
-import axios from "axios";
+import { getJson, getText, HttpError } from "../utils/httpFetch";
 import cheerio from "cheerio";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "../drizzle/client";
@@ -16,146 +17,125 @@ export class LyricsProvidersController {
 
   constructor() {
     this.router = Router();
+    requireNumericParams(this.router, "id");
     this.router.get("/hmiku", adminOnlyMiddleware, this.hmikuAtWiki);
-    this.router.get(
-      "/hmiku/:id(\\d+)",
-      adminOnlyMiddleware,
-      this.hmikuAtWikiSingle
-    );
-    this.router.get("/vocadb/:id(\\d+)", this.vocaDBSingle);
+    this.router.get("/hmiku/:id", adminOnlyMiddleware, this.hmikuAtWikiSingle);
+    this.router.get("/vocadb/:id", this.vocaDBSingle);
     this.router.get("/lyrics-kit", adminOnlyMiddleware, this.lyricsKit);
     this.lyricsProvider = new LyricsProviderManager();
   }
 
-  public hmikuAtWiki = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const keyword = req.query.q;
-      if (!keyword) {
-        return res.status(400).json({
-          status: 400,
-          error: "No keyword provided on parameter `q`.",
-        });
-      }
-      const response = await axios.get<string>("https://w.atwiki.jp/hmiku/", {
-        params: {
-          cmd: "wikisearch",
-          keyword: keyword,
-        },
+  public hmikuAtWiki = async (req: Request, res: Response) => {
+    const keyword = req.query.q;
+    if (!keyword) {
+      return res.status(400).json({
+        status: 400,
+        error: "No keyword provided on parameter `q`.",
       });
-      if (response.status !== 200) {
-        return res.status(500).json({
-          status: response.status,
-          error: response.data,
-        });
-      }
-      const urlRegex = /(?<=pageid=)\d+/;
-      const $ = cheerio.load(response.data);
-      const nodes = $("#wikibody ul li");
-      const data = nodes
-        .filter((_, elm) => {
-          const href = $("a", elm).attr("href");
-          return Boolean(href && href.match(urlRegex));
-        })
-        .map((_, elm) => {
-          const a = $("a", elm);
-          const text = $(elm)
-            .text()
-            .split("\n")
-            .map((x) => x.trim())
-            .filter((x) => !!x);
-          const desc = text[1],
-            name = a.text(),
-            href = a.attr("href"),
-            id = href?.match(urlRegex)?.[0];
-          if (!id) return null;
-          return {
-            id: id,
-            name: name,
-            desc: desc,
-          };
-        })
-        .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
-        .get();
-      return res.json(data);
-    } catch (e) {
-      next(e);
     }
+    const response = await getText("https://w.atwiki.jp/hmiku/", {
+      cmd: "wikisearch",
+      keyword: keyword,
+    });
+    if (response.status !== 200) {
+      return res.status(500).json({
+        status: response.status,
+        error: response.data,
+      });
+    }
+    const urlRegex = /(?<=pageid=)\d+/;
+    const $ = cheerio.load(response.data);
+    const nodes = $("#wikibody ul li");
+    const data = nodes
+      .filter((_, elm) => {
+        const href = $("a", elm).attr("href");
+        return Boolean(href && href.match(urlRegex));
+      })
+      .map((_, elm) => {
+        const a = $("a", elm);
+        const text = $(elm)
+          .text()
+          .split("\n")
+          .map((x) => x.trim())
+          .filter((x) => !!x);
+        const desc = text[1],
+          name = a.text(),
+          href = a.attr("href"),
+          id = href?.match(urlRegex)?.[0];
+        if (!id) return null;
+        return {
+          id: id,
+          name: name,
+          desc: desc,
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+      .get();
+    return res.json(data);
   };
 
-  public hmikuAtWikiSingle = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const id = req.params.id;
-      const response = await axios.get<string>(
-        `https://w.atwiki.jp/hmiku/pages/${id}.html`
-      );
-      if (response.status !== 200) {
-        return res.status(500).json({
-          status: response.status,
-          error: response.data,
-        });
-      }
-      const $ = cheerio.load(response.data);
-      const titleNode = $("h2");
-      if (!titleNode) {
-        return res.status(404).json({
-          status: 404,
-          error: "Not found",
-        });
-      }
-      const title = titleNode.text();
-      const furiganaMatch = $("#wikibody")
-        .text()
-        .match(/.+(?=【登録タグ)/);
-      const furigana = furiganaMatch ? furiganaMatch[0] : null;
-      const lyricsTitleNode = $("#wikibody h3:contains(歌詞)");
-      let lyrics = null;
-      if (lyricsTitleNode) {
-        const lyricsNodes = lyricsTitleNode.nextUntil("h3");
-        if (lyricsNodes) {
-          // Normalize line breaks
-          lyrics = lyricsNodes
-            .text()
-            .replace(/\n{3,}/g, "\n␊\n")
-            .replace(/\n\n/g, "\n")
-            .replace(/␊/g, "");
-        } else {
-          console.log("lyricsNodes not found");
-        }
-      } else {
-        console.log("lyricsTitleNode not found");
-      }
-      return res.json({
-        id: id,
-        title: title,
-        furigana: furigana,
-        lyrics: lyrics,
+  public hmikuAtWikiSingle = async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const response = await getText(
+      `https://w.atwiki.jp/hmiku/pages/${id}.html`,
+    );
+    if (response.status === 404) {
+      return res.status(404).json({
+        status: 404,
+        error: "Not found",
       });
-    } catch (e) {
-      if (axios.isAxiosError(e) && e.response?.status === 404) {
-        return res.status(404).json({
-          status: 404,
-          error: "Not found",
-        });
-      }
-      next(e);
     }
+    if (response.status !== 200) {
+      return res.status(500).json({
+        status: response.status,
+        error: response.data,
+      });
+    }
+    const $ = cheerio.load(response.data);
+    const titleNode = $("h2");
+    if (!titleNode) {
+      return res.status(404).json({
+        status: 404,
+        error: "Not found",
+      });
+    }
+    const title = titleNode.text();
+    const furiganaMatch = $("#wikibody")
+      .text()
+      .match(/.+(?=【登録タグ)/);
+    const furigana = furiganaMatch ? furiganaMatch[0] : null;
+    const lyricsTitleNode = $("#wikibody h3:contains(歌詞)");
+    let lyrics = null;
+    if (lyricsTitleNode) {
+      const lyricsNodes = lyricsTitleNode.nextUntil("h3");
+      if (lyricsNodes) {
+        // Normalize line breaks
+        lyrics = lyricsNodes
+          .text()
+          .replace(/\n{3,}/g, "\n␊\n")
+          .replace(/\n\n/g, "\n")
+          .replace(/␊/g, "");
+      } else {
+        console.log("lyricsNodes not found");
+      }
+    } else {
+      console.log("lyricsTitleNode not found");
+    }
+    return res.json({
+      id: id,
+      title: title,
+      furigana: furigana,
+      lyrics: lyrics,
+    });
   };
 
   public vocaDBSingle = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
-      const id = req.params.id;
+      const id = req.params.id as string;
       const elm = await db.query.Songs.findFirst({
         where: and(eq(Songs.id, parseInt(id)), isNull(Songs.deletionDate)),
       });
@@ -168,22 +148,20 @@ export class LyricsProvidersController {
         }
         return res.json([]);
       }
-      const resp = await axios.get<SongForApiContract>(
+      const resp = await getJson<SongForApiContract>(
         `https://vocadb.net/api/songs/${id}`,
-        {
-          params: { fields: "Lyrics" },
-        }
+        { fields: "Lyrics" },
       );
-      if (resp.data.lyrics && resp.data.lyrics.length) {
-        return res.json(resp.data.lyrics);
+      if (resp.lyrics && resp.lyrics.length) {
+        return res.json(resp.lyrics);
       } else {
-        if (resp.data.originalVersionId) {
-          return res.redirect(`${resp.data.originalVersionId}`);
+        if (resp.originalVersionId) {
+          return res.redirect(`${resp.originalVersionId}`);
         }
         return res.json([]);
       }
     } catch (e) {
-      if (axios.isAxiosError(e) && e.response?.status === 404) {
+      if (e instanceof HttpError && e.status === 404) {
         return res.status(404).json({
           status: 404,
           error: "Not found",
@@ -193,38 +171,30 @@ export class LyricsProvidersController {
     }
   };
 
-  public lyricsKit = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const artists = req.query.artists as string,
-        title = req.query.title as string;
-      const useLRCX = parseInt(req.query.useLRCX as string) === 1;
-      const duration = parseFloat(req.query.duration as string) || 0;
-      if (title === undefined || artists === undefined) {
-        return res.status(400).json({
-          status: 400,
-          error: "Query parameter `title` and `artists` are required.",
-        });
-      }
-      const lyrics = await this.lyricsProvider.getLyrics(
-        LyricsSearchRequest.fromInfo(title, artists, duration)
-      );
-      return res.json(
-        lyrics.map((lrc) => {
-          return {
-            lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
-            quality: lrc.quality,
-            isMatched: lrc.isMatched(),
-            metadata: lrc.metadata,
-            tags: lrc.idTags,
-          };
-        })
-      );
-    } catch (e) {
-      next(e);
+  public lyricsKit = async (req: Request, res: Response) => {
+    const artists = req.query.artists as string,
+      title = req.query.title as string;
+    const useLRCX = parseInt(req.query.useLRCX as string) === 1;
+    const duration = parseFloat(req.query.duration as string) || 0;
+    if (title === undefined || artists === undefined) {
+      return res.status(400).json({
+        status: 400,
+        error: "Query parameter `title` and `artists` are required.",
+      });
     }
+    const lyrics = await this.lyricsProvider.getLyrics(
+      LyricsSearchRequest.fromInfo(title, artists, duration),
+    );
+    return res.json(
+      lyrics.map((lrc) => {
+        return {
+          lyrics: useLRCX ? lrc.toString() : lrc.toPlainLRC(),
+          quality: lrc.quality,
+          isMatched: lrc.isMatched(),
+          metadata: lrc.metadata,
+          tags: lrc.idTags,
+        };
+      }),
+    );
   };
 }

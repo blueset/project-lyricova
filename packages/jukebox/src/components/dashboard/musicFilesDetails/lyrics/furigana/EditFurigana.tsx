@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import EditFuriganaLine from "./EditFuriganaLine";
 import { FuriganaLineButton } from "./FuriganaLineButton";
 import { CheckSquare, Wand2 } from "lucide-react";
@@ -47,7 +47,7 @@ export default function EditFurigana({ fileId, songId }: Props) {
       autoApplyIdentical: state.furigana.autoApplyIdentical,
       setAutoApplyIdentical: state.furigana.setAutoApplyIdentical,
       setVocaDbFuriganaLines: state.furigana.setVocaDbFuriganaLines,
-    }))
+    })),
   );
   const apolloClient = useApolloClient();
   const vocaDBFuriganaLines = useVocaDBFurigana(songId ?? 0);
@@ -67,8 +67,8 @@ export default function EditFurigana({ fileId, songId }: Props) {
       if (result.data) {
         setFurigana(
           result.data.transliterate.karaoke.map((line) =>
-            line.map(([base, furigana]) => [base, furigana])
-          )
+            line.map(([base, furigana]) => [base, furigana]),
+          ),
         );
       }
     } catch (e) {

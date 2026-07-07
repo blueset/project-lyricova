@@ -9,7 +9,7 @@ import type { ChangeEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { FURIGANA, Lyrics } from "lyrics-kit/core";
 import { toast } from "sonner";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { useLyricsStore } from "./state/editorState";
 import { useShallow } from "zustand/shallow";
 import { graphql } from "@lyricova/components/gql";

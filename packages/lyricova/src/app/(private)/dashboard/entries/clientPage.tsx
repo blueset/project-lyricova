@@ -1,6 +1,5 @@
 "use client";
-
-import { useQuery, useApolloClient } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import {
   Alert,
   AlertDescription,
@@ -79,8 +78,8 @@ export default function Entries() {
       actionDate: new Date(
         Math.max(
           e.creationDate.valueOf(),
-          ...(e.pulses ?? []).map((p) => p.creationDate.valueOf())
-        )
+          ...(e.pulses ?? []).map((p) => p.creationDate.valueOf()),
+        ),
       ),
     })) ?? [];
 
@@ -95,7 +94,7 @@ export default function Entries() {
       toast.success("Entry deleted.");
       await entriesQuery.refetch();
     },
-    [apolloClient, entriesQuery]
+    [apolloClient, entriesQuery],
   );
 
   const handleBump = useCallback(
@@ -109,7 +108,7 @@ export default function Entries() {
       toast.success("Entry bumped.");
       await entriesQuery.refetch();
     },
-    [apolloClient, entriesQuery]
+    [apolloClient, entriesQuery],
   );
 
   const columns: ColumnDef<(typeof rows)[number]>[] = [

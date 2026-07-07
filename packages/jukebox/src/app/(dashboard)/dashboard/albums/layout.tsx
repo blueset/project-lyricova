@@ -1,8 +1,7 @@
 "use client";
-
 import type { ReactNode } from "react";
 import React from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import {
   Alert,

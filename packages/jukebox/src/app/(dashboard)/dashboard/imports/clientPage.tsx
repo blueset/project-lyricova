@@ -1,7 +1,6 @@
 "use client";
-
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import type { ResultOf } from "@graphql-typed-document-node/core";
 import { useNamedState } from "@/hooks/useNamedState";
@@ -72,7 +71,7 @@ export default function Imports() {
                   setImporting(false);
                   return;
                 }
-                const artists = data.data.artistsWithFilesNeedEnrol;
+                const artists = data.data?.artistsWithFilesNeedEnrol ?? [];
                 if (artists.length === 0) {
                   toast.info("No artist to import.");
                   setImporting(false);
@@ -85,7 +84,7 @@ export default function Imports() {
                   });
                   toast.success(`Imported ${artists.length} artists`);
                   setArtistImportOutcomes(
-                    importData.data?.enrolArtistsFromVocaDB ?? []
+                    importData.data?.enrolArtistsFromVocaDB ?? [],
                   );
                 } catch (e) {
                   toast.error(`Error: ${e}`);

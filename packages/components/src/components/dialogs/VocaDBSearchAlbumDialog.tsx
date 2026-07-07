@@ -1,13 +1,12 @@
 "use client";
-
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import { fetchJson } from "../../utils/httpFetch";
 import type {
   PartialFindResult,
   AlbumForApiContract,
 } from "@lyricova/api/vocadb";
 import _ from "lodash";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "../../gql";
 import type { SelectAlbumEntryFragment } from "../../gql/graphql";
 import { toast } from "sonner";
@@ -97,7 +96,7 @@ export function VocaDBSearchAlbumDialog({
       if (result.data) {
         setAlbum(result.data.enrolAlbumFromVocaDB);
         toast.success(
-          `Album "${result.data.enrolAlbumFromVocaDB.name}" is successfully enrolled.`
+          `Album "${result.data.enrolAlbumFromVocaDB.name}" is successfully enrolled.`,
         );
         handleClose();
       } else {
@@ -106,10 +105,10 @@ export function VocaDBSearchAlbumDialog({
     } catch (e) {
       console.error(
         `Error occurred while importing album #${selectedAlbum}.`,
-        e
+        e,
       );
       toast.error(
-        `Error occurred while importing album #${selectedAlbum}. (${e})`
+        `Error occurred while importing album #${selectedAlbum}. (${e})`,
       );
       toggleImporting(false);
     }
@@ -121,22 +120,20 @@ export function VocaDBSearchAlbumDialog({
     let active = true;
 
     (async () => {
-      const response = await axios.get<PartialFindResult<AlbumForApiContract>>(
+      const response = await fetchJson<PartialFindResult<AlbumForApiContract>>(
         "https://vocadb.net/api/albums",
         {
-          params: {
-            query: keyword,
-            sort: "Name",
-            nameMatchMode: "Auto",
-            fields: "MainPicture",
-          },
-        }
+          query: keyword,
+          sort: "Name",
+          nameMatchMode: "Auto",
+          fields: "MainPicture",
+        },
       );
 
       const idResponse = keyword.match(/^\d+$/)
-        ? await axios.get<AlbumForApiContract>(
+        ? await fetchJson<AlbumForApiContract>(
             `https://vocadb.net/api/albums/${keyword}`,
-            { params: { fields: "MainPicture" } }
+            { fields: "MainPicture" },
           )
         : null;
 
@@ -151,10 +148,10 @@ export function VocaDBSearchAlbumDialog({
           setResults([]);
           console.error(
             "Error occurred while loading search results from VocaDB",
-            response
+            response,
           );
           toast.error(
-            `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`
+            `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`,
           );
         }
       }

@@ -64,7 +64,7 @@ function mergeSegmentsAndCalculateTotal(segments: TimeSegment[]): number {
 function shouldCountPlay(
   heardTime: number,
   duration: number,
-  minHeard: number = 30
+  minHeard: number = 30,
 ): boolean {
   // Minimum heard time requirement
   if (heardTime < minHeard) {
@@ -88,7 +88,7 @@ function shouldCountPlay(
 interface UsePlaybackTrackingOptions {
   playerRef: React.RefObject<HTMLAudioElement>;
   currentTrack: Track | null;
-  apolloClient: ApolloClient<unknown>;
+  apolloClient: ApolloClient;
   cooldownPeriod?: number; // in milliseconds, default 30 min
 }
 
@@ -126,7 +126,7 @@ export function usePlaybackTracking({
       if (!lastPlayTime) return false;
       return Date.now() - lastPlayTime < cooldownPeriod;
     },
-    [cooldownPeriod]
+    [cooldownPeriod],
   );
 
   /**
@@ -156,7 +156,7 @@ export function usePlaybackTracking({
 
     // Recalculate total unique heard time
     session.totalHeardTime = mergeSegmentsAndCalculateTotal(
-      session.playedSegments
+      session.playedSegments,
     );
   }, []);
 

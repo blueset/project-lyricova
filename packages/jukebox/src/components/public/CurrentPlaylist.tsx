@@ -1,7 +1,7 @@
 import type { Track } from "./AppContext";
 import { MoreVertical, GripVertical, Trash } from "lucide-react";
 import { useEffect, useRef } from "react";
-import AutoResizer from "react-virtualized-auto-sizer";
+import { AutoSizer as AutoResizer } from "react-virtualized-auto-sizer";
 import type { CSSProperties } from "react";
 import React from "react";
 import type {
@@ -61,7 +61,7 @@ function CurrentPlaylistItem({
       className={cn(
         "flex items-center justify-between pr-2",
         isPastTrack ? "opacity-40" : "opacity-100",
-        nowPlaying === index || isDragging ? "bg-secondary" : "hover:bg-muted"
+        nowPlaying === index || isDragging ? "bg-secondary" : "hover:bg-muted",
       )}
     >
       <div
@@ -152,7 +152,7 @@ const Row = React.memo(
         )}
       </Draggable>
     );
-  }
+  },
 );
 Row.displayName = "Row";
 
@@ -196,8 +196,8 @@ export default function CurrentPlaylist() {
 
   return (
     <div className="flex-1 flex-grow">
-      <AutoResizer>
-        {({ height, width }) => (
+      <AutoResizer
+        renderProp={({ height, width }) => (
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable
               droppableId="droppable-currentPlaylist"
@@ -208,7 +208,7 @@ export default function CurrentPlaylist() {
               renderClone={(
                 provided: DraggableProvided,
                 snapshot: DraggableStateSnapshot,
-                rubric: DraggableRubric
+                rubric: DraggableRubric,
               ) => (
                 <CurrentPlaylistItem
                   index={rubric.source.index}
@@ -262,7 +262,7 @@ export default function CurrentPlaylist() {
             </Droppable>
           </DragDropContext>
         )}
-      </AutoResizer>
+      />
     </div>
   );
 }

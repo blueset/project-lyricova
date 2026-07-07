@@ -1,13 +1,12 @@
 "use client";
-
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import { fetchJson } from "../../utils/httpFetch";
 import type {
   PartialFindResult,
   ArtistForApiContract,
 } from "@lyricova/api/vocadb";
 import _ from "lodash";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "../../gql";
 import type { SelectArtistEntryFragment } from "../../gql/graphql";
 import { toast } from "sonner";
@@ -96,7 +95,7 @@ export function VocaDBSearchArtistDialog({
       if (result.data) {
         setArtist(result.data.enrolArtistFromVocaDB);
         toast.success(
-          `Artist "${result.data.enrolArtistFromVocaDB.name}" is successfully enrolled.`
+          `Artist "${result.data.enrolArtistFromVocaDB.name}" is successfully enrolled.`,
         );
         handleClose();
       } else {
@@ -105,10 +104,10 @@ export function VocaDBSearchArtistDialog({
     } catch (e) {
       console.error(
         `Error occurred while importing artist #${selectedArtist}.`,
-        e
+        e,
       );
       toast.error(
-        `Error occurred while importing artist #${selectedArtist}. (${e})`
+        `Error occurred while importing artist #${selectedArtist}. (${e})`,
       );
       toggleImporting(false);
     }
@@ -120,22 +119,20 @@ export function VocaDBSearchArtistDialog({
     let active = true;
 
     (async () => {
-      const response = await axios.get<PartialFindResult<ArtistForApiContract>>(
+      const response = await fetchJson<PartialFindResult<ArtistForApiContract>>(
         "https://vocadb.net/api/artists",
         {
-          params: {
-            query: keyword,
-            sort: "SongCount",
-            nameMatchMode: "Auto",
-            fields: "MainPicture",
-          },
-        }
+          query: keyword,
+          sort: "SongCount",
+          nameMatchMode: "Auto",
+          fields: "MainPicture",
+        },
       );
 
       const idResponse = keyword.match(/^\d+$/)
-        ? await axios.get<ArtistForApiContract>(
+        ? await fetchJson<ArtistForApiContract>(
             `https://vocadb.net/api/artists/${keyword}`,
-            { params: { fields: "MainPicture" } }
+            { fields: "MainPicture" },
           )
         : null;
 
@@ -150,10 +147,10 @@ export function VocaDBSearchArtistDialog({
           setResults([]);
           console.error(
             "Error occurred while loading search results from VocaDB",
-            response
+            response,
           );
           toast.error(
-            `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`
+            `Error occurred while loading search results from VocaDB. (${response.status} ${response.statusText})`,
           );
         }
       }

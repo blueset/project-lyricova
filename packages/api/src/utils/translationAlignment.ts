@@ -1,5 +1,7 @@
 import { OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL } from "./secret";
-import { OpenAI } from "openai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createAzure } from "@ai-sdk/azure";
+import { generateText } from "ai";
 import { getTranslationAlignmentLLMPrompt } from "./llmPrompt";
 
 /**
@@ -9,45 +11,35 @@ import { getTranslationAlignmentLLMPrompt } from "./llmPrompt";
  */
 export async function translationAlignment(
   original: string,
-  translation: string
+  translation: string,
 ): Promise<string> {
   if (!OPENAI_BASE_URL || !OPENAI_API_KEY || !OPENAI_MODEL) {
     throw new Error("OpenAI credentials are not set");
   }
-  const client = new OpenAI({
-    baseURL: OPENAI_BASE_URL,
-    apiKey: OPENAI_API_KEY,
-  });
+  const model = OPENAI_BASE_URL.includes("openai.azure.com")
+    ? createAzure({
+        baseURL: OPENAI_BASE_URL,
+        apiKey: OPENAI_API_KEY,
+        apiVersion: "2024-10-01-preview",
+      })(OPENAI_MODEL)
+    : createOpenAI({
+        baseURL: OPENAI_BASE_URL,
+        apiKey: OPENAI_API_KEY,
+      })(OPENAI_MODEL);
 
   const messages = getTranslationAlignmentLLMPrompt(original, translation);
   console.log("messages", JSON.stringify(messages, undefined, 2));
 
-  const response = await client.beta.chat.completions.parse(
-    {
-      messages,
-      model: OPENAI_MODEL || "gpt-4o",
-      max_tokens: 4096,
-    },
-    OPENAI_BASE_URL.includes("openai.azure.com")
-      ? {
-          headers: {
-            "Api-Key": OPENAI_API_KEY,
-            Authorization: "",
-          },
-          query: {
-            "api-version": "2024-10-01-preview",
-          },
-        }
-      : undefined
-  );
-  const content = response.choices[0].message.content;
-  if (content === null) {
-    throw new Error(`Invalid response format: ${JSON.stringify(response)}`);
-  }
-  console.log("response", content);
-  const parsedResponse = JSON.parse(content);
+  const { text } = await generateText({
+    model,
+    messages,
+    maxOutputTokens: 4096,
+  });
+
+  console.log("response", text);
+  const parsedResponse = JSON.parse(text);
   if (!Array.isArray(parsedResponse)) {
-    throw new Error(`Invalid response format: ${JSON.stringify(response)}`);
+    throw new Error(`Invalid response format: ${text}`);
   }
   return (parsedResponse as { original: string; aligned: string }[])
     .map((item) => item.aligned)

@@ -1,4 +1,4 @@
-import { useApolloClient, useLazyQuery } from "@apollo/client";
+import { useApolloClient, useLazyQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { useCallback, useEffect } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
@@ -84,19 +84,17 @@ interface MusicFileDetailsProps {
 export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
   const apolloClient = useApolloClient();
 
-  const [getFile, fileData] = useLazyQuery(SINGLE_FILE_DATA, {
-    variables: { id: fileId! },
-  });
+  const [getFile, fileData] = useLazyQuery(SINGLE_FILE_DATA);
 
   useEffect(() => {
     if (fileId != null) {
-      getFile();
+      getFile({ variables: { id: fileId } });
     }
   }, [fileId, getFile]);
 
   const [submittingReview, toggleSubmittingReview] = useNamedState(
     false,
-    "submittingReview"
+    "submittingReview",
   );
 
   const toggleReviewStatus = useCallback(async () => {
@@ -116,7 +114,8 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
     toggleSubmittingReview(false);
   }, [toggleSubmittingReview, apolloClient, fileData, fileId]);
 
-  const musicFile = fileData.data?.musicFile;
+  const musicFile =
+    fileData.dataState === "complete" ? fileData.data.musicFile : undefined;
 
   useEffect(() => {
     if (document?.title && fileData?.data?.musicFile?.trackName) {
@@ -142,9 +141,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
                   trackName={musicFile?.trackName ?? ""}
                   trackSortOrder={musicFile?.trackSortOrder ?? ""}
                   artistName={musicFile?.artistName ?? ""}
-                  artistSortOrder={
-                    musicFile?.artistSortOrder ?? ""
-                  }
+                  artistSortOrder={musicFile?.artistSortOrder ?? ""}
                   albumName={musicFile?.albumName ?? ""}
                   albumSortOrder={musicFile?.albumSortOrder ?? ""}
                   song={musicFile?.song ?? null}
@@ -160,9 +157,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
                   hasSong={(musicFile?.song ?? null) !== null}
                   hasAlbum={(musicFile?.album ?? null) !== null}
                   songCoverUrl={musicFile?.song?.coverUrl ?? null}
-                  albumCoverUrl={
-                    musicFile?.album?.coverUrl ?? null
-                  }
+                  albumCoverUrl={musicFile?.album?.coverUrl ?? null}
                   refresh={fileData.refetch}
                 />
               </TabsContent>
@@ -186,9 +181,7 @@ export default function MusicFileDetails({ fileId }: MusicFileDetailsProps) {
                   disabled={!musicFile}
                   progress={submittingReview}
                   variant={
-                    musicFile?.needReview ?? false
-                      ? "default"
-                      : "secondary"
+                    (musicFile?.needReview ?? false) ? "default" : "secondary"
                   }
                   onClick={toggleReviewStatus}
                 >

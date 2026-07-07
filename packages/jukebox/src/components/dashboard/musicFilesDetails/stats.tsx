@@ -1,4 +1,4 @@
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -80,7 +80,7 @@ export default function StatsPanel({
 
       if (result.data?.updateMusicFileStats?.trackName) {
         toast.success(
-          `Stats of "${result.data?.updateMusicFileStats?.trackName}" is successfully updated.`
+          `Stats of "${result.data?.updateMusicFileStats?.trackName}" is successfully updated.`,
         );
         await refresh();
       }

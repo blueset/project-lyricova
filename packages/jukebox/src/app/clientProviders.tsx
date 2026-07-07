@@ -1,6 +1,5 @@
 "use client";
-
-import { ApolloProvider } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client/react";
 import { apolloClient, TelemetryProvider } from "@lyricova/components";
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {

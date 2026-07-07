@@ -7,9 +7,9 @@ import type {
 } from "react";
 import { useCallback } from "react";
 import { useNamedState } from "../../hooks/useNamedState";
-import { useApolloClient, useLazyQuery } from "@apollo/client";
+import { useApolloClient, useLazyQuery } from "@apollo/client/react";
 import { toast } from "sonner";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import { ExternalLink } from "lucide-react";
 import { NextComposedLink } from "@lyricova/components";
 import { swapExt } from "@/frontendUtils/path";
@@ -167,7 +167,7 @@ export default function YouTubeDlDownloadSteps({
   const [overwrite, toggleOverwrite] = useNamedState(false, "overwrite");
   const [downloadProgress, setDownloadProgress] = useNamedState<number | null>(
     null,
-    "downloadProgress"
+    "downloadProgress",
   );
   const [downloadInfo, setDownloadInfo] = useNamedState("", "downloadInfo");
 
@@ -175,27 +175,26 @@ export default function YouTubeDlDownloadSteps({
     (event: ChangeEvent<HTMLInputElement>) => {
       setVideoURL(event.target.value);
     },
-    [setVideoURL]
+    [setVideoURL],
   );
 
   const handleFilename = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       setFilename(event.target.value);
     },
-    [setFilename]
+    [setFilename],
   );
 
   const handleOverwrite = useCallback(
     (checked: boolean) => {
       toggleOverwrite(checked);
     },
-    [toggleOverwrite]
+    [toggleOverwrite],
   );
 
   const [fetchInfo, fetchInfoQuery] = useLazyQuery(YOUTUBE_DL_INFO_QUERY);
-  const fetchInfoQueryData = fetchInfoQuery?.data?.youtubeDlGetInfo as unknown as
-    | YouTubeDlInfo
-    | undefined;
+  const fetchInfoQueryData = fetchInfoQuery?.data
+    ?.youtubeDlGetInfo as unknown as YouTubeDlInfo | undefined;
   const handleVerify = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -204,20 +203,21 @@ export default function YouTubeDlDownloadSteps({
       if (result?.data?.youtubeDlGetInfo) {
         setFilename(
           swapExt(
-            (result.data.youtubeDlGetInfo as unknown as YouTubeDlInfo)._filename,
-            ".mp3"
-          )
+            (result.data.youtubeDlGetInfo as unknown as YouTubeDlInfo)
+              ._filename,
+            ".mp3",
+          ),
         );
       }
       return false;
     },
-    [fetchInfo, videoURL, setStep, setFilename]
+    [fetchInfo, videoURL, setStep, setFilename],
   );
 
   /** Download state. Null = no result. >= 0, -1: Fail */
   const [downloadState, setDownloadState] = useNamedState<number | null>(
     null,
-    "downloadState"
+    "downloadState",
   );
 
   const downloadFile = useCallback(async () => {
@@ -237,16 +237,13 @@ export default function YouTubeDlDownloadSteps({
         variables: { sessionId },
       });
       const zenSubscription = subscription.subscribe({
-        start(subscription) {
-          console.log("subscription started", subscription);
-        },
         next(x) {
           console.log("subscription event", x);
           const progress = x.data?.youTubeDlDownloadProgress;
           if (progress?.__typename === "YouTubeDlProgressValue") {
             setDownloadProgress((progress.current / progress.total) * 100);
             setDownloadInfo(
-              `${progress.current}/${progress.total}, ${progress.speed}, ETA: ${progress.eta}`
+              `${progress.current}/${progress.total}, ${progress.speed}, ETA: ${progress.eta}`,
             );
           } else if (progress?.__typename === "YouTubeDlProgressMessage") {
             setDownloadProgress(null);
@@ -297,7 +294,7 @@ export default function YouTubeDlDownloadSteps({
         setDownloadInfo("Resolving PV on VocaDB…");
         // 1) Resolve PV service/id from the original video URL
         const pvResolveResp = await fetch(
-          `https://vocadb.net/api/pvs/?pvUrl=${encodeURIComponent(videoURL)}`
+          `https://vocadb.net/api/pvs/?pvUrl=${encodeURIComponent(videoURL)}`,
         );
         if (!pvResolveResp.ok) throw new Error("PV resolve failed");
         const pvResolveJson: PVContract = await pvResolveResp.json();
@@ -306,14 +303,14 @@ export default function YouTubeDlDownloadSteps({
         if (!pvService || !pvId) throw new Error("PV service/id not found");
         setDownloadProgress(null);
         setDownloadInfo(
-          `Resolved PV: service=${pvService}, id=${pvId}. Fetching song…`
+          `Resolved PV: service=${pvService}, id=${pvId}. Fetching song…`,
         );
 
         // 2) Get song by PV to obtain VocaDB song id
         const songByPvResp = await fetch(
           `https://vocadb.net/api/songs/byPv?pvService=${encodeURIComponent(
-            pvService
-          )}&pvId=${encodeURIComponent(pvId)}`
+            pvService,
+          )}&pvId=${encodeURIComponent(pvId)}`,
         );
         if (!songByPvResp.ok) throw new Error("Song by PV fetch failed");
         const songByPvJson: SongForApiContract = await songByPvResp.json();
@@ -321,7 +318,7 @@ export default function YouTubeDlDownloadSteps({
         if (!vocaSongId) throw new Error("VocaDB song id not found");
         setDownloadProgress(null);
         setDownloadInfo(
-          `VocaDB song #${vocaSongId} found. Checking local database…`
+          `VocaDB song #${vocaSongId} found. Checking local database…`,
         );
 
         // 3) Check if the song already exists in our DB; if not, enrol it
@@ -339,7 +336,7 @@ export default function YouTubeDlDownloadSteps({
         if (!internalSongId) {
           setDownloadProgress(null);
           setDownloadInfo(
-            `Song not found locally. Enrolling from VocaDB (#${vocaSongId})…`
+            `Song not found locally. Enrolling from VocaDB (#${vocaSongId})…`,
           );
           const enrol = await apolloClient.mutate({
             mutation: ENROL_SONG_FROM_VOCADB_MUTATION,
@@ -360,7 +357,7 @@ export default function YouTubeDlDownloadSteps({
           variables: { id: fileId },
           fetchPolicy: "no-cache",
         });
-        const mf = fileData.data.musicFile;
+        const mf = fileData.data?.musicFile;
         if (!mf) throw new Error("Music file not found after scan");
         setDownloadProgress(null);
         setDownloadInfo("Writing tags to file…");
@@ -396,12 +393,9 @@ export default function YouTubeDlDownloadSteps({
           action: {
             label: "Review file",
             onClick: () =>
-              window.open(
-                `/dashboard/review/${scanByPath.id}`,
-                "_blank"
-              ),
+              window.open(`/dashboard/review/${scanByPath.id}`, "_blank"),
           },
-        }
+        },
       );
     } catch (e) {
       console.error("Error occurred while downloading file", e);
@@ -557,8 +551,8 @@ export default function YouTubeDlDownloadSteps({
           {step !== 3
             ? "Download"
             : downloadState === null
-            ? "Downloading..."
-            : "Download outcome"}
+              ? "Downloading..."
+              : "Download outcome"}
         </StepLabel>
         <StepContent>
           {downloadState === null && (

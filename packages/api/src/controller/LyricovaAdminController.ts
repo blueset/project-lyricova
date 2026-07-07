@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { requireNumericParams } from "../utils/numericParam";
 import { Router } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "../drizzle/client";
@@ -10,7 +11,8 @@ export class LyricovaAdminApiController {
 
   constructor() {
     this.router = Router();
-    this.router.patch("/bump/:entryId(\\d+)", adminOnlyMiddleware, this.bump);
+    requireNumericParams(this.router, "entryId");
+    this.router.patch("/bump/:entryId", adminOnlyMiddleware, this.bump);
   }
 
   /**
@@ -54,7 +56,7 @@ export class LyricovaAdminApiController {
    *         $ref: '#/components/responses/Unauthorized'
    */
   public bump = async (req: Request, res: Response) => {
-    const id: number = parseInt(req.params.entryId);
+    const id: number = parseInt(req.params.entryId as string);
     const entry = await db.query.Entries.findFirst({
       where: and(eq(Entries.id, id), isNull(Entries.deletionDate)),
     });

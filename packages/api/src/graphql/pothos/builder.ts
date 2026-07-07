@@ -1,7 +1,7 @@
 import SchemaBuilder from "@pothos/core";
 import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
 import DrizzlePlugin from "@pothos/plugin-drizzle";
-import { GraphQLJSONObject } from "graphql-type-json";
+import { GraphQLJSONObject } from "graphql-scalars";
 import type { Request } from "express";
 import type { User } from "../../models/User";
 import { db, fullSchema } from "../../drizzle/client";
@@ -11,8 +11,8 @@ import { db, fullSchema } from "../../drizzle/client";
  *
  * Object types are backed by Drizzle via `builder.drizzleObject`
  * (`@pothos/plugin-drizzle`) plus plain object refs for mapped/computed shapes.
- * The emitted schema must stay byte-compatible with schema.graphql
- * (`npm run schema:check`).
+ * The emitted schema must stay in sync with the committed schema.graphql
+ * (`npm run pothos:emit`).
  */
 
 export interface Context {

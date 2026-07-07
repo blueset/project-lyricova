@@ -1,5 +1,4 @@
 "use client";
-
 import { type ReactNode } from "react";
 import {
   AuthContext,
@@ -8,8 +7,7 @@ import {
   apolloClient,
 } from "@lyricova/components";
 import { useRouter, usePathname } from "next/navigation";
-import { usePopupState } from "material-ui-popup-state/hooks";
-import { ApolloProvider } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client/react";
 import {
   Sidebar,
   SidebarContent,
@@ -87,18 +85,12 @@ interface Props {
 
 export default function DashboardLayout({ children }: Props) {
   const router = useRouter();
-  const popupState = usePopupState({
-    variant: "popover",
-    popupId: "appbar-menu",
-  });
 
   const logOut = async () => {
     await router.push("/logout");
-    popupState.close();
   };
   const webAuthn = async () => {
     await router.push("/dashboard/webauthn");
-    popupState.close();
   };
 
   return (

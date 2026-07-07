@@ -1,8 +1,8 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
+import { requireNumericParams } from "../utils/numericParam";
 import { Router } from "express";
 import type { SongForApiContract } from "../types/vocadb";
-import type { AxiosInstance } from "axios";
-import axios from "axios";
+import { getJson } from "../utils/httpFetch";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
 import { saveSongFromVocaDB } from "../utils/vocadbImport";
 import { Songs } from "../drizzle/schema";
@@ -10,30 +10,22 @@ import { Songs } from "../drizzle/schema";
 type SongRow = typeof Songs.$inferSelect;
 
 export class VocaDBImportController {
-  private axios: AxiosInstance;
   public router: Router;
 
   constructor() {
-    this.axios = axios.create({ responseType: "json" });
     this.router = Router();
-    this.router.get(
-      "/enrolSong/:id(\\d+)",
-      adminOnlyMiddleware,
-      this.enrolSong
-    );
+    requireNumericParams(this.router, "id");
+    this.router.get("/enrolSong/:id", adminOnlyMiddleware, this.enrolSong);
   }
 
   private async getSong(songId: string | number): Promise<SongForApiContract> {
-    const song = await this.axios.get<SongForApiContract>(
+    return getJson<SongForApiContract>(
       `https://vocadb.net/api/songs/${songId}`,
       {
-        params: {
-          fields:
-            "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
-        },
-      }
+        fields:
+          "Albums,Artists,Names,ThumbUrl,PVs,Lyrics,MainPicture,AdditionalNames,Tags",
+      },
     );
-    return song.data;
   }
 
   /**
@@ -41,7 +33,7 @@ export class VocaDBImportController {
    * @param song Leaf song to retrieve from
    */
   private async getOriginalSong(
-    song: SongForApiContract
+    song: SongForApiContract,
   ): Promise<SongForApiContract | null> {
     if (!(song.songType !== "Original" && song.originalVersionId)) return null;
     do {
@@ -50,28 +42,20 @@ export class VocaDBImportController {
     return song;
   }
 
-  public enrolSong = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const songId = req.params.id;
-      // Fetch song data
-      const song = await this.getSong(songId);
-      // Recursively get original song
-      const originalSong = await this.getOriginalSong(song);
-      let originalSongEntity: SongRow | null = null;
+  public enrolSong = async (req: Request, res: Response) => {
+    const songId = req.params.id as string;
+    // Fetch song data
+    const song = await this.getSong(songId);
+    // Recursively get original song
+    const originalSong = await this.getOriginalSong(song);
+    let originalSongEntity: SongRow | null = null;
 
-      if (originalSong !== null) {
-        originalSongEntity = await saveSongFromVocaDB(originalSong, null);
-      }
-      console.dir(originalSongEntity);
-      const songEntity = await saveSongFromVocaDB(song, originalSongEntity);
-
-      res.json({ status: "OK", data: songEntity });
-    } catch (e) {
-      next(e);
+    if (originalSong !== null) {
+      originalSongEntity = await saveSongFromVocaDB(originalSong, null);
     }
+    console.dir(originalSongEntity);
+    const songEntity = await saveSongFromVocaDB(song, originalSongEntity);
+
+    res.json({ status: "OK", data: songEntity });
   };
 }

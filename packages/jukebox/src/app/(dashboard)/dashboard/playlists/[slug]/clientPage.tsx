@@ -1,7 +1,6 @@
 "use client";
-
 import { useRouter, useParams } from "next/navigation";
-import { useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import PlaylistAvatar from "@/components/PlaylistAvatar";
 import { NavHeader } from "../../NavHeader";
@@ -77,7 +76,11 @@ const PLAYLIST_QUERY = graphql(`
 `);
 
 const UPDATE_PLAYLIST_QUERY = graphql(`
-  mutation UpdatePlaylist($slug: String!, $data: UpdatePlaylistInput!, $files: [Int!]!) {
+  mutation UpdatePlaylist(
+    $slug: String!
+    $data: UpdatePlaylistInput!
+    $files: [Int!]!
+  ) {
     updatePlaylist(slug: $slug, data: $data) {
       slug
     }
@@ -111,7 +114,7 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
   const { slug } = useParams<{ slug: string }>();
   const [isDeleteAlertOpen, toggleDeleteAlertOpen] = useNamedState(
     false,
-    "isDeleteAlertOpen"
+    "isDeleteAlertOpen",
   );
 
   const form = useForm<FormValues>({
@@ -135,11 +138,11 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
 
   const handleDeleteConfirm = useCallback(
     () => toggleDeleteAlertOpen(true),
-    [toggleDeleteAlertOpen]
+    [toggleDeleteAlertOpen],
   );
   const handleClose = useCallback(
     () => toggleDeleteAlertOpen(false),
-    [toggleDeleteAlertOpen]
+    [toggleDeleteAlertOpen],
   );
 
   const handleDelete = useCallback(async () => {
@@ -412,8 +415,8 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                                         onClick={() => {
                                           field.onChange(
                                             field.value.filter(
-                                              (i: MusicFile) => i.id !== v.id
-                                            )
+                                              (i: MusicFile) => i.id !== v.id,
+                                            ),
                                           );
                                         }}
                                       >

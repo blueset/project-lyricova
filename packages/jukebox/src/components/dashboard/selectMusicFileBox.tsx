@@ -1,6 +1,5 @@
 "use client";
-
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import type { ResultOf } from "@graphql-typed-document-node/core";
 import {
@@ -28,7 +27,12 @@ import { Music, ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@lyricova/components/utils";
 import { useCallback, useEffect, useState } from "react";
 import _ from "lodash";
-import type { FieldValues, FieldPath, FieldPathValue, UseFormReturn } from "react-hook-form";
+import type {
+  FieldValues,
+  FieldPath,
+  FieldPathValue,
+  UseFormReturn,
+} from "react-hook-form";
 import { useController } from "react-hook-form";
 
 const LOCAL_ARTIST_ENTITY_QUERY = graphql(`
@@ -52,7 +56,7 @@ type LocalMusicFile = ResultOf<
 
 interface Props<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > {
   form: UseFormReturn<TFieldValues>;
   fieldName: TName;
@@ -62,7 +66,7 @@ interface Props<
 
 export default function SelectMusicFileBox<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({ fieldName, labelName, title, form }: Props<TFieldValues, TName>) {
   const apolloClient = useApolloClient();
   const { field, fieldState } = useController({
@@ -77,38 +81,41 @@ export default function SelectMusicFileBox<
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchOptions = useCallback(
-    _.debounce(async (searchText: string, currentValue: LocalMusicFile | null) => {
-      if (searchText === "") {
-        setOptions(currentValue ? [currentValue] : []);
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      let result: LocalMusicFile[] = [];
-
-      try {
-        const apolloResult = await apolloClient.query({
-          query: LOCAL_ARTIST_ENTITY_QUERY,
-          variables: { text: searchText },
-        });
-
-        if (apolloResult.data?.searchMusicFiles) {
-          result = result.concat(apolloResult.data?.searchMusicFiles);
+    _.debounce(
+      async (searchText: string, currentValue: LocalMusicFile | null) => {
+        if (searchText === "") {
+          setOptions(currentValue ? [currentValue] : []);
+          setIsLoading(false);
+          return;
         }
-      } catch (e) {
-        /* No-Op. */
-      }
 
-      // Ensure current value is in options if it exists
-      if (currentValue && !result.some((opt) => opt.id === currentValue.id)) {
-        result = [currentValue, ...result];
-      }
+        setIsLoading(true);
+        let result: LocalMusicFile[] = [];
 
-      setOptions(result);
-      setIsLoading(false);
-    }, 300),
-    [apolloClient]
+        try {
+          const apolloResult = await apolloClient.query({
+            query: LOCAL_ARTIST_ENTITY_QUERY,
+            variables: { text: searchText },
+          });
+
+          if (apolloResult.data?.searchMusicFiles) {
+            result = result.concat(apolloResult.data?.searchMusicFiles);
+          }
+        } catch (e) {
+          /* No-Op. */
+        }
+
+        // Ensure current value is in options if it exists
+        if (currentValue && !result.some((opt) => opt.id === currentValue.id)) {
+          result = [currentValue, ...result];
+        }
+
+        setOptions(result);
+        setIsLoading(false);
+      },
+      300,
+    ),
+    [apolloClient],
   );
 
   useEffect(() => {
@@ -126,15 +133,19 @@ export default function SelectMusicFileBox<
 
   const handleSelect = (selectedOptionValue: string) => {
     const selectedOption = options.find(
-      (option) => `${option.trackName}-${option.id}` === selectedOptionValue
+      (option) => `${option.trackName}-${option.id}` === selectedOptionValue,
     );
 
     if (!selectedOption) return;
 
-    form.setValue(fieldName, selectedOption as FieldPathValue<TFieldValues, TName>, {
-      shouldValidate: true,
-      shouldDirty: true,
-    });
+    form.setValue(
+      fieldName,
+      selectedOption as FieldPathValue<TFieldValues, TName>,
+      {
+        shouldValidate: true,
+        shouldDirty: true,
+      },
+    );
     setOpen(false);
     setInputValue("");
   };
@@ -213,7 +224,7 @@ export default function SelectMusicFileBox<
                                     "ml-auto h-4 w-4",
                                     value?.id === option.id
                                       ? "opacity-100"
-                                      : "opacity-0"
+                                      : "opacity-0",
                                   )}
                                 />
                               )}

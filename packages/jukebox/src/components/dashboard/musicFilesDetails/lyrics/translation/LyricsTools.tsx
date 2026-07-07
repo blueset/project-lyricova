@@ -20,7 +20,7 @@ import { useShallow } from "zustand/shallow";
 import { useAuthContext } from "@lyricova/components";
 import { fetchEventData } from "fetch-sse";
 import { toast } from "sonner";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 
 const GET_LLM_MODELS_QUERY = graphql(`
@@ -50,7 +50,7 @@ export default function LyricsTools() {
     useShallow((state) => ({
       fixQuotes: state.translations.fixQuotes,
       setTextareaValue: state.translations.setTextareaValue,
-    }))
+    })),
   );
 
   // Fetch LLM models from site meta
@@ -62,7 +62,7 @@ export default function LyricsTools() {
         default: JSON.stringify(FALLBACK_LLM_MODELS),
       },
       errorPolicy: "all", // Continue even if there's an error
-    }
+    },
   );
 
   // Parse LLM models with fallback handling
@@ -81,7 +81,7 @@ export default function LyricsTools() {
     } catch (error) {
       console.warn(
         "Failed to parse LLM models from site meta, using fallback:",
-        error
+        error,
       );
     }
 
@@ -105,7 +105,7 @@ export default function LyricsTools() {
     if (!container) return false;
     return (
       Math.abs(
-        container.scrollHeight - container.clientHeight - container.scrollTop
+        container.scrollHeight - container.clientHeight - container.scrollTop,
       ) < 1
     );
   }, []);
@@ -161,7 +161,7 @@ export default function LyricsTools() {
                     setTimeout(() => {
                       reasoningContainerRef.current?.scrollTo(
                         0,
-                        reasoningContainerRef.current.scrollHeight
+                        reasoningContainerRef.current.scrollHeight,
                       );
                     }, 0);
                   }
@@ -195,7 +195,7 @@ export default function LyricsTools() {
         setIsAlignmentLoading(false);
       }
     },
-    [authContext, setTextareaValue, isScrolledToBottom]
+    [authContext, setTextareaValue, isScrolledToBottom],
   );
 
   const handleCancelAlignment = useCallback(() => {
@@ -214,8 +214,9 @@ export default function LyricsTools() {
         Math.max(
           0,
           (chunkBuffer.split("\n").length * 100) /
-            ((useLyricsStore.getState().lyrics?.lines?.length ?? 0) * 4 + 2 || 1)
-        )
+            ((useLyricsStore.getState().lyrics?.lines?.length ?? 0) * 4 + 2 ||
+              1),
+        ),
       )
     : undefined;
 
@@ -232,7 +233,9 @@ export default function LyricsTools() {
                 <ProgressButton
                   variant="ghost"
                   size="sm"
-                  progress={isAlignmentLoading ? progressValue ?? true : false}
+                  progress={
+                    isAlignmentLoading ? (progressValue ?? true) : false
+                  }
                   className="flex items-center gap-2"
                 >
                   LLM Alignment

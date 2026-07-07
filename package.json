@@ -17,6 +17,9 @@
   "workspaces": [
     "packages/*"
   ],
+  "overrides": {
+    "postcss": "8.5.16"
+  },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
     "graphql": "^16.12.0",

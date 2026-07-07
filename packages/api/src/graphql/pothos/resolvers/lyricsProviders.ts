@@ -1,4 +1,4 @@
-import axios from "axios";
+import { getJson, getText, HttpError } from "../../../utils/httpFetch";
 import cheerio from "cheerio";
 import { eq } from "drizzle-orm";
 import { db } from "../../../drizzle/client";
@@ -22,7 +22,7 @@ interface HmikuAtWikiSearchResultEntry {
 
 const HmikuAtWikiSearchResultEntryRef =
   builder.objectRef<HmikuAtWikiSearchResultEntry>(
-    "HmikuAtWikiSearchResultEntry"
+    "HmikuAtWikiSearchResultEntry",
   );
 
 HmikuAtWikiSearchResultEntryRef.implement({
@@ -97,8 +97,9 @@ interface LyricsKitLyricsEntry {
   tags: Record<string, unknown>;
 }
 
-export const LyricsKitLyricsEntryRef =
-  builder.objectRef<LyricsKitLyricsEntry>("LyricsKitLyricsEntry");
+export const LyricsKitLyricsEntryRef = builder.objectRef<LyricsKitLyricsEntry>(
+  "LyricsKitLyricsEntry",
+);
 
 LyricsKitLyricsEntryRef.implement({
   description: "A lyrics entry from lyrics-kit search engine.",
@@ -135,7 +136,7 @@ function timeoutPromise<T>(promise: Promise<T>, name: string): Promise<T> {
   return Promise.race([
     promise,
     new Promise<T>((_resolve, reject) =>
-      setTimeout(() => reject(new Error(`Timeout in ${name}`)), 10000)
+      setTimeout(() => reject(new Error(`Timeout in ${name}`)), 10000),
     ),
   ]);
 }
@@ -158,29 +159,29 @@ async function vocaDBLyrics(id: number): Promise<LyricsForSongContract[]> {
     }
 
     if (id > 0) {
-      const resp = await axios.get<SongForApiContract>(
+      const resp = await getJson<SongForApiContract>(
         `https://vocadb.net/api/songs/${id}`,
-        { params: { fields: "Lyrics" } }
+        { fields: "Lyrics" },
       );
-      if (resp.data?.lyrics && resp.data.lyrics.length) {
-        return resp.data.lyrics;
+      if (resp?.lyrics && resp.lyrics.length) {
+        return resp.lyrics;
       } else {
-        if (resp.data.originalVersionId) {
-          return vocaDBLyrics(resp.data.originalVersionId);
+        if (resp.originalVersionId) {
+          return vocaDBLyrics(resp.originalVersionId);
         }
         return [];
       }
     } else if (elm?.utaiteDbId) {
-      const resp = await axios.get<SongForApiContract>(
+      const resp = await getJson<SongForApiContract>(
         `https://utaitedb.net/api/songs/${elm.utaiteDbId}`,
-        { params: { fields: "Lyrics" } }
+        { fields: "Lyrics" },
       );
-      if (resp.data?.lyrics && resp.data.lyrics.length) {
-        return resp.data.lyrics;
+      if (resp?.lyrics && resp.lyrics.length) {
+        return resp.lyrics;
       }
     }
   } catch (e) {
-    if (axios.isAxiosError(e) && e.response?.status === 404) {
+    if (e instanceof HttpError && e.status === 404) {
       return [];
     }
     throw e;
@@ -193,8 +194,9 @@ builder.queryField("hmikuLyricsSearch", (t) =>
     type: [HmikuAtWikiSearchResultEntryRef],
     args: { keyword: t.arg.string() },
     resolve: async (_root, { keyword }) => {
-      const response = await axios.get<string>("https://w.atwiki.jp/hmiku/", {
-        params: { cmd: "wikisearch", keyword },
+      const response = await getText("https://w.atwiki.jp/hmiku/", {
+        cmd: "wikisearch",
+        keyword,
       });
       if (response.status !== 200) {
         throw new GraphQLError(`${response.status}: ${response.data}`);
@@ -225,7 +227,7 @@ builder.queryField("hmikuLyricsSearch", (t) =>
         .get();
       return data;
     },
-  })
+  }),
 );
 
 builder.queryField("hmikuLyrics", (t) =>
@@ -234,52 +236,48 @@ builder.queryField("hmikuLyrics", (t) =>
     nullable: true,
     args: { id: t.arg.string() },
     resolve: async (_root, { id }) => {
-      try {
-        const response = await axios.get<string>(
-          `https://w.atwiki.jp/hmiku/pages/${id}.html`
-        );
-        if (response.status !== 200) {
-          throw new GraphQLError(`${response.status}: ${response.data}`);
-        }
-        const $ = cheerio.load(response.data);
-        const titleNode = $("h2");
-        if (!titleNode) {
-          return null;
-        }
-        const title = titleNode.text();
-        const furiganaMatch =
-          /(?:【検索用:)?([^:【\n]+?)[\u00a0\s]*【?登録タグ/g.exec(
-            $("#wikibody").text()
-          );
-        console.log("wikibody", JSON.stringify($("#wikibody").text()));
-        console.log("wikibody match", furiganaMatch);
-        const furigana = furiganaMatch ? furiganaMatch[1] : title;
-        console.log("wikibody furigana", furigana);
-        const lyricsTitleNode = $("#wikibody h3:contains(歌詞)");
-        let lyrics = null;
-        if (lyricsTitleNode) {
-          const lyricsNodes = lyricsTitleNode.nextUntil("h3");
-          if (lyricsNodes) {
-            lyrics = lyricsNodes
-              .text()
-              .replace(/\n{3,}/g, "\n␊\n")
-              .replace(/\n\n/g, "\n")
-              .replace(/␊/g, "");
-          } else {
-            console.log("lyricsNodes not found");
-          }
-        } else {
-          console.log("lyricsTitleNode not found");
-        }
-        return { id, name: title, furigana, lyrics: lyrics ?? "" };
-      } catch (e) {
-        if (axios.isAxiosError(e) && e.response?.status === 404) {
-          return null;
-        }
-        throw e;
+      const response = await getText(
+        `https://w.atwiki.jp/hmiku/pages/${id}.html`,
+      );
+      if (response.status === 404) {
+        return null;
       }
+      if (response.status !== 200) {
+        throw new GraphQLError(`${response.status}: ${response.data}`);
+      }
+      const $ = cheerio.load(response.data);
+      const titleNode = $("h2");
+      if (!titleNode) {
+        return null;
+      }
+      const title = titleNode.text();
+      const furiganaMatch =
+        /(?:【検索用:)?([^:【\n]+?)[\u00a0\s]*【?登録タグ/g.exec(
+          $("#wikibody").text(),
+        );
+      console.log("wikibody", JSON.stringify($("#wikibody").text()));
+      console.log("wikibody match", furiganaMatch);
+      const furigana = furiganaMatch ? furiganaMatch[1] : title;
+      console.log("wikibody furigana", furigana);
+      const lyricsTitleNode = $("#wikibody h3:contains(歌詞)");
+      let lyrics = null;
+      if (lyricsTitleNode) {
+        const lyricsNodes = lyricsTitleNode.nextUntil("h3");
+        if (lyricsNodes) {
+          lyrics = lyricsNodes
+            .text()
+            .replace(/\n{3,}/g, "\n␊\n")
+            .replace(/\n\n/g, "\n")
+            .replace(/␊/g, "");
+        } else {
+          console.log("lyricsNodes not found");
+        }
+      } else {
+        console.log("lyricsTitleNode not found");
+      }
+      return { id, name: title, furigana, lyrics: lyrics ?? "" };
     },
-  })
+  }),
 );
 
 builder.queryField("vocaDBLyrics", (t) =>
@@ -287,7 +285,7 @@ builder.queryField("vocaDBLyrics", (t) =>
     type: [VocaDBLyricsEntryRef],
     args: { id: t.arg.int() },
     resolve: (_root, { id }) => vocaDBLyrics(id),
-  })
+  }),
 );
 
 builder.queryField("lyricsKitSearch", (t) =>
@@ -313,7 +311,7 @@ builder.queryField("lyricsKitSearch", (t) =>
           try {
             const result = await timeoutPromise(
               v.getLyrics(request),
-              v.constructor.name
+              v.constructor.name,
             );
 
             const converted = result.map((lrc: Lyrics) => ({
@@ -335,7 +333,7 @@ builder.queryField("lyricsKitSearch", (t) =>
             failed.push(e instanceof Error ? e.message : String(e));
             return [];
           }
-        })
+        }),
       );
 
       await pubsub.publish(TOPIC_LYRICS_KIT_RESULT, { sessionId, data: null });
@@ -345,5 +343,5 @@ builder.queryField("lyricsKitSearch", (t) =>
       }
       return _.flatten(results);
     },
-  })
+  }),
 );

@@ -20,12 +20,12 @@ import { v4 as uuid } from "uuid";
 type User = typeof Users.$inferSelect;
 
 declare global {
-    // eslint-disable-next-line @typescript-eslint/no-namespace
-    namespace Express {
-        interface User {
-          id: number;
-        }
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface User {
+      id: number;
     }
+  }
 }
 
 const JWT_ISSUER = "lyricova";
@@ -53,28 +53,31 @@ export class AuthController {
         failureFlash: "Invalid username or password.",
         successFlash: "Welcome back!",
       }),
-      this.postLogin
+      this.postLogin,
     );
     this.router.post(
       "/login/local/jwt",
       passport.authenticate("local", { session: false }),
-      this.emitJWT
+      this.emitJWT,
     );
 
     // WebAuthn routes
     this.router.post("/login/public-key/challenge", function (req, res, next) {
-      store.challenge(req, function (err, challenge) {
-        if (err) {
-          return next(err);
-        }
-        res.json({ challenge: challenge && base64url.encode(challenge) });
-      });
+      store.challenge(
+        req as unknown as Parameters<typeof store.challenge>[0],
+        function (err, challenge) {
+          if (err) {
+            return next(err);
+          }
+          res.json({ challenge: challenge && base64url.encode(challenge) });
+        },
+      );
     });
 
     this.router.post(
       "/login/public-key",
       passport.authenticate("webauthn", { failWithError: true }),
-      this.emitJWT
+      this.emitJWT,
     );
 
     this.router.post(
@@ -96,17 +99,21 @@ export class AuthController {
             req.connection.remoteAddress,
           ])}`,
         };
-        store.challenge(req, { user: user }, (err, challenge) => {
-          if (err) {
-            console.error("Store challenge err", err);
-            return next(err);
-          }
-          res.json({
-            user: user,
-            challenge: challenge && base64url.encode(challenge),
-          });
-        });
-      }
+        store.challenge(
+          req as unknown as Parameters<typeof store.challenge>[0],
+          { user: user },
+          (err, challenge) => {
+            if (err) {
+              console.error("Store challenge err", err);
+              return next(err);
+            }
+            res.json({
+              user: user,
+              challenge: challenge && base64url.encode(challenge),
+            });
+          },
+        );
+      },
     );
 
     this.router.use(
@@ -116,7 +123,7 @@ export class AuthController {
           res.sendStatus(401);
         }
         next();
-      }
+      },
     );
 
     // Inject user context before Apollo server
@@ -130,7 +137,7 @@ export class AuthController {
       },
       cors({
         preflightContinue: true,
-      })
+      }),
     );
     this.injectionRouter.post("/graphql", this.injectGraphQLUser);
   }
@@ -145,12 +152,15 @@ export class AuthController {
           done: (
             error: any,
             user?: User | false,
-            options?: IVerifyOptions
-          ) => void
+            options?: IVerifyOptions,
+          ) => void,
         ) => {
           try {
             const user = await db.query.Users.findFirst({
-              where: and(eq(Users.username, username), isNull(Users.deletionDate)),
+              where: and(
+                eq(Users.username, username),
+                isNull(Users.deletionDate),
+              ),
             });
             if (
               user != null &&
@@ -165,14 +175,14 @@ export class AuthController {
           } catch (err) {
             return done(err);
           }
-        }
-      )
+        },
+      ),
     );
 
     passport.serializeUser(
       (user: Express.User, done: (err: any, id: string) => void) => {
         done(null, `${user.id}`);
-      }
+      },
     );
 
     passport.deserializeUser(
@@ -184,7 +194,7 @@ export class AuthController {
           return done("User not found");
         }
         done(null, user as unknown as Express.User);
-      }
+      },
     );
     // #endregion
 
@@ -198,7 +208,7 @@ export class AuthController {
         },
         async (
           payload: { id: number },
-          done: (err: any, user: User | false) => void
+          done: (err: any, user: User | false) => void,
         ) => {
           try {
             const user = await db.query.Users.findFirst({
@@ -211,8 +221,8 @@ export class AuthController {
           } catch (err) {
             return done(err, false);
           }
-        }
-      )
+        },
+      ),
     );
     // #endregion
 
@@ -223,7 +233,7 @@ export class AuthController {
         /* verify */ async (
           id: string,
           userHandle: Buffer,
-          cb: VerifiedFunction
+          cb: VerifiedFunction,
         ) => {
           const cred = await db.query.UserPublicKeyCredentials.findFirst({
             where: eq(UserPublicKeyCredentials.externalId, id),
@@ -236,7 +246,7 @@ export class AuthController {
           user: WebAuthnEnrolPayload,
           id: string,
           publicKey: string,
-          cb: RegisteredFunction
+          cb: RegisteredFunction,
         ) => {
           const userObj = await db.query.Users.findFirst({
             where: eq(Users.id, Number(user.id)),
@@ -251,8 +261,8 @@ export class AuthController {
             updatedOn: new Date(),
           });
           return cb(null, userObj);
-        }
-      )
+        },
+      ),
     );
     // #endregion
   }
@@ -260,7 +270,7 @@ export class AuthController {
   public postLogin = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     // res.redirect("/dashboard");
     // console.log(req.user);
@@ -280,7 +290,7 @@ export class AuthController {
       {
         expiresIn: "180d",
         issuer: JWT_ISSUER,
-      }
+      },
     );
 
     return res.json({
@@ -292,7 +302,7 @@ export class AuthController {
   public injectGraphQLUser = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     passport.authenticate(
       "jwt",
@@ -303,7 +313,7 @@ export class AuthController {
         } else {
           next();
         }
-      }
+      },
     )(req, res, next);
   };
 }

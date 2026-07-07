@@ -36,8 +36,8 @@ import "./resolvers/foo";
 
 /**
  * Builds the Pothos `GraphQLSchema` from the type/resolver modules imported
- * above. The emitted SDL is kept at full parity with `schema.graphql`
- * (`npm run schema:check`); Apollo consumes this schema in `applyApollo`.
+ * above. The emitted SDL is kept in sync with the committed `schema.graphql`
+ * (`npm run pothos:emit`); Apollo consumes this schema in `applyApollo`.
  */
 export function buildPothosSchema() {
   return builder.toSchema();

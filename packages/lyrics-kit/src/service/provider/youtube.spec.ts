@@ -15,5 +15,5 @@ describe('YouTubeProvider', () => {
         result.forEach(v => console.log("Entry:", v.toString()));
         expect(result.length).toBeGreaterThan(0);
         expect(result.some(i => i.isMatched())).toBeTruthy();
-    });
+    }, 100000);
 });
