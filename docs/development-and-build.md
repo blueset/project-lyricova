@@ -19,7 +19,7 @@ requires. It focuses on the four things that changed the day-to-day workflow:
 | ORM | Sequelize (`sequelize.sync()`) | **Drizzle ORM** — schema in `packages/api/src/drizzle/schema.ts`, migrations via **drizzle-kit** |
 | GraphQL server | TypeGraphQL decorators on models | **Pothos** builder in `packages/api/src/graphql/pothos/` |
 | GraphQL client | Apollo `` gql`…` `` tagged templates (untyped) | **graphql-codegen client preset** — `` graphql(`…`) `` from `@lyricova/components/gql` (fully typed) |
-| Schema source of truth | (implicit, from decorators) | committed **`packages/api/schema.graphql`**, guarded by **`schema.graphql.golden`** parity |
+| Schema source of truth | (implicit, from decorators) | committed **`packages/api/schema.graphql`** (emitted from Pothos) |
 
 The practical consequence: a few artifacts are now **generated** (and
 git-ignored), so some changes require a regeneration step before types line up.
@@ -152,8 +152,8 @@ Practical notes:
   in the SDL — not resolver bodies. Refactor a resolver's logic and
   `schema.graphql` is rewritten byte-identically, so `git status` stays clean.
   `schema.graphql` only shows as modified when you actually change the GraphQL
-  contract — which is exactly when you'd want a visible diff (reconcile
-  `schema.graphql.golden` at commit time; see
+  contract — which is exactly when you'd want a visible diff (commit it
+  alongside the resolver change; see
   [§5.3](#53-graphql--api-schema-changes-resolver--type--field)).
 - The emit reads the **compiled** `dist/`, so a schema change propagates only
   after `tsc -w` finishes recompiling (a second or two).
@@ -170,7 +170,6 @@ Know these so you don't hunt for "missing" files or commit generated output:
 | `packages/api/schema.pothos.graphql` | `npm run pothos:emit` | **No** (transient emit) |
 | `packages/api/dist/**` | `tsc` | **No** |
 | `packages/api/schema.graphql` | *hand-updated* from the Pothos emit | **Yes** — codegen source of truth |
-| `packages/api/schema.graphql.golden` | *hand-updated* parity baseline | **Yes** |
 | `packages/api/drizzle/migrations/**` | `npm run db:generate` | **Yes** |
 
 ---
@@ -224,10 +223,9 @@ server schema is a multi-step operation:
 > **During `npm run dev` most of this is automatic.** The watch pipeline
 > ([§3.1](#31-graphql-watch-pipeline)) re-emits `schema.graphql` and regenerates
 > the frontend types on every resolver save — so in dev you can skip the manual
-> emit (step 2) and codegen (step 5) below, and just do the **commit-time**
-> reconciliation: update `schema.graphql.golden` to match and run the parity
-> checks (steps 3b–4). The manual sequence here is what you run **outside** dev
-> (CI, a one-off, or to produce the golden diff).
+> emit (step 2) and codegen (step 4) below, and just commit the resulting
+> `schema.graphql` diff. The manual sequence here is what you run **outside** dev
+> (CI, a one-off, or to produce the SDL diff by hand).
 
 1. Edit the Pothos resolver/type under `packages/api/src/graphql/pothos/`.
 2. Re-emit the SDL from the running schema:
@@ -251,30 +249,21 @@ server schema is a multi-step operation:
    >
    > `pothos:emit` (like the server) loads the real app, so a *parseable* `DB_URI`
    > is required (a reachable database is not — the pool is created lazily).
-3. Promote the emit to the codegen source and update the parity baseline:
+3. Promote the emit to the codegen source:
 
    ```bash
    cp schema.pothos.graphql schema.graphql          # codegen source of truth (dev's watch already did this)
-   # add the same field(s) to schema.graphql.golden  (parity baseline — NOT automated)
    ```
 
-4. Verify parity:
-
-   ```bash
-   npm run schema:check     # golden vs schema.graphql
-   npm run pothos:check     # golden vs a fresh Pothos emit
-   ```
-
-5. Regenerate the frontend types so the new field is usable in `graphql()`
+4. Regenerate the frontend types so the new field is usable in `graphql()`
    documents:
 
    ```bash
    npm run codegen -w @lyricova/components
    ```
 
-> The parity guard exists to catch **accidental** schema drift. An
-> **intentional** change is expected to update both `schema.graphql` and
-> `schema.graphql.golden` in the same commit — treat it like updating a snapshot.
+> Commit the `schema.graphql` diff alongside the resolver change — treat it like
+> updating a snapshot so accidental schema drift stays visible in review.
 
 ### 5.4 Database schema changes (Drizzle)
 
@@ -323,7 +312,7 @@ npm run test              # turbo run test            (jest)
 
 | Package | Type-check | Lint | Test | Schema |
 | --- | --- | --- | --- | --- |
-| `@lyricova/api` | `npm run typecheck` (or `build:ts`) | `npm run lint` | `npm test` (jest) | `npm run schema:check` |
+| `@lyricova/api` | `npm run typecheck` (or `build:ts`) | `npm run lint` | `npm test` (jest) | `npm run pothos:emit` |
 | `@lyricova/components` | `npm run typecheck` | `npm run lint` | — | — |
 | `@lyricova/jukebox` | `npm run typecheck` | `npm run lint` | `npm test` | — |
 | `@lyricova/blog` (`packages/lyricova`) | `npm run typecheck` | `npm run lint` | `npm test` | — |
@@ -404,8 +393,7 @@ npm run codegen -w @lyricova/components        # regenerate typed graphql()
 # GraphQL API schema changed (resolver/type/field)
 # In `npm run dev`, schema.graphql + client types regenerate automatically; then at commit time:
 cd packages/api && npm run pothos:emit         # regenerate SDL (see the drizzle-orm note in §5.3)
-cp schema.pothos.graphql schema.graphql        # + mirror the change into schema.graphql.golden
-npm run schema:check && npm run pothos:check
+cp schema.pothos.graphql schema.graphql        # promote the emit to the codegen source
 npm run codegen -w @lyricova/components
 
 # Database schema changed

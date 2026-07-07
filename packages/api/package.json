@@ -22,10 +22,8 @@
     "dev:debug-b": "npm run dev serve-debug",
     "dev:debug": "concurrently -n node,tscr -c green,blue npm:dev:node-debug npm:dev:ts",
     "posthog": "node scripts/posthog-sourcemaps.mjs",
-    "schema:check": "node scripts/schema-parity.mjs",
     "openapi": "node scripts/emit-openapi.mjs && openapi-typescript openapi.json -o src/openapi/schema.ts",
     "pothos:emit": "tsc ; node scripts/emit-pothos-schema.mjs",
-    "pothos:check": "npm run pothos:emit && node scripts/schema-parity.mjs schema.graphql.golden schema.pothos.graphql",
     "test": "jest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"

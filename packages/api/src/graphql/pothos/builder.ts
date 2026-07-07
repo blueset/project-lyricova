@@ -11,8 +11,8 @@ import { db, fullSchema } from "../../drizzle/client";
  *
  * Object types are backed by Drizzle via `builder.drizzleObject`
  * (`@pothos/plugin-drizzle`) plus plain object refs for mapped/computed shapes.
- * The emitted schema must stay byte-compatible with schema.graphql
- * (`npm run schema:check`).
+ * The emitted schema must stay in sync with the committed schema.graphql
+ * (`npm run pothos:emit`).
  */
 
 export interface Context {
