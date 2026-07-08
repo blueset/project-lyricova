@@ -222,8 +222,8 @@ function LyricsLineElement({
           ref={
             animate
               ? (scene) => {
-                  if (progressorRef) progressorRef.current = scene;
-                }
+                if (progressorRef) progressorRef.current = scene;
+              }
               : undefined
           }
           autoplay={true}
@@ -297,6 +297,7 @@ export function StrokeLyrics({ lyrics }: Props) {
       }
     }
     // Player progress is not included to prevent animation loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerState.state, currentFrame, currentFrameId, lyrics.lines.length]);
 
   let lineElement: (width: number) => React.ReactNode | null = () => null;

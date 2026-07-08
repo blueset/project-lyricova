@@ -129,21 +129,21 @@ export default function SearchClient() {
       >
         {results?.length
           ? results?.map((entry, idx) => (
-              <motion.div key={entry.id} variants={variants} custom={idx}>
-                <SingleEntry entry={entry} />
-                <Divider />
-              </motion.div>
-            ))
+            <motion.div key={entry.id} variants={variants} custom={idx}>
+              <SingleEntry entry={entry} />
+              <Divider />
+            </motion.div>
+          ))
           : results !== null && (
-              <motion.div key={-1} variants={variants} custom={0}>
-                <div
-                  className={`lyricova-container verticalPadding ${classes.noResult}`}
-                >
-                  No result found.
-                </div>
-                <Divider />
-              </motion.div>
-            )}
+            <motion.div key={-1} variants={variants} custom={0}>
+              <div
+                className={`lyricova-container verticalPadding ${classes.noResult}`}
+              >
+                No result found.
+              </div>
+              <Divider />
+            </motion.div>
+          )}
       </motion.div>
       <Footer />
     </>

@@ -43,7 +43,7 @@ export function TagNode({ tag }: { tag: TagWithCount }) {
           if (elm) {
             document.fonts.ready
               .then(() => {
-                const promises: Promise<any>[] = [];
+                const promises: Promise<unknown>[] = [];
                 document.fonts.forEach(
                   (f) => f.family.match(/Hubot/gi) && promises.push(f.loaded),
                 );

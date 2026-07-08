@@ -7,7 +7,7 @@ const SONG = "初音ミクの消失",
   DURATION = 290.0;
 const REQ = LyricsSearchRequest.fromInfo(SONG, ARTIST, DURATION);
 
-async function macro(provider: LyricsProvider<any>) {
+async function macro(provider: LyricsProvider<unknown>) {
   const result = await provider.getLyrics(REQ);
   expect(Array.isArray(result)).toBe(true);
   console.log("Number of hits:", result.length);

@@ -112,8 +112,8 @@ export default function FuriganaManager() {
     const mappings = showAll
       ? data.furiganaMappings
       : data.furiganaMappings.filter(
-          (i) => !i.segmentedText || !i.segmentedFurigana,
-        );
+        (i) => !i.segmentedText || !i.segmentedFurigana,
+      );
 
     return mappings.map(
       (mapping) =>
@@ -188,6 +188,11 @@ export default function FuriganaManager() {
     [setEditFormData],
   );
 
+  const handleProcessRowUpdateError = useCallback((error: Error) => {
+    console.error(error);
+    toast.error(error.message);
+  }, []);
+
   const processRowUpdate = useCallback(
     async (newRow: EditFormData) => {
       try {
@@ -214,15 +219,14 @@ export default function FuriganaManager() {
 
         await refetch();
         toast.success(
-          `Updated ${newRow.text} to ${newRow.segmentedText ?? "null"}, ${
-            newRow.segmentedFurigana ?? "null"
+          `Updated ${newRow.text} to ${newRow.segmentedText ?? "null"}, ${newRow.segmentedFurigana ?? "null"
           }.`,
         );
       } catch (error) {
         handleProcessRowUpdateError(error as Error);
       }
     },
-    [apolloClient, refetch],
+    [apolloClient, refetch, handleProcessRowUpdateError],
   );
 
   const handleSaveClick = useCallback(async () => {
@@ -237,11 +241,6 @@ export default function FuriganaManager() {
       toast.error("Validation failed. Please check the fields.");
     }
   }, [editFormData, editingRowId, validateRow, processRowUpdate]);
-
-  const handleProcessRowUpdateError = useCallback((error: Error) => {
-    console.error(error);
-    toast.error(error.message);
-  }, []);
 
   const handleBulkUpdate = useCallback(
     async (input: string) => {
@@ -324,9 +323,9 @@ Output:
 ---
 Input:
 ${data.furiganaMappings
-  .filter((i) => !i.segmentedText || !i.segmentedFurigana)
-  .map((i) => i.text + ";" + i.furigana)
-  .join("\n")}
+          .filter((i) => !i.segmentedText || !i.segmentedFurigana)
+          .map((i) => i.text + ";" + i.furigana)
+          .join("\n")}
 Output:
 `
         : null,
@@ -553,10 +552,12 @@ Output:
         },
       },
     ],
-    [], // Dependencies for useMemo should include anything external used inside,
+    // Dependencies for useMemo should include anything external used inside,
     // but since column definitions are usually static or depend on stable functions,
     // an empty array might be acceptable if handlers passed via meta are stable refs.
     // If handlers change, they should be included or wrapped in useCallback.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   const tableMeta = useMemo(

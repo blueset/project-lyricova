@@ -349,7 +349,7 @@ export function CustomAlign({ fileId }: { fileId: number }) {
 
       setIsAlignmentLoading(false);
     })();
-  }, [fileId]);
+  }, [authContext, fileId]);
 
   return (
     <HoverCard>
