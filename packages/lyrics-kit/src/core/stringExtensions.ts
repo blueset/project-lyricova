@@ -3,7 +3,7 @@ import _ from "lodash";
 export function isCaseInsensitiveSimilar(self: string, other: string): boolean {
   const s1 = self.toLowerCase(),
     s2 = other.toLowerCase();
-  return s1.indexOf(s2) >= 0 || s1.indexOf(s1) >= 0;
+  return s1.indexOf(s2) >= 0 || s2.indexOf(s1) >= 0;
 }
 
 function distance(
