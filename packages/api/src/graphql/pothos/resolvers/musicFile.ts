@@ -2,7 +2,7 @@ import { MUSIC_FILES_PATH } from "../../../utils/secret.js";
 import { writeAsync as ffMetadataWrite } from "../../../utils/ffmetadata.js";
 import fs from "fs";
 import pLimit from "p-limit";
-import hasha from "hasha";
+import { hashFile } from "hasha";
 import { desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
 import { db } from "../../../drizzle/client.js";
 import {
@@ -208,31 +208,25 @@ builder.mutationField("scan", (t) =>
       const limit = pLimit(10);
 
       if (!dryRun) {
-        const entriesToAdd = await Promise.all(
-          [...toAdd].map((filePath) =>
-            limit(async () => buildSongEntry(filePath)),
-          ),
+        const entriesToAdd = await limit.map(toAdd, (filePath) =>
+          buildSongEntry(filePath),
         );
 
         console.log("entries_to_add done.");
 
         const now = new Date();
-        await Promise.all(
-          entriesToAdd.map((built) =>
-            limit(async () => {
-              const inserted = await db.insert(MusicFiles).values({
-                ...built.values,
-                creationDate: now,
-                updatedOn: now,
-              });
-              if (built.playlistSlugs.length > 0)
-                await replaceFilePlaylists(
-                  inserted[0].insertId,
-                  built.playlistSlugs,
-                );
-            }),
-          ),
-        );
+        await limit.map(entriesToAdd, async (built) => {
+          const inserted = await db.insert(MusicFiles).values({
+            ...built.values,
+            creationDate: now,
+            updatedOn: now,
+          });
+          if (built.playlistSlugs.length > 0)
+            await replaceFilePlaylists(
+              inserted[0].insertId,
+              built.playlistSlugs,
+            );
+        });
         progressObj.added += entriesToAdd.length;
       }
 
@@ -246,20 +240,16 @@ builder.mutationField("scan", (t) =>
       console.log("to Update Entries", toUpdateEntries.length);
 
       if (!dryRun) {
-        await Promise.all(
-          toUpdateEntries.map((entry) =>
-            limit(async () => {
-              const updated = await updateSongEntry(entry);
-              if (!updated) progressObj.unchanged++;
-              else progressObj.updated++;
-              if (
-                sessionId &&
-                (progressObj.updated + progressObj.unchanged) % 10 === 0
-              )
-                if (sessionId) await publish({ sessionId, data: progressObj });
-            }),
-          ),
-        );
+        await limit.map(toUpdateEntries, async (entry) => {
+          const updated = await updateSongEntry(entry);
+          if (!updated) progressObj.unchanged++;
+          else progressObj.updated++;
+          if (
+            sessionId &&
+            (progressObj.updated + progressObj.unchanged) % 10 === 0
+          )
+            if (sessionId) await publish({ sessionId, data: progressObj });
+        });
       }
       if (sessionId) await publish({ sessionId, data: progressObj });
 
@@ -398,7 +388,7 @@ builder.mutationField("writeTagsToMusicFile", (t) =>
 
       await writeMetadataToFile(song, data);
 
-      const hash = await hasha.fromFile(fullPathOf(musicFilePath(song.path)), {
+      const hash = await hashFile(fullPathOf(musicFilePath(song.path)), {
         algorithm: "md5",
       });
       await db

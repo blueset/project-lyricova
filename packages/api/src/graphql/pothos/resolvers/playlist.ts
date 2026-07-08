@@ -89,11 +89,7 @@ builder.mutationField("updatePlaylist", (t) =>
           where: eq(FileInPlaylists.playlistId, newSlug),
         });
         const limit = pLimit(10);
-        await Promise.all(
-          files.map((i) =>
-            limit(async () => updatePlaylistsOfFileAsTags(i.fileId!)),
-          ),
-        );
+        await limit.map(files, (i) => updatePlaylistsOfFileAsTags(i.fileId!));
       }
       return (await db.query.Playlists.findFirst({
         where: eq(Playlists.slug, newSlug),
@@ -258,11 +254,7 @@ builder.mutationField("removePlaylist", (t) =>
       await db.delete(Playlists).where(eq(Playlists.slug, slug));
 
       const limit = pLimit(10);
-      await Promise.all(
-        files.map((i) =>
-          limit(async () => updatePlaylistsOfFileAsTags(i.fileId!)),
-        ),
-      );
+      await limit.map(files, (i) => updatePlaylistsOfFileAsTags(i.fileId!));
       return true;
     },
   }),
@@ -304,11 +296,7 @@ builder.mutationField("updatePlaylistFiles", (t) =>
             ),
           );
       }
-      await Promise.all(
-        toRemove.map((id) =>
-          limit(async () => updatePlaylistsOfFileAsTags(id)),
-        ),
-      );
+      await limit.map(toRemove, (id) => updatePlaylistsOfFileAsTags(id));
 
       // Add / update sort order for the desired set.
       for (let idx = 0; idx < fileIds.length; idx++) {
@@ -317,9 +305,7 @@ builder.mutationField("updatePlaylistFiles", (t) =>
 
       // Update tags only for newly added files (mirrors original).
       const toAdd = fileIds.filter((v) => !oldFilesIdSet.has(v));
-      await Promise.all(
-        toAdd.map((id) => limit(async () => updatePlaylistsOfFileAsTags(id))),
-      );
+      await limit.map(toAdd, (id) => updatePlaylistsOfFileAsTags(id));
 
       return playlist;
     },

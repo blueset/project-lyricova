@@ -1,5 +1,5 @@
 import path from "path";
-import hasha from "hasha";
+import { hashFile } from "hasha";
 import { eq } from "drizzle-orm";
 import { db } from "../drizzle/client.js";
 import { MusicFiles, FileInPlaylists } from "../drizzle/schema.js";
@@ -37,7 +37,7 @@ export async function updatePlaylistsOfFileAsTags(
     },
     { preserveStreams: true, forceId3v2 },
   );
-  const md5 = await hasha.fromFile(fullPath, { algorithm: "md5" });
+  const md5 = await hashFile(fullPath, { algorithm: "md5" });
   await db
     .update(MusicFiles)
     .set({ hash: md5 })
