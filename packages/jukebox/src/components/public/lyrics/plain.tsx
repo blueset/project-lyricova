@@ -65,7 +65,7 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
   },
 );
 
-export const MemoedLineRenderer = memo(
+const MemoedLineRenderer = memo(
   forwardRef<
     LyricsAnimationRef,
     { line: LyricsKitLyricsLine; start: number; end: number }

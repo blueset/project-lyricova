@@ -94,9 +94,8 @@ export type TimedSpanProps = PropsWithChildren<{
   endTime: number;
   static?: boolean;
 }>;
-export type TimedSpanPropsWithRef = TimedSpanProps &
-  RefAttributes<LyricsAnimationRef>;
-export type TimedSpanComponent = FC<TimedSpanPropsWithRef>;
+type TimedSpanPropsWithRef = TimedSpanProps & RefAttributes<LyricsAnimationRef>;
+type TimedSpanComponent = FC<TimedSpanPropsWithRef>;
 
 function buildTimeSpans(
   TimedSpan: TimedSpanComponent,

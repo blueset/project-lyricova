@@ -1,4 +1,4 @@
-export const timeTagRegex = /\[([-+]?\d+):(\d+(?:\.\d+)?)\]/g;
+const timeTagRegex = /\[([-+]?\d+):(\d+(?:\.\d+)?)\]/g;
 
 /**
  * Resolve time tag
@@ -60,7 +60,3 @@ export const ttpodXtrcLineRegex =
   /^((?:\[[+-]?\d+:\d+(?:\.\d+)?\])+)(?:((?:<\d+>[^<\r\n]+)+)|(.*))$(?:[\r\n]+\[x\-trans\](.*))?/gm;
 
 export const ttpodXtrcInlineTagRegex = /<(\d+)>([^<\r\n]*)/gm;
-
-export const syairSearchResultRegex = /<div class="title"><a href="([^"]+)">/g;
-
-export const syairLyricsContentRegex = /<div class="entry">(.+?)<div/gs;

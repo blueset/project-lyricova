@@ -1,0 +1,12 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    "packages/api": {
+      "ignore": ["src/openapi/schema.ts"]
+    },
+    "packages/components": {
+      "ignoreDependencies": ["@graphql-typed-document-node/core"]
+    }
+  },
+  "ignoreDependencies": ["drizzle-orm", "graphql", "@parcel/watcher"]
+}

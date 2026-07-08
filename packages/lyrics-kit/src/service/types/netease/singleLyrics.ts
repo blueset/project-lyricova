@@ -1,4 +1,4 @@
-export interface NetEaseLyrics {
+interface NetEaseLyrics {
   lyric?: string;
 }
 

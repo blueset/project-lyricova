@@ -23,7 +23,7 @@ export interface WebAudioControlsProps {
   playbackProgress: number;
 }
 
-export function Rewind5({
+function Rewind5({
   audioBuffer,
   seek,
   getProgress,
@@ -56,7 +56,7 @@ const Rewind5Memo = memo(Rewind5, (prevProps, nextProps) => {
   );
 });
 
-export function PlayPause({
+function PlayPause({
   audioBuffer,
   playerStatus,
   play,

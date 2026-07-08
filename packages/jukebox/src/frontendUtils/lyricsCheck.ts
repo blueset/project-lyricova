@@ -8,7 +8,7 @@ const simplifiedJapanesePattern =
  * Check if the provided string is “Simplified Japanese” (i.e. Japanese Text through Simplified Chinese filters)
  * @param text the string to check
  */
-export function isSimplifiedJapanese(text: string): boolean {
+function isSimplifiedJapanese(text: string): boolean {
   return simplifiedJapanesePattern.test(text);
 }
 

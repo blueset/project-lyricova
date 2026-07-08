@@ -62,7 +62,7 @@ interface InlineTaggingLineProps {
   section: "mark" | "tag";
 }
 
-export function InlineTaggingLine({
+function InlineTaggingLine({
   index,
   timelinesRef,
   playerStatusRef,

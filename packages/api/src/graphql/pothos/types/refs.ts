@@ -33,7 +33,7 @@ export const MusicFileRef = builder.drizzleObject("MusicFiles", {
   name: "MusicFile",
   description: "A music file in the jukebox.",
 });
-export const VideoFileRef = builder.drizzleObject("VideoFiles", {
+builder.drizzleObject("VideoFiles", {
   name: "VideoFile",
 });
 export const PlaylistRef = builder.drizzleObject("Playlists", {
@@ -56,9 +56,9 @@ export const EntryRef = builder.drizzleObject("Entries", {
   name: "Entry",
   description: "A Lyricova entry.",
 });
-export const PulseRef = builder.drizzleObject("Pulses", { name: "Pulse" });
+builder.drizzleObject("Pulses", { name: "Pulse" });
 export const TagRef = builder.drizzleObject("Tags", { name: "Tag" });
-export const VerseRef = builder.drizzleObject("Verses", { name: "Verse" });
+builder.drizzleObject("Verses", { name: "Verse" });
 export const UserRef = builder.drizzleObject("Users", { name: "User" });
 export const UserPublicKeyCredentialRef = builder.drizzleObject(
   "UserPublicKeyCredentials",

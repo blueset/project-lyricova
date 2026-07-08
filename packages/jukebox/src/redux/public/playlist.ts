@@ -21,7 +21,7 @@ export type Track = Pick<
   | "hasLyrics"
 >;
 
-export interface PlaylistState {
+interface PlaylistState {
   tracks: Track[];
 
   /** Track index number AFTER shuffle mapping. */
@@ -50,7 +50,7 @@ const initialState: PlaylistState = {
   playNow: null,
 };
 
-export const playlistSlice = createSlice({
+const playlistSlice = createSlice({
   name: "playlist",
   initialState,
   reducers: {

@@ -700,7 +700,7 @@ async function setSongsOfAlbum(
 // UtaiteDB id resolution (Drizzle port of utils/vocadb.ts processUtaiteDb*).
 // --------------------------------------------------------------------------
 
-export async function processUtaiteDbArtist(artist: ArtistContract): Promise<{
+async function processUtaiteDbArtist(artist: ArtistContract): Promise<{
   artist: ArtistContract;
   type: "vocaDb" | "utaiteDb";
   isNew: boolean;
@@ -723,7 +723,7 @@ export async function processUtaiteDbArtist(artist: ArtistContract): Promise<{
   return { artist, type: "utaiteDb", isNew: true };
 }
 
-export async function processUtaiteDbAlbum(album: AlbumContract): Promise<{
+async function processUtaiteDbAlbum(album: AlbumContract): Promise<{
   album: AlbumContract;
   type: "vocaDb" | "utaiteDb";
   isNew: boolean;

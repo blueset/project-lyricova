@@ -20,7 +20,7 @@ interface LyricsKeyframeInfo {
 }
 
 /** Convert lyrics to time segments, and sort by start the end time. */
-export function lyricsToSegments(
+function lyricsToSegments(
   lines: LyricsKitLyricsLine[] | LyricsLine[],
 ): LyricsSegment[] {
   const segments: LyricsSegment[] = lines
@@ -50,7 +50,7 @@ export function lyricsToSegments(
 }
 
 /** convert segments to a list of keyframes where the data is the array of line IDs in the keyframe. */
-export function segmentsToKeyframes(
+function segmentsToKeyframes(
   segments: LyricsSegment[],
 ): PlayerLyricsKeyframe<LyricsKeyframeInfo>[] {
   const START = 0,

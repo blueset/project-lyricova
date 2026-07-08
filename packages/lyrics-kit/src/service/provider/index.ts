@@ -1,10 +1,6 @@
 import type { LyricsSearchRequest } from "../lyricsSearchRequest";
 import type { Lyrics } from "../../core/lyrics";
 
-export interface LyricsProviderConstructor<T> {
-  new (): LyricsProvider<T>;
-}
-
 export abstract class LyricsProvider<T> {
   // I had no idea what the publishers are doing here.
   // Just assuming that they are simply requests that return

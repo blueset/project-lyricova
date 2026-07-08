@@ -15,16 +15,6 @@ import { buildPothosSchema } from "./pothos/schema";
 import type { Context } from "./pothos/builder";
 import { postHog } from "../utils/posthog";
 
-/**
- * Payload envelope for session-scoped subscriptions. Re-exported for the
- * remaining TypeGraphQL resolver files until they are removed; Pothos resolvers
- * import the same shape from `./pothos/pubsub`.
- */
-export interface PubSubSessionPayload<T> {
-  sessionId: string;
-  data: T | null;
-}
-
 export async function applyApollo(app: Application): Promise<Server> {
   // GraphQL schema is now built with Pothos (replacing TypeGraphQL).
   const schema = buildPothosSchema();

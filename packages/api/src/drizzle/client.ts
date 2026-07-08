@@ -19,5 +19,3 @@ export const db = drizzle(pool, {
   schema: fullSchema,
   mode: "default",
 });
-
-export { schema, relations };

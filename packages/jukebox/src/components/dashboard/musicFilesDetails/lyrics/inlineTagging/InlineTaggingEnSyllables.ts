@@ -117,7 +117,7 @@ function postprocess(arr: string[]): string[] {
   return arr;
 }
 
-export function syllables(str: string): string[] {
+function syllables(str: string): string[] {
   let all: string[] = [];
 
   if (str.match(" ")) {

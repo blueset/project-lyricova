@@ -440,7 +440,7 @@ function des_crypt(in_: number[], out: number[], key: number_0_6) {
   InvIP(state, out);
 }
 
-export function des(buff: number[], key: number[], len: number): number {
+function des(buff: number[], key: number[], len: number): number {
   const schedule: number_6[] = [...Array(16)].map(() => [0, 0, 0, 0, 0, 0]);
   des_key_setup(key, schedule, "encrypt");
   for (let i = 0; i < len; i += 8)
@@ -448,7 +448,7 @@ export function des(buff: number[], key: number[], len: number): number {
   return 0;
 }
 
-export function Ddes(buff: number[], key: number[], len: number): number {
+function Ddes(buff: number[], key: number[], len: number): number {
   const schedule: number_6[] = [...Array(16)].map(() => [0, 0, 0, 0, 0, 0]);
   des_key_setup(key, schedule, "decrypt");
   for (let i = 0; i < len; i += 8)

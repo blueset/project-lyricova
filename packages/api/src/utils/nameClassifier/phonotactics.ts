@@ -1,6 +1,6 @@
 type SyllableGroup = readonly [initial: string, finals: readonly string[]];
 
-export interface DiscriminativeFeatureScores {
+interface DiscriminativeFeatureScores {
   pinyinScore: number;
   romajiScore: number;
 }
@@ -850,7 +850,7 @@ export function scoreRomaji(romanization: string): number {
   return matched / input.length;
 }
 
-export function scoreDiscriminativeFeatures(
+function scoreDiscriminativeFeatures(
   romanization: string,
 ): DiscriminativeFeatureScores {
   const raw = romanization.normalize("NFC").normalize("NFKC").toLowerCase();

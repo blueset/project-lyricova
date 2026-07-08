@@ -1,8 +1,5 @@
-import type { ApolloClient } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-import { kanaToHira, romaToHira } from "@lyricova/components";
-import type { LyricsLine } from "lyrics-kit/core";
-import { FURIGANA } from "lyrics-kit/core";
+import { romaToHira } from "@lyricova/components";
 import diff from "fast-diff";
 import { useMemo } from "react";
 import { graphql } from "@lyricova/components/gql";
@@ -106,49 +103,6 @@ export function generateDiffLines(
   );
 
   return diffLines;
-}
-
-export async function furiganaRomajiMatching({
-  apolloClient,
-  lines,
-  songId,
-}: {
-  apolloClient: ApolloClient;
-  lines: LyricsLine[];
-  songId: number;
-}): Promise<[number, string][][]> {
-  const kanaLines = lines.map((line) => {
-    const kanaLine: string[] = [];
-    let ptr = 0;
-    const base = line.content;
-    const furigana = line?.attachments?.content?.[FURIGANA]?.attachment ?? [];
-    furigana.forEach(({ content, range: [start, end] }) => {
-      if (start > ptr) {
-        kanaLine.push(base.substring(ptr, start));
-      }
-      kanaLine.push(content);
-      ptr = end;
-    });
-    if (ptr < base.length) kanaLine.push(base.substring(ptr));
-
-    return kanaToHira(kanaLine.join("").trimEnd());
-  });
-
-  const vocaDBLyrics = await apolloClient.query({
-    query: VOCADB_LYRICS_QUERY,
-    variables: { id: songId },
-  });
-  const romajiLines =
-    vocaDBLyrics.data?.vocaDBLyrics
-      .find((v) => v.translationType === "Romanized")
-      ?.value?.split("\n") ?? [];
-
-  if (!romajiLines.length) {
-    return [];
-  }
-  const romajiHiraLines = romajiLines.map((line) => romaToHira(line));
-
-  return generateDiffLines(kanaLines, romajiHiraLines);
 }
 
 const oneCharMapping = {
