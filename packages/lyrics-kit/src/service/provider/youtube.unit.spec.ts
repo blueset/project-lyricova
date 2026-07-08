@@ -5,15 +5,19 @@ import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
 import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
 import type { YouTubeSearchResult } from "../types/youtube/searchResult.js";
 
-const mockGetVideoInfo = jest.fn();
-const mockExecPromise = jest.fn();
+const { mockGetVideoInfo, mockExecPromise } = vi.hoisted(() => ({
+  mockGetVideoInfo: vi.fn(),
+  mockExecPromise: vi.fn(),
+}));
 
-jest.mock("yt-dlp-wrap-plus", () => ({
+vi.mock("yt-dlp-wrap-plus", () => ({
   __esModule: true,
-  default: jest.fn().mockImplementation(() => ({
-    getVideoInfo: mockGetVideoInfo,
-    execPromise: mockExecPromise,
-  })),
+  default: vi.fn(function () {
+    return {
+      getVideoInfo: mockGetVideoInfo,
+      execPromise: mockExecPromise,
+    };
+  }),
 }));
 
 import { YouTubeProvider } from "./youtube.js";

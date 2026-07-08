@@ -25,7 +25,7 @@
     "posthog": "node scripts/posthog-sourcemaps.mjs",
     "openapi": "node scripts/emit-openapi.mjs && openapi-typescript openapi.json -o src/openapi/schema.ts",
     "pothos:emit": "tsc ; node scripts/emit-pothos-schema.mjs",
-    "test": "jest",
+    "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },
@@ -109,9 +109,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@jest/globals": "^30.4.1",
-    "@swc/core": "^1.11.9",
-    "@swc/jest": "^0.2.37",
     "@types/bcryptjs": "^2.4.2",
     "@types/compression": "^1.0.1",
     "@types/cors": "^2.8.17",
@@ -120,7 +117,6 @@
     "@types/express-flash": "^0.0.2",
     "@types/express-mysql-session": "^3.0.8",
     "@types/express-session": "^1.15.16",
-    "@types/jest": "^30.0.0",
     "@types/jsdom": "^28.0.3",
     "@types/lodash": "^4.14.149",
     "@types/multer": "^2.2.0",
@@ -135,7 +131,6 @@
     "concurrently": "^10.0.3",
     "drizzle-kit": "^0.31.10",
     "eslint-config-prettier": "^10.1.8",
-    "jest": "^30.4.2",
     "nodemon": "^3.1.7",
     "openapi-typescript": "^7.13.0",
     "typescript": "^6.0.3"

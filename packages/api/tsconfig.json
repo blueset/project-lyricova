@@ -6,7 +6,7 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "preserve",
     "target": "ES2022",
-    "types": ["node", "jest"],
+    "types": ["node", "vitest/globals"],
     "outDir": "dist",
     "rootDir": "src",
     "declaration": true,

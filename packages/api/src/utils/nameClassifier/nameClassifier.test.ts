@@ -1,4 +1,3 @@
-import { describe, expect, it, jest } from "@jest/globals";
 import { classifyNameLanguage } from "./index.js";
 import { alignSegments, nfkcNormalize, phoneticSkeleton } from "./normalize.js";
 import { phonotacticClassify, scorePinyin, scoreRomaji } from "./phonotactics.js";
@@ -9,7 +8,7 @@ import {
   scoreSimilarity,
 } from "./reconciliation.js";
 
-jest.setTimeout(30000);
+vi.setConfig({ testTimeout: 30000 });
 
 describe("nameClassifier normalization utilities", () => {
   it("builds a phonetic skeleton for romaji input", () => {

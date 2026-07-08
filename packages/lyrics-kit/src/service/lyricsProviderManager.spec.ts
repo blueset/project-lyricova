@@ -13,7 +13,7 @@ async function macro(provider: LyricsProvider<any>) {
   console.log("Number of hits:", result.length);
 }
 
-jest.setTimeout(15000);
+vi.setConfig({ testTimeout: 15000 });
 
 // test("NetEase", () => macro(LyricsProviderSource.netease.build()));
 // test("QQ Music", () => macro(LyricsProviderSource.qq.build()));
