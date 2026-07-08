@@ -4,7 +4,7 @@ import path from "path";
 
 const ffmpeg = spawn.bind(null, process.env.FFMPEG_PATH || "ffmpeg");
 
-export interface ReadOptions {
+interface ReadOptions {
   dryRun?: boolean;
   coverUrl?: string;
 }
@@ -159,18 +159,14 @@ function parseIni(content: string): Metadata {
   return data;
 }
 
-export function read(src: string, callback: ReadCallback): void;
-export function read(
+function read(src: string, callback: ReadCallback): void;
+function read(
   src: string,
   options: ReadOptions & { dryRun: true },
   callback: ReadCallback,
 ): string[];
-export function read(
-  src: string,
-  options: ReadOptions,
-  callback: ReadCallback,
-): void;
-export function read(
+function read(src: string, options: ReadOptions, callback: ReadCallback): void;
+function read(
   src: string,
   options: ReadOptions | ReadCallback,
   callback?: ReadCallback,
@@ -205,10 +201,7 @@ export function read(
   });
 }
 
-export function readAsync(
-  src: string,
-  options?: ReadOptions,
-): Promise<Metadata> {
+function readAsync(src: string, options?: ReadOptions): Promise<Metadata> {
   return new Promise((resolve, reject) => {
     const callback = (err?: Error, data?: Metadata) => {
       if (err) return reject(err);
@@ -224,24 +217,20 @@ export function readAsync(
 
 type WriteCallback = (err?: Error) => void;
 
-export function write(
-  src: string,
-  data: Metadata,
-  callback: WriteCallback,
-): void;
-export function write(
+function write(src: string, data: Metadata, callback: WriteCallback): void;
+function write(
   src: string,
   data: Metadata,
   options: WriteOptions & { dryRun: true },
   callback: WriteCallback,
 ): string[];
-export function write(
+function write(
   src: string,
   data: Metadata,
   options: WriteOptions,
   callback: WriteCallback,
 ): void;
-export function write(
+function write(
   src: string,
   data: Metadata,
   options: WriteOptions | WriteCallback,

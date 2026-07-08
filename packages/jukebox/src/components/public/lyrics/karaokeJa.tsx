@@ -146,15 +146,6 @@ function buildPages(lyrics: LyricsKitLyrics, duration: number): KaraokePage[] {
 //#region Lyrics state
 
 // Line = -1 means countdown
-export type KaraokeJaFrameCallback = (
-  page: number,
-  line: number,
-  lyrics: LyricsKitLyrics,
-  player: HTMLAudioElement,
-  lineStart: number | null,
-  lineEnd: number | null,
-) => void;
-
 type KaraokeJaState =
   | {
       /**

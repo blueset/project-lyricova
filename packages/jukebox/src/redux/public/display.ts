@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-export interface DisplayState {
+interface DisplayState {
   isFullscreen: boolean;
   textureUrl?: string;
 }
@@ -10,7 +10,7 @@ const initialState: DisplayState = {
   textureUrl: undefined,
 };
 
-export const displaySlice = createSlice({
+const displaySlice = createSlice({
   name: "display",
   initialState,
   reducers: {

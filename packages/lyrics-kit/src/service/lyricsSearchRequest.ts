@@ -12,7 +12,7 @@ interface SearchTermInfoInterface {
 export type LyricsSearchTerm =
   SearchTermKeywordInterface | SearchTermInfoInterface;
 
-export class SearchTermKeyword implements SearchTermKeywordInterface {
+class SearchTermKeyword implements SearchTermKeywordInterface {
   public state = "keyword" as const;
   public keyword: string;
 
@@ -25,7 +25,7 @@ export class SearchTermKeyword implements SearchTermKeywordInterface {
   }
 }
 
-export class SearchTermInfo implements SearchTermInfoInterface {
+class SearchTermInfo implements SearchTermInfoInterface {
   public state = "info" as const;
   public title: string;
   public artist: string;

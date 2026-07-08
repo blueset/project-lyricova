@@ -1,4 +1,4 @@
-export function padLeft(number: number, places: number): string {
+function padLeft(number: number, places: number): string {
   return String(number).padStart(places, "0");
 }
 

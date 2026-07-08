@@ -27,7 +27,7 @@ const SEQUENCE_QUERY = graphql(`
   }
 `);
 
-export interface SequenceQueryResult {
+interface SequenceQueryResult {
   transliterate: {
     text: string;
     typingSequence: AnimatedWord[][];

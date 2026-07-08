@@ -68,12 +68,12 @@ const formSchema = z.object({
   color: z.string().min(1),
 });
 
-export interface TagFormProps {
+interface TagFormProps {
   slug?: string | null;
   onSubmit?: () => void;
 }
 
-export function TagForm({ slug = null, onSubmit }: TagFormProps) {
+function TagForm({ slug = null, onSubmit }: TagFormProps) {
   const apolloClient = useApolloClient();
   const { data, loading, refetch } = useQuery(TAG_QUERY, {
     variables: { slug: slug ?? "" },

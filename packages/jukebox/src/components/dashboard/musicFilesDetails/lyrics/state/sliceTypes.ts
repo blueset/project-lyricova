@@ -13,7 +13,7 @@ export interface MainSlice {
   debouncedGenerate: () => void;
 }
 
-export interface TaggingCurrentLineState {
+interface TaggingCurrentLineState {
   index: number;
   start: number;
   end: number;

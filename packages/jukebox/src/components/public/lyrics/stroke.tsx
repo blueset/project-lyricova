@@ -110,7 +110,7 @@ type RelayoutFn = (wrapper: HTMLElement, ratio: number) => void;
  * @author Shu Ding
  * @license MIT
  */
-export const relayout: RelayoutFn = (wrapper, ratio = 1) => {
+const relayout: RelayoutFn = (wrapper, ratio = 1) => {
   const container = wrapper.parentElement;
   if (!container) return;
 

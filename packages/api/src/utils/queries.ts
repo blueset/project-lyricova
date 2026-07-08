@@ -1,4 +1,4 @@
-export const entryListingCondition = {
+const entryListingCondition = {
   attributes: {
     exclude: ["updatedOn"],
   },
@@ -39,7 +39,7 @@ import { Entries, Verses } from "../drizzle/schema";
  */
 export const entryHasMainVerse = sql`EXISTS (SELECT 1 FROM Verses AS v WHERE v.entryId = ${Entries.id} AND v.isMain = true AND v.deletionDate IS NULL)`;
 
-export function mapEntryListing(e: Record<string, any>): Record<string, any> {
+function mapEntryListing(e: Record<string, any>): Record<string, any> {
   const { updatedOn: _updatedOn, tagOfEntries, verses, pulses, ...cols } = e;
   // Preserve the Sequelize key order: entry columns, verses, tags, pulses.
   return {

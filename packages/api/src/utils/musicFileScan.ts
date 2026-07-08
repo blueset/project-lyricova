@@ -20,7 +20,7 @@ const SONG_ID_TAG = "LyricovaSongID";
 const ALBUM_ID_TAG = "LyricovaAlbumID";
 const PLAYLIST_IDS_TAG = "LyricovaPlaylistIDs";
 
-export interface GenericMetadata {
+interface GenericMetadata {
   trackName?: string;
   trackSortOrder?: string;
   artistName?: string;
@@ -42,9 +42,7 @@ export function fullPathOf(relPath: string): string {
   return Path.resolve(MUSIC_FILES_PATH!, relPath);
 }
 
-export async function getSongMetadata(
-  fullPath: string,
-): Promise<GenericMetadata> {
+async function getSongMetadata(fullPath: string): Promise<GenericMetadata> {
   const metadata = await ffprobe(fullPath);
   const tags = metadata.format?.tags ?? {};
   const duration = parseFloat(metadata.format?.duration ?? "");

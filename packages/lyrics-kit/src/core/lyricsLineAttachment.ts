@@ -234,7 +234,7 @@ export class RangeAttribute extends LyricsLineAttachment {
   }
 }
 
-export class NumberArray extends LyricsLineAttachment {
+class NumberArray extends LyricsLineAttachment {
   public attachment: number[];
 
   constructor(description: string);
@@ -262,7 +262,7 @@ export class NumberArray extends LyricsLineAttachment {
   }
 }
 
-export class Number2DArray extends LyricsLineAttachment {
+class Number2DArray extends LyricsLineAttachment {
   public attachment: number[][];
 
   constructor(description: string);

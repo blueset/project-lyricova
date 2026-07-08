@@ -6,7 +6,7 @@ export function isCaseInsensitiveSimilar(self: string, other: string): boolean {
   return s1.indexOf(s2) >= 0 || s1.indexOf(s1) >= 0;
 }
 
-export function distance(
+function distance(
   self: string,
   other: string,
   options: {
