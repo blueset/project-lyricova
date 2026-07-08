@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
-import { requireNumericParams } from "../utils/numericParam";
+import { requireNumericParams } from "../utils/numericParam.js";
 import { and, eq, isNull, like, or } from "drizzle-orm";
-import shuffle from "lodash/shuffle";
-import { db } from "../drizzle/client";
-import { Entries, Verses } from "../drizzle/schema";
-import { parseEnumArray } from "../drizzle/enumArray";
-import { entriesPerPage } from "../utils/consts";
-import type { PVContract } from "../types/vocadb";
+import _ from "lodash";
+import { db } from "../drizzle/client.js";
+import { Entries, Verses } from "../drizzle/schema.js";
+import { parseEnumArray } from "../drizzle/enumArray.js";
+import { entriesPerPage } from "../utils/consts.js";
+import type { PVContract } from "../types/vocadb.js";
 
 /** Pick the preferred playback URL from a song's VocaDB PV list. */
 function deriveVideoUrl(vocaDbJson: unknown): { has: boolean; url?: string } {
@@ -411,7 +411,7 @@ export class EntriesController {
       return res.status(404).json({ message: "No entries found" });
     }
 
-    const verses = shuffle(
+    const verses = _.shuffle(
       matched.flatMap((entry) =>
         entry.verses.map((v) => ({
           id: v.id,

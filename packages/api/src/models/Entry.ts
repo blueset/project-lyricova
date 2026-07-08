@@ -1,10 +1,10 @@
-import type { Song } from "./Song";
-import type { User } from "./User";
-import type { Tag } from "./Tag";
-import type { Verse } from "./Verse";
-import type { SongOfEntry } from "./SongOfEntry";
-import type { TagOfEntry } from "./TagOfEntry";
-import type { Pulse } from "./Pulse";
+import type { Song } from "./Song.js";
+import type { User } from "./User.js";
+import type { Tag } from "./Tag.js";
+import type { Verse } from "./Verse.js";
+import type { SongOfEntry } from "./SongOfEntry.js";
+import type { TagOfEntry } from "./TagOfEntry.js";
+import type { Pulse } from "./Pulse.js";
 
 /**
  * @openapi

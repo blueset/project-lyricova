@@ -1,14 +1,14 @@
 import type { Request, Response, NextFunction } from "express";
-import { requireNumericParams } from "../utils/numericParam";
+import { requireNumericParams } from "../utils/numericParam.js";
 import { Router } from "express";
-import { getJson, getText, HttpError } from "../utils/httpFetch";
+import { getJson, getText, HttpError } from "../utils/httpFetch.js";
 import cheerio from "cheerio";
 import { and, eq, isNull } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { Songs } from "../drizzle/schema";
-import type { SongForApiContract } from "../types/vocadb";
+import { db } from "../drizzle/client.js";
+import { Songs } from "../drizzle/schema.js";
+import type { SongForApiContract } from "../types/vocadb.js";
 import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit/service";
-import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
+import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware.js";
 
 export class LyricsProvidersController {
   public router: Router;

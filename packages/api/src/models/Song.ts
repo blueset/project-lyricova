@@ -1,12 +1,12 @@
-import type { MusicFile } from "./MusicFile";
-import type { VideoFile } from "./VideoFile";
-import type { SongForApiContract } from "../types/vocadb";
-import type { ArtistOfSong } from "./ArtistOfSong";
-import type { SongInAlbum } from "./SongInAlbum";
-import type { Entry } from "./Entry";
-import type { Artist } from "./Artist";
-import type { Album } from "./Album";
-import type { SongOfEntry } from "./SongOfEntry";
+import type { MusicFile } from "./MusicFile.js";
+import type { VideoFile } from "./VideoFile.js";
+import type { SongForApiContract } from "../types/vocadb.js";
+import type { ArtistOfSong } from "./ArtistOfSong.js";
+import type { SongInAlbum } from "./SongInAlbum.js";
+import type { Entry } from "./Entry.js";
+import type { Artist } from "./Artist.js";
+import type { Album } from "./Album.js";
+import type { SongOfEntry } from "./SongOfEntry.js";
 
 /**
  * @openapi

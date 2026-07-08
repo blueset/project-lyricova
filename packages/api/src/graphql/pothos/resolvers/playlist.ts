@@ -1,15 +1,15 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import pLimit from "p-limit";
-import { builder } from "../builder";
-import { PlaylistRef } from "../types/refs";
-import { db } from "../../../drizzle/client";
+import { builder } from "../builder.js";
+import { PlaylistRef } from "../types/refs.js";
+import { db } from "../../../drizzle/client.js";
 import {
   Playlists,
   FileInPlaylists,
   MusicFiles,
-} from "../../../drizzle/schema";
-import { updatePlaylistsOfFileAsTags } from "../../../utils/musicFileTags";
+} from "../../../drizzle/schema.js";
+import { updatePlaylistsOfFileAsTags } from "../../../utils/musicFileTags.js";
 
 const NewPlaylistInput = builder.inputType("NewPlaylistInput", {
   fields: (t) => ({

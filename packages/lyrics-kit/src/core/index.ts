@@ -1,6 +1,6 @@
-export { Lyrics, type LyricsJSON } from "./lyrics";
-export { LyricsLine, type LyricsLineJSON } from "./lyricsLine";
-export * from "./attachmentTypes";
+export { Lyrics, type LyricsJSON } from "./lyrics.js";
+export { LyricsLine, type LyricsLineJSON } from "./lyricsLine.js";
+export * from "./attachmentTypes.js";
 export {
   type Range,
   TRANSLATION,
@@ -19,7 +19,7 @@ export {
   RangeAttributeLabel,
   RangeAttribute,
   type AttachmentsContent,
-} from "./lyricsLineAttachment";
+} from "./lyricsLineAttachment.js";
 export {
   LyricsMetadata,
   ATTACHMENT_TAGS,
@@ -29,7 +29,7 @@ export {
   REMOTE_URL,
   ARTWORK_URL,
   PROVIDER_TOKEN,
-} from "./lyricsMetadata";
+} from "./lyricsMetadata.js";
 export {
   TITLE,
   ALBUM,
@@ -38,5 +38,5 @@ export {
   LRC_BY,
   OFFSET,
   LENGTH,
-} from "./idTagKey";
-export { buildTimeTag, resolveTimeTag } from "../utils/regexPattern";
+} from "./idTagKey.js";
+export { buildTimeTag, resolveTimeTag } from "../utils/regexPattern.js";

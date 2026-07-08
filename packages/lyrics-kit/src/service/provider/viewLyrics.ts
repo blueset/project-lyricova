@@ -1,12 +1,12 @@
-import { LyricsProvider } from ".";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { Lyrics } from "../../core/lyrics";
+import { LyricsProvider } from "./index.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { Lyrics } from "../../core/lyrics.js";
 import axios from "axios";
 import cheerio from "cheerio";
 
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
-import stringMD5 from "../../utils/stringMD5";
-import type { ViewLyricsResponseSearchResult } from "../types/viewLyrics/searchResult";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
+import stringMD5 from "../../utils/stringMD5.js";
+import type { ViewLyricsResponseSearchResult } from "../types/viewLyrics/searchResult.js";
 
 const SEARCH_URL = "http://search.crintsoft.com/searchlyrics.htm";
 const LYRICS_URL = "http://viewlyrics.com/";

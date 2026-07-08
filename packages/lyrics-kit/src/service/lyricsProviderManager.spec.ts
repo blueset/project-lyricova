@@ -1,6 +1,6 @@
-import { LyricsProviderSource } from "./lyricsProviderSource";
-import type { LyricsProvider } from "./provider";
-import { LyricsSearchRequest } from "./lyricsSearchRequest";
+import { LyricsProviderSource } from "./lyricsProviderSource.js";
+import type { LyricsProvider } from "./provider/index.js";
+import { LyricsSearchRequest } from "./lyricsSearchRequest.js";
 
 const SONG = "初音ミクの消失",
   ARTIST = "初音ミク",

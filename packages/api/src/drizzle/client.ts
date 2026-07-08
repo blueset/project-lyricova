@@ -1,8 +1,8 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
-import { DB_URI } from "../utils/secret";
-import * as schema from "./schema";
-import * as relations from "./relations";
+import { DB_URI } from "../utils/secret.js";
+import * as schema from "./schema.js";
+import * as relations from "./relations.js";
 
 /**
  * Drizzle client for the Lyricova MySQL database — the single data-access layer

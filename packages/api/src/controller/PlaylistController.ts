@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
 import { eq } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { Playlists, FileInPlaylists } from "../drizzle/schema";
+import { db } from "../drizzle/client.js";
+import { Playlists, FileInPlaylists } from "../drizzle/schema.js";
 
 export class PlaylistController {
   public router: Router;

@@ -1,9 +1,9 @@
 import Path from "path";
 import { writeFile } from "fs/promises";
-import { ARTIST, TITLE } from "../../core/idTagKey";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import type { YouTubeSearchResult } from "../types/youtube/searchResult";
+import { ARTIST, TITLE } from "../../core/idTagKey.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import type { YouTubeSearchResult } from "../types/youtube/searchResult.js";
 
 const mockGetVideoInfo = jest.fn();
 const mockExecPromise = jest.fn();
@@ -16,7 +16,7 @@ jest.mock("yt-dlp-wrap-plus", () => ({
   })),
 }));
 
-import { YouTubeProvider } from "./youtube";
+import { YouTubeProvider } from "./youtube.js";
 
 describe("YouTubeProvider yt-dlp integration", () => {
   beforeEach(() => {

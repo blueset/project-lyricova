@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
-import { requireNumericParams } from "../utils/numericParam";
+import { requireNumericParams } from "../utils/numericParam.js";
 import { Router } from "express";
-import type { SongForApiContract } from "../types/vocadb";
-import { getJson } from "../utils/httpFetch";
-import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
-import { saveSongFromVocaDB } from "../utils/vocadbImport";
-import type { Songs } from "../drizzle/schema";
+import type { SongForApiContract } from "../types/vocadb.js";
+import { getJson } from "../utils/httpFetch.js";
+import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware.js";
+import { saveSongFromVocaDB } from "../utils/vocadbImport.js";
+import type { Songs } from "../drizzle/schema.js";
 
 type SongRow = typeof Songs.$inferSelect;
 

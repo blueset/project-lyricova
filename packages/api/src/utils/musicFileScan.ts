@@ -3,10 +3,10 @@ import Path from "path";
 import hasha from "hasha";
 import ffprobe from "ffprobe-client";
 import { eq } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { MusicFiles, FileInPlaylists } from "../drizzle/schema";
-import { MUSIC_FILES_PATH } from "./secret";
-import { writeAsync as ffMetadataWrite } from "./ffmetadata";
+import { db } from "../drizzle/client.js";
+import { MusicFiles, FileInPlaylists } from "../drizzle/schema.js";
+import { MUSIC_FILES_PATH } from "./secret.js";
+import { writeAsync as ffMetadataWrite } from "./ffmetadata.js";
 
 /**
  * Drizzle port of the filesystem/audio-coupled `MusicFile` model methods

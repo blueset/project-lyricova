@@ -1,27 +1,27 @@
-import { LyricsProvider } from ".";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { Lyrics } from "../../core/lyrics";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
+import { LyricsProvider } from "./index.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { Lyrics } from "../../core/lyrics.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
 import axios from "axios";
-import { TITLE, ARTIST, ALBUM, LRC_BY } from "../../core/idTagKey";
+import { TITLE, ARTIST, ALBUM, LRC_BY } from "../../core/idTagKey.js";
 import {
   id3TagRegex,
   krcLineRegex,
   netEaseInlineTagRegex,
   netEaseYrcInlineTagRegex,
-} from "../../utils/regexPattern";
+} from "../../utils/regexPattern.js";
 import {
   WordTimeTag,
   WordTimeTagLabel,
   Attachments,
   TIME_TAG,
-} from "../../core/lyricsLineAttachment";
-import { LyricsLine } from "../../core/lyricsLine";
+} from "../../core/lyricsLineAttachment.js";
+import { LyricsLine } from "../../core/lyricsLine.js";
 import type {
   NetEaseResponseSong,
   NetEaseResponseSearchResult,
-} from "../types/netease/searchResult";
-import type { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
+} from "../types/netease/searchResult.js";
+import type { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics.js";
 
 const SEARCH_URL = "http://music.163.com/api/search/pc";
 const LYRICS_URL = "http://music.163.com/api/song/lyric";

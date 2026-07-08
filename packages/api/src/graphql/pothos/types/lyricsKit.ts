@@ -1,4 +1,4 @@
-import { builder } from "../builder";
+import { builder } from "../builder.js";
 import type {
   LyricsKitRangeAttachment,
   LyricsKitWordTimeTag,
@@ -6,7 +6,7 @@ import type {
   LyricsKitAttachment,
   LyricsKitLyricsLine,
   LyricsKitLyrics,
-} from "../../LyricsKitObjects";
+} from "../../LyricsKitObjects.js";
 
 const LyricsKitRangeAttachmentRef =
   builder.objectRef<LyricsKitRangeAttachment>("LyricsKitRangeAttachment");

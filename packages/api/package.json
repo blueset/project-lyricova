@@ -1,6 +1,7 @@
 {
   "name": "@lyricova/api",
   "version": "2.1.0",
+  "type": "module",
   "description": "API server for Lyricova blog and jukebox.",
   "main": "./dist/server.js",
   "typings": "./dist/server.d.ts",
@@ -98,7 +99,6 @@
     "passport-local": "^1.0.0",
     "pinyin": "^4.0.0",
     "posthog-node": "^5.39.4",
-    "reflect-metadata": "^0.1.13",
     "rss": "^1.2.2",
     "satori": "^0.4.1",
     "swagger-jsdoc": "^6.2.8",
@@ -110,6 +110,8 @@
   },
   "devDependencies": {
     "@jest/globals": "^30.4.1",
+    "@swc/core": "^1.11.9",
+    "@swc/jest": "^0.2.37",
     "@types/bcryptjs": "^2.4.2",
     "@types/compression": "^1.0.1",
     "@types/cors": "^2.8.17",
@@ -136,7 +138,6 @@
     "jest": "^30.4.2",
     "nodemon": "^3.1.7",
     "openapi-typescript": "^7.13.0",
-    "ts-jest": "^29.4.11",
     "typescript": "^6.0.3"
   }
 }

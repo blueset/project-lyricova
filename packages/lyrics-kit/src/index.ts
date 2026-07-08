@@ -1,8 +1,8 @@
-export { LyricsProviderManager } from "./service/lyricsProviderManager";
-export { LyricsProviderSource } from "./service/lyricsProviderSource";
-export { LyricsSearchRequest } from "./service/lyricsSearchRequest";
-export { Lyrics, type LyricsJSON } from "./core/lyrics";
-export { LyricsLine, type LyricsLineJSON } from "./core/lyricsLine";
+export { LyricsProviderManager } from "./service/lyricsProviderManager.js";
+export { LyricsProviderSource } from "./service/lyricsProviderSource.js";
+export { LyricsSearchRequest } from "./service/lyricsSearchRequest.js";
+export { Lyrics, type LyricsJSON } from "./core/lyrics.js";
+export { LyricsLine, type LyricsLineJSON } from "./core/lyricsLine.js";
 export {
   Attachments,
   isTranslationTag,
@@ -12,7 +12,7 @@ export {
   RangeAttributeLabel,
   RangeAttribute,
   type AttachmentsContent,
-} from "./core/lyricsLineAttachment";
+} from "./core/lyricsLineAttachment.js";
 export {
   LyricsMetadata,
   ATTACHMENT_TAGS,
@@ -22,7 +22,7 @@ export {
   REMOTE_URL,
   ARTWORK_URL,
   PROVIDER_TOKEN,
-} from "./core/lyricsMetadata";
+} from "./core/lyricsMetadata.js";
 export {
   TITLE,
   ALBUM,
@@ -31,4 +31,4 @@ export {
   LRC_BY,
   OFFSET,
   LENGTH,
-} from "./core/idTagKey";
+} from "./core/idTagKey.js";

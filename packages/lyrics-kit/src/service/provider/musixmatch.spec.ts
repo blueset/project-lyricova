@@ -1,5 +1,5 @@
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { MusixMatchProvider } from "./musixmatch";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { MusixMatchProvider } from "./musixmatch.js";
 
 const SONG = "初音ミクの消失",
   ARTIST = "cosMo@暴走P feat. 初音ミク",

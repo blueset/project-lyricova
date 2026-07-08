@@ -1,9 +1,9 @@
-import { builder } from "../builder";
-import { TransliterationResultRef } from "../types/Transliteration";
-import { FuriganaMappingRef } from "../types/refs";
-import { db } from "../../../drizzle/client";
-import { FuriganaMappings } from "../../../drizzle/schema";
-import { convertMonoruby } from "../../../utils/monoruby";
+import { builder } from "../builder.js";
+import { TransliterationResultRef } from "../types/Transliteration.js";
+import { FuriganaMappingRef } from "../types/refs.js";
+import { db } from "../../../drizzle/client.js";
+import { FuriganaMappings } from "../../../drizzle/schema.js";
+import { convertMonoruby } from "../../../utils/monoruby.js";
 
 const FuriganaLabelInput = builder.inputType("FuriganaLabel", {
   description: "Furigana/romaji to words in a lyrics line.",

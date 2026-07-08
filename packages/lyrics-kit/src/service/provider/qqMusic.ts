@@ -1,17 +1,17 @@
-import { LyricsProvider } from ".";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { Lyrics } from "../../core/lyrics";
+import { LyricsProvider } from "./index.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { Lyrics } from "../../core/lyrics.js";
 import axios from "axios";
-import axiosJsonp from "../../utils/axiosJsonp";
+import axiosJsonp from "../../utils/axiosJsonp.js";
 import _ from "lodash";
-import { TITLE, ARTIST, ALBUM } from "../../core/idTagKey";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
+import { TITLE, ARTIST, ALBUM } from "../../core/idTagKey.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
 import type {
   QQSongItem,
   QQResponseSearchResult,
-} from "../types/qqMusic/searchResult";
-import type { QQResponseSinglePlainLyrics } from "../types/qqMusic/singleLyrics";
-import type { Range } from "../../core/lyricsLineAttachment";
+} from "../types/qqMusic/searchResult.js";
+import type { QQResponseSinglePlainLyrics } from "../types/qqMusic/singleLyrics.js";
+import type { Range } from "../../core/lyricsLineAttachment.js";
 import {
   Attachments,
   FURIGANA,
@@ -19,11 +19,11 @@ import {
   TIME_TAG,
   WordTimeTag,
   WordTimeTagLabel,
-} from "../../core/lyricsLineAttachment";
+} from "../../core/lyricsLineAttachment.js";
 import { URLSearchParams } from "url";
 import cheerio from "cheerio";
-import { decodeQrc } from "./helpers/qqMusic/decoder";
-import { LyricsLine } from "../../core";
+import { decodeQrc } from "./helpers/qqMusic/decoder.js";
+import { LyricsLine } from "../../core/index.js";
 
 const SEARCH_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg";
 const LYRICS_URL = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg";

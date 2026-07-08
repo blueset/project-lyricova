@@ -1,16 +1,16 @@
 import { and, eq, isNull, notInArray } from "drizzle-orm";
-import { builder } from "../builder";
-import { EntryRef } from "../types/refs";
-import { db } from "../../../drizzle/client";
+import { builder } from "../builder.js";
+import { EntryRef } from "../types/refs.js";
+import { db } from "../../../drizzle/client.js";
 import {
   Entries,
   Verses,
   Pulses,
   SongOfEntries,
   TagOfEntries,
-} from "../../../drizzle/schema";
+} from "../../../drizzle/schema.js";
 import { GraphQLError } from "graphql";
-import { segmentedTransliteration } from "../../../utils/transliterate";
+import { segmentedTransliteration } from "../../../utils/transliterate.js";
 
 const PulseInput = builder.inputType("PulseInput", {
   fields: (t) => ({

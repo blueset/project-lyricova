@@ -2,8 +2,8 @@ import type { Request, Response } from "express";
 import { Router } from "express";
 import swaggerJsdoc from "swagger-jsdoc";
 import { apiReference } from "@scalar/express-api-reference";
-import { ENVIRONMENT } from "../utils/secret";
-import { compat } from "../utils/expressCompat";
+import { ENVIRONMENT } from "../utils/secret.js";
+import { compat } from "../utils/expressCompat.js";
 
 const options: swaggerJsdoc.Options = {
   definition: {

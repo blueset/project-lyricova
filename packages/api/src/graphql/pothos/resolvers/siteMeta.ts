@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { builder } from "../builder";
-import { db } from "../../../drizzle/client";
-import { SiteMeta } from "../../../drizzle/schema";
+import { builder } from "../builder.js";
+import { db } from "../../../drizzle/client.js";
+import { SiteMeta } from "../../../drizzle/schema.js";
 
 builder.queryField("getSiteMeta", (t) =>
   t.string({

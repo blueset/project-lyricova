@@ -1,7 +1,7 @@
-import { LyricsProviderSource } from "./lyricsProviderSource";
-import type { LyricsSearchRequest } from "./lyricsSearchRequest";
-import type { Lyrics } from "../core/lyrics";
-import type { LyricsProvider } from "./provider";
+import { LyricsProviderSource } from "./lyricsProviderSource.js";
+import type { LyricsSearchRequest } from "./lyricsSearchRequest.js";
+import type { Lyrics } from "../core/lyrics.js";
+import type { LyricsProvider } from "./provider/index.js";
 import _ from "lodash";
 
 export class LyricsProviderManager {

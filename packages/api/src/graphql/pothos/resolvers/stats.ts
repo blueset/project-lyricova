@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { builder } from "../builder";
-import { db } from "../../../drizzle/client";
+import { builder } from "../builder.js";
+import { db } from "../../../drizzle/client.js";
 import {
   MusicFiles,
   Songs,
@@ -9,7 +9,7 @@ import {
   Entries,
   Pulses,
   Tags,
-} from "../../../drizzle/schema";
+} from "../../../drizzle/schema.js";
 
 const DashboardStatsRef =
   builder.objectRef<Record<string, never>>("DashboardStats");

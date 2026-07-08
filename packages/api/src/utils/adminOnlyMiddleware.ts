@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import passport from "passport";
-import type { User } from "../models/User";
+import type { User } from "../models/User.js";
 
 /**
  * @openapi

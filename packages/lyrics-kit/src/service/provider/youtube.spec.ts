@@ -1,5 +1,5 @@
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { YouTubeProvider } from "./youtube";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { YouTubeProvider } from "./youtube.js";
 
 const SONG = "初音ミクの消失",
   ARTIST = "cosMo@暴走P feat. 初音ミク",

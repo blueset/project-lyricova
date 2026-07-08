@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { requireNumericParams } from "../utils/numericParam";
+import { requireNumericParams } from "../utils/numericParam.js";
 import { Router } from "express";
 import {
   and,
@@ -12,62 +12,62 @@ import {
   sql,
   type SQL,
 } from "drizzle-orm";
-import { db } from "../drizzle/client";
+import { db } from "../drizzle/client.js";
 import {
   Entries,
   Verses,
   SongOfEntries,
   TagOfEntries,
-} from "../drizzle/schema";
-import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
+} from "../drizzle/schema.js";
+import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries.js";
 import { resolve } from "path";
 import { readFile } from "node:fs/promises";
 import { Resvg } from "@resvg/resvg-js";
 import { Readable } from "stream";
 import React from "react";
 import satori from "satori";
-import { shiftinPuncts } from "../utils/typography";
+import { shiftinPuncts } from "../utils/typography.js";
 
 const sourceHanExtraLight = readFile(
   resolve(
-    __dirname,
+    import.meta.dirname,
     "../../src/fonts/SourceHanSans-ExtraLight-Subset-hhea.otf",
   ),
 );
 const sourceHanExtraLightZh = readFile(
   resolve(
-    __dirname,
+    import.meta.dirname,
     "../../src/fonts/SourceHanSansSC-ExtraLight-Subset-hhea.otf",
   ),
 );
 const sourceHanRegular = readFile(
-  resolve(__dirname, "../../src/fonts/SourceHanSans-Regular-Subset.otf"),
+  resolve(import.meta.dirname, "../../src/fonts/SourceHanSans-Regular-Subset.otf"),
 );
 const sourceHanMedium = readFile(
-  resolve(__dirname, "../../src/fonts/SourceHanSans-Medium-Subset.otf"),
+  resolve(import.meta.dirname, "../../src/fonts/SourceHanSans-Medium-Subset.otf"),
 );
 const tsimExtraLightPalt = readFile(
-  resolve(__dirname, "../../src/fonts/TsimSans-J-ExtraLight-Palt-hhea.otf"),
+  resolve(import.meta.dirname, "../../src/fonts/TsimSans-J-ExtraLight-Palt-hhea.otf"),
 );
 const tsimRegularPalt = readFile(
-  resolve(__dirname, "../../src/fonts/TsimSans-J-Regular-Palt.otf"),
+  resolve(import.meta.dirname, "../../src/fonts/TsimSans-J-Regular-Palt.otf"),
 );
 const tsimMediumPalt = readFile(
-  resolve(__dirname, "../../src/fonts/TsimSans-J-Medium-Palt.otf"),
+  resolve(import.meta.dirname, "../../src/fonts/TsimSans-J-Medium-Palt.otf"),
 );
 const monaUltraLight = readFile(
-  resolve(__dirname, "../../src/fonts/Mona-Sans-UltraLight-hhea.otf"),
+  resolve(import.meta.dirname, "../../src/fonts/Mona-Sans-UltraLight-hhea.otf"),
 );
 const monaRegular = readFile(
-  resolve(__dirname, "../../src/fonts/Mona-Sans-Regular.otf"),
+  resolve(import.meta.dirname, "../../src/fonts/Mona-Sans-Regular.otf"),
 );
 const monaMedium = readFile(
-  resolve(__dirname, "../../src/fonts/Mona-Sans-Medium.otf"),
+  resolve(import.meta.dirname, "../../src/fonts/Mona-Sans-Medium.otf"),
 );
 const hubotNarrow = readFile(
-  resolve(__dirname, "../../src/fonts/Hubot-Sans-RegularNarrow.otf"),
+  resolve(import.meta.dirname, "../../src/fonts/Hubot-Sans-RegularNarrow.otf"),
 );
-const bg = readFile(resolve(__dirname, "../../src/images/og-cover-bg.png"));
+const bg = readFile(resolve(import.meta.dirname, "../../src/images/og-cover-bg.png"));
 
 export class LyricovaPublicApiController {
   public router: Router;

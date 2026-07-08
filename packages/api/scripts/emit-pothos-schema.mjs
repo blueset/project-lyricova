@@ -12,7 +12,6 @@
  * is required but a reachable database is not — hence the explicit
  * `process.exit(0)` to drop the idle pool handle.
  */
-import "reflect-metadata";
 import { writeFileSync } from "node:fs";
 import { printSchema } from "graphql";
 import { buildPothosSchema } from "../dist/graphql/pothos/schema.js";

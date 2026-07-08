@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from "express";
 import { Router } from "express";
-import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
-import { YOHANE_SERVER_URL } from "../utils/secret";
+import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware.js";
+import { YOHANE_SERVER_URL } from "../utils/secret.js";
 import { eq } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { MusicFiles } from "../drizzle/schema";
-import { fullPathOf } from "../utils/musicFileScan";
+import { db } from "../drizzle/client.js";
+import { MusicFiles } from "../drizzle/schema.js";
+import { fullPathOf } from "../utils/musicFileScan.js";
 import { Readable } from "stream";
 import { existsSync, openAsBlob } from "fs";
 import { basename } from "path";

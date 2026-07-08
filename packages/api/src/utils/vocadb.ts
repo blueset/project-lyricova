@@ -1,9 +1,9 @@
-import { getJson } from "./httpFetch";
+import { getJson } from "./httpFetch.js";
 import type {
   SongForApiContract,
   ArtistForApiContract,
   AlbumForApiContract,
-} from "../types/vocadb";
+} from "../types/vocadb.js";
 
 export async function getSong(
   songId: string | number,

@@ -1,8 +1,8 @@
-import { OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL } from "./secret";
+import { OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL } from "./secret.js";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAzure } from "@ai-sdk/azure";
 import { generateText } from "ai";
-import { getTranslationAlignmentLLMPrompt } from "./llmPrompt";
+import { getTranslationAlignmentLLMPrompt } from "./llmPrompt.js";
 
 /**
  * Align a translation to the original text via an LLM, returning the aligned

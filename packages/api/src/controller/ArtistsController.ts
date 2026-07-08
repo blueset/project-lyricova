@@ -1,16 +1,16 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
-import { requireNumericParams } from "../utils/numericParam";
+import { requireNumericParams } from "../utils/numericParam.js";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
-import { db } from "../drizzle/client";
+import { db } from "../drizzle/client.js";
 import {
   Artists,
   ArtistOfSongs,
   SongOfEntries,
   Entries,
-} from "../drizzle/schema";
-import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
-import { entriesPerPage } from "../utils/consts";
+} from "../drizzle/schema.js";
+import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries.js";
+import { entriesPerPage } from "../utils/consts.js";
 
 export class ArtistsController {
   public router: Router;

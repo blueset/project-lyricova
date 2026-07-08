@@ -1,6 +1,6 @@
-import type { VDBArtistRoleType, VDBArtistCategoryType } from "../types/vocadb";
-import type { Artist } from "./Artist";
-import type { Album } from "./Album";
+import type { VDBArtistRoleType, VDBArtistCategoryType } from "../types/vocadb.js";
+import type { Artist } from "./Artist.js";
+import type { Album } from "./Album.js";
 
 /**
  * @openapi

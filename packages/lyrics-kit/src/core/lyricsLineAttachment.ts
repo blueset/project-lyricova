@@ -2,7 +2,7 @@ import {
   rangeAttachmentRegex,
   timeLineAttachmentDurationRegex,
   timeLineAttachmentRegex,
-} from "../utils/regexPattern";
+} from "../utils/regexPattern.js";
 import type {
   WordTimeTagJSON,
   RangeAttributeJSON,
@@ -11,7 +11,7 @@ import type {
   AttachmentJSON,
   NumberArrayJson,
   Number2DArrayJson,
-} from "./attachmentTypes";
+} from "./attachmentTypes.js";
 
 /** Range: [a, b) */
 export type Range = [number, number];

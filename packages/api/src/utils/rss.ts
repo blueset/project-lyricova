@@ -1,8 +1,8 @@
 import { isNull } from "drizzle-orm";
 import RSS from "rss";
-import { db } from "../drizzle/client";
-import { Entries } from "../drizzle/schema";
-import { host, siteName, tagLine1, tagLine2 } from "./consts";
+import { db } from "../drizzle/client.js";
+import { Entries } from "../drizzle/schema.js";
+import { host, siteName, tagLine1, tagLine2 } from "./consts.js";
 
 export default async function generateRssFeed() {
   const feedOptions = {

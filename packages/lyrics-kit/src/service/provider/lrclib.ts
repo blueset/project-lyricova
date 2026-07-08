@@ -1,9 +1,9 @@
 import axios from "axios";
-import { LyricsProvider } from ".";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import type { LrcLibSearchResult } from "../types/lrclib/LrcLibSearchResult";
-import { ALBUM, ARTIST, Lyrics, TITLE } from "../../core";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
+import { LyricsProvider } from "./index.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import type { LrcLibSearchResult } from "../types/lrclib/LrcLibSearchResult.js";
+import { ALBUM, ARTIST, Lyrics, TITLE } from "../../core/index.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
 
 const SEARCH_URL = "https://lrclib.net/api/search";
 const FETCH_URL = "https://lrclib.net/api/get/";

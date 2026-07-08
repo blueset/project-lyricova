@@ -7,7 +7,7 @@ import type {
   TAGS,
   TIME_TAG,
   TRANSLATION,
-} from "./lyricsLineAttachment";
+} from "./lyricsLineAttachment.js";
 
 export interface WordTimeTagLabelJSON {
   timeTag: number;

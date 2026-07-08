@@ -26,7 +26,7 @@
   ],
   "scripts": {
     "clean": "rimraf build",
-    "build": "npm run clean && run-p build:main build:module",
+    "build": "npm run clean && run-p build:main build:module && node scripts/write-build-markers.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "typecheck:native": "tsgo --noEmit -p tsconfig.json",
     "build:main": "tsc -p tsconfig.json",

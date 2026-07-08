@@ -1,12 +1,12 @@
-import { builder } from "../builder";
-import { FuriganaMappingRef } from "./refs";
+import { builder } from "../builder.js";
+import { FuriganaMappingRef } from "./refs.js";
 import {
   segmentedTransliteration,
   getLanguage,
-} from "../../../utils/transliterate";
-import { buildAnimationSequence } from "../../../utils/typingSequence";
-import { convertMonoruby } from "../../../utils/monoruby";
-import { kanaToHira, hiraToRoma } from "../../../utils/kanaUtils";
+} from "../../../utils/transliterate.js";
+import { buildAnimationSequence } from "../../../utils/typingSequence.js";
+import { convertMonoruby } from "../../../utils/monoruby.js";
+import { kanaToHira, hiraToRoma } from "../../../utils/kanaUtils.js";
 
 const LANGUAGE_DESC =
   'Language of the query, choose from "ja", "zh", and "en". Leave blank for auto detection.';

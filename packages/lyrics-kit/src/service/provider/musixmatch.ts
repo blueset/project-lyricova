@@ -1,12 +1,12 @@
 import axios from "axios";
-import { LyricsProvider } from ".";
-import { ARTIST, TITLE } from "../../core/idTagKey";
-import { Lyrics } from "../../core/lyrics";
-import { LyricsLine } from "../../core/lyricsLine";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import type { MusixMatchEntry } from "../types/lyrixmatch/searchResult";
-import type { MusixMatchSyncLyricsLine } from "../types/lyrixmatch/singleLyrics";
+import { LyricsProvider } from "./index.js";
+import { ARTIST, TITLE } from "../../core/idTagKey.js";
+import { Lyrics } from "../../core/lyrics.js";
+import { LyricsLine } from "../../core/lyricsLine.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import type { MusixMatchEntry } from "../types/lyrixmatch/searchResult.js";
+import type { MusixMatchSyncLyricsLine } from "../types/lyrixmatch/singleLyrics.js";
 
 /* Token from: https://github.com/logan-mcgee/DiscordLyrics/blob/master/config.json */
 const token = {

@@ -1,11 +1,11 @@
-import { builder } from "../builder";
+import { builder } from "../builder.js";
 import type {
   FuriganaMappings,
   ArtistOfSongs,
   ArtistOfAlbums,
   SongInAlbums,
   FileInPlaylists,
-} from "../../../drizzle/schema";
+} from "../../../drizzle/schema.js";
 
 /**
  * Central object references for every model-backed GraphQL type.

@@ -1,14 +1,14 @@
 import axios from "axios";
-import { LyricsProvider } from ".";
-import { ALBUM, ARTIST, Lyrics, LyricsLine, TITLE } from "../../core";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import type { SpotifyAuthToken } from "../types/spotify/token";
+import { LyricsProvider } from "./index.js";
+import { ALBUM, ARTIST, Lyrics, LyricsLine, TITLE } from "../../core/index.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import type { SpotifyAuthToken } from "../types/spotify/token.js";
 import type {
   SpotifySearchResponse,
   SpotifySearchResult,
-} from "../types/spotify/search";
-import type { SpotifyLyricsJSON } from "../types/spotify/lyrics";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
+} from "../types/spotify/search.js";
+import type { SpotifyLyricsJSON } from "../types/spotify/lyrics.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
 
 const TOKEN_URL = "https://open.spotify.com/get_access_token";
 const SEARCH_URL = "https://api-partner.spotify.com/pathfinder/v1/query";

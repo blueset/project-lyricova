@@ -1,5 +1,5 @@
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { SyairProvider } from "./syair";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { SyairProvider } from "./syair.js";
 
 const SONG = "初音ミクの消失",
   ARTIST = "初音ミク",

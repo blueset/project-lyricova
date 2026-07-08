@@ -1,15 +1,15 @@
 import fs from "fs";
 import path from "path";
 import { eq } from "drizzle-orm";
-import { builder } from "../builder";
-import { swapExt } from "../../../utils/path";
-import { MUSIC_FILES_PATH } from "../../../utils/secret";
+import { builder } from "../builder.js";
+import { swapExt } from "../../../utils/path.js";
+import { MUSIC_FILES_PATH } from "../../../utils/secret.js";
 import { Lyrics } from "lyrics-kit/core";
-import { LyricsKitLyrics } from "../../LyricsKitObjects";
-import { LyricsKitLyricsRef } from "./lyricsKit";
-import { db } from "../../../drizzle/client";
-import { FileInPlaylists } from "../../../drizzle/schema";
-import { PlaylistRef, FileInPlaylistRef } from "./refs";
+import { LyricsKitLyrics } from "../../LyricsKitObjects.js";
+import { LyricsKitLyricsRef } from "./lyricsKit.js";
+import { db } from "../../../drizzle/client.js";
+import { FileInPlaylists } from "../../../drizzle/schema.js";
+import { PlaylistRef, FileInPlaylistRef } from "./refs.js";
 
 /** Replicates the Sequelize `MusicFile.fullPath` VIRTUAL (not a DB column). */
 function fullPathOf(filePath: string): string {

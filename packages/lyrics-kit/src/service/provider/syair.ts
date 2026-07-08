@@ -1,12 +1,12 @@
-import { LyricsProvider } from ".";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { Lyrics } from "../../core/lyrics";
+import { LyricsProvider } from "./index.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { Lyrics } from "../../core/lyrics.js";
 import axios from "axios";
 import cheerio from "cheerio";
 
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
-import type { SyairResponseSearchResult } from "../types/syair/searchResult";
-import { TITLE } from "../../core/idTagKey";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
+import type { SyairResponseSearchResult } from "../types/syair/searchResult.js";
+import { TITLE } from "../../core/idTagKey.js";
 
 const SEARCH_URL = "https://www.lyricsify.com/search";
 const LYRICS_URL = "https://www.lyricsify.com/";

@@ -1,14 +1,14 @@
 import axios from "axios";
-import { LyricsProvider } from ".";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { ALBUM, ARTIST, LRC_BY, Lyrics, TITLE } from "../../core";
+import { LyricsProvider } from "./index.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { ALBUM, ARTIST, LRC_BY, Lyrics, TITLE } from "../../core/index.js";
 import type {
   NetEaseResponseSearchResult,
   NetEaseResponseSong,
-} from "../types/netease/searchResult";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
-import type { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics";
-import { NeteaseKLyrics, NeteaseYLyrics } from "./netease";
+} from "../types/netease/searchResult.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
+import type { NetEaseResponseSingleLyrics } from "../types/netease/singleLyrics.js";
+import { NeteaseKLyrics, NeteaseYLyrics } from "./netease.js";
 
 const SEARCH_URL = "https://neteasecloudmusicapi-ten-wine.vercel.app/search";
 const FETCH_URL = "https://neteasecloudmusicapi-ten-wine.vercel.app/lyric/new";

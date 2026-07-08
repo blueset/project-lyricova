@@ -1,28 +1,28 @@
-import { LyricsProvider } from ".";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { Lyrics } from "../../core/lyrics";
+import { LyricsProvider } from "./index.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { Lyrics } from "../../core/lyrics.js";
 import axios from "axios";
-import { TITLE, ARTIST } from "../../core/idTagKey";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
+import { TITLE, ARTIST } from "../../core/idTagKey.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
 import {
   ttpodXtrcLineRegex,
   id3TagRegex,
   resolveTimeTag,
   ttpodXtrcInlineTagRegex,
-} from "../../utils/regexPattern";
-import { LyricsLine } from "../../core/lyricsLine";
+} from "../../utils/regexPattern.js";
+import { LyricsLine } from "../../core/lyricsLine.js";
 import {
   WordTimeTag,
   WordTimeTagLabel,
   Attachments,
   TRANSLATION,
   TIME_TAG,
-} from "../../core/lyricsLineAttachment";
+} from "../../core/lyricsLineAttachment.js";
 import _ from "lodash";
 import type {
   XiamiResultSong,
   XiamiResponseSearchResult,
-} from "../types/xiami/searchResult";
+} from "../types/xiami/searchResult.js";
 
 const SEARCH_URL = "http://api.xiami.com/web";
 
