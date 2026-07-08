@@ -8,7 +8,7 @@ import type {
   LyricsKitLyrics,
 } from "../../LyricsKitObjects";
 
-export const LyricsKitRangeAttachmentRef =
+const LyricsKitRangeAttachmentRef =
   builder.objectRef<LyricsKitRangeAttachment>("LyricsKitRangeAttachment");
 
 LyricsKitRangeAttachmentRef.implement({
@@ -27,7 +27,7 @@ LyricsKitRangeAttachmentRef.implement({
   }),
 });
 
-export const LyricsKitWordTimeTagRef = builder.objectRef<LyricsKitWordTimeTag>(
+const LyricsKitWordTimeTagRef = builder.objectRef<LyricsKitWordTimeTag>(
   "LyricsKitWordTimeTag",
 );
 
@@ -44,7 +44,7 @@ LyricsKitWordTimeTagRef.implement({
   }),
 });
 
-export const LyricsKitWordTimeAttachmentRef =
+const LyricsKitWordTimeAttachmentRef =
   builder.objectRef<LyricsKitWordTimeAttachment>("LyricsKitWordTimeAttachment");
 
 LyricsKitWordTimeAttachmentRef.implement({
@@ -63,7 +63,7 @@ LyricsKitWordTimeAttachmentRef.implement({
   }),
 });
 
-export const LyricsKitAttachmentRef = builder.objectRef<LyricsKitAttachment>(
+const LyricsKitAttachmentRef = builder.objectRef<LyricsKitAttachment>(
   "LyricsKitAttachment",
 );
 
@@ -95,7 +95,7 @@ LyricsKitAttachmentRef.implement({
   }),
 });
 
-export const LyricsKitLyricsLineRef = builder.objectRef<LyricsKitLyricsLine>(
+const LyricsKitLyricsLineRef = builder.objectRef<LyricsKitLyricsLine>(
   "LyricsKitLyricsLine",
 );
 

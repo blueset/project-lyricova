@@ -1,6 +1,6 @@
 import { builder } from "../builder";
 
-export interface YouTubeDlProgressValueShape {
+interface YouTubeDlProgressValueShape {
   type: "progress";
   current: number;
   total: number;
@@ -9,18 +9,18 @@ export interface YouTubeDlProgressValueShape {
   __typename?: "YouTubeDlProgressValue";
 }
 
-export interface YouTubeDlProgressDoneShape {
+interface YouTubeDlProgressDoneShape {
   type: "done";
   __typename?: "YouTubeDlProgressDone";
 }
 
-export interface YouTubeDlProgressErrorShape {
+interface YouTubeDlProgressErrorShape {
   type: "error";
   message: string;
   __typename?: "YouTubeDlProgressError";
 }
 
-export interface YouTubeDlProgressMessageShape {
+interface YouTubeDlProgressMessageShape {
   type: "message";
   message: string;
   __typename?: "YouTubeDlProgressMessage";
@@ -32,7 +32,7 @@ export type YouTubeDlProgressShape =
   | YouTubeDlProgressErrorShape
   | YouTubeDlProgressMessageShape;
 
-export const YouTubeDlProgressValueRef =
+const YouTubeDlProgressValueRef =
   builder.objectRef<YouTubeDlProgressValueShape>("YouTubeDlProgressValue");
 
 YouTubeDlProgressValueRef.implement({
@@ -48,7 +48,7 @@ YouTubeDlProgressValueRef.implement({
   }),
 });
 
-export const YouTubeDlProgressDoneRef =
+const YouTubeDlProgressDoneRef =
   builder.objectRef<YouTubeDlProgressDoneShape>("YouTubeDlProgressDone");
 
 YouTubeDlProgressDoneRef.implement({
@@ -58,7 +58,7 @@ YouTubeDlProgressDoneRef.implement({
   }),
 });
 
-export const YouTubeDlProgressErrorRef =
+const YouTubeDlProgressErrorRef =
   builder.objectRef<YouTubeDlProgressErrorShape>("YouTubeDlProgressError");
 
 YouTubeDlProgressErrorRef.implement({
@@ -69,7 +69,7 @@ YouTubeDlProgressErrorRef.implement({
   }),
 });
 
-export const YouTubeDlProgressMessageRef =
+const YouTubeDlProgressMessageRef =
   builder.objectRef<YouTubeDlProgressMessageShape>("YouTubeDlProgressMessage");
 
 YouTubeDlProgressMessageRef.implement({

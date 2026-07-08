@@ -18,7 +18,7 @@ const LANGUAGE_DESC =
 type Lang = "zh" | "ja" | "en" | undefined;
 const asLang = (l?: string | null): Lang => (l ?? undefined) as Lang;
 
-export interface FuriganaLabelShape {
+interface FuriganaLabelShape {
   content: string;
   leftIndex: number;
   rightIndex: number;
@@ -29,7 +29,7 @@ interface AnimatedWordShape {
   sequence: string[];
 }
 
-export const AnimatedWordRef =
+const AnimatedWordRef =
   builder.objectRef<AnimatedWordShape>("AnimatedWord");
 AnimatedWordRef.implement({
   description: "Describes the animation sequence for a word.",

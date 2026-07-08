@@ -1,12 +1,12 @@
 import { builder } from "../builder";
 import { MusicFileRef } from "./refs";
 
-export interface PaginationInfoShape {
+interface PaginationInfoShape {
   endCursor: string | null;
   hasNextPage: boolean;
 }
 
-export const PaginationInfoRef =
+const PaginationInfoRef =
   builder.objectRef<PaginationInfoShape>("PaginationInfo");
 
 PaginationInfoRef.implement({
@@ -21,7 +21,7 @@ export interface MusicFilesPaginationEdgeShape {
   node: any;
 }
 
-export const MusicFilesPaginationEdgeRef =
+const MusicFilesPaginationEdgeRef =
   builder.objectRef<MusicFilesPaginationEdgeShape>("MusicFilesPaginationEdge");
 
 MusicFilesPaginationEdgeRef.implement({
