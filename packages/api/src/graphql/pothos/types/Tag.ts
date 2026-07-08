@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
-import { builder } from "../builder";
-import { db } from "../../../drizzle/client";
-import { TagOfEntries } from "../../../drizzle/schema";
-import { EntryRef } from "./refs";
+import { builder } from "../builder.js";
+import { db } from "../../../drizzle/client.js";
+import { TagOfEntries } from "../../../drizzle/schema.js";
+import { EntryRef } from "./refs.js";
 
 builder.drizzleObjectFields("Tags", (t) => ({
   color: t.field({ type: "String", resolve: (tag: any) => tag.color }),

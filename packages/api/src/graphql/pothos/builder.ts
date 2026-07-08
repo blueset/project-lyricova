@@ -3,9 +3,9 @@ import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
 import DrizzlePlugin from "@pothos/plugin-drizzle";
 import { GraphQLJSONObject } from "graphql-scalars";
 import type { Request } from "express";
-import type { User } from "../../models/User";
-import type { fullSchema } from "../../drizzle/client";
-import { db } from "../../drizzle/client";
+import type { User } from "../../models/User.js";
+import type { fullSchema } from "../../drizzle/client.js";
+import { db } from "../../drizzle/client.js";
 
 /**
  * Pothos schema builder (replaced the former TypeGraphQL setup).

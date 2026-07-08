@@ -1,5 +1,5 @@
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { NetEaseVercelProvider } from "./neteaseVercel";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { NetEaseVercelProvider } from "./neteaseVercel.js";
 
 const SONG = "初音ミクの消失",
   ARTIST = "初音ミク",

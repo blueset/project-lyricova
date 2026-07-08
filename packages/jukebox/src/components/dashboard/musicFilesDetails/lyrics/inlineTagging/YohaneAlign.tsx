@@ -329,7 +329,7 @@ export function YohaneAlign({ fileId }: { fileId: number }) {
 
       setIsAlignmentLoading(false);
     })();
-  }, [fileId]);
+  }, [authContext, fileId]);
 
   return (
     <HoverCard>

@@ -1,6 +1,6 @@
-import { isTranslationTag } from "./lyricsLineAttachment";
-import type { LyricsProviderSourceId } from "../service/lyricsProviderSourceId";
-import type { LyricsSearchRequest } from "../service/lyricsSearchRequest";
+import { isTranslationTag } from "./lyricsLineAttachment.js";
+import type { LyricsProviderSourceId } from "../service/lyricsProviderSourceId.js";
+import type { LyricsSearchRequest } from "../service/lyricsSearchRequest.js";
 
 export interface LyricsMetadataJSON {
   attachmentTags?: string[];

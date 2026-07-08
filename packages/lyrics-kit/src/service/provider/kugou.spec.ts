@@ -1,5 +1,5 @@
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { KugouProvider } from "./kugou";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { KugouProvider } from "./kugou.js";
 
 const SONG = "初音ミクの消失",
   ARTIST = "初音ミク",

@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
-import { builder } from "../builder";
-import { db } from "../../../drizzle/client";
-import { SongOfEntries, TagOfEntries } from "../../../drizzle/schema";
-import { SongRef, TagRef } from "./refs";
+import { builder } from "../builder.js";
+import { db } from "../../../drizzle/client.js";
+import { SongOfEntries, TagOfEntries } from "../../../drizzle/schema.js";
+import { SongRef, TagRef } from "./refs.js";
 
 builder.drizzleObjectFields("Entries", (t) => {
   const col = (type: any, name: string, nullable = false) =>

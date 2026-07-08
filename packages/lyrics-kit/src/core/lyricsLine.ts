@@ -1,6 +1,6 @@
-import type { Lyrics } from "./lyrics";
-import { Attachments, FURIGANA } from "./lyricsLineAttachment";
-import { buildTimeTag } from "../utils/regexPattern";
+import type { Lyrics } from "./lyrics.js";
+import { Attachments, FURIGANA } from "./lyricsLineAttachment.js";
+import { buildTimeTag } from "../utils/regexPattern.js";
 
 export interface LyricsLineJSON {
   content: string;

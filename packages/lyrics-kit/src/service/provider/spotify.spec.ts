@@ -1,5 +1,5 @@
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { SpotifyProvider } from "./spotify";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { SpotifyProvider } from "./spotify.js";
 
 const SONG = "マシンガンポエムドール",
   ARTIST = "cosMo@暴走P",

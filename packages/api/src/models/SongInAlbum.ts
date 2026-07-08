@@ -1,5 +1,5 @@
-import type { Song } from "./Song";
-import type { Album } from "./Album";
+import type { Song } from "./Song.js";
+import type { Album } from "./Album.js";
 
 /**
  * @openapi

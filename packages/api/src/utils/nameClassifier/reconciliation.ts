@@ -1,8 +1,8 @@
-import pinyin from "pinyin";
+import { pinyin } from "pinyin";
 import MeCab from "mecab-async";
-import kanjidic from "../kanjidic2.mod.min.json";
-import { hiraToRoma, kanaToHira } from "../kanaUtils";
-import { phoneticSkeleton } from "./normalize";
+import kanjidic from "../kanjidic2.mod.min.json" with { type: "json" };
+import { hiraToRoma, kanaToHira } from "../kanaUtils.js";
+import { phoneticSkeleton } from "./normalize.js";
 
 interface MecabParsedResult {
   kanji: string;

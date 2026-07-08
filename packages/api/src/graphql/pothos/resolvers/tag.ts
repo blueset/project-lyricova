@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
-import { builder } from "../builder";
-import { TagRef } from "../types/refs";
-import { db } from "../../../drizzle/client";
-import { Tags } from "../../../drizzle/schema";
+import { builder } from "../builder.js";
+import { TagRef } from "../types/refs.js";
+import { db } from "../../../drizzle/client.js";
+import { Tags } from "../../../drizzle/schema.js";
 import { GraphQLError } from "graphql";
 
 const NewTagInput = builder.inputType("NewTagInput", {

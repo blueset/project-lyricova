@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { Tags, TagOfEntries, Entries } from "../drizzle/schema";
-import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
-import { entriesPerPage } from "../utils/consts";
+import { db } from "../drizzle/client.js";
+import { Tags, TagOfEntries, Entries } from "../drizzle/schema.js";
+import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries.js";
+import { entriesPerPage } from "../utils/consts.js";
 
 export class TagsController {
   public router: Router;

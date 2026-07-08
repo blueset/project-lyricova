@@ -1,5 +1,5 @@
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { SongleProvider } from "./songle";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { SongleProvider } from "./songle.js";
 
 const SONG = "初音ミクの消失",
   ARTIST = "初音ミク",

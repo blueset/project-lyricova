@@ -1,17 +1,17 @@
 import axios from "axios";
-import { LyricsProvider } from ".";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import { LyricsProvider } from "./index.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
 import type {
   SongleResponseLyricsList,
   SongleResponseSearch,
   SongleResponseSearchResult,
-} from "../types/songle/searchResult";
+} from "../types/songle/searchResult.js";
 import type {
   SongleError,
   SongleLicenseResponse,
   SongleLyricsObject,
   SongleTimeTagData,
-} from "../types/songle/lyricsResult";
+} from "../types/songle/lyricsResult.js";
 import {
   ARTIST,
   Attachments,
@@ -21,8 +21,8 @@ import {
   TITLE,
   WordTimeTag,
   WordTimeTagLabel,
-} from "../../core";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
+} from "../../core/index.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
 import type { Element } from "cheerio";
 import cheerio from "cheerio";
 

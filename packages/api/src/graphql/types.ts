@@ -1,27 +1,27 @@
-export type * from "./LyricsKitObjects";
+export type * from "./LyricsKitObjects.js";
 
-export type * from "../models/Album";
-export type * from "../models/Artist";
-export type * from "../models/ArtistOfAlbum";
-export type * from "../models/ArtistOfSong";
-export type * from "../models/Entry";
-export type * from "../models/FileInPlaylist";
-export type * from "../models/FuriganaMapping";
-export type * from "../models/MusicFile";
-export type * from "../models/Playlist";
-export type * from "../models/Pulse";
-export type * from "../models/SiteMeta";
-export type * from "../models/Song";
-export type * from "../models/SongInAlbum";
-export type * from "../models/SongOfEntry";
-export type * from "../models/Tag";
-export type * from "../models/TagOfEntry";
-export type * from "../models/User";
-export type * from "../models/UserPublicKeyCredential";
-export type * from "../models/Verse";
-export type * from "../models/VideoFile";
+export type * from "../models/Album.js";
+export type * from "../models/Artist.js";
+export type * from "../models/ArtistOfAlbum.js";
+export type * from "../models/ArtistOfSong.js";
+export type * from "../models/Entry.js";
+export type * from "../models/FileInPlaylist.js";
+export type * from "../models/FuriganaMapping.js";
+export type * from "../models/MusicFile.js";
+export type * from "../models/Playlist.js";
+export type * from "../models/Pulse.js";
+export type * from "../models/SiteMeta.js";
+export type * from "../models/Song.js";
+export type * from "../models/SongInAlbum.js";
+export type * from "../models/SongOfEntry.js";
+export type * from "../models/Tag.js";
+export type * from "../models/TagOfEntry.js";
+export type * from "../models/User.js";
+export type * from "../models/UserPublicKeyCredential.js";
+export type * from "../models/Verse.js";
+export type * from "../models/VideoFile.js";
 
-export type * from "../types/vocadb";
+export type * from "../types/vocadb.js";
 export type {
   VDBLanguageType,
   VDBPVServiceType,
@@ -66,4 +66,4 @@ export type {
   AlbumIdentifierContract,
   SongInAlbumForApiContract,
   PartialFindResult,
-} from "../types/vocadb";
+} from "../types/vocadb.js";

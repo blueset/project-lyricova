@@ -1,11 +1,11 @@
-import pinyin from "pinyin";
+import { pinyin } from "pinyin";
 import Segment from "novel-segment";
 import MeCab from "mecab-async";
 import _ from "lodash";
-import { kanaToHira } from "./kanaUtils";
+import { kanaToHira } from "./kanaUtils.js";
 import { and, eq } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { FuriganaMappings } from "../drizzle/schema";
+import { db } from "../drizzle/client.js";
+import { FuriganaMappings } from "../drizzle/schema.js";
 import { loadDefaultJapaneseParser, type HTMLProcessingParser } from "budoux";
 import { JSDOM } from "jsdom";
 

@@ -11,12 +11,14 @@ import WebAuthnStrategy, {
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { and, eq, isNull } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { Users, UserPublicKeyCredentials } from "../drizzle/schema";
-import { JWT_SECRET } from "../utils/secret";
+import { db } from "../drizzle/client.js";
+import { Users, UserPublicKeyCredentials } from "../drizzle/schema.js";
+import { JWT_SECRET } from "../utils/secret.js";
 import cors from "cors";
 import type { VerifiedFunction } from "passport-fido2-webauthn";
-import base64url from "base64url";
+import base64urlImport from "base64url";
+import type { Base64Url } from "base64url";
+const base64url = base64urlImport as unknown as Base64Url;
 
 type User = typeof Users.$inferSelect;
 

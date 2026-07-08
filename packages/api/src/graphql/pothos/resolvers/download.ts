@@ -1,11 +1,21 @@
 import Path from "path";
-import { MUSIC_FILES_PATH, YTDLP_PATH } from "../../../utils/secret";
-import { swapExt } from "../../../utils/path";
-import YTDlpWrap from "yt-dlp-wrap-plus";
-import { builder } from "../builder";
-import type { PubSubSessionPayload } from "../pubsub";
-import { pubsub, TOPIC_YOUTUBE_DL_PROGRESS } from "../pubsub";
-import type { YouTubeDlProgressShape } from "../types/download";
+import { MUSIC_FILES_PATH, YTDLP_PATH } from "../../../utils/secret.js";
+import { swapExt } from "../../../utils/path.js";
+import YTDlpWrapModule from "yt-dlp-wrap-plus";
+// Default import is the class under CJS interop but a `{ default }` wrapper under
+// Node ESM; normalize (value + type) so it works regardless of how it's loaded.
+type YTDlpWrapCtor = typeof YTDlpWrapModule extends { default: infer D }
+  ? D
+  : typeof YTDlpWrapModule;
+const YTDlpWrap = (
+  typeof YTDlpWrapModule === "function"
+    ? YTDlpWrapModule
+    : (YTDlpWrapModule as unknown as { default: YTDlpWrapCtor }).default
+) as YTDlpWrapCtor;
+import { builder } from "../builder.js";
+import type { PubSubSessionPayload } from "../pubsub.js";
+import { pubsub, TOPIC_YOUTUBE_DL_PROGRESS } from "../pubsub.js";
+import type { YouTubeDlProgressShape } from "../types/download.js";
 
 const YouTubeDlDownloadOptions = builder.inputType("YouTubeDlDownloadOptions", {
   fields: (t) => ({

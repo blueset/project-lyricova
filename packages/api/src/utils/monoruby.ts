@@ -1,5 +1,5 @@
-import data from "./kanjidic2.mod.min.json";
-import { kanaToHira } from "../utils/kanaUtils";
+import data from "./kanjidic2.mod.min.json" with { type: "json" };
+import { kanaToHira } from "../utils/kanaUtils.js";
 
 // kanjidic2.mod.min.json extracted from KANJIDIC project
 // http://www.edrdg.org/wiki/index.php/KANJIDIC_Project

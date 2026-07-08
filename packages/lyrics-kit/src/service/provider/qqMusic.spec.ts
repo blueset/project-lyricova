@@ -1,5 +1,5 @@
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import { QQMusicProvider } from "./qqMusic";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import { QQMusicProvider } from "./qqMusic.js";
 
 const SONG = "初音ミクの消失",
   ARTIST = "初音ミク",

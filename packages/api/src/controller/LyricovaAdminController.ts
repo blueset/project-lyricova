@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
-import { requireNumericParams } from "../utils/numericParam";
+import { requireNumericParams } from "../utils/numericParam.js";
 import { Router } from "express";
 import { and, eq, isNull } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { Entries, Pulses } from "../drizzle/schema";
-import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
+import { db } from "../drizzle/client.js";
+import { Entries, Pulses } from "../drizzle/schema.js";
+import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware.js";
 
 export class LyricovaAdminApiController {
   public router: Router;

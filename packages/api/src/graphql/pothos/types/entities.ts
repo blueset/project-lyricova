@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
-import { builder } from "../builder";
-import { db } from "../../../drizzle/client";
+import { builder } from "../builder.js";
+import { db } from "../../../drizzle/client.js";
 import {
   ArtistOfSongs,
   SongInAlbums,
   ArtistOfAlbums,
-} from "../../../drizzle/schema";
+} from "../../../drizzle/schema.js";
 import {
   SongRef,
   AlbumRef,
@@ -13,7 +13,7 @@ import {
   SongInAlbumRef,
   ArtistOfAlbumRef,
   ArtistOfSongRef,
-} from "./refs";
+} from "./refs.js";
 
 /**
  * Music entity types (Song/Album/Artist) backed by Drizzle via the plugin.

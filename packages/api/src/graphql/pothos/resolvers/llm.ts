@@ -1,5 +1,5 @@
-import { builder } from "../builder";
-import { translationAlignment } from "../../../utils/translationAlignment";
+import { builder } from "../builder.js";
+import { translationAlignment } from "../../../utils/translationAlignment.js";
 
 builder.queryField("translationAlignment", (t) =>
   t.string({

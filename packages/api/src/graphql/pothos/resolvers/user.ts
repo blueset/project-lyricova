@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
-import { builder } from "../builder";
-import { UserRef, UserPublicKeyCredentialRef } from "../types/refs";
-import { db } from "../../../drizzle/client";
-import type { Users } from "../../../drizzle/schema";
-import { UserPublicKeyCredentials } from "../../../drizzle/schema";
+import { builder } from "../builder.js";
+import { UserRef, UserPublicKeyCredentialRef } from "../types/refs.js";
+import { db } from "../../../drizzle/client.js";
+import type { Users } from "../../../drizzle/schema.js";
+import { UserPublicKeyCredentials } from "../../../drizzle/schema.js";
 
 builder.queryField("currentUser", (t) =>
   t.field({

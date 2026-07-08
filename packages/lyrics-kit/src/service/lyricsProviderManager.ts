@@ -1,15 +1,14 @@
-import { LyricsProviderSource } from "./lyricsProviderSource";
-import type { LyricsSearchRequest } from "./lyricsSearchRequest";
-import type { Lyrics } from "../core/lyrics";
-import type { LyricsProvider } from "./provider";
+import { LyricsProviderSource } from "./lyricsProviderSource.js";
+import type { LyricsSearchRequest } from "./lyricsSearchRequest.js";
+import type { Lyrics } from "../core/lyrics.js";
+import type { LyricsProvider } from "./provider/index.js";
 import _ from "lodash";
 
 export class LyricsProviderManager {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public providers: LyricsProvider<any>[];
+  public providers: LyricsProvider<unknown>[];
 
   constructor(
-    sources: LyricsProviderSource<any>[] = LyricsProviderSource.allCases,
+    sources: LyricsProviderSource<LyricsProvider<unknown>>[] = LyricsProviderSource.allCases,
   ) {
     this.providers = sources.map((v) => v.build());
   }

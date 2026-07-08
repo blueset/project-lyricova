@@ -1,5 +1,5 @@
-import { builder } from "../builder";
-import { MusicFileRef } from "./refs";
+import { builder } from "../builder.js";
+import { MusicFileRef } from "./refs.js";
 
 interface PaginationInfoShape {
   endCursor: string | null;

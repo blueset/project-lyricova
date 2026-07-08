@@ -6,7 +6,7 @@
  * `packages/jukebox/public/textures/`). Kept as a plain data module,
  * decoupled from the schema type.
  */
-import type { TextureShape } from "../types/Texture";
+import type { TextureShape } from "../types/Texture.js";
 
 export const TEXTURE_DATA: TextureShape[] = [
   {

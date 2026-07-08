@@ -31,9 +31,8 @@ jobs:
           node-version: 24
           cache: npm
 
-      # The repo has a pre-existing react/expo peer conflict; matches local dev.
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm install
 
       # Build the two zero-side-effect library packages first. @lyricova/components
       # runs GraphQL codegen in its build (producing src/gql/**), which the two

@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import logger from "../utils/logger";
+import logger from "../utils/logger.js";
 import fs from "fs";
 
 export const ENVIRONMENT = process.env.NODE_ENV;

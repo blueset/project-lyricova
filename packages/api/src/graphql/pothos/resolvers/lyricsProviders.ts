@@ -1,18 +1,18 @@
-import { getJson, getText, HttpError } from "../../../utils/httpFetch";
+import { getJson, getText, HttpError } from "../../../utils/httpFetch.js";
 import cheerio from "cheerio";
 import { eq } from "drizzle-orm";
-import { db } from "../../../drizzle/client";
-import { Songs } from "../../../drizzle/schema";
+import { db } from "../../../drizzle/client.js";
+import { Songs } from "../../../drizzle/schema.js";
 import type {
   SongForApiContract,
   LyricsForSongContract,
-} from "../../../types/vocadb";
+} from "../../../types/vocadb.js";
 import { LyricsProviderManager, LyricsSearchRequest } from "lyrics-kit/service";
 import type { Lyrics, LyricsMetadata } from "lyrics-kit/core";
 import { GraphQLError } from "graphql";
 import _ from "lodash";
-import { builder } from "../builder";
-import { pubsub, TOPIC_LYRICS_KIT_RESULT } from "../pubsub";
+import { builder } from "../builder.js";
+import { pubsub, TOPIC_LYRICS_KIT_RESULT } from "../pubsub.js";
 
 interface HmikuAtWikiSearchResultEntry {
   id: string;

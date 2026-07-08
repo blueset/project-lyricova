@@ -1,10 +1,9 @@
 import errorHandler from "errorhandler";
-import "reflect-metadata";
 
-import App from "./app";
-import { applyApollo } from "./graphql/index";
-import { postHog } from "./utils/posthog";
-import { compat } from "./utils/expressCompat";
+import App from "./app.js";
+import { applyApollo } from "./graphql/index.js";
+import { postHog } from "./utils/posthog.js";
+import { compat } from "./utils/expressCompat.js";
 
 (async () => {
   const app = await App();

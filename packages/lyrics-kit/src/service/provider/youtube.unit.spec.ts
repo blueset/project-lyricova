@@ -1,22 +1,26 @@
 import Path from "path";
 import { writeFile } from "fs/promises";
-import { ARTIST, TITLE } from "../../core/idTagKey";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
-import { LyricsSearchRequest } from "../lyricsSearchRequest";
-import type { YouTubeSearchResult } from "../types/youtube/searchResult";
+import { ARTIST, TITLE } from "../../core/idTagKey.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
+import { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import type { YouTubeSearchResult } from "../types/youtube/searchResult.js";
 
-const mockGetVideoInfo = jest.fn();
-const mockExecPromise = jest.fn();
-
-jest.mock("yt-dlp-wrap-plus", () => ({
-  __esModule: true,
-  default: jest.fn().mockImplementation(() => ({
-    getVideoInfo: mockGetVideoInfo,
-    execPromise: mockExecPromise,
-  })),
+const { mockGetVideoInfo, mockExecPromise } = vi.hoisted(() => ({
+  mockGetVideoInfo: vi.fn(),
+  mockExecPromise: vi.fn(),
 }));
 
-import { YouTubeProvider } from "./youtube";
+vi.mock("yt-dlp-wrap-plus", () => ({
+  __esModule: true,
+  default: vi.fn(function () {
+    return {
+      getVideoInfo: mockGetVideoInfo,
+      execPromise: mockExecPromise,
+    };
+  }),
+}));
+
+import { YouTubeProvider } from "./youtube.js";
 
 describe("YouTubeProvider yt-dlp integration", () => {
   beforeEach(() => {

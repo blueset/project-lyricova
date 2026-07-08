@@ -206,8 +206,8 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
         const segment =
           direction === "left"
             ? [...validSegments]
-                .reverse()
-                .find((s) => s.index < curSegment.index)
+              .reverse()
+              .find((s) => s.index < curSegment.index)
             : validSegments.find((s) => s.index > curSegment.index);
         if (segment) {
           setCurrentSegment(segment);
@@ -367,7 +367,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           onKeyDown={onKeyDown}
           value={inputStr}
           placeholder={formatStr}
-          onChange={() => {}}
+          onChange={() => { }}
           disabled={options.disabled}
           spellCheck={false}
         />
@@ -483,6 +483,8 @@ function safeSetSelection(
     }
   });
 }
+// sourced from https://github.com/huybuidac/shadcn-datetime-picker/blob/main/components/datetime-input.tsx#L693
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useEventCallback<T extends (...args: any[]) => unknown>(
   fn: T,
   deps: React.DependencyList,

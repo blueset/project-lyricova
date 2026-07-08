@@ -1,8 +1,8 @@
-import type { ArtistForApiContract, VDBArtistType } from "../types/vocadb";
-import type { ArtistOfSong } from "./ArtistOfSong";
-import type { ArtistOfAlbum } from "./ArtistOfAlbum";
-import type { Song } from "./Song";
-import type { Album } from "./Album";
+import type { ArtistForApiContract, VDBArtistType } from "../types/vocadb.js";
+import type { ArtistOfSong } from "./ArtistOfSong.js";
+import type { ArtistOfAlbum } from "./ArtistOfAlbum.js";
+import type { Song } from "./Song.js";
+import type { Album } from "./Album.js";
 
 /**
  * @openapi

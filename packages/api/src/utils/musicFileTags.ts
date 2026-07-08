@@ -1,10 +1,10 @@
 import path from "path";
-import hasha from "hasha";
+import { hashFile } from "hasha";
 import { eq } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { MusicFiles, FileInPlaylists } from "../drizzle/schema";
-import { MUSIC_FILES_PATH } from "./secret";
-import { writeAsync as ffMetadataWrite } from "./ffmetadata";
+import { db } from "../drizzle/client.js";
+import { MusicFiles, FileInPlaylists } from "../drizzle/schema.js";
+import { MUSIC_FILES_PATH } from "./secret.js";
+import { writeAsync as ffMetadataWrite } from "./ffmetadata.js";
 
 const PLAYLIST_IDS_TAG = "LyricovaPlaylistIDs";
 
@@ -37,7 +37,7 @@ export async function updatePlaylistsOfFileAsTags(
     },
     { preserveStreams: true, forceId3v2 },
   );
-  const md5 = await hasha.fromFile(fullPath, { algorithm: "md5" });
+  const md5 = await hashFile(fullPath, { algorithm: "md5" });
   await db
     .update(MusicFiles)
     .set({ hash: md5 })

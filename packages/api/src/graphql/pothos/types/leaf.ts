@@ -1,11 +1,11 @@
-import { builder } from "../builder";
-import { parseEnumArray } from "../../../drizzle/enumArray";
+import { builder } from "../builder.js";
+import { parseEnumArray } from "../../../drizzle/enumArray.js";
 import {
   FileInPlaylistRef,
   ArtistOfSongRef,
   ArtistOfAlbumRef,
   SongInAlbumRef,
-} from "./refs";
+} from "./refs.js";
 
 // --- Blog leaves (Drizzle-backed) ---
 

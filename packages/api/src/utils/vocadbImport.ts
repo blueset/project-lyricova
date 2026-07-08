@@ -15,7 +15,7 @@
  */
 import { and, eq, isNull } from "drizzle-orm";
 import _ from "lodash";
-import { db } from "../drizzle/client";
+import { db } from "../drizzle/client.js";
 import {
   Songs,
   Artists,
@@ -23,13 +23,13 @@ import {
   ArtistOfSongs,
   ArtistOfAlbums,
   SongInAlbums,
-} from "../drizzle/schema";
-import { serializeEnumArray } from "../drizzle/enumArray";
+} from "../drizzle/schema.js";
+import { serializeEnumArray } from "../drizzle/enumArray.js";
 import {
   getUtaiteDbArtistLite,
   getUtaiteDbAlbumLite,
   getVocaDbId,
-} from "./vocadb";
+} from "./vocadb.js";
 import type {
   AlbumContract,
   AlbumForApiContract,
@@ -39,7 +39,7 @@ import type {
   ArtistForSongContract,
   SongForApiContract,
   SongInAlbumForApiContract,
-} from "../types/vocadb";
+} from "../types/vocadb.js";
 
 type SongRow = typeof Songs.$inferSelect;
 type ArtistRow = typeof Artists.$inferSelect;

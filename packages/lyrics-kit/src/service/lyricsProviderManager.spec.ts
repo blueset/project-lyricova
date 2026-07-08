@@ -1,19 +1,19 @@
-import { LyricsProviderSource } from "./lyricsProviderSource";
-import type { LyricsProvider } from "./provider";
-import { LyricsSearchRequest } from "./lyricsSearchRequest";
+import { LyricsProviderSource } from "./lyricsProviderSource.js";
+import type { LyricsProvider } from "./provider/index.js";
+import { LyricsSearchRequest } from "./lyricsSearchRequest.js";
 
 const SONG = "初音ミクの消失",
   ARTIST = "初音ミク",
   DURATION = 290.0;
 const REQ = LyricsSearchRequest.fromInfo(SONG, ARTIST, DURATION);
 
-async function macro(provider: LyricsProvider<any>) {
+async function macro(provider: LyricsProvider<unknown>) {
   const result = await provider.getLyrics(REQ);
   expect(Array.isArray(result)).toBe(true);
   console.log("Number of hits:", result.length);
 }
 
-jest.setTimeout(15000);
+vi.setConfig({ testTimeout: 15000 });
 
 // test("NetEase", () => macro(LyricsProviderSource.netease.build()));
 // test("QQ Music", () => macro(LyricsProviderSource.qq.build()));

@@ -1,15 +1,27 @@
 import { mkdtemp, readdir, readFile, rm } from "fs/promises";
 import { tmpdir } from "os";
 import Path from "path";
-import YTDlpWrap from "yt-dlp-wrap-plus";
-import { LyricsProvider } from ".";
-import { ARTIST, TITLE } from "../../core/idTagKey";
-import { Lyrics } from "../../core/lyrics";
-import { LyricsLine } from "../../core/lyricsLine";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import type { YouTubeSearchResult } from "../types/youtube/searchResult";
-import type { YouTubeLyricsJSON3 } from "../types/youtube/singleLyrics";
+import YTDlpWrapImport from "yt-dlp-wrap-plus";
+import { LyricsProvider } from "./index.js";
+import { ARTIST, TITLE } from "../../core/idTagKey.js";
+import { Lyrics } from "../../core/lyrics.js";
+import { LyricsLine } from "../../core/lyricsLine.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import type { YouTubeSearchResult } from "../types/youtube/searchResult.js";
+import type { YouTubeLyricsJSON3 } from "../types/youtube/singleLyrics.js";
+
+// yt-dlp-wrap-plus ships `export default class` with an `__esModule` marker, so
+// the default import is the class under CJS interop but a `{ default }` wrapper
+// under Node ESM. Normalize (value + type) so the class works from both systems.
+type YTDlpWrapCtor = typeof YTDlpWrapImport extends { default: infer D }
+  ? D
+  : typeof YTDlpWrapImport;
+const YTDlpWrap = (
+  typeof YTDlpWrapImport === "function"
+    ? YTDlpWrapImport
+    : (YTDlpWrapImport as unknown as { default: YTDlpWrapCtor }).default
+) as YTDlpWrapCtor;
 
 const SEARCH_RESULT_LIMIT = 5;
 const SUBTITLE_FORMAT = "json3";

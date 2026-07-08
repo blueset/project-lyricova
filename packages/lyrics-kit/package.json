@@ -26,7 +26,7 @@
   ],
   "scripts": {
     "clean": "rimraf build",
-    "build": "npm run clean && run-p build:main build:module",
+    "build": "npm run clean && run-p build:main build:module && node scripts/write-build-markers.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "typecheck:native": "tsgo --noEmit -p tsconfig.json",
     "build:main": "tsc -p tsconfig.json",
@@ -34,8 +34,8 @@
     "dev": "run-p dev:main dev:module",
     "dev:main": "tsc -p tsconfig.json --watch",
     "dev:module": "tsc -p tsconfig.module.json --watch",
-    "test": "jest",
-    "test:dev": "jest --watch",
+    "test": "vitest run",
+    "test:dev": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -49,13 +49,9 @@
     "yt-dlp-wrap-plus": "^2.4.3"
   },
   "devDependencies": {
-    "@swc/core": "^1.11.9",
-    "@swc/jest": "^0.2.37",
-    "@types/jest": "^30.0.0",
     "@types/lodash": "^4.14.149",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
-    "jest": "^30.4.2",
     "npm-run-all": "^4.1.5",
     "rimraf": "^6.0.1",
     "typescript": "^6.0.3"

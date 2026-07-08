@@ -5,13 +5,13 @@ import flash from "express-flash";
 import session from "express-session";
 import passport from "passport";
 
-import registerRoutes from "./routes";
-import { SESSION_SECRET } from "./utils/secret";
+import registerRoutes from "./routes.js";
+import { SESSION_SECRET } from "./utils/secret.js";
 import expressMySQLSession from "express-mysql-session";
-import { pool as drizzlePool } from "./drizzle/client";
-import { postHog } from "./utils/posthog";
+import { pool as drizzlePool } from "./drizzle/client.js";
+import { postHog } from "./utils/posthog.js";
 import { setupExpressErrorHandler } from "posthog-node";
-import { compat } from "./utils/expressCompat";
+import { compat } from "./utils/expressCompat.js";
 
 const MySQLStore = expressMySQLSession(session);
 

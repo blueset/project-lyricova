@@ -1,5 +1,5 @@
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
-import type { Lyrics } from "../../core/lyrics";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
+import type { Lyrics } from "../../core/lyrics.js";
 
 export abstract class LyricsProvider<T> {
   // I had no idea what the publishers are doing here.

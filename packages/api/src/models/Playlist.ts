@@ -1,4 +1,4 @@
-import type { MusicFile } from "./MusicFile";
+import type { MusicFile } from "./MusicFile.js";
 
 /**
  * @openapi

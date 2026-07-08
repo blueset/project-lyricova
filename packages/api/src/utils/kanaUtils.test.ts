@@ -1,4 +1,4 @@
-import { romaToHira } from "./kanaUtils";
+import { romaToHira } from "./kanaUtils.js";
 
 describe("romaToHira", () => {
   it("processes prolonged vowels", () => {

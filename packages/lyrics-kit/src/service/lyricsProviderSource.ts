@@ -1,21 +1,21 @@
-import type { LyricsProvider } from "./provider";
-import { NetEaseProvider } from "./provider/netease";
-import { QQMusicProvider } from "./provider/qqMusic";
-import { KugouProvider } from "./provider/kugou";
-import { XiamiProvider } from "./provider/xiami";
-import { GecimiProvider } from "./provider/gecimi";
-import { ViewLyricsProvider } from "./provider/viewLyrics";
-import { SyairProvider } from "./provider/syair";
-import { MusixMatchProvider } from "./provider/musixmatch";
-import { YouTubeProvider } from "./provider/youtube";
-import { SpotifyProvider } from "./provider/spotify";
-import { SongleProvider } from "./provider/songle";
-import { LrcLibLyricsProvider as LrcLibProvider } from "./provider/lrclib";
-import { NetEaseVercelProvider } from "./provider/neteaseVercel";
+import type { LyricsProvider } from "./provider/index.js";
+import { NetEaseProvider } from "./provider/netease.js";
+import { QQMusicProvider } from "./provider/qqMusic.js";
+import { KugouProvider } from "./provider/kugou.js";
+import { XiamiProvider } from "./provider/xiami.js";
+import { GecimiProvider } from "./provider/gecimi.js";
+import { ViewLyricsProvider } from "./provider/viewLyrics.js";
+import { SyairProvider } from "./provider/syair.js";
+import { MusixMatchProvider } from "./provider/musixmatch.js";
+import { YouTubeProvider } from "./provider/youtube.js";
+import { SpotifyProvider } from "./provider/spotify.js";
+import { SongleProvider } from "./provider/songle.js";
+import { LrcLibLyricsProvider as LrcLibProvider } from "./provider/lrclib.js";
+import { NetEaseVercelProvider } from "./provider/neteaseVercel.js";
 import {
   LyricsProviderSourceId,
   type LyricsProviderSourceId as LyricsProviderSourceIdValue,
-} from "./lyricsProviderSourceId";
+} from "./lyricsProviderSourceId.js";
 
 export class LyricsProviderSource<T extends LyricsProvider<unknown>> {
   static netease: LyricsProviderSource<NetEaseProvider>;

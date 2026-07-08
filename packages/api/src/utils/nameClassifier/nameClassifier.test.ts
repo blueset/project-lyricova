@@ -1,15 +1,14 @@
-import { describe, expect, it, jest } from "@jest/globals";
-import { classifyNameLanguage } from "./index";
-import { alignSegments, nfkcNormalize, phoneticSkeleton } from "./normalize";
-import { phonotacticClassify, scorePinyin, scoreRomaji } from "./phonotactics";
+import { classifyNameLanguage } from "./index.js";
+import { alignSegments, nfkcNormalize, phoneticSkeleton } from "./normalize.js";
+import { phonotacticClassify, scorePinyin, scoreRomaji } from "./phonotactics.js";
 import {
   reconcile,
   romanizeAsJapanese,
   romanizeAsMandarin,
   scoreSimilarity,
-} from "./reconciliation";
+} from "./reconciliation.js";
 
-jest.setTimeout(30000);
+vi.setConfig({ testTimeout: 30000 });
 
 describe("nameClassifier normalization utilities", () => {
   it("builds a phonetic skeleton for romaji input", () => {

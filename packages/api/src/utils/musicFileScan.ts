@@ -1,12 +1,12 @@
 import fs from "fs";
 import Path from "path";
-import hasha from "hasha";
+import { hashFile } from "hasha";
 import ffprobe from "ffprobe-client";
 import { eq } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { MusicFiles, FileInPlaylists } from "../drizzle/schema";
-import { MUSIC_FILES_PATH } from "./secret";
-import { writeAsync as ffMetadataWrite } from "./ffmetadata";
+import { db } from "../drizzle/client.js";
+import { MusicFiles, FileInPlaylists } from "../drizzle/schema.js";
+import { MUSIC_FILES_PATH } from "./secret.js";
+import { writeAsync as ffMetadataWrite } from "./ffmetadata.js";
 
 /**
  * Drizzle port of the filesystem/audio-coupled `MusicFile` model methods
@@ -85,7 +85,7 @@ export interface BuiltSongEntry {
 export async function buildSongEntry(
   fullPath: string,
 ): Promise<BuiltSongEntry> {
-  const md5Promise = hasha.fromFile(fullPath, { algorithm: "md5" });
+  const md5Promise = hashFile(fullPath, { algorithm: "md5" });
   const metadataPromise = getSongMetadata(fullPath);
   const md5 = await md5Promise;
   const {
@@ -145,7 +145,7 @@ export async function updateSongEntry(
     const hasLyrics = fs.existsSync(lrcPath);
     let needUpdate = hasLyrics !== file.hasLyrics;
     const fileSize = fs.statSync(fullPath).size;
-    const md5 = await hasha.fromFile(fullPath, { algorithm: "md5" });
+    const md5 = await hashFile(fullPath, { algorithm: "md5" });
     needUpdate = needUpdate || md5 !== file.hash;
     if (!needUpdate) return false;
 
@@ -224,7 +224,7 @@ export async function updateMD5(
   fileId: number,
   relPath: string,
 ): Promise<void> {
-  const md5 = await hasha.fromFile(fullPathOf(relPath), { algorithm: "md5" });
+  const md5 = await hashFile(fullPathOf(relPath), { algorithm: "md5" });
   await db
     .update(MusicFiles)
     .set({ hash: md5, updatedOn: new Date() })

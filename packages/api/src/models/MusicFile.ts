@@ -1,7 +1,7 @@
-import type { Song } from "./Song";
-import type { Album } from "./Album";
-import type { Playlist } from "./Playlist";
-import type { FileInPlaylist } from "./FileInPlaylist";
+import type { Song } from "./Song.js";
+import type { Album } from "./Album.js";
+import type { Playlist } from "./Playlist.js";
+import type { FileInPlaylist } from "./FileInPlaylist.js";
 
 export const ID3_LYRICS_LANGUAGE = "eng";
 

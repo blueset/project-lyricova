@@ -1,17 +1,17 @@
 import type { NextFunction, Request, Response } from "express";
 import { Router } from "express";
-import { requireNumericParams } from "../utils/numericParam";
+import { requireNumericParams } from "../utils/numericParam.js";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { promises as fs } from "node:fs";
 import { Lyrics } from "lyrics-kit/core";
-import { db } from "../drizzle/client";
-import { Songs, SongOfEntries, Entries } from "../drizzle/schema";
-import { parseEnumArray } from "../drizzle/enumArray";
-import { fullPathOf } from "../utils/musicFileScan";
-import { swapExt } from "../utils/path";
-import { LyricsKitLyrics } from "../graphql/LyricsKitObjects";
-import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries";
-import { entriesPerPage } from "../utils/consts";
+import { db } from "../drizzle/client.js";
+import { Songs, SongOfEntries, Entries } from "../drizzle/schema.js";
+import { parseEnumArray } from "../drizzle/enumArray.js";
+import { fullPathOf } from "../utils/musicFileScan.js";
+import { swapExt } from "../utils/path.js";
+import { LyricsKitLyrics } from "../graphql/LyricsKitObjects.js";
+import { entryHasMainVerse, fetchEntriesListing } from "../utils/queries.js";
+import { entriesPerPage } from "../utils/consts.js";
 
 export class SongController {
   public router: Router;

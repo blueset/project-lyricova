@@ -1,5 +1,5 @@
-import { Lyrics } from "../core/lyrics";
-import { LyricsLine } from "../core/lyricsLine";
+import { Lyrics } from "../core/lyrics.js";
+import { LyricsLine } from "../core/lyricsLine.js";
 import {
   Attachments,
   RangeAttribute,
@@ -7,9 +7,9 @@ import {
   PlainText,
   FURIGANA,
   TIME_TAG,
-} from "../core/lyricsLineAttachment";
-import { ARTIST, TITLE, OFFSET } from "../core/idTagKey";
-import type { AttachmentJSON } from "../core/attachmentTypes";
+} from "../core/lyricsLineAttachment.js";
+import { ARTIST, TITLE, OFFSET } from "../core/idTagKey.js";
+import type { AttachmentJSON } from "../core/attachmentTypes.js";
 
 describe("Lyrics Kit Serialization", () => {
   test("should serialize and deserialize attachment types correctly", () => {

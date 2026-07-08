@@ -1,9 +1,9 @@
 import { eq, sql } from "drizzle-orm";
-import { builder } from "../builder";
-import { AlbumRef } from "../types/refs";
-import { db } from "../../../drizzle/client";
-import { Albums, ArtistOfAlbums, SongInAlbums } from "../../../drizzle/schema";
-import { serializeEnumArray } from "../../../drizzle/enumArray";
+import { builder } from "../builder.js";
+import { AlbumRef } from "../types/refs.js";
+import { db } from "../../../drizzle/client.js";
+import { Albums, ArtistOfAlbums, SongInAlbums } from "../../../drizzle/schema.js";
+import { serializeEnumArray } from "../../../drizzle/enumArray.js";
 import _ from "lodash";
 
 const ArtistOfAlbumInput = builder.inputType("ArtistOfAlbumInput", {

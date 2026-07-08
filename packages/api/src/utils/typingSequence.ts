@@ -1,4 +1,4 @@
-import { kanaToHira } from "./kanaUtils";
+import { kanaToHira } from "./kanaUtils.js";
 
 // prettier-ignore
 const JA_MAP = {

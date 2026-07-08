@@ -225,7 +225,7 @@ export default function LibraryTracks() {
     } else {
       parentRef.current = elm;
     }
-  }, []);
+  }, [rowVirtualizer]);
 
   const sliderLookup = useMemo(() => {
     const rows = [null, ...entries];

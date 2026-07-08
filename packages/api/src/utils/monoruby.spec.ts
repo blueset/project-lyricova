@@ -1,5 +1,4 @@
-import { describe, expect, it } from "@jest/globals";
-import { convertMonoruby } from "./monoruby";
+import { convertMonoruby } from "./monoruby.js";
 
 describe("convertMonoruby", () => {
   it("should convert monoruby properly", () => {

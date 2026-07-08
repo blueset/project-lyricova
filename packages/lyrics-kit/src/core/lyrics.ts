@@ -1,5 +1,5 @@
-import type { LyricsLineJSON, ToLegacyStringOptions } from "./lyricsLine";
-import type { LyricsMetadataJSON } from "./lyricsMetadata";
+import type { LyricsLineJSON, ToLegacyStringOptions } from "./lyricsLine.js";
+import type { LyricsMetadataJSON } from "./lyricsMetadata.js";
 
 export interface LyricsJSON {
   lines: LyricsLineJSON[];
@@ -13,17 +13,17 @@ import {
   resolveTimeTag,
   lyricsLineAttachmentRegex,
   base60TimeRegex,
-} from "../utils/regexPattern";
-import { LyricsLine } from "./lyricsLine";
-import { LyricsMetadata, ATTACHMENT_TAGS } from "./lyricsMetadata";
+} from "../utils/regexPattern.js";
+import { LyricsLine } from "./lyricsLine.js";
+import { LyricsMetadata, ATTACHMENT_TAGS } from "./lyricsMetadata.js";
 import _ from "lodash";
-import { OFFSET, LENGTH, ARTIST, TITLE } from "./idTagKey";
-import { TIME_TAG, TRANSLATION } from "./lyricsLineAttachment";
+import { OFFSET, LENGTH, ARTIST, TITLE } from "./idTagKey.js";
+import { TIME_TAG, TRANSLATION } from "./lyricsLineAttachment.js";
 import {
   isCaseInsensitiveSimilar,
   similarity,
   similarityIn,
-} from "./stringExtensions";
+} from "./stringExtensions.js";
 
 type LyricsMatch =
   | {

@@ -134,6 +134,7 @@ export function useWebAudio(mediaUrl: string) {
       }
       return { state: "paused", rate: playerStatus.rate, progress };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioContext]);
 
   const seek = useCallback(

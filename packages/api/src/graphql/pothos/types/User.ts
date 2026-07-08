@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { builder } from "../builder";
+import { builder } from "../builder.js";
 
 builder.drizzleObjectFields("Users", (t) => ({
   creationDate: t.field({

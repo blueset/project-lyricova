@@ -4,7 +4,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "lib": ["ESNext"],
-    "types": ["node", "jest"],
+    "types": ["node", "vitest/globals"],
     "strict": true,
     "outDir": "build/main",
     "rootDir": "src",

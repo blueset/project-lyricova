@@ -28,8 +28,8 @@ const entryListingCondition = {
 // Mirrors the legacy `entryListingCondition`: entries with main verses, tags,
 // and pulses, excluding `updatedOn`. Shared by Song/Artist/Tag/LyricovaPublic.
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { Entries, Verses } from "../drizzle/schema";
+import { db } from "../drizzle/client.js";
+import { Entries, Verses } from "../drizzle/schema.js";
 
 /**
  * Correlated condition mirroring the legacy `entryListingCondition`

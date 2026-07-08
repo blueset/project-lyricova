@@ -441,7 +441,7 @@ export default function GlucagonScreensaver({
         glucagon.unregister();
       };
     }
-  }, [verses]);
+  }, [verses, entries]);
 
   return (
     <div className={classes.container}>

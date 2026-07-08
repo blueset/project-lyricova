@@ -12,7 +12,7 @@
  *
  * Regenerate with `npm run openapi -w @lyricova/api`.
  */
-import type { components, paths, operations } from "./schema";
+import type { components, paths, operations } from "./schema.js";
 
 export type { components, paths, operations };
 

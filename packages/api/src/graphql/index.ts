@@ -11,9 +11,9 @@ import cors from "cors";
 import { json } from "express";
 import { printSchema } from "graphql";
 import { writeFileSync } from "fs";
-import { buildPothosSchema } from "./pothos/schema";
-import type { Context } from "./pothos/builder";
-import { postHog } from "../utils/posthog";
+import { buildPothosSchema } from "./pothos/schema.js";
+import type { Context } from "./pothos/builder.js";
+import { postHog } from "../utils/posthog.js";
 
 export async function applyApollo(app: Application): Promise<Server> {
   // GraphQL schema is now built with Pothos (replacing TypeGraphQL).
@@ -22,7 +22,7 @@ export async function applyApollo(app: Application): Promise<Server> {
   // Keep schema.graphql fresh for the frontend codegen + parity checks
   // (replaces the TypeGraphQL `emitSchemaFile` behaviour).
   try {
-    writeFileSync(`${__dirname}/../../schema.graphql`, printSchema(schema));
+    writeFileSync(`${import.meta.dirname}/../../schema.graphql`, printSchema(schema));
   } catch (e) {
     console.error("Failed to emit schema.graphql:", e);
   }

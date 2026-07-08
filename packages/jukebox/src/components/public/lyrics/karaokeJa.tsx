@@ -148,24 +148,24 @@ function buildPages(lyrics: LyricsKitLyrics, duration: number): KaraokePage[] {
 // Line = -1 means countdown
 type KaraokeJaState =
   | {
-      /**
-       * Null to hide the page.
-       */
-      pageIdx: number;
-      /**
-       * Line Index.
-       * * -1 for countdown
-       * * `lines.length` to stay on the end of the page
-       * * `null` to stay on the beginning of the page
-       */
-      lineIdx: number | null;
-      showNext: boolean;
-    }
+    /**
+     * Null to hide the page.
+     */
+    pageIdx: number;
+    /**
+     * Line Index.
+     * * -1 for countdown
+     * * `lines.length` to stay on the end of the page
+     * * `null` to stay on the beginning of the page
+     */
+    lineIdx: number | null;
+    showNext: boolean;
+  }
   | {
-      pageIdx: null;
-      lineIdx: null;
-      showNext: false;
-    };
+    pageIdx: null;
+    lineIdx: null;
+    showNext: false;
+  };
 
 function useNicokaraLyricsState(
   lyrics: LyricsKitLyrics,
@@ -316,14 +316,14 @@ function LyricsLine({
 function LyricsLineHTML({ textLine, furiganaLine }: LyricsLineProps): string {
   const content = furiganaLine
     ? furiganaLine
-        .map(([text, ruby]) => {
-          if (text === ruby) {
-            return `<span>${text}</span>`;
-          } else {
-            return `<ruby>${text}<rp>(</rp><rt>${ruby}</rt><rp>)</rp></ruby>`;
-          }
-        })
-        .join("")
+      .map(([text, ruby]) => {
+        if (text === ruby) {
+          return `<span>${text}</span>`;
+        } else {
+          return `<ruby>${text}<rp>(</rp><rt>${ruby}</rt><rp>)</rp></ruby>`;
+        }
+      })
+      .join("")
     : `<span>${textLine}</span>`;
   return `<span style="position:relative;font-weight: 800;font-family: Source Han Serif,Noto Serif CJK,Noto Serif JP,serif;white-space:pre;">${content}</span>`;
 }
@@ -347,11 +347,11 @@ function buildPageClasses(
     const line = lyrics.lines[v];
     return line
       ? measureElement(
-          LyricsLineHTML({
-            textLine: line.content,
-            furiganaLine: furigana?.[v],
-          }),
-        ).width
+        LyricsLineHTML({
+          textLine: line.content,
+          furiganaLine: furigana?.[v],
+        }),
+      ).width
       : 0;
   });
 
@@ -520,10 +520,10 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   const { ref: measureRef, width: containerWidth } =
     useResizeObserver<HTMLDivElement>();
 
-  // Page should only be rebuild if the 2 parameters change
-
   const pages = useMemo(
     () => buildPages(lyrics, playerRef.current?.duration ?? lyrics.length ?? 0),
+    // Page should only be rebuild if the 2 parameters change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [lyrics, playerRef.current?.duration],
   );
   const activeRef = useRef<HTMLSpanElement>(null);
@@ -715,6 +715,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
         timeline.pause(inlineProgress);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     playerState,
     pageIdx,

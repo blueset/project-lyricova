@@ -1,8 +1,8 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
-import { OPENAI_MODEL } from "../utils/secret";
-import { getTranslationAlignmentLLMPrompt } from "../utils/llmPrompt";
+import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware.js";
+import { OPENAI_MODEL } from "../utils/secret.js";
+import { getTranslationAlignmentLLMPrompt } from "../utils/llmPrompt.js";
 import { streamText } from "ai";
 import { createAzure } from "@ai-sdk/azure";
 import { openrouter } from "@openrouter/ai-sdk-provider";

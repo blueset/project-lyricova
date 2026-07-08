@@ -1,5 +1,5 @@
-import { builder } from "../builder";
-import { SongRef, ArtistRef, AlbumRef } from "../types/refs";
+import { builder } from "../builder.js";
+import { SongRef, ArtistRef, AlbumRef } from "../types/refs.js";
 import {
   enrolSongFromVocaDB,
   enrolArtistFromVocaDB,
@@ -7,7 +7,7 @@ import {
   enrolSongFromUtaiteDB,
   enrolArtistFromUtaiteDB,
   enrolAlbumFromUtaiteDB,
-} from "../../../utils/enrol";
+} from "../../../utils/enrol.js";
 
 builder.mutationField("enrolSongFromVocaDB", (t) =>
   t.field({

@@ -1,8 +1,8 @@
 import { and, gt, inArray, eq, sql } from "drizzle-orm";
-import { builder } from "../builder";
-import { ArtistRef } from "../types/refs";
-import { db } from "../../../drizzle/client";
-import { Artists } from "../../../drizzle/schema";
+import { builder } from "../builder.js";
+import { ArtistRef } from "../types/refs.js";
+import { db } from "../../../drizzle/client.js";
+import { Artists } from "../../../drizzle/schema.js";
 import _ from "lodash";
 
 const ArtistInput = builder.inputType("ArtistInput", {

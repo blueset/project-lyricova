@@ -1,16 +1,16 @@
-import { MUSIC_FILES_PATH } from "../../../utils/secret";
-import { writeAsync as ffMetadataWrite } from "../../../utils/ffmetadata";
+import { MUSIC_FILES_PATH } from "../../../utils/secret.js";
+import { writeAsync as ffMetadataWrite } from "../../../utils/ffmetadata.js";
 import fs from "fs";
 import pLimit from "p-limit";
-import hasha from "hasha";
+import { hashFile } from "hasha";
 import { desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
-import { db } from "../../../drizzle/client";
+import { db } from "../../../drizzle/client.js";
 import {
   MusicFiles,
   Playlists,
   FileInPlaylists,
-} from "../../../drizzle/schema";
-import { updatePlaylistsOfFileAsTags } from "../../../utils/musicFileTags";
+} from "../../../drizzle/schema.js";
+import { updatePlaylistsOfFileAsTags } from "../../../utils/musicFileTags.js";
 import {
   ID3_LYRICS_LANGUAGE,
   buildSongEntry,
@@ -19,23 +19,23 @@ import {
   updateMD5,
   replaceFilePlaylists,
   fullPathOf,
-} from "../../../utils/musicFileScan";
+} from "../../../utils/musicFileScan.js";
 import Path from "path";
 import { GraphQLError } from "graphql";
 import NodeID3 from "node-id3";
-import { swapExt } from "../../../utils/path";
-import { builder } from "../builder";
-import { MusicFileRef } from "../types/refs";
+import { swapExt } from "../../../utils/path.js";
+import { builder } from "../builder.js";
+import { MusicFileRef } from "../types/refs.js";
 import type {
   MusicFilesScanOutcomeShape,
   MusicFilesPaginationEdgeShape,
-} from "../types/pagination";
+} from "../types/pagination.js";
 import {
   MusicFilesPaginationRef,
   MusicFilesScanOutcomeRef,
-} from "../types/pagination";
-import type { PubSubSessionPayload } from "../pubsub";
-import { pubsub, TOPIC_MUSIC_FILE_SCAN_PROGRESS } from "../pubsub";
+} from "../types/pagination.js";
+import type { PubSubSessionPayload } from "../pubsub.js";
+import { pubsub, TOPIC_MUSIC_FILE_SCAN_PROGRESS } from "../pubsub.js";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter((val) => !other.has(val)));
@@ -208,31 +208,25 @@ builder.mutationField("scan", (t) =>
       const limit = pLimit(10);
 
       if (!dryRun) {
-        const entriesToAdd = await Promise.all(
-          [...toAdd].map((filePath) =>
-            limit(async () => buildSongEntry(filePath)),
-          ),
+        const entriesToAdd = await limit.map(toAdd, (filePath) =>
+          buildSongEntry(filePath),
         );
 
         console.log("entries_to_add done.");
 
         const now = new Date();
-        await Promise.all(
-          entriesToAdd.map((built) =>
-            limit(async () => {
-              const inserted = await db.insert(MusicFiles).values({
-                ...built.values,
-                creationDate: now,
-                updatedOn: now,
-              });
-              if (built.playlistSlugs.length > 0)
-                await replaceFilePlaylists(
-                  inserted[0].insertId,
-                  built.playlistSlugs,
-                );
-            }),
-          ),
-        );
+        await limit.map(entriesToAdd, async (built) => {
+          const inserted = await db.insert(MusicFiles).values({
+            ...built.values,
+            creationDate: now,
+            updatedOn: now,
+          });
+          if (built.playlistSlugs.length > 0)
+            await replaceFilePlaylists(
+              inserted[0].insertId,
+              built.playlistSlugs,
+            );
+        });
         progressObj.added += entriesToAdd.length;
       }
 
@@ -246,20 +240,16 @@ builder.mutationField("scan", (t) =>
       console.log("to Update Entries", toUpdateEntries.length);
 
       if (!dryRun) {
-        await Promise.all(
-          toUpdateEntries.map((entry) =>
-            limit(async () => {
-              const updated = await updateSongEntry(entry);
-              if (!updated) progressObj.unchanged++;
-              else progressObj.updated++;
-              if (
-                sessionId &&
-                (progressObj.updated + progressObj.unchanged) % 10 === 0
-              )
-                if (sessionId) await publish({ sessionId, data: progressObj });
-            }),
-          ),
-        );
+        await limit.map(toUpdateEntries, async (entry) => {
+          const updated = await updateSongEntry(entry);
+          if (!updated) progressObj.unchanged++;
+          else progressObj.updated++;
+          if (
+            sessionId &&
+            (progressObj.updated + progressObj.unchanged) % 10 === 0
+          )
+            if (sessionId) await publish({ sessionId, data: progressObj });
+        });
       }
       if (sessionId) await publish({ sessionId, data: progressObj });
 
@@ -398,7 +388,7 @@ builder.mutationField("writeTagsToMusicFile", (t) =>
 
       await writeMetadataToFile(song, data);
 
-      const hash = await hasha.fromFile(fullPathOf(musicFilePath(song.path)), {
+      const hash = await hashFile(fullPathOf(musicFilePath(song.path)), {
         algorithm: "md5",
       });
       await db

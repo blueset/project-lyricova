@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { Songs, Artists, Albums } from "../drizzle/schema";
+import { db } from "../drizzle/client.js";
+import { Songs, Artists, Albums } from "../drizzle/schema.js";
 import {
   getAlbum,
   getArtist,
@@ -13,7 +13,7 @@ import {
   getBaseVoiceBank,
   getUtaiteDbBaseVoiceBank,
   getUtaiteDbOriginalSong,
-} from "./vocadb";
+} from "./vocadb.js";
 import {
   saveSongFromVocaDB,
   saveSongFromUtaiteDB,
@@ -21,7 +21,7 @@ import {
   saveArtistFromUtaiteDB,
   saveAlbumFromVocaDB,
   saveAlbumFromUtaiteDB,
-} from "./vocadbImport";
+} from "./vocadbImport.js";
 
 type SongRow = typeof Songs.$inferSelect;
 type ArtistRow = typeof Artists.$inferSelect;

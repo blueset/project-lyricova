@@ -18,7 +18,7 @@ import {
   TagOfEntries,
   Playlists,
   FileInPlaylists,
-} from "./schema";
+} from "./schema.js";
 
 /**
  * Drizzle `relations()` mirroring the Sequelize associations. Many-to-many links

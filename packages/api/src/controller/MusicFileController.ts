@@ -1,29 +1,29 @@
 import { eq, inArray } from "drizzle-orm";
-import { db } from "../drizzle/client";
-import { MusicFiles } from "../drizzle/schema";
-import { fullPathOf } from "../utils/musicFileScan";
+import { db } from "../drizzle/client.js";
+import { MusicFiles } from "../drizzle/schema.js";
+import { fullPathOf } from "../utils/musicFileScan.js";
 
 type MusicFile = typeof MusicFiles.$inferSelect;
 import type { Request, Response } from "express";
-import { requireNumericParams } from "../utils/numericParam";
-import { compat } from "../utils/expressCompat";
+import { requireNumericParams } from "../utils/numericParam.js";
+import { compat } from "../utils/expressCompat.js";
 import { Router } from "express";
-import { MUSIC_FILES_PATH } from "../utils/secret";
+import { MUSIC_FILES_PATH } from "../utils/secret.js";
 import ffprobe from "ffprobe-client";
-import ffmetadata from "../utils/ffmetadata";
+import ffmetadata from "../utils/ffmetadata.js";
 import fs from "fs";
-import hasha from "hasha";
+import { hashFile } from "hasha";
 import Path from "path";
-import chunkArray from "../utils/chunkArray";
+import chunkArray from "../utils/chunkArray.js";
 import _ from "lodash";
 import crypto from "crypto";
 import multer from "multer";
-import { swapExt } from "../utils/path";
+import { swapExt } from "../utils/path.js";
 import mime from "mime";
 import { Readable } from "stream";
-import { downloadFromStream } from "../utils/download";
-import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware";
-import tempy from "tempy";
+import { downloadFromStream } from "../utils/download.js";
+import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware.js";
+import { temporaryFile, temporaryDirectory } from "tempy";
 import pLimit from "p-limit";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
@@ -62,7 +62,7 @@ export class MusicFileController {
   }
 
   constructor() {
-    this.uploadDirectory = tempy.directory();
+    this.uploadDirectory = temporaryDirectory();
     const coverUpload = multer({
       storage: multer.diskStorage({
         destination: (req, file, callback) =>
@@ -168,7 +168,7 @@ export class MusicFileController {
   private async buildSongEntry(
     path: string,
   ): Promise<typeof MusicFiles.$inferInsert> {
-    const md5Promise = hasha.fromFile(path, { algorithm: "md5" });
+    const md5Promise = hashFile(path, { algorithm: "md5" });
     const metadataPromise = this.getSongMetadata(path);
     const md5 = await md5Promise,
       metadata = await metadataPromise;
@@ -196,7 +196,7 @@ export class MusicFileController {
     const hasLyrics = fs.existsSync(lrcPath);
     needUpdate = needUpdate || hasLyrics !== entry.hasLyrics;
     const fileSize = fs.statSync(path).size;
-    const md5 = await hasha.fromFile(path, { algorithm: "md5" });
+    const md5 = await hashFile(path, { algorithm: "md5" });
     needUpdate = needUpdate || md5 !== entry.hash;
     if (!needUpdate) return null;
 
@@ -339,8 +339,8 @@ export class MusicFileController {
     const limit = pLimit(10);
 
     if (!dryRun) {
-      const entriesToAdd = await Promise.all(
-        [...toAdd].map((path) => limit(async () => this.buildSongEntry(path))),
+      const entriesToAdd = await limit.map(toAdd, (path) =>
+        this.buildSongEntry(path),
       );
 
       console.log("entries_to_add done.");
@@ -361,10 +361,8 @@ export class MusicFileController {
     );
     let updateResults: (MusicFile | null)[] = [];
     if (!dryRun) {
-      updateResults = await Promise.all(
-        toUpdateEntries.map((entry) =>
-          limit(async () => this.updateSongEntry(entry)),
-        ),
+      updateResults = await limit.map(toUpdateEntries, (entry) =>
+        this.updateSongEntry(entry),
       );
     }
 
@@ -798,7 +796,7 @@ export class MusicFileController {
       });
     }
 
-    const coverUrl = tempy.file({ extension: "png" });
+    const coverUrl = temporaryFile({ extension: "png" });
     try {
       await ffmetadata.readAsync(fullPathOf(musicFile.path), {
         coverUrl: coverUrl,
@@ -1009,7 +1007,7 @@ export class MusicFileController {
       }
 
       // Update file hash
-      const md5 = await hasha.fromFile(fullPathOf(musicFile.path), {
+      const md5 = await hashFile(fullPathOf(musicFile.path), {
         algorithm: "md5",
       });
       await db

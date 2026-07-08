@@ -1,30 +1,30 @@
-import { LyricsProvider } from ".";
-import { LyricsProviderSourceId } from "../lyricsProviderSourceId";
-import type { LyricsSearchRequest } from "../lyricsSearchRequest";
+import { LyricsProvider } from "./index.js";
+import { LyricsProviderSourceId } from "../lyricsProviderSourceId.js";
+import type { LyricsSearchRequest } from "../lyricsSearchRequest.js";
 import axios from "axios";
-import { Lyrics } from "../../core/lyrics";
+import { Lyrics } from "../../core/lyrics.js";
 import { unzipSync } from "zlib";
 import {
   id3TagRegex,
   krcLineRegex,
   kugouInlineTagRegex,
-} from "../../utils/regexPattern";
+} from "../../utils/regexPattern.js";
 import {
   WordTimeTag,
   WordTimeTagLabel,
   Attachments,
   TIME_TAG,
   TRANSLATION,
-} from "../../core/lyricsLineAttachment";
-import { LyricsLine } from "../../core/lyricsLine";
+} from "../../core/lyricsLineAttachment.js";
+import { LyricsLine } from "../../core/lyricsLine.js";
 import _ from "lodash";
-import { LRC_BY, TITLE, ARTIST } from "../../core/idTagKey";
-import type { KugouKrcHeaderField } from "../types/kugou/headerField";
+import { LRC_BY, TITLE, ARTIST } from "../../core/idTagKey.js";
+import type { KugouKrcHeaderField } from "../types/kugou/headerField.js";
 import type {
   KugouResultItem,
   KugouResponseSearchResult,
-} from "../types/kugou/searchResult";
-import type { KugouResponseSingleLyrics } from "../types/kugou/singleLyrics";
+} from "../types/kugou/searchResult.js";
+import type { KugouResponseSingleLyrics } from "../types/kugou/singleLyrics.js";
 
 const SEARCH_URL = "http://lyrics.kugou.com/search";
 const LYRICS_URL = "http://lyrics.kugou.com/download";

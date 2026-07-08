@@ -9,9 +9,9 @@
  * Fallback: phonotactic analysis of the romanization itself.
  */
 
-import { alignSegments, extractScoringCore } from "./normalize";
-import { phonotacticClassify } from "./phonotactics";
-import { reconcile } from "./reconciliation";
+import { alignSegments, extractScoringCore } from "./normalize.js";
+import { phonotacticClassify } from "./phonotactics.js";
+import { reconcile } from "./reconciliation.js";
 
 export interface ClassificationResult {
   label: "ja" | "zh" | "unknown";
