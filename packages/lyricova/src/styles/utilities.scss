@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 .lyricova-container {
   padding-inline-start: $horizontal-gutter;

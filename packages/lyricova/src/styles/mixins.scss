@@ -1,3 +1,5 @@
+@use "sass:map";
+
 /* Responsive */
 $breakpoint-mobile: 540px;
 $breakpoint-tablet: 768px;
@@ -14,13 +16,13 @@ $grid-breakpoints: (
 );
 
 @mixin media-breakpoint-up($breakpoint) {
-  @media (min-width: map-get($grid-breakpoints, $breakpoint)) {
+  @media (min-width: map.get($grid-breakpoints, $breakpoint)) {
     @content;
   }
 }
 
 @mixin media-breakpoint-down($breakpoint) {
-  @media (max-width: map-get($grid-breakpoints, $breakpoint)) {
+  @media (max-width: map.get($grid-breakpoints, $breakpoint)) {
     @content;
   }
 }

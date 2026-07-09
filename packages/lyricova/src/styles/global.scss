@@ -1,4 +1,4 @@
-@import "variables";
-@import "utilities";
-@import "styles";
-@import "singleScreen";
+@use "variables" as *;
+@use "utilities" as *;
+@use "styles" as *;
+@use "singleScreen" as *;
