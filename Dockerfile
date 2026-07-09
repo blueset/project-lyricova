@@ -15,7 +15,7 @@ RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git /tmp
 
 # Install Python 3 and dependencies
 RUN apt-get install -y python3 python3-pip
-RUN pip3 install --upgrade pip && pip3 install "yt-dlp[default,curl-cffi]" --break-system-packages
+RUN pip3 install --upgrade pip && pip3 install --break-system-packages "yt-dlp[default,curl-cffi]"
 
 RUN npm install -g concurrently
 
