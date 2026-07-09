@@ -24,18 +24,20 @@ in VocaDB.net.</small>
 
 ## Packages
 
+- `api`: The backend API for both `jukebox` and `lyricova`.
 - `jukebox`: Music library manager and public jukebox.
 - `lyricova`: Lyrics blog (similar to version 1).
-- `common`: Common code shared between `jukebox` and `lyricova`.
+- `components`: Common front-end logic and components shared between `jukebox` and `lyricova`.
 - `lyrics-kit`: Fetch and parse lyrics from various sources.
 
 ## Install
 
 - Database
-
-  - Setup a MySQL database and import the schema from `lyricova-schema.sql`.
   - Create a MySQL user and grant it access to the database.
-
+  - Setup a MySQL database and initialize the schema with Drizzle:
+    ```bash
+    npm run db:migrate --workspace @lyricova/api
+    ```
 - Music file storage
   - Create a directory for storing music files (defaulted to
     `/var/lyricova/music`).
@@ -82,7 +84,7 @@ oneself through songs and lyrics.
 
 ```
 Project Lyricova: A lyrics blogging and music management suite for Vocaloid
-Copyright (C) 2013–2023 Eana Hufwe
+Copyright (C) 2013–2026 Eana Hufwe
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
