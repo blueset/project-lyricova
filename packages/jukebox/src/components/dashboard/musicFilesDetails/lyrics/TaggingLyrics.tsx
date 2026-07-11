@@ -142,6 +142,9 @@ function ExtrapolateModeToggle({
 }
 const ExtrapolateModeToggleMemo = memo(ExtrapolateModeToggle);
 
+/**
+ * Render the native-audio lyrics tagging editor with media-clock highlighting.
+ */
 export default function TaggingLyrics({ fileId }: Props) {
   const [playbackRate, setPlaybackRate] = useNamedState(1, "playbackRate");
 

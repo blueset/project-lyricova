@@ -1,5 +1,11 @@
 import { useEffect, useRef } from "react";
 
+/**
+ * Run a callback on the next animation frame and continue while active.
+ *
+ * Changing `refreshKey` schedules a one-shot frame even while inactive, which
+ * allows paused media seeks to refresh their derived UI state.
+ */
 export function useAnimationFrame(
   callback: (timestamp: number) => void,
   active: boolean,

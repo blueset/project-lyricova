@@ -20,6 +20,7 @@ import { useWebAnimationController } from "../../../hooks/useWebAnimationControl
 import { readPlaybackSnapshot } from "../../../hooks/useMediaClock";
 
 interface LyricsRowRefs {
+  /** Synchronize this row's line-local animation with media playback. */
   synchronize(snapshot: PlaybackSnapshot): void;
   scrollToCenter(): void;
 }
@@ -31,6 +32,9 @@ type LyricsRowProps = {
   end?: number;
 };
 
+/**
+ * Render a preview row with a media-controlled per-character fill animation.
+ */
 const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
   { line, isActive, start = 0, end = 1e100 },
   ref,
@@ -137,6 +141,12 @@ interface Props {
   className?: string;
 }
 
+/**
+ * Render an audio-backed lyrics preview and synchronize every mounted row.
+ *
+ * Newly mounted rows receive the current snapshot immediately, while active
+ * rows are centered as the playback frame changes.
+ */
 export default function LyricsPreview({ lyrics, fileId, className }: Props) {
   const playerRef = useRef<HTMLAudioElement>(null!);
   const containerRef = useRef<HTMLDivElement>(null);

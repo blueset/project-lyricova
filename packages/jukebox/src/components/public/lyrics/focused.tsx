@@ -20,6 +20,9 @@ const TRANSITION: Transition = {
   ease: "easeOut",
 };
 
+/**
+ * Create a timed opacity span for full-line or per-syllable focused lyrics.
+ */
 const TimedSpanGenerator = (full: boolean) =>
   forwardRef<LyricsAnimationRef, TimedSpanProps>(function TimedSpan(
     { startTime, endTime, children },
@@ -219,6 +222,12 @@ interface Props {
   variant?: "plain" | "glow" | "glowPerSyllable";
 }
 
+/**
+ * Render the active focused lyric lines and synchronize their span animations.
+ *
+ * Each newly mounted line receives the current media snapshot before subsequent
+ * playback-state updates.
+ */
 export function FocusedLyrics({
   lyrics,
   transLangIdx,

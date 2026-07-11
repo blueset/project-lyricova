@@ -143,6 +143,9 @@ interface Props {
   fileId: number;
 }
 
+/**
+ * Render the Web Audio lyrics tagging editor with frame-synchronized progress.
+ */
 export default function WebAudioTaggingLyrics({ fileId }: Props) {
   const {
     linesLength,

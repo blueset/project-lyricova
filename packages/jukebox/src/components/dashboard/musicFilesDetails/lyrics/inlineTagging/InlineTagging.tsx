@@ -65,6 +65,12 @@ interface Props {
   fileId: number;
 }
 
+/**
+ * Render inline lyrics tagging and synchronize its per-line GSAP timelines.
+ *
+ * Playback changes update every mounted timeline from one Web Audio snapshot,
+ * and all timelines are killed when the editor unmounts.
+ */
 export default function InlineTagging({ fileId }: Props) {
   const { playerStatus, play, pause, seek, setRate, getProgress, audioBuffer } =
     useWebAudio(`/api/files/${fileId}/file`);

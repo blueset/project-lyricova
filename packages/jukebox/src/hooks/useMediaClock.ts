@@ -18,6 +18,11 @@ const MEDIA_EVENTS: (keyof HTMLMediaElementEventMap)[] = [
   "waiting",
 ];
 
+/**
+ * Read the media element's current timing state for animation synchronization.
+ *
+ * Media that is paused, ended, or lacks future data is reported as paused.
+ */
 export function readPlaybackSnapshot(
   player: HTMLMediaElement,
 ): PlaybackSnapshot {
@@ -34,6 +39,11 @@ export function readPlaybackSnapshot(
   };
 }
 
+/**
+ * Find the last entry in sorted `startTimes` that is not after `currentTime`.
+ *
+ * @returns The matching index, or `-1` before the first keyframe.
+ */
 export function findActiveKeyframeIndex(
   startTimes: readonly number[],
   currentTime: number,
@@ -53,6 +63,13 @@ export function findActiveKeyframeIndex(
   return low - 1;
 }
 
+/**
+ * Emit media timing snapshots on relevant media events and during playback.
+ *
+ * The hook synchronizes immediately, resumes after visibility changes, and
+ * cancels its animation frame on pause or unmount. Continuous animation frames
+ * can be disabled for consumers that only need event-driven state.
+ */
 export function useMediaClock(
   playerRef: RefObject<HTMLMediaElement | null>,
   onSnapshot: (snapshot: PlaybackSnapshot) => void,

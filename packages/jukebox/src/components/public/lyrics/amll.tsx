@@ -21,6 +21,12 @@ interface Props {
   transLangIdx?: number;
 }
 
+/**
+ * Adapt Lyricova lines to Apple Music-like lyric words and playback timing.
+ *
+ * Media-clock snapshots drive millisecond progress so seeks, stalls, rate
+ * changes, and paused updates remain synchronized with the external renderer.
+ */
 export function AMLLyrics({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
   const playerState = usePlayerState(playerRef);

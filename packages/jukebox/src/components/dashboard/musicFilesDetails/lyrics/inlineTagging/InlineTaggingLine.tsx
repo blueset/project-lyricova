@@ -63,6 +63,12 @@ interface InlineTaggingLineProps {
   section: "mark" | "tag";
 }
 
+/**
+ * Render one inline-tagging row and own its line-local GSAP fill timeline.
+ *
+ * The timeline is created only for the active row, initialized from Web Audio
+ * state, and killed when the row leaves the active range or unmounts.
+ */
 function InlineTaggingLine({
   index,
   timelinesRef,

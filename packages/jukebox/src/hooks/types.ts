@@ -36,6 +36,7 @@ export interface PlaybackSnapshot {
 }
 
 export interface PlaybackAnimationController {
+  /** Seek the animation to a media snapshot and match its rate and play state. */
   synchronize: (snapshot: PlaybackSnapshot) => void;
 }
 

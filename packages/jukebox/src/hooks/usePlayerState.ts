@@ -3,6 +3,12 @@ import type { PlayerState } from "./types";
 import { useNamedState } from "./useNamedState";
 import { useMediaClock } from "./useMediaClock";
 
+/**
+ * Derive stable paused or playing state from an audio element's media clock.
+ *
+ * Paused state preserves exact progress and playback rate; playing state uses
+ * a performance-time origin while suppressing insignificant event updates.
+ */
 export function usePlayerState(playerRef: RefObject<HTMLAudioElement>) {
   const [playerState, setPlayerState] = useNamedState<PlayerState>(
     { state: "paused", progress: 0, rate: 1 },

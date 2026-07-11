@@ -12,6 +12,12 @@ interface Props {
   transLangIdx?: number;
 }
 
+/**
+ * Render horizontally scrolling slanted lyrics on a track-wide GSAP timeline.
+ *
+ * Resize observations rebuild the layout-dependent timeline, which is then
+ * synchronized against the media element and disposed when replaced.
+ */
 export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
   const container = useRef<HTMLDivElement>(null);

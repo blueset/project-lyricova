@@ -136,6 +136,12 @@ interface LineRendererProps<TContainer extends ElementType = ElementType> {
   timedSpan: TimedSpanComponent;
 }
 
+/**
+ * Render timed text and ruby segments behind one line-local animation controller.
+ *
+ * Playback snapshots are rebased to the line start, and out-of-range lines are
+ * held paused so all child span animations share the same timing contract.
+ */
 const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
   function InnerLineRenderer(
     {
@@ -156,6 +162,7 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
     };
 
     useImperativeHandle(ref, () => ({
+      /** Forward a line-local playback snapshot to every animated span. */
       synchronize(snapshot: PlaybackSnapshot) {
         const isInRange =
           start <= snapshot.currentTime && snapshot.currentTime <= end;

@@ -13,6 +13,7 @@ import type { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { useSpring, animated } from "@react-spring/web";
 import { useWebAnimationController } from "../../../hooks/useWebAnimationController";
 
+/** Render a timed opacity span controlled by its parent lyrics line. */
 const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
   function TimedSpan({ startTime, endTime, children }, ref) {
     const createAnimation = useCallback(

@@ -9,6 +9,9 @@ import { useWebAnimationController } from "../../../../hooks/useWebAnimationCont
 const FILLED_OPACITY = 100;
 const BLANK_OPACITY = 50;
 
+/**
+ * Render a timed Ringoll span with either a static pulse or mask reveal.
+ */
 const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
   function TimedSpan({ startTime, endTime, static: isStatic, children }, ref) {
     const createAnimation = useCallback(

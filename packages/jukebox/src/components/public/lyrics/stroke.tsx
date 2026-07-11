@@ -152,6 +152,12 @@ interface LyricsLineElementProps {
   onProgressorReady?: (scene: Scene | null) => void;
 }
 
+/**
+ * Render one measured SVG lyric line and expose its paused Scene controller.
+ *
+ * The scene is rebuilt when wrapping or line content changes; its parent owns
+ * playback synchronization.
+ */
 function LyricsLineElement({
   line,
   duration,
@@ -271,6 +277,9 @@ interface Props {
   lyrics: LyricsKitLyrics;
 }
 
+/**
+ * Render stroke lyrics and synchronize the active line's Scene with playback.
+ */
 export function StrokeLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const { ref: measureRef, width } = useResizeObserver<HTMLDivElement>();

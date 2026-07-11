@@ -9,7 +9,12 @@ import {
   useMediaClock,
 } from "./useMediaClock";
 
-/** Select the current lyrics line from the media element's playback clock. */
+/**
+ * Select the current lyrics line from the media element's playback clock.
+ *
+ * The optional callback runs only when the active line changes and receives
+ * the next line position, or the finite media duration for the final line.
+ */
 export function useLyricsState(
   playerRef: RefObject<HTMLAudioElement>,
   lyrics: LyricsKitLyrics,

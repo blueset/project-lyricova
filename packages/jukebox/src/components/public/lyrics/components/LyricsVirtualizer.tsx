@@ -38,6 +38,12 @@ export interface LyricsVirtualizerProps<
   containerProps?: React.ComponentProps<TELement>;
 }
 
+/**
+ * Virtualize lyric rows and keep their imperative animations on the media clock.
+ *
+ * Animation refs are synchronized both when playback changes and when a
+ * virtualized row mounts. Clicking a row seeks to its segment start.
+ */
 export function LyricsVirtualizer({
   children: rowRenderer,
   rows,

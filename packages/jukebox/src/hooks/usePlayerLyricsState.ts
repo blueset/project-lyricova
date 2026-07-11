@@ -9,7 +9,13 @@ import {
   useMediaClock,
 } from "./useMediaClock";
 
-/** Select the current lyrics frame from the media element's playback clock. */
+/**
+ * Select the current lyrics frame from the media element's playback clock.
+ *
+ * Invalid start times are excluded from scheduling while returned frame IDs
+ * still refer to the original keyframe order. The final frame ends at the
+ * finite media duration when it is available.
+ */
 export function usePlayerLyricsState<T>(
   keyframes: PlayerLyricsKeyframe<T>[],
   playerRef: RefObject<HTMLAudioElement>,

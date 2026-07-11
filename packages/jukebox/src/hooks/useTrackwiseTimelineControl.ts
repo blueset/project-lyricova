@@ -5,6 +5,11 @@ import { readPlaybackSnapshot } from "./useMediaClock";
 
 type Timeline = gsap.core.Timeline;
 
+/**
+ * Seek a GSAP timeline to a media snapshot and match its rate and play state.
+ *
+ * @param offset Seconds to subtract when the timeline is local to a segment.
+ */
 export function synchronizeGsapTimeline(
   timeline: Timeline,
   snapshot: PlaybackSnapshot,
@@ -20,7 +25,10 @@ export function synchronizeGsapTimeline(
 }
 
 /**
- * Control a GSAP timeline which covers the entire track according to the player state.
+ * Synchronize a track-wide GSAP timeline with the media element.
+ *
+ * `playerState` invalidates the effect, while the media element remains the
+ * source of truth for the exact time, playback rate, and paused state.
  */
 export function useTrackwiseTimelineControl(
   playerRef: RefObject<HTMLMediaElement>,

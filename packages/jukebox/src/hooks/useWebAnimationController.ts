@@ -2,6 +2,7 @@ import type { ForwardedRef, RefCallback } from "react";
 import { useCallback, useImperativeHandle, useRef } from "react";
 import type { PlaybackAnimationController, PlaybackSnapshot } from "./types";
 
+/** Apply a media snapshot to a Web Animation without replaying a completed one. */
 function synchronizeAnimation(
   animation: Animation,
   snapshot: PlaybackSnapshot,
@@ -20,6 +21,13 @@ function synchronizeAnimation(
   }
 }
 
+/**
+ * Bind a Web Animation to an imperative media playback controller.
+ *
+ * The returned ref callback creates one animation for the mounted element,
+ * applies the latest snapshot again after the animation becomes ready, and
+ * cancels the animation during ref cleanup or unmount.
+ */
 export function useWebAnimationController<TElement extends Element>(
   forwardedRef: ForwardedRef<PlaybackAnimationController>,
   createAnimation: (element: TElement) => Animation,

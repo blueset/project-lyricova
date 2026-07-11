@@ -517,6 +517,12 @@ interface Props {
   blur?: boolean;
 }
 
+/**
+ * Render paginated Japanese karaoke lyrics with line-local GSAP progress.
+ *
+ * Timelines are rebuilt for each active line or countdown, synchronized from
+ * the media clock, and killed when replaced or unmounted.
+ */
 export function KaraokeJaLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const { ref: measureRef, width: containerWidth } =
