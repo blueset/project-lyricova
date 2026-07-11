@@ -1,5 +1,5 @@
 import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type {
   LyricLine as AAMLyricLine,
   LyricWord as AMLLyricWord,
@@ -7,6 +7,7 @@ import type {
 import { useAppContext } from "../AppContext";
 import { usePlayerState } from "../../../hooks/usePlayerState";
 import dynamic from "next/dynamic";
+import { useMediaClock } from "../../../hooks/useMediaClock";
 
 const LyricPlayer = dynamic(
   () => import("../compat/amllLyricsPlayer").then((m) => m.LyricPlayer),
@@ -20,6 +21,12 @@ interface Props {
   transLangIdx?: number;
 }
 
+/**
+ * Adapt Lyricova lines to Apple Music-like lyric words and playback timing.
+ *
+ * Media-clock snapshots drive millisecond progress so seeks, stalls, rate
+ * changes, and paused updates remain synchronized with the external renderer.
+ */
 export function AMLLyrics({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
   const playerState = usePlayerState(playerRef);
@@ -90,31 +97,14 @@ export function AMLLyrics({ lyrics, transLangIdx }: Props) {
   }, [lang, lyrics.lines, playerRef]);
 
   const [playbackProgressMs, setPlaybackProgressMs] = useState(
-    Math.floor(playerRef.current.currentTime * 1000),
+    Math.floor((playerRef.current?.currentTime ?? 0) * 1000),
   );
-  const updatePlaybackProgressMs = useCallback(() => {
-    setPlaybackProgressMs(Math.floor(playerRef.current.currentTime * 1000));
-    if (playerRef.current?.paused !== true) {
-      requestAnimationFrame(updatePlaybackProgressMs);
-    }
-  }, [playerRef]);
-
-  useEffect(() => {
-    requestAnimationFrame(updatePlaybackProgressMs);
-  }, [playerState.state, updatePlaybackProgressMs]);
-
-  useEffect(() => {
-    function onTimeUpdate() {
-      requestAnimationFrame(updatePlaybackProgressMs);
-    }
-    const player = playerRef.current;
-    player.addEventListener("timeupdate", onTimeUpdate);
-    player.addEventListener("seeked", onTimeUpdate);
-    return () => {
-      player.removeEventListener("timeupdate", onTimeUpdate);
-      player.removeEventListener("seeked", onTimeUpdate);
-    };
-  }, [playerRef, updatePlaybackProgressMs]);
+  useMediaClock(playerRef, (snapshot) => {
+    const nextProgress = Math.floor(snapshot.currentTime * 1000);
+    setPlaybackProgressMs((progress) =>
+      progress === nextProgress ? progress : nextProgress,
+    );
+  });
 
   return (
     <div

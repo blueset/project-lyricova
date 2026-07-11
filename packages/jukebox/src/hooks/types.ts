@@ -24,7 +24,21 @@ export type PlayerState =
       state: "paused";
       /** Progress of the current player (seconds). */
       progress: number;
+      /** Playback rate to use when playback resumes. */
+      rate: number;
     };
+
+export interface PlaybackSnapshot {
+  currentTime: number;
+  duration: number;
+  playbackRate: number;
+  state: "playing" | "paused";
+}
+
+export interface PlaybackAnimationController {
+  /** Seek the animation to a media snapshot and match its rate and play state. */
+  synchronize: (snapshot: PlaybackSnapshot) => void;
+}
 
 export interface PlayerLyricsKeyframe<T> {
   /** Start of the frame, in seconds. */

@@ -212,7 +212,7 @@ export function PictureInPictureLyrics({ lyrics }: Props) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const timeline = gsap.timeline();
+    const timeline = gsap.timeline({ paused: true });
     if (!canvas) {
       console.error("canvas not ready", canvas);
       return;
@@ -310,7 +310,7 @@ export function PictureInPictureLyrics({ lyrics }: Props) {
     };
   }, []);
 
-  useTrackwiseTimelineControl(playerState, timeline);
+  useTrackwiseTimelineControl(playerRef, playerState, timeline);
 
   return (
     <div lang="ja">

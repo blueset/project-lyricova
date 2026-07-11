@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { measureTextWidths } from "../../../../../frontendUtils/measure";
 import type { WebAudioPlayerState } from "../../../../../hooks/types";
 import gsap from "gsap";
+import { synchronizeGsapTimeline } from "../../../../../hooks/useTrackwiseTimelineControl";
 import {
   Tooltip,
   TooltipContent,
@@ -62,6 +63,12 @@ interface InlineTaggingLineProps {
   section: "mark" | "tag";
 }
 
+/**
+ * Render one inline-tagging row and own its line-local GSAP fill timeline.
+ *
+ * The timeline is created only for the active row, initialized from Web Audio
+ * state, and killed when the row leaves the active range or unmounts.
+ */
 function InlineTaggingLine({
   index,
   timelinesRef,
@@ -158,7 +165,7 @@ function InlineTaggingLine({
         timelinesRef.current = [];
         return;
       }
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ paused: true });
 
       let start = -1;
       startingTags.forEach((x, idx) => {
@@ -189,14 +196,20 @@ function InlineTaggingLine({
           start = x;
         }
       });
-      tl.timeScale(playerStatusRef.current.rate);
       const progress = getProgress();
-      if (playerStatusRef.current.state === "playing") {
-        tl.play(progress);
-      } else {
-        tl.pause(progress);
-      }
+      synchronizeGsapTimeline(tl, {
+        currentTime: progress,
+        duration: Number.NaN,
+        playbackRate: playerStatusRef.current.rate,
+        state: playerStatusRef.current.state,
+      });
       timelinesRef.current[index] = tl;
+      return () => {
+        if (timelinesRef.current[index] === tl) {
+          timelinesRef.current[index] = undefined;
+        }
+        tl.kill();
+      };
     } else if (relativeProgress === 1) {
       centerRow.style.backgroundSize = "0px 100%";
       if (timelinesRef.current?.[index]) {
@@ -218,8 +231,6 @@ function InlineTaggingLine({
         timelinesRef.current[index] = undefined;
       }
     }
-    // return () => {timelinesRef.current[index] = undefined; };
-    // Explicitly only depends on relativeProgress to prevent excessive re-renders
   }, [
     relativeProgress,
     index,

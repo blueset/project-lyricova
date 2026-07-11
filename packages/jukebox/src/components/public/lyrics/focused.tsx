@@ -6,77 +6,60 @@ import { useAppContext } from "../AppContext";
 import type { Transition } from "framer-motion";
 import { motion } from "framer-motion";
 import { useActiveLyrcsRanges } from "../../../hooks/useActiveLyricsRanges";
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { forwardRef, useCallback, useEffect, useRef } from "react";
 import type { LyricsAnimationRef } from "./components/AnimationRef.type";
 import type { TimedSpanProps } from "./components/RubyLineRenderer";
 import { LineRenderer } from "./components/RubyLineRenderer";
 import { cn } from "@lyricova/components/utils";
 import { safeDuration } from "../../../frontendUtils/safeDuration";
+import { useWebAnimationController } from "../../../hooks/useWebAnimationController";
+import { readPlaybackSnapshot } from "../../../hooks/useMediaClock";
 
 const TRANSITION: Transition = {
   duration: 0.2,
   ease: "easeOut",
 };
 
+/**
+ * Create a timed opacity span for full-line or per-syllable focused lyrics.
+ */
 const TimedSpanGenerator = (full: boolean) =>
   forwardRef<LyricsAnimationRef, TimedSpanProps>(function TimedSpan(
     { startTime, endTime, children },
     ref,
   ) {
-    const webAnimationRef = useRef<Animation | null>(null);
-    const refCallback = useCallback(
-      (node: HTMLSpanElement | null) => {
-        if (node && node.style.opacity !== "1") {
-          node.style.opacity = "1";
-          const duration = safeDuration(startTime, endTime, 0.1, { children });
-          webAnimationRef.current = node.animate(
-            full
-              ? [
-                  { opacity: "0.3" },
-                  { opacity: "1", offset: 0.1 },
-                  { opacity: "1" },
-                ]
-              : [
-                  { opacity: "0.3" },
-                  { opacity: "1", offset: 0.1 },
-                  { opacity: "1", offset: 0.9 },
-                  { opacity: "0.6", offset: 1 },
-                ],
-            {
-              delay: startTime * 1000,
-              duration: duration * 1000,
-              fill: "both",
-              id: `static-mask-${startTime}-${endTime}-${children}`,
-            },
-          );
-        }
+    const createAnimation = useCallback(
+      (node: HTMLSpanElement) => {
+        const duration = safeDuration(startTime, endTime, 0.1, { children });
+        return node.animate(
+          full
+            ? [
+                { opacity: "0.3" },
+                { opacity: "1", offset: 0.1 },
+                { opacity: "1" },
+              ]
+            : [
+                { opacity: "0.3" },
+                { opacity: "1", offset: 0.1 },
+                { opacity: "1", offset: 0.9 },
+                { opacity: "0.6", offset: 1 },
+              ],
+          {
+            delay: startTime * 1000,
+            duration: duration * 1000,
+            fill: "both",
+            id: `static-mask-${startTime}-${endTime}-${children}`,
+          },
+        );
       },
-      [children, startTime, endTime],
+      [children, endTime, startTime],
     );
-    useImperativeHandle(ref, () => ({
-      resume(time?: number) {
-        const anim = webAnimationRef.current;
-        if (anim) {
-          anim.currentTime = time ? time * 1000 : 0;
-          if ((time ?? 0) <= endTime) anim.play();
-          else anim.pause();
-        }
-      },
-      pause(time?: number) {
-        const anim = webAnimationRef.current;
-        if (anim) {
-          anim.pause();
-          anim.currentTime = time ? time * 1000 : 0;
-        }
-      },
-    }));
-    return <span ref={refCallback}>{children}</span>;
+    const refCallback = useWebAnimationController(ref, createAnimation);
+    return (
+      <span ref={refCallback} style={{ opacity: 1 }}>
+        {children}
+      </span>
+    );
   });
 
 const TimedSpan = TimedSpanGenerator(true);
@@ -239,6 +222,12 @@ interface Props {
   variant?: "plain" | "glow" | "glowPerSyllable";
 }
 
+/**
+ * Render the active focused lyric lines and synchronize their span animations.
+ *
+ * Each newly mounted line receives the current media snapshot before subsequent
+ * playback-state updates.
+ */
 export function FocusedLyrics({
   lyrics,
   transLangIdx,
@@ -249,27 +238,16 @@ export function FocusedLyrics({
     lyrics.lines,
     playerRef,
   );
-  const playerStateRef = useRef(playerState);
-  playerStateRef.current = playerState;
 
   const animationRefs = useRef<(LyricsAnimationRef | null)[]>([]);
   useEffect(() => {
-    if (playerState.state === "playing") {
-      const currentTime =
-        (performance.now() - playerState.startingAt) / playerState.rate / 1000;
-      animationRefs.current.forEach((ref) => {
-        if (ref) {
-          ref.resume(currentTime);
-        }
-      });
-    } else {
-      animationRefs.current.forEach((ref) => {
-        if (ref) {
-          ref.pause(playerState.progress);
-        }
-      });
-    }
-  }, [playerState]);
+    const player = playerRef.current;
+    if (!player) return;
+    const snapshot = readPlaybackSnapshot(player);
+    animationRefs.current.forEach((animationRef) => {
+      animationRef?.synchronize(snapshot);
+    });
+  }, [currentFrame, playerRef, playerState]);
 
   const lines = lyrics.lines;
   const lang = lyrics.translationLanguages[transLangIdx ?? 0];
@@ -284,19 +262,12 @@ export function FocusedLyrics({
     (index: number) => (ref: LyricsAnimationRef | null) => {
       if (animationRefs.current[index] === ref) return;
       animationRefs.current[index] = ref;
-      if (ref) {
-        if (playerStateRef.current.state === "playing") {
-          const currentTime =
-            (performance.now() - playerStateRef.current.startingAt) /
-            playerStateRef.current.rate /
-            1000;
-          ref.resume(currentTime);
-        } else {
-          ref.pause(playerStateRef.current.progress);
-        }
+      const player = playerRef.current;
+      if (ref && player) {
+        ref.synchronize(readPlaybackSnapshot(player));
       }
     },
-    [],
+    [playerRef],
   );
 
   return (

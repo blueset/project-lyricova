@@ -181,6 +181,9 @@ Know these so you don't hunt for "missing" files or commit generated output:
 No new steps. Edit, and let `tsc -w` / `next dev` recompile. Validate with the
 per-package commands in [§6](#6-verification).
 
+For media-synchronized jukebox lyrics, follow the lifecycle and timing rules in
+[Jukebox animation timing](./jukebox-animation-timing.md).
+
 ### 5.2 GraphQL — **client** documents (queries/mutations/subscriptions)
 
 Anywhere in `components`, `jukebox`, or `lyricova`:
@@ -315,12 +318,12 @@ npm run typecheck:native  # turbo run typecheck:native (tsgo / TS 7 preview)
 npm run test              # turbo run test            (jest)
 ```
 
-| Package                                | Type-check                          | Lint           | Test              | Schema                |
-| -------------------------------------- | ----------------------------------- | -------------- | ----------------- | --------------------- |
-| `@lyricova/api`                        | `npm run typecheck` (or `build:ts`) | `npm run lint` | `npm test` (jest) | `npm run pothos:emit` |
-| `@lyricova/components`                 | `npm run typecheck`                 | `npm run lint` | —                 | —                     |
-| `@lyricova/jukebox`                    | `npm run typecheck`                 | `npm run lint` | `npm test`        | —                     |
-| `@lyricova/blog` (`packages/lyricova`) | `npm run typecheck`                 | `npm run lint` | `npm test`        | —                     |
+| Package                                | Type-check                          | Lint           | Test                               | Schema                |
+| -------------------------------------- | ----------------------------------- | -------------- | ---------------------------------- | --------------------- |
+| `@lyricova/api`                        | `npm run typecheck` (or `build:ts`) | `npm run lint` | `npm test` (jest)                  | `npm run pothos:emit` |
+| `@lyricova/components`                 | `npm run typecheck`                 | `npm run lint` | —                                  | —                     |
+| `@lyricova/jukebox`                    | `npm run typecheck`                 | `npm run lint` | `npm test`; `npm run test:browser` | —                     |
+| `@lyricova/blog` (`packages/lyricova`) | `npm run typecheck`                 | `npm run lint` | `npm test`                         | —                     |
 
 > Type-checking `components`, `jukebox`, or `lyricova` requires the generated
 > `@lyricova/components/gql` to exist — run `npm run codegen -w @lyricova/components`

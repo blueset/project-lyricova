@@ -1,4 +1,3 @@
-export interface LyricsAnimationRef {
-  resume: (time?: number) => void;
-  pause: (time?: number) => void;
-}
+import type { PlaybackAnimationController } from "../../../../hooks/types";
+
+export type LyricsAnimationRef = PlaybackAnimationController;

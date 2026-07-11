@@ -20,6 +20,8 @@ import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
 import { graphql } from "@lyricova/components/gql";
 import { cn } from "@lyricova/components/utils";
+import { readPlaybackSnapshot } from "../../../hooks/useMediaClock";
+import { synchronizeGsapTimeline } from "../../../hooks/useTrackwiseTimelineControl";
 
 type Timeline = gsap.core.Timeline;
 const COUNTDOWN_DURATION = 3;
@@ -148,24 +150,24 @@ function buildPages(lyrics: LyricsKitLyrics, duration: number): KaraokePage[] {
 // Line = -1 means countdown
 type KaraokeJaState =
   | {
-    /**
-     * Null to hide the page.
-     */
-    pageIdx: number;
-    /**
-     * Line Index.
-     * * -1 for countdown
-     * * `lines.length` to stay on the end of the page
-     * * `null` to stay on the beginning of the page
-     */
-    lineIdx: number | null;
-    showNext: boolean;
-  }
+      /**
+       * Null to hide the page.
+       */
+      pageIdx: number;
+      /**
+       * Line Index.
+       * * -1 for countdown
+       * * `lines.length` to stay on the end of the page
+       * * `null` to stay on the beginning of the page
+       */
+      lineIdx: number | null;
+      showNext: boolean;
+    }
   | {
-    pageIdx: null;
-    lineIdx: null;
-    showNext: false;
-  };
+      pageIdx: null;
+      lineIdx: null;
+      showNext: false;
+    };
 
 function useNicokaraLyricsState(
   lyrics: LyricsKitLyrics,
@@ -316,14 +318,14 @@ function LyricsLine({
 function LyricsLineHTML({ textLine, furiganaLine }: LyricsLineProps): string {
   const content = furiganaLine
     ? furiganaLine
-      .map(([text, ruby]) => {
-        if (text === ruby) {
-          return `<span>${text}</span>`;
-        } else {
-          return `<ruby>${text}<rp>(</rp><rt>${ruby}</rt><rp>)</rp></ruby>`;
-        }
-      })
-      .join("")
+        .map(([text, ruby]) => {
+          if (text === ruby) {
+            return `<span>${text}</span>`;
+          } else {
+            return `<ruby>${text}<rp>(</rp><rt>${ruby}</rt><rp>)</rp></ruby>`;
+          }
+        })
+        .join("")
     : `<span>${textLine}</span>`;
   return `<span style="position:relative;font-weight: 800;font-family: Source Han Serif,Noto Serif CJK,Noto Serif JP,serif;white-space:pre;">${content}</span>`;
 }
@@ -347,11 +349,11 @@ function buildPageClasses(
     const line = lyrics.lines[v];
     return line
       ? measureElement(
-        LyricsLineHTML({
-          textLine: line.content,
-          furiganaLine: furigana?.[v],
-        }),
-      ).width
+          LyricsLineHTML({
+            textLine: line.content,
+            furiganaLine: furigana?.[v],
+          }),
+        ).width
       : 0;
   });
 
@@ -515,6 +517,12 @@ interface Props {
   blur?: boolean;
 }
 
+/**
+ * Render paginated Japanese karaoke lyrics with line-local GSAP progress.
+ *
+ * Timelines are rebuilt for each active line or countdown, synchronized from
+ * the media clock, and killed when replaced or unmounted.
+ */
 export function KaraokeJaLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const { ref: measureRef, width: containerWidth } =
@@ -612,7 +620,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     if (shouldUseTimelineFor !== timelineForRef.current) {
       if (timelineRef.current) timelineRef.current.kill();
       const tl = gsap.timeline({
-        paused: playerState.state === "paused",
+        paused: true,
       });
       timelineForRef.current = shouldUseTimelineFor;
       if (currentLine === null && activeSpan !== null)
@@ -642,7 +650,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
               idx > 0 ? v.timeTag - tags[idx - 1].timeTag : v.timeTag;
             let start = idx > 0 ? tags[idx - 1].timeTag : 0;
             if (start === 0 && v.index !== 0) start = 0.0001;
-            let percentage = -2;
+            let percentage = 102;
             if (v.index > 0) percentage = percentages[v.index - 1];
             tl.to(
               activeSpan,
@@ -703,17 +711,11 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     }
 
     // Controls the progress of timeline
-    const now = performance.now();
     const timeline = timelineRef.current;
-    if (timeline) {
+    const player = playerRef.current;
+    if (timeline && player) {
       const start = currentLineStartRef.current || 0;
-      if (playerState.state === "playing") {
-        const inlineProgress = (now - playerState.startingAt) / 1000 - start;
-        timeline.play(inlineProgress);
-      } else {
-        const inlineProgress = playerState.progress - start;
-        timeline.pause(inlineProgress);
-      }
+      synchronizeGsapTimeline(timeline, readPlaybackSnapshot(player), start);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -724,6 +726,13 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     currentLineStart,
     currentLine,
   ]);
+
+  useEffect(
+    () => () => {
+      timelineRef.current?.kill();
+    },
+    [],
+  );
 
   let node: React.ReactNode = <span>...</span>;
   if (sequenceQuery.error)
