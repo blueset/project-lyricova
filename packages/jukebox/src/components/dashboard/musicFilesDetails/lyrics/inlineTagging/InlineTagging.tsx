@@ -316,7 +316,11 @@ export default function InlineTagging({ fileId }: Props) {
     }
   }, [getProgress, setPlaybackProgress]);
 
-  useAnimationFrame(onFrame, playerStatus.state === "playing");
+  useAnimationFrame(
+    onFrame,
+    playerStatus.state === "playing",
+    playerStatus.state === "paused" ? playerStatus.progress : undefined,
+  );
 
   useEffect(() => {
     const snapshot = {

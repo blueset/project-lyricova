@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 export function useAnimationFrame(
   callback: (timestamp: number) => void,
   active: boolean,
+  refreshKey?: unknown,
 ) {
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
@@ -24,5 +25,5 @@ export function useAnimationFrame(
       disposed = true;
       if (animationFrame !== null) cancelAnimationFrame(animationFrame);
     };
-  }, [active]);
+  }, [active, refreshKey]);
 }

@@ -218,7 +218,11 @@ export default function TaggingLyrics({ fileId }: Props) {
     }
   }, [setCurrentLine]);
 
-  useAnimationFrame(onFrame, playerState.state === "playing");
+  useAnimationFrame(
+    onFrame,
+    playerState.state === "playing",
+    playerState.state === "paused" ? playerState.progress : undefined,
+  );
 
   const handleExtrapolateModeToggle = useCallback(
     (checked: boolean) => {

@@ -224,7 +224,11 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
     }
   }, [getProgress, setCurrentLine, setPlaybackProgress]);
 
-  useAnimationFrame(onFrame, playerStatus.state === "playing");
+  useAnimationFrame(
+    onFrame,
+    playerStatus.state === "playing",
+    playerStatus.state === "paused" ? playerStatus.progress : undefined,
+  );
 
   const handleExtrapolateModeToggle = useCallback(
     (checked: boolean) => {
