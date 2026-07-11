@@ -39,20 +39,38 @@ export function usePlayerLyricsState<T>(
 
   /**
    * `endTimes[i + 1]` is when frame `i` ends, in seconds.
+   * Each slot holds the next *finite* keyframe start (or the track end),
+   * skipping over any `NaN`/`Infinity` starts.
    * Last value is the end of the track.
    */
   const endTimes = useMemo(() => {
-    const endTimes = [];
-    keyframes.forEach((v, idx) => {
-      endTimes[idx] = v.start;
-    });
+    const n = keyframes.length;
+    const result: number[] = new Array(n + 1);
 
-    if (mediaDuration !== null) endTimes[keyframes.length] = mediaDuration;
-    else if (keyframes.length > 0)
-      endTimes[keyframes.length] = keyframes[keyframes.length - 1]!.start + 10;
-    else endTimes[keyframes.length] = 0;
+    if (mediaDuration !== null) {
+      result[n] = mediaDuration;
+    } else if (n > 0) {
+      let lastFiniteStart = 0;
+      for (let i = n - 1; i >= 0; i--) {
+        if (Number.isFinite(keyframes[i]!.start)) {
+          lastFiniteStart = keyframes[i]!.start;
+          break;
+        }
+      }
+      result[n] = lastFiniteStart + 10;
+    } else {
+      result[n] = 0;
+    }
 
-    return endTimes;
+    let nextFinite = result[n];
+    for (let i = n - 1; i >= 0; i--) {
+      if (Number.isFinite(keyframes[i]!.start)) {
+        nextFinite = keyframes[i]!.start;
+      }
+      result[i] = nextFinite;
+    }
+
+    return result;
   }, [keyframes, mediaDuration]);
 
   const startTimes = useMemo(() => keyframes.map((v) => v.start), [keyframes]);
