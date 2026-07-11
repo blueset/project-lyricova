@@ -9,6 +9,7 @@ import { forwardRef, memo, useImperativeHandle, useRef } from "react";
 import type { LyricsAnimationRef } from "./AnimationRef.type";
 import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import FuriganaLyricsLine from "../../../FuriganaLyricsLine";
+import type { PlaybackSnapshot } from "../../../../hooks/types";
 
 function lineToTimeSegments(
   line: LyricsKitLyricsLine,
@@ -155,39 +156,17 @@ const InnerLineRenderer = forwardRef<LyricsAnimationRef, LineRendererProps>(
     };
 
     useImperativeHandle(ref, () => ({
-      resume(time?: number) {
-        if (!Object.keys(animationRefs.current).length) {
-          console.log("no refs found in array");
-          return;
-        }
-
-        const currentTime = time ?? 0;
-        if (start <= currentTime && currentTime <= end) {
-          Object.values(animationRefs.current).forEach((ref) =>
-            ref
-              ? ref?.resume(currentTime - start)
-              : console.log("ref is not found", ref),
-          );
-        } else {
-          Object.values(animationRefs.current).forEach((ref) =>
-            ref
-              ? ref?.pause(currentTime - start)
-              : console.log("ref is not found", ref),
-          );
-        }
-      },
-      pause(time?: number) {
-        if (!Object.keys(animationRefs.current).length) {
-          console.log("no refs found in array");
-          return;
-        }
-
-        const currentTime = time ?? 0;
-        Object.values(animationRefs.current).forEach((ref) =>
-          ref
-            ? ref?.pause(currentTime - start)
-            : console.log("ref is not found", ref),
-        );
+      synchronize(snapshot: PlaybackSnapshot) {
+        const isInRange =
+          start <= snapshot.currentTime && snapshot.currentTime <= end;
+        const lineSnapshot = {
+          ...snapshot,
+          currentTime: snapshot.currentTime - start,
+          state: isInRange ? snapshot.state : ("paused" as const),
+        };
+        Object.values(animationRefs.current).forEach((animationRef) => {
+          animationRef?.synchronize(lineSnapshot);
+        });
       },
     }));
 

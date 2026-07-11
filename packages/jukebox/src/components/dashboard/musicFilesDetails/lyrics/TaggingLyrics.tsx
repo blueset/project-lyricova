@@ -7,6 +7,7 @@
 import type { PlayerState } from "../../../../hooks/types";
 import { useNamedState } from "../../../../hooks/useNamedState";
 import { usePlayerState } from "../../../../hooks/usePlayerState";
+import { useAnimationFrame } from "../../../../hooks/useAnimationFrame";
 import type { MouseEvent, MouseEventHandler } from "react";
 import { useCallback, useEffect, useRef, useMemo, memo } from "react";
 import { Pencil } from "lucide-react";
@@ -185,55 +186,39 @@ export default function TaggingLyrics({ fileId }: Props) {
   }, [reset]);
 
   // Update time tags
-  const onFrame = useCallback(
-    (timestamp: number) => {
-      const playerState = playerStateRef.current;
-      const currentLine = useLyricsStore.getState().tagging.currentLine;
-      const lines = useLyricsStore.getState().lyrics?.lines ?? [];
+  const onFrame = useCallback(() => {
+    const currentLine = useLyricsStore.getState().tagging.currentLine;
+    const lines = useLyricsStore.getState().lyrics?.lines ?? [];
+    const time = playerRef.current?.currentTime ?? 0;
 
-      let time: number;
-      if (playerState.state === "paused") {
-        time = playerState.progress;
-      } else {
-        time = ((timestamp - playerState.startingAt) / 1000) * playerState.rate;
-      }
-
-      if (
-        (time < currentLine.start || time > currentLine.end) &&
-        lines.length > 0
-      ) {
-        const record = lines.reduce(
-          (p, c, i) => {
-            if (c.position) {
-              if (c.position < p.end && c.position > time) {
-                p.end = c.position;
-              }
-              if (c.position > p.start && c.position <= time) {
-                p.start = c.position;
-                p.index = i;
-              }
+    if (
+      (time < currentLine.start || time > currentLine.end) &&
+      lines.length > 0
+    ) {
+      const record = lines.reduce(
+        (p, c, i) => {
+          if (c.position) {
+            if (c.position < p.end && c.position > time) {
+              p.end = c.position;
             }
-            return p;
-          },
-          {
-            index: -Infinity,
-            start: -Infinity,
-            end: Infinity,
-          },
-        );
-        setCurrentLine(record);
-      }
+            if (c.position > p.start && c.position <= time) {
+              p.start = c.position;
+              p.index = i;
+            }
+          }
+          return p;
+        },
+        {
+          index: -Infinity,
+          start: -Infinity,
+          end: Infinity,
+        },
+      );
+      setCurrentLine(record);
+    }
+  }, [setCurrentLine]);
 
-      if (playerState.state === "playing") {
-        requestAnimationFrame(onFrame);
-      }
-    },
-    [setCurrentLine],
-  );
-
-  useEffect(() => {
-    requestAnimationFrame(onFrame);
-  }, [onFrame, playerState]);
+  useAnimationFrame(onFrame, playerState.state === "playing");
 
   const handleExtrapolateModeToggle = useCallback(
     (checked: boolean) => {
@@ -283,7 +268,7 @@ export default function TaggingLyrics({ fileId }: Props) {
       if (!line) return;
       playerRef.current.currentTime = line.position;
       if (playerStateRef.current.state !== "playing") {
-        requestAnimationFrame(onFrame);
+        onFrame();
       }
     },
     [moveCursor, onFrame],
@@ -354,12 +339,7 @@ export default function TaggingLyrics({ fileId }: Props) {
       if (code === "Space" || key === " " || key === "Spacebar") {
         ev.preventDefault();
         if (!playerRef.current || !playerStateRef.current) return;
-        const perfNow = performance.now();
-        const time =
-          playerStateRef.current.state === "playing"
-            ? ((perfNow - playerStateRef.current.startingAt) / 1000) *
-              playerStateRef.current.rate
-            : playerStateRef.current.progress;
+        const time = playerRef.current.currentTime;
 
         if (!isInExtrapolateMode) {
           setTimestampAtCursor(time);

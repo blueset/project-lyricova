@@ -9,6 +9,7 @@ import { useAppContext } from "../../AppContext";
 import type { VirtualizerRowRenderProps } from "./useLyricsVirtualizer";
 import { useLyricsVirtualizer } from "./useLyricsVirtualizer";
 import type { LyricsAnimationRef } from "./AnimationRef.type";
+import { readPlaybackSnapshot } from "../../../../hooks/useMediaClock";
 
 export interface RowRendererProps<T> {
   row: T;
@@ -53,49 +54,30 @@ export function LyricsVirtualizer({
     rows,
     playerRef,
   );
-  const playerStateRef = useRef(playerState);
-  playerStateRef.current = playerState;
 
   useEffect(() => {
-    if (playerState.state === "playing") {
-      const currentTime =
-        (performance.now() - playerState.startingAt) / playerState.rate / 1000;
-      animationRefs.current.forEach((ref) => {
-        if (ref) {
-          ref.resume(currentTime);
-        }
-      });
-    } else {
-      animationRefs.current.forEach((ref) => {
-        if (ref) {
-          ref.pause(playerState.progress);
-        }
-      });
-    }
-  }, [playerState]);
+    const player = playerRef.current;
+    if (!player) return;
+    const snapshot = readPlaybackSnapshot(player);
+    animationRefs.current.forEach((animationRef) => {
+      animationRef?.synchronize(snapshot);
+    });
+  }, [currentFrame, playerRef, playerState]);
 
   const endRow = currentFrame?.data?.rangeEnd ?? 0;
   const startRow = currentFrame?.data?.rangeStart ?? 0;
-  const activeSegmentsRef = useRef<number[]>([]);
-  activeSegmentsRef.current = currentFrame?.data?.activeSegments ?? [];
+  const activeSegments = currentFrame?.data?.activeSegments;
   const animationRefs = useRef<(LyricsAnimationRef | null)[]>([]);
   const setRef = useCallback(
     (index: number) => (ref: LyricsAnimationRef | null) => {
       if (animationRefs.current[index] === ref) return;
       animationRefs.current[index] = ref;
-      if (ref) {
-        if (playerStateRef.current.state === "playing") {
-          const currentTime =
-            (performance.now() - playerStateRef.current.startingAt) /
-            playerStateRef.current.rate /
-            1000;
-          ref.resume(currentTime);
-        } else {
-          ref.pause(playerStateRef.current.progress);
-        }
+      const player = playerRef.current;
+      if (ref && player) {
+        ref.synchronize(readPlaybackSnapshot(player));
       }
     },
-    [],
+    [playerRef],
   );
 
   const virtualizerRowRender = useCallback(
@@ -115,7 +97,7 @@ export function LyricsVirtualizer({
         top,
         absoluteIndex,
         isActiveScroll,
-        isActive: activeSegmentsRef.current.includes(index),
+        isActive: activeSegments?.includes(index) ?? false,
         animationRef: setRef(index),
         onClick: () => {
           const segment = segments[index];
@@ -124,7 +106,7 @@ export function LyricsVirtualizer({
           }
         },
       }),
-    [playerRef, rowRenderer, rows, segments, setRef],
+    [activeSegments, playerRef, rowRenderer, rows, segments, setRef],
   );
 
   const { renderedRows, isActiveScroll } = useLyricsVirtualizer({

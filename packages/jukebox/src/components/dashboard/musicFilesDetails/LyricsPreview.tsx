@@ -12,10 +12,15 @@ import { measureTextWidths } from "../../../frontendUtils/measure";
 import { safeDuration } from "../../../frontendUtils/safeDuration";
 import { useActiveLyrcsRanges } from "../../../hooks/useActiveLyricsRanges";
 import { cn } from "@lyricova/components/utils";
+import type {
+  PlaybackAnimationController,
+  PlaybackSnapshot,
+} from "../../../hooks/types";
+import { useWebAnimationController } from "../../../hooks/useWebAnimationController";
+import { readPlaybackSnapshot } from "../../../hooks/useMediaClock";
 
 interface LyricsRowRefs {
-  resume(time: number): void;
-  pause(time: number): void;
+  synchronize(snapshot: PlaybackSnapshot): void;
   scrollToCenter(): void;
 }
 
@@ -31,22 +36,45 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
   ref,
 ) {
   const boxRef = useRef<HTMLDivElement>(null);
-  const webAnimationRef = useRef<Animation>(null);
+  const animationControllerRef = useRef<PlaybackAnimationController>(null);
+  const createAnimation = useCallback(
+    (target: HTMLDivElement) => {
+      const tags = line.attachments?.timeTag?.tags ?? [];
+      const lengths = measureTextWidths(target);
+      const length = lengths.at(-1) ?? 0;
+      const percentages = lengths.map((value) =>
+        length > 0 ? (value / length) * 100 : 0,
+      );
+      const duration = safeDuration(start, end, 1, { line });
+      const keyframes = tags
+        .map((tag) => ({
+          offset: Math.min(1, Math.max(tag.timeTag / duration, 0)),
+          backgroundSize: `${percentages[tag.index - 1] ?? 0}% 100%`,
+        }))
+        .toSorted((left, right) => left.offset - right.offset);
+
+      return target.animate(keyframes, {
+        duration: Math.max(0.1, duration * 1000),
+        fill: "forwards",
+        id: `background-size-${line.position}`,
+      });
+    },
+    [end, line, start],
+  );
+  const animationTargetRef = useWebAnimationController(
+    animationControllerRef,
+    createAnimation,
+  );
 
   useImperativeHandle(ref, () => ({
-    resume(time: number) {
-      if (webAnimationRef.current && start <= time && time <= end) {
-        webAnimationRef.current.currentTime = (time - start) * 1000;
-        webAnimationRef.current.play();
-      }
-    },
-    pause(time: number) {
-      if (webAnimationRef.current) {
-        if (start <= time && time <= end) {
-          webAnimationRef.current.currentTime = (time - start) * 1000;
-        }
-        webAnimationRef.current.pause();
-      }
+    synchronize(snapshot) {
+      const isInRange =
+        start <= snapshot.currentTime && snapshot.currentTime <= end;
+      animationControllerRef.current?.synchronize({
+        ...snapshot,
+        currentTime: snapshot.currentTime - start,
+        state: isInRange ? snapshot.state : "paused",
+      });
     },
     scrollToCenter() {
       requestAnimationFrame(() =>
@@ -68,32 +96,13 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
         line.attachments.role % 3 === 2 && "text-center",
         line.attachments.minor && "text-base opacity-75",
       )}
-      ref={(elm: HTMLDivElement) => {
-        if (!elm || boxRef.current === elm) return;
-        boxRef.current = elm;
-        const tags = line?.attachments?.timeTag?.tags;
-        if (elm && tags?.length) {
-          const target = elm.querySelector(".furigana") as HTMLDivElement;
-          target.style.backgroundSize = "0% 100%";
-          const lengths = measureTextWidths(target);
-          const length = lengths.at(-1) ?? 0;
-          const percentages = lengths.map((v) => (v / length) * 100);
-          const duration = safeDuration(start, end, 1, { line });
-          const keyframes = tags.map((v) => ({
-            offset: Math.min(1, Math.max(v.timeTag / duration, 0)),
-            backgroundSize: `${percentages[v.index - 1] ?? 0}% 100%`,
-          }));
-          keyframes.sort((a, b) => a.offset - b.offset);
-          webAnimationRef.current = target.animate(keyframes, {
-            duration: Math.max(0.1, duration * 1000),
-            fill: "forwards",
-            id: `background-size-${line.position}`,
-          });
-          webAnimationRef.current.pause();
-        }
-      }}
+      ref={boxRef}
     >
-      <div className="furigana group-data-[active=true]/lyrics-row:inline group-data-[active=true]/lyrics-row:bg-linear-to-r group-data-[active=true]/lyrics-row:from-info-foreground/30 group-data-[active=true]/lyrics-row:to-info-foreground/30 group-data-[active=true]/lyrics-row:bg-blend-difference group-data-[active=true]/lyrics-row:bg-no-repeat group-data-[active=true]/lyrics-row:bg-size-[0%_100%]">
+      <div
+        ref={animationTargetRef}
+        className="furigana group-data-[active=true]/lyrics-row:inline group-data-[active=true]/lyrics-row:bg-linear-to-r group-data-[active=true]/lyrics-row:from-info-foreground/30 group-data-[active=true]/lyrics-row:to-info-foreground/30 group-data-[active=true]/lyrics-row:bg-blend-difference group-data-[active=true]/lyrics-row:bg-no-repeat"
+        style={{ backgroundSize: "0% 100%" }}
+      >
         <FuriganaLyricsLine lyricsKitLine={line} />
       </div>
       {Object.entries(line.attachments.translations).map(([lang, content]) => (
@@ -139,20 +148,15 @@ export default function LyricsPreview({ lyrics, fileId, className }: Props) {
   const currentFrameRef = useRef(currentFrame);
   currentFrameRef.current = currentFrame;
 
-  const rowRefs = useRef<LyricsRowRefs[]>([]);
+  const rowRefs = useRef<(LyricsRowRefs | null)[]>([]);
 
   // Controls the progress of timeline
   useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    const snapshot = readPlaybackSnapshot(player);
+    rowRefs.current.forEach((rowRef) => rowRef?.synchronize(snapshot));
     const activeSegments = currentFrameRef.current?.data.activeSegments ?? [];
-    activeSegments.forEach((idx) => {
-      if (playerState.state === "playing") {
-        const now = performance.now();
-        const progress = (now - playerState.startingAt) / 1000;
-        rowRefs.current[idx]?.resume(progress);
-      } else {
-        rowRefs.current[idx]?.pause(playerState.progress);
-      }
-    });
     if (activeSegments.length) {
       const lastActiveSegment = activeSegments.at(-1);
       if (lastActiveSegment !== undefined) {
@@ -162,15 +166,24 @@ export default function LyricsPreview({ lyrics, fileId, className }: Props) {
   }, [playerState, currentFrame]);
 
   // Row ref cache to prevent row rerender.
-  const rowRefUpdaterCache = useRef<((r: LyricsRowRefs) => void)[]>([]);
-  const rowRefUpdater = useCallback((idx: number) => {
-    if (!rowRefUpdaterCache.current[idx]) {
-      rowRefUpdaterCache.current[idx] = (r: LyricsRowRefs) => {
-        rowRefs.current[idx] = r;
-      };
-    }
-    return rowRefUpdaterCache.current[idx];
-  }, []);
+  const rowRefUpdaterCache = useRef<((rowRef: LyricsRowRefs | null) => void)[]>(
+    [],
+  );
+  const rowRefUpdater = useCallback(
+    (idx: number) => {
+      if (!rowRefUpdaterCache.current[idx]) {
+        rowRefUpdaterCache.current[idx] = (rowRef: LyricsRowRefs | null) => {
+          rowRefs.current[idx] = rowRef;
+          const player = playerRef.current;
+          if (rowRef && player) {
+            rowRef.synchronize(readPlaybackSnapshot(player));
+          }
+        };
+      }
+      return rowRefUpdaterCache.current[idx];
+    },
+    [playerRef],
+  );
 
   return (
     <div className={cn("h-[calc(100vh-10rem)] flex flex-col", className)}>

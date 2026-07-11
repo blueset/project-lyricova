@@ -2,14 +2,7 @@ import type {
   LyricsKitLyrics,
   LyricsKitLyricsLine,
 } from "@lyricova/components/gql/schema";
-import {
-  forwardRef,
-  memo,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { forwardRef, memo, useCallback, useEffect } from "react";
 import { cn } from "@lyricova/components/utils";
 import type { RowRendererProps } from "./components/LyricsVirtualizer";
 import { LyricsVirtualizer } from "./components/LyricsVirtualizer";
@@ -18,50 +11,31 @@ import { LineRenderer } from "./components/RubyLineRenderer";
 import { safeDuration } from "../../../frontendUtils/safeDuration";
 import type { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { useSpring, animated } from "@react-spring/web";
+import { useWebAnimationController } from "../../../hooks/useWebAnimationController";
 
 const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
   function TimedSpan({ startTime, endTime, children }, ref) {
-    const webAnimationRef = useRef<Animation | null>(null);
-    const refCallback = useCallback(
-      (node: HTMLSpanElement | null) => {
-        if (node && node.style.opacity !== "1") {
-          node.style.opacity = "1";
-          const duration = safeDuration(startTime, endTime, 0.1, { children });
-          webAnimationRef.current = node.animate(
-            [
-              { opacity: "0.5" },
-              { opacity: "1", offset: 0.1 },
-              { opacity: "1" },
-            ],
-            {
-              delay: startTime * 1000,
-              duration: duration * 1000,
-              fill: "both",
-              id: `static-mask-${startTime}-${endTime}-${children}`,
-            },
-          );
-        }
+    const createAnimation = useCallback(
+      (node: HTMLSpanElement) => {
+        const duration = safeDuration(startTime, endTime, 0.1, { children });
+        return node.animate(
+          [{ opacity: "0.5" }, { opacity: "1", offset: 0.1 }, { opacity: "1" }],
+          {
+            delay: startTime * 1000,
+            duration: duration * 1000,
+            fill: "both",
+            id: `static-mask-${startTime}-${endTime}-${children}`,
+          },
+        );
       },
       [children, startTime, endTime],
     );
-    useImperativeHandle(ref, () => ({
-      resume(time?: number) {
-        const anim = webAnimationRef.current;
-        if (anim) {
-          anim.currentTime = time ? time * 1000 : 0;
-          if ((time ?? 0) <= endTime) anim.play();
-          else anim.pause();
-        }
-      },
-      pause(time?: number) {
-        const anim = webAnimationRef.current;
-        if (anim) {
-          anim.pause();
-          anim.currentTime = time ? time * 1000 : 0;
-        }
-      },
-    }));
-    return <span ref={refCallback}>{children}</span>;
+    const refCallback = useWebAnimationController(ref, createAnimation);
+    return (
+      <span ref={refCallback} style={{ opacity: 1 }}>
+        {children}
+      </span>
+    );
   },
 );
 

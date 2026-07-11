@@ -1,77 +1,56 @@
 import type { RefObject } from "react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import type { LyricsFrameCallback } from "./types";
 import { useNamedState } from "./useNamedState";
+import {
+  findActiveKeyframeIndex,
+  readPlaybackSnapshot,
+  useMediaClock,
+} from "./useMediaClock";
 
-/** Refactor useLyricsState using WebVTT Cue callbacks. */
+/** Select the current lyrics line from the media element's playback clock. */
 export function useLyricsState(
   playerRef: RefObject<HTMLAudioElement>,
   lyrics: LyricsKitLyrics,
   callback?: LyricsFrameCallback,
 ): number | null {
   const [line, setLine] = useNamedState<number | null>(null, "line");
+  const lineRef = useRef(line);
+  lineRef.current = line;
+  const startTimes = useMemo(
+    () => lyrics.lines.map((lyricsLine) => lyricsLine.position),
+    [lyrics.lines],
+  );
 
-  useEffect(() => {
-    if (!playerRef.current) return;
-    const player = playerRef.current;
+  const synchronizeLine = useCallback(
+    (snapshot: ReturnType<typeof readPlaybackSnapshot>) => {
+      const index = findActiveKeyframeIndex(startTimes, snapshot.currentTime);
+      const nextLine = index >= 0 ? index : null;
+      if (lineRef.current === nextLine) return;
 
-    // Create track
-    const track = document.createElement("track");
-    const uniqueId = Math.random().toString(36).substring(2, 15);
-    track.id = `lyricsState-${uniqueId}`;
-    track.kind = "subtitles";
-    track.label = `Lyrics State ${uniqueId}`;
-    track.src = "data:text/vtt;base64,V0VCVlRUCgoK";
-
-    // Add track
-    player.appendChild(track);
-    track.track.mode = "hidden";
-    // Workaround for Firefox
-    const textTrack = player.textTracks.getTrackById(track.id);
-    if (textTrack) textTrack.mode = "hidden";
-
-    const addCues = () => {
-      // Generate cues
-      if (lyrics?.lines?.length > 0 && lyrics.lines[0].position > 0) {
-        const cue = new VTTCue(0, lyrics.lines[0].position, "null,0");
-        cue.addEventListener("enter", () => {
-          setLine(null);
-          // console.log("WebWTT lyrics state enter", null);
-        });
-        track.track.addCue(cue);
-      }
-      lyrics.lines.forEach((line, index) => {
-        let nextLine: number =
-          lyrics.lines[index + 1]?.position ?? player.duration;
-        if (Number.isNaN(nextLine)) nextLine = 1e10;
-        const cue = new VTTCue(
-          line.position,
+      lineRef.current = nextLine;
+      setLine(nextLine);
+      const player = playerRef.current;
+      const lyricsLine = nextLine !== null ? lyrics.lines[nextLine] : undefined;
+      if (callback && player && nextLine !== null && lyricsLine) {
+        callback(
           nextLine,
-          `${index},${line.position},${line.content}`,
+          lyrics,
+          player,
+          lyricsLine.position,
+          lyrics.lines[nextLine + 1]?.position ??
+            (Number.isFinite(snapshot.duration) ? snapshot.duration : null),
         );
-        cue.addEventListener("enter", () => {
-          setLine(index);
-          // console.log("WebWTT lyrics state enter", index);
-          callback && callback(index, lyrics, player, line.position, nextLine);
-        });
-        track.track.addCue(cue);
-      });
-    };
-
-    if (player.readyState >= 2) {
-      // Set timeout to ensure the cues can be added properly.
-      setTimeout(addCues, 0);
-    } else {
-      player.addEventListener("loadedmetadata", addCues);
-    }
-
-    // Cleanup
-    return () => {
-      track?.parentElement?.removeChild(track);
-      player?.removeEventListener("loadedmetadata", addCues);
-    };
-  }, [callback, lyrics, playerRef, setLine]);
+      }
+    },
+    [callback, lyrics, playerRef, setLine, startTimes],
+  );
+  useMediaClock(playerRef, synchronizeLine);
+  useEffect(() => {
+    const player = playerRef.current;
+    if (player) synchronizeLine(readPlaybackSnapshot(player));
+  }, [playerRef, synchronizeLine]);
 
   return line;
 }

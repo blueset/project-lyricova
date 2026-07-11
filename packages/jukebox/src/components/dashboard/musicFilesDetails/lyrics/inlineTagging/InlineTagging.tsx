@@ -31,6 +31,8 @@ import { Toggle } from "@lyricova/components/components/ui/toggle";
 import { CheckSquare } from "lucide-react";
 import { YohaneAlign } from "./YohaneAlign";
 import { CustomAlign } from "./CustomAlign";
+import { useAnimationFrame } from "../../../../../hooks/useAnimationFrame";
+import { synchronizeGsapTimeline } from "../../../../../hooks/useTrackwiseTimelineControl";
 
 function Instructions() {
   return (
@@ -257,7 +259,6 @@ export default function InlineTagging({ fileId }: Props) {
   }, [getProgress, section, seek]);
 
   const timelinesRef = useRef<(gsap.core.Timeline | undefined)[]>([]);
-  const isMounted = useRef(true);
 
   // Update time tags
   const onFrame = useCallback(() => {
@@ -313,28 +314,27 @@ export default function InlineTagging({ fileId }: Props) {
       );
       setCurrentLine(record);
     }
-
-    if (playerStatus.state === "playing" && isMounted.current) {
-      requestAnimationFrame(onFrame);
-    }
   }, [getProgress, setPlaybackProgress]);
 
+  useAnimationFrame(onFrame, playerStatus.state === "playing");
+
   useEffect(() => {
-    isMounted.current = true;
-    requestAnimationFrame(onFrame);
-    if (timelinesRef.current) {
-      const progress = getProgress();
-      if (playerStatus.state === "playing") {
-        timelinesRef.current?.map((t) => t?.play(progress));
-      } else if (playerStatus.state === "paused") {
-        timelinesRef.current?.map((t) => t?.pause(progress));
-      }
-    }
-    return () => {
-      isMounted.current = false;
-      timelinesRef.current?.map((t) => t?.kill());
+    const snapshot = {
+      currentTime: getProgress(),
+      duration: audioBuffer?.duration ?? Number.NaN,
+      playbackRate: playerStatus.rate,
+      state: playerStatus.state,
     };
-  }, [getProgress, onFrame, playerStatus]);
+    timelinesRef.current.forEach((timeline) => {
+      if (timeline) synchronizeGsapTimeline(timeline, snapshot);
+    });
+  }, [audioBuffer?.duration, getProgress, playerStatus]);
+
+  useEffect(() => {
+    return () => {
+      timelinesRef.current.forEach((timeline) => timeline?.kill());
+    };
+  }, []);
 
   // Register playback control listener
   useEffect(() => {

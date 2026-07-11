@@ -9,6 +9,7 @@
  */
 import { useNamedState } from "../../../../hooks/useNamedState";
 import { useWebAudio } from "../../../../hooks/useWebAudio";
+import { useAnimationFrame } from "../../../../hooks/useAnimationFrame";
 import type { WebAudioPlayerState } from "../../../../hooks/types";
 import type { MouseEvent, MouseEventHandler } from "react";
 import { useCallback, useEffect, useRef, useMemo, memo } from "react";
@@ -221,15 +222,9 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
       );
       setCurrentLine(record);
     }
-
-    if (playerStatus.state === "playing") {
-      requestAnimationFrame(onFrame);
-    }
   }, [getProgress, setCurrentLine, setPlaybackProgress]);
 
-  useEffect(() => {
-    requestAnimationFrame(onFrame);
-  }, [onFrame, playerStatus]);
+  useAnimationFrame(onFrame, playerStatus.state === "playing");
 
   const handleExtrapolateModeToggle = useCallback(
     (checked: boolean) => {
@@ -279,7 +274,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
       if (!line) return;
       seek(line.position);
       if (playerStatusRef.current.state !== "playing") {
-        requestAnimationFrame(onFrame);
+        onFrame();
       }
     },
     [audioBuffer, moveCursor, onFrame, seek],

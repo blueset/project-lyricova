@@ -165,7 +165,7 @@ export function usePlayerLyricsTypingState(
     typingElementRef,
   ]);
 
-  useTrackwiseTimelineControl(playerState, timeline);
+  useTrackwiseTimelineControl(playerRef, playerState, timeline);
 
   return { ...state, timeline, sequenceQuery };
 }

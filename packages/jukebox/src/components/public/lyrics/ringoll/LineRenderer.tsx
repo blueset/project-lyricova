@@ -1,96 +1,70 @@
-import {
-  forwardRef,
-  memo,
-  useCallback,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { forwardRef, memo, useCallback } from "react";
 import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import type { LyricsAnimationRef } from "../components/AnimationRef.type";
 import type { TimedSpanProps } from "../components/RubyLineRenderer";
 import { LineRenderer } from "../components/RubyLineRenderer";
 import { safeDuration } from "../../../../frontendUtils/safeDuration";
+import { useWebAnimationController } from "../../../../hooks/useWebAnimationController";
 
 const FILLED_OPACITY = 100;
 const BLANK_OPACITY = 50;
 
 const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
   function TimedSpan({ startTime, endTime, static: isStatic, children }, ref) {
-    // const spanRef = useRef<HTMLSpanElement>(null);
-    const webAnimationRefs = useRef<Animation[]>([]);
-    const refCallback = useCallback(
-      (node: HTMLSpanElement | null) => {
-        // webAnimationRefs.current.forEach(anim => anim.cancel());
+    const createAnimation = useCallback(
+      (node: HTMLSpanElement) => {
+        const duration = safeDuration(startTime, endTime, 0.1, {
+          children,
+        });
         if (isStatic) {
-          if (node && node.style.opacity !== "1") {
-            node.style.opacity = "1";
-            const duration = safeDuration(startTime, endTime, 0.1, {
-              children,
-            });
-            webAnimationRefs.current = [
-              node.animate(
-                [
-                  { opacity: "0.5" },
-                  { opacity: "1", offset: 0.1 },
-                  { opacity: "1", offset: 0.9 },
-                  { opacity: "0.5", offset: 1 },
-                ],
-                {
-                  delay: startTime * 1000,
-                  duration: duration * 1000,
-                  fill: "both",
-                  id: `static-mask-${startTime}-${endTime}-${children}`,
-                },
-              ),
-            ];
-          }
-        } else {
-          if (node && node.style.maskRepeat !== "no-repeat") {
-            node.style.maskImage = `linear-gradient(
-            to right, 
-            color-mix(in srgb, currentcolor ${FILLED_OPACITY}%, transparent) 50%, 
-            color-mix(in srgb, currentcolor ${BLANK_OPACITY}%, transparent) 50%
-          )`;
-            node.style.maskSize = "200% 100%";
-            node.style.maskRepeat = "no-repeat";
-            node.style.maskOrigin = "left";
-            const duration = safeDuration(startTime, endTime, 0.1, {
-              children,
-            });
-            webAnimationRefs.current = [
-              node.animate(
-                [{ maskPosition: "100% 0" }, { maskPosition: "0 0" }],
-                {
-                  delay: startTime * 1000,
-                  duration: duration * 1000,
-                  fill: "both",
-                  id: `mask-${startTime}-${endTime}-${children}`,
-                },
-              ),
-            ];
-          }
+          return node.animate(
+            [
+              { opacity: "0.5" },
+              { opacity: "1", offset: 0.1 },
+              { opacity: "1", offset: 0.9 },
+              { opacity: "0.5", offset: 1 },
+            ],
+            {
+              delay: startTime * 1000,
+              duration: duration * 1000,
+              fill: "both",
+              id: `static-mask-${startTime}-${endTime}-${children}`,
+            },
+          );
         }
+        return node.animate(
+          [{ maskPosition: "100% 0" }, { maskPosition: "0 0" }],
+          {
+            delay: startTime * 1000,
+            duration: duration * 1000,
+            fill: "both",
+            id: `mask-${startTime}-${endTime}-${children}`,
+          },
+        );
       },
       [children, endTime, isStatic, startTime],
     );
-    useImperativeHandle(ref, () => ({
-      resume(time?: number) {
-        // console.log("Resume at %o, %o", time ?? "current time", webAnimationRefs.current);
-        webAnimationRefs.current.forEach((anim) => {
-          anim.currentTime = time ? time * 1000 : 0;
-          if ((time ?? 0) <= endTime) anim.play();
-          else anim.pause();
-        });
-      },
-      pause(time?: number) {
-        // console.log("Pause at %o, %o", time ?? "current time", webAnimationRefs.current);
-        webAnimationRefs.current.forEach((anim) => {
-          anim.pause();
-          anim.currentTime = time ? time * 1000 : 0;
-        });
-      },
-    }));
-    return <span ref={refCallback}>{children}</span>;
+    const refCallback = useWebAnimationController(ref, createAnimation);
+    return (
+      <span
+        ref={refCallback}
+        style={
+          isStatic
+            ? { opacity: 1 }
+            : {
+                maskImage: `linear-gradient(
+                  to right,
+                  color-mix(in srgb, currentcolor ${FILLED_OPACITY}%, transparent) 50%,
+                  color-mix(in srgb, currentcolor ${BLANK_OPACITY}%, transparent) 50%
+                )`,
+                maskSize: "200% 100%",
+                maskRepeat: "no-repeat",
+              }
+        }
+      >
+        {children}
+      </span>
+    );
   },
 );
 

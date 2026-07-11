@@ -2,9 +2,10 @@ import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import { useTrackwiseTimelineControl } from "../../../hooks/useTrackwiseTimelineControl";
-import { useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { cn } from "@lyricova/components/utils";
+import { safeDuration } from "../../../frontendUtils/safeDuration";
 
 interface Props {
   lyrics: LyricsKitLyrics;
@@ -26,72 +27,82 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
   const { playerState, currentFrameId, startTimes, endTimes } =
     usePlainPlayerLyricsState(lyrics, playerRef);
 
-  const timeline = useMemo(() => {
+  const [layoutVersion, setLayoutVersion] = useState(0);
+  const [timeline, setTimeline] = useState<gsap.core.Timeline | null>(null);
+
+  useEffect(() => {
+    const observedElements = [
+      container.current,
+      wrapper.current,
+      translationContainer.current,
+      translationWrapper.current,
+    ].filter((element): element is HTMLDivElement => element !== null);
+    if (!observedElements.length) return;
+
+    const observer = new ResizeObserver(() => {
+      setLayoutVersion((version) => version + 1);
+    });
+    observedElements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [hasTranslation, transLangIdx]);
+
+  useLayoutEffect(() => {
+    const mainWrapper = wrapper.current;
+    const mainContainer = container.current;
+    if (!mainWrapper || !mainContainer) return;
+
     const tl = gsap.timeline({
       paused: true,
     });
-    requestAnimationFrame(() => {
-      if (wrapper.current && container.current) {
-        const lines = wrapper.current.children;
-        tl.set(wrapper.current, { x: 0 }, 0);
-        for (let i = 0; i < lines.length; i++) {
-          const el = lines[i] as HTMLDivElement;
-          tl.to(
-            wrapper.current,
-            {
-              x: -(
-                el.offsetLeft -
-                container.current.offsetWidth / 2 +
-                el.offsetWidth
-              ),
-              duration: endTimes[i + 1] - startTimes[i],
-              ease: "none",
-            },
-            startTimes[i],
-          );
-        }
-      }
-      if (translationWrapper.current && translationContainer.current) {
-        const lines = translationWrapper.current.children;
-        tl.set(translationWrapper.current, { x: 0 }, 0);
-        for (let i = 0; i < lines.length; i++) {
-          const el = lines[i] as HTMLDivElement;
-          tl.to(
-            translationWrapper.current,
-            {
-              x: -(
-                el.offsetLeft -
-                translationContainer.current.offsetWidth / 2 +
-                el.offsetWidth
-              ),
-              duration: endTimes[i + 1] - startTimes[i],
-              ease: "none",
-            },
-            startTimes[i],
-          );
-        }
-      }
-      const now = performance.now();
-      if (playerState.state === "playing") {
-        const progress = (now - playerState.startingAt) / 1000;
-        timeline.play(progress, false);
-      } else {
-        timeline.pause(playerState.progress, false);
-      }
-    });
-    return tl;
+    const lines = mainWrapper.children;
+    tl.set(mainWrapper, { x: 0 }, 0);
+    for (let i = 0; i < lines.length; i++) {
+      const element = lines[i] as HTMLSpanElement;
+      tl.to(
+        mainWrapper,
+        {
+          x: -(
+            element.offsetLeft -
+            mainContainer.offsetWidth / 2 +
+            element.offsetWidth
+          ),
+          duration: safeDuration(startTimes[i] ?? 0, endTimes[i + 1] ?? 0),
+          ease: "none",
+        },
+        startTimes[i],
+      );
+    }
 
-    // Adding wrapper.current, translationWrapper.current for the timeline to change along with the lyrics.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    wrapper.current,
-    translationWrapper.current,
-    startTimes,
-    endTimes,
-    transLangIdx,
-  ]);
+    const translatedWrapper = translationWrapper.current;
+    const translatedContainer = translationContainer.current;
+    if (translatedWrapper && translatedContainer) {
+      const translatedLines = translatedWrapper.children;
+      tl.set(translatedWrapper, { x: 0 }, 0);
+      for (let i = 0; i < translatedLines.length; i++) {
+        const element = translatedLines[i] as HTMLSpanElement;
+        tl.to(
+          translatedWrapper,
+          {
+            x: -(
+              element.offsetLeft -
+              translatedContainer.offsetWidth / 2 +
+              element.offsetWidth
+            ),
+            duration: safeDuration(startTimes[i] ?? 0, endTimes[i + 1] ?? 0),
+            ease: "none",
+          },
+          startTimes[i],
+        );
+      }
+    }
 
-  useTrackwiseTimelineControl(playerState, timeline);
+    setTimeline(tl);
+    return () => {
+      tl.kill();
+    };
+  }, [endTimes, layoutVersion, startTimes, transLangIdx]);
+
+  useTrackwiseTimelineControl(playerRef, playerState, timeline);
 
   return (
     <div className="size-full overflow-hidden flex justify-center flex-col mask-x-from-[calc(100%_-_40px)] mask-x-to-100%">

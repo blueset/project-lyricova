@@ -5,12 +5,12 @@ import type {
 import { useAppContext } from "../AppContext";
 import { usePlainPlayerLyricsState } from "../../../hooks/usePlainPlayerLyricsState";
 import Balancer from "react-wrap-balancer";
-import type { RefObject } from "react";
 import type React from "react";
-import { useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 import { useResizeObserver } from "../../../hooks/useResizeObserver";
 import { Scene } from "react-scenejs";
 import { cn } from "@lyricova/components/utils";
+import { readPlaybackSnapshot } from "../../../hooks/useMediaClock";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -149,7 +149,7 @@ interface LyricsLineElementProps {
   line: LyricsKitLyricsLine | null;
   duration: number;
   width: number;
-  progressorRef?: RefObject<Scene | null>;
+  onProgressorReady?: (scene: Scene | null) => void;
 }
 
 function LyricsLineElement({
@@ -157,12 +157,20 @@ function LyricsLineElement({
   duration,
   translationClassName,
   width,
-  progressorRef,
+  onProgressorReady,
 }: LyricsLineElementProps) {
   const textRef = useRef<SVGTextElement>(null);
   const sizerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<SVGSVGElement>(null);
+  const [progressorScene, setProgressorScene] = useState<Scene | null>(null);
   const animate = duration >= ANIMATION_THRESHOLD;
+  const setProgressor = useCallback(
+    (scene: Scene | null) => {
+      setProgressorScene(scene);
+      onProgressorReady?.(scene);
+    },
+    [onProgressorReady],
+  );
 
   useEffect(() => {
     if (textRef.current && sizerRef.current) {
@@ -203,9 +211,9 @@ function LyricsLineElement({
         );
       }
 
-      progressorRef?.current?.getItem().load(animate ? keyframes : {});
+      progressorScene?.getItem().load(animate ? keyframes : {});
     }
-  }, [animate, line, progressorRef, width]);
+  }, [animate, line, progressorScene, width]);
 
   return (
     <div>
@@ -219,14 +227,8 @@ function LyricsLineElement({
         {/* @ts-expect-error Scene is an JSX element. */}
         <Scene
           keyframes={animate ? keyframes : undefined}
-          ref={
-            animate
-              ? (scene) => {
-                if (progressorRef) progressorRef.current = scene;
-              }
-              : undefined
-          }
-          autoplay={true}
+          ref={animate ? setProgressor : undefined}
+          autoplay={false}
         >
           <svg
             width={width}
@@ -272,33 +274,35 @@ interface Props {
 export function StrokeLyrics({ lyrics }: Props) {
   const { playerRef } = useAppContext();
   const { ref: measureRef, width } = useResizeObserver<HTMLDivElement>();
-  const progressorRef = useRef<Scene>(null);
+  const [progressorScene, setProgressorScene] = useState<Scene | null>(null);
 
   const { currentFrame, currentFrameId, endTime, playerState } =
     usePlainPlayerLyricsState(lyrics, playerRef);
 
   useEffect(() => {
-    if (!progressorRef.current) return;
-    const progressorScene = progressorRef.current;
+    const player = playerRef.current;
+    if (!progressorScene || !player) return;
     if (currentFrameId >= lyrics.lines.length) {
       progressorScene.setTime("100%");
     } else {
-      const now = performance.now();
       const startTime = currentFrame?.start ?? 0;
-      if (playerState.state === "playing") {
-        const inlineProgress =
-          (now - playerState.startingAt) / 1000 - startTime;
-        progressorScene.setTime(inlineProgress);
+      const snapshot = readPlaybackSnapshot(player);
+      progressorScene.getItem().setPlaySpeed(snapshot.playbackRate);
+      progressorScene.setTime(snapshot.currentTime - startTime);
+      if (snapshot.state === "playing") {
         progressorScene.play();
       } else {
-        const inlineProgress = playerState.progress - startTime;
         progressorScene.pause();
-        progressorScene.setTime(inlineProgress);
       }
     }
-    // Player progress is not included to prevent animation loop.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerState.state, currentFrame, currentFrameId, lyrics.lines.length]);
+  }, [
+    currentFrame,
+    currentFrameId,
+    lyrics.lines.length,
+    playerRef,
+    playerState,
+    progressorScene,
+  ]);
 
   let lineElement: (width: number) => React.ReactNode | null = () => null;
   if (currentFrame !== null) {
@@ -310,7 +314,7 @@ export function StrokeLyrics({ lyrics }: Props) {
         line={currentFrame.data}
         duration={end - start}
         width={width}
-        progressorRef={progressorRef}
+        onProgressorReady={setProgressorScene}
       />
     );
   }

@@ -1,33 +1,35 @@
+import type { RefObject } from "react";
 import { useEffect } from "react";
-import type { PlayerState } from "./types";
+import type { PlaybackSnapshot, PlayerState } from "./types";
+import { readPlaybackSnapshot } from "./useMediaClock";
 
 type Timeline = gsap.core.Timeline;
+
+export function synchronizeGsapTimeline(
+  timeline: Timeline,
+  snapshot: PlaybackSnapshot,
+  offset = 0,
+) {
+  const progress = snapshot.currentTime - offset;
+  timeline.timeScale(snapshot.playbackRate);
+  if (snapshot.state === "playing") {
+    timeline.play(progress, false);
+  } else {
+    timeline.pause(progress, false);
+  }
+}
 
 /**
  * Control a GSAP timeline which covers the entire track according to the player state.
  */
 export function useTrackwiseTimelineControl(
+  playerRef: RefObject<HTMLMediaElement>,
   playerState: PlayerState,
   timeline: Timeline | null,
 ) {
-  // Controls the progress of timeline
   useEffect(() => {
-    const now = performance.now();
-    if (!timeline) return;
-    if (playerState.state === "playing") {
-      const progress = (now - playerState.startingAt) / 1000;
-      timeline.play(progress, false);
-    } else {
-      timeline.pause(playerState.progress, false);
-    }
-  }, [playerState, timeline]);
-
-  // Kill a timeline when its lifespan ends.
-  useEffect(() => {
-    const tl = timeline;
-    if (!tl) return;
-    return () => {
-      tl.kill();
-    };
-  }, [timeline]);
+    const player = playerRef.current;
+    if (!player || !timeline) return;
+    synchronizeGsapTimeline(timeline, readPlaybackSnapshot(player));
+  }, [playerRef, playerState, timeline]);
 }
