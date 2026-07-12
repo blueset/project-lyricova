@@ -381,7 +381,7 @@ Output:
           className={error ? "border-destructive" : ""}
         />
         {error && (
-          <p className="text-xs text-destructive-foregound-foreground mt-1">{error}</p>
+          <p className="text-xs text-destructive-foreground mt-1">{error}</p>
         )}
       </div>
     );

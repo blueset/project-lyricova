@@ -246,7 +246,7 @@ export default function Entries() {
                   <TooltipTrigger asChild>
                     <PopoverTrigger asChild>
                       <Button variant="ghost" size="icon">
-                        <Trash className=" text-destructive-foregound-foreground" />
+                        <Trash className=" text-destructive-foreground" />
                       </Button>
                     </PopoverTrigger>
                   </TooltipTrigger>

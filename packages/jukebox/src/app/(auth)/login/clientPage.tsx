@@ -171,7 +171,7 @@ export default function Login() {
                     />
                     {errors.username &&
                       errors.username.message !== " " && ( // Don't show the space message
-                        <p className="text-sm text-destructive-foregound-foreground">
+                        <p className="text-sm text-destructive-foreground">
                           {" "}
                           {errors.username.message}
                         </p>
@@ -199,9 +199,9 @@ export default function Login() {
                     />
                     {errors.password &&
                       errors.password.message !== " " && ( // Don't show the space message
-                        <p className="text-sm text-destructive-foregound-foreground">
+                        <p className="text-sm text-destructive-foreground">
                           {" "}
-                          {/* Use text-destructive-foregound */}
+                          {/* Use text-destructive-foreground */}
                           {errors.password.message}
                         </p>
                       )}

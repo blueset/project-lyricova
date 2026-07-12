@@ -410,7 +410,7 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                                       <Button
                                         type="button"
                                         variant="ghost"
-                                        className="text-destructive-foregound-foreground hover:bg-destructive/10"
+                                        className="text-destructive-foreground hover:bg-destructive/10"
                                         size="icon"
                                         onClick={() => {
                                           field.onChange(
