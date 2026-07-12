@@ -6,10 +6,12 @@ export * from "./fragments";
 
 export * from "./artists";
 
-export * from "./localStorage";
-
 export * from "./kanaUtils";
 
 export * from "./cn";
+
+export * from "./auth";
+
+export * from "./passkey";
 
 export { apolloClient };

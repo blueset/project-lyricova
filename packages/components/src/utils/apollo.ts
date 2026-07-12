@@ -7,8 +7,6 @@ import {
   CombinedGraphQLErrors,
 } from "@apollo/client";
 import { ErrorLink } from "@apollo/client/link/error";
-import { SetContextLink } from "@apollo/client/link/context";
-import { LS_JWT_KEY } from "./localStorage";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from "graphql-ws";
@@ -16,18 +14,7 @@ import posthog from "posthog-js";
 
 const httpLink = new HttpLink({
   uri: "/graphql",
-});
-
-const authLink = new SetContextLink(({ headers }) => {
-  // get the authentication token from local storage if it exists
-  const token = localStorage?.getItem(LS_JWT_KEY) ?? null;
-  // return the headers to the context so httpLink can read them
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    },
-  };
+  credentials: "same-origin",
 });
 
 const errorLink = new ErrorLink(({ error }) => {
@@ -58,8 +45,7 @@ interface Process {
 declare let process: Process;
 
 const link = (() => {
-  const baseLink = errorLink.concat(authLink).concat(httpLink);
-  // return authLink.concat(httpLink);
+  const baseLink = errorLink.concat(httpLink);
   if (process.browser) {
     const protocol = location.protocol === "http:" ? "ws:" : "wss:";
     const wsPort = location.port;
@@ -67,9 +53,6 @@ const link = (() => {
     const wsLink = new GraphQLWsLink(
       createClient({
         url: `${protocol}//${wsHost}/graphql`,
-        connectionParams: {
-          authToken: localStorage?.getItem(LS_JWT_KEY) ?? null,
-        },
       }),
     );
     // The split function takes three parameters:

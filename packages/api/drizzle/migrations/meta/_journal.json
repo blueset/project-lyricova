@@ -8,6 +8,27 @@
       "when": 1782797343596,
       "tag": "0000_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1783807403947,
+      "tag": "0001_modern-auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1783808209614,
+      "tag": "0002_remove-legacy-auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1783808489919,
+      "tag": "0003_auth-verification-timestamps",
+      "breakpoints": true
     }
   ]
 }

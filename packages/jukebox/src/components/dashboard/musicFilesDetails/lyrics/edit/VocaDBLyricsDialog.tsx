@@ -72,7 +72,7 @@ export default function VocaDBLyricsDialog({
   let content = <DialogDescription>Loading...</DialogDescription>;
   if (query.error) {
     content = (
-      <DialogDescription className="text-destructive">
+      <DialogDescription className="text-destructive-foregound">
         Error occurred while loading lyrics: {`${query.error}`}
       </DialogDescription>
     );

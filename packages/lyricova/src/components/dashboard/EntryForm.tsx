@@ -206,16 +206,16 @@ export function EntryForm({ id }: EntityFormProps) {
       id && data?.entry
         ? initialFormValues(data.entry)
         : {
-            title: "",
-            producersName: "",
-            vocalistsName: "",
-            comment: "",
-            songs: [],
-            verses: [],
-            tags: [],
-            pulses: [],
-            creationDate: new Date(),
-          },
+          title: "",
+          producersName: "",
+          vocalistsName: "",
+          comment: "",
+          songs: [],
+          verses: [],
+          tags: [],
+          pulses: [],
+          creationDate: new Date(),
+        },
     [data, id],
   );
 
@@ -331,14 +331,12 @@ export function EntryForm({ id }: EntityFormProps) {
       }
     } catch (e) {
       console.error(
-        `Error occurred while ${!id ? "creating" : "updating"} entry ${
-          values?.title
+        `Error occurred while ${!id ? "creating" : "updating"} entry ${values?.title
         }.`,
         e,
       );
       toast.error(
-        `Error occurred while ${!id ? "creating" : "updating"} Entry ${
-          values?.title
+        `Error occurred while ${!id ? "creating" : "updating"} Entry ${values?.title
         }. (${e})`,
       );
     }
@@ -604,8 +602,8 @@ export function EntryForm({ id }: EntityFormProps) {
                                   (
                                   {value
                                     ? formatDistanceToNow(value, {
-                                        addSuffix: true,
-                                      })
+                                      addSuffix: true,
+                                    })
                                     : "unknown"}
                                   )
                                 </>

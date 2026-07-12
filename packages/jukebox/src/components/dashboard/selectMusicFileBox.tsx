@@ -239,7 +239,7 @@ export default function SelectMusicFileBox<
             </PopoverContent>
           </Popover>
           {fieldState.error && (
-            <p className="text-sm text-destructive mt-1">
+            <p className="text-sm text-destructive-foregound mt-1">
               {fieldState.error.message}
             </p>
           )}

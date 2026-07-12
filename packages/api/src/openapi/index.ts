@@ -50,6 +50,5 @@ export type SongOfEntry = Schemas["SongOfEntry"];
 export type Tag = Schemas["Tag"];
 export type TagOfEntry = Schemas["TagOfEntry"];
 export type User = Schemas["User"];
-export type UserPublicKeyCredential = Schemas["UserPublicKeyCredential"];
 export type Verse = Schemas["Verse"];
 export type VideoFile = Schemas["VideoFile"];

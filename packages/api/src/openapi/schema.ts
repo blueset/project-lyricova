@@ -193,7 +193,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a single entry by ID with full details */
+        /** Get a single entry by ID */
         get: {
             parameters: {
                 query?: never;
@@ -206,7 +206,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Entry with verses, tags, songs, and pulses */
+                /** @description The requested entry with verses, tags, songs, and pulses */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -220,11 +220,13 @@ export interface paths {
                                 id?: components["schemas"]["Song"]["id"];
                                 name?: components["schemas"]["Song"]["name"];
                                 coverUrl?: components["schemas"]["Song"]["coverUrl"];
-                                /** @description Video URL from PV */
-                                videoUrl?: string | null;
-                                artists?: (components["schemas"]["Artist"] & {
+                                /** @description Preferred playback URL derived from VocaDB PVs */
+                                videoUrl?: string;
+                                artists?: {
+                                    id?: components["schemas"]["Artist"]["id"];
+                                    name?: components["schemas"]["Artist"]["name"];
                                     ArtistOfSong?: components["schemas"]["ArtistOfSong"];
-                                })[];
+                                }[];
                             }[];
                         };
                     };
@@ -264,15 +266,9 @@ export interface paths {
                 query?: {
                     /** @description Filter verses by type (original language or main display verse) */
                     type?: "original" | "main";
-                    /**
-                     * @description Comma-separated list of language codes to filter verses by
-                     * @example ja,en,zh
-                     */
+                    /** @description Comma-separated language prefixes to filter verses by */
                     languages?: string;
-                    /**
-                     * @description Comma-separated list of tag slugs to filter entries by
-                     * @example core,light,soft
-                     */
+                    /** @description Comma-separated tag slugs to filter entries by */
                     tags?: string;
                 };
                 header?: never;
@@ -281,39 +277,21 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Randomized verses and their associated entries */
+                /** @description Randomized verses and their entries */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            /** @description Map of entry IDs to entry objects */
                             entries?: {
-                                [key: string]: {
-                                    id?: components["schemas"]["Entry"]["id"];
-                                    title?: components["schemas"]["Entry"]["title"];
-                                    producersName?: components["schemas"]["Entry"]["producersName"];
-                                    vocalistsName?: components["schemas"]["Entry"]["vocalistsName"];
-                                    tags?: {
-                                        name?: components["schemas"]["Tag"]["name"];
-                                        slug?: components["schemas"]["Tag"]["slug"];
-                                        color?: components["schemas"]["Tag"]["color"];
-                                    }[];
-                                };
+                                [key: string]: components["schemas"]["Entry"];
                             };
-                            /** @description Shuffled array of verses matching the filter criteria */
-                            verses?: {
-                                id?: components["schemas"]["Verse"]["id"];
-                                text?: components["schemas"]["Verse"]["text"];
-                                typingSequence?: components["schemas"]["Verse"]["typingSequence"];
-                                language?: components["schemas"]["Verse"]["language"];
-                                entryId?: components["schemas"]["Verse"]["entryId"];
-                            }[];
+                            verses?: components["schemas"]["Verse"][];
                         };
                     };
                 };
-                /** @description No entries found matching the filter criteria */
+                /** @description No entries found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -1900,35 +1878,11 @@ export interface components {
              * @enum {string}
              */
             role: "admin" | "guest";
-            /** @description OAuth provider name if using OAuth */
-            provider?: string;
-            /** @description OAuth provider’s user ID */
-            provider_id?: string;
             /** Format: date-time */
             creationDate?: string;
             /** Format: date-time */
             updatedOn?: string;
             deletionDate?: string | null;
-        };
-        /** @description WebAuthn public key credential for passwordless authentication. */
-        UserPublicKeyCredential: {
-            /** Format: int64 */
-            id: number;
-            /**
-             * Format: int64
-             * @description ID of the user who owns this credential
-             */
-            userId: number;
-            /** @description External credential ID from WebAuthn */
-            externalId: string;
-            /** @description Public key for the credential (base64 encoded) */
-            publicKey: string;
-            /** @description Optional remarks or nickname for this credential */
-            remarks?: string | null;
-            /** Format: date-time */
-            creationDate?: string;
-            /** Format: date-time */
-            updatedOn?: string;
         };
         /** @description A verse or translation of lyrics for an entry. */
         Verse: {
@@ -2208,6 +2162,17 @@ export interface components {
             translationLanguages: string[];
         };
         /** @enum {string} */
+        DiscType: "Unknown" | "Album" | "Single" | "EP" | "SplitAlbum" | "Compilation" | "Video" | "Artbook" | "Game" | "Fanmade" | "Instrumental" | "Other" | "Drama";
+        OptionalDateTimeContract: {
+            /** Format: int32 */
+            day?: number | null;
+            isEmpty?: boolean;
+            /** Format: int32 */
+            month?: number | null;
+            /** Format: int32 */
+            year?: number | null;
+        };
+        /** @enum {string} */
         ArtistType: "Unknown" | "Circle" | "Label" | "Producer" | "Animator" | "Illustrator" | "Lyricist" | "Vocaloid" | "UTAU" | "CeVIO" | "OtherVoiceSynthesizer" | "OtherVocalist" | "OtherGroup" | "OtherIndividual" | "Utaite" | "Band" | "Vocalist" | "Character" | "SynthesizerV" | "CoverArtist" | "NEUTRINO" | "VoiSona" | "NewType" | "Voiceroid" | "Instrumentalist" | "Designer" | "VOICEVOX" | "ACEVirtualSinger" | "AIVOICE";
         /** @enum {string} */
         EntryStatus: "Draft" | "Finished" | "Approved" | "Locked";
@@ -2226,13 +2191,17 @@ export interface components {
             version?: number;
         };
         /** @enum {string} */
-        ArtistLinkType: "CharacterDesigner" | "Group" | "Illustrator" | "Manager" | "VoiceProvider";
-        ArtistForArtistForApiContract: {
+        ArtistEventRoles: "Default" | "Dancer" | "DJ" | "Instrumentalist" | "Organizer" | "Promoter" | "VJ" | "Vocalist" | "VoiceManipulator" | "OtherPerformer" | "Other";
+        ArtistForEventContract: {
             artist?: components["schemas"]["ArtistContract"];
-            linkType?: components["schemas"]["ArtistLinkType"];
+            effectiveRoles?: components["schemas"]["ArtistEventRoles"];
+            /** Format: int32 */
+            id?: number;
+            name?: string | null;
+            roles?: components["schemas"]["ArtistEventRoles"];
         };
         /** @enum {string} */
-        ContentLanguageSelection: "Unspecified" | "Japanese" | "Romaji" | "English";
+        EventCategory: "Unspecified" | "AlbumRelease" | "Anniversary" | "Club" | "Concert" | "Contest" | "Convention" | "Other" | "Festival";
         EntryThumbForApiContract: {
             mime?: string | null;
             name?: string | null;
@@ -2241,35 +2210,10 @@ export interface components {
             urlThumb?: string | null;
             urlTinyThumb?: string | null;
         };
+        /** @enum {string} */
+        ContentLanguageSelection: "Unspecified" | "Japanese" | "Romaji" | "English";
         LocalizedStringContract: {
             language?: components["schemas"]["ContentLanguageSelection"];
-            value?: string | null;
-        };
-        /** @enum {string} */
-        ArtistCategories: "Nothing" | "Vocalist" | "Producer" | "Animator" | "Label" | "Circle" | "Other" | "Band" | "Illustrator" | "Subject";
-        /** @enum {string} */
-        ArtistRoles: "Default" | "Animator" | "Arranger" | "Composer" | "Distributor" | "Illustrator" | "Instrumentalist" | "Lyricist" | "Mastering" | "Publisher" | "Vocalist" | "VoiceManipulator" | "Other" | "Mixer" | "Chorus" | "Encoder" | "VocalDataProvider" | "RecordingEngineer";
-        ArtistForAlbumForApiContract: {
-            artist?: components["schemas"]["ArtistContract"];
-            categories?: components["schemas"]["ArtistCategories"];
-            effectiveRoles?: components["schemas"]["ArtistRoles"];
-            isSupport?: boolean;
-            name?: string | null;
-            roles?: components["schemas"]["ArtistRoles"];
-        };
-        /** @enum {string} */
-        DiscMediaType: "Audio" | "Video";
-        AlbumDiscPropertiesContract: {
-            /** Format: int32 */
-            discNumber?: number;
-            /** Format: int32 */
-            id?: number;
-            mediaType?: components["schemas"]["DiscMediaType"];
-            name?: string | null;
-        };
-        /** @enum {string} */
-        DiscType: "Unknown" | "Album" | "Single" | "EP" | "SplitAlbum" | "Compilation" | "Video" | "Artbook" | "Game" | "Fanmade" | "Instrumental" | "Other" | "Drama";
-        AlbumIdentifierContract: {
             value?: string | null;
         };
         PVExtendedMetadata: {
@@ -2299,27 +2243,6 @@ export interface components {
             thumbUrl?: string | null;
             url?: string | null;
         };
-        OptionalDateTimeContract: {
-            /** Format: int32 */
-            day?: number | null;
-            isEmpty?: boolean;
-            /** Format: int32 */
-            month?: number | null;
-            /** Format: int32 */
-            year?: number | null;
-        };
-        /** @enum {string} */
-        ArtistEventRoles: "Default" | "Dancer" | "DJ" | "Instrumentalist" | "Organizer" | "Promoter" | "VJ" | "Vocalist" | "VoiceManipulator" | "OtherPerformer" | "Other";
-        ArtistForEventContract: {
-            artist?: components["schemas"]["ArtistContract"];
-            effectiveRoles?: components["schemas"]["ArtistEventRoles"];
-            /** Format: int32 */
-            id?: number;
-            name?: string | null;
-            roles?: components["schemas"]["ArtistEventRoles"];
-        };
-        /** @enum {string} */
-        EventCategory: "Unspecified" | "AlbumRelease" | "Anniversary" | "Club" | "Concert" | "Contest" | "Convention" | "Other" | "Festival";
         /** @enum {string} */
         WebLinkCategory: "Official" | "Commercial" | "Reference" | "Other";
         WebLinkContract: {
@@ -2472,8 +2395,6 @@ export interface components {
             version?: number;
             webLinks?: components["schemas"]["WebLinkForApiContract"][] | null;
         };
-        /** @enum {string} */
-        SongVoteRating: "Nothing" | "Dislike" | "Like" | "Favorite";
         AlbumContract: {
             additionalNames?: string | null;
             artistString?: string | null;
@@ -2495,6 +2416,10 @@ export interface components {
             /** Format: int32 */
             version?: number;
         };
+        /** @enum {string} */
+        ArtistCategories: "Nothing" | "Vocalist" | "Producer" | "Animator" | "Label" | "Circle" | "Other" | "Band" | "Illustrator" | "Subject";
+        /** @enum {string} */
+        ArtistRoles: "Default" | "Animator" | "Arranger" | "Composer" | "Distributor" | "Illustrator" | "Instrumentalist" | "Lyricist" | "Mastering" | "Publisher" | "Vocalist" | "VoiceManipulator" | "Other" | "Mixer" | "Chorus" | "Encoder" | "VocalDataProvider" | "RecordingEngineer";
         ArtistForSongContract: {
             artist?: components["schemas"]["ArtistContract"];
             categories?: components["schemas"]["ArtistCategories"];
@@ -2568,6 +2493,35 @@ export interface components {
             webLinks?: components["schemas"]["WebLinkForApiContract"][] | null;
             cultureCodes?: string[] | null;
         };
+        /** @enum {string} */
+        ArtistLinkType: "CharacterDesigner" | "Group" | "Illustrator" | "Manager" | "VoiceProvider";
+        ArtistForArtistForApiContract: {
+            artist?: components["schemas"]["ArtistContract"];
+            linkType?: components["schemas"]["ArtistLinkType"];
+        };
+        ArtistForAlbumForApiContract: {
+            artist?: components["schemas"]["ArtistContract"];
+            categories?: components["schemas"]["ArtistCategories"];
+            effectiveRoles?: components["schemas"]["ArtistRoles"];
+            isSupport?: boolean;
+            name?: string | null;
+            roles?: components["schemas"]["ArtistRoles"];
+        };
+        /** @enum {string} */
+        DiscMediaType: "Audio" | "Video";
+        AlbumDiscPropertiesContract: {
+            /** Format: int32 */
+            discNumber?: number;
+            /** Format: int32 */
+            id?: number;
+            mediaType?: components["schemas"]["DiscMediaType"];
+            name?: string | null;
+        };
+        AlbumIdentifierContract: {
+            value?: string | null;
+        };
+        /** @enum {string} */
+        SongVoteRating: "Nothing" | "Dislike" | "Like" | "Favorite";
         SongInAlbumForApiContract: {
             /** Format: int32 */
             discNumber?: number;

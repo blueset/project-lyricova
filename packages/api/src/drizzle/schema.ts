@@ -295,13 +295,16 @@ export const Users = mysqlTable(
   "Users",
   {
     id: int("id").primaryKey().autoincrement(),
-    username: varchar("username", { length: 256 }),
-    displayName: varchar("displayName", { length: 256 }),
-    password: varchar("password", { length: 256 }),
-    email: varchar("email", { length: 512 }),
-    role: mysqlEnum("role", ["admin", "guest"]).default("guest"),
-    provider: varchar("provider", { length: 256 }),
-    provider_id: varchar("provider_id", { length: 1024 }),
+    username: varchar("username", { length: 256 }).notNull(),
+    displayUsername: varchar("displayUsername", { length: 256 }),
+    displayName: varchar("displayName", { length: 256 }).notNull(),
+    email: varchar("email", { length: 512 }).notNull(),
+    emailVerified: boolean("emailVerified").notNull().default(false),
+    image: text("image"),
+    role: mysqlEnum("role", ["admin", "guest"]).notNull().default("guest"),
+    banned: boolean("banned").notNull().default(false),
+    banReason: text("banReason"),
+    banExpires: datetime("banExpires", { mode: "date" }),
     creationDate: datetime("creationDate", { mode: "date" }).notNull(),
     updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
     deletionDate: datetime("deletionDate", { mode: "date" }),
@@ -312,22 +315,101 @@ export const Users = mysqlTable(
   ],
 );
 
-export const UserPublicKeyCredentials = mysqlTable(
-  "UserPublicKeyCredentials",
+export const AuthAccounts = mysqlTable(
+  "AuthAccounts",
   {
-    id: int("id").primaryKey().autoincrement(),
-    userId: int("userId").references((): AnyMySqlColumn => Users.id, {
-      onUpdate: "cascade",
-    }),
-    externalId: varchar("externalId", { length: 512 }),
-    publicKey: text("publicKey"),
-    remarks: text("remarks"),
+    id: varchar("id", { length: 36 }).primaryKey(),
+    accountId: varchar("accountId", { length: 255 }).notNull(),
+    providerId: varchar("providerId", { length: 255 }).notNull(),
+    userId: int("userId")
+      .notNull()
+      .references((): AnyMySqlColumn => Users.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    accessToken: text("accessToken"),
+    refreshToken: text("refreshToken"),
+    idToken: text("idToken"),
+    accessTokenExpiresAt: datetime("accessTokenExpiresAt", { mode: "date" }),
+    refreshTokenExpiresAt: datetime("refreshTokenExpiresAt", { mode: "date" }),
+    scope: text("scope"),
+    password: text("password"),
     creationDate: datetime("creationDate", { mode: "date" }).notNull(),
     updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
   },
   (t) => [
-    uniqueIndex("externalId").on(t.externalId),
-    index("userId").on(t.userId),
+    uniqueIndex("AuthAccounts_provider_account_unique").on(
+      t.providerId,
+      t.accountId,
+    ),
+    index("AuthAccounts_userId_index").on(t.userId),
+  ],
+);
+
+export const AuthSessions = mysqlTable(
+  "AuthSessions",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    expiresAt: datetime("expiresAt", { mode: "date" }).notNull(),
+    token: varchar("token", { length: 255 }).notNull(),
+    creationDate: datetime("creationDate", { mode: "date" }).notNull(),
+    updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
+    ipAddress: text("ipAddress"),
+    userAgent: text("userAgent"),
+    userId: int("userId")
+      .notNull()
+      .references((): AnyMySqlColumn => Users.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    impersonatedBy: varchar("impersonatedBy", { length: 36 }),
+  },
+  (t) => [
+    uniqueIndex("AuthSessions_token_unique").on(t.token),
+    index("AuthSessions_userId_index").on(t.userId),
+    index("AuthSessions_expiresAt_index").on(t.expiresAt),
+  ],
+);
+
+export const AuthVerifications = mysqlTable(
+  "AuthVerifications",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    identifier: varchar("identifier", { length: 255 }).notNull(),
+    value: text("value").notNull(),
+    expiresAt: datetime("expiresAt", { mode: "date" }).notNull(),
+    creationDate: datetime("creationDate", { mode: "date" }).notNull(),
+    updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
+  },
+  (t) => [
+    index("AuthVerifications_identifier_index").on(t.identifier),
+    index("AuthVerifications_expiresAt_index").on(t.expiresAt),
+  ],
+);
+
+export const UserPasskeys = mysqlTable(
+  "UserPasskeys",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    name: varchar("name", { length: 255 }),
+    publicKey: text("publicKey").notNull(),
+    userId: int("userId")
+      .notNull()
+      .references((): AnyMySqlColumn => Users.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    credentialID: varchar("credentialID", { length: 512 }).notNull(),
+    counter: int("counter").notNull(),
+    deviceType: varchar("deviceType", { length: 32 }).notNull(),
+    backedUp: boolean("backedUp").notNull(),
+    transports: text("transports"),
+    creationDate: datetime("creationDate", { mode: "date" }),
+    aaguid: varchar("aaguid", { length: 36 }),
+  },
+  (t) => [
+    uniqueIndex("UserPasskeys_credentialID_unique").on(t.credentialID),
+    index("UserPasskeys_userId_index").on(t.userId),
   ],
 );
 

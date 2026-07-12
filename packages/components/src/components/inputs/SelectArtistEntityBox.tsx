@@ -239,12 +239,11 @@ export function SelectArtistEntityBox<
     const allOptions = [...apolloResults, ...vocaDBResults, ...utaiteDBResults];
     const selectedOption = allOptions.find(
       (option) =>
-        `${option.name}-${
-          option.vocaDBSuggestion
-            ? "v"
-            : option.utaiteDBSuggestion
-              ? "u"
-              : option.id
+        `${option.name}-${option.vocaDBSuggestion
+          ? "v"
+          : option.utaiteDBSuggestion
+            ? "u"
+            : option.id
         }` === selectedOptionValue,
     );
 
@@ -349,73 +348,73 @@ export function SelectArtistEntityBox<
                         !apolloResults.some(
                           (option) => option.id === value.id,
                         ))) && (
-                      <CommandGroup heading="Local artists">
-                        {/* Current value if not found in Apollo results */}
-                        {value &&
-                          !apolloResults.some(
-                            (option) => option.id === value.id,
-                          ) && (
-                            <CommandItem
-                              key={value.id ?? value.name}
-                              value={`${value.name}-${value.id}`}
-                              onSelect={handleSelect}
-                              className="flex items-center cursor-pointer"
-                            >
-                              <div className="flex items-center flex-shrink-0">
-                                <Music className="text-muted-foreground" />
-                              </div>
-                              <div className="flex flex-col flex-grow ml-2">
-                                <span className="text-sm">
-                                  {value.name}
-                                  {value.id ? ` (#${value.id})` : ""}
-                                </span>
-                                {value.type && (
-                                  <span className="text-xs text-muted-foreground leading-tight">
-                                    {value.type}
+                        <CommandGroup heading="Local artists">
+                          {/* Current value if not found in Apollo results */}
+                          {value &&
+                            !apolloResults.some(
+                              (option) => option.id === value.id,
+                            ) && (
+                              <CommandItem
+                                key={value.id ?? value.name}
+                                value={`${value.name}-${value.id}`}
+                                onSelect={handleSelect}
+                                className="flex items-center cursor-pointer"
+                              >
+                                <div className="flex items-center flex-shrink-0">
+                                  <Music className="text-muted-foreground" />
+                                </div>
+                                <div className="flex flex-col flex-grow ml-2">
+                                  <span className="text-sm">
+                                    {value.name}
+                                    {value.id ? ` (#${value.id})` : ""}
                                   </span>
-                                )}
-                              </div>
-                              <Check className="ml-auto opacity-100" />
-                            </CommandItem>
-                          )}
-                        {apolloResults.map((option) => {
-                          const optionValue = `${option.name}-${option.id}`;
-                          return (
-                            <CommandItem
-                              key={option.id ?? option.name}
-                              value={optionValue}
-                              onSelect={handleSelect}
-                              className="flex items-center cursor-pointer"
-                            >
-                              <div className="flex items-center flex-shrink-0">
-                                <Music className="text-muted-foreground" />
-                              </div>
-                              <div className="flex flex-col flex-grow ml-2">
-                                <span className="text-sm">
-                                  {option.name}
-                                  {option.id ? ` (#${option.id})` : ""}
-                                </span>
-                                {option.type && (
-                                  <span className="text-xs text-muted-foreground leading-tight">
-                                    {option.type}
-                                  </span>
-                                )}
-                              </div>
-                              {value?.id === option.id && (
-                                <Check
-                                  className={cn(
-                                    "ml-auto h-4 w-4",
-                                    value?.id === option.id
-                                      ? "opacity-100"
-                                      : "opacity-0",
+                                  {value.type && (
+                                    <span className="text-xs text-muted-foreground leading-tight">
+                                      {value.type}
+                                    </span>
                                   )}
-                                />
-                              )}
-                            </CommandItem>
-                          );
-                        })}
-                      </CommandGroup>
-                    )}
+                                </div>
+                                <Check className="ml-auto opacity-100" />
+                              </CommandItem>
+                            )}
+                          {apolloResults.map((option) => {
+                            const optionValue = `${option.name}-${option.id}`;
+                            return (
+                              <CommandItem
+                                key={option.id ?? option.name}
+                                value={optionValue}
+                                onSelect={handleSelect}
+                                className="flex items-center cursor-pointer"
+                              >
+                                <div className="flex items-center flex-shrink-0">
+                                  <Music className="text-muted-foreground" />
+                                </div>
+                                <div className="flex flex-col flex-grow ml-2">
+                                  <span className="text-sm">
+                                    {option.name}
+                                    {option.id ? ` (#${option.id})` : ""}
+                                  </span>
+                                  {option.type && (
+                                    <span className="text-xs text-muted-foreground leading-tight">
+                                      {option.type}
+                                    </span>
+                                  )}
+                                </div>
+                                {value?.id === option.id && (
+                                  <Check
+                                    className={cn(
+                                      "ml-auto h-4 w-4",
+                                      value?.id === option.id
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                )}
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      )}
 
                     {/* VocaDB suggestions */}
                     {vocaDBResults.length > 0 && (
@@ -542,7 +541,7 @@ export function SelectArtistEntityBox<
             </PopoverContent>
           </Popover>
           {fieldState.error && (
-            <p className="text-sm text-destructive mt-1">
+            <p className="text-sm text-destructive-foregound mt-1">
               {fieldState.error.message}
             </p>
           )}

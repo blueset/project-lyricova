@@ -2,7 +2,7 @@ import { WebAuthnCredManager } from "@lyricova/components";
 import { NavHeader } from "../NavHeader";
 
 export const metadata = {
-  title: "WebAuthn",
+  title: "Passkeys",
 };
 
 export default function WebAuthn() {
@@ -11,7 +11,7 @@ export default function WebAuthn() {
       <NavHeader
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
-          { label: "WebAuthn" },
+          { label: "Passkeys" },
         ]}
       />
       <div className="h-full mx-4 mb-2">

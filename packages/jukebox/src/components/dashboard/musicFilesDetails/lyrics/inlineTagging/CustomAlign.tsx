@@ -1,4 +1,4 @@
-import { kanaToHira, useAuthContext } from "@lyricova/components";
+import { kanaToHira } from "@lyricova/components";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
   TooltipTrigger,
@@ -269,7 +269,6 @@ function assToInlineTags(lyrics: LyricsJSON, alignmentResult: AlignmentResult) {
 }
 
 export function CustomAlign({ fileId }: { fileId: number }) {
-  const authContext = useAuthContext();
   const [isAlignmentLoading, setIsAlignmentLoading] = useState(false);
   const [progress, setProgress] = useState<{
     status: string;
@@ -289,11 +288,9 @@ export function CustomAlign({ fileId }: { fileId: number }) {
 
       let result: AlignmentResult | null = null;
       try {
-        const token = authContext.jwt();
         await fetchEventData("/api/alignment/custom", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           data: { fileId, lyrics: hiraganaLyrics },
@@ -349,7 +346,7 @@ export function CustomAlign({ fileId }: { fileId: number }) {
 
       setIsAlignmentLoading(false);
     })();
-  }, [authContext, fileId]);
+  }, [fileId]);
 
   return (
     <HoverCard>
