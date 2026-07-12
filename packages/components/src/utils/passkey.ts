@@ -1,5 +1,6 @@
 import { getAuthenticatorName, type Passkey } from "@better-auth/passkey";
 
-export function suggestPasskeyName(passkey: Pick<Passkey, "aaguid">): string {
-  return getAuthenticatorName(passkey.aaguid) ?? "Passkey";
+export function suggestPasskeyName(passkey: { aaguid?: Passkey["aaguid"] | null }): string {
+  const aaguid = passkey.aaguid;
+  return (typeof aaguid === "string" && getAuthenticatorName(aaguid)) || "Passkey";
 }
