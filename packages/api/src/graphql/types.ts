@@ -17,7 +17,6 @@ export type * from "../models/SongOfEntry.js";
 export type * from "../models/Tag.js";
 export type * from "../models/TagOfEntry.js";
 export type * from "../models/User.js";
-export type * from "../models/UserPublicKeyCredential.js";
 export type * from "../models/Verse.js";
 export type * from "../models/VideoFile.js";
 

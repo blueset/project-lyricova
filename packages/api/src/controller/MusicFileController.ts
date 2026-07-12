@@ -109,7 +109,7 @@ export class MusicFileController {
    *     tags:
    *       - Music Files
    *     security:
-   *       - bearerAuth: []
+   *       - sessionCookie: []
    *     responses:
    *       200:
    *         description: Scan completed successfully
@@ -260,7 +260,7 @@ export class MusicFileController {
    *     tags:
    *       - Music Files
    *     security:
-   *       - bearerAuth: []
+   *       - sessionCookie: []
    *     responses:
    *       200:
    *         description: Scan completed successfully
@@ -639,7 +639,7 @@ export class MusicFileController {
    *     tags:
    *       - Music Files
    *     security:
-   *       - bearerAuth: []
+   *       - sessionCookie: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -839,7 +839,7 @@ export class MusicFileController {
    *     tags:
    *       - Music Files
    *     security:
-   *       - bearerAuth: []
+   *       - sessionCookie: []
    *     parameters:
    *       - in: path
    *         name: id

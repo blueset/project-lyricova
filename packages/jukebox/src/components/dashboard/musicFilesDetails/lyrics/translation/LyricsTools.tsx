@@ -17,7 +17,6 @@ import { ChevronDownIcon, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLyricsStore } from "../state/editorState";
 import { useShallow } from "zustand/shallow";
-import { useAuthContext } from "@lyricova/components";
 import { fetchEventData } from "fetch-sse";
 import { toast } from "sonner";
 import { useQuery } from "@apollo/client/react";
@@ -45,7 +44,6 @@ const FALLBACK_LLM_MODELS = [
 ];
 
 export default function LyricsTools() {
-  const authContext = useAuthContext();
   const { fixQuotes, setTextareaValue } = useLyricsStore(
     useShallow((state) => ({
       fixQuotes: state.translations.fixQuotes,
@@ -129,13 +127,11 @@ export default function LyricsTools() {
       setChunkBuffer("");
       setReasoningBuffer("");
       try {
-        const token = authContext.jwt();
         abortControllerRef.current = new AbortController();
         const { signal } = abortControllerRef.current;
         await fetchEventData("/api/llm/translation-alignment", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           data: { translation, original, model },
@@ -195,7 +191,7 @@ export default function LyricsTools() {
         setIsAlignmentLoading(false);
       }
     },
-    [authContext, setTextareaValue, isScrolledToBottom],
+    [setTextareaValue, isScrolledToBottom],
   );
 
   const handleCancelAlignment = useCallback(() => {

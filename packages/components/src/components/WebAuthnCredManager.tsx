@@ -1,179 +1,258 @@
 "use client";
-import { useApolloClient, useQuery } from "@apollo/client/react";
+
+import { getAuthenticatorName, type Passkey } from "@better-auth/passkey";
 import { Button } from "@lyricova/components/components/ui/button";
-import { graphql } from "../gql";
-import type { MouseEvent } from "react";
-import { useCallback, useEffect, useState } from "react";
-import base64url from "base64url";
-import { LS_JWT_KEY } from "../utils/localStorage";
-import { Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@lyricova/components/components/ui/dialog";
+import { Input } from "@lyricova/components/components/ui/input";
+import { Label } from "@lyricova/components/components/ui/label";
+import { Pencil, Trash2 } from "lucide-react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { authClient } from "../utils/auth";
+import { suggestPasskeyName } from "../utils/passkey";
 
-const GET_CREDENTIALS_QUERY = graphql(`
-  query CurrentCredentials {
-    currentCredentials {
-      id
-      remarks
-      creationDate
-    }
-  }
-`);
-
-const DELETE_CREDENTIAL_MUTATION = graphql(`
-  mutation DeleteCredential($id: Int!) {
-    deleteCredential(id: $id)
-  }
-`);
+interface NamingTarget {
+  passkey: Passkey;
+  newlyEnrolled: boolean;
+}
 
 export function WebAuthnCredManager() {
-  const { data, loading, error, refetch } = useQuery(GET_CREDENTIALS_QUERY);
-
-  const apolloClient = useApolloClient();
-
+  const [passkeys, setPasskeys] = useState<Passkey[]>([]);
+  const [loading, setLoading] = useState(true);
   const [webAuthnSupported, setWebAuthnSupported] = useState(true);
-  useEffect(() => {
-    if (!window.PublicKeyCredential) {
-      setWebAuthnSupported(false);
+  const [adding, setAdding] = useState(false);
+  const [namingTarget, setNamingTarget] = useState<NamingTarget | null>(null);
+  const [passkeyName, setPasskeyName] = useState("");
+  const [savingName, setSavingName] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await authClient.passkey.listUserPasskeys();
+    setLoading(false);
+    if (error) {
+      toast.error(error.message ?? "Could not load passkeys.");
+      return;
     }
-  }, [setWebAuthnSupported]);
+    setPasskeys(data ?? []);
+  }, []);
 
-  const addCredential = useCallback(
-    async (evt: MouseEvent<HTMLElement>) => {
-      evt.preventDefault();
-      const token = localStorage?.getItem(LS_JWT_KEY) ?? null;
-      const resp = await fetch("/api/enroll/public-key/challenge", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          authorization: token ? `Bearer ${token}` : "",
-        },
+  useEffect(() => {
+    setWebAuthnSupported(Boolean(window.PublicKeyCredential));
+    void refresh();
+  }, [refresh]);
+
+  const handleMutationError = useCallback(
+    (error: { status: number; message?: string }) => {
+      if (error.status === 403) {
+        window.location.assign(
+          `/login?redirect=${encodeURIComponent(window.location.pathname)}`,
+        );
+        return;
+      }
+      toast.error(error.message ?? "Could not update passkeys.");
+    },
+    [],
+  );
+
+  const addCredential = useCallback(async () => {
+    setAdding(true);
+    const { data, error } = await authClient.passkey.addPasskey();
+    setAdding(false);
+    if (error) {
+      handleMutationError(error);
+      return;
+    }
+    if (!data) {
+      toast.error("Passkey was enrolled but its details were not returned.");
+      await refresh();
+      return;
+    }
+    await refresh();
+    setPasskeyName(suggestPasskeyName(data));
+    setNamingTarget({ passkey: data, newlyEnrolled: true });
+  }, [handleMutationError, refresh]);
+
+  const renameCredential = useCallback(
+    (passkey: Passkey) => async () => {
+      setPasskeyName(passkey.name?.trim() || suggestPasskeyName(passkey));
+      setNamingTarget({ passkey, newlyEnrolled: false });
+    },
+    [],
+  );
+
+  const savePasskeyName = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const name = passkeyName.trim();
+      if (!namingTarget || !name) return;
+
+      setSavingName(true);
+      const { error } = await authClient.passkey.updatePasskey({
+        id: namingTarget.passkey.id,
+        name,
       });
-      const respJson = await resp.json();
-
-      const publicKey: PublicKeyCredentialCreationOptions = {
-        rp: {
-          name: "Project Lyricova",
-          ...(window.location.hostname.startsWith("127")
-            ? {}
-            : { id: window.location.hostname }),
-        },
-        user: {
-          id: Uint8Array.from(respJson.user.id as string, (c) =>
-            c.charCodeAt(0),
-          ),
-          name: respJson.user.name,
-          displayName: respJson.user.displayName,
-        },
-        challenge: base64url.toBuffer(
-          respJson.challenge,
-        ) as unknown as ArrayBuffer,
-        pubKeyCredParams: [
-          {
-            type: "public-key",
-            alg: -7,
-          },
-        ],
-        attestation: "none",
-        authenticatorSelection: {
-          userVerification: "discouraged",
-          residentKey: "required",
-        },
-      };
-      const credential = (await navigator.credentials.create({
-        publicKey,
-      })) as PublicKeyCredential;
-
-      const body = {
-        response: {
-          clientDataJSON: base64url.encode(
-            Buffer.from(credential.response.clientDataJSON),
-          ),
-          attestationObject: base64url.encode(
-            Buffer.from(
-              (credential.response as AuthenticatorAttestationResponse)
-                .attestationObject,
-            ),
-          ),
-          transports: undefined as string[] | undefined,
-        },
-      };
-      if (
-        (credential.response as AuthenticatorAttestationResponse).getTransports
-      ) {
-        body.response.transports = (
-          credential.response as AuthenticatorAttestationResponse
-        ).getTransports();
+      setSavingName(false);
+      if (error) {
+        handleMutationError(error);
+        return;
       }
 
-      const validateReq = await fetch("/api/login/public-key", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      const validateReqJson = await validateReq.json();
-      console.log(validateReqJson);
-
-      await refetch();
+      toast.success(
+        namingTarget.newlyEnrolled ? "Passkey added." : "Passkey renamed.",
+      );
+      setNamingTarget(null);
+      await refresh();
     },
-    [refetch],
+    [handleMutationError, namingTarget, passkeyName, refresh],
   );
 
   const removeCredential = useCallback(
-    (id: number) => async () => {
-      await apolloClient.mutate({
-        mutation: DELETE_CREDENTIAL_MUTATION,
-        variables: { id },
+    (passkey: Passkey) => async () => {
+      const warning =
+        passkeys.length === 1
+          ? "This is your last passkey. Password sign-in will remain available. Remove it?"
+          : `Remove ${passkey.name || "this passkey"}?`;
+      if (!window.confirm(warning)) return;
+
+      const { error } = await authClient.passkey.deletePasskey({
+        id: passkey.id,
       });
-      await refetch();
+      if (error) {
+        handleMutationError(error);
+        return;
+      }
+      toast.success("Passkey removed.");
+      await refresh();
     },
-    [apolloClient, refetch],
+    [handleMutationError, passkeys.length, refresh],
   );
 
   return (
     <div>
-      <div className="flex flex-row justify-between items-center mb-4">
+      <div className="mb-4 flex flex-row items-center justify-between">
         <div>
-          {loading && <p>Loading...</p>}
-          {error && (
-            <p className="text-destructive-foreground">
-              Error occurred while loading credentials: {error.message}
-            </p>
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <p>{passkeys.length} passkey(s) found.</p>
           )}
-          {data && (
-            <p>{data?.currentCredentials?.length ?? 0} credential(s) found.</p>
+          {!loading && passkeys.length < 2 && (
+            <p className="text-sm text-muted-foreground">
+              Enroll a second passkey to avoid losing access to your preferred
+              sign-in method.
+            </p>
           )}
         </div>
         <Button
           variant="outline"
-          disabled={!webAuthnSupported}
+          disabled={!webAuthnSupported || adding}
           onClick={addCredential}
         >
-          Add credential
+          {adding ? "Adding..." : "Add passkey"}
         </Button>
       </div>
       <ul className="space-y-2">
-        {data?.currentCredentials.map((cred) => (
-          <li
-            key={cred.id}
-            className="flex flex-row justify-between items-center p-2 border rounded"
-          >
-            <p className="text-sm">
-              <b className="font-medium">{cred.id}</b>: {cred.remarks},{" "}
-              {new Date(cred.creationDate).toISOString()}
-            </p>
-            <Button
-              variant="destructive"
-              size="icon"
-              aria-label="Remove token"
-              onClick={removeCredential(cred.id!)}
+        {passkeys.map((passkey) => {
+          const authenticator =
+            getAuthenticatorName(passkey.aaguid) ?? passkey.deviceType;
+          return (
+            <li
+              key={passkey.id}
+              className="flex items-center justify-between rounded border p-2"
             >
-              <Trash2 />
-            </Button>
-          </li>
-        ))}
+              <div className="text-sm">
+                <p className="font-medium">
+                  {passkey.name || authenticator || "Passkey"}
+                </p>
+                <p className="text-muted-foreground">
+                  {authenticator}
+                  {passkey.backedUp ? " · Synced/backup eligible" : ""}
+                  {passkey.createdAt
+                    ? ` · ${new Date(passkey.createdAt).toLocaleString()}`
+                    : ""}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Rename passkey"
+                  onClick={renameCredential(passkey)}
+                >
+                  <Pencil />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  aria-label="Remove passkey"
+                  onClick={removeCredential(passkey)}
+                >
+                  <Trash2 />
+                </Button>
+              </div>
+            </li>
+          );
+        })}
       </ul>
+      <Dialog
+        open={namingTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !savingName) setNamingTarget(null);
+        }}
+      >
+        <DialogContent>
+          <form onSubmit={savePasskeyName} className="grid gap-4">
+            <DialogHeader>
+              <DialogTitle>
+                {namingTarget?.newlyEnrolled
+                  ? "Name your new passkey"
+                  : "Rename passkey"}
+              </DialogTitle>
+              <DialogDescription>
+                {namingTarget?.newlyEnrolled
+                  ? "Your passkey is enrolled. Confirm the suggested authenticator name or choose your own."
+                  : "Use a name that helps you recognize where this passkey is stored."}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-2">
+              <Label htmlFor="passkey-name">Passkey name</Label>
+              <Input
+                id="passkey-name"
+                value={passkeyName}
+                onChange={(event) => setPasskeyName(event.target.value)}
+                autoComplete="off"
+                autoFocus
+                required
+                maxLength={255}
+                disabled={savingName}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={savingName}
+                onClick={() => setNamingTarget(null)}
+              >
+                {namingTarget?.newlyEnrolled ? "Skip" : "Cancel"}
+              </Button>
+              <Button
+                type="submit"
+                disabled={savingName || !passkeyName.trim()}
+              >
+                {savingName ? "Saving..." : "Save name"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

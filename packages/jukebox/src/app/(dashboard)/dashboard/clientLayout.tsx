@@ -138,7 +138,7 @@ export default function DashboardLayout({ children }: Props) {
                             sideOffset={4}
                           >
                             <DropdownMenuItem onClick={webAuthn}>
-                              <span>WebAuthn</span>
+                              <span>Passkeys</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               variant="destructive"

@@ -461,7 +461,7 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                 disabled={
                   !watchSelectedTrack ||
                   watchFiles.findIndex((v) => watchSelectedTrack.id === v.id) >=
-                    0
+                  0
                 }
                 onClick={() => {
                   form.setValue("files", [...watchFiles, watchSelectedTrack!]);

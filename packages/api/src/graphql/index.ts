@@ -14,10 +14,13 @@ import { writeFileSync } from "fs";
 import { buildPothosSchema } from "./pothos/schema.js";
 import type { Context } from "./pothos/builder.js";
 import { postHog } from "../utils/posthog.js";
+import { resolveRequestAuth } from "../auth/session.js";
+import { authConfig } from "../auth/config.js";
 
 export async function applyApollo(app: Application): Promise<Server> {
   // GraphQL schema is now built with Pothos (replacing TypeGraphQL).
   const schema = buildPothosSchema();
+  const trustedOrigins = new Set(authConfig.trustedOrigins);
 
   // Keep schema.graphql fresh for the frontend codegen + parity checks
   // (replaces the TypeGraphQL `emitSchemaFile` behaviour).
@@ -41,8 +44,16 @@ export async function applyApollo(app: Application): Promise<Server> {
   const serverCleanup = useServer(
     {
       schema,
-      context: async (): Promise<Context> => {
-        return { user: null };
+      onConnect: (ctx) => {
+        const origin = ctx.extra.request.headers.origin;
+        return typeof origin === "string" && trustedOrigins.has(origin);
+      },
+      context: async (ctx): Promise<Context> => {
+        const requestAuth = await resolveRequestAuth(ctx.extra.request.headers);
+        return {
+          auth: requestAuth,
+          user: requestAuth?.user ?? null,
+        };
       },
     },
     wsServer,
@@ -117,11 +128,15 @@ export async function applyApollo(app: Application): Promise<Server> {
 
   app.use(
     "/graphql",
-    cors<cors.CorsRequest>(),
+    cors<cors.CorsRequest>({
+      origin: [...authConfig.trustedOrigins],
+      credentials: true,
+    }),
     json(),
     expressMiddleware(apolloServer, {
       context: async ({ req }): Promise<Context> => ({
-        user: req.user as Context["user"],
+        auth: req.auth,
+        user: req.auth?.user ?? null,
         req,
       }),
     }),

@@ -60,10 +60,6 @@ builder.drizzleObject("Pulses", { name: "Pulse" });
 export const TagRef = builder.drizzleObject("Tags", { name: "Tag" });
 builder.drizzleObject("Verses", { name: "Verse" });
 export const UserRef = builder.drizzleObject("Users", { name: "User" });
-export const UserPublicKeyCredentialRef = builder.drizzleObject(
-  "UserPublicKeyCredentials",
-  { name: "UserPublicKeyCredential" },
-);
 
 // --- Misc (Sequelize/Drizzle-row backed) ---
 export const FuriganaMappingRef =

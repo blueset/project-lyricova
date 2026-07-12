@@ -8,7 +8,8 @@
         "POSTHOG_CLI_API_KEY",
         "POSTHOG_CLI_PROJECT_ID",
         "POSTHOG_CLI_HOST",
-        "POSTHOG_CLI_DRY_RUN"
+        "POSTHOG_CLI_DRY_RUN",
+        "API_INTERNAL_URL"
       ],
       "outputs": [".next/**", "!.next/cache/**", "build/**", "dist/**"]
     },

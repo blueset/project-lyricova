@@ -2,7 +2,6 @@ import {
   hiraToRoma,
   kanaToHira,
   romaToHira,
-  useAuthContext,
 } from "@lyricova/components";
 import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
 import {
@@ -255,7 +254,6 @@ function assToInlineTags(lyrics: LyricsJSON, ass: string) {
 }
 
 export function YohaneAlign({ fileId }: { fileId: number }) {
-  const authContext = useAuthContext();
   const [isAlignmentLoading, setIsAlignmentLoading] = useState(false);
   const [progress, setProgress] = useState<{
     status: string;
@@ -275,11 +273,9 @@ export function YohaneAlign({ fileId }: { fileId: number }) {
       let result = "";
 
       try {
-        const token = authContext.jwt();
         await fetchEventData("/api/alignment/align", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           data: { fileId, lyrics: romajiLyrics },
@@ -329,7 +325,7 @@ export function YohaneAlign({ fileId }: { fileId: number }) {
 
       setIsAlignmentLoading(false);
     })();
-  }, [authContext, fileId]);
+  }, [fileId]);
 
   return (
     <HoverCard>

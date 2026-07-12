@@ -3,7 +3,6 @@ import { useNamedState } from "../../../hooks/useNamedState";
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { useAuthContext } from "@lyricova/components";
 import { Music, ImageOff } from "lucide-react";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Input } from "@lyricova/components/components/ui/input";
@@ -108,12 +107,10 @@ export default function CoverArtPanel({
   }, [onPaste]);
 
   // Submit button action
-  const authContext = useAuthContext();
   const applyCover = useCallback(async () => {
     toggleSubmitting(true);
 
     if (!selectedImage) return;
-    const token = authContext.jwt();
     const data = new FormData();
 
     if (selectedImage.url) {
@@ -127,9 +124,6 @@ export default function CoverArtPanel({
     try {
       const result = await fetch(`/api/files/${fileId}/cover`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: data,
       });
 
@@ -150,7 +144,6 @@ export default function CoverArtPanel({
       toggleSubmitting(false);
     }
   }, [
-    authContext,
     fileId,
     refresh,
     selectedImage,
