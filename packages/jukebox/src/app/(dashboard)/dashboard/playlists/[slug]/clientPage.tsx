@@ -410,7 +410,7 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                                       <Button
                                         type="button"
                                         variant="ghost"
-                                        className="text-destructive-foreground hover:bg-destructive/10"
+                                        className="text-destructive-foregound-foreground hover:bg-destructive/10"
                                         size="icon"
                                         onClick={() => {
                                           field.onChange(
@@ -461,7 +461,7 @@ function PlaylistForm({ initialData }: { initialData: Playlist }) {
                 disabled={
                   !watchSelectedTrack ||
                   watchFiles.findIndex((v) => watchSelectedTrack.id === v.id) >=
-                    0
+                  0
                 }
                 onClick={() => {
                   form.setValue("files", [...watchFiles, watchSelectedTrack!]);

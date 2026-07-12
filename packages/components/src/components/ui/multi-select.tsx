@@ -38,7 +38,7 @@ function MultiSelect<
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium",
         multiValueLabel: () => "leading-none",
         multiValueRemove: () =>
-          "hover:bg-destructive/20 text-destructive dark:text-red-500 dark:hover:text-red-600 rounded-sm p-0.5",
+          "hover:bg-destructive/20 text-destructive-foregound dark:text-red-500 dark:hover:text-red-600 rounded-sm p-0.5",
         indicatorsContainer: () => "flex items-center gap-1",
         indicatorSeparator: () => "bg-border self-stretch w-px mx-1",
         dropdownIndicator: () =>

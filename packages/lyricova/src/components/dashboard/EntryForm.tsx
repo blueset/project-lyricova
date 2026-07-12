@@ -206,16 +206,16 @@ export function EntryForm({ id }: EntityFormProps) {
       id && data?.entry
         ? initialFormValues(data.entry)
         : {
-            title: "",
-            producersName: "",
-            vocalistsName: "",
-            comment: "",
-            songs: [],
-            verses: [],
-            tags: [],
-            pulses: [],
-            creationDate: new Date(),
-          },
+          title: "",
+          producersName: "",
+          vocalistsName: "",
+          comment: "",
+          songs: [],
+          verses: [],
+          tags: [],
+          pulses: [],
+          creationDate: new Date(),
+        },
     [data, id],
   );
 
@@ -331,14 +331,12 @@ export function EntryForm({ id }: EntityFormProps) {
       }
     } catch (e) {
       console.error(
-        `Error occurred while ${!id ? "creating" : "updating"} entry ${
-          values?.title
+        `Error occurred while ${!id ? "creating" : "updating"} entry ${values?.title
         }.`,
         e,
       );
       toast.error(
-        `Error occurred while ${!id ? "creating" : "updating"} Entry ${
-          values?.title
+        `Error occurred while ${!id ? "creating" : "updating"} Entry ${values?.title
         }. (${e})`,
       );
     }
@@ -550,7 +548,7 @@ export function EntryForm({ id }: EntityFormProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => removeSong(index)}
-                  className="text-destructive-foreground mt-5"
+                  className="text-destructive-foregound-foreground mt-5"
                 >
                   <Trash2 />
                 </Button>
@@ -604,8 +602,8 @@ export function EntryForm({ id }: EntityFormProps) {
                                   (
                                   {value
                                     ? formatDistanceToNow(value, {
-                                        addSuffix: true,
-                                      })
+                                      addSuffix: true,
+                                    })
                                     : "unknown"}
                                   )
                                 </>
@@ -623,7 +621,7 @@ export function EntryForm({ id }: EntityFormProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => removePulse(index)}
-                  className="text-destructive-foreground"
+                  className="text-destructive-foregound-foreground"
                 >
                   <Trash2 />
                 </Button>
@@ -764,7 +762,7 @@ export function EntryForm({ id }: EntityFormProps) {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="text-destructive-foreground"
+                        className="text-destructive-foregound-foreground"
                         onClick={() => removeVerse(index)}
                       >
                         <Trash2 />
@@ -923,7 +921,7 @@ export function EntryForm({ id }: EntityFormProps) {
             {form.formState.errors.verses?.root && (
               <p
                 data-slot="form-message"
-                className="text-destructive-foreground text-sm"
+                className="text-destructive-foregound-foreground text-sm"
               >
                 {form.formState.errors.verses?.root.message}
               </p>

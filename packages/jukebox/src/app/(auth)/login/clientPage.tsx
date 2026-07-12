@@ -57,12 +57,15 @@ export default function Login() {
 
   useEffect(() => {
     let active = true;
+    const publicKeyCredential = window.PublicKeyCredential;
+    if (!publicKeyCredential) return;
+
     const conditionalAvailable =
-      PublicKeyCredential.isConditionalMediationAvailable;
+      publicKeyCredential.isConditionalMediationAvailable;
     if (!conditionalAvailable) return;
 
     void (async () => {
-      if (!(await conditionalAvailable.call(PublicKeyCredential))) return;
+      if (!(await conditionalAvailable.call(publicKeyCredential))) return;
       const result = await authClient.signIn.passkey({ autoFill: true });
       if (!active || result.error) return;
       await apolloClient.resetStore();
@@ -168,9 +171,8 @@ export default function Login() {
                     />
                     {errors.username &&
                       errors.username.message !== " " && ( // Don't show the space message
-                        <p className="text-sm text-destructive">
+                        <p className="text-sm text-destructive-foregound-foreground">
                           {" "}
-                          {/* Use text-destructive */}
                           {errors.username.message}
                         </p>
                       )}
@@ -197,9 +199,9 @@ export default function Login() {
                     />
                     {errors.password &&
                       errors.password.message !== " " && ( // Don't show the space message
-                        <p className="text-sm text-destructive-foreground">
+                        <p className="text-sm text-destructive-foregound-foreground">
                           {" "}
-                          {/* Use text-destructive */}
+                          {/* Use text-destructive-foregound */}
                           {errors.password.message}
                         </p>
                       )}
