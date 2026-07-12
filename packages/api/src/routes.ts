@@ -5,7 +5,6 @@ import { VocaDBImportController } from "./controller/VocaDBImportController.js";
 import type { SegmentedTransliterationOptions } from "./utils/transliterate.js";
 import { transliterate, segmentedTransliteration } from "./utils/transliterate.js";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController.js";
-import { AuthController } from "./controller/AuthController.js";
 import { PlaylistController } from "./controller/PlaylistController.js";
 import { convertMonoruby } from "./utils/monoruby.js";
 import { SongController } from "./controller/SongController.js";
@@ -53,10 +52,6 @@ export default (app: express.Express) => {
 
   const docsController = new DocsController();
   apiRouter.use("/", docsController.router);
-
-  const authController = new AuthController();
-  apiRouter.use("/", authController.router);
-  app.use("/", authController.injectionRouter);
 
   apiRouter.get("/transliterate/:text", (req: Request, res: Response) => {
     res.send(transliterate(req.params.text as string));

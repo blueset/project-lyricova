@@ -1,9 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { AuthContext, LS_JWT_KEY } from "@lyricova/components";
+import { authClient } from "@lyricova/components";
 import { useApolloClient } from "@apollo/client/react";
 import { useCallback, useEffect, useState } from "react";
-import base64url from "base64url";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,6 +21,15 @@ const loginSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
+
+const loginDestination = () => {
+  const destination = new URLSearchParams(window.location.search).get(
+    "redirect",
+  );
+  return destination?.startsWith("/") && !destination.startsWith("//")
+    ? destination
+    : "/dashboard";
+};
 
 export default function Login() {
   const router = useRouter();
@@ -47,81 +55,33 @@ export default function Login() {
     }
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    const conditionalAvailable =
+      PublicKeyCredential.isConditionalMediationAvailable;
+    if (!conditionalAvailable) return;
+
+    void (async () => {
+      if (!(await conditionalAvailable.call(PublicKeyCredential))) return;
+      const result = await authClient.signIn.passkey({ autoFill: true });
+      if (!active || result.error) return;
+      await apolloClient.resetStore();
+      router.push(loginDestination());
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [apolloClient, router]);
+
   const webauthnLogin = useCallback(async () => {
     try {
-      const resp = await fetch("/api/login/public-key/challenge", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
-      });
-      if (!resp.ok) throw new Error("Failed to get challenge");
-      const json = await resp.json();
-      const credential = (await navigator.credentials.get({
-        publicKey: {
-          challenge: base64url.toBuffer(
-            json.challenge,
-          ) as unknown as ArrayBuffer,
-          // allowCredentials: [], // You might need to specify allowed credentials if required by your RP
-          // userVerification: "preferred", // Or "required" or "discouraged"
-        },
-      })) as PublicKeyCredential | null;
-
-      if (!credential) {
-        toast.error("Credential retrieval cancelled or failed.");
-        return;
+      const result = await authClient.signIn.passkey();
+      if (result.error) {
+        throw new Error(result.error.message ?? "Passkey authentication failed.");
       }
-
-      const body = {
-        id: credential.id,
-        response: {
-          clientDataJSON: base64url.encode(
-            (credential.response as AuthenticatorAssertionResponse)
-              .clientDataJSON as unknown as Buffer,
-          ),
-          authenticatorData: base64url.encode(
-            (credential.response as AuthenticatorAssertionResponse)
-              .authenticatorData as unknown as Buffer,
-          ),
-          signature: base64url.encode(
-            (credential.response as AuthenticatorAssertionResponse)
-              .signature as unknown as Buffer,
-          ),
-          userHandle: (credential.response as AuthenticatorAssertionResponse)
-            .userHandle
-            ? base64url.encode(
-                (credential.response as AuthenticatorAssertionResponse)
-                  .userHandle as unknown as Buffer,
-              )
-            : null, // Use null or omit if userHandle is not present
-        },
-        type: credential.type,
-        ...(credential.authenticatorAttachment
-          ? { authenticatorAttachment: credential.authenticatorAttachment }
-          : {}),
-      };
-
-      const loginReq = await fetch("/api/login/public-key", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!loginReq.ok) {
-        const errorData = await loginReq.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Passkey login failed: ${loginReq.statusText}`,
-        );
-      }
-
-      const loginResp = await loginReq.json();
-      const token: string = loginResp.token;
-      window.localStorage.setItem(LS_JWT_KEY, token);
       await apolloClient.resetStore();
-      await router.push("/dashboard");
+      router.push(loginDestination());
       toast.success("Login Successful. Welcome back!");
     } catch (error) {
       console.error("Passkey login failed:", error);
@@ -133,18 +93,15 @@ export default function Login() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      const resp = await fetch("/api/login/local/jwt", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
+      const result = await authClient.signIn.username({
+        username: values.username,
+        password: values.password,
       });
 
-      if (resp.status === 401) {
+      if (result.error) {
         setError("username", {
           type: "manual",
-          message: " ", // Keep space for layout consistency if needed
+          message: " ",
         });
         setError("password", {
           type: "manual",
@@ -152,20 +109,10 @@ export default function Login() {
         });
         toast.error("Login Failed: Invalid credentials.");
         return;
-      } else if (!resp.ok) {
-        const errorText = await resp.text();
-        setError("username", {
-          type: "manual",
-          message: `Login failed: ${resp.status} ${resp.statusText}`,
-        });
-        toast.error(`Login Error: ${errorText || resp.statusText}`);
-        return;
       }
 
-      const token: string = (await resp.json()).token;
-      window.localStorage.setItem(LS_JWT_KEY, token);
       await apolloClient.resetStore();
-      await router.push("/dashboard");
+      router.push(loginDestination());
       toast.success("Login Successful. Welcome back!");
     } catch (error) {
       console.error("Login error:", error);
@@ -181,11 +128,11 @@ export default function Login() {
 
   const handleForgotPassword = (evt: React.MouseEvent<HTMLButtonElement>) => {
     evt.preventDefault();
-    toast.info("Try harder.");
+    toast.info("Ask an administrator to reset the account with lyricova-admin.");
   };
 
   return (
-    <AuthContext authRedirect="/dashboard">
+    <>
       <Toaster
         closeButton
         richColors
@@ -214,6 +161,7 @@ export default function Login() {
                     <Input
                       id="username"
                       type="text"
+                      autoComplete="username webauthn"
                       required
                       {...register("username")}
                       aria-invalid={errors.username ? "true" : "false"}
@@ -242,13 +190,14 @@ export default function Login() {
                     <Input
                       id="password"
                       type="password"
+                      autoComplete="current-password webauthn"
                       required
                       {...register("password")}
                       aria-invalid={errors.password ? "true" : "false"}
                     />
                     {errors.password &&
                       errors.password.message !== " " && ( // Don't show the space message
-                        <p className="text-sm text-destructive">
+                        <p className="text-sm text-destructive-foreground">
                           {" "}
                           {/* Use text-destructive */}
                           {errors.password.message}
@@ -290,6 +239,6 @@ export default function Login() {
           </Card>
         </div>
       </div>
-    </AuthContext>
+    </>
   );
 }

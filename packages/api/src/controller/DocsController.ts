@@ -28,10 +28,12 @@ const options: swaggerJsdoc.Options = {
     ].filter(Boolean),
     components: {
       securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
+        sessionCookie: {
+          type: "apiKey",
+          in: "cookie",
+          name: "__Secure-lyricova.session_token",
+          description:
+            "Better Auth database session cookie. Development uses the same name without the __Secure- prefix.",
         },
       },
     },

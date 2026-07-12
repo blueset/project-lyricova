@@ -2,6 +2,8 @@
 
 import React, { Suspense, useEffect, type ReactNode } from "react";
 import posthog from "posthog-js";
+
+declare const process: { env: { NODE_ENV?: string } };
 import { PostHogProvider, usePostHog } from "posthog-js/react";
 import clarity from "@microsoft/clarity";
 import { usePathname, useSearchParams } from "next/navigation";

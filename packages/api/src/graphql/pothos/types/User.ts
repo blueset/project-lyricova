@@ -20,18 +20,3 @@ builder.drizzleObjectFields("Users", (t) => ({
   role: t.field({ type: "String", resolve: (u: any) => u.role }),
   username: t.field({ type: "String", resolve: (u: any) => u.username }),
 }));
-
-builder.drizzleObjectFields("UserPublicKeyCredentials", (t) => ({
-  creationDate: t.field({
-    type: "Timestamp",
-    resolve: (c: any) => c.creationDate,
-  }),
-  id: t.field({ type: "Float", resolve: (c: any) => c.id }),
-  remarks: t.field({
-    type: "String",
-    nullable: true,
-    resolve: (c: any) => c.remarks,
-  }),
-  updatedOn: t.field({ type: "Timestamp", resolve: (c: any) => c.updatedOn }),
-  userId: t.field({ type: "Float", resolve: (c: any) => c.userId }),
-}));

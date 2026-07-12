@@ -1,8 +1,7 @@
 "use client";
 
+import { authClient } from "@lyricova/components";
 import { Button } from "@lyricova/components/components/ui/button";
-import { LS_JWT_KEY } from "@lyricova/components";
-import { useEffect, useState } from "react";
 import { Divider } from "../Divider";
 import classes from "./AdminLinks.module.scss";
 
@@ -11,21 +10,8 @@ interface AdminLinksProps {
 }
 
 export function AdminLinks({ id }: AdminLinksProps) {
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const jwtKey = localStorage?.getItem(LS_JWT_KEY);
-    if (jwtKey) {
-      const expiryDate = new Date(
-        JSON.parse(atob(jwtKey.split(".")[1])).exp * 1000,
-      );
-      setIsAdmin(expiryDate > new Date());
-    } else {
-      setIsAdmin(false);
-    }
-  }, []);
-
-  if (!isAdmin) return null;
+  const { data: session } = authClient.useSession();
+  if (session?.user.role !== "admin") return null;
 
   return (
     <>
@@ -49,16 +35,18 @@ export function AdminLinks({ id }: AdminLinksProps) {
               try {
                 const response = await fetch(`/api/bump/${id}`, {
                   method: "PATCH",
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem(LS_JWT_KEY)}`,
-                  },
                 });
+                if (!response.ok) {
+                  throw new Error(
+                    `Request failed: ${response.status} ${response.statusText}`,
+                  );
+                }
                 const data = await response.json();
                 alert(`Success: ${JSON.stringify(data)}`);
                 window.location.reload();
-              } catch (e) {
-                alert(`Fail: ${e}`);
-                console.error("Failed to bump entry", e);
+              } catch (error) {
+                alert(`Fail: ${error}`);
+                console.error("Failed to bump entry", error);
               }
             }}
           >

@@ -1,9 +1,9 @@
-import bcrypt from "bcryptjs";
 import _ from "lodash";
 import { withFilter } from "graphql-subscriptions";
 import { builder } from "../builder.js";
 import type { PubSubSessionPayload } from "../pubsub.js";
 import { pubsub, TOPIC_LENGTHY_TASK } from "../pubsub.js";
+import { hashPassword } from "../../../auth/password.js";
 
 interface FooShape {
   bar: number;
@@ -27,7 +27,7 @@ function sleep(ms: number): Promise<void> {
 builder.queryField("hash", (t) =>
   t.string({
     args: { plaintext: t.arg.string() },
-    resolve: (_root, { plaintext }) => bcrypt.hash(plaintext, 10),
+    resolve: (_root, { plaintext }) => hashPassword(plaintext),
   }),
 );
 
