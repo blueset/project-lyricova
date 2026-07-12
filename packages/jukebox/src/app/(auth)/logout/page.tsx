@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { LS_JWT_KEY } from "@lyricova/components";
+import { authClient } from "@lyricova/components";
 import { useRouter } from "next/navigation";
 import { useApolloClient } from "@apollo/client/react";
 
@@ -9,15 +9,11 @@ export default function Logout() {
   const apolloClient = useApolloClient();
 
   useEffect(() => {
-    const hasToken = Boolean(localStorage?.getItem(LS_JWT_KEY) ?? null);
-    if (hasToken) {
-      localStorage.removeItem(LS_JWT_KEY);
-      apolloClient.resetStore().then(() => {
-        router.push("/login");
-      });
-    } else {
+    void (async () => {
+      await authClient.signOut();
+      await apolloClient.clearStore();
       router.push("/login");
-    }
+    })();
   }, [apolloClient, router]);
   return <></>;
 }

@@ -19,19 +19,7 @@ if (fs.existsSync(".env")) {
   }
 }
 
-export const SESSION_SECRET = process.env["SESSION_SECRET"]!;
-
-if (!SESSION_SECRET) {
-  console.error("No client secret. Set SESSION_SECRET environment variable.");
-  process.exit(1);
-}
-
-export const JWT_SECRET = process.env["JWT_SECRET"]!;
-
-if (!JWT_SECRET) {
-  console.error("No JWT secret. Set JWT_SECRET environment variable.");
-  process.exit(1);
-}
+export const BETTER_AUTH_SECRET = process.env["BETTER_AUTH_SECRET"];
 
 export const DB_URI = process.env["DB_URI"] as string;
 

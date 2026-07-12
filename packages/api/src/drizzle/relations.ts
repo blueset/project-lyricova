@@ -9,7 +9,9 @@ import {
   ArtistOfSongs,
   SongInAlbums,
   Users,
-  UserPublicKeyCredentials,
+  AuthAccounts,
+  AuthSessions,
+  UserPasskeys,
   Entries,
   Pulses,
   Verses,
@@ -112,18 +114,31 @@ export const songInAlbumsRelations = relations(SongInAlbums, ({ one }) => ({
 
 export const usersRelations = relations(Users, ({ many }) => ({
   entries: many(Entries),
-  credentials: many(UserPublicKeyCredentials),
+  accounts: many(AuthAccounts),
+  sessions: many(AuthSessions),
+  passkeys: many(UserPasskeys),
 }));
 
-export const userPublicKeyCredentialsRelations = relations(
-  UserPublicKeyCredentials,
-  ({ one }) => ({
-    user: one(Users, {
-      fields: [UserPublicKeyCredentials.userId],
-      references: [Users.id],
-    }),
+export const authAccountsRelations = relations(AuthAccounts, ({ one }) => ({
+  user: one(Users, {
+    fields: [AuthAccounts.userId],
+    references: [Users.id],
   }),
-);
+}));
+
+export const authSessionsRelations = relations(AuthSessions, ({ one }) => ({
+  user: one(Users, {
+    fields: [AuthSessions.userId],
+    references: [Users.id],
+  }),
+}));
+
+export const userPasskeysRelations = relations(UserPasskeys, ({ one }) => ({
+  user: one(Users, {
+    fields: [UserPasskeys.userId],
+    references: [Users.id],
+  }),
+}));
 
 export const entriesRelations = relations(Entries, ({ one, many }) => ({
   author: one(Users, {

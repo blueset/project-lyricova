@@ -5,9 +5,9 @@ import { useQuery } from "@apollo/client/react";
 import { graphql } from "../gql";
 import type { CurrentUserQuery } from "../gql/graphql";
 import { useRouter } from "next/navigation";
-import { LS_JWT_KEY } from "../utils/localStorage";
 import React from "react";
 import { usePostHog } from "posthog-js/react";
+import { authClient } from "../utils/auth";
 
 interface AuthContextProps {
   /**
@@ -36,17 +36,24 @@ type QueriedUser = NonNullable<CurrentUserQuery["currentUser"]>;
 
 type UserContextType = {
   user?: QueriedUser;
-  jwt: () => string | null;
+  session: typeof authClient.$Infer.Session | null;
 };
 
-const AuthContextReact = createContext<UserContextType>({ jwt: () => null });
+const AuthContextReact = createContext<UserContextType>({ session: null });
 
 export function AuthContext({
   authRedirect,
   children,
   noRedirect,
 }: AuthContextProps) {
-  const { loading, error, data } = useQuery(CURRENT_USER_QUERY);
+  const {
+    data: session,
+    error: sessionError,
+    isPending,
+  } = authClient.useSession();
+  const { loading, error, data } = useQuery(CURRENT_USER_QUERY, {
+    skip: !session,
+  });
 
   const router = useRouter();
   const postHog = usePostHog();
@@ -55,25 +62,28 @@ export function AuthContext({
     if (noRedirect) return;
 
     const needAuth = !authRedirect;
-    const token = window.localStorage?.getItem(LS_JWT_KEY);
-    let hasToken = !!(token ?? null);
-    if (hasToken) {
-      if (loading) return;
-      if (error) {
-        console.error("Check auth error", error);
-        return;
-      }
-      hasToken = !!data?.currentUser;
-      if (hasToken === false) {
-        window.localStorage?.removeItem(LS_JWT_KEY);
-      }
+    if (isPending || (session && loading)) return;
+    if (sessionError || error) {
+      console.error("Check auth error", sessionError ?? error);
+      return;
     }
-    if (hasToken && !needAuth) {
+    const hasSession = !!session && !!data?.currentUser;
+    if (hasSession && !needAuth) {
       router?.push(authRedirect);
-    } else if (!hasToken && needAuth) {
+    } else if (!hasSession && needAuth) {
       router?.push("/login");
     }
-  }, [loading, error, data, noRedirect, authRedirect, router]);
+  }, [
+    loading,
+    error,
+    data,
+    session,
+    sessionError,
+    isPending,
+    noRedirect,
+    authRedirect,
+    router,
+  ]);
 
   useEffect(() => {
     if (postHog && data?.currentUser) {
@@ -89,7 +99,7 @@ export function AuthContext({
 
   const value = {
     user: data?.currentUser ?? undefined,
-    jwt: () => window.localStorage?.getItem(LS_JWT_KEY),
+    session: session ?? null,
   };
 
   return (

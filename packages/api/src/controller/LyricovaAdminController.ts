@@ -23,7 +23,7 @@ export class LyricovaAdminApiController {
    *     tags:
    *       - Lyricova admin API
    *     security:
-   *       - bearerAuth: []
+   *       - sessionCookie: []
    *     parameters:
    *       - in: path
    *         name: entryId

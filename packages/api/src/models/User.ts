@@ -36,14 +36,6 @@
  *             - admin
  *             - guest
  *           description: User role determining permissions
- *         provider:
- *           type: string
- *           maxLength: 256
- *           description: OAuth provider name if using OAuth
- *         provider_id:
- *           type: string
- *           maxLength: 1024
- *           description: OAuth provider’s user ID
  *         creationDate:
  *           type: string
  *           format: date-time
@@ -69,15 +61,9 @@ export class User {
 
   displayName!: string;
 
-  password!: string;
-
   email!: string;
 
   role!: "admin" | "guest";
-
-  provider?: string;
-
-  provider_id?: string;
 
   creationDate!: Date;
 

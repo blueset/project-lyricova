@@ -417,7 +417,6 @@ type Mutation {
     """Music file ID"""
     fileId: Int!
   ): Int!
-  deleteCredential(id: Int!): Boolean!
   deleteEntry(id: Int!): Boolean!
   deleteTag(slug: String!): Boolean!
 
@@ -599,7 +598,6 @@ type Query {
   artistsHasFiles(types: [String!]! = ["Unknown", "Circle", "Label", "Producer", "Animator", "Illustrator", "Lyricist", "Vocaloid", "UTAU", "CeVIO", "OtherVoiceSynthesizer", "OtherVocalist", "OtherGroup", "OtherIndividual", "Utaite", "Band", "Vocalist", "Character", "SynthesizerV", "CoverArtist", "NEUTRINO", "VoiSona", "NewType", "Voiceroid"]): [Artist!]!
   artistsWithFilesNeedEnrol: [Int!]!
   computeFuriganaMappings(mapping: [FuriganaMappingInput!]!): [FuriganaMapping!]!
-  currentCredentials: [UserPublicKeyCredential!]!
   currentUser: User
   dashboardStats: DashboardStats!
   entries: [Entry!]!
@@ -806,14 +804,6 @@ type User {
   id: Float!
   role: String!
   username: String!
-}
-
-type UserPublicKeyCredential {
-  creationDate: Timestamp!
-  id: Float!
-  remarks: String
-  updatedOn: Timestamp!
-  userId: Float!
 }
 
 type Verse {
