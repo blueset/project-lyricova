@@ -10,6 +10,7 @@ export interface VirtualizerRowRenderProps {
   absoluteIndex: number;
   top: number;
   isActiveScroll: boolean;
+  isUserScrolling: boolean;
   rowRefHandler: (el: HTMLElement) => void;
 }
 
@@ -42,15 +43,16 @@ export function useLyricsVirtualizer({
     containerSize,
     rowCount,
   });
-  const { scrollOffset, isActiveScroll } = useScrollOffset({
-    containerRef,
-    containerSize,
-    rowAccumulateHeight,
-    startRow,
-    endRow,
-    align,
-    alignAnchor,
-  });
+  const { scrollOffset, scrollContentHeight, isActiveScroll, isUserScrolling } =
+    useScrollOffset({
+      containerRef,
+      containerSize,
+      rowAccumulateHeight,
+      startRow,
+      endRow,
+      align,
+      alignAnchor,
+    });
   const { renderStartRow, renderEndRow } = useRenderRange({
     scrollOffset,
     rowAccumulateHeight,
@@ -67,6 +69,7 @@ export function useLyricsVirtualizer({
             i < startRow ? i - startRow : i >= endRow ? i - endRow + 1 : 0,
           top: rowAccumulateHeight[i] - scrollOffset,
           isActiveScroll,
+          isUserScrolling,
           rowRefHandler: rowRefHandler(i),
         }),
       );
@@ -81,8 +84,15 @@ export function useLyricsVirtualizer({
     rowAccumulateHeight,
     scrollOffset,
     isActiveScroll,
+    isUserScrolling,
     rowRefHandler,
   ]);
 
-  return { renderedRows, isActiveScroll };
+  return {
+    renderedRows,
+    scrollContentHeight,
+    scrollViewportHeight: containerSize.height,
+    isActiveScroll,
+    isUserScrolling,
+  };
 }

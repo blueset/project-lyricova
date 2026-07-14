@@ -1,5 +1,35 @@
 import { expect, test } from "@playwright/test";
 
+test("uses native wheel scrolling behind a sticky lyrics viewport", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const scroller = page.getByTestId("native-scroller");
+  const viewport = page.getByTestId("sticky-lyrics-viewport");
+  await expect
+    .poll(() => scroller.evaluate((node) => node.scrollTop))
+    .toBe(150);
+  const initialViewportTop = await viewport.evaluate(
+    (node) => node.getBoundingClientRect().top,
+  );
+
+  await scroller.hover();
+  await page.mouse.wheel(0, 60);
+
+  await expect
+    .poll(() => scroller.evaluate((node) => node.scrollTop))
+    .toBeGreaterThan(150);
+  const nativeScrollTop = await scroller.evaluate((node) => node.scrollTop);
+  await expect(page.getByTestId("native-scroll-offset")).toHaveText(
+    String(nativeScrollTop - 100),
+  );
+  await expect(scroller).toHaveAttribute("data-active-scroll", "true");
+  await expect
+    .poll(() => viewport.evaluate((node) => node.getBoundingClientRect().top))
+    .toBe(initialViewportTop);
+});
+
 test("synchronizes late mounts, seeks, rates, and replacements", async ({
   page,
 }) => {

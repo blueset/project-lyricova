@@ -14,6 +14,46 @@ import { readPlaybackSnapshot } from "../../../../src/hooks/useMediaClock";
 import { useTrackwiseTimelineControl } from "../../../../src/hooks/useTrackwiseTimelineControl";
 import type { PlaybackAnimationController } from "../../../../src/hooks/types";
 import { useWebAnimationController } from "../../../../src/hooks/useWebAnimationController";
+import { useScrollOffset } from "../../../../src/components/public/lyrics/components/useScrollOffset";
+
+function NativeScrollHarness() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollOffset, scrollContentHeight, isActiveScroll, isUserScrolling } =
+    useScrollOffset({
+      containerRef,
+      containerSize: { width: 300, height: 200 },
+      rowAccumulateHeight: [0, 100, 200, 300],
+      startRow: 1,
+      endRow: 2,
+      align: "center",
+      alignAnchor: 0.5,
+    });
+
+  return (
+    <div
+      ref={containerRef}
+      data-testid="native-scroller"
+      data-active-scroll={isActiveScroll}
+      data-user-scrolling={isUserScrolling}
+      style={{
+        height: 200,
+        overflowY: "auto",
+        overscrollBehaviorY: "contain",
+        touchAction: "pan-y",
+        width: 300,
+      }}
+    >
+      <div style={{ height: scrollContentHeight, position: "relative" }}>
+        <div
+          data-testid="sticky-lyrics-viewport"
+          style={{ height: 200, position: "sticky", top: 0 }}
+        >
+          <output data-testid="native-scroll-offset">{scrollOffset}</output>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const AnimatedNode = forwardRef<
   PlaybackAnimationController,
@@ -124,6 +164,7 @@ function App() {
 
   return (
     <main>
+      <NativeScrollHarness />
       <audio ref={bindPlayer} />
       <output data-testid="frame">{currentFrame?.data ?? "none"}</output>
       <button type="button" onClick={() => seek(6)}>
