@@ -14,6 +14,52 @@ import { readPlaybackSnapshot } from "../../../../src/hooks/useMediaClock";
 import { useTrackwiseTimelineControl } from "../../../../src/hooks/useTrackwiseTimelineControl";
 import type { PlaybackAnimationController } from "../../../../src/hooks/types";
 import { useWebAnimationController } from "../../../../src/hooks/useWebAnimationController";
+import { useScrollOffset } from "../../../../src/components/public/lyrics/components/useScrollOffset";
+
+function NativeScrollHarness() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState(200);
+  const { scrollOffset, scrollContentHeight, isActiveScroll, isUserScrolling } =
+    useScrollOffset({
+      containerRef,
+      containerSize: { width: 300, height: containerHeight },
+      rowAccumulateHeight: [0, 100, 200, 300],
+      startRow: 1,
+      endRow: 2,
+      align: "center",
+      alignAnchor: 0.5,
+    });
+
+  return (
+    <>
+      <button type="button" onClick={() => setContainerHeight(300)}>
+        resize-native-scroller
+      </button>
+      <div
+        ref={containerRef}
+        data-testid="native-scroller"
+        data-active-scroll={isActiveScroll}
+        data-user-scrolling={isUserScrolling}
+        style={{
+          height: containerHeight,
+          overflowY: "auto",
+          overscrollBehaviorY: "contain",
+          touchAction: "pan-y",
+          width: 300,
+        }}
+      >
+        <div style={{ height: scrollContentHeight, position: "relative" }}>
+          <div
+            data-testid="sticky-lyrics-viewport"
+            style={{ height: containerHeight, position: "sticky", top: 0 }}
+          >
+            <output data-testid="native-scroll-offset">{scrollOffset}</output>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
 
 const AnimatedNode = forwardRef<
   PlaybackAnimationController,
@@ -124,6 +170,7 @@ function App() {
 
   return (
     <main>
+      <NativeScrollHarness />
       <audio ref={bindPlayer} />
       <output data-testid="frame">{currentFrame?.data ?? "none"}</output>
       <button type="button" onClick={() => seek(6)}>

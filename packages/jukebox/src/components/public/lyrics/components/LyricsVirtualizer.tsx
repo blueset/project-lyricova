@@ -1,5 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useRef } from "react";
+import { cn } from "@lyricova/components/utils";
 import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import {
   type LyricsSegment,
@@ -16,6 +17,7 @@ export interface RowRendererProps<T> {
   segment: LyricsSegment;
   isActive?: boolean;
   isActiveScroll?: boolean;
+  isUserScrolling?: boolean;
   ref?: React.Ref<HTMLDivElement>;
   top: number;
   transLang?: string;
@@ -36,6 +38,7 @@ export interface LyricsVirtualizerProps<
   alignAnchor?: number;
   containerAs?: TELement;
   containerProps?: React.ComponentProps<TELement>;
+  viewportClassName?: string;
 }
 
 /**
@@ -52,6 +55,7 @@ export function LyricsVirtualizer({
   alignAnchor = 0.5,
   containerAs: ContainerAs = "div",
   containerProps = {},
+  viewportClassName,
 }: LyricsVirtualizerProps<LyricsKitLyricsLine>) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -93,6 +97,7 @@ export function LyricsVirtualizer({
       top,
       rowRefHandler,
       isActiveScroll,
+      isUserScrolling,
     }: VirtualizerRowRenderProps) =>
       rowRenderer({
         row: rows[index]!,
@@ -103,6 +108,7 @@ export function LyricsVirtualizer({
         top,
         absoluteIndex,
         isActiveScroll,
+        isUserScrolling,
         isActive: activeSegments?.includes(index) ?? false,
         animationRef: setRef(index),
         onClick: () => {
@@ -115,7 +121,13 @@ export function LyricsVirtualizer({
     [activeSegments, playerRef, rowRenderer, rows, segments, setRef],
   );
 
-  const { renderedRows, isActiveScroll } = useLyricsVirtualizer({
+  const {
+    renderedRows,
+    scrollContentHeight,
+    scrollViewportHeight,
+    isActiveScroll,
+    isUserScrolling,
+  } = useLyricsVirtualizer({
     containerRef: containerRef as React.RefObject<HTMLDivElement>,
     startRow,
     endRow,
@@ -127,12 +139,25 @@ export function LyricsVirtualizer({
   });
 
   return (
-    <ContainerAs
-      ref={containerRef}
-      isActiveScroll={isActiveScroll}
-      {...containerProps}
-    >
-      {renderedRows}
+    <ContainerAs {...containerProps}>
+      <div
+        ref={containerRef}
+        className="no-scrollbar size-full touch-pan-y overflow-x-hidden overflow-y-auto overscroll-y-contain"
+        data-active-scroll={isActiveScroll}
+        data-user-scrolling={isUserScrolling}
+      >
+        <div
+          className="relative w-full"
+          style={{ height: scrollContentHeight }}
+        >
+          <div
+            className={cn("sticky top-0 w-full", viewportClassName)}
+            style={{ height: scrollViewportHeight }}
+          >
+            {renderedRows}
+          </div>
+        </div>
+      </div>
     </ContainerAs>
   );
 }

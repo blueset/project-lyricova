@@ -83,6 +83,7 @@ const InnerRowRenderer = forwardRef<
       onClick,
       transLang,
       absoluteIndex,
+      isUserScrolling,
     },
     ref,
   ) => {
@@ -91,8 +92,8 @@ const InnerRowRenderer = forwardRef<
     }));
 
     useEffect(() => {
-      api.start({ to: { y: top } });
-    }, [api, top]);
+      api.start({ to: { y: top }, immediate: isUserScrolling });
+    }, [api, isUserScrolling, top]);
 
     return (
       <animated.div
@@ -131,7 +132,8 @@ const RowRenderer = memo(
     prev.transLang === next.transLang &&
     prev.isActive === next.isActive &&
     prev.absoluteIndex === next.absoluteIndex &&
-    prev.isActiveScroll === next.isActiveScroll,
+    prev.isActiveScroll === next.isActiveScroll &&
+    prev.isUserScrolling === next.isUserScrolling,
 );
 
 interface Props {
@@ -148,8 +150,9 @@ export function PlainLyrics({ lyrics, transLangIdx }: Props) {
       containerAs="div"
       containerProps={{
         className:
-          "p-4 w-full h-full overflow-hidden relative text-justify mask-y-from-70% mask-y-to-100%",
+          "size-full overflow-hidden relative text-justify mask-y-from-70% mask-y-to-100%",
       }}
+      viewportClassName="p-4"
       align="center"
       alignAnchor={0.5}
     >

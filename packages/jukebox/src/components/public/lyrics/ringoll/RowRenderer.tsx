@@ -36,6 +36,7 @@ const InnerRowRenderer = forwardRef<
       absoluteIndex,
       isActive,
       isActiveScroll,
+      isUserScrolling,
       animationRef,
       onClick,
       transLang,
@@ -62,8 +63,9 @@ const InnerRowRenderer = forwardRef<
             : `blur(${Math.abs(absoluteIndex) * 0.3}px)`,
         },
         delay,
+        immediate: isUserScrolling,
       });
-    }, [absoluteIndex, api, isActive, isActiveScroll, top]);
+    }, [absoluteIndex, api, isActive, isActiveScroll, isUserScrolling, top]);
 
     return (
       <animated.div
@@ -107,5 +109,6 @@ export const RowRenderer = memo(
     prev.transLang === next.transLang &&
     prev.isActive === next.isActive &&
     prev.absoluteIndex === next.absoluteIndex &&
-    prev.isActiveScroll === next.isActiveScroll,
+    prev.isActiveScroll === next.isActiveScroll &&
+    prev.isUserScrolling === next.isUserScrolling,
 );

@@ -1,6 +1,19 @@
-import _ from "lodash";
 import type { RefObject } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+const AUTO_FOLLOW_RESUME_DELAY = 5000;
+const SCROLL_IDLE_DELAY = 150;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
 
 export function useScrollOffset({
   containerRef,
@@ -22,116 +35,172 @@ export function useScrollOffset({
   const [activeScrollOffset, setActiveScrollOffset] = useState<
     number | undefined
   >(undefined);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
 
   const containerHeight = containerSize.height;
   const anchorOffset = containerHeight * alignAnchor;
-  const scorllOffsetMin = -anchorOffset;
-  const scrollOffsetMax = (rowAccumulateHeight.at(-2) ?? 0) + scorllOffsetMin;
+  const scrollOffsetMin = -anchorOffset;
+  const lastRowStart = rowAccumulateHeight.at(-2) ?? 0;
+  const contentHeight = rowAccumulateHeight.at(-1) ?? 0;
+  const lastAlignedOffset =
+    align === "start"
+      ? lastRowStart
+      : align === "center"
+        ? (lastRowStart + contentHeight) / 2
+        : contentHeight;
+  const scrollOffsetMax = Math.max(
+    scrollOffsetMin,
+    lastAlignedOffset - anchorOffset,
+  );
 
-  const scrollOffset = useMemo(() => {
+  const targetScrollOffset = useMemo(() => {
     const startOffset = rowAccumulateHeight[startRow];
     const endOffset = rowAccumulateHeight[endRow];
 
-    let newScrollOffset = 0;
+    let nextScrollOffset = 0;
     if (align === "start") {
-      newScrollOffset = startOffset - anchorOffset;
+      nextScrollOffset = startOffset - anchorOffset;
     } else if (align === "center") {
-      newScrollOffset = (startOffset + endOffset) / 2 - anchorOffset;
+      nextScrollOffset = (startOffset + endOffset) / 2 - anchorOffset;
     } else if (align === "end") {
-      newScrollOffset = endOffset - anchorOffset;
+      nextScrollOffset = endOffset - anchorOffset;
     }
-    return Math.round(newScrollOffset);
-  }, [rowAccumulateHeight, startRow, endRow, align, anchorOffset]);
-  const scrollOffsetRef = useRef(scrollOffset);
-  scrollOffsetRef.current = scrollOffset;
+    return clamp(
+      Math.round(nextScrollOffset),
+      scrollOffsetMin,
+      scrollOffsetMax,
+    );
+  }, [
+    align,
+    anchorOffset,
+    endRow,
+    rowAccumulateHeight,
+    scrollOffsetMax,
+    scrollOffsetMin,
+    startRow,
+  ]);
 
-  const debounceReset = useCallback(
-    _.debounce(() => setActiveScrollOffset(undefined), 5000),
-    [setActiveScrollOffset],
+  const boundsRef = useRef({
+    min: scrollOffsetMin,
+    max: scrollOffsetMax,
+  });
+  boundsRef.current = { min: scrollOffsetMin, max: scrollOffsetMax };
+
+  const activeScrollOffsetRef = useRef(activeScrollOffset);
+  activeScrollOffsetRef.current = activeScrollOffset;
+  const programmaticScrollTopRef = useRef<number | undefined>(undefined);
+  const autoFollowTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const scrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+
+  const updateFromNativeScroll = useCallback((nativeScrollTop: number) => {
+    const { min, max } = boundsRef.current;
+    const nextScrollOffset = clamp(nativeScrollTop + min, min, max);
+    activeScrollOffsetRef.current = nextScrollOffset;
+    setActiveScrollOffset(nextScrollOffset);
+    setIsUserScrolling(true);
+
+    clearTimeout(scrollIdleTimerRef.current);
+    scrollIdleTimerRef.current = setTimeout(
+      () => setIsUserScrolling(false),
+      SCROLL_IDLE_DELAY,
+    );
+
+    clearTimeout(autoFollowTimerRef.current);
+    autoFollowTimerRef.current = setTimeout(() => {
+      activeScrollOffsetRef.current = undefined;
+      setActiveScrollOffset(undefined);
+    }, AUTO_FOLLOW_RESUME_DELAY);
+  }, []);
+
+  const setProgrammaticScrollTop = useCallback(
+    (container: HTMLDivElement, scrollTop: number) => {
+      programmaticScrollTopRef.current = scrollTop;
+      if (Math.abs(container.scrollTop - scrollTop) >= 0.5) {
+        container.scrollTop = scrollTop;
+      }
+    },
+    [],
   );
 
   useEffect(() => {
-    const bottom = rowAccumulateHeight.at(-1) ?? 0;
-    let direction: "up" | "down" | "none" = "none";
-    let startTouchPosY = 0;
-    let lastMoveY = 0;
-    function wheelListener(event: WheelEvent) {
-      setActiveScrollOffset((v) => {
-        const base = v !== undefined ? v : scrollOffsetRef.current;
-        let result = base;
-        if (event.deltaMode === event.DOM_DELTA_PIXEL) {
-          result += event.deltaY;
-        } else {
-          result += event.deltaY * 50;
-        }
-        // TODO: fix scroll bound
-        return Math.max(scorllOffsetMin, Math.min(scrollOffsetMax, result));
-      });
-      debounceReset();
-    }
-    function touchStartListener(event: TouchEvent) {
-      // event.preventDefault();
-      // startScrollY = this.scrollOffset;
-      startTouchPosY = event.touches[0].screenY;
-      lastMoveY = startTouchPosY;
-    }
-
-    function touchMoveListener(event: TouchEvent) {
-      event.preventDefault();
-      const touchScreenY = event.touches[0].screenY;
-      const delta = touchScreenY - startTouchPosY;
-      const lastDelta = touchScreenY - lastMoveY;
-      const targetDirection =
-        lastDelta > 0 ? "down" : lastDelta < 0 ? "up" : "none";
-      if (direction !== targetDirection) {
-        direction = targetDirection;
-        startTouchPosY = touchScreenY;
-      } else {
-        // TODO: fix scroll bound
-        setActiveScrollOffset((v) =>
-          Math.max(0, Math.min(bottom, (v ?? scrollOffsetRef.current) - delta)),
-        );
-      }
-      debounceReset();
-      lastMoveY = touchScreenY;
-    }
-
-    function touchEndListener(_event: TouchEvent) {
-      // event.preventDefault();
-      debounceReset();
-    }
-
     const container = containerRef.current;
-    if (container) {
-      container.addEventListener("wheel", wheelListener, { passive: true });
-      container.addEventListener("touchstart", touchStartListener, {
-        passive: false,
-      });
-      container.addEventListener("touchmove", touchMoveListener, {
-        passive: false,
-      });
-      container.addEventListener("touchend", touchEndListener, {
-        passive: false,
-      });
-      return () => {
-        container?.removeEventListener("wheel", wheelListener);
-        container?.removeEventListener("touchstart", touchStartListener);
-        container?.removeEventListener("touchmove", touchMoveListener);
-        container?.removeEventListener("touchend", touchEndListener);
-      };
+    if (!container) return;
+
+    function scrollListener() {
+      const programmaticScrollTop = programmaticScrollTopRef.current;
+      if (
+        programmaticScrollTop !== undefined &&
+        Math.abs(container.scrollTop - programmaticScrollTop) < 0.5
+      ) {
+        programmaticScrollTopRef.current = undefined;
+        return;
+      }
+      programmaticScrollTopRef.current = undefined;
+      updateFromNativeScroll(container.scrollTop);
     }
+
+    container.addEventListener("scroll", scrollListener, { passive: true });
+    return () => {
+      container.removeEventListener("scroll", scrollListener);
+    };
+  }, [containerRef, updateFromNativeScroll]);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const activeOffset = activeScrollOffsetRef.current;
+    if (!container || activeOffset === undefined) return;
+
+    const nextActiveOffset = clamp(
+      activeOffset,
+      scrollOffsetMin,
+      scrollOffsetMax,
+    );
+    if (nextActiveOffset !== activeOffset) {
+      activeScrollOffsetRef.current = nextActiveOffset;
+      setActiveScrollOffset(nextActiveOffset);
+    }
+    setProgrammaticScrollTop(container, nextActiveOffset - scrollOffsetMin);
   }, [
     containerRef,
-    debounceReset,
-    rowAccumulateHeight,
-    scorllOffsetMin,
     scrollOffsetMax,
-    setActiveScrollOffset,
+    scrollOffsetMin,
+    setProgrammaticScrollTop,
   ]);
 
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container || activeScrollOffset !== undefined) return;
+
+    setProgrammaticScrollTop(container, targetScrollOffset - scrollOffsetMin);
+  }, [
+    activeScrollOffset,
+    containerRef,
+    scrollOffsetMin,
+    setProgrammaticScrollTop,
+    targetScrollOffset,
+  ]);
+
+  useEffect(
+    () => () => {
+      clearTimeout(autoFollowTimerRef.current);
+      clearTimeout(scrollIdleTimerRef.current);
+    },
+    [],
+  );
+
+  const scrollOffset =
+    activeScrollOffset === undefined
+      ? targetScrollOffset
+      : clamp(activeScrollOffset, scrollOffsetMin, scrollOffsetMax);
+
   return {
-    scrollOffset:
-      activeScrollOffset === undefined ? scrollOffset : activeScrollOffset,
+    scrollOffset,
+    scrollContentHeight: containerHeight + scrollOffsetMax - scrollOffsetMin,
     isActiveScroll: activeScrollOffset !== undefined,
+    isUserScrolling,
   };
 }
