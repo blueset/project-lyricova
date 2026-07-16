@@ -28,6 +28,21 @@ test("uses native wheel scrolling behind a sticky lyrics viewport", async ({
   await expect
     .poll(() => viewport.evaluate((node) => node.getBoundingClientRect().top))
     .toBe(initialViewportTop);
+
+  await expect(scroller).toHaveAttribute("data-user-scrolling", "false");
+  const activeOffset = Number(
+    await page.getByTestId("native-scroll-offset").textContent(),
+  );
+  const resizedOffset = Math.min(activeOffset, 100);
+  await page.getByRole("button", { name: "resize-native-scroller" }).click();
+
+  await expect(page.getByTestId("native-scroll-offset")).toHaveText(
+    String(resizedOffset),
+  );
+  await expect
+    .poll(() => scroller.evaluate((node) => node.scrollTop))
+    .toBe(resizedOffset + 150);
+  await expect(scroller).toHaveAttribute("data-user-scrolling", "false");
 });
 
 test("synchronizes late mounts, seeks, rates, and replacements", async ({

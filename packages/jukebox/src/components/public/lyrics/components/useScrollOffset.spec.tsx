@@ -6,12 +6,20 @@ import { useScrollOffset } from "./useScrollOffset";
 
 const rowAccumulateHeight = [0, 100, 200, 300];
 
-function Harness({ startRow, endRow }: { startRow: number; endRow: number }) {
+function Harness({
+  startRow,
+  endRow,
+  containerHeight = 200,
+}: {
+  startRow: number;
+  endRow: number;
+  containerHeight?: number;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollOffset, scrollContentHeight, isActiveScroll, isUserScrolling } =
     useScrollOffset({
       containerRef: containerRef as RefObject<HTMLDivElement>,
-      containerSize: { width: 400, height: 200 },
+      containerSize: { width: 400, height: containerHeight },
       rowAccumulateHeight,
       startRow,
       endRow,
@@ -74,5 +82,34 @@ describe("useScrollOffset", () => {
     act(() => fireEvent.scroll(scroller));
     expect(scroller.dataset.activeScroll).toBe("false");
     expect(scroller.dataset.userScrolling).toBe("false");
+  });
+
+  it("rebases native scrollTop when the viewport resizes during browsing", () => {
+    const view = render(
+      <Harness startRow={1} endRow={2} containerHeight={200} />,
+    );
+    const scroller = view.getByTestId("scroller");
+
+    act(() => {
+      scroller.scrollTop = 210;
+      fireEvent.scroll(scroller);
+      vi.advanceTimersByTime(151);
+    });
+    expect(scroller.dataset.scrollOffset).toBe("110");
+    expect(scroller.dataset.activeScroll).toBe("true");
+    expect(scroller.dataset.userScrolling).toBe("false");
+
+    view.rerender(<Harness startRow={1} endRow={2} containerHeight={300} />);
+    expect(scroller.dataset.scrollOffset).toBe("100");
+    expect(scroller.scrollTop).toBe(250);
+
+    act(() => fireEvent.scroll(scroller));
+    expect(scroller.dataset.scrollOffset).toBe("100");
+    expect(scroller.dataset.userScrolling).toBe("false");
+
+    act(() => vi.advanceTimersByTime(4849));
+    expect(scroller.dataset.activeScroll).toBe("false");
+    expect(scroller.dataset.scrollOffset).toBe("0");
+    expect(scroller.scrollTop).toBe(150);
   });
 });

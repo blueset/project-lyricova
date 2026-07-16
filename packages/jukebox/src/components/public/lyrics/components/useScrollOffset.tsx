@@ -116,6 +116,16 @@ export function useScrollOffset({
     }, AUTO_FOLLOW_RESUME_DELAY);
   }, []);
 
+  const setProgrammaticScrollTop = useCallback(
+    (container: HTMLDivElement, scrollTop: number) => {
+      programmaticScrollTopRef.current = scrollTop;
+      if (Math.abs(container.scrollTop - scrollTop) >= 0.5) {
+        container.scrollTop = scrollTop;
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -123,10 +133,10 @@ export function useScrollOffset({
     function scrollListener() {
       const programmaticScrollTop = programmaticScrollTopRef.current;
       if (
-        activeScrollOffsetRef.current === undefined &&
         programmaticScrollTop !== undefined &&
         Math.abs(container.scrollTop - programmaticScrollTop) < 0.5
       ) {
+        programmaticScrollTopRef.current = undefined;
         return;
       }
       programmaticScrollTopRef.current = undefined;
@@ -141,19 +151,36 @@ export function useScrollOffset({
 
   useLayoutEffect(() => {
     const container = containerRef.current;
-    if (!container || activeScrollOffset !== undefined) return;
+    const activeOffset = activeScrollOffsetRef.current;
+    if (!container || activeOffset === undefined) return;
 
-    const nextScrollTop = targetScrollOffset - scrollOffsetMin;
-    programmaticScrollTopRef.current = nextScrollTop;
-    if (Math.abs(container.scrollTop - nextScrollTop) >= 0.5) {
-      container.scrollTop = nextScrollTop;
+    const nextActiveOffset = clamp(
+      activeOffset,
+      scrollOffsetMin,
+      scrollOffsetMax,
+    );
+    if (nextActiveOffset !== activeOffset) {
+      activeScrollOffsetRef.current = nextActiveOffset;
+      setActiveScrollOffset(nextActiveOffset);
     }
-    programmaticScrollTopRef.current = container.scrollTop;
+    setProgrammaticScrollTop(container, nextActiveOffset - scrollOffsetMin);
   }, [
-    activeScrollOffset,
     containerRef,
     scrollOffsetMax,
     scrollOffsetMin,
+    setProgrammaticScrollTop,
+  ]);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container || activeScrollOffset !== undefined) return;
+
+    setProgrammaticScrollTop(container, targetScrollOffset - scrollOffsetMin);
+  }, [
+    activeScrollOffset,
+    containerRef,
+    scrollOffsetMin,
+    setProgrammaticScrollTop,
     targetScrollOffset,
   ]);
 
