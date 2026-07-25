@@ -118,7 +118,7 @@
     "@types/rss": "^0.0.30",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/ws": "^8.5.4",
-    "concurrently": "^10.0.3",
+    "concurrently": "^10.0.4",
     "drizzle-kit": "^0.31.10",
     "eslint-config-prettier": "^10.1.8",
     "nodemon": "^3.1.7",
