@@ -11,7 +11,7 @@
         "POSTHOG_CLI_DRY_RUN",
         "API_INTERNAL_URL"
       ],
-      "outputs": [".next/**", "!.next/cache/**", "build/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "build/**", "dist/**", "pkg/**"]
     },
     "typecheck": {
       "dependsOn": [],

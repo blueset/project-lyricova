@@ -1,6 +1,7 @@
 "use client";
 import { useQuery, skipToken } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
+import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { useMemo, useRef, useState } from "react";
 import { FocusedLyrics } from "@/components/public/lyrics/focused";
@@ -25,6 +26,17 @@ import { LyricsTranslationLanguageSwitchButton } from "@/components/public/Lyric
 import TooltipIconButton from "@/components/dashboard/TooltipIconButton";
 import { Maximize, Minimize } from "lucide-react";
 import { cn } from "@lyricova/components/utils";
+
+// Lazily loaded proof-of-concept WASM glyph renderer. Loading it dynamically
+// (client-only) keeps the WASM shaper and multi-megabyte base font out of the
+// bundle until this mode is actually selected.
+const GlyphCanvasLyrics = dynamic(
+  () =>
+    import("@/components/public/lyrics/glyph/glyphCanvas").then(
+      (m) => m.GlyphCanvasLyrics,
+    ),
+  { ssr: false },
+);
 
 const args = new URLSearchParams(
   typeof window === "object" ? (window?.location?.search ?? "") : "",
@@ -91,6 +103,7 @@ const MODULE_LIST = {
   "Typing/Stacked": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <TypingStackedLyrics lyrics={lyrics} />,
   "Stroke": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <StrokeLyrics lyrics={lyrics} />,
   "PIP (Alpha)": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <PictureInPictureLyrics lyrics={lyrics} />,
+  "Glyph Canvas (PoC)": (lyrics: LyricsKitLyrics, transLangIdx = 0) => <GlyphCanvasLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
 } as const;
 
 export default function Index() {

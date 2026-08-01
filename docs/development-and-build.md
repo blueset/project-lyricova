@@ -32,6 +32,12 @@ git-ignored), so some changes require a regeneration step before types line up.
 - npm 10.9.2 or newer, matching the root `packageManager` pin.
 - `lyrics-kit` supports Node.js 22 or newer when consumed as a standalone
   package.
+- A stable Rust toolchain via [`rustup`](https://rustup.rs/) with the
+  `wasm32-unknown-unknown` target, only for building `@lyricova/glyph-renderer`
+  (consumed by `jukebox`'s "Glyph Canvas (PoC)" lyrics renderer) — see
+  [§ 4.1](#41-glyph-renderer-wasm-artifacts) for exact requirements and
+  [`docs/glyph-canvas-poc.md`](./glyph-canvas-poc.md) for the feature this
+  unlocks.
 
 ---
 
@@ -54,12 +60,18 @@ lyrics-kit ─┐
             │                  ├─▶ @lyricova/jukebox   (Next.js, port 8082)
 @lyricova/components ──────────┴─▶ @lyricova/blog      (Next.js, port 8081)
    (runs codegen in its build)
+@lyricova/glyph-renderer ──────────▶ @lyricova/jukebox (Rust/wasm → jukebox only)
+   (wasm-pack + tsc)
 ```
 
 - `lyrics-kit` and `@lyricova/components` have no workspace deps → build first.
 - `@lyricova/api` builds after `lyrics-kit`.
-- `@lyricova/jukebox` and `@lyricova/blog` (the `packages/lyricova` app) build
-  after `api` + `components`.
+- `@lyricova/glyph-renderer` (a Rust/wasm-bindgen crate built with `wasm-pack`,
+  see [§4.1](#41-glyph-renderer-wasm-artifacts)) has no workspace deps → build
+  first; only `@lyricova/jukebox` depends on it.
+- `@lyricova/jukebox` builds after `api` + `components` + `glyph-renderer`;
+  `@lyricova/blog` (the `packages/lyricova` app) builds after `api` +
+  `components`.
 
 > **Why the ordering matters:** `@lyricova/components`'s `build` runs
 > **codegen**, which produces the git-ignored `packages/components/src/gql/**`
@@ -70,12 +82,13 @@ lyrics-kit ─┐
 
 ### What each package's `build` / `dev` does
 
-| Package                                | `build`                                          | `dev`                                                                                     |
-| -------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `@lyricova/api`                        | `build:ts` (tsc) → `lint` → `posthog` sourcemaps | `nodemon dist/server.js` + `tsc -w` + **`pothos:emit:watch`** (re-emits `schema.graphql`) |
-| `@lyricova/components`                 | **`codegen`** → `tsc` → `tsc-alias`              | **`codegen:watch`** (regenerates typed docs + schema types) + `tsc -w` + `tsc-alias -w`   |
-| `@lyricova/jukebox`                    | `next build`                                     | `next dev` (PORT 8082)                                                                    |
-| `@lyricova/blog` (`packages/lyricova`) | `next build`                                     | `next dev` (PORT 8081)                                                                    |
+| Package                                | `build`                                                                 | `dev`                                                                                                                             |
+| -------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `@lyricova/api`                        | `build:ts` (tsc) → `lint` → `posthog` sourcemaps                        | `nodemon dist/server.js` + `tsc -w` + **`pothos:emit:watch`** (re-emits `schema.graphql`)                                         |
+| `@lyricova/components`                 | **`codegen`** → `tsc` → `tsc-alias`                                     | **`codegen:watch`** (regenerates typed docs + schema types) + `tsc -w` + `tsc-alias -w`                                           |
+| `@lyricova/glyph-renderer`             | `build:wasm` (**`wasm-pack`** → `pkg/`) → `build:ts` (`tsc` → `build/`) | _no `dev` task_ — its only consumer (`jukebox`) bootstraps it via a `predev` hook (see [§4.1](#41-glyph-renderer-wasm-artifacts)) |
+| `@lyricova/jukebox`                    | `next build` (`prebuild` bootstraps `glyph-renderer`)                   | `next dev` (PORT 8082; `predev` bootstraps `glyph-renderer`)                                                                      |
+| `@lyricova/blog` (`packages/lyricova`) | `next build`                                                            | `next dev` (PORT 8081)                                                                                                            |
 
 ---
 
@@ -109,6 +122,15 @@ Cold-start caveats on a **fresh checkout / clean tree**:
    alongside `tsc -w`; on a clean tree `dist/` is produced by the watcher, so the
    node process (and the `pothos:emit:watch` emitter, which also reads `dist/`)
    may run a couple of times before `dist/` is fully populated.
+
+3. **`glyph-renderer`'s wasm/JS artifacts don't exist yet.** `jukebox` imports
+   `@lyricova/glyph-renderer` (git-ignored `build/` + `pkg/`, see
+   [§4.1](#41-glyph-renderer-wasm-artifacts)). You do **not** need to prime this
+   by hand: `jukebox`'s `predev` hook bootstraps the package (building it only if
+   an artifact is missing) before `next dev` starts, both under `npm run dev` and
+   `npm run dev -w @lyricova/jukebox`. The first clean start therefore pays a
+   one-time `wasm-pack` build (needs a stable Rust toolchain + the
+   `wasm32-unknown-unknown` target); subsequent starts are instant no-ops.
 
 Ports: **jukebox → 8082**, **blog/lyricova → 8081**. `api` needs a `.env` with a
 **parseable** `DB_URI` (the emit only creates a lazy pool — a reachable database
@@ -171,6 +193,73 @@ Know these so you don't hunt for "missing" files or commit generated output:
 | `packages/api/dist/**`               | `tsc`                                     | **No**                            |
 | `packages/api/schema.graphql`        | _hand-updated_ from the Pothos emit       | **Yes** — codegen source of truth |
 | `packages/api/drizzle/migrations/**` | `npm run db:generate`                     | **Yes**                           |
+| `packages/glyph-renderer/pkg/**`     | `npm run build:wasm` (`wasm-pack`)        | **No** (git-ignored)              |
+| `packages/glyph-renderer/build/**`   | `npm run build:ts` (`tsc`)                | **No** (git-ignored)              |
+| `packages/glyph-renderer/target/**`  | `cargo` (Rust intermediates)              | **No** (git-ignored)              |
+
+### 4.1 `glyph-renderer` wasm artifacts
+
+`@lyricova/glyph-renderer` is a Rust/wasm-bindgen crate. Its `build` runs
+`wasm-pack build` (→ `pkg/`: the WASM binary + wasm-bindgen JS/`.d.ts`) then
+`tsc` (→ `build/`: the public `index.js`/`index.d.ts` wrapper `ts/index.ts`
+imports the `pkg/` bindings). Both trees are **git-ignored**, so on a clean
+checkout they don't exist. `@lyricova/jukebox` is the only consumer — it imports
+the package at build/dev time and serves `pkg/glyph_renderer_bg.wasm` at runtime
+via `/api/glyph-renderer/wasm` (see
+`packages/jukebox/src/app/api/glyph-renderer/wasm/`).
+
+How each entry point ensures the artifacts exist **before** jukebox needs them:
+
+| Entry point                                 | How glyph-renderer is built first                                                                                                     |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run build` (root, Turbo)               | Topological `^build` — jukebox depends on it, so Turbo builds it first                                                                |
+| `npm run dev` (root, Turbo)                 | jukebox `predev` hook bootstraps it (no standalone glyph `dev` task, so no double-build/race)                                         |
+| `npm run dev -w @lyricova/jukebox`          | jukebox `predev` hook                                                                                                                 |
+| `npm run build -w @lyricova/jukebox`        | jukebox `prebuild` hook                                                                                                               |
+| `npm run typecheck` / `typecheck:native`    | jukebox `pretypecheck` / `pretypecheck:native` hooks (tsc/tsgo read the `.d.ts`); glyph-renderer's own `pretypecheck*` also bootstrap |
+| `npm run test` / `npm test -w …/jukebox`    | jukebox `pretest` hook (vitest reads `pkg/` + `build/`)                                                                               |
+| `npm run test:browser`                      | jukebox `pretest:browser` hook (the vite fixture serves `pkg/` wasm)                                                                  |
+| `npm run start -w @lyricova/jukebox` (prod) | jukebox `prestart` hook **verifies only** (`--check`, no build)                                                                       |
+| CI (`.github/workflows/typecheck.yml`)      | explicit `npm run build -w @lyricova/glyph-renderer` before lint/typecheck                                                            |
+
+`lint` deliberately has **no** hook: eslint's config is not type-aware and never
+resolves the built package, and glyph-renderer's own `lint` doesn't build, so
+`turbo run lint` neither consumes nor produces the artifacts — adding a hook
+would only cause needless wasm rebuilds.
+
+The hooks delegate to the package's bootstrap
+(`packages/glyph-renderer/scripts/ensure-build.mjs`, invoked via
+`packages/jukebox/scripts/ensure-glyph-renderer.mjs`), which is **idempotent,
+staleness-aware, and concurrency-safe**, and never shells out to Turbo (so it
+can't recurse into the hook):
+
+- **Staleness** — it records a content **fingerprint** of the real build inputs
+  (Rust `src/*.rs`, `ts/*.ts` excluding tests, `Cargo.toml`/`Cargo.lock`,
+  `tsconfig.json`, the build-related `package.json` scripts + tool versions,
+  and the relevant extracted `package-lock.json` subset for `typescript` /
+  `wasm-pack`) at `build/.glyph-inputs.hash` (written by glyph-renderer's
+  `postbuild` hook). A bootstrap is a no-op only when every artifact exists
+  **and** the fingerprint matches; it rebuilds when any input changed
+  (content-based, so it survives clone/checkout mtime churn and won't serve
+  stale wasm after a `.rs`/`.ts`/Cargo/script/tool/lock edit). Test/doc files
+  are **not** inputs.
+- **Concurrency** — a cross-process lock (`.glyph-build.lock`, atomic `mkdir`,
+  git-ignored) serialises builds: with many `pre*` hooks firing in parallel
+  under Turbo, exactly one caller builds while the others wait and then reuse
+  the fresh result, so two `wasm-pack` builds never run and no caller reads a
+  half-written tree. A dead/stale lock owner is stolen so a crashed build can't
+  wedge the repo.
+- **`--check`** (used by `prestart`) verifies without building and exits
+  non-zero with distinct **missing** vs **stale** guidance — for runtimes that
+  ship prebuilt artifacts and have no Rust toolchain (see
+  [§5.5](#55-docker--runtime-prebuilt-artifacts)).
+
+Turbo's `build` task lists `pkg/**` in its `outputs`, so a cache hit restores
+the WASM (and the fingerprint) alongside `build/`.
+
+> Because `ts/index.ts` imports the generated `pkg/` bindings, glyph-renderer's
+> own `typecheck`/`typecheck:native` also bootstrap `pkg/` first (a no-op once
+> built) rather than unconditionally rebuilding the wasm on every type-check.
 
 ---
 
@@ -325,6 +414,32 @@ cross-referenced with the canonical `lyricova-schema.sql` dump).
   [§5.3](#53-graphql--api-schema-changes-resolver--type--field) (update the Pothos
   object type, re-emit, re-run codegen).
 
+### 5.5 Docker / runtime (prebuilt artifacts)
+
+The container image (`Dockerfile`) provisions only the **runtime** OS deps
+(mecab, `yt-dlp`, ffmpeg, `concurrently`) — it does **not** compile the apps.
+`docker-compose.yml` bind-mounts the repo (`.:/app`) and the `CMD` runs each
+package's `npm run start`, so the container serves the artifacts you built on
+the **host** first:
+
+```bash
+npm run build            # host: turbo build (incl. glyph-renderer pkg/ + build/)
+docker-compose build     # image: OS runtime deps only
+docker-compose up -d
+```
+
+Because the container is a **prebuilt-artifact** runtime (no Rust toolchain), it
+is intentionally **not** provisioned to build `glyph-renderer` from source.
+Instead, jukebox's `prestart` hook runs the bootstrap in `--check` mode: it
+**verifies** `packages/glyph-renderer/{build,pkg}` exist (delivered via the bind
+mount) and fails fast with a clear message if you forgot the host `npm run
+build`, rather than trying — and failing — to compile wasm in the container.
+The WASM byte route resolves the binary through Node module resolution + a
+`cwd` walk (`src/app/api/glyph-renderer/wasm/wasmFile.ts`), which works from
+`next start` in the mounted source tree (jukebox does not use `output:
+"standalone"`, so there is no separate traced server bundle to copy `pkg/`
+into).
+
 ---
 
 ## 6. Verification
@@ -344,6 +459,7 @@ npm run test              # turbo run test            (jest)
 | -------------------------------------- | ----------------------------------- | -------------- | ---------------------------------- | --------------------- |
 | `@lyricova/api`                        | `npm run typecheck` (or `build:ts`) | `npm run lint` | `npm test` (jest)                  | `npm run pothos:emit` |
 | `@lyricova/components`                 | `npm run typecheck`                 | `npm run lint` | —                                  | —                     |
+| `@lyricova/glyph-renderer`             | `npm run typecheck`                 | `npm run lint` | `npm test` (`cargo test`)          | —                     |
 | `@lyricova/jukebox`                    | `npm run typecheck`                 | `npm run lint` | `npm test`; `npm run test:browser` | —                     |
 | `@lyricova/blog` (`packages/lyricova`) | `npm run typecheck`                 | `npm run lint` | `npm test`                         | —                     |
 
@@ -351,6 +467,10 @@ npm run test              # turbo run test            (jest)
 > `@lyricova/components/gql` to exist — run `npm run codegen -w @lyricova/components`
 > first if you're on a clean tree. `jukebox`/`lyricova` also type-check against
 > `@lyricova/components`'s build output, so build it first on a clean tree.
+> `jukebox` additionally type-checks against `@lyricova/glyph-renderer`'s
+> `build/` types; its `predev`/`prebuild` hooks build it automatically, or run
+> `npm run build -w @lyricova/glyph-renderer` once before a bare `npm run
+typecheck` on a clean tree.
 >
 > A ready-to-enable GitHub Actions workflow that runs the lint + `tsc` + `tsgo`
 > gates lives at `.github/workflows/typecheck.yml` (triggered on pull requests
@@ -428,4 +548,8 @@ npm run codegen -w @lyricova/components
 
 # Database schema changed
 cd packages/api && npm run db:generate && npm run db:migrate
+
+# glyph-renderer wasm (jukebox's dev/build/start hooks build it automatically;
+# run manually to force a rebuild or to prime a bare typecheck on a clean tree)
+npm run build -w @lyricova/glyph-renderer      # wasm-pack (pkg/) + tsc (build/)
 ```

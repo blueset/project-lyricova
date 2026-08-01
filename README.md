@@ -57,6 +57,16 @@ in VocaDB.net.</small>
     ```bash
     npm run build
     ```
+    This is a topological Turborepo build. It also compiles the
+    `@lyricova/glyph-renderer` Rust/wasm crate (via `wasm-pack`, needing a
+    stable Rust toolchain + the `wasm32-unknown-unknown` target) into its
+    git-ignored `pkg/` (WASM) and `build/` (JS) — `@lyricova/jukebox` imports
+    these at build time and serves the WASM at runtime. Jukebox's own
+    `dev`/`build`/`start` also bootstrap the crate automatically; see
+    [`docs/development-and-build.md` §4.1](docs/development-and-build.md). This
+    crate powers the experimental "Glyph Canvas (PoC)" lyrics renderer — see
+    [`docs/glyph-canvas-poc.md`](docs/glyph-canvas-poc.md) for what it is, the
+    platform research behind it, and its known limitations.
   - Create a Lyricova user in the database as admin.
     ```bash
     npx --workspace @lyricova/api lyricova-admin user add --username <username> --email <email> --role admin --display-name <display-name>
@@ -69,6 +79,13 @@ in VocaDB.net.</small>
     reference and the legacy-auth migration recovery flow.
 - Runtime
   - Runtime is supported by Docker.
+  - The image ships only runtime OS dependencies (it does **not** compile the
+    apps or the wasm crate). `docker-compose` bind-mounts the repo and runs each
+    package's `npm run start`, so **build on the host first** (`npm install &&
+npm run build`) — including `@lyricova/glyph-renderer`'s `pkg/`/`build/`,
+    which reach the container through the bind mount. Jukebox's `prestart` hook
+    verifies these prebuilt artifacts exist and fails fast if the host build was
+    skipped.
   - Build the image: `docker-compose build`
   - Run the container: `docker-compose up -d`
   - Lyricova blog is listening at port 59742 (`lyric`)

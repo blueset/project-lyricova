@@ -1,0 +1,58 @@
+{
+  "name": "@lyricova/glyph-renderer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WASM text shaping/layout proof of concept for Project Lyricova (rustybuzz-backed).",
+  "type": "module",
+  "main": "build/index.js",
+  "module": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build",
+    "pkg",
+    "src",
+    "Cargo.toml"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blueset/project-lyricova",
+    "directory": "packages/glyph-renderer"
+  },
+  "license": "AGPL-3.0-or-later",
+  "author": {
+    "name": "Eana Hufwe",
+    "url": "https://1a23.com"
+  },
+  "bugs": {
+    "url": "https://github.com/blueset/project-lyricova/issues"
+  },
+  "homepage": "https://github.com/blueset/project-lyricova#readme",
+  "scripts": {
+    "clean": "rimraf build pkg target",
+    "build:wasm": "wasm-pack build --target web --out-dir pkg --out-name glyph_renderer",
+    "build:ts": "tsc",
+    "build": "npm run build:wasm && npm run build:ts",
+    "postbuild": "node scripts/ensure-build.mjs --write-fingerprint",
+    "bootstrap": "node scripts/ensure-build.mjs",
+    "pretypecheck": "npm run bootstrap",
+    "typecheck": "tsc --noEmit",
+    "pretypecheck:native": "npm run bootstrap",
+    "typecheck:native": "tsgo --noEmit",
+    "test:rust": "cargo test",
+    "pretest:ts": "npm run bootstrap",
+    "test:ts": "vitest run --config vitest.config.ts",
+    "pretest": "npm run bootstrap",
+    "test": "npm run test:rust && npm run test:ts",
+    "lint": "eslint ts"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "rimraf": "^6.0.1",
+    "typescript": "^6.0.3",
+    "wasm-pack": "^0.15.0"
+  }
+}

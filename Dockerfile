@@ -28,6 +28,15 @@ ENV YTDLP_PATH=/usr/local/bin/yt-dlp
 ENV MUSIC_FILES_PATH=/var/music/
 ENV NODE_ENV production
 
+# This image provisions runtime OS deps only; it intentionally does NOT compile
+# the apps or the @lyricova/glyph-renderer Rust/wasm crate. docker-compose
+# bind-mounts the repo (.:/app) and the CMD below runs `npm run start`, so the
+# container serves artifacts built on the HOST (`npm install && npm run build`,
+# which produces glyph-renderer's pkg/ + build/). Jukebox's `prestart` hook
+# verifies those prebuilt wasm/JS artifacts exist before serving. If you ever
+# make this image build from source instead, add a stable Rust toolchain + the
+# wasm32-unknown-unknown target here (see .github/workflows/typecheck.yml).
+
 # Expose the ports defined in the environment variables LYRICOVA_PORT and JUKEBOX_PORT
 EXPOSE $LYRICOVA_PORT $JUKEBOX_PORT
 

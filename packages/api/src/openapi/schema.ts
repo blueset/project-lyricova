@@ -313,6 +313,182 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fonts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List whitelisted glyph fonts available for delivery
+         * @description Lists every font in the whitelist with its metadata and byte size. Sizes are resolved with `fs.stat` only (no byte reads), so listing never populates the on-demand byte cache.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Whitelisted font manifest, with resolved sizes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            fonts?: {
+                                /** @example mona-sans-latin-otf */
+                                id?: string;
+                                /** @example /api/fonts/mona-sans-latin-otf */
+                                url?: string;
+                                /** @example font/otf */
+                                contentType?: string;
+                                /** @example Mona Sans */
+                                family?: string;
+                                /** @enum {string} */
+                                script?: "latin" | "japanese" | "han-latin" | "thai" | "simplified-chinese" | "traditional-chinese";
+                                rawSfnt?: boolean;
+                                eagerFetch?: boolean;
+                                sizeBytes?: number | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fonts/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compact code-point coverage index for every whitelisted font
+         * @description Returns, for each whitelisted font, the inclusive UTF-32 code point ranges its real `cmap` covers (ascending and non-overlapping). This lets a browser client decide which font(s) to lazily fetch for a given piece of text without downloading any font binary first. The payload is derived from the actual shipped bytes, memoized in memory, and served with a strong ETag so conditional requests (`If-None-Match`) get a `304`.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Strong/weak/comma-separated ETag(s) for conditional GET */
+                    "If-None-Match"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Per-font code point coverage ranges */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            fonts?: {
+                                /** @example source-han-sans-jp-vf */
+                                id?: string;
+                                /** @description Inclusive `[startCodepoint, endCodepoint]` UTF-32 ranges, ascending and non-overlapping. */
+                                ranges?: number[][];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Client's cached copy is still fresh */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fonts/{fontId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fetch whitelisted glyph font bytes by ID
+         * @description `fontId` is only ever used as a lookup key into the whitelist — it is never concatenated into a filesystem path, so path traversal payloads (`../..`, absolute paths, encoded slashes, etc.) simply fail the whitelist lookup and yield a `404` instead of touching the filesystem. Supports conditional requests via `If-None-Match`.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Strong/weak/comma-separated ETag(s) for conditional GET */
+                    "If-None-Match"?: string;
+                };
+                path: {
+                    /** @description Whitelisted font identifier from `GET /fonts` */
+                    fontId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Raw font bytes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "font/otf": string;
+                        "font/ttf": string;
+                    };
+                };
+                /** @description Client's cached copy is still fresh */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unknown font id */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Unknown font id: does-not-exist */
+                            error?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bump/{entryId}": {
         parameters: {
             query?: never;

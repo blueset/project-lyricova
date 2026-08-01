@@ -48,6 +48,11 @@ const options: swaggerJsdoc.Options = {
           "Operations related to blog entries with verses and metadata",
       },
       {
+        name: "Fonts",
+        description:
+          "Delivery of whitelisted raw-OTF glyph fonts for browser-side glyph shaping consumers",
+      },
+      {
         name: "Songs",
         description: "Operations related to song entities and their metadata",
       },

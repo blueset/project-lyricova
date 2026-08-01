@@ -3,7 +3,10 @@ import express from "express";
 import { MusicFileController } from "./controller/MusicFileController.js";
 import { VocaDBImportController } from "./controller/VocaDBImportController.js";
 import type { SegmentedTransliterationOptions } from "./utils/transliterate.js";
-import { transliterate, segmentedTransliteration } from "./utils/transliterate.js";
+import {
+  transliterate,
+  segmentedTransliteration,
+} from "./utils/transliterate.js";
 import { LyricsProvidersController } from "./controller/LyricsProvidersController.js";
 import { PlaylistController } from "./controller/PlaylistController.js";
 import { convertMonoruby } from "./utils/monoruby.js";
@@ -17,6 +20,7 @@ import generateRssFeed from "./utils/rss.js";
 import { ArtistsController } from "./controller/ArtistsController.js";
 import { AlignmentController } from "./controller/AlignmentController.js";
 import { DocsController } from "./controller/DocsController.js";
+import { FontsController } from "./controller/FontsController.js";
 
 export default (app: express.Express) => {
   const apiRouter = express.Router();
@@ -49,6 +53,9 @@ export default (app: express.Express) => {
 
   const alignmentController = new AlignmentController();
   apiRouter.use("/alignment", alignmentController.router);
+
+  const fontsController = new FontsController();
+  apiRouter.use("/fonts", fontsController.router);
 
   const docsController = new DocsController();
   apiRouter.use("/", docsController.router);
