@@ -12,6 +12,13 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 rustybuzz = "0.20"
+# Only here to turn on `gvar-alloc` for the `ttf-parser` that `rustybuzz`
+# already pulls in (feature unification applies it to that shared copy; the
+# crate is used via `rustybuzz::ttf_parser`, never imported directly).
+# Without it `ttf-parser` keeps a glyph's `gvar` tuples in a fixed 32-slot
+# stack buffer and silently outlines nothing for any glyph that needs more -
+# e.g. `e` and `f` in Mona Sans VF, which have 35. See `outline.rs`.
+ttf-parser = { version = "0.25", features = ["gvar-alloc"] }
 unicode-bidi = "0.3"
 unicode-segmentation = "1"
 unicode-linebreak = "0.1"

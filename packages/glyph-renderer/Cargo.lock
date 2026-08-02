@@ -78,6 +78,7 @@ dependencies = [
  "rustybuzz",
  "serde",
  "serde-wasm-bindgen",
+ "ttf-parser",
  "unicode-bidi",
  "unicode-linebreak",
  "unicode-script",

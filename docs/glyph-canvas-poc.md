@@ -346,6 +346,11 @@ Shaping/layout (in `@lyricova/glyph-renderer`; see its README for full detail):
   this MVP. Thai is selected unambiguously by script.
 - **Font fallback**: explicit, deterministic, per-grapheme-cluster (see
   above).
+- **Variable-font outlines**: `ttf-parser`'s `gvar-alloc` feature is enabled
+  (see `packages/glyph-renderer/Cargo.toml`). Without it, a glyph needing more
+  than 32 `gvar` variation tuples silently outlines nothing — Mona Sans VF needs
+  35 for `e` and `f`, which made both letters vanish from rendered Latin text
+  while every other glyph drew normally.
 
 Jukebox integration layer (`src/components/public/lyrics/glyph/`):
 
@@ -369,7 +374,7 @@ Jukebox integration layer (`src/components/public/lyrics/glyph/`):
 
 | Task                               | Command                                                                                                                                                                                           |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rust unit/integration tests        | `cd packages/glyph-renderer && cargo test` (80 tests)                                                                                                                                             |
+| Rust unit/integration tests        | `cd packages/glyph-renderer && cargo test` (81 tests)                                                                                                                                             |
 | Build the WASM + JS package        | `npm run build -w @lyricova/glyph-renderer` (needs `rustup target add wasm32-unknown-unknown`; see [development-and-build.md § 4.1](./development-and-build.md#41-glyph-renderer-wasm-artifacts)) |
 | Jukebox unit tests (glyph modules) | `npm test -w @lyricova/jukebox` (vitest)                                                                                                                                                          |
 | Jukebox browser/E2E tests          | `npm run test:browser -w @lyricova/jukebox` (Playwright: `chromium`, `firefox`, emulated `mobile-chromium`)                                                                                       |
@@ -377,12 +382,12 @@ Jukebox integration layer (`src/components/public/lyrics/glyph/`):
 
 ### Measured numbers (this environment)
 
-- `cargo test`: 80/80 passing (55 layout + 9 outline + 16 shaping).
+- `cargo test`: 81/81 passing (55 layout + 10 outline + 16 shaping).
 - API Vitest suite: 147 passing across 14 files.
 - Jukebox Vitest suite: 417 passing and 1 skipped across 34 files.
-- Playwright suite: 77 passing across Chromium, Firefox, and emulated mobile
+- Playwright suite: 79 passing across Chromium, Firefox, and emulated mobile
   Chromium.
-- Served WASM binary: 860,462 bytes (~840 KiB).
+- Served WASM binary: 871,236 bytes (~851 KiB).
 - Font payloads (all Source Han members are `eagerFetch: false` and fetched
   lazily, per line, only when a line's coverage needs them):
   `mona-sans-latin-otf` 1,372,268 bytes, `noto-sans-thai-vf-ttf` 218,652 bytes,

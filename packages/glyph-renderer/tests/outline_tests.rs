@@ -11,6 +11,8 @@ use glyph_renderer::{FontRegistry, ShapeError, ShapeRequest, TextDirection};
 const LATIN_FONT: &[u8] = include_bytes!("../../api/src/fonts/Mona-Sans-Regular.otf");
 /// Hiragana + punctuation (TsimSans, also an OTF).
 const KANA_FONT: &[u8] = include_bytes!("../../api/src/fonts/TsimSans-J-Regular-Palt.otf");
+/// Variable Latin font whose `e`/`f` need more `gvar` tuples than fit on the stack.
+const LATIN_VF_FONT: &[u8] = include_bytes!("../../api/src/fonts/Mona-Sans-VF.ttf");
 
 fn shape_request(text: &str, font_ids: Vec<u32>) -> ShapeRequest {
     ShapeRequest {
@@ -236,4 +238,40 @@ fn accepts_variation_strings_on_a_non_variable_font() {
         base.commands, varied.commands,
         "a non-variable font must ignore axis settings and yield the same outline"
     );
+}
+
+/// Regression: `ttf-parser` keeps a glyph's `gvar` variation tuples in a fixed
+/// 32-slot stack buffer unless its `gvar-alloc` feature is enabled, and
+/// *silently* outlines nothing for any glyph that needs more. Mona Sans VF has
+/// 27 such glyphs at 35 tuples each - including `e` and `f` - so without the
+/// feature every `e` and `f` vanished from rendered Latin text while the rest
+/// of the string drew normally. See the `ttf-parser` entry in `Cargo.toml`.
+#[test]
+fn outlines_glyphs_with_more_gvar_tuples_than_fit_on_the_stack() {
+    let mut registry = FontRegistry::new();
+    let latin = registry.register(LATIN_VF_FONT.to_vec(), 0).unwrap();
+
+    for ch in ["e", "f"] {
+        let glyph = glyph_id_for(&registry, latin, ch);
+        let outline = glyph_outline(&registry, &outline_request(latin, glyph, 64.0))
+            .unwrap()
+            .unwrap_or_else(|| panic!("{ch} has no outline"));
+        assert!(
+            outline.commands.len() > 10,
+            "{ch} outlined only {} command(s)",
+            outline.commands.len()
+        );
+        assert!(outline.bounds.x_max > outline.bounds.x_min);
+        assert!(outline.bounds.y_max > outline.bounds.y_min);
+    }
+
+    // The same must hold once variation coordinates are actually applied,
+    // which is when the tuple buffer is really exercised.
+    let glyph = glyph_id_for(&registry, latin, "e");
+    let mut request = outline_request(latin, glyph, 64.0);
+    request.variations = vec!["wght=600".to_string()];
+    let varied = glyph_outline(&registry, &request)
+        .unwrap()
+        .expect("varied e has no outline");
+    assert!(varied.commands.len() > 10);
 }

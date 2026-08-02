@@ -32,7 +32,10 @@ test("karaoke fill reveals a cluster left-to-right at 0, partial, and 1", async 
           activeColor: active,
           inactiveColor: inactive,
         });
-        return window.__glyph.analyze({ activeColor: active, inactiveColor: inactive });
+        return window.__glyph.analyze({
+          activeColor: active,
+          inactiveColor: inactive,
+        });
       },
       { fraction, chain: LATIN, active: ACTIVE, inactive: INACTIVE },
     );
@@ -54,7 +57,9 @@ test("karaoke fill reveals a cluster left-to-right at 0, partial, and 1", async 
   const half = await analyzeAt(0.5);
   expect(half.active).toBeGreaterThan(0);
   expect(half.inactive).toBeGreaterThan(0);
-  expect(half.halves.leftActive).toBeGreaterThan(half.halves.rightActive * 3 + 5);
+  expect(half.halves.leftActive).toBeGreaterThan(
+    half.halves.rightActive * 3 + 5,
+  );
   expect(half.halves.rightInactive).toBeGreaterThan(
     half.halves.leftInactive * 3 + 5,
   );
@@ -66,21 +71,32 @@ test("transforms one safe cluster independently of its neighbour", async ({
   const shiftY = 24;
 
   // Baseline: two 'A's, no transform.
-  const base = await page.evaluate((chain) =>
-    window.__glyph.render({ text: "A A", fontChain: chain, fontSize: 48 }), LATIN,
+  const base = await page.evaluate(
+    (chain) =>
+      window.__glyph.render({ text: "A A", fontChain: chain, fontSize: 48 }),
+    LATIN,
   );
   const inkClusters = base.layout.clusters.filter((c) => !c.isWhitespace);
   expect(inkClusters).toHaveLength(2);
   const originX = base.originX;
   const region = (i: number): [number, number] => {
     const c = inkClusters[i];
-    return [Math.floor(originX + c.x - 2), Math.ceil(originX + c.x + c.advance + 2)];
+    return [
+      Math.floor(originX + c.x - 2),
+      Math.ceil(originX + c.x + c.advance + 2),
+    ];
   };
   const [l0, l1] = region(0);
   const [r0, r1] = region(1);
 
-  const baseLeft = await page.evaluate(([a, b]) => window.__glyph.measureInk(a, b), [l0, l1]);
-  const baseRight = await page.evaluate(([a, b]) => window.__glyph.measureInk(a, b), [r0, r1]);
+  const baseLeft = await page.evaluate(
+    ([a, b]) => window.__glyph.measureInk(a, b),
+    [l0, l1],
+  );
+  const baseRight = await page.evaluate(
+    ([a, b]) => window.__glyph.measureInk(a, b),
+    [r0, r1],
+  );
   expect(baseLeft.count).toBeGreaterThan(50);
   expect(baseRight.count).toBeGreaterThan(50);
 
@@ -96,8 +112,14 @@ test("transforms one safe cluster independently of its neighbour", async ({
     { chain: LATIN, shift: shiftY },
   );
 
-  const movedLeft = await page.evaluate(([a, b]) => window.__glyph.measureInk(a, b), [l0, l1]);
-  const movedRight = await page.evaluate(([a, b]) => window.__glyph.measureInk(a, b), [r0, r1]);
+  const movedLeft = await page.evaluate(
+    ([a, b]) => window.__glyph.measureInk(a, b),
+    [l0, l1],
+  );
+  const movedRight = await page.evaluate(
+    ([a, b]) => window.__glyph.measureInk(a, b),
+    [r0, r1],
+  );
 
   // The untouched neighbour is unchanged; the transformed cluster moved down
   // by ~shiftY (independent per-cluster transform, no re-shaping).
@@ -110,21 +132,57 @@ test("transforms one safe cluster independently of its neighbour", async ({
 test("renders stable white-on-black glyphs (per-browser screenshot)", async ({
   page,
 }) => {
-  await page.evaluate((chain) =>
-    window.__glyph.render({
-      text: "Ag",
-      fontChain: chain,
-      fontSize: 96,
-      width: 220,
-      height: 140,
-      fillFraction: 1,
-      activeColor: "#ffffff",
-      inactiveColor: "#ffffff",
-      background: "#000000",
-    }), LATIN,
+  await page.evaluate(
+    (chain) =>
+      window.__glyph.render({
+        text: "Ag",
+        fontChain: chain,
+        fontSize: 96,
+        width: 220,
+        height: 140,
+        fillFraction: 1,
+        activeColor: "#ffffff",
+        inactiveColor: "#ffffff",
+        background: "#000000",
+      }),
+    LATIN,
   );
   const canvas = page.getByTestId("probe-canvas");
   await expect(canvas).toHaveScreenshot("glyph-ag.png", {
     maxDiffPixelRatio: 0.02,
   });
+});
+
+test("draws every Latin letter of the production chain, including high-gvar glyphs", async ({
+  page,
+}) => {
+  // Regression: `ttf-parser` keeps a glyph's `gvar` tuples in a fixed 32-slot
+  // stack buffer unless its `gvar-alloc` feature is on, and silently outlines
+  // nothing past that. Mona Sans VF needs 35 tuples for `e` and `f`, so both
+  // used to vanish from rendered text while every other letter drew normally.
+  const letters = "abcdefghijklmnopqrstuvwxyz";
+  const blank: string[] = [];
+
+  for (const ch of letters) {
+    const ink = await page.evaluate(async (letter) => {
+      await window.__glyph.render({
+        text: letter,
+        fontChain: ["mona-sans-latin-otf"],
+        fontSize: 96,
+        width: 160,
+        height: 160,
+        originX: 20,
+        baseline: 120,
+        fillFraction: 1,
+        activeColor: "#ffffff",
+        inactiveColor: "#ffffff",
+        background: "#000000",
+        variations: ["wght=600"],
+      });
+      return window.__glyph.measureInk(0, 160).count;
+    }, ch);
+    if (ink === 0) blank.push(ch);
+  }
+
+  expect(blank).toEqual([]);
 });
