@@ -10,7 +10,10 @@ import type {
 } from "@lyricova/glyph-renderer";
 
 /** Builds a `SourceRange` for a plain-ASCII-ish fake where UTF-8 byte offsets mirror UTF-16 offsets (irrelevant to this layer's logic, which only reads the UTF-16 side). */
-export function makeSourceRange(utf16Start: number, utf16End: number): SourceRange {
+export function makeSourceRange(
+  utf16Start: number,
+  utf16End: number,
+): SourceRange {
   return { utf8Start: utf16Start, utf8End: utf16End, utf16Start, utf16End };
 }
 
@@ -19,6 +22,10 @@ export interface CharSpec {
   advance: number;
   /** ISO 15924 script tag for this cluster. Defaults to `"Latn"`. */
   script?: string;
+  /** JLReq base-expansion space inserted before this cluster. Defaults to `0`. */
+  leadingSpace?: number;
+  /** JLReq base-expansion space inserted after this cluster. Defaults to `0`. */
+  trailingSpace?: number;
 }
 
 /** Builds one `ShapedCluster` per entry in `chars`, laid out left-to-right starting at x=0. */
@@ -28,24 +35,35 @@ export function buildClusters(
 ): ShapedCluster[] {
   let x = 0;
   let utf16 = startUtf16;
-  return chars.map(({ char, advance, script = "Latn" }) => {
-    const source = makeSourceRange(utf16, utf16 + char.length);
-    const cluster: ShapedCluster = {
-      source,
-      fontId: 0,
-      direction: "ltr",
-      script,
-      level: 0,
-      glyphs: [],
-      x,
+  return chars.map(
+    ({
+      char,
       advance,
-      bounds: { xMin: 0, xMax: advance, yMin: 0, yMax: 0 },
-      isWhitespace: char === " ",
-    };
-    x += advance;
-    utf16 += char.length;
-    return cluster;
-  });
+      script = "Latn",
+      leadingSpace = 0,
+      trailingSpace = 0,
+    }) => {
+      const source = makeSourceRange(utf16, utf16 + char.length);
+      x += leadingSpace;
+      const cluster: ShapedCluster = {
+        source,
+        fontId: 0,
+        direction: "ltr",
+        script,
+        level: 0,
+        glyphs: [],
+        x,
+        advance,
+        leadingSpace,
+        trailingSpace,
+        bounds: { xMin: 0, xMax: advance, yMin: 0, yMax: 0 },
+        isWhitespace: char === " ",
+      };
+      x += advance + trailingSpace;
+      utf16 += char.length;
+      return cluster;
+    },
+  );
 }
 
 /** Builds a `LayoutLine` wrapping `clusters`, with simple fixed ascent/descent metrics. */
@@ -57,7 +75,10 @@ export function buildLine(
   const last = clusters[clusters.length - 1];
   const utf16Start = first ? first.source.utf16Start : 0;
   const utf16End = last ? last.source.utf16End : 0;
-  const width = clusters.reduce((sum, c) => sum + c.advance, 0);
+  const width = clusters.reduce(
+    (sum, c) => sum + c.leadingSpace + c.advance + c.trailingSpace,
+    0,
+  );
   const ascent = opts.ascent ?? 8;
   const descent = opts.descent ?? 2;
   const top = opts.top ?? 0;

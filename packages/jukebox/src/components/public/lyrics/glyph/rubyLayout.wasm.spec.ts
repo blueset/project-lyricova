@@ -97,49 +97,64 @@ describe.skipIf(SKIP_WASM_INTEGRATION)(
       expect(ruby.baseX[1]).toBeGreaterThan(ruby.baseX[0]);
       expect(ruby.fontSize).toBeCloseTo(16, 5); // default: fontSize * 0.5
 
-      // Ink ascent/descent are measured from the real shaped glyphs' actual
-      // outlines (see rubyInkMetrics.ts), not approximated from the base
-      // paragraph's font metrics.
+      // Ink ascent/descent are still measured from the real shaped glyphs'
+      // actual outlines (see rubyInkMetrics.ts) for bounds/clipping.
       expect(ruby.inkAscent).toBeGreaterThan(0);
       expect(ruby.inkDescent).toBeGreaterThanOrEqual(0);
-      expect(ruby.y).toBe(ruby.inkAscent);
+
+      // ...but line advance comes from the deterministic row instead, derived
+      // from the ruby size and the font's own em-relative metrics.
+      expect(ruby.y).toBe(result.rubyRow.baseline);
+      expect(result.rubyRow.fontSize).toBeCloseTo(16, 5);
+      expect(result.rubyRow.height).toBeGreaterThan(0);
 
       // Every base range must land on exactly one line - i.e. it always
-      // resolves to a concrete lineIndex here, and the annotated line's box
-      // grew to reserve room for the ruby row above it (ink ascent + ink
-      // descent + gap).
+      // resolves to a concrete lineIndex here - and every line's box grew by
+      // exactly the reserved row, annotated or not.
       const line = result.lines[ruby.lineIndex]!;
-      expect(line.height).toBeGreaterThan(line.line.height);
       expect(line.height).toBeCloseTo(
-        line.line.height + ruby.inkAscent + ruby.inkDescent,
+        line.line.height + result.rubyRow.height,
         5,
       );
-      expect(result.height).toBeGreaterThan(
-        result.lines.reduce((sum, l) => sum + l.line.height, 0) - 1,
-      );
+      for (const placement of result.lines) {
+        expect(placement.height).toBeCloseTo(
+          placement.line.height + result.rubyRow.height,
+          5,
+        );
+      }
     });
 
-    it("shapes a clean mono-ruby pair 1:1 over two base graphemes", () => {
-      // Two single-kanji, single-mora readings: base and ruby grapheme
-      // counts both equal 2, so this maps cleanly to mono-ruby (one ruby
-      // grapheme centered per base cluster) rather than group ruby.
+    it("takes ruby type from the input data: one annotation per base grapheme is mono", () => {
+      // Upstream emits mono ruby as one annotation per base grapheme, so a
+      // single annotation spanning two graphemes is group ruby even though the
+      // grapheme counts happen to line up 1:1.
       const text = "手目";
-      const furigana: FuriganaAnnotationInput[] = [
-        { content: "てめ", leftIndex: 0, rightIndex: 2 },
-      ];
 
-      const result = layoutRubyParagraph(shaper, {
+      const grouped = layoutRubyParagraph(shaper, {
         text,
-        furigana,
+        furigana: [{ content: "てめ", leftIndex: 0, rightIndex: 2 }],
         fontIds: [fontId],
         fontSize: 32,
       });
+      expect(grouped.issues).toEqual([]);
+      expect(grouped.rubies[0]!.mode).toBe("group");
 
-      expect(result.issues).toEqual([]);
-      expect(result.rubies).toHaveLength(1);
-      const ruby = result.rubies[0]!;
-      expect(ruby.mode).toBe("mono");
-      expect(ruby.runs).toHaveLength(2);
+      const mono = layoutRubyParagraph(shaper, {
+        text,
+        furigana: [
+          { content: "て", leftIndex: 0, rightIndex: 1 },
+          { content: "め", leftIndex: 1, rightIndex: 2 },
+        ],
+        fontIds: [fontId],
+        fontSize: 32,
+      });
+      expect(mono.issues).toEqual([]);
+      expect(mono.rubies).toHaveLength(2);
+      expect(mono.rubies.map((r) => r.mode)).toEqual(["mono", "mono"]);
+      // Each reading is centred over its own kanji, in source order.
+      expect(mono.rubies[0]!.baseX[1]).toBeLessThanOrEqual(
+        mono.rubies[1]!.baseX[0] + 1e-3,
+      );
     });
 
     it("reserves real ink descent for a distinct Latin ruby fallback font with descenders", () => {
@@ -170,9 +185,194 @@ describe.skipIf(SKIP_WASM_INTEGRATION)(
 
       const line = result.lines[ruby.lineIndex]!;
       expect(line.height).toBeCloseTo(
-        line.line.height + ruby.inkAscent + ruby.inkDescent,
+        line.line.height + result.rubyRow.height,
         5,
       );
+    });
+
+    it("expands the base so over-long ruby fits, pre-measured before line breaking", () => {
+      // Ideographic neighbours grant no overhang at all, so the whole excess
+      // has to come from base expansion (JLReq 3.3.6 fig. 127).
+      const result = layoutRubyParagraph(shaper, {
+        text: "字山字",
+        furigana: [{ content: "gpjygpjy", leftIndex: 1, rightIndex: 2 }],
+        fontIds: [fontId],
+        rubyFontIds: [latinFontId],
+        fontSize: 32,
+      });
+
+      expect(result.issues).toEqual([]);
+      const ruby = result.rubies[0]!;
+      const line = result.lines[ruby.lineIndex]!.line;
+      const expanded = line.clusters.find(
+        (cluster) => cluster.source.utf16Start === 1,
+      )!;
+
+      // The engine injected symmetric edge gaps around the annotated cluster.
+      expect(expanded.leadingSpace).toBeGreaterThan(0);
+      expect(expanded.trailingSpace).toBeCloseTo(expanded.leadingSpace, 3);
+      // The cluster's own shaped advance is untouched - only spacing moved.
+      const plain = line.clusters.find(
+        (cluster) => cluster.source.utf16Start === 0,
+      )!;
+      expect(plain.leadingSpace).toBe(0);
+      expect(plain.trailingSpace).toBe(0);
+
+      // baseX covers the expanded box, and the ruby is centred in it rather
+      // than overhanging onto the ideographs.
+      const rubyWidth =
+        ruby.runs.reduce(
+          (max, run) => Math.max(max, run.x + run.width),
+          -Infinity,
+        ) - Math.min(...ruby.runs.map((run) => run.x));
+      expect(ruby.baseX[1] - ruby.baseX[0]).toBeCloseTo(rubyWidth, 2);
+      // Everything after the annotation shifted right, and the line grew.
+      expect(plain.x + plain.advance).toBeLessThanOrEqual(ruby.baseX[0] + 1e-3);
+      expect(line.width).toBeGreaterThan(3 * plain.advance);
+    });
+
+    it("leaves the base alone when kana neighbours can absorb the overhang", () => {
+      const withKana = layoutRubyParagraph(shaper, {
+        text: "のは山のは",
+        furigana: [{ content: "gp", leftIndex: 2, rightIndex: 3 }],
+        fontIds: [fontId],
+        rubyFontIds: [latinFontId],
+        fontSize: 32,
+      });
+
+      expect(withKana.issues).toEqual([]);
+      for (const cluster of withKana.lines[0]!.line.clusters) {
+        expect(cluster.leadingSpace).toBe(0);
+        expect(cluster.trailingSpace).toBe(0);
+      }
+    });
+
+    it("keeps each base+ruby pair unbreakable while still wrapping between pairs", () => {
+      // Narrow enough to force wrapping; every annotated range must stay whole.
+      const result = layoutRubyParagraph(shaper, {
+        text: "明日は晴れ明日は晴れ明日は晴れ",
+        furigana: [
+          { content: "あした", leftIndex: 0, rightIndex: 2 },
+          { content: "は", leftIndex: 5, rightIndex: 7 },
+          { content: "あした", leftIndex: 10, rightIndex: 12 },
+        ],
+        fontIds: [fontId],
+        fontSize: 32,
+        maxWidth: 160,
+        wrapStrategy: "balanced",
+        phraseRanges: [
+          [0, 3],
+          [5, 9],
+        ],
+      });
+
+      expect(result.lines.length).toBeGreaterThan(1);
+      expect(
+        result.issues.filter((issue) => issue.kind === "splitAcrossLines"),
+      ).toEqual([]);
+      expect(result.rubies).toHaveLength(3);
+      // Each annotation resolved to exactly one line, and its base clusters
+      // are contiguous on that line.
+      for (const ruby of result.rubies) {
+        const line = result.lines[ruby.lineIndex]!.line;
+        const covered = line.clusters.filter(
+          (cluster) =>
+            cluster.source.utf16Start >= ruby.annotation.utf16Range[0] &&
+            cluster.source.utf16End <= ruby.annotation.utf16Range[1],
+        );
+        expect(covered.length).toBeGreaterThan(0);
+        expect(ruby.baseX[1]).toBeGreaterThan(ruby.baseX[0]);
+      }
+    });
+
+    it("handles the real lyrics shapes: jukujikun, brackets and a Latin base", () => {
+      const cases: {
+        text: string;
+        furigana: FuriganaAnnotationInput[];
+        mode: "mono" | "group";
+      }[] = [
+        // <つながり,0,2> over 接続 - jukujikun, 4 kana over 2 kanji.
+        {
+          text: "接続",
+          furigana: [{ content: "つながり", leftIndex: 0, rightIndex: 2 }],
+          mode: "group",
+        },
+        // <うた,8,16> over ＜最高速の喜びの歌＞ - ruby far narrower than base.
+        {
+          text: "＜最高速の喜びの歌＞",
+          furigana: [{ content: "うた", leftIndex: 1, rightIndex: 9 }],
+          mode: "group",
+        },
+        // <ボク,0,4> over Voc. - kana ruby over a Latin/punctuation base.
+        {
+          text: "Voc.",
+          furigana: [{ content: "ボク", leftIndex: 0, rightIndex: 4 }],
+          mode: "group",
+        },
+        // <ゼロ,0,1> over 0 - kana ruby over a single digit.
+        {
+          text: "0",
+          furigana: [{ content: "ゼロ", leftIndex: 0, rightIndex: 1 }],
+          mode: "mono",
+        },
+        // <おく,1,2> over 憶 - mono ruby, 2 kana over 1 kanji.
+        {
+          text: "記憶",
+          furigana: [{ content: "おく", leftIndex: 1, rightIndex: 2 }],
+          mode: "mono",
+        },
+      ];
+
+      for (const { text, furigana, mode } of cases) {
+        const result = layoutRubyParagraph(shaper, {
+          text,
+          furigana,
+          fontIds: [fontId, latinFontId],
+          fontSize: 32,
+        });
+
+        expect(result.issues, text).toEqual([]);
+        expect(result.rubies, text).toHaveLength(1);
+        const ruby = result.rubies[0]!;
+        expect(ruby.mode, text).toBe(mode);
+        expect(ruby.runs.length, text).toBeGreaterThan(0);
+        expect(ruby.baseX[1], text).toBeGreaterThan(ruby.baseX[0]);
+        // Ruby clusters never overlap, whatever the width ratio.
+        const ordered = [...ruby.runs].sort((a, b) => a.x - b.x);
+        for (let i = 1; i < ordered.length; i++) {
+          expect(
+            ordered[i]!.x - (ordered[i - 1]!.x + ordered[i - 1]!.width),
+            text,
+          ).toBeGreaterThanOrEqual(-1e-3);
+        }
+      }
+    });
+
+    it("never letterspaces a proportional base, only its edges or inter-word space", () => {
+      // Kana ruby wider than a Latin base: JLReq forbids adding space between
+      // the Latin letters, so the excess lands on the edges instead.
+      const result = layoutRubyParagraph(shaper, {
+        text: "字BAD字",
+        furigana: [{ content: "バッドバッド", leftIndex: 1, rightIndex: 4 }],
+        fontIds: [fontId, latinFontId],
+        fontSize: 32,
+      });
+
+      expect(result.issues).toEqual([]);
+      const line = result.lines[0]!.line;
+      const inside = line.clusters.filter(
+        (cluster) =>
+          cluster.source.utf16Start >= 1 && cluster.source.utf16End <= 4,
+      );
+      expect(inside).toHaveLength(3);
+      // Only the outer edges of the run carry expansion; the letters stay set
+      // solid against each other.
+      expect(inside[0]!.leadingSpace).toBeGreaterThan(0);
+      expect(inside[2]!.trailingSpace).toBeGreaterThan(0);
+      expect(inside[0]!.trailingSpace).toBe(0);
+      expect(inside[1]!.leadingSpace).toBe(0);
+      expect(inside[1]!.trailingSpace).toBe(0);
+      expect(inside[2]!.leadingSpace).toBe(0);
     });
 
     it("measures different ink metrics for the same ruby content shaped with a different fallback font", () => {

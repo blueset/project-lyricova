@@ -103,6 +103,12 @@ pub struct ShapedCluster {
     pub bounds: ClusterBounds,
     /// Whether every source character of this cluster is whitespace.
     pub is_whitespace: bool,
+    /// Extra space inserted immediately before this cluster by a
+    /// [`RangeAdvance`] (already reflected in `x`). `0.0` normally.
+    pub leading_space: f32,
+    /// Extra space inserted immediately after this cluster by a
+    /// [`RangeAdvance`]. `0.0` normally.
+    pub trailing_space: f32,
 }
 
 /// One laid-out line of a paragraph.
@@ -178,6 +184,56 @@ pub enum LineWrapStrategy {
     Balanced,
 }
 
+/// How the extra advance required by a [`RangeAdvance`] is distributed
+/// among the base clusters of the range.
+///
+/// Every variant is **symmetric or interior**: there is deliberately no
+/// leading-only or trailing-only distribution. A caller that needs to displace
+/// a range in one direction (JLReq's remedy for two ruby runs that still
+/// collide - push the following base range right) can get it from the symmetric
+/// form, since adding `2 * d` to `min_advance` places `d` on each side and so
+/// moves the range's box centre right by `d`; it just also widens the line by
+/// `2 * d` instead of `d`.
+///
+/// The reason no such variant exists is not that it would be hard to add, but
+/// that it would not help: expansion is an *input* to line breaking (it is
+/// applied to the logical cluster list before the break pass runs), so any
+/// displacement decided from a finished layout requires re-running that pass,
+/// and the new widths can move the range onto a different line - which
+/// dissolves the adjacency that motivated the displacement while leaving the
+/// base permanently wider. The ruby layer therefore reports the residual
+/// overlap instead; see `resolveCollisions` in the jukebox package's
+/// `rubyLayout.ts`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum RangeAdvanceDistribution {
+    /// JLReq 2:1:1 distribution: with `m` clusters and `excess` extra width,
+    /// the inter-cluster gap is `g = excess / m` and each edge gap is `g / 2`.
+    #[default]
+    Even,
+    /// The whole excess is split equally between the two edge gaps; no
+    /// inter-cluster spacing is added. Used for proportional / non-CJK runs,
+    /// which must never be letterspaced.
+    Edges,
+    /// The excess is absorbed by inter-word whitespace clusters strictly
+    /// inside the range; falls back to `Edges` when there is none.
+    Whitespace,
+}
+
+/// A minimum total advance requirement for a logical UTF-16 range.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RangeAdvance {
+    /// Logical UTF-16 start offset (inclusive).
+    pub start: u32,
+    /// Logical UTF-16 end offset (exclusive).
+    pub end: u32,
+    /// Minimum total advance the range must occupy.
+    pub min_advance: f32,
+    #[serde(default)]
+    pub distribution: RangeAdvanceDistribution,
+}
+
 /// A request to lay out a whole paragraph.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -227,6 +283,12 @@ pub struct ParagraphRequest {
     /// may still break internally instead of overflowing.
     #[serde(default)]
     pub phrase_ranges: Vec<(u32, u32)>,
+    /// Logical UTF-16 ranges that must occupy at least a given total advance
+    /// (ruby base expansion). Extra width is injected as inter-cluster and edge
+    /// spacing *before* line breaking, so wrapping, cluster x-positions and line
+    /// widths all account for it on the first pass. Ranges must not overlap.
+    #[serde(default)]
+    pub range_advances: Vec<RangeAdvance>,
 }
 
 /// Returns every legal UAX #14 line-break opportunity in `text`, with each
@@ -257,6 +319,10 @@ struct RawCluster {
     advance: f32,
     bounds: ClusterBounds,
     is_whitespace: bool,
+    /// Extra space injected before this cluster by a [`RangeAdvance`].
+    leading_space: f32,
+    /// Extra space injected after this cluster by a [`RangeAdvance`].
+    trailing_space: f32,
 }
 
 /// Lays out `request.text` into wrapped, bidi-reordered lines of shaped
@@ -331,6 +397,7 @@ pub fn layout_paragraph(
     // Validate optional break-suppression ranges up front (strict).
     let no_break_ranges = validate_no_break_ranges(&request.no_break_ranges, &utf16)?;
     let phrase_ranges = validate_phrase_ranges(&request.phrase_ranges, &utf16)?;
+    let range_advances = validate_range_advances(&request.range_advances, &utf16)?;
 
     // --- Itemize into runs (bidi level x font fallback x script) in logical
     // order and shape each, producing a single logical-order list of clusters. ---
@@ -402,6 +469,11 @@ pub fn layout_paragraph(
             }
         }
     }
+
+    // Ruby base expansion: inject inter-cluster and edge spacing into the
+    // logical cluster list *before* line breaking, so wrapping, cluster
+    // x-positions and line widths all account for it on the first pass.
+    apply_range_advances(&mut clusters, &range_advances);
 
     // --- Vertical metrics from the primary font. ---
     let primary = &faces[0].1;
@@ -605,6 +677,8 @@ fn group_clusters(
                         y_max: f32::NEG_INFINITY,
                     },
                     is_whitespace,
+                    leading_space: 0.0,
+                    trailing_space: 0.0,
                 };
                 accumulate_glyph(&mut cluster, &glyph, face, scale);
                 cluster.glyphs.push(glyph);
@@ -725,9 +799,113 @@ fn validate_utf16_ranges(
     Ok(ranges.to_vec())
 }
 
-/// Whether a break at logical UTF-16 position `pos` is forbidden because it
-/// falls strictly *inside* a no-break range. Positions exactly on a range's
-/// `start` or `end` remain breakable (rule: preserve breaks before/after).
+/// Validates ruby base-expansion range advances (logical UTF-16 `[start, end)`)
+/// and returns them sorted by `start`. Each range is validated with the same
+/// strict endpoint rules as [`validate_utf16_ranges`], `min_advance` must be
+/// finite and non-negative, and (unlike no-break ranges) overlapping ranges are
+/// rejected because overlapping expansion is ambiguous. Touching ranges
+/// (`a.end == b.start`) are permitted.
+fn validate_range_advances(
+    ranges: &[RangeAdvance],
+    utf16: &Utf16Map,
+) -> Result<Vec<RangeAdvance>, ShapeError> {
+    let pairs: Vec<(u32, u32)> = ranges.iter().map(|r| (r.start, r.end)).collect();
+    validate_utf16_ranges(&pairs, utf16, "range-advance")?;
+
+    for range in ranges {
+        if !(range.min_advance.is_finite() && range.min_advance >= 0.0) {
+            return Err(ShapeError::InvalidInput(format!(
+                "range-advance minAdvance must be a finite non-negative number, got {}",
+                range.min_advance
+            )));
+        }
+    }
+
+    let mut sorted = ranges.to_vec();
+    sorted.sort_by_key(|r| r.start);
+    for pair in sorted.windows(2) {
+        if pair[1].start < pair[0].end {
+            return Err(ShapeError::InvalidInput(format!(
+                "range-advance ranges must not overlap: [{}, {}) overlaps [{}, {})",
+                pair[0].start, pair[0].end, pair[1].start, pair[1].end
+            )));
+        }
+    }
+    Ok(sorted)
+}
+
+/// The total horizontal space a cluster occupies: its shaped glyph advance plus
+/// any ruby base-expansion spacing injected before and after it. Every width
+/// accumulation / indexing site must use this rather than `advance` alone.
+fn total_advance(c: &RawCluster) -> f32 {
+    c.leading_space + c.advance + c.trailing_space
+}
+
+/// Applies ruby base expansion to the logical cluster list. For each validated
+/// [`RangeAdvance`] (already sorted by `start`), selects the clusters contained
+/// in `[start, end)`, computes the excess width over their natural advance, and
+/// distributes it as leading/trailing spacing per the range's distribution.
+fn apply_range_advances(clusters: &mut [RawCluster], ranges: &[RangeAdvance]) {
+    for range in ranges {
+        let selected: Vec<usize> = clusters
+            .iter()
+            .enumerate()
+            .filter(|(_, c)| c.utf16_start >= range.start && c.utf16_end <= range.end)
+            .map(|(i, _)| i)
+            .collect();
+        let m = selected.len();
+        if m == 0 {
+            continue;
+        }
+
+        let base: f32 = selected.iter().map(|&i| clusters[i].advance).sum();
+        let excess = (range.min_advance - base).max(0.0);
+        if excess <= 0.0 {
+            continue;
+        }
+
+        match range.distribution {
+            RangeAdvanceDistribution::Even => {
+                let g = excess / m as f32;
+                let edge = g / 2.0;
+                for (pos, &i) in selected.iter().enumerate() {
+                    if pos == 0 {
+                        clusters[i].leading_space += edge;
+                    }
+                    if pos == m - 1 {
+                        clusters[i].trailing_space += edge;
+                    } else {
+                        clusters[i].trailing_space += g;
+                    }
+                }
+            }
+            RangeAdvanceDistribution::Edges => {
+                let edge = excess / 2.0;
+                clusters[selected[0]].leading_space += edge;
+                clusters[selected[m - 1]].trailing_space += edge;
+            }
+            RangeAdvanceDistribution::Whitespace => {
+                let interior: Vec<usize> = selected
+                    .iter()
+                    .enumerate()
+                    .filter(|&(pos, &i)| pos != 0 && pos != m - 1 && clusters[i].is_whitespace)
+                    .map(|(_, &i)| i)
+                    .collect();
+                if interior.is_empty() {
+                    let edge = excess / 2.0;
+                    clusters[selected[0]].leading_space += edge;
+                    clusters[selected[m - 1]].trailing_space += edge;
+                } else {
+                    let share = excess / interior.len() as f32;
+                    for i in interior {
+                        clusters[i].trailing_space += share;
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn break_forbidden(pos: u32, no_break_ranges: &[(u32, u32)]) -> bool {
     no_break_ranges
         .iter()
@@ -792,7 +970,7 @@ fn break_lines_greedy(
 
     while i < n {
         let cluster = &clusters[i];
-        width += cluster.advance;
+        width += total_advance(cluster);
         if cluster.is_whitespace {
             // trailing whitespace does not extend the measured width
         } else {
@@ -969,7 +1147,7 @@ impl LineWidthIndex {
 
         let mut last_visible_end = 0usize;
         for (index, cluster) in clusters.iter().enumerate() {
-            prefix_advance.push(prefix_advance[index] + f64::from(cluster.advance));
+            prefix_advance.push(prefix_advance[index] + f64::from(total_advance(cluster)));
             if !cluster.is_whitespace {
                 last_visible_end = index + 1;
             }
@@ -1192,16 +1370,19 @@ fn build_line(
     let mut trailing_whitespace = 0.0f32;
     for cluster in logical.iter().rev() {
         if cluster.is_whitespace {
-            trailing_whitespace += cluster.advance;
+            trailing_whitespace += total_advance(cluster);
         } else {
             break;
         }
     }
 
+    // Ruby base expansion is only defined for horizontal LTR text, so applying
+    // the logical leading/trailing spaces in this visual-order walk is fine.
     let mut clusters = Vec::with_capacity(logical.len());
     let mut pen = 0.0f32;
     for &logical_index in &visual_order {
         let raw = &logical[logical_index];
+        pen += raw.leading_space;
         clusters.push(ShapedCluster {
             source: SourceRange::new(raw.utf8_start, raw.utf8_end, utf16),
             font_id: raw.font_id,
@@ -1213,8 +1394,10 @@ fn build_line(
             advance: raw.advance,
             bounds: raw.bounds,
             is_whitespace: raw.is_whitespace,
+            leading_space: raw.leading_space,
+            trailing_space: raw.trailing_space,
         });
-        pen += raw.advance;
+        pen += raw.advance + raw.trailing_space;
     }
 
     let width = (pen - trailing_whitespace).max(0.0);

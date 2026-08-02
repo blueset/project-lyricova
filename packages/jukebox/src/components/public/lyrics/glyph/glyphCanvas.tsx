@@ -107,6 +107,18 @@ const GLYPH_VARIATIONS = ["wght=600"] as const;
  */
 const BASE_FALLBACK_PROBE = " ";
 
+/**
+ * Absolute cap on ruby size for this renderer, in CSS px. The base size is
+ * viewport-responsive (see {@link responsiveFontSize}), so ruby tracks it by
+ * ratio; this cap keeps furigana from becoming a distracting second headline
+ * at the largest base sizes. It is a *design* decision belonging to this
+ * player overlay, which is why the ruby layout engine takes it as a parameter
+ * rather than baking one in.
+ */
+const RUBY_FONT_SIZE_MAX = 20;
+/** Floor for the same reason, so ruby stays legible on a narrow viewport. */
+const RUBY_FONT_SIZE_MIN = 10;
+
 function getDevicePixelRatio(): number {
   if (typeof window === "undefined") return 1;
   return window.devicePixelRatio || 1;
@@ -182,7 +194,7 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
   const snapshotRef = useRef<PlaybackSnapshot | null>(null);
   // Points at the latest `draw` so async preparations repaint the *current*
   // snapshot without being a dependency of the stable callbacks below.
-  const drawRef = useRef<(snapshot: PlaybackSnapshot | null) => void>(() => { });
+  const drawRef = useRef<(snapshot: PlaybackSnapshot | null) => void>(() => {});
 
   const {
     ref: containerRef,
@@ -197,6 +209,15 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
         trackDuration,
       }),
     [lyrics, language, trackDuration],
+  );
+
+  // Document-level: JLReq reserves the ruby row on *every* line when the
+  // lyrics file carries any furigana at all, so line advance stays uniform and
+  // lines never jitter between annotated and un-annotated ones - even though
+  // each line is laid out on its own.
+  const reserveRubyRow = useMemo(
+    () => segments.some((segment) => segment.furigana.length > 0),
+    [segments],
   );
 
   // Validate reveal tags up front so invalid indices are surfaced explicitly
@@ -233,7 +254,7 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
       // The selected manifest ids are part of the key: escalating a text to a
       // broader chain yields a different key, so its earlier (subset) layout is
       // never wrongly reused.
-      const key = `${segment.lineIndex}\u0000${segment.content}\u0000${fontSize}\u0000${maxWidth ?? "-"}\u0000balanced\u0000${GLYPH_FEATURES.join(",")}\u0000${GLYPH_VARIATIONS.join(",")}\u0000${selection.fontManifestIds.join(",")}`;
+      const key = `${segment.lineIndex}\u0000${segment.content}\u0000${fontSize}\u0000${maxWidth ?? "-"}\u0000balanced\u0000${GLYPH_FEATURES.join(",")}\u0000${GLYPH_VARIATIONS.join(",")}\u0000${selection.fontManifestIds.join(",")}\u0000${reserveRubyRow ? "ruby" : "noruby"}`;
       let keys = layoutKeysByTextRef.current.get(shapeText);
       if (!keys) {
         keys = new Set();
@@ -252,6 +273,9 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
           furigana: segment.furigana,
           fontIds: selection.fontIds,
           fontSize,
+          rubyFontSizeMin: RUBY_FONT_SIZE_MIN,
+          rubyFontSizeMax: RUBY_FONT_SIZE_MAX,
+          reserveRubyRow,
           maxWidth,
           wrapStrategy: "balanced",
           phraseRanges,
@@ -272,7 +296,7 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
         return null;
       }
     },
-    [],
+    [reserveRubyRow],
   );
 
   // Drops every cached layout produced for `text` (its font selection changed).
@@ -773,7 +797,8 @@ function drawSegment(
     for (const lp of layout.lines) {
       const alignX =
         PADDING +
-        alignmentOffset(segment.alignment, contentWidth, lp.line.width);
+        alignmentOffset(segment.alignment, contentWidth, lp.occupiedWidth) +
+        lp.contentOffsetX;
       const adjustedLine = {
         ...lp.line,
         top: lp.top,

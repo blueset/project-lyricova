@@ -249,8 +249,78 @@ explicitly rather than trusting the doc comment — see
 `furiganaValidation.ts` (furigana ranges) and `karaokeTiming.ts` (word time
 tag indices) for the validation logic and full explanation, and
 `types.ts`/`rubyLayout.ts` for how a UTF-16 range is additionally converted to
-grapheme-cluster indices where the renderer needs one ruby grapheme placed per
-base grapheme.
+grapheme-cluster indices, which is what decides mono vs group ruby.
+
+## Ruby (furigana) layout
+
+Ruby follows [JLReq](https://www.w3.org/TR/jlreq/) for horizontal, left-to-right
+text. Vertical writing mode, RTL ruby, base-text justification, one-third ruby
+(三分ルビ) and small-kana normalisation are explicitly out of scope.
+
+- **Ruby type comes from the data, not from grapheme counts.** Upstream emits
+  one annotation per base grapheme wherever a clean 1:1 mapping exists, so an
+  annotation covering exactly one base grapheme is mono ruby and anything wider
+  is group-/jukugo-ruby, even when the counts happen to line up. `isMonoEligible`
+  survives only as a guard that the single grapheme really shaped to one cluster.
+- **Size** is `clamp(fontSize × rubyFontSizeRatio, rubyFontSizeMin, rubyFontSizeMax)`,
+  ratio `0.5` by default. The two absolute bounds are **caller-supplied layout
+  parameters** — the right value depends on the consuming design — and default
+  to `0`/`Infinity`, so the engine never bakes in a pixel constant. The cap wins
+  over the ratio; an explicit `rubyFontSize` bypasses the whole computation.
+  Glyph Canvas supplies its own bounds (10–20 px) for the player overlay.
+- **The ruby row is reserved at document level.** `reserveRubyRow` is computed
+  once over the whole lyrics file ("does _any_ line carry furigana?") and, when
+  true, every line reserves the same deterministic row derived from the ruby
+  size, the base font's em-relative ascent/descent, and `rubyGap`. Per-annotation
+  ink ascent/descent is still measured, but only for ink bounds and clipping —
+  letting it drive line advance made lines jitter as the lyrics advanced.
+- **Ruby narrower than its base** is centred (nakatsuki). Group ruby with several
+  clusters distributes the slack `2 : 1 : 1` (inter-cluster : leading : trailing,
+  i.e. `g = slack / n` with `g / 2` edge gaps), with each edge gap clamped to one
+  ruby em and the remainder redistributed inward. A single cluster is simply
+  centred: centring wins over the clamp.
+- **Ruby wider than its base** is absorbed by overhang first, then by base
+  expansion. Overhang budgets come from the _adjacent character's_ JLReq class
+  (`jlreqCharClass.ts`): one ruby em next to kana, brackets and punctuation, zero
+  next to ideographs and western characters, never past a bracket/full-stop glyph
+  itself. The table is overridable via `rubyOverhang`. Whatever overhang cannot
+  absorb becomes a `rangeAdvance` on the paragraph request, so the layout engine
+  spreads the base characters `2 : 1 : 1` **before** line breaking — wrapping,
+  cluster positions and line widths are therefore all correct on the first pass,
+  with no iteration. That is why fully romanized lines, where every neighbour is
+  western and grants nothing, are driven almost entirely by base expansion.
+- **Proportional runs are never letterspaced.** Detection is by character class,
+  not by font: a run whose non-whitespace characters are not all ideographs/kana
+  (Latin, Cyrillic, Hangul, Thai, digits) is set solid, and absorbs slack through
+  inter-word whitespace or its edges only. This is a first-class case — the real
+  lyrics mix kana ruby over `Voc.`/`BAD`/`0` with Latin romanization over Hangul,
+  Cyrillic, Hanzi and Japanese bases.
+- **Adjacent ruby collisions** are resolved left to right in one pass: the
+  preceding run is kept and only the following run moves, spending its own left
+  overhang to insert up to one ruby em of separation. The shift is hard-capped
+  at the overhang that run actually has, so a ruby is never slid off the
+  characters it annotates. That cap is load-bearing: after base expansion two
+  adjacent annotated bases each carry a ruby that exactly fills its own expanded
+  box, so their runs _touch_ with no overhang left to trade — chasing separation
+  there would push every ruby of a fully romanized line progressively right of
+  its own base. Touching runs are therefore left alone, and a `rubyCollision`
+  issue is recorded only for the case that actually harms legibility: runs that
+  still overlap once the follower's overhang is spent. JLReq would instead push
+  the following base range right by the shortfall. That is expressible (adding
+  `2 x shortfall` to the range's `minAdvance` displaces its box centre by
+  `shortfall`), but only on a second layout pass, since expansion is an input to
+  line breaking rather than an output — and re-running it can move the
+  annotation onto another line, dissolving the collision that motivated the push
+  while leaving the base permanently wider. Converging on that needs bounded
+  iteration, so the residual overlap is reported instead.
+- **Line head and line end are ruby-aligned.** Overhanging ink sticks out past
+  the base and the _ruby_ is flush with the line edge, so each line reports a
+  `contentOffsetX` (how far its content must shift inward) and an
+  `occupiedWidth` (its true box, including overhang) instead of the bare advance
+  width. Ruby never leaves the content box: anything that would is pulled back
+  in and reported as an `outsideLineBox` issue.
+- **Each base+ruby pair is an unbreakable atom**, passed as a hard
+  `noBreakRange`, which takes precedence over the soft BudouX phrase hints.
 
 ## Supported text behavior
 
@@ -279,9 +349,10 @@ Shaping/layout (in `@lyricova/glyph-renderer`; see its README for full detail):
 
 Jukebox integration layer (`src/components/public/lyrics/glyph/`):
 
-- **Ruby (furigana)**: horizontal-only mono/group placement centered over
-  base graphemes (`rubyLayout.ts`, `rubyPlacement.ts`) — see "Known
-  limitations" for the horizontal-only caveat.
+- **Ruby (furigana)**: horizontal-only placement implementing the
+  JLReq-derived model below (`rubyLayout.ts`, `rubyPlacement.ts`,
+  `rubyOverhang.ts`, `jlreqCharClass.ts`) — see "Known limitations" for the
+  horizontal-only caveat.
 - **Cluster animation**: each safe shaped cluster paints as an independently
   transformable unit — karaoke fill (`karaokeTiming.ts`) and entrance
   transitions (`clusterAnimation.ts`) are pure functions of a single
@@ -298,7 +369,7 @@ Jukebox integration layer (`src/components/public/lyrics/glyph/`):
 
 | Task                               | Command                                                                                                                                                                                           |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rust unit/integration tests        | `cd packages/glyph-renderer && cargo test` (70 tests)                                                                                                                                             |
+| Rust unit/integration tests        | `cd packages/glyph-renderer && cargo test` (80 tests)                                                                                                                                             |
 | Build the WASM + JS package        | `npm run build -w @lyricova/glyph-renderer` (needs `rustup target add wasm32-unknown-unknown`; see [development-and-build.md § 4.1](./development-and-build.md#41-glyph-renderer-wasm-artifacts)) |
 | Jukebox unit tests (glyph modules) | `npm test -w @lyricova/jukebox` (vitest)                                                                                                                                                          |
 | Jukebox browser/E2E tests          | `npm run test:browser -w @lyricova/jukebox` (Playwright: `chromium`, `firefox`, emulated `mobile-chromium`)                                                                                       |
@@ -306,10 +377,10 @@ Jukebox integration layer (`src/components/public/lyrics/glyph/`):
 
 ### Measured numbers (this environment)
 
-- `cargo test`: 70/70 passing (45 layout + 9 outline + 16 shaping).
+- `cargo test`: 80/80 passing (55 layout + 9 outline + 16 shaping).
 - API Vitest suite: 147 passing across 14 files.
-- Jukebox Vitest suite: 339 passing and 1 skipped across 32 files.
-- Playwright suite: 65 passing across Chromium, Firefox, and emulated mobile
+- Jukebox Vitest suite: 417 passing and 1 skipped across 34 files.
+- Playwright suite: 77 passing across Chromium, Firefox, and emulated mobile
   Chromium.
 - Served WASM binary: 860,462 bytes (~840 KiB).
 - Font payloads (all Source Han members are `eagerFetch: false` and fetched

@@ -44,20 +44,22 @@ function singleClusterRun(advance: number, clusterUtf16 = 0): ResolvedShapeRun {
 }
 
 describe("isMonoEligible", () => {
-  it("is eligible when base graphemes, base clusters, and ruby graphemes all match", () => {
-    expect(isMonoEligible(2, 2, 2)).toBe(true);
+  it("is eligible for a single annotated grapheme that shaped to one cluster", () => {
+    expect(isMonoEligible(1, 1)).toBe(true);
   });
 
-  it("is not eligible when ruby grapheme count differs from base", () => {
-    expect(isMonoEligible(2, 2, 3)).toBe(false);
+  it("is not eligible for a multi-grapheme base, even when ruby counts would match", () => {
+    // Ruby type comes from the input data: upstream splits mono ruby into one
+    // annotation per grapheme, so anything wider is deliberately group ruby.
+    expect(isMonoEligible(2, 2)).toBe(false);
   });
 
-  it("is not eligible when a ligature merged base graphemes into fewer clusters", () => {
-    expect(isMonoEligible(2, 1, 2)).toBe(false);
+  it("is not eligible when the single grapheme shaped to more than one cluster", () => {
+    expect(isMonoEligible(1, 2)).toBe(false);
   });
 
   it("is not eligible for an empty base", () => {
-    expect(isMonoEligible(0, 0, 0)).toBe(false);
+    expect(isMonoEligible(0, 0)).toBe(false);
   });
 });
 
@@ -121,6 +123,8 @@ describe("placeMonoRuby", () => {
       glyphs: [],
       x: 10,
       advance: 5,
+      leadingSpace: 0,
+      trailingSpace: 0,
       bounds: { xMin: 0, xMax: 5, yMin: 0, yMax: 0 },
       isWhitespace: false,
     };
@@ -133,6 +137,8 @@ describe("placeMonoRuby", () => {
       glyphs: [],
       x: 0,
       advance: 5,
+      leadingSpace: 0,
+      trailingSpace: 0,
       bounds: { xMin: 0, xMax: 5, yMin: 0, yMax: 0 },
       isWhitespace: false,
     };
@@ -171,7 +177,12 @@ describe("placeMonoRuby", () => {
 });
 
 describe("placeGroupRuby", () => {
-  it("distributes a narrower-than-base run across its own clusters with non-negative space-around", () => {
+  const opts = (rubyFontSize = 6, spaceable = true) => ({
+    rubyFontSize,
+    spaceable,
+  });
+
+  it("distributes a narrower-than-base run 2:1:1 (nakatsuki) across its own clusters", () => {
     // Two ruby clusters, 5 wide each (10 total), over a 20-wide base.
     const run: ResolvedShapeRun = {
       glyphs: [
@@ -181,23 +192,65 @@ describe("placeGroupRuby", () => {
       width: 10,
     };
 
-    const runs = placeGroupRuby([0, 20], run, 2);
+    const runs = placeGroupRuby([0, 20], run, "ab", opts());
 
     expect(runs).toHaveLength(2);
-    // gap = (20 - 10) / 2 = 5 (non-negative); cursor starts at 0 + gap/2 = 2.5.
+    // slack 10, n = 2 -> inter-cluster gap 5, edge gaps 2.5 (the 2:1:1 ratio).
     expect(runs.map((r) => r.x)).toEqual([2.5, 12.5]);
     expect(runs.map((r) => r.contentRange)).toEqual([
       [0, 1],
       [1, 2],
     ]);
-    // Symmetric margins on both sides of the base range, never negative.
     const [first, last] = runs;
-    expect(first!.x).toBeGreaterThanOrEqual(0);
     expect(first!.x - 0).toBeCloseTo(20 - (last!.x + last!.width), 5);
+    // Edge gap is exactly half the inter-cluster gap.
+    const interGap = last!.x - (first!.x + first!.width);
+    expect(first!.x - 0).toBeCloseTo(interGap / 2, 5);
+  });
+
+  it("clamps each edge gap to one ruby em and redistributes the remainder inward", () => {
+    // 4 kana over a much wider base (the `<けつまつ,9,20>` shape): without the
+    // clamp the ruby would drift a long way from the characters it annotates.
+    const run: ResolvedShapeRun = {
+      glyphs: [0, 1, 2, 3].map((i) =>
+        glyph({
+          x: i * 5,
+          xAdvance: 5,
+          clusterUtf16: i,
+          clusterEndUtf16: i + 1,
+        }),
+      ),
+      width: 20,
+    };
+
+    const runs = placeGroupRuby([0, 100], run, "けつまつ", opts(6));
+
+    // slack 80, n = 4 -> nominal edge gap 10, clamped to 1.0 x 6 = 6.
+    expect(runs[0]!.x).toBeCloseTo(6, 5);
+    expect(100 - (runs[3]!.x + runs[3]!.width)).toBeCloseTo(6, 5);
+    // The clamped remainder is absorbed by the 3 inter-cluster gaps.
+    const interGap = runs[1]!.x - (runs[0]!.x + runs[0]!.width);
+    expect(interGap).toBeCloseTo((80 - 12) / 3, 5);
+    for (let i = 1; i < runs.length; i++) {
+      expect(runs[i]!.x - (runs[i - 1]!.x + runs[i - 1]!.width)).toBeCloseTo(
+        interGap,
+        5,
+      );
+    }
+  });
+
+  it("centers a single cluster even when that beats the edge clamp", () => {
+    // n === 1 has no inter-cluster gap to absorb a clamped remainder, so
+    // centring wins over the edge clamp.
+    const run = singleClusterRun(4);
+
+    const runs = placeGroupRuby([0, 100], run, "き", opts(6));
+
+    expect(runs).toHaveLength(1);
+    expect(runs[0]!.x).toBeCloseTo(48, 5);
   });
 
   it("keeps a wider-than-base run as one contextually shaped block, centered with symmetric overhang", () => {
-    // Three ruby clusters, 6 wide each (18 total), over a 12-wide base.
     const run: ResolvedShapeRun = {
       glyphs: [
         glyph({ x: 0, xAdvance: 6, clusterUtf16: 0, clusterEndUtf16: 1 }),
@@ -207,54 +260,86 @@ describe("placeGroupRuby", () => {
       width: 18,
     };
 
-    const runs = placeGroupRuby([100, 112], run, 3);
+    const runs = placeGroupRuby([100, 112], run, "abc", opts());
 
     expect(runs).toHaveLength(1);
-    // Centered as a single block: x = 100 + (12 - 18) / 2 = 97; overhangs by
-    // 3 on each side, and shaping (all 3 glyphs) stays in one intact run.
     expect(runs[0]).toMatchObject({ contentRange: [0, 3], width: 18, x: 97 });
     expect(runs[0]!.glyphs).toHaveLength(3);
-    // Symmetric overhang: equal margin past both edges of the base range.
     const overhangLeft = 100 - runs[0]!.x;
     const overhangRight = runs[0]!.x + runs[0]!.width - 112;
     expect(overhangLeft).toBeCloseTo(overhangRight, 5);
   });
 
   it("centers a run exactly as wide as the base as a single block (no distribution)", () => {
-    const run = singleClusterRun(10);
-
-    const runs = placeGroupRuby([0, 10], run, 1);
+    const runs = placeGroupRuby([0, 10], singleClusterRun(10), "a", opts());
 
     expect(runs).toHaveLength(1);
     expect(runs[0]).toMatchObject({ contentRange: [0, 1], width: 10, x: 0 });
   });
 
-  it("centers a narrower run with only a single cluster (nothing to distribute)", () => {
-    const run = singleClusterRun(4);
-
-    const runs = placeGroupRuby([0, 10], run, 1);
-
-    expect(runs).toHaveLength(1);
-    expect(runs[0]).toMatchObject({ contentRange: [0, 1], width: 4, x: 3 });
-  });
-
   it("handles an empty ruby run by centering a zero-width block", () => {
     const run: ResolvedShapeRun = { glyphs: [], width: 0 };
-    const runs = placeGroupRuby([0, 10], run, 0);
-    expect(runs).toEqual([{ contentRange: [0, 0], glyphs: [], width: 0, x: 5 }]);
+    const runs = placeGroupRuby([0, 10], run, "", opts());
+    expect(runs).toEqual([
+      { contentRange: [0, 0], glyphs: [], width: 0, x: 5 },
+    ]);
+  });
+
+  it("never letterspaces a proportional ruby run without inter-word space", () => {
+    // Latin romanization ruby (`Khot'`, `dung`, `xing`): JLReq sets
+    // proportional runs solid, so a narrower-than-base run is centred as one
+    // block instead of having its letters pulled apart.
+    const run: ResolvedShapeRun = {
+      glyphs: [0, 1, 2].map((i) =>
+        glyph({
+          x: i * 4,
+          xAdvance: 4,
+          clusterUtf16: i,
+          clusterEndUtf16: i + 1,
+        }),
+      ),
+      width: 12,
+    };
+
+    const runs = placeGroupRuby([0, 40], run, "abc", opts(6, false));
+
+    expect(runs).toHaveLength(1);
+    expect(runs[0]).toMatchObject({ width: 12, x: 14 });
+  });
+
+  it("stretches a proportional ruby run's inter-word space instead of its letters", () => {
+    // "a b": only the interior whitespace cluster absorbs the slack.
+    const run: ResolvedShapeRun = {
+      glyphs: [
+        glyph({ x: 0, xAdvance: 4, clusterUtf16: 0, clusterEndUtf16: 1 }),
+        glyph({ x: 4, xAdvance: 2, clusterUtf16: 1, clusterEndUtf16: 2 }),
+        glyph({ x: 6, xAdvance: 4, clusterUtf16: 2, clusterEndUtf16: 3 }),
+      ],
+      width: 10,
+    };
+
+    const runs = placeGroupRuby([0, 30], run, "a b", opts(6, false));
+
+    expect(runs).toHaveLength(3);
+    // Set flush at the line-relative base origin, with the whole 20 units of
+    // slack going into the gap that follows the space cluster.
+    expect(runs.map((r) => r.x)).toEqual([0, 4, 26]);
   });
 
   it("never produces a negative inter-cluster gap regardless of width ratio", () => {
     const narrow: ResolvedShapeRun = {
-      glyphs: [
-        glyph({ x: 0, xAdvance: 3, clusterUtf16: 0, clusterEndUtf16: 1 }),
-        glyph({ x: 3, xAdvance: 3, clusterUtf16: 1, clusterEndUtf16: 2 }),
-        glyph({ x: 6, xAdvance: 3, clusterUtf16: 2, clusterEndUtf16: 3 }),
-      ],
+      glyphs: [0, 1, 2].map((i) =>
+        glyph({
+          x: i * 3,
+          xAdvance: 3,
+          clusterUtf16: i,
+          clusterEndUtf16: i + 1,
+        }),
+      ),
       width: 9,
     };
 
-    const runs = placeGroupRuby([0, 30], narrow, 3);
+    const runs = placeGroupRuby([0, 30], narrow, "abc", opts());
 
     for (let i = 1; i < runs.length; i++) {
       const gap = runs[i]!.x - (runs[i - 1]!.x + runs[i - 1]!.width);
@@ -262,4 +347,3 @@ describe("placeGroupRuby", () => {
     }
   });
 });
-

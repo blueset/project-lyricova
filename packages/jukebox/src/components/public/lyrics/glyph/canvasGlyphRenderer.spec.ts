@@ -140,6 +140,8 @@ function cluster(
     glyphs,
     x,
     advance,
+    leadingSpace: 0,
+    trailingSpace: 0,
     bounds: { xMin: 0, xMax: advance, yMin: 0, yMax: 30 },
     isWhitespace: false,
     ...overrides,

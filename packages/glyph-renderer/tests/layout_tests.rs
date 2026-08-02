@@ -12,7 +12,8 @@
 //! missing-coverage reporting path.
 
 use glyph_renderer::layout::{
-    layout_paragraph, line_break_opportunities, LayoutLine, ParagraphRequest,
+    layout_paragraph, line_break_opportunities, LayoutLine, ParagraphRequest, RangeAdvance,
+    RangeAdvanceDistribution,
 };
 use glyph_renderer::{FontRegistry, LineWrapStrategy, ShapeError, TextDirection};
 
@@ -43,6 +44,7 @@ fn para(text: &str, font_ids: Vec<u32>) -> ParagraphRequest {
         line_height: None,
         no_break_ranges: Vec::new(),
         phrase_ranges: Vec::new(),
+        range_advances: Vec::new(),
     }
 }
 
@@ -1017,4 +1019,308 @@ fn rejects_non_finite_max_width_but_allows_non_positive_as_no_wrap() {
     assert_eq!(layout_paragraph(&reg, &req).unwrap().lines.len(), 1);
     req.max_width = Some(-100.0);
     assert_eq!(layout_paragraph(&reg, &req).unwrap().lines.len(), 1);
+}
+
+// --------------------------------------------------------------------------
+// Ruby base expansion (RangeAdvance): min-advance-driven inter-cluster and
+// edge spacing injected before line breaking.
+// --------------------------------------------------------------------------
+
+/// Advances of a single-line paragraph's clusters, in visual order.
+fn cluster_advances(text: &str, font_ids: Vec<u32>, reg: &FontRegistry) -> Vec<f32> {
+    let layout = layout_paragraph(reg, &para(text, font_ids)).unwrap();
+    layout.lines[0].clusters.iter().map(|c| c.advance).collect()
+}
+
+#[test]
+fn range_advance_even_distributes_edges_and_gaps_over_two_clusters() {
+    let (reg, _, kana) = registry();
+    let advances = cluster_advances(KANA5, vec![kana], &reg);
+    let (a0, a1) = (advances[0], advances[1]);
+    let base = a0 + a1;
+    let base_width = layout_paragraph(&reg, &para(KANA5, vec![kana]))
+        .unwrap()
+        .lines[0]
+        .width;
+
+    let excess = 40.0f32;
+    let mut req = para(KANA5, vec![kana]);
+    req.range_advances = vec![RangeAdvance {
+        start: 0,
+        end: 2,
+        min_advance: base + excess,
+        distribution: RangeAdvanceDistribution::Even,
+    }];
+    let layout = layout_paragraph(&reg, &req).unwrap();
+    let line = &layout.lines[0];
+    let c = &line.clusters;
+
+    let g = excess / 2.0; // gap = excess / m, m = 2
+    let edge = g / 2.0;
+    assert!((c[0].leading_space - edge).abs() < 1e-3);
+    assert!((c[0].trailing_space - g).abs() < 1e-3);
+    assert!((c[1].leading_space).abs() < 1e-6);
+    assert!((c[1].trailing_space - edge).abs() < 1e-3);
+    // x positions reflect the injected leading/inter-cluster spaces.
+    assert!((c[0].x - edge).abs() < 1e-3);
+    assert!((c[1].x - (edge + a0 + g)).abs() < 1e-3);
+    // The shaped advance is untouched.
+    assert!((c[0].advance - a0).abs() < 1e-4);
+    assert!((c[1].advance - a1).abs() < 1e-4);
+    // The line grew by exactly the excess.
+    assert!((line.width - (base_width + excess)).abs() < 1e-2);
+}
+
+#[test]
+fn range_advance_even_single_cluster_splits_excess_across_both_edges() {
+    let (reg, _, kana) = registry();
+    let advances = cluster_advances(KANA5, vec![kana], &reg);
+    let a0 = advances[0];
+
+    let excess = 30.0f32;
+    let mut req = para(KANA5, vec![kana]);
+    req.range_advances = vec![RangeAdvance {
+        start: 0,
+        end: 1,
+        min_advance: a0 + excess,
+        distribution: RangeAdvanceDistribution::Even,
+    }];
+    let c = &layout_paragraph(&reg, &req).unwrap().lines[0].clusters;
+
+    assert!((c[0].leading_space - excess / 2.0).abs() < 1e-3);
+    assert!((c[0].trailing_space - excess / 2.0).abs() < 1e-3);
+    assert!((c[0].advance - a0).abs() < 1e-4);
+    assert!((c[0].x - excess / 2.0).abs() < 1e-3);
+}
+
+#[test]
+fn range_advance_edges_adds_no_inter_cluster_spacing() {
+    let (reg, _, kana) = registry();
+    let advances = cluster_advances(KANA5, vec![kana], &reg);
+    let base = advances[0] + advances[1] + advances[2];
+
+    let excess = 48.0f32;
+    let mut req = para(KANA5, vec![kana]);
+    req.range_advances = vec![RangeAdvance {
+        start: 0,
+        end: 3,
+        min_advance: base + excess,
+        distribution: RangeAdvanceDistribution::Edges,
+    }];
+    let c = &layout_paragraph(&reg, &req).unwrap().lines[0].clusters;
+
+    assert!((c[0].leading_space - excess / 2.0).abs() < 1e-3);
+    assert!((c[0].trailing_space).abs() < 1e-6);
+    assert!((c[1].leading_space).abs() < 1e-6);
+    assert!((c[1].trailing_space).abs() < 1e-6);
+    assert!((c[2].leading_space).abs() < 1e-6);
+    assert!((c[2].trailing_space - excess / 2.0).abs() < 1e-3);
+}
+
+#[test]
+fn range_advance_whitespace_absorbs_excess_in_interior_space() {
+    let (reg, mona, _) = registry();
+    // "ab cd": a(0) b(1) space(2) c(3) d(4).
+    let text = "ab cd";
+    let advances = cluster_advances(text, vec![mona], &reg);
+    let base: f32 = advances.iter().sum();
+
+    let excess = 25.0f32;
+    let mut req = para(text, vec![mona]);
+    req.range_advances = vec![RangeAdvance {
+        start: 0,
+        end: 5,
+        min_advance: base + excess,
+        distribution: RangeAdvanceDistribution::Whitespace,
+    }];
+    let line = &layout_paragraph(&reg, &req).unwrap().lines[0];
+    let c = &line.clusters;
+
+    // The lone interior whitespace cluster absorbs the whole excess; the base
+    // characters get no spacing.
+    for (i, cluster) in c.iter().enumerate() {
+        if i == 2 {
+            assert!(cluster.is_whitespace);
+            assert!((cluster.trailing_space - excess).abs() < 1e-3);
+            assert!((cluster.leading_space).abs() < 1e-6);
+        } else {
+            assert!((cluster.leading_space).abs() < 1e-6);
+            assert!((cluster.trailing_space).abs() < 1e-6);
+        }
+    }
+    // "ab cd" has no trailing whitespace, so the line width grew by the excess.
+    let base_width = layout_paragraph(&reg, &para(text, vec![mona]))
+        .unwrap()
+        .lines[0]
+        .width;
+    assert!((line.width - (base_width + excess)).abs() < 1e-2);
+}
+
+#[test]
+fn range_advance_whitespace_falls_back_to_edges_without_interior_space() {
+    let (reg, mona, _) = registry();
+    let text = "abcd";
+    let advances = cluster_advances(text, vec![mona], &reg);
+    let base: f32 = advances.iter().sum();
+
+    let excess = 20.0f32;
+    let mut req = para(text, vec![mona]);
+    req.range_advances = vec![RangeAdvance {
+        start: 0,
+        end: 4,
+        min_advance: base + excess,
+        distribution: RangeAdvanceDistribution::Whitespace,
+    }];
+    let c = &layout_paragraph(&reg, &req).unwrap().lines[0].clusters;
+
+    assert!((c[0].leading_space - excess / 2.0).abs() < 1e-3);
+    assert!((c[3].trailing_space - excess / 2.0).abs() < 1e-3);
+    for cluster in &c[1..3] {
+        assert!((cluster.leading_space).abs() < 1e-6);
+        assert!((cluster.trailing_space).abs() < 1e-6);
+    }
+}
+
+#[test]
+fn range_advance_smaller_than_base_is_a_noop() {
+    let (reg, _, kana) = registry();
+    let mut req = para(KANA5, vec![kana]);
+    req.range_advances = vec![RangeAdvance {
+        start: 0,
+        end: 3,
+        min_advance: 1.0, // far below the natural base width
+        distribution: RangeAdvanceDistribution::Even,
+    }];
+    let base_width = layout_paragraph(&reg, &para(KANA5, vec![kana]))
+        .unwrap()
+        .lines[0]
+        .width;
+    let line = &layout_paragraph(&reg, &req).unwrap().lines[0];
+    for cluster in &line.clusters {
+        assert!(cluster.leading_space >= 0.0 && cluster.leading_space.abs() < 1e-6);
+        assert!(cluster.trailing_space >= 0.0 && cluster.trailing_space.abs() < 1e-6);
+    }
+    assert!((line.width - base_width).abs() < 1e-3);
+}
+
+#[test]
+fn range_advance_is_premeasured_and_changes_wrapping() {
+    let (reg, _, kana) = registry();
+    let text = "\u{3042}\u{3044}"; // two kana
+    let advances = cluster_advances(text, vec![kana], &reg);
+    let (a0, a1) = (advances[0], advances[1]);
+    let base_width = a0 + a1;
+
+    // A width that fits both kana on one line without expansion.
+    let mut req = para(text, vec![kana]);
+    req.max_width = Some(base_width + 1.0);
+    assert_eq!(
+        layout_paragraph(&reg, &req).unwrap().lines.len(),
+        1,
+        "both kana fit on one line without expansion"
+    );
+
+    // Expanding the first kana past the limit must force a wrap, proving the
+    // expansion is measured *before* line breaking.
+    req.range_advances = vec![RangeAdvance {
+        start: 0,
+        end: 1,
+        min_advance: a0 + 100.0,
+        distribution: RangeAdvanceDistribution::Even,
+    }];
+    assert_eq!(
+        layout_paragraph(&reg, &req).unwrap().lines.len(),
+        2,
+        "expansion pushes the range past max_width and forces a second line"
+    );
+}
+
+#[test]
+fn range_advance_selecting_no_clusters_is_a_silent_noop() {
+    let (reg, mona, _) = registry();
+    // "ff" ligates into one cluster spanning UTF-16 [0, 2); [0, 1) contains no
+    // whole cluster, so the range selects nothing and is inert.
+    let mut req = para("ff", vec![mona]);
+    req.range_advances = vec![RangeAdvance {
+        start: 0,
+        end: 1,
+        min_advance: 1000.0,
+        distribution: RangeAdvanceDistribution::Even,
+    }];
+    let layout = layout_paragraph(&reg, &req).unwrap();
+    let c = &layout.lines[0].clusters;
+    assert_eq!(c.len(), 1);
+    assert!((c[0].leading_space).abs() < 1e-6);
+    assert!((c[0].trailing_space).abs() < 1e-6);
+}
+
+#[test]
+fn range_advances_are_validated_strictly() {
+    let (reg, mona, kana) = registry();
+
+    let advance = |start: u32, end: u32, min_advance: f32| RangeAdvance {
+        start,
+        end,
+        min_advance,
+        distribution: RangeAdvanceDistribution::Even,
+    };
+    let invalid = |ranges: Vec<RangeAdvance>| {
+        let mut req = para(KANA5, vec![kana]);
+        req.range_advances = ranges;
+        layout_paragraph(&reg, &req).unwrap_err()
+    };
+
+    // Overlapping ranges are rejected (unlike no-break ranges).
+    assert!(matches!(
+        invalid(vec![advance(0, 3, 100.0), advance(2, 4, 100.0)]),
+        ShapeError::InvalidInput(_)
+    ));
+    // Touching ranges are fine.
+    let mut ok = para(KANA5, vec![kana]);
+    ok.range_advances = vec![advance(0, 2, 100.0), advance(2, 4, 100.0)];
+    assert!(layout_paragraph(&reg, &ok).is_ok());
+
+    // start >= end.
+    assert!(matches!(invalid(vec![advance(3, 3, 10.0)]), ShapeError::InvalidInput(_)));
+    // out of bounds (UTF-16 length is 5).
+    assert!(matches!(invalid(vec![advance(0, 6, 10.0)]), ShapeError::InvalidInput(_)));
+    // non-finite / negative min_advance.
+    assert!(matches!(invalid(vec![advance(0, 2, f32::NAN)]), ShapeError::InvalidInput(_)));
+    assert!(matches!(invalid(vec![advance(0, 2, f32::INFINITY)]), ShapeError::InvalidInput(_)));
+    assert!(matches!(invalid(vec![advance(0, 2, -1.0)]), ShapeError::InvalidInput(_)));
+
+    // Endpoint mid-surrogate: "a𝟙b" has UTF-16 boundaries {0, 1, 3, 4}.
+    let mut req = para("a\u{1D7D9}b", vec![mona, kana]);
+    req.range_advances = vec![advance(1, 2, 10.0)];
+    assert!(matches!(
+        layout_paragraph(&reg, &req).unwrap_err(),
+        ShapeError::InvalidInput(_)
+    ));
+    req.range_advances = vec![advance(1, 3, 10.0)];
+    assert!(layout_paragraph(&reg, &req).is_ok());
+}
+
+#[test]
+fn range_advance_works_with_balanced_wrapping() {
+    let (reg, _, kana) = registry();
+    let text = format!("{KANA5}\n{KANA5}");
+    let advances = cluster_advances(&text, vec![kana], &reg);
+    let base = advances[0] + advances[1];
+
+    let mut request = para(&text, vec![kana]);
+    request.max_width = Some(80.0);
+    request.wrap_strategy = LineWrapStrategy::Balanced;
+    request.range_advances = vec![RangeAdvance {
+        start: 0,
+        end: 2,
+        min_advance: base + 40.0,
+        distribution: RangeAdvanceDistribution::Even,
+    }];
+
+    // Balanced wrapping still succeeds and produces valid lines; the injected
+    // spaces are reflected in the first cluster's leading space.
+    let layout = layout_paragraph(&reg, &request).unwrap();
+    assert!(layout.lines.len() >= 2);
+    let first = &layout.lines[0].clusters[0];
+    assert!(first.leading_space > 0.0);
 }

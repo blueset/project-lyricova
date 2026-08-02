@@ -373,6 +373,7 @@ interface RubySummary {
   issues: string[];
   height: number;
   width: number;
+  rubyRow: { height: number; baseline: number; fontSize: number };
   rubies: {
     mode: string;
     lineIndex: number;
@@ -380,6 +381,8 @@ interface RubySummary {
     y: number;
     inkAscent: number;
     inkDescent: number;
+    inkLeft: number;
+    inkRight: number;
     fontSize: number;
     runCount: number;
     glyphCount: number;
@@ -389,6 +392,11 @@ interface RubySummary {
     baseline: number;
     height: number;
     lineBoxHeight: number;
+    contentOffsetX: number;
+    occupiedWidth: number;
+    lineWidth: number;
+    /** Per-cluster JLReq base expansion injected by the layout engine. */
+    spacing: { leadingSpace: number; trailingSpace: number }[];
   }[];
 }
 
@@ -399,6 +407,8 @@ async function ruby(req: {
   rubyFontChain?: readonly string[];
   fontSize?: number;
   maxWidth?: number | null;
+  reserveRubyRow?: boolean;
+  rubyFontSizeMax?: number;
 }): Promise<RubySummary> {
   const fontIds = await ensureFonts(
     req.fontChain ?? ["source-han-sans-vf-otf"],
@@ -413,6 +423,8 @@ async function ruby(req: {
     rubyFontIds,
     fontSize: req.fontSize ?? 32,
     maxWidth: req.maxWidth ?? null,
+    reserveRubyRow: req.reserveRubyRow,
+    rubyFontSizeMax: req.rubyFontSizeMax,
     language: "ja",
     onInvalidAnnotation: "skip",
   });
@@ -420,6 +432,7 @@ async function ruby(req: {
     issues: result.issues.map((i) => i.kind),
     height: result.height,
     width: result.width,
+    rubyRow: { ...result.rubyRow },
     rubies: result.rubies.map((r) => ({
       mode: r.mode,
       lineIndex: r.lineIndex,
@@ -427,6 +440,8 @@ async function ruby(req: {
       y: r.y,
       inkAscent: r.inkAscent,
       inkDescent: r.inkDescent,
+      inkLeft: r.inkLeft,
+      inkRight: r.inkRight,
       fontSize: r.fontSize,
       runCount: r.runs.length,
       glyphCount: r.runs.reduce((s, run) => s + run.glyphs.length, 0),
@@ -436,6 +451,13 @@ async function ruby(req: {
       baseline: l.baseline,
       height: l.height,
       lineBoxHeight: l.line.height,
+      contentOffsetX: l.contentOffsetX,
+      occupiedWidth: l.occupiedWidth,
+      lineWidth: l.line.width,
+      spacing: l.line.clusters.map((cluster) => ({
+        leadingSpace: cluster.leadingSpace,
+        trailingSpace: cluster.trailingSpace,
+      })),
     })),
   };
 }

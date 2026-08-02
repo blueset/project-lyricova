@@ -44,18 +44,22 @@ export function clustersInRange(
 }
 
 export interface BaseGroupBounds {
-  /** Leftmost x of the base clusters within the line. */
+  /** Leftmost x of the base clusters within the line, including base expansion. */
   xStart: number;
-  /** Rightmost x (start + advance) of the base clusters within the line. */
+  /** Rightmost x of the base clusters within the line, including base expansion. */
   xEnd: number;
   clusters: ShapedCluster[];
 }
 
 /**
  * Computes the horizontal span (line-relative) occupied by the base clusters
- * of a ruby annotation. Returns `null` if no cluster of the line falls within
- * the given range (e.g. the range is pure whitespace collapsed away, or an
- * upstream inconsistency).
+ * of a ruby annotation, **including** the JLReq base-expansion spacing the
+ * layout engine injected around them (`ShapedCluster.leadingSpace` /
+ * `trailingSpace`). Ruby is centred over this expanded box, so ignoring the
+ * edge gaps would bias every expanded annotation's ruby off-centre.
+ *
+ * Returns `null` if no cluster of the line falls within the given range (e.g.
+ * the range is pure whitespace collapsed away, or an upstream inconsistency).
  */
 export function computeBaseGroupBounds(
   line: LayoutLine,
@@ -64,15 +68,11 @@ export function computeBaseGroupBounds(
 ): BaseGroupBounds | null {
   const clusters = clustersInRange(line, utf16Start, utf16End);
   if (clusters.length === 0) return null;
-  const xStart = Math.min(...clusters.map((c) => c.x));
-  const xEnd = Math.max(...clusters.map((c) => c.x + c.advance));
+  const xStart = Math.min(...clusters.map((c) => c.x - c.leadingSpace));
+  const xEnd = Math.max(
+    ...clusters.map((c) => c.x + c.advance + c.trailingSpace),
+  );
   return { xStart, xEnd, clusters };
-}
-
-export interface LineRubyExtent {
-  lineIndex: number;
-  /** Height reserved above the base line's original box for the ruby row (ascent + gap). */
-  extent: number;
 }
 
 export interface AdjustedLineMetrics {
@@ -83,31 +83,27 @@ export interface AdjustedLineMetrics {
 }
 
 /**
- * Recomputes `top`/`baseline`/`height` for every line so that any line with a
- * ruby row (`ruby-position: over`) reserves extra height *above* its
- * original base-text box, and every following line is pushed down by the
- * same amount - so ruby glyphs never overlap the line above them.
+ * Recomputes `top`/`baseline`/`height` for every line, reserving a **uniform**
+ * `rubyRowHeight` above each one's original base-text box.
  *
- * `extentByLine` need not cover every line; lines without an entry (or with
- * `extent <= 0`) are left with their original height, only shifted down by
- * the cumulative growth of preceding lines.
+ * The reservation is document-level and constant by design: deriving it from
+ * per-line measured ruby ink would make line advance depend on which lines
+ * happen to carry furigana, so lines would visibly jitter as the lyrics
+ * advance. Pass `0` when the document has no ruby at all.
  */
 export function computeAdjustedLineMetrics(
   lines: readonly LayoutLine[],
-  extentByLine: ReadonlyMap<number, number>,
+  rubyRowHeight: number,
 ): AdjustedLineMetrics[] {
-  // `cumulativeGrowth` is the total extra height contributed by *prior*
-  // lines' ruby rows only; each line's own `extent` grows its own box
-  // (pushing its base-text content down within that box) without affecting
-  // its own `top`, which is only shifted by growth accumulated so far.
-  let cumulativeGrowth = 0;
+  const extent = Math.max(0, rubyRowHeight);
   return lines.map((line, index) => {
-    const extent = Math.max(0, extentByLine.get(index) ?? 0);
     const originalAscentOffset = line.baseline - line.top;
-    const top = line.top + cumulativeGrowth;
-    const baseline = top + extent + originalAscentOffset;
-    const height = line.height + extent;
-    cumulativeGrowth += extent;
-    return { lineIndex: index, top, baseline, height };
+    const top = line.top + extent * index;
+    return {
+      lineIndex: index,
+      top,
+      baseline: top + extent + originalAscentOffset,
+      height: line.height + extent,
+    };
   });
 }

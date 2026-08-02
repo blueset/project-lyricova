@@ -12,6 +12,7 @@ import type {
   SourceRange,
   TextDirection,
 } from "@lyricova/glyph-renderer";
+import type { JlreqCharClass } from "./jlreqCharClass";
 
 /**
  * Minimal surface of `GlyphShaper` this layer depends on. Consumers pass a
@@ -86,6 +87,46 @@ export type RubyLayoutIssue =
       kind: "splitAcrossLines";
       annotation: FuriganaAnnotationInput;
       lineIndices: number[];
+    }
+  | {
+      /**
+       * The ruby run needed more overhang on one side than the adjacent
+       * character's JLReq class permits (see `rubyOverhang.ts`). It was
+       * clamped to the budget and re-centered as closely as possible.
+       */
+      kind: "overhangClamped";
+      annotation: FuriganaAnnotationInput;
+      side: "left" | "right";
+      /** Overhang the ruby wanted on that side, in layout units. */
+      requested: number;
+      /** Overhang actually granted, in layout units. */
+      allowed: number;
+    }
+  | {
+      /**
+       * Two ruby runs on one line still **overlap** after the following run's
+       * left overhang was spent (JLReq adjacent-ruby resolution (b)). The run
+       * is never pushed past its own base to force them apart, so the residual
+       * overlap is reported instead. `shortfall` is that overlap, in layout
+       * units. Runs that merely end up adjacent are not reported: that is the
+       * expected outcome of base expansion, not a defect.
+       */
+      kind: "rubyCollision";
+      annotation: FuriganaAnnotationInput;
+      other: FuriganaAnnotationInput;
+      /** Overlap, in layout units, that overhang reduction could not remove. */
+      shortfall: number;
+    }
+  | {
+      /**
+       * The ruby run's ink would have extended past the line's content box
+       * (hanmen) and was clamped inward (JLReq line head/end handling).
+       */
+      kind: "outsideLineBox";
+      annotation: FuriganaAnnotationInput;
+      side: "left" | "right";
+      /** How far past the content box the ink reached, in layout units. */
+      overflow: number;
     };
 
 /** A furigana annotation whose indices have been validated and converted. */
@@ -99,22 +140,78 @@ export interface NormalizedFuriganaAnnotation {
   sourceIndex: number;
 }
 
-/** Horizontal ruby placement strategy (CSS `ruby-position: over` scope only). */
+/**
+ * Horizontal ruby placement strategy (CSS `ruby-position: over` scope only).
+ *
+ * `"under"`, vertical writing mode and RTL/bidi ruby are out of scope for this
+ * layer, as are base-text justification, one-third ruby (三分ルビ) and
+ * small-kana normalisation - see the "known gaps" note at the top of
+ * `rubyLayout.ts`.
+ */
 export type RubyPosition = "over";
+
+/** Default ruby-to-base font size ratio (JLReq's half-size ruby). */
+export const DEFAULT_RUBY_FONT_SIZE_RATIO = 0.5;
 
 export interface RubyLayoutOptions {
   /** Ordered font fallback chain used to shape both the base text and ruby text. */
   fontIds: FontId[];
   /** Base text font size, in the units advances/positions are returned in (e.g. CSS px). */
   fontSize: number;
-  /** Ruby text font size. Defaults to `fontSize * 0.5`. */
+  /**
+   * Explicit ruby font size. Overrides the whole
+   * {@link RubyLayoutOptions.rubyFontSizeRatio}/{@link RubyLayoutOptions.rubyFontSizeMin}/{@link RubyLayoutOptions.rubyFontSizeMax}
+   * computation (kept for backward compatibility); must still be a finite
+   * positive size.
+   */
   rubyFontSize?: number;
+  /**
+   * Ruby size as a fraction of {@link RubyLayoutOptions.fontSize}. Defaults to
+   * {@link DEFAULT_RUBY_FONT_SIZE_RATIO}. This is the *relative* behaviour:
+   * ruby tracks a responsive base size, so it stays readable as the base
+   * shrinks.
+   */
+  rubyFontSizeRatio?: number;
+  /**
+   * Absolute floor for the computed ruby size, in the same units as
+   * {@link RubyLayoutOptions.fontSize}. Defaults to `0` (disabled).
+   * Caller-supplied: the right value depends on the consuming design, so no
+   * pixel constant is baked into this engine.
+   */
+  rubyFontSizeMin?: number;
+  /**
+   * Absolute cap for the computed ruby size, in the same units as
+   * {@link RubyLayoutOptions.fontSize}, so ruby stays non-distracting at large
+   * base sizes. Defaults to `Infinity` (uncapped, ratio-only behaviour); the
+   * cap takes precedence over the ratio. Caller-supplied for the same reason
+   * as {@link RubyLayoutOptions.rubyFontSizeMin}.
+   */
+  rubyFontSizeMax?: number;
   /** Font fallback chain for ruby text. Defaults to `fontIds`. */
   rubyFontIds?: FontId[];
   /** Only horizontal `"over"` placement is implemented; defaults to `"over"`. */
   rubyPosition?: RubyPosition;
   /** Extra gap between the ruby row and the base text's ascent line. Defaults to `0`. */
   rubyGap?: number;
+  /**
+   * Whether *every* line reserves a ruby row, so line advance is uniform and
+   * lines never jitter between annotated and un-annotated ones.
+   *
+   * This is a **document-level** decision: the caller, which has access to the
+   * whole lyrics file, should pass `true` when *any* line in the file carries
+   * at least one ruby annotation, even though rendering happens per line.
+   * When omitted it falls back to the paragraph-local answer (reserve iff this
+   * paragraph placed at least one ruby), which is only correct for a
+   * single-paragraph document.
+   */
+  reserveRubyRow?: boolean;
+  /**
+   * Maximum ruby overhang per adjacent JLReq character class, in **ruby em**
+   * (multiples of the resolved ruby font size). Merged over
+   * `DEFAULT_RUBY_OVERHANG`; see `jlreqCharClass.ts` for the classes and
+   * `rubyOverhang.ts` for how the per-side budgets are resolved.
+   */
+  rubyOverhang?: Partial<Record<JlreqCharClass, number>>;
   baseDirection?: TextDirection;
   script?: string | null;
   language?: string | null;
@@ -158,19 +255,30 @@ export interface RubyRun {
 export interface RubyPlacement {
   annotation: NormalizedFuriganaAnnotation;
   /**
-   * `"mono"`: base and ruby grapheme counts matched cleanly and each ruby
-   * grapheme is individually centered over its corresponding base grapheme.
-   * `"group"`: the ruby run is shaped as a whole and centered/distributed
-   * over the entire base range.
+   * `"mono"`: the annotation covers exactly one base grapheme (which shaped
+   * to exactly one cluster), so its ruby is shaped as a single contextual run
+   * and centered over that cluster. `"group"`: the annotation covers more
+   * than one base grapheme, so the ruby run is centered/distributed over the
+   * whole base range (group-/jukugo-ruby).
+   *
+   * The mode follows the *input data* - upstream already emits one annotation
+   * per base grapheme wherever a clean 1:1 mapping exists - rather than being
+   * re-derived from grapheme counts.
    */
   mode: "mono" | "group";
   lineIndex: number;
-  /** Line-relative x-range spanned by the base clusters this ruby annotates. */
+  /**
+   * Line-relative x-range spanned by the base clusters this ruby annotates,
+   * **including** any JLReq base expansion inserted around them (see
+   * `ShapedCluster.leadingSpace`/`trailingSpace`).
+   */
   baseX: readonly [number, number];
   /**
-   * Line-relative y position of the ruby row's baseline - shared by every
-   * ruby annotation on the same line (the max ink ascent across that
-   * line's annotations; see {@link LinePlacement.height}).
+   * Line-relative y position of the ruby row's baseline. Shared by every ruby
+   * annotation of the whole layout: the row is reserved deterministically
+   * from the resolved ruby font size and `rubyGap` (see
+   * {@link RubyLayoutResult.rubyRow}), never from per-line measured ink, so
+   * line advance is uniform across the document.
    */
   y: number;
   /**
@@ -178,6 +286,9 @@ export interface RubyPlacement {
    * baseline), derived from the actual outlines of the glyphs it shaped
    * (see `rubyInkMetrics.ts`) - not approximated from base paragraph
    * metrics. `0` if none of its glyphs have a drawable outline.
+   *
+   * Used for ink bounds / clipping only. It deliberately does **not** drive
+   * line advance any more; see {@link RubyLayoutResult.rubyRow}.
    */
   inkAscent: number;
   /**
@@ -215,15 +326,52 @@ export interface LinePlacement {
   baseline: number;
   /** Adjusted line box height, including any ruby row. */
   height: number;
+  /**
+   * Horizontal offset (`>= 0`) that must be added to **both** base cluster
+   * and ruby x positions when drawing this line.
+   *
+   * JLReq sets the line head/end "ruby-aligned": overhanging ruby ink sticks
+   * out past the base text and the *ruby*, not the base, is flush with the
+   * line edge. Rather than clipping that ink, the line's content is shifted
+   * inward by exactly the amount the ruby overhangs to the left.
+   */
+  contentOffsetX: number;
+  /**
+   * True width occupied by this line once ruby overhang is included, i.e.
+   * `max(line.width, rightmost ruby ink) - min(0, leftmost ruby ink)`. This
+   * is the box the line should be aligned/centered within, not `line.width`.
+   */
+  occupiedWidth: number;
   rubies: RubyPlacement[];
+}
+
+/**
+ * Deterministic vertical geometry of the single ruby row reserved above every
+ * line. Derived from the resolved ruby font size, the base font's em-relative
+ * ascent/descent, and `rubyGap` - never from per-line measured ink - so every
+ * line advances identically whether or not it carries ruby.
+ */
+export interface RubyRowMetrics {
+  /** Total height reserved above each line's original box (`0` when no row is reserved). */
+  height: number;
+  /** Offset of the ruby baseline from the top of the reserved row. */
+  baseline: number;
+  /** Resolved ruby font size used for the row and every ruby run. */
+  fontSize: number;
 }
 
 export interface RubyLayoutResult {
   lines: LinePlacement[];
   /** Total paragraph height, including reserved ruby rows. */
   height: number;
+  /**
+   * Widest {@link LinePlacement.occupiedWidth}, i.e. the true occupied box
+   * including ruby overhang - not just the base text's advance width.
+   */
   width: number;
   baseDirection: TextDirection;
+  /** Deterministic geometry of the reserved ruby row (see {@link RubyRowMetrics}). */
+  rubyRow: RubyRowMetrics;
   rubies: RubyPlacement[];
   issues: RubyLayoutIssue[];
   /**

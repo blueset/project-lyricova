@@ -155,6 +155,21 @@ export interface ShapedCluster {
   bounds: ClusterBounds;
   /** Whether every source character of this cluster is whitespace. */
   isWhitespace: boolean;
+  /**
+   * Extra space inserted immediately *before* this cluster by a ruby
+   * base-expansion {@link RangeAdvance} (already reflected in `x`). `0`
+   * normally. Kept separate from `advance` so karaoke-fill, ink-bounds and
+   * animation code can still rely on `advance` meaning the shaped glyph
+   * advance.
+   */
+  leadingSpace: number;
+  /**
+   * Extra space inserted immediately *after* this cluster by a ruby
+   * base-expansion {@link RangeAdvance}. `0` normally. Additive and separate
+   * from `advance` (see {@link ShapedCluster.leadingSpace}). The pen model is
+   * `pen += leadingSpace; x = pen; pen += advance + trailingSpace`.
+   */
+  trailingSpace: number;
 }
 
 /** One laid-out line of a paragraph. */
@@ -181,6 +196,53 @@ export interface LayoutLine {
 
 /** Width-constrained paragraph wrapping strategy. */
 export type LineWrapStrategy = "greedy" | "balanced";
+
+/**
+ * How the extra advance required by a {@link RangeAdvance} is distributed among
+ * the base clusters of the annotated range (ruby base expansion, JLReq §3.3.6 /
+ * §3.3.7).
+ *
+ * - `"even"` - JLReq 2:1:1 distribution: with `m` clusters and `excess` extra
+ *   width, the inter-cluster gap is `g = excess / m` and each edge gap is
+ *   `g / 2`. For `m === 1` the single cluster receives `excess / 2` on each
+ *   side (mono ruby).
+ * - `"edges"` - the whole excess is split equally between the two outer edge
+ *   gaps; no inter-cluster spacing is added. Use for proportional / non-CJK
+ *   runs, which must never be letterspaced.
+ * - `"whitespace"` - the excess is absorbed by inter-word whitespace clusters
+ *   strictly inside the range; falls back to `"edges"` when there is none.
+ *
+ * Every variant is symmetric or interior; there is deliberately no
+ * leading-only or trailing-only form. A one-sided displacement of `d` is still
+ * reachable by adding `2 * d` to `minAdvance` (which places `d` on each side,
+ * moving the box centre right by `d`), at the cost of widening the line by
+ * `2 * d`. It is omitted because it would not help: expansion is an *input* to
+ * line breaking, so any displacement decided from a finished layout needs a
+ * second break pass, and the new widths can move the range onto a different
+ * line - dissolving the adjacency that motivated it. See `resolveCollisions`
+ * in the jukebox package's `rubyLayout.ts`.
+ */
+export type RangeAdvanceDistribution = "even" | "edges" | "whitespace";
+
+/**
+ * A minimum total advance requirement for a logical UTF-16 range (ruby base
+ * expansion). When the range's natural advance is below `minAdvance`, the
+ * difference is injected as inter-cluster and edge spacing (per
+ * `distribution`) *before* line breaking, so wrapping, cluster x-positions and
+ * line widths all account for it on the first pass. The injected amounts appear
+ * on each cluster as {@link ShapedCluster.leadingSpace} /
+ * {@link ShapedCluster.trailingSpace}.
+ */
+export interface RangeAdvance {
+  /** Logical UTF-16 start offset (inclusive). */
+  start: number;
+  /** Logical UTF-16 end offset (exclusive). */
+  end: number;
+  /** Minimum total advance the range must occupy. */
+  minAdvance: number;
+  /** Distribution of the excess width. Defaults to `"even"`. */
+  distribution?: RangeAdvanceDistribution;
+}
 
 /** A request to lay out a whole paragraph with {@link GlyphShaper.layoutParagraph}. */
 export interface ParagraphRequest {
@@ -237,6 +299,16 @@ export interface ParagraphRequest {
    * break internally rather than overflow.
    */
   phraseRanges?: [number, number][];
+  /**
+   * Logical UTF-16 ranges that must occupy at least a given total advance
+   * (ruby base expansion). Extra width is injected as inter-cluster and edge
+   * spacing *before* line breaking, so wrapping, cluster x-positions and line
+   * widths all account for it on the first pass. Ranges must not overlap
+   * (touching, `a.end === b.start`, is fine); each endpoint is validated
+   * strictly (`start < end`, within the text, on code-point boundaries) and
+   * `minAdvance` must be finite and non-negative - otherwise layout throws.
+   */
+  rangeAdvances?: RangeAdvance[];
 }
 
 /** The result of laying out a paragraph with {@link GlyphShaper.layoutParagraph}. */

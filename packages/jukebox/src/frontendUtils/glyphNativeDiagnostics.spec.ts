@@ -72,6 +72,8 @@ function makeWasmCluster(
       Array.from({ length: glyphCount }, () => makeGlyph(startUtf16, endUtf16)),
     x,
     advance,
+    leadingSpace: 0,
+    trailingSpace: 0,
     bounds: { xMin: 0, xMax: advance, yMin: -10, yMax: 5 },
     isWhitespace: false,
     ...overrides,
