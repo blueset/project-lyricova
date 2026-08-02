@@ -56,6 +56,9 @@
   // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
   // "shutdownAction": "none",
 
+  // Dev-only CLI tooling; intentionally not in the prod Dockerfile.
+  "onCreateCommand": "apt-get update && apt-get install -y --no-install-recommends ripgrep xxd",
+
   "postCreateCommand": "npm ci --legacy-peer-deps && npm run build:ts -w @lyricova/api && npm run codegen -w @lyricova/components",
 
   // Configure tool-specific properties.
