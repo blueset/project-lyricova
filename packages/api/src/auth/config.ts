@@ -58,15 +58,15 @@ export const authConfig = {
     "AUTH_ALLOWED_HOSTS",
     production
       ? ["lyricova.1a23.studio", "jukebox.1a23.studio"]
-      : ["localhost:8081", "localhost:8082"],
+      : ["localhost:8081", "localhost:8082", "localhost:8083", "127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083"],
   ),
   trustedOrigins: csvEnvironment(
     "AUTH_TRUSTED_ORIGINS",
     production
       ? [
-          "https://lyricova.1a23.studio",
-          "https://jukebox.1a23.studio",
-        ]
+        "https://lyricova.1a23.studio",
+        "https://jukebox.1a23.studio",
+      ]
       : ["http://localhost:8081", "http://localhost:8082"],
   ),
   cookieDomain:
@@ -77,9 +77,9 @@ export const authConfig = {
     "WEBAUTHN_ORIGINS",
     production
       ? [
-          "https://lyricova.1a23.studio",
-          "https://jukebox.1a23.studio",
-        ]
+        "https://lyricova.1a23.studio",
+        "https://jukebox.1a23.studio",
+      ]
       : ["http://localhost:8081", "http://localhost:8082"],
   ),
 } as const;
