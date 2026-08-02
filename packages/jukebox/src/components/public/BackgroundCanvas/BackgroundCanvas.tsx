@@ -107,11 +107,9 @@ export function BackgroundCanvas({ coverUrl, textureUrl, playerRef }: Props) {
     );
   } else if (supportsWebGL2) {
     return (
-      <BackgroundRenderNoSSR
-        album={coverUrl}
-        staticMode
-        className="fixed inset-0 size-full"
-      />
+      <div className="fixed inset-0 size-full">
+        <BackgroundRenderNoSSR album={coverUrl} staticMode />
+      </div>
     );
   } else {
     return <div className="fixed inset-0 size-full" style={fallbackBackgroundStyle} />;

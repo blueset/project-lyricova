@@ -110,7 +110,7 @@ export function AMLLyrics({ lyrics, transLangIdx }: Props) {
     <div
       lang="ja"
       ref={containerRef}
-      className="w-full h-full overflow-hidden relative [--amll-lyric-player-font-size:3em] [&_>_div]:size-full [&_>_div]:overflow-hidden [&_>_div]:relative [&_>_div_div[class*='lyricMainLine-']]:font-semibold [&_>_div_div[class*='lyricMainLine-']]:text-balance"
+      className="w-full h-full overflow-hidden relative [--amll-lp-font-size:3em] [&_>_div]:size-full [&_>_div]:overflow-hidden [&_>_div]:relative [&_>_div_div[class*='lyricMainLine']]:font-semibold [&_>_div_div[class*='lyricMainLine']]:text-balance"
     >
       <LyricPlayer
         lyricLines={amlLyricsArray}
