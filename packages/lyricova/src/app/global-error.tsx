@@ -1,6 +1,7 @@
 "use client"; // Error boundaries must be Client Components
 
 import posthog from "posthog-js";
+import { isTelemetryEnabled } from "@lyricova/components/utils/telemetry";
 import NextError from "next/error";
 import { useEffect } from "react";
 
@@ -11,6 +12,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    if (!isTelemetryEnabled()) return;
     posthog.captureException(error);
   }, [error]);
 

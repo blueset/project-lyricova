@@ -7,6 +7,7 @@ declare const process: { env: { NODE_ENV?: string } };
 import { PostHogProvider, usePostHog } from "posthog-js/react";
 import clarity from "@microsoft/clarity";
 import { usePathname, useSearchParams } from "next/navigation";
+import { isTelemetryEnabled } from "../utils/telemetry";
 
 type ClarityWindow = Window & {
   clarity: (
@@ -31,7 +32,12 @@ export function TelemetryProvider({
   postHogKey,
   postHogHost,
 }: TelemetryProviderProps) {
+  const telemetryEnabled = isTelemetryEnabled();
+
   useEffect(() => {
+    // Never send analytics from non-production environments.
+    if (!telemetryEnabled) return;
+
     // Initialize Microsoft Clarity if project ID is provided
     if (clarityProjectId) {
       clarity.init(clarityProjectId);
@@ -62,10 +68,10 @@ export function TelemetryProvider({
         posthog.reset();
       }
     };
-  }, [clarityProjectId, postHogKey, postHogHost]);
+  }, [clarityProjectId, postHogKey, postHogHost, telemetryEnabled]);
 
   // If PostHog is configured, wrap children with PostHogProvider
-  if (postHogKey) {
+  if (postHogKey && telemetryEnabled) {
     return (
       <PostHogProvider client={posthog}>
         <SuspendedPostHogPageView />

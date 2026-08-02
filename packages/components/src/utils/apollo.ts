@@ -11,6 +11,7 @@ import { getMainDefinition } from "@apollo/client/utilities";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from "graphql-ws";
 import posthog from "posthog-js";
+import { isTelemetryEnabled } from "./telemetry";
 
 const httpLink = new HttpLink({
   uri: "/graphql",
@@ -18,11 +19,13 @@ const httpLink = new HttpLink({
 });
 
 const errorLink = new ErrorLink(({ error }) => {
+  const telemetryEnabled = isTelemetryEnabled();
   if (CombinedGraphQLErrors.is(error)) {
     error.errors.forEach(({ message, locations, path }) => {
       console.error(
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
       );
+      if (!telemetryEnabled) return;
       posthog?.captureException(new Error(message), {
         extra: {
           locations,
@@ -32,6 +35,7 @@ const errorLink = new ErrorLink(({ error }) => {
     });
   } else {
     console.error(`[Network error]: ${error}`);
+    if (!telemetryEnabled) return;
     posthog?.captureException(
       error instanceof Error ? error : new Error(String(error)),
     );

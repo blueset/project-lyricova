@@ -88,6 +88,7 @@
       "types": "./build/components/*.d.ts"
     },
     "./utils": "./src/utils/index.ts",
+    "./utils/*": "./src/utils/*.ts",
     "./gql": "./src/gql/index.ts",
     "./gql/graphql": "./src/gql/graphql.ts",
     "./gql/schema": "./src/gql/schema.ts",

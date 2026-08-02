@@ -174,6 +174,28 @@ Know these so you don't hunt for "missing" files or commit generated output:
 
 ---
 
+## 4.1 Telemetry (PostHog / Clarity)
+
+Analytics events are **suppressed outside production builds**. The gate lives in
+two places:
+
+| Runtime                                            | Gate                                                     |
+| -------------------------------------------------- | -------------------------------------------------------- |
+| Browser (`@lyricova/components`, Next.js apps)      | `isTelemetryEnabled()` in `packages/components/src/utils/telemetry.ts` |
+| Node API server (`@lyricova/api`)                   | `isTelemetryEnabled()` in `packages/api/src/utils/posthog.ts` (`postHog` stays `undefined` when off) |
+
+Both return `process.env.NODE_ENV === "production"`, so `npm run dev` never
+initialises PostHog/Clarity nor sends events. Overrides:
+
+- `NEXT_PUBLIC_TELEMETRY_ENABLED=1` — force telemetry on in the browser apps
+  (use `TELEMETRY_ENABLED=1` for the API server; it also honours the
+  `NEXT_PUBLIC_` variant).
+- `…=0` — force telemetry off even in production.
+
+Sourcemap uploads are separate and controlled by `POSTHOG_SOURCEMAPS`.
+
+---
+
 ## 5. Workflows
 
 ### 5.1 Ordinary code changes (TS / React)

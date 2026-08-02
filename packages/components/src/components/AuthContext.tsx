@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { usePostHog } from "posthog-js/react";
 import { authClient } from "../utils/auth";
+import { isTelemetryEnabled } from "../utils/telemetry";
 
 interface AuthContextProps {
   /**
@@ -86,7 +87,7 @@ export function AuthContext({
   ]);
 
   useEffect(() => {
-    if (postHog && data?.currentUser) {
+    if (isTelemetryEnabled() && postHog && data?.currentUser) {
       postHog.identify(`${data.currentUser.id}`, {
         username: data.currentUser.username,
         displayName: data.currentUser.displayName,
