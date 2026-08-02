@@ -18,15 +18,15 @@ describe("validateRevealTags", () => {
   });
 
   it("rejects a non-integer index", () => {
-    expect(() =>
-      validateRevealTags([{ index: 1.5, time: 0 }], 5),
-    ).toThrow(KaraokeTimingError);
+    expect(() => validateRevealTags([{ index: 1.5, time: 0 }], 5)).toThrow(
+      KaraokeTimingError,
+    );
   });
 
   it("rejects an index past the content length", () => {
-    expect(() =>
-      validateRevealTags([{ index: 6, time: 0 }], 5),
-    ).toThrow(/out of range/);
+    expect(() => validateRevealTags([{ index: 6, time: 0 }], 5)).toThrow(
+      /out of range/,
+    );
   });
 
   it("rejects a decreasing index (would corrupt the reveal)", () => {
@@ -78,21 +78,24 @@ describe("revealedOffset", () => {
       { index: 10, time: 110 },
     ];
     // Halfway between t=100 (idx0) and t=102 (idx4).
-    expect(
-      revealedOffset({ ...base, tags, currentTime: 101 }),
-    ).toBeCloseTo(2, 6);
+    expect(revealedOffset({ ...base, tags, currentTime: 101 })).toBeCloseTo(
+      2,
+      6,
+    );
     // Halfway between t=102 (idx4) and t=110 (idx10) => idx 4 + 3 = 7.
-    expect(
-      revealedOffset({ ...base, tags, currentTime: 106 }),
-    ).toBeCloseTo(7, 6);
+    expect(revealedOffset({ ...base, tags, currentTime: 106 })).toBeCloseTo(
+      7,
+      6,
+    );
   });
 
   it("anchors segment start at 0 when the first tag index is not 0", () => {
     const tags: RevealTag[] = [{ index: 4, time: 104 }];
     // From startTime=100 (idx0) to t=104 (idx4): at t=102 => idx 2.
-    expect(
-      revealedOffset({ ...base, tags, currentTime: 102 }),
-    ).toBeCloseTo(2, 6);
+    expect(revealedOffset({ ...base, tags, currentTime: 102 })).toBeCloseTo(
+      2,
+      6,
+    );
   });
 
   it("steps across a zero-duration tag interval instead of dividing by zero", () => {

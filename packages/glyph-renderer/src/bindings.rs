@@ -7,6 +7,8 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
+use serde::Serialize;
+
 use crate::layout::{self, ParagraphRequest};
 use crate::outline::{self, GlyphOutlineRequest};
 use crate::shaping::{self, FontId, FontRegistry, ShapeRequest};
@@ -94,6 +96,25 @@ impl GlyphShaper {
     #[wasm_bindgen(js_name = fontCount)]
     pub fn font_count(&self) -> usize {
         self.registry.len()
+    }
+
+    /// Reads a registered font's vertical metrics (matches the TypeScript
+    /// `FontMetrics` type in `ts/types.ts`): `unitsPerEm`, the `hhea`-derived
+    /// `ascender`/`descender`/`lineGap`, and the `OS/2` sTypo
+    /// `typoAscender`/`typoDescender`/`typoLineGap`. All values are in the
+    /// font's own design units (divide by `unitsPerEm` for em-relative values).
+    ///
+    /// The three `typo*` fields are `null` in JS when the font has no `OS/2`
+    /// table to read them from. Throws a `ShapeError` (see `ts/types.ts`) if
+    /// `font_id` is not registered or its bytes fail to re-parse.
+    #[wasm_bindgen(js_name = fontMetrics)]
+    pub fn font_metrics(&self, font_id: FontId) -> Result<JsValue, JsValue> {
+        let metrics = self.registry.font_metrics(font_id).map_err(to_js_error)?;
+        // Serialize absent `typo*` fields as JS `null` rather than the default
+        // `undefined`, so the documented `number | null` contract holds exactly.
+        metrics
+            .serialize(&serde_wasm_bindgen::Serializer::new().serialize_missing_as_null(true))
+            .map_err(to_js_error)
     }
 
     /// Shapes a single contextual text run. `request` must match the shape

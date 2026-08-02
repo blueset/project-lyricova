@@ -42,7 +42,10 @@ describe("clusterEntrance", () => {
     expect(rtl.transform.translate!.x).toBeGreaterThan(0);
     const ltr = clusterEntrance(0, "ltr");
     expect(ltr.transform.translate!.x).toBeLessThan(0);
-    expect(rtl.transform.translate!.x).toBeCloseTo(-ltr.transform.translate!.x, 6);
+    expect(rtl.transform.translate!.x).toBeCloseTo(
+      -ltr.transform.translate!.x,
+      6,
+    );
   });
 
   it("honors configurable distances/opacity", () => {

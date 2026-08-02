@@ -13,7 +13,10 @@ interface LineOptions {
   role?: number;
   minor?: boolean;
   furigana?: { content: string; leftIndex: number; rightIndex: number }[];
-  timeTag?: { duration?: number | null; tags: { index: number; timeTag: number }[] };
+  timeTag?: {
+    duration?: number | null;
+    tags: { index: number; timeTag: number }[];
+  };
   translation?: string | null;
   translations?: Record<string, string>;
 }
@@ -198,9 +201,7 @@ describe("buildLyricSegments", () => {
     );
     expect(withTrack[0]!.endTime).toBe(25);
 
-    const withoutTrack = buildLyricSegments(
-      makeLyrics([makeLine("last", 10)]),
-    );
+    const withoutTrack = buildLyricSegments(makeLyrics([makeLine("last", 10)]));
     expect(withoutTrack[0]!.endTime).toBeGreaterThan(10);
   });
 });

@@ -6,7 +6,10 @@ import {
   measureRubyInkMetrics,
 } from "./rubyInkMetrics";
 import type { GlyphOutlineCache } from "./rubyInkMetrics";
-import type { GlyphOutline, GlyphOutlineRequest } from "@lyricova/glyph-renderer";
+import type {
+  GlyphOutline,
+  GlyphOutlineRequest,
+} from "@lyricova/glyph-renderer";
 import type { RubyRun } from "./types";
 
 function fakeShaper(
@@ -66,17 +69,24 @@ function makeRun(runX: number, width: number, glyphX = 0): RubyRun {
   };
 }
 
-
 describe("measureRubyInkMetrics", () => {
   it("returns the glyph's own ascent/descent for a single glyph", () => {
     const shaper = fakeShaper(() => outline(-2, 8));
-    const result = measureRubyInkMetrics(shaper, [{ fontId: 0, glyphId: 1 }], 10);
+    const result = measureRubyInkMetrics(
+      shaper,
+      [{ fontId: 0, glyphId: 1 }],
+      10,
+    );
     expect(result).toEqual({ ascent: 8, descent: 2 });
   });
 
   it("treats a positive-yMin glyph (no descender) as zero descent, never negative", () => {
     const shaper = fakeShaper(() => outline(0, 8));
-    const result = measureRubyInkMetrics(shaper, [{ fontId: 0, glyphId: 1 }], 10);
+    const result = measureRubyInkMetrics(
+      shaper,
+      [{ fontId: 0, glyphId: 1 }],
+      10,
+    );
     expect(result.descent).toBe(0);
   });
 
@@ -128,7 +138,10 @@ describe("measureRubyInkMetrics", () => {
     const shaper = fakeShaper(() => null);
     const result = measureRubyInkMetrics(
       shaper,
-      [{ fontId: 0, glyphId: 1 }, { fontId: 0, glyphId: 2 }],
+      [
+        { fontId: 0, glyphId: 1 },
+        { fontId: 0, glyphId: 2 },
+      ],
       10,
     );
     expect(result).toEqual({ ascent: 0, descent: 0 });
@@ -158,7 +171,9 @@ describe("measureRubyInkMetrics", () => {
       seenVariations = request.variations;
       return outline(-1, 5);
     });
-    measureRubyInkMetrics(shaper, [{ fontId: 0, glyphId: 1 }], 10, ["wght=700"]);
+    measureRubyInkMetrics(shaper, [{ fontId: 0, glyphId: 1 }], 10, [
+      "wght=700",
+    ]);
     expect(seenVariations).toEqual(["wght=700"]);
   });
 });
@@ -262,7 +277,13 @@ describe("lookupGlyphOutline caching", () => {
     lookupGlyphOutline(shaper, { fontId: 1, glyphId: 1 }, 10, [], cache);
     lookupGlyphOutline(shaper, { fontId: 0, glyphId: 2 }, 10, [], cache);
     lookupGlyphOutline(shaper, { fontId: 0, glyphId: 1 }, 12, [], cache);
-    lookupGlyphOutline(shaper, { fontId: 0, glyphId: 1 }, 10, ["wght=700"], cache);
+    lookupGlyphOutline(
+      shaper,
+      { fontId: 0, glyphId: 1 },
+      10,
+      ["wght=700"],
+      cache,
+    );
     expect(shaper.calls).toHaveLength(5);
   });
 

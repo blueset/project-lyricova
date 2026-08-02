@@ -1,4 +1,5 @@
 import type {
+  FontMetrics,
   GlyphOutline,
   GlyphOutlineRequest,
   LayoutLine,
@@ -26,6 +27,10 @@ export interface CharSpec {
   leadingSpace?: number;
   /** JLReq base-expansion space inserted after this cluster. Defaults to `0`. */
   trailingSpace?: number;
+  /** Font that shaped this cluster. Defaults to `0`. */
+  fontId?: number;
+  /** Ink height above the baseline (`bounds.yMax`). Defaults to `0`. */
+  inkTop?: number;
 }
 
 /** Builds one `ShapedCluster` per entry in `chars`, laid out left-to-right starting at x=0. */
@@ -42,12 +47,14 @@ export function buildClusters(
       script = "Latn",
       leadingSpace = 0,
       trailingSpace = 0,
+      fontId = 0,
+      inkTop = 0,
     }) => {
       const source = makeSourceRange(utf16, utf16 + char.length);
       x += leadingSpace;
       const cluster: ShapedCluster = {
         source,
-        fontId: 0,
+        fontId,
         direction: "ltr",
         script,
         level: 0,
@@ -56,7 +63,7 @@ export function buildClusters(
         advance,
         leadingSpace,
         trailingSpace,
-        bounds: { xMin: 0, xMax: advance, yMin: 0, yMax: 0 },
+        bounds: { xMin: 0, xMax: advance, yMin: 0, yMax: inkTop },
         isWhitespace: char === " ",
       };
       x += advance + trailingSpace;
@@ -212,4 +219,32 @@ export function fakeGlyphOutline(
       scale: request.fontSize / 1000,
     };
   };
+}
+
+/**
+ * A fake `fontMetrics()`: per-font vertical metrics on a 1000 upem, so ruby row
+ * placement can be exercised without loading a real face.
+ *
+ * The defaults deliberately mirror {@link buildParagraphLayout}'s ascent/descent
+ * (8 / 2 at the fixtures' `fontSize` 20, i.e. 0.400 / 0.100 em) with `sTypo`
+ * equal to `hhea`. That makes the sTypo-anchored row math reduce exactly to the
+ * paragraph-metric behaviour, so a test only sees a difference when it opts in.
+ *
+ * Pass `overrides` to model the shapes that actually matter: a pan-CJK face
+ * whose `sTypo` box is the tighter *ideographic em box*, or an `OS/2` table too
+ * old to carry `sTypo*` at all (`null`).
+ */
+export function fakeFontMetrics(
+  overrides: Record<number, Partial<FontMetrics>> = {},
+): (fontId: number) => FontMetrics {
+  return (fontId) => ({
+    unitsPerEm: 1000,
+    ascender: 400,
+    descender: -100,
+    lineGap: 0,
+    typoAscender: 400,
+    typoDescender: -100,
+    typoLineGap: 0,
+    ...overrides[fontId],
+  });
 }

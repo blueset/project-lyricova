@@ -129,7 +129,9 @@ function normalizeScale(scale: number | Point | undefined): Point {
  * y-up bounds are negated). Falls back to the horizontal centre on the
  * baseline when the cluster has no ink (e.g. whitespace).
  */
-export function defaultClusterAnchor(cluster: Pick<ShapedCluster, "bounds" | "advance">): Point {
+export function defaultClusterAnchor(
+  cluster: Pick<ShapedCluster, "bounds" | "advance">,
+): Point {
   const { bounds, advance } = cluster;
   const hasInk = bounds.xMax >= bounds.xMin && bounds.yMax >= bounds.yMin;
   if (!hasInk) return { x: advance / 2, y: 0 };
@@ -159,7 +161,8 @@ export function composeClusterMatrix(
   m = multiply(m, translation(translate.x, translate.y));
   m = multiply(m, translation(anchor.x, anchor.y));
   if (rotate !== 0) m = multiply(m, rotation(rotate));
-  if (scale.x !== 1 || scale.y !== 1) m = multiply(m, scaling(scale.x, scale.y));
+  if (scale.x !== 1 || scale.y !== 1)
+    m = multiply(m, scaling(scale.x, scale.y));
   m = multiply(m, translation(-anchor.x, -anchor.y));
   return m;
 }

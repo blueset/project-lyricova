@@ -268,6 +268,21 @@ text. Vertical writing mode, RTL ruby, base-text justification, one-third ruby
   to `0`/`Infinity`, so the engine never bakes in a pixel constant. The cap wins
   over the ratio; an explicit `rubyFontSize` bypasses the whole computation.
   Glyph Canvas supplies its own bounds (10–20 px) for the player overlay.
+- **The row is anchored to `OS/2` sTypo boxes, not `hhea`.** `ParagraphLayout`
+  reports vertical metrics from the _first_ font of the chain using `hhea`,
+  which is wrong twice over: it tracks chain order rather than what actually
+  shaped the text, and `hhea` is a line box, not a typographic top (Source Han
+  reports 1.160 em there while its ideographic em box — where ideographs, kana
+  and Hangul live — tops out at 0.880 em). The row therefore uses
+  `sTypoAscender`/`sTypoDescender` of the fonts actually used: `max` over the
+  fonts shaping _annotated_ base ranges, and the deepest box across the ruby
+  fonts (`rubyVerticalMetrics.ts`). `rubyGap` then becomes the one real
+  clearance knob — with `0` the ruby's reserved descender sits exactly on the
+  base's typographic top. Since `sTypo` is a design box and not an ink bound
+  (Source Han's own Latin `g` reaches −0.257 em against a −0.120 em box), a
+  `rubyClearanceLost` issue reports any font whose ruby ink genuinely reaches
+  into the base text — ink against ink, so routine harmless overshoot stays
+  silent.
 - **The ruby row is reserved at document level.** `reserveRubyRow` is computed
   once over the whole lyrics file ("does _any_ line carry furigana?") and, when
   true, every line reserves the same deterministic row derived from the ruby
@@ -374,7 +389,7 @@ Jukebox integration layer (`src/components/public/lyrics/glyph/`):
 
 | Task                               | Command                                                                                                                                                                                           |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rust unit/integration tests        | `cd packages/glyph-renderer && cargo test` (81 tests)                                                                                                                                             |
+| Rust unit/integration tests        | `cd packages/glyph-renderer && cargo test` (87 tests)                                                                                                                                             |
 | Build the WASM + JS package        | `npm run build -w @lyricova/glyph-renderer` (needs `rustup target add wasm32-unknown-unknown`; see [development-and-build.md § 4.1](./development-and-build.md#41-glyph-renderer-wasm-artifacts)) |
 | Jukebox unit tests (glyph modules) | `npm test -w @lyricova/jukebox` (vitest)                                                                                                                                                          |
 | Jukebox browser/E2E tests          | `npm run test:browser -w @lyricova/jukebox` (Playwright: `chromium`, `firefox`, emulated `mobile-chromium`)                                                                                       |
@@ -382,10 +397,10 @@ Jukebox integration layer (`src/components/public/lyrics/glyph/`):
 
 ### Measured numbers (this environment)
 
-- `cargo test`: 81/81 passing (55 layout + 10 outline + 16 shaping).
+- `cargo test`: 87/87 passing (55 layout + 6 metrics + 10 outline + 16 shaping).
 - API Vitest suite: 147 passing across 14 files.
-- Jukebox Vitest suite: 417 passing and 1 skipped across 34 files.
-- Playwright suite: 79 passing across Chromium, Firefox, and emulated mobile
+- Jukebox Vitest suite: 438 passing and 1 skipped across 35 files.
+- Playwright suite: 83 passing across Chromium, Firefox, and emulated mobile
   Chromium.
 - Served WASM binary: 871,236 bytes (~851 KiB).
 - Font payloads (all Source Han members are `eagerFetch: false` and fetched

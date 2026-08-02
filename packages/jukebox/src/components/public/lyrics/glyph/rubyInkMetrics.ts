@@ -92,7 +92,13 @@ export function measureRubyInkMetrics(
   let ascent = 0;
   let descent = 0;
   for (const glyph of glyphs) {
-    const outline = lookupGlyphOutline(shaper, glyph, fontSize, variations, cache);
+    const outline = lookupGlyphOutline(
+      shaper,
+      glyph,
+      fontSize,
+      variations,
+      cache,
+    );
     if (!outline) continue;
     ascent = Math.max(ascent, outline.bounds.yMax);
     descent = Math.max(descent, -outline.bounds.yMin);
@@ -131,7 +137,13 @@ export function measureRubyInkHorizontalExtent(
     left = Math.min(left, run.x);
     right = Math.max(right, run.x + run.width);
     for (const glyph of run.glyphs) {
-      const outline = lookupGlyphOutline(shaper, glyph, fontSize, variations, cache);
+      const outline = lookupGlyphOutline(
+        shaper,
+        glyph,
+        fontSize,
+        variations,
+        cache,
+      );
       if (!outline) continue;
       const glyphX = run.x + glyph.x;
       left = Math.min(left, glyphX + outline.bounds.xMin);

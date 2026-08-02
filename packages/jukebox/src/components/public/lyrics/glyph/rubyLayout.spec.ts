@@ -6,6 +6,7 @@ import {
   buildClusters,
   buildLine,
   buildParagraphLayout,
+  fakeFontMetrics,
   fakeGlyphOutline,
   fakeShape,
 } from "./testFixtures";
@@ -23,6 +24,7 @@ function makeShaper(
     layoutParagraph: vi.fn(() => layoutParagraphResult),
     shape: vi.fn(shapeImpl),
     glyphOutline: vi.fn(glyphOutlineImpl),
+    fontMetrics: vi.fn(fakeFontMetrics()),
   };
 }
 
@@ -1260,5 +1262,151 @@ describe("layoutRubyParagraph: line head and end", () => {
     );
     expect(overflowIssues).toHaveLength(1);
     expect(result.rubies[0]!.inkRight).toBeLessThanOrEqual(20 + 1e-6);
+  });
+});
+
+describe("layoutRubyParagraph: sTypo-anchored ruby row", () => {
+  /** Base font 0 keeps the fixture box; font 1 is pan-CJK (tighter sTypo). */
+  const metricsShaper = (layout: ParagraphLayout, advance = 3) => ({
+    layoutParagraph: vi.fn(() => layout),
+    shape: vi.fn(fakeShape(advance)),
+    glyphOutline: vi.fn(fakeGlyphOutline()),
+    fontMetrics: vi.fn(
+      fakeFontMetrics({
+        1: {
+          ascender: 460,
+          descender: -115,
+          typoAscender: 300,
+          typoDescender: -50,
+        },
+      }),
+    ),
+  });
+
+  function layoutWith(
+    clusters: Parameters<typeof buildClusters>[0],
+    furigana: FuriganaAnnotationInput[],
+    extra: Record<string, unknown> = {},
+  ) {
+    const line = buildLine(buildClusters(clusters));
+    const shaper = metricsShaper(buildParagraphLayout([line]));
+    return layoutRubyParagraph(shaper, {
+      text: clusters.map((c) => c.char).join(""),
+      furigana,
+      fontIds: [0],
+      fontSize: 20,
+      ...extra,
+    });
+  }
+
+  it("anchors the row to the annotated base font's sTypo box", () => {
+    // Base cluster shaped by font 1: sTypo top 0.300 x 20 = 6, ruby box from
+    // font 0 (0.400/0.100 at ruby size 10) = 4 / 1.
+    // height = max(0, 6 + 0 + 1 + 4 - 8) = 3; baseline = 3 + 8 - 6 - 0 - 1 = 4.
+    const result = layoutWith(
+      [{ char: "A", advance: 10, fontId: 1 }],
+      [{ content: "x", leftIndex: 0, rightIndex: 1 }],
+    );
+    expect(result.rubyRow).toEqual({ height: 3, baseline: 4, fontSize: 10 });
+  });
+
+  it("puts the ruby's reserved descender exactly rubyGap above the base box", () => {
+    const gap = 2;
+    const result = layoutWith(
+      [{ char: "A", advance: 10, fontId: 1 }],
+      [{ content: "x", leftIndex: 0, rightIndex: 1 }],
+      { rubyGap: gap },
+    );
+    const { height, baseline } = result.rubyRow;
+    // Base sTypo top, line-relative: the row plus the line's own ascent, less
+    // the base box the anchor reserved.
+    const baseTypoTop = height + 8 - 0.3 * 20;
+    const rubyDescenderLine = baseline + 0.1 * 10;
+    expect(baseTypoTop - rubyDescenderLine).toBeCloseTo(gap, 5);
+  });
+
+  it("ignores fonts that shaped only unannotated base text", () => {
+    // "B" is shaped by the wider font 0 but carries no ruby, so it must not
+    // push the row taller.
+    const annotatedOnly = layoutWith(
+      [
+        { char: "A", advance: 10, fontId: 1 },
+        { char: "B", advance: 10, fontId: 0 },
+      ],
+      [{ content: "x", leftIndex: 0, rightIndex: 1 }],
+    );
+    expect(annotatedOnly.rubyRow.height).toBe(3);
+  });
+
+  it("collapses the row when the line's own ascent already covers the stack", () => {
+    const line = buildLine(
+      buildClusters([{ char: "A", advance: 10, fontId: 1 }]),
+      {
+        ascent: 40,
+      },
+    );
+    const shaper = metricsShaper(buildParagraphLayout([line], { ascent: 40 }));
+    const result = layoutRubyParagraph(shaper, {
+      text: "A",
+      furigana: [{ content: "x", leftIndex: 0, rightIndex: 1 }],
+      fontIds: [0],
+      fontSize: 20,
+    });
+    expect(result.rubyRow.height).toBe(0);
+    // Even collapsed, the ruby never rises above the line top.
+    expect(result.rubyRow.baseline).toBeGreaterThanOrEqual(0.4 * 10);
+  });
+
+  it("uses caller-supplied metrics so every line of a document agrees", () => {
+    const shared = { baseAscentEm: 0.5, rubyAscentEm: 0.5, rubyDescentEm: 0.2 };
+    // height = max(0, 0.5*20 + 0 + 0.2*10 + 0.5*10 - 8) = 9
+    const withRuby = layoutWith(
+      [{ char: "A", advance: 10, fontId: 1 }],
+      [{ content: "x", leftIndex: 0, rightIndex: 1 }],
+      { rubyMetrics: shared },
+    );
+    const withoutRuby = layoutWith(
+      [{ char: "A", advance: 10, fontId: 1 }],
+      [],
+      {
+        rubyMetrics: shared,
+        reserveRubyRow: true,
+      },
+    );
+    expect(withRuby.rubyRow).toEqual({ height: 9, baseline: 5, fontSize: 10 });
+    expect(withoutRuby.rubyRow).toEqual(withRuby.rubyRow);
+  });
+
+  it("reports a real ruby/base collision once per font, not every overshoot", () => {
+    // Ruby ink descends 0.9 x 10 = 9 against a 1-unit reserved descent, while
+    // the base fills its box exactly - so the two genuinely overlap.
+    const line = buildLine(
+      buildClusters([{ char: "A", advance: 10, fontId: 1, inkTop: 6 }]),
+    );
+    const shaper = {
+      ...metricsShaper(buildParagraphLayout([line])),
+      glyphOutline: vi.fn(
+        fakeGlyphOutline(() => ({ ascentRatio: 0.4, descentRatio: 0.9 })),
+      ),
+    };
+    const result = layoutRubyParagraph(shaper, {
+      text: "A",
+      furigana: [{ content: "xy", leftIndex: 0, rightIndex: 1 }],
+      fontIds: [0],
+      fontSize: 20,
+    });
+    expect(result.issues).toEqual([
+      { kind: "rubyClearanceLost", fontId: 0, overlap: 8 },
+    ]);
+
+    // A gap wide enough to absorb it silences the report.
+    const spaced = layoutRubyParagraph(shaper, {
+      text: "A",
+      furigana: [{ content: "xy", leftIndex: 0, rightIndex: 1 }],
+      fontIds: [0],
+      fontSize: 20,
+      rubyGap: 10,
+    });
+    expect(spaced.issues).toEqual([]);
   });
 });

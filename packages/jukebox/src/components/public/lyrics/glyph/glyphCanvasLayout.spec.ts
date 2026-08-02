@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  alignmentOffset,
-  stackSegmentPositions,
-} from "./glyphCanvasLayout";
+import { alignmentOffset, stackSegmentPositions } from "./glyphCanvasLayout";
 
 describe("alignmentOffset", () => {
   it("hugs the left edge for start alignment", () => {

@@ -19,6 +19,6 @@ pub use layout::{
 };
 pub use outline::{glyph_outline, GlyphBounds, GlyphOutline, GlyphOutlineRequest, PathCommand};
 pub use shaping::{
-    shape, FontId, FontRegistry, PositionedGlyph, ShapeError, ShapeRequest, ShapeResult,
-    TextDirection,
+    shape, FontId, FontMetrics, FontRegistry, PositionedGlyph, ShapeError, ShapeRequest,
+    ShapeResult, TextDirection,
 };

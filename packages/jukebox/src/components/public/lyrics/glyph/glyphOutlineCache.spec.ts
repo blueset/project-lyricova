@@ -68,7 +68,12 @@ describe("buildGlyphPath", () => {
 });
 
 function makeCache(
-  lookup: (fontId: number, glyphId: number, fontSize: number, variations: readonly string[]) => GlyphOutline | null,
+  lookup: (
+    fontId: number,
+    glyphId: number,
+    fontSize: number,
+    variations: readonly string[],
+  ) => GlyphOutline | null,
 ) {
   const created: RecordingPath[] = [];
   const cache = new GlyphPathCache({

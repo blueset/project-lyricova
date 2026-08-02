@@ -34,10 +34,16 @@ describe("affine primitives", () => {
   it("multiplies so the right operand is applied first", () => {
     // translate-then-scale vs scale-then-translate differ.
     const scaleThenTranslate = multiply(translation(10, 0), scaling(2, 2));
-    expectPointClose(apply(scaleThenTranslate, { x: 3, y: 0 }), { x: 16, y: 0 });
+    expectPointClose(apply(scaleThenTranslate, { x: 3, y: 0 }), {
+      x: 16,
+      y: 0,
+    });
 
     const translateThenScale = multiply(scaling(2, 2), translation(10, 0));
-    expectPointClose(apply(translateThenScale, { x: 3, y: 0 }), { x: 26, y: 0 });
+    expectPointClose(apply(translateThenScale, { x: 3, y: 0 }), {
+      x: 26,
+      y: 0,
+    });
   });
 
   it("treats IDENTITY as a no-op", () => {
@@ -98,7 +104,12 @@ describe("defaultClusterAnchor", () => {
   it("falls back to the baseline horizontal centre for ink-less clusters", () => {
     const anchor = defaultClusterAnchor({
       advance: 8,
-      bounds: { xMin: Infinity, xMax: -Infinity, yMin: Infinity, yMax: -Infinity },
+      bounds: {
+        xMin: Infinity,
+        xMax: -Infinity,
+        yMin: Infinity,
+        yMax: -Infinity,
+      },
     });
     expect(anchor).toEqual({ x: 4, y: 0 });
   });
@@ -117,7 +128,10 @@ describe("composeClusterMatrix", () => {
     const anchor: Point = { x: 10, y: -4 };
     const m = composeClusterMatrix(origin, { scale: 2 }, anchor);
     // The anchor maps to origin + anchor regardless of scale.
-    expectPointClose(apply(m, anchor), { x: origin.x + anchor.x, y: origin.y + anchor.y });
+    expectPointClose(apply(m, anchor), {
+      x: origin.x + anchor.x,
+      y: origin.y + anchor.y,
+    });
     // A point 1 unit right of the anchor moves to 2 units right after 2x scale.
     expectPointClose(apply(m, { x: anchor.x + 1, y: anchor.y }), {
       x: origin.x + anchor.x + 2,
@@ -126,7 +140,11 @@ describe("composeClusterMatrix", () => {
   });
 
   it("applies translation on top of the origin", () => {
-    const m = composeClusterMatrix(origin, { translate: { x: 7, y: -3 } }, { x: 0, y: 0 });
+    const m = composeClusterMatrix(
+      origin,
+      { translate: { x: 7, y: -3 } },
+      { x: 0, y: 0 },
+    );
     expectPointClose(apply(m, { x: 0, y: 0 }), { x: 107, y: 47 });
   });
 
@@ -206,7 +224,12 @@ describe("clusterFillExtent", () => {
     const extent = clusterFillExtent(
       {
         advance: 12,
-        bounds: { xMin: Infinity, xMax: -Infinity, yMin: Infinity, yMax: -Infinity },
+        bounds: {
+          xMin: Infinity,
+          xMax: -Infinity,
+          yMin: Infinity,
+          yMax: -Infinity,
+        },
       },
       line,
     );

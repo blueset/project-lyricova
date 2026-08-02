@@ -3,6 +3,8 @@ import init, {
   lineBreakOpportunities as rawLineBreakOpportunities,
 } from "../pkg/glyph_renderer.js";
 import type {
+  FontId,
+  FontMetrics,
   GlyphOutline,
   GlyphOutlineRequest,
   LineBreak,
@@ -84,6 +86,24 @@ export class GlyphShaper {
   /** Returns the number of currently registered fonts. */
   fontCount(): number {
     return this.inner.fontCount();
+  }
+
+  /**
+   * Reads a registered font's vertical metrics in the font's own design units
+   * (divide by {@link FontMetrics.unitsPerEm} for em-relative values): the
+   * `hhea`-derived `ascender`/`descender`/`lineGap` and the OS/2 sTypo
+   * `typoAscender`/`typoDescender`/`typoLineGap`.
+   *
+   * Prefer the `typo*` fields when anchoring secondary text (e.g. ruby) to a
+   * base run: on pan-CJK fonts they describe the ideographic em box, a
+   * script-neutral anchor that does not drift with the fallback font mix (see
+   * {@link FontMetrics}). The three `typo*` fields are `null` when the font has
+   * no OS/2 table.
+   *
+   * @throws {Error} if `fontId` is not registered or its bytes fail to re-parse.
+   */
+  fontMetrics(fontId: FontId): FontMetrics {
+    return this.inner.fontMetrics(fontId) as FontMetrics;
   }
 
   /**

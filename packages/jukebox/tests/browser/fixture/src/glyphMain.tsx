@@ -374,6 +374,11 @@ interface RubySummary {
   height: number;
   width: number;
   rubyRow: { height: number; baseline: number; fontSize: number };
+  rubyMetrics: {
+    baseAscentEm: number;
+    rubyAscentEm: number;
+    rubyDescentEm: number;
+  } | null;
   rubies: {
     mode: string;
     lineIndex: number;
@@ -409,6 +414,7 @@ async function ruby(req: {
   maxWidth?: number | null;
   reserveRubyRow?: boolean;
   rubyFontSizeMax?: number;
+  rubyGap?: number;
 }): Promise<RubySummary> {
   const fontIds = await ensureFonts(
     req.fontChain ?? ["source-han-sans-vf-otf"],
@@ -425,6 +431,7 @@ async function ruby(req: {
     maxWidth: req.maxWidth ?? null,
     reserveRubyRow: req.reserveRubyRow,
     rubyFontSizeMax: req.rubyFontSizeMax,
+    rubyGap: req.rubyGap,
     language: "ja",
     onInvalidAnnotation: "skip",
   });
@@ -433,6 +440,7 @@ async function ruby(req: {
     height: result.height,
     width: result.width,
     rubyRow: { ...result.rubyRow },
+    rubyMetrics: result.rubyMetrics ? { ...result.rubyMetrics } : null,
     rubies: result.rubies.map((r) => ({
       mode: r.mode,
       lineIndex: r.lineIndex,

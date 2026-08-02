@@ -11,14 +11,11 @@ describe("assertFinitePositiveSize", () => {
     expect(() => assertFinitePositiveSize(0.001, "fontSize")).not.toThrow();
   });
 
-  it.each([0, -1, NaN, Infinity, -Infinity])(
-    "rejects %s",
-    (value) => {
-      expect(() => assertFinitePositiveSize(value, "fontSize")).toThrow(
-        RubyLayoutOptionsError,
-      );
-    },
-  );
+  it.each([0, -1, NaN, Infinity, -Infinity])("rejects %s", (value) => {
+    expect(() => assertFinitePositiveSize(value, "fontSize")).toThrow(
+      RubyLayoutOptionsError,
+    );
+  });
 
   it("includes the field name and value in the error message", () => {
     expect(() => assertFinitePositiveSize(NaN, "rubyFontSize")).toThrow(
@@ -33,12 +30,9 @@ describe("assertFiniteNonNegative", () => {
     expect(() => assertFiniteNonNegative(5, "rubyGap")).not.toThrow();
   });
 
-  it.each([-1, -0.001, NaN, Infinity, -Infinity])(
-    "rejects %s",
-    (value) => {
-      expect(() => assertFiniteNonNegative(value, "rubyGap")).toThrow(
-        RubyLayoutOptionsError,
-      );
-    },
-  );
+  it.each([-1, -0.001, NaN, Infinity, -Infinity])("rejects %s", (value) => {
+    expect(() => assertFiniteNonNegative(value, "rubyGap")).toThrow(
+      RubyLayoutOptionsError,
+    );
+  });
 });

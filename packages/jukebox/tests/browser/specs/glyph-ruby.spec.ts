@@ -282,3 +282,55 @@ test("keeps each base+ruby pair unbreakable while wrapping between pairs", async
     expect(advance).toBeCloseTo(advances[0], 3);
   }
 });
+
+test("anchors the ruby row to the base font's ideographic em box", async ({
+  page,
+}) => {
+  const result = await page.evaluate(
+    (chain) =>
+      window.__glyph.ruby({
+        text: "明日は晴れ",
+        furigana: [{ content: "あした", leftIndex: 0, rightIndex: 2 }],
+        fontChain: chain,
+        fontSize: 32,
+      }),
+    KANA,
+  );
+
+  // Source Han's sTypo box is the ideographic em box (0.880 / -0.120), far
+  // tighter than its hhea line box (1.160 / -0.288). Anchoring to the former is
+  // what keeps ruby sitting on the kanji rather than floating above them.
+  expect(result.rubyMetrics).toEqual({
+    baseAscentEm: 0.88,
+    rubyAscentEm: 0.88,
+    rubyDescentEm: 0.12,
+  });
+
+  // With no gap the ruby's reserved descender lands exactly on that box top.
+  // `lines[].baseline` is already the adjusted (row-inclusive) baseline.
+  const baseTypoTop = result.lines[0].baseline - 0.88 * 32;
+  expect(result.rubyRow.baseline + 0.12 * 16).toBeCloseTo(baseTypoTop, 3);
+});
+
+test("rubyGap is the only clearance between the ruby row and the base box", async ({
+  page,
+}) => {
+  const measure = async (rubyGap: number) => {
+    const r = await page.evaluate(
+      ({ chain, gap }) =>
+        window.__glyph.ruby({
+          text: "明日は晴れ",
+          furigana: [{ content: "あした", leftIndex: 0, rightIndex: 2 }],
+          fontChain: chain,
+          fontSize: 32,
+          rubyGap: gap,
+        }),
+      { chain: KANA, gap: rubyGap },
+    );
+    const baseTypoTop = r.lines[0].baseline - 0.88 * 32;
+    return baseTypoTop - (r.rubyRow.baseline + 0.12 * 16);
+  };
+
+  expect(await measure(0)).toBeCloseTo(0, 3);
+  expect(await measure(6)).toBeCloseTo(6, 3);
+});

@@ -375,6 +375,74 @@ describe.skipIf(SKIP_WASM_INTEGRATION)(
       expect(inside[2]!.leadingSpace).toBe(0);
     });
 
+    it("anchors the ruby row to the base font's ideographic em box, not its hhea line box", () => {
+      // TsimSans reports hhea 1.160/-0.288 but its sTypo box is the ideographic
+      // em box, 0.880/-0.120. Anchoring to the latter is what stops ruby from
+      // floating 0.21em above the kanji it annotates.
+      const metrics = shaper.fontMetrics(fontId);
+      expect(metrics.unitsPerEm).toBe(1000);
+      expect(metrics.ascender).toBe(1160);
+      expect(metrics.typoAscender).toBe(880);
+
+      const result = layoutRubyParagraph(shaper, {
+        text: "明日は晴れ",
+        furigana: [{ content: "あした", leftIndex: 0, rightIndex: 2 }],
+        fontIds: [fontId],
+        fontSize: 32,
+      });
+
+      expect(result.rubyMetrics).toEqual({
+        baseAscentEm: 0.88,
+        rubyAscentEm: 0.88,
+        rubyDescentEm: 0.12,
+      });
+
+      // With rubyGap 0 the ruby's reserved descender sits exactly on the base's
+      // ideographic top.
+      const { height, baseline } = result.rubyRow;
+      const baseTypoTop = height + result.lines[0]!.line.baseline - 0.88 * 32;
+      expect(baseline + 0.12 * 16).toBeCloseTo(baseTypoTop, 4);
+
+      // And that is materially tighter than the hhea-derived row would be.
+      expect(height).toBeLessThan((1.16 + 0.288) * 16);
+    });
+
+    it("keeps ruby fixed relative to the base when a Latin font joins the chain", () => {
+      // The Latin face sorts first in the chain, so anything anchored to
+      // `faces[0]` moves with it. The sTypo anchor only counts fonts that
+      // shaped *annotated base* text, so the ruby-to-base relationship holds.
+      const japaneseOnly = layoutRubyParagraph(shaper, {
+        text: "明日は晴れ",
+        furigana: [{ content: "あした", leftIndex: 0, rightIndex: 2 }],
+        fontIds: [fontId],
+        fontSize: 32,
+      });
+      const withLatinFirst = layoutRubyParagraph(shaper, {
+        text: "明日は晴れ",
+        furigana: [{ content: "あした", leftIndex: 0, rightIndex: 2 }],
+        fontIds: [latinFontId, fontId],
+        fontSize: 32,
+      });
+
+      expect(withLatinFirst.rubyMetrics).toEqual(japaneseOnly.rubyMetrics);
+
+      // Distance from the base baseline up to the ruby baseline: identical.
+      const drop = (r: typeof japaneseOnly) =>
+        r.lines[0]!.baseline - r.rubyRow.baseline;
+      expect(drop(withLatinFirst)).toBeCloseTo(drop(japaneseOnly), 4);
+
+      // The line *box* still differs, because ParagraphLayout.ascent is taken
+      // from the chain's first font (hhea 800 for the static Latin face vs 1160
+      // for the Japanese one). The reserved row absorbs exactly that
+      // difference, which is why the ruby itself does not move.
+      const ascentDelta =
+        japaneseOnly.lines[0]!.line.baseline -
+        withLatinFirst.lines[0]!.line.baseline;
+      expect(
+        withLatinFirst.rubyRow.height - japaneseOnly.rubyRow.height,
+      ).toBeCloseTo(ascentDelta, 4);
+    });
+
     it("measures different ink metrics for the same ruby content shaped with a different fallback font", () => {
       const text = "山";
       const contentSameFont: FuriganaAnnotationInput[] = [

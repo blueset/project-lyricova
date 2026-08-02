@@ -5,6 +5,7 @@ export * from "./glyphMetrics";
 export * from "./linePlacement";
 export * from "./rubyPlacement";
 export * from "./rubyOverhang";
+export * from "./rubyVerticalMetrics";
 export * from "./rubyInkMetrics";
 export * from "./layoutOptionsValidation";
 export * from "./rubyLayout";

@@ -1,5 +1,14 @@
-import type { LayoutLine, ParagraphLayout, ShapedCluster } from "@lyricova/glyph-renderer";
-import type { Affine, ClusterTransform, FillDirection, Point } from "./canvasGlyphGeometry";
+import type {
+  LayoutLine,
+  ParagraphLayout,
+  ShapedCluster,
+} from "@lyricova/glyph-renderer";
+import type {
+  Affine,
+  ClusterTransform,
+  FillDirection,
+  Point,
+} from "./canvasGlyphGeometry";
 import {
   clamp01,
   clusterFillExtent,
@@ -46,7 +55,14 @@ export interface GlyphCanvasContext {
   fillStyle: string | CanvasGradient | CanvasPattern;
   save(): void;
   restore(): void;
-  transform(a: number, b: number, c: number, d: number, e: number, f: number): void;
+  transform(
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    e: number,
+    f: number,
+  ): void;
   beginPath(): void;
   rect(x: number, y: number, w: number, h: number): void;
   clip(): void;

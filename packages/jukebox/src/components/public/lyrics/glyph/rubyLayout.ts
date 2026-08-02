@@ -16,6 +16,11 @@ import {
 } from "./linePlacement";
 import { isMonoEligible, placeGroupRuby, placeMonoRuby } from "./rubyPlacement";
 import {
+  collectRubyClearanceLoss,
+  resolveRubyVerticalMetrics,
+  type RubyVerticalMetrics,
+} from "./rubyVerticalMetrics";
+import {
   capBudgetToGlyph,
   isFixedWidthRun,
   resolveOverhangBudget,
@@ -251,12 +256,30 @@ export function layoutRubyParagraph(
     resolveCollisions(pendingList, rubyFontSize, epsilon, issues, furigana);
   }
 
+  const placements = [...pendingByLine.values()].flat();
+  const verticalMetrics =
+    request.rubyMetrics ??
+    resolveRubyVerticalMetrics(
+      shaper,
+      annotatedBaseFonts(paragraphLayout, placements),
+      rubyFonts(placements),
+    );
   const rubyRow = resolveRubyRowMetrics(
     paragraphLayout,
     fontSize,
     rubyFontSize,
     rubyGap,
     reserveRubyRow ?? pendingByLine.size > 0,
+    verticalMetrics,
+  );
+  reportRubyClearanceLoss(
+    paragraphLayout,
+    placements,
+    verticalMetrics,
+    fontSize,
+    rubyFontSize,
+    rubyGap,
+    issues,
   );
   const adjustedMetrics = computeAdjustedLineMetrics(
     paragraphLayout.lines,
@@ -296,6 +319,7 @@ export function layoutRubyParagraph(
     width: lines.reduce((max, line) => Math.max(max, line.occupiedWidth), 0),
     baseDirection: paragraphLayout.baseDirection,
     rubyRow,
+    rubyMetrics: verticalMetrics,
     rubies: lines.flatMap((line) => line.rubies),
     issues,
     missingFontRanges: paragraphLayout.missingFontRanges ?? [],
@@ -345,11 +369,26 @@ export function resolveRubyFontSize(request: {
 /**
  * Deterministic geometry of the ruby row reserved above every line.
  *
- * The row height comes from the resolved ruby font size scaled by the base
- * font's own em-relative ascent/descent, plus `rubyGap` - never from measured
- * ink. Per-annotation ink metrics are still recorded on each
- * {@link RubyPlacement} for clipping/bounds, but letting them drive line
- * advance would make it depend on which lines happen to carry furigana.
+ * The row is anchored to the **typographic boxes** of the fonts in use (see
+ * {@link RubyVerticalMetrics}), never to measured ink, so line advance cannot
+ * depend on which lines happen to carry furigana:
+ *
+ * ```text
+ *   line top ─────────────────────────  y = 0
+ *              rubyAscent
+ *   ruby baseline ───────────────────
+ *              rubyDescent
+ *              rubyGap                  ← the only tunable clearance
+ *   base sTypo top ──────────────────
+ *              baseAscent
+ *   base baseline ───────────────────   y = height + paragraphAscent
+ * ```
+ *
+ * The reserved `height` is therefore whatever the stack above needs *beyond*
+ * the line's own ascent. When the paragraph's ascent already exceeds it the
+ * row collapses to `0` and the ruby simply sits inside the existing ascent -
+ * still never above the line top, since `height` only clamps once
+ * `paragraphAscent >= baseAscent + rubyGap + rubyDescent + rubyAscent`.
  */
 export function resolveRubyRowMetrics(
   paragraph: Pick<ParagraphLayout, "ascent" | "descent">,
@@ -357,15 +396,111 @@ export function resolveRubyRowMetrics(
   rubyFontSize: number,
   rubyGap: number,
   reserve: boolean,
+  metrics: RubyVerticalMetrics | null,
 ): RubyRowMetrics {
   if (!reserve) return { height: 0, baseline: 0, fontSize: rubyFontSize };
-  const ascent = (paragraph.ascent / fontSize) * rubyFontSize;
-  const descent = (paragraph.descent / fontSize) * rubyFontSize;
+
+  // Without usable font metrics, fall back to the paragraph's own (hhea-based)
+  // ratios: less faithful, but never worse than having no row at all.
+  const resolved = metrics ?? {
+    baseAscentEm: paragraph.ascent / fontSize,
+    rubyAscentEm: paragraph.ascent / fontSize,
+    rubyDescentEm: paragraph.descent / fontSize,
+  };
+
+  const baseAscent = resolved.baseAscentEm * fontSize;
+  const rubyAscent = resolved.rubyAscentEm * rubyFontSize;
+  const rubyDescent = resolved.rubyDescentEm * rubyFontSize;
+  const height = Math.max(
+    0,
+    baseAscent + rubyGap + rubyDescent + rubyAscent - paragraph.ascent,
+  );
   return {
-    height: ascent + descent + rubyGap,
-    baseline: ascent,
+    height,
+    baseline: height + paragraph.ascent - baseAscent - rubyGap - rubyDescent,
     fontSize: rubyFontSize,
   };
+}
+
+/**
+ * Fonts that shaped base clusters inside an *annotated* range. Unannotated runs
+ * are excluded on purpose: nothing is placed above them, so their box must not
+ * inflate the ruby row.
+ */
+function annotatedBaseFonts(
+  paragraph: ParagraphLayout,
+  placements: readonly PendingRubyPlacement[],
+): Set<number> {
+  const fonts = new Set<number>();
+  for (const placement of placements) {
+    const [start, end] = placement.annotation.utf16Range;
+    for (const cluster of paragraph.lines[placement.lineIndex]!.clusters) {
+      if (
+        cluster.source.utf16Start >= start &&
+        cluster.source.utf16End <= end
+      ) {
+        fonts.add(cluster.fontId);
+      }
+    }
+  }
+  return fonts;
+}
+
+/** Fonts that shaped ruby glyphs; the ruby chain may fall back per grapheme. */
+function rubyFonts(placements: readonly PendingRubyPlacement[]): Set<number> {
+  const fonts = new Set<number>();
+  for (const placement of placements) {
+    for (const run of placement.runs) {
+      for (const glyph of run.glyphs) fonts.add(glyph.fontId);
+    }
+  }
+  return fonts;
+}
+
+/**
+ * Records ruby that actually reaches into the base text, once per ruby font.
+ *
+ * See `collectRubyClearanceLoss` for why this compares ink against ink rather
+ * than against the declared `sTypo` box: fonts overshoot that box routinely and
+ * harmlessly, so only a genuine collision is worth reporting.
+ */
+function reportRubyClearanceLoss(
+  paragraph: ParagraphLayout,
+  placements: readonly PendingRubyPlacement[],
+  metrics: RubyVerticalMetrics | null,
+  fontSize: number,
+  rubyFontSize: number,
+  rubyGap: number,
+  issues: RubyLayoutIssue[],
+): void {
+  if (!metrics || placements.length === 0) return;
+
+  const annotations = placements.map((placement) => {
+    const [start, end] = placement.annotation.utf16Range;
+    let baseInkTop = 0;
+    for (const cluster of paragraph.lines[placement.lineIndex]!.clusters) {
+      if (
+        cluster.source.utf16Start >= start &&
+        cluster.source.utf16End <= end
+      ) {
+        baseInkTop = Math.max(baseInkTop, cluster.bounds.yMax);
+      }
+    }
+    return {
+      rubyFontIds: rubyFonts([placement]),
+      baseInkTop,
+      rubyInkDescent: placement.inkDescent,
+    };
+  });
+
+  const losses = collectRubyClearanceLoss(annotations, {
+    baseTypoTop: metrics.baseAscentEm * fontSize,
+    rubyReservedDescent: metrics.rubyDescentEm * rubyFontSize,
+    rubyGap,
+  });
+  for (const loss of losses) {
+    issues.push({ kind: "rubyClearanceLost", ...loss });
+  }
 }
 
 function prepareAnnotation(

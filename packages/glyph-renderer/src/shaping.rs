@@ -179,6 +179,30 @@ pub struct ShapeResult {
     pub missing_font_ranges: Vec<(u32, u32)>,
 }
 
+/// Vertical metrics of one registered font, in **font design units**
+/// (divide by `units_per_em` for em-relative values).
+///
+/// The `typo_*` fields come from the font's `OS/2` table and are the correct
+/// anchor for aligning secondary text (e.g. ruby) to the primary run's em box;
+/// the plain `ascender`/`descender`/`line_gap` are `hhea`-derived line metrics.
+/// See [`FontRegistry::font_metrics`] for how they are read.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FontMetrics {
+    pub units_per_em: u16,
+    /// `hhea.ascender` (or the OS/2 usWin/typo fallback ttf-parser applies).
+    pub ascender: i16,
+    /// `hhea.descender`, negative below the baseline.
+    pub descender: i16,
+    pub line_gap: i16,
+    /// `OS/2.sTypoAscender`, or `None` when the table predates it.
+    pub typo_ascender: Option<i16>,
+    /// `OS/2.sTypoDescender` (negative below the baseline), or `None`.
+    pub typo_descender: Option<i16>,
+    /// `OS/2.sTypoLineGap`, or `None`.
+    pub typo_line_gap: Option<i16>,
+}
+
 struct FontEntry {
     bytes: Vec<u8>,
     face_index: u32,
@@ -235,6 +259,29 @@ impl FontRegistry {
     pub(crate) fn face(&self, id: FontId) -> Result<Face<'_>, ShapeError> {
         let entry = self.fonts.get(&id).ok_or(ShapeError::UnknownFont(id))?;
         Face::from_slice(&entry.bytes, entry.face_index).ok_or(ShapeError::InvalidFont)
+    }
+
+    /// Reads the vertical [`FontMetrics`] of a registered font, in that font's
+    /// own design units (see [`FontMetrics`] for turning them em-relative).
+    ///
+    /// Fails with [`ShapeError::UnknownFont`] for an unregistered `id` and
+    /// [`ShapeError::InvalidFont`] if the stored bytes fail to re-parse (the
+    /// same errors font resolution reports elsewhere in the crate).
+    pub fn font_metrics(&self, id: FontId) -> Result<FontMetrics, ShapeError> {
+        // Read metrics off the underlying `ttf_parser` face: its
+        // `units_per_em()` returns the `u16` design grid, whereas the
+        // `rustybuzz` wrapper shadows that accessor with an `i32`.
+        let face = self.face(id)?;
+        let face: &rustybuzz::ttf_parser::Face<'_> = face.as_ref();
+        Ok(FontMetrics {
+            units_per_em: face.units_per_em(),
+            ascender: face.ascender(),
+            descender: face.descender(),
+            line_gap: face.line_gap(),
+            typo_ascender: face.typographic_ascender(),
+            typo_descender: face.typographic_descender(),
+            typo_line_gap: face.typographic_line_gap(),
+        })
     }
 
     /// Resolves an ordered fallback chain of [`FontId`]s into parsed faces,

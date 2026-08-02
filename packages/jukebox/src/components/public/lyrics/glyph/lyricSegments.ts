@@ -79,7 +79,10 @@ function maxFiniteTagTime(
 ): number | undefined {
   let max: number | undefined;
   for (const tag of tags) {
-    if (Number.isFinite(tag.timeTag) && (max === undefined || tag.timeTag > max)) {
+    if (
+      Number.isFinite(tag.timeTag) &&
+      (max === undefined || tag.timeTag > max)
+    ) {
       max = tag.timeTag;
     }
   }
@@ -114,7 +117,9 @@ function resolveEndTime(
     durationEnd,
     nextLine?.position,
     options.trackDuration ?? undefined,
-  ].filter((v): v is number => v != null && Number.isFinite(v) && v > startTime);
+  ].filter(
+    (v): v is number => v != null && Number.isFinite(v) && v > startTime,
+  );
 
   if (candidates.length > 0) {
     // The line's own timed extent wins when present so overlaps are preserved;

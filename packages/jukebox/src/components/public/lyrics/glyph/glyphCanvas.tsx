@@ -44,7 +44,8 @@ import {
 import { createGlyphShaper, initGlyphRuntime } from "./fontLoader";
 import { GlyphFontManager, type GlyphFontSelection } from "./glyphFontManager";
 import { layoutRubyParagraph } from "./rubyLayout";
-import type { RubyLayoutResult } from "./types";
+import type { RubyLayoutIssue, RubyLayoutResult } from "./types";
+import type { RubyVerticalMetrics } from "./rubyVerticalMetrics";
 
 /**
  * Proof-of-concept "Glyph Canvas" lyric renderer built on
@@ -118,6 +119,72 @@ const BASE_FALLBACK_PROBE = " ";
 const RUBY_FONT_SIZE_MAX = 20;
 /** Floor for the same reason, so ruby stays legible on a narrow viewport. */
 const RUBY_FONT_SIZE_MIN = 10;
+/**
+ * Clearance between the ruby row and the base text's typographic top, as a
+ * fraction of the ruby size.
+ *
+ * The layout anchors the row to the base font's `OS/2` sTypo box, so with a gap
+ * of `0` the two boxes touch exactly. A small positive gap both looks better
+ * and absorbs the fonts that draw past their declared box (see the
+ * `rubyClearanceLost` issue).
+ */
+const RUBY_GAP_EM = 0.25;
+
+/**
+ * Ruby layout issues are non-fatal by contract, so the layout returns them
+ * rather than throwing. Without a consumer they would vanish silently, which
+ * makes a genuine problem (a malformed furigana range, ruby colliding with the
+ * base text) invisible in a browser.
+ *
+ * Each distinct issue is logged once per line and kind: layouts are cached, but
+ * a resize re-runs them at a new font size, and repeating the same warning on
+ * every resize frame would be worse than useless. `console.warn` rather than
+ * `error` because every one of them is recovered from - the annotation is
+ * skipped, clamped, or nudged - and none stops the render.
+ */
+const reportedRubyIssues = new Set<string>();
+
+export function reportRubyIssues(
+  lineIndex: number,
+  issues: readonly RubyLayoutIssue[],
+): void {
+  for (const issue of issues) {
+    const key = `${lineIndex}\u0000${issue.kind}`;
+    if (reportedRubyIssues.has(key)) continue;
+    reportedRubyIssues.add(key);
+    console.warn(
+      `[GlyphCanvas] ruby layout issue on line ${lineIndex + 1}: ${issue.kind}`,
+      issue,
+    );
+  }
+}
+
+/**
+ * Widens the document-level ruby anchors to cover `candidate`. Returns `true`
+ * when anything grew, which invalidates rows computed from the narrower value.
+ */
+function widenRubyMetrics(
+  ref: { current: RubyVerticalMetrics | null },
+  candidate: RubyVerticalMetrics | null,
+): boolean {
+  if (!candidate) return false;
+  const current = ref.current;
+  if (!current) {
+    ref.current = { ...candidate };
+    return true;
+  }
+  const merged: RubyVerticalMetrics = {
+    baseAscentEm: Math.max(current.baseAscentEm, candidate.baseAscentEm),
+    rubyAscentEm: Math.max(current.rubyAscentEm, candidate.rubyAscentEm),
+    rubyDescentEm: Math.max(current.rubyDescentEm, candidate.rubyDescentEm),
+  };
+  const grew =
+    merged.baseAscentEm > current.baseAscentEm ||
+    merged.rubyAscentEm > current.rubyAscentEm ||
+    merged.rubyDescentEm > current.rubyDescentEm;
+  if (grew) ref.current = merged;
+  return grew;
+}
 
 function getDevicePixelRatio(): number {
   if (typeof window === "undefined") return 1;
@@ -185,6 +252,11 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
   // awaiting; misses kick off an async preparation.
   const selectionCacheRef = useRef<Map<string, GlyphFontSelection>>(new Map());
   // Texts with an in-flight `ensureFontsFor(...)` preparation (per-text dedupe).
+  // Document-level ruby anchors. Each paragraph reports the boxes of the fonts
+  // it actually used; widening a shared value and dropping stale layouts keeps
+  // every line's ruby row identical instead of letting it track each line's own
+  // script. Monotonic, so it converges after the first few distinct scripts.
+  const rubyMetricsRef = useRef<RubyVerticalMetrics | null>(null);
   const preparingRef = useRef<Set<string>>(new Set());
   // Texts whose escalation decision has already been made, so escalation can
   // never loop (each text is considered exactly once).
@@ -275,7 +347,15 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
           fontSize,
           rubyFontSizeMin: RUBY_FONT_SIZE_MIN,
           rubyFontSizeMax: RUBY_FONT_SIZE_MAX,
+          rubyGap:
+            Math.min(
+              Math.max(fontSize * 0.5, RUBY_FONT_SIZE_MIN),
+              RUBY_FONT_SIZE_MAX,
+            ) * RUBY_GAP_EM,
           reserveRubyRow,
+          ...(rubyMetricsRef.current
+            ? { rubyMetrics: rubyMetricsRef.current }
+            : {}),
           maxWidth,
           wrapStrategy: "balanced",
           phraseRanges,
@@ -284,6 +364,11 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
           features: [...GLYPH_FEATURES],
           variations: [...GLYPH_VARIATIONS],
         });
+        reportRubyIssues(segment.lineIndex, result.issues);
+        if (widenRubyMetrics(rubyMetricsRef, result.rubyMetrics)) {
+          // The shared anchors grew, so every cached row height is now stale.
+          layoutCacheRef.current.clear();
+        }
         layoutCacheRef.current.set(key, result);
         return result;
       } catch (err) {

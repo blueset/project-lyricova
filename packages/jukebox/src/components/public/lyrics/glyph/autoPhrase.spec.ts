@@ -111,13 +111,16 @@ describe("autoPhraseRanges", () => {
   it.each([
     ["zh-Hans", "是今天的天气。"],
     ["zh-Hant", "是今天的天氣。"],
-  ] as const)("uses the real %s model when explicitly hinted", (language, text) => {
-    const result = autoPhraseRanges(text, { language });
-    expect(result.phraseRanges).toEqual([
-      [0, 1],
-      [1, 3],
-      [3, 4],
-      [4, 7],
-    ]);
-  });
+  ] as const)(
+    "uses the real %s model when explicitly hinted",
+    (language, text) => {
+      const result = autoPhraseRanges(text, { language });
+      expect(result.phraseRanges).toEqual([
+        [0, 1],
+        [1, 3],
+        [3, 4],
+        [4, 7],
+      ]);
+    },
+  );
 });

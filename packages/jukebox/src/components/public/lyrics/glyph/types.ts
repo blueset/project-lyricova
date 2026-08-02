@@ -1,5 +1,6 @@
 import type {
   FontId,
+  FontMetrics,
   GlyphOutline,
   GlyphOutlineRequest,
   LayoutLine,
@@ -13,6 +14,7 @@ import type {
   TextDirection,
 } from "@lyricova/glyph-renderer";
 import type { JlreqCharClass } from "./jlreqCharClass";
+import type { RubyVerticalMetrics } from "./rubyVerticalMetrics";
 
 /**
  * Minimal surface of `GlyphShaper` this layer depends on. Consumers pass a
@@ -29,6 +31,13 @@ export interface RubyLayoutShaper {
   shape(request: ShapeRequest): ShapeResult;
   layoutParagraph(request: ParagraphRequest): ParagraphLayout;
   glyphOutline(request: GlyphOutlineRequest): GlyphOutline | null;
+  /**
+   * Vertical metrics of one registered font. Used to anchor the ruby row to
+   * the `OS/2` **sTypo** box of the fonts that actually shaped the text,
+   * instead of the chain's first font's `hhea` line box - see
+   * `rubyVerticalMetrics.ts` for why that distinction matters.
+   */
+  fontMetrics(fontId: FontId): FontMetrics;
 }
 
 /**
@@ -116,6 +125,23 @@ export type RubyLayoutIssue =
       other: FuriganaAnnotationInput;
       /** Overlap, in layout units, that overhang reduction could not remove. */
       shortfall: number;
+    }
+  | {
+      /**
+       * Ruby ink shaped with this font actually reaches into the base text
+       * below it. Reported once per ruby font rather than per annotation,
+       * because it follows from the font's design (its ink descends further
+       * than the `OS/2` sTypo box the row is anchored to) rather than from one
+       * line. The remedy is a larger `rubyGap`.
+       *
+       * Fonts overshooting their sTypo box is normal and harmless on its own,
+       * so this fires only on a genuine collision - see
+       * `collectRubyClearanceLoss` in `rubyVerticalMetrics.ts`.
+       */
+      kind: "rubyClearanceLost";
+      fontId: FontId;
+      /** How far ruby ink and base ink overlap, in layout units. */
+      overlap: number;
     }
   | {
       /**
@@ -212,6 +238,17 @@ export interface RubyLayoutOptions {
    * `rubyOverhang.ts` for how the per-side budgets are resolved.
    */
   rubyOverhang?: Partial<Record<JlreqCharClass, number>>;
+  /**
+   * Shared vertical anchors for the ruby row (see {@link RubyVerticalMetrics}).
+   *
+   * Like {@link RubyLayoutOptions.reserveRubyRow} this is a **document-level**
+   * decision: computed once over the whole lyrics file and passed to every
+   * paragraph, so line advance and ruby height stay identical across lines
+   * whose scripts - and therefore whose fonts - differ. When omitted they are
+   * derived from the fonts this paragraph actually used, which is correct in
+   * isolation but varies between paragraphs.
+   */
+  rubyMetrics?: RubyVerticalMetrics;
   baseDirection?: TextDirection;
   script?: string | null;
   language?: string | null;
@@ -372,6 +409,16 @@ export interface RubyLayoutResult {
   baseDirection: TextDirection;
   /** Deterministic geometry of the reserved ruby row (see {@link RubyRowMetrics}). */
   rubyRow: RubyRowMetrics;
+  /**
+   * The vertical anchors the row was built from - either the caller's
+   * {@link RubyLayoutOptions.rubyMetrics} or the ones derived from the fonts
+   * this paragraph used. `null` when no font was involved (no ruby, no
+   * caller-supplied value).
+   *
+   * Exposed so a caller laying out many paragraphs can widen a shared value
+   * across the document and re-run with it, keeping every line's row identical.
+   */
+  rubyMetrics: RubyVerticalMetrics | null;
   rubies: RubyPlacement[];
   issues: RubyLayoutIssue[];
   /**

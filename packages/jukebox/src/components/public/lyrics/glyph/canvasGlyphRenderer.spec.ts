@@ -13,10 +13,7 @@ import {
   type Affine,
   type Point,
 } from "./canvasGlyphGeometry";
-import {
-  GlyphPathCache,
-  type CanvasPathReceiver,
-} from "./glyphOutlineCache";
+import { GlyphPathCache, type CanvasPathReceiver } from "./glyphOutlineCache";
 import {
   drawParagraph,
   type ClusterRenderStyle,
@@ -82,7 +79,14 @@ class RecordingContext implements GlyphCanvasContext {
       this.fillStyle = state.fillStyle;
     }
   }
-  transform(a: number, b: number, c: number, d: number, e: number, f: number): void {
+  transform(
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    e: number,
+    f: number,
+  ): void {
     this.current = multiply(this.current, [a, b, c, d, e, f]);
   }
   beginPath(): void {}
@@ -178,10 +182,7 @@ function paragraph(lines: LayoutLine[]): ParagraphLayout {
 /** Cache whose lookup returns a stub outline for every glyph except id 0 (a
  * "space" with no outline). */
 function makeCache() {
-  const lookup = (
-    _fontId: number,
-    glyphId: number,
-  ): GlyphOutline | null => {
+  const lookup = (_fontId: number, glyphId: number): GlyphOutline | null => {
     if (glyphId === 0) return null;
     return {
       commands: [{ type: "moveTo", x: 0, y: 0 }],
@@ -193,11 +194,14 @@ function makeCache() {
   };
   return new GlyphPathCache({
     lookup,
-    createPath2D: () => new FakePath() as unknown as Path2D & CanvasPathReceiver,
+    createPath2D: () =>
+      new FakePath() as unknown as Path2D & CanvasPathReceiver,
   });
 }
 
-const solidStyle = (overrides: Partial<ClusterRenderStyle> = {}): ClusterRenderStyle => ({
+const solidStyle = (
+  overrides: Partial<ClusterRenderStyle> = {},
+): ClusterRenderStyle => ({
   inactiveColor: "#111111",
   activeColor: "#eeeeee",
   ...overrides,
@@ -232,7 +236,12 @@ describe("drawParagraph", () => {
   it("preserves relative glyph offsets inside a cluster", () => {
     const ctx = new RecordingContext();
     const layout = paragraph([
-      line([cluster(5, 30, [glyph(10, 10, { xOffset: 2, yOffset: 3 }), glyph(11, 0, { xOffset: -1, yOffset: -4 })])]),
+      line([
+        cluster(5, 30, [
+          glyph(10, 10, { xOffset: 2, yOffset: 3 }),
+          glyph(11, 0, { xOffset: -1, yOffset: -4 }),
+        ]),
+      ]),
     ]);
 
     drawParagraph(ctx, layout, {
@@ -371,13 +380,18 @@ describe("drawParagraph", () => {
   it("applies an independent per-cluster transform", () => {
     const ctx = new RecordingContext();
     const layout = paragraph([
-      line([cluster(0, 20, [glyph(10, 20)], { bounds: { xMin: 0, xMax: 20, yMin: 0, yMax: 0 } })]),
+      line([
+        cluster(0, 20, [glyph(10, 20)], {
+          bounds: { xMin: 0, xMax: 20, yMin: 0, yMax: 0 },
+        }),
+      ]),
     ]);
 
     drawParagraph(ctx, layout, {
       cache: makeCache(),
       fontSize: 32,
-      resolveCluster: () => solidStyle({ transform: { translate: { x: 100, y: 5 } } }),
+      resolveCluster: () =>
+        solidStyle({ transform: { translate: { x: 100, y: 5 } } }),
     });
 
     // Glyph origin shifts by the cluster translate (anchor irrelevant for a
@@ -453,7 +467,9 @@ describe("drawParagraph", () => {
     // and guard against drift between our structural interfaces and the real
     // Canvas2D API. They are never invoked with real DOM objects (jsdom
     // implements neither), so the assertions here are just that they compiled.
-    const asGlyphContext = (ctx: CanvasRenderingContext2D): GlyphCanvasContext => ctx;
+    const asGlyphContext = (
+      ctx: CanvasRenderingContext2D,
+    ): GlyphCanvasContext => ctx;
     const asPathReceiver = (path: Path2D): CanvasPathReceiver => path;
     expect(typeof asGlyphContext).toBe("function");
     expect(typeof asPathReceiver).toBe("function");
@@ -461,10 +477,14 @@ describe("drawParagraph", () => {
 
   it("is deterministic and stateless across repeated calls", () => {
     const layout = paragraph([
-      line([cluster(0, 20, [glyph(10, 12), glyph(11, 8)]), cluster(20, 15, [glyph(12, 15)], { direction: "rtl" })]),
+      line([
+        cluster(0, 20, [glyph(10, 12), glyph(11, 8)]),
+        cluster(20, 15, [glyph(12, 15)], { direction: "rtl" }),
+      ]),
     ]);
     const cache = makeCache();
-    const resolveCluster: ResolveCluster = () => solidStyle({ fillFraction: 0.5 });
+    const resolveCluster: ResolveCluster = () =>
+      solidStyle({ fillFraction: 0.5 });
 
     const run = () => {
       const ctx = new RecordingContext();

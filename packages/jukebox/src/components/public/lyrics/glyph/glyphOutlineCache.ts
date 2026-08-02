@@ -122,7 +122,8 @@ export class GlyphPathCache {
   }) {
     this.lookup = options.lookup;
     this.createPath2D =
-      options.createPath2D ?? (() => new Path2D() as Path2D & CanvasPathReceiver);
+      options.createPath2D ??
+      (() => new Path2D() as Path2D & CanvasPathReceiver);
   }
 
   /**

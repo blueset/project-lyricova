@@ -80,6 +80,60 @@ export interface ShapeResult {
 }
 
 /**
+ * Vertical metrics of one registered font, in the font's own **design units**
+ * (divide by {@link FontMetrics.unitsPerEm} for em-relative values). Mirrors
+ * the Rust `FontMetrics` struct in `src/shaping.rs`; read one with
+ * {@link GlyphShaper.fontMetrics}.
+ *
+ * Fonts carry *two* independent sets of vertical metrics, and on multi-script
+ * faces they disagree sharply - which set you pick matters:
+ *
+ * - `ascender`/`descender`/`lineGap` come from `hhea` (with the OS/2
+ *   `usWin`/`usTypo` fallback ttf-parser applies). These are **line-box**
+ *   metrics, sized to reserve vertical room, and are often loose - especially
+ *   on pan-CJK fonts that must clear tall/deep glyphs across every script.
+ * - `typoAscender`/`typoDescender`/`typoLineGap` come from OS/2 `sTypo*`. For a
+ *   pan-CJK font like Source Han Sans these describe the **ideographic em box**
+ *   (880 up / -120 down per 1000 upem), whereas its `hhea` metrics are much
+ *   looser (1160 / -288).
+ *
+ * Prefer `typo*` when you need a script-neutral anchor for aligning secondary
+ * text to a base run - e.g. positioning a ruby row above its base. The `hhea`
+ * ascent is font-dependent (in a mixed fallback chain it comes from whichever
+ * font happens to sort first), so anchoring to it makes ruby spacing drift with
+ * the font mix; the `sTypo` em box does not. For a Latin-only face the two sets
+ * usually coincide, so the choice is a no-op there.
+ *
+ * Caveat: `sTypo*` is a *design* box, **not** a guaranteed ink bound - glyphs
+ * may paint outside it. Source Han Sans's own Latin/accented glyphs reach 995
+ * up and -244 down per 1000 upem, well past its 880 / -120 `sTypo` box, so do
+ * not treat these values as a clipping rectangle.
+ */
+export interface FontMetrics {
+  /** The font's units-per-em (design grid); scales the other fields to em-relative values. */
+  unitsPerEm: number;
+  /** `hhea.ascender` (baseline to top), in design units. A line metric, not an ink bound. */
+  ascender: number;
+  /** `hhea.descender`, negative below the baseline, in design units. */
+  descender: number;
+  /** `hhea.lineGap` (extra leading between lines), in design units. */
+  lineGap: number;
+  /**
+   * OS/2 `sTypoAscender` (the ideographic em box top on pan-CJK fonts), in
+   * design units, or `null` when the font has no OS/2 table. Prefer this over
+   * `ascender` as a cross-font baseline anchor (see the interface docs).
+   */
+  typoAscender: number | null;
+  /**
+   * OS/2 `sTypoDescender`, negative below the baseline, in design units, or
+   * `null` when the font has no OS/2 table.
+   */
+  typoDescender: number | null;
+  /** OS/2 `sTypoLineGap`, in design units, or `null` when the font has no OS/2 table. */
+  typoLineGap: number | null;
+}
+
+/**
  * Errors thrown by {@link GlyphShaper.shape} and
  * {@link GlyphShaper.registerFont} are plain JS `Error` objects (see
  * `src/bindings.rs::to_js_error`); `error.message` contains a human-readable

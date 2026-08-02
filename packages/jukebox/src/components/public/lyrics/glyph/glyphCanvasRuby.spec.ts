@@ -79,7 +79,8 @@ function makeCache(): GlyphPathCache {
       fontSize: 10,
       scale: 0.01,
     }),
-    createPath2D: () => fakePathReceiver() as unknown as Path2D & CanvasPathReceiver,
+    createPath2D: () =>
+      fakePathReceiver() as unknown as Path2D & CanvasPathReceiver,
   });
 }
 
@@ -90,7 +91,8 @@ interface RecordedFill {
 function makeFakeCtx() {
   let fillStyle = "";
   const fills: RecordedFill[] = [];
-  const rectCalls: { x: number; y: number; width: number; height: number }[] = [];
+  const rectCalls: { x: number; y: number; width: number; height: number }[] =
+    [];
   const ctx = {
     save: vi.fn(),
     restore: vi.fn(),
