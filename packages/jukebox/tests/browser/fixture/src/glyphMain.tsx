@@ -489,7 +489,7 @@ async function tryBadFont(
         await import("@/components/public/lyrics/glyph/fontLoader");
       await ensureRuntime();
       await loadGlyphFonts({
-        fontManifestIds: ["mona-sans-latin-otf"],
+        fontManifestIds: ["inter-variable-ttf"],
         fetchImpl: async () =>
           new Response(new Uint8Array([0xde, 0xad, 0xbe, 0xef]), {
             status: 200,
@@ -499,7 +499,7 @@ async function tryBadFont(
       const { loadGlyphFonts } =
         await import("@/components/public/lyrics/glyph/fontLoader");
       await loadGlyphFonts({
-        fontManifestIds: ["mona-sans-latin-otf"],
+        fontManifestIds: ["inter-variable-ttf"],
         baseUrl: "/no-such-font-route",
         fetchImpl: fetch,
       });

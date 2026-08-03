@@ -7,6 +7,7 @@ describe("FONT_MANIFEST", () => {
     const ids = FONT_MANIFEST.map((entry) => entry.id).sort();
     expect(ids).toEqual(
       [
+        "inter-variable-ttf",
         "mona-sans-latin-otf",
         "noto-sans-thai-vf-ttf",
         "source-han-sans-vf-otf",
@@ -35,6 +36,7 @@ describe("FONT_MANIFEST", () => {
       FONT_MANIFEST.map((entry) => [entry.id, entry.eagerFetch]),
     );
     expect(eagerness).toEqual({
+      "inter-variable-ttf": true,
       "mona-sans-latin-otf": true,
       "noto-sans-thai-vf-ttf": true,
       "source-han-sans-vf-otf": false,
@@ -67,6 +69,9 @@ describe("FONT_MANIFEST", () => {
   });
 
   it("getFontManifestEntry resolves whitelisted ids and rejects unknown ones", () => {
+    expect(getFontManifestEntry("inter-variable-ttf")?.family).toBe(
+      "Inter Variable",
+    );
     expect(getFontManifestEntry("mona-sans-latin-otf")?.family).toBe(
       "Mona Sans VF",
     );

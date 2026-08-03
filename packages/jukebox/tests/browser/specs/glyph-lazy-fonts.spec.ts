@@ -31,12 +31,12 @@ test("downloads only the fonts each line needs (Latin vs Japanese)", async ({
   const latin = await page.evaluate(() =>
     window.__glyph.prepareText("Hello world"),
   );
-  expect(latin.fontManifestIds).toEqual(["mona-sans-latin-otf"]);
+  expect(latin.fontManifestIds).toEqual(["inter-variable-ttf"]);
 
   let loaded = (
     await page.evaluate(() => window.__glyph.payloads())
   ).loadedFonts.map((f) => f.id);
-  expect(loaded).toContain("mona-sans-latin-otf");
+  expect(loaded).toContain("inter-variable-ttf");
   // None of the Han members were touched by a Latin-only line.
   for (const cjk of [...CJK_SUBSETS, FULL_VF]) {
     expect(loaded).not.toContain(cjk);

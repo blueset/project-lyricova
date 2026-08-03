@@ -43,8 +43,12 @@ export function createGlyphShaper(): GlyphShaper {
  * The order is latin → Thai → the Source Han region subsets (JP, SC, TC) →
  * the full Source Han VF catch-all:
  *
- * 1. `mona-sans-latin-otf` — Latin variable fallback (~1.31 MiB); also the natural
- *    guaranteed base font for otherwise-uncoverable lines.
+ * 1. `inter-variable-ttf` — Latin/Greek/Cyrillic variable fallback (~859 KiB);
+ *    also the natural guaranteed base font for otherwise-uncoverable lines.
+ *    It replaced `mona-sans-latin-otf`, which is Latin-only (no Cyrillic, two
+ *    Greek code points) in a larger file; Inter maps 2852 code points against
+ *    Mona's 568. Mona stays whitelisted in the API manifest, so swapping back
+ *    is a one-line change here.
  * 2. `noto-sans-thai-vf-ttf` — Thai shaping and outlines (~214 KB). Kept for
  *    Thai coverage; its position is functionally neutral because selection is
  *    coverage-driven, not position-driven.
@@ -58,11 +62,13 @@ export function createGlyphShaper(): GlyphShaper {
  *    the final catch-all for any Han/kana/Hangul codepoint the region subsets
  *    miss.
  *
- * The renderer shapes every member with OpenType `palt=1` and variation
- * `wght=600`.
+ * The renderer shapes every member with OpenType `palt=1`, `wght=600` and an
+ * `opsz` that tracks the rendered size (see `fontVariations.ts`). Axis ranges
+ * differ per face - Inter's `opsz` is 14-32, Mona's was 0-100 - so the real
+ * size is passed and each face clamps it to its own range.
  */
 export const GLYPH_FONT_MANIFEST_IDS = [
-  "mona-sans-latin-otf",
+  "inter-variable-ttf",
   "noto-sans-thai-vf-ttf",
   "source-han-sans-jp-vf",
   "source-han-sans-sc-vf",

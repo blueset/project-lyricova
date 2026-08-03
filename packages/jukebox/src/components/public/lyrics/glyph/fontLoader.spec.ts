@@ -35,7 +35,7 @@ function okFetch(): typeof fetch {
 
 describe("fetchFontBytes", () => {
   it("returns the bytes for an OK response", async () => {
-    const bytes = await fetchFontBytes("mona-sans-latin-otf", {
+    const bytes = await fetchFontBytes("inter-variable-ttf", {
       baseUrl: "/api/fonts",
       fetchImpl: okFetch(),
     });
@@ -47,13 +47,13 @@ describe("fetchFontBytes", () => {
       async () => new Response("nope", { status: 404 }),
     ) as unknown as typeof fetch;
     await expect(
-      fetchFontBytes("mona-sans-latin-otf", {
+      fetchFontBytes("inter-variable-ttf", {
         baseUrl: "/api/fonts",
         fetchImpl,
       }),
     ).rejects.toMatchObject({
       name: "GlyphFontLoadError",
-      fontManifestId: "mona-sans-latin-otf",
+      fontManifestId: "inter-variable-ttf",
       status: 404,
     });
   });
@@ -63,7 +63,7 @@ describe("fetchFontBytes", () => {
       async () => new Response(new Uint8Array([]), { status: 200 }),
     ) as unknown as typeof fetch;
     await expect(
-      fetchFontBytes("mona-sans-latin-otf", {
+      fetchFontBytes("inter-variable-ttf", {
         baseUrl: "/api/fonts",
         fetchImpl,
       }),
@@ -75,7 +75,7 @@ describe("fetchFontBytes", () => {
       throw new Error("connection refused");
     }) as unknown as typeof fetch;
     await expect(
-      fetchFontBytes("mona-sans-latin-otf", {
+      fetchFontBytes("inter-variable-ttf", {
         baseUrl: "/api/fonts",
         fetchImpl,
       }),
@@ -87,26 +87,30 @@ describe("loadGlyphFonts", () => {
   it("registers the whole chain in order and returns parallel ids", async () => {
     const shaper = new FakeShaper();
     const result = await loadGlyphFonts({
-      fontManifestIds: ["mona-sans-latin-otf", "source-han-sans-vf-otf"],
+      fontManifestIds: ["inter-variable-ttf", "source-han-sans-vf-otf"],
       fetchImpl: okFetch(),
       createShaper: () => shaper,
     });
     expect(result.shaper).toBe(shaper);
     expect(result.fontIds).toEqual([1, 2]);
     expect(result.fontManifestIds).toEqual([
-      "mona-sans-latin-otf",
+      "inter-variable-ttf",
       "source-han-sans-vf-otf",
     ]);
     expect(shaper.freed).toBe(false);
   });
 
   it("uses the deterministic demo fallback chain (Latin first, full Source Han VF last)", () => {
-    expect(DEFAULT_GLYPH_FONT_CHAIN[0]).toBe("mona-sans-latin-otf");
+    // Inter replaced Mona Sans here: Mona is Latin-only (no Cyrillic, two Greek
+    // code points) while Inter maps 2852 code points in a smaller file. Mona
+    // stays in the API manifest, but client-side validation is derived from
+    // *this* chain, so it is no longer fetchable from the browser.
+    expect(DEFAULT_GLYPH_FONT_CHAIN[0]).toBe("inter-variable-ttf");
     expect(DEFAULT_GLYPH_FONT_CHAIN[DEFAULT_GLYPH_FONT_CHAIN.length - 1]).toBe(
       "source-han-sans-vf-otf",
     );
     expect(DEFAULT_GLYPH_FONT_CHAIN).toEqual([
-      "mona-sans-latin-otf",
+      "inter-variable-ttf",
       "noto-sans-thai-vf-ttf",
       "source-han-sans-jp-vf",
       "source-han-sans-sc-vf",
@@ -119,7 +123,7 @@ describe("loadGlyphFonts", () => {
     const shaper = new FakeShaper();
     await expect(
       loadGlyphFonts({
-        fontManifestIds: ["mona-sans-latin-otf", "not-a-real-font"],
+        fontManifestIds: ["inter-variable-ttf", "not-a-real-font"],
         fetchImpl: okFetch(),
         createShaper: () => shaper,
       }),
@@ -135,7 +139,7 @@ describe("loadGlyphFonts", () => {
     shaper.failAtIndex = 1; // second font fails to register
     await expect(
       loadGlyphFonts({
-        fontManifestIds: ["mona-sans-latin-otf", "source-han-sans-vf-otf"],
+        fontManifestIds: ["inter-variable-ttf", "source-han-sans-vf-otf"],
         fetchImpl: okFetch(),
         createShaper: () => shaper,
       }),
@@ -150,7 +154,7 @@ describe("loadGlyphFonts", () => {
     ) as unknown as typeof fetch;
     await expect(
       loadGlyphFonts({
-        fontManifestIds: ["mona-sans-latin-otf"],
+        fontManifestIds: ["inter-variable-ttf"],
         fetchImpl,
         createShaper: () => shaper,
       }),

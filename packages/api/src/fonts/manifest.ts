@@ -62,10 +62,36 @@ export interface FontManifestEntry {
  */
 export const FONT_MANIFEST = [
   {
+    // Inter Variable 4.1, taken verbatim from the upstream release archive
+    // (rsms/inter, `InterVariable.ttf`), licensed under the SIL Open Font
+    // License 1.1; see Inter-OFL.txt.
+    //
+    // Carries far more than Mona Sans for the same job: 2852 mapped code
+    // points against 568, including 248 Cyrillic and 105 Greek where Mona has
+    // 0 and 2 - and in a smaller file (~859 KiB vs ~1.31 MiB).
+    //
+    // Axes are `wght` 100-900 (default 400) and `opsz` 14-32 (default 14);
+    // note the `opsz` range differs from Mona's 0-100, which is why callers
+    // pass the real font size and let each face clamp to its own range. 2048
+    // upem, and `sTypo` repeats `hhea` (1984 / -494), so it does not declare a
+    // distinct typographic box - see `rubyVerticalMetrics.ts`.
+    id: "inter-variable-ttf",
+    fileName: "InterVariable.ttf",
+    contentType: "font/ttf",
+    family: "Inter Variable",
+    script: "latin",
+    rawSfnt: true,
+    eagerFetch: true,
+  },
+  {
     // Upstream github/mona-sans `fonts/variable/MonaSansVF[wdth,wght,opsz,ital].ttf`,
     // licensed under the SIL Open Font License 1.1; see MonaSans-OFL.txt.
     // Default instance is wght=200 (Thin), so consumers wanting the Regular
     // weight must pass `wght=400` as a variation.
+    //
+    // Superseded by `inter-variable-ttf` in the glyph fallback chain (Latin
+    // only: no Cyrillic, two Greek code points). Kept whitelisted so the chain
+    // can be switched back without moving bytes around.
     id: "mona-sans-latin-otf",
     fileName: "Mona-Sans-VF.ttf",
     contentType: "font/ttf",

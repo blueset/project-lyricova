@@ -10,9 +10,13 @@
 export const GLYPH_WEIGHT = 600;
 
 /**
- * Bounds of Mona Sans's `opsz` axis. Values outside are clamped rather than
- * rejected: an out-of-range axis value is undefined behaviour in the shaper, and
- * a lyric font size should never silently disable optical sizing.
+ * Sanity bounds for the `opsz` value handed to the shaper.
+ *
+ * These are **not** any one font's axis range - those differ per face (Inter's
+ * `opsz` is 14-32, Mona Sans' was 0-100) and the shaper clamps each face to its
+ * own range, verified: passing `opsz=60` to Inter renders byte-identically to
+ * `opsz=32`. These bounds only keep a nonsensical size (negative, or a runaway
+ * layout number) from reaching the shaper at all.
  */
 export const OPSZ_MIN = 0;
 export const OPSZ_MAX = 100;
@@ -22,21 +26,21 @@ export const OPSZ_MAX = 100;
  *
  * ## Why `opsz` tracks the size
  *
- * Mona Sans exposes an `opsz` axis spanning `0-100` whose **default is `0`**,
- * while all 160 of its named instances sit at `72`. Leaving it at the default
- * therefore rendered Latin at an optical size the font was never designed for -
- * measurably looser and lighter (at 22 px, `opsz=0` is 7.5% wider and 5.5% less
- * dense than tracking the size).
- *
  * Following the *actual* size is what an optical size axis is for, and matches
  * CSS `font-optical-sizing: auto`, which feeds the used font size straight into
- * `opsz`. It also keeps small text deliberately a little looser than display
- * text, which is the legibility behaviour the axis exists to provide - at 56 px
- * this is indistinguishable from pinning `72`, while at 22 px it is correctly
- * more open.
+ * `opsz`. It keeps small text deliberately a little looser than display text,
+ * which is the legibility behaviour the axis exists to provide.
  *
- * Source Han Sans has no `opsz` axis; unknown axes are ignored per face, so one
- * list is safe for a mixed chain.
+ * The alternative - leaving the axis alone - is actively wrong, because a
+ * font's `opsz` default need not be a size anyone renders at. Mona Sans
+ * defaulted to `0` though all 160 of its named instances sat at `72`, which
+ * rendered Latin measurably looser and lighter (at 22 px, `opsz=0` was 7.5%
+ * wider and 5.5% less dense than tracking the size).
+ *
+ * Axis ranges differ per face (Inter 14-32, Mona Sans 0-100) and the shaper
+ * clamps to each face's own range, so the real size can be passed to all of
+ * them. Source Han Sans has no `opsz` axis at all; unknown axes are ignored per
+ * face, so one list is safe for a mixed chain.
  *
  * Non-finite or non-positive sizes fall back to the axis minimum so the caller
  * never has to pre-validate.
