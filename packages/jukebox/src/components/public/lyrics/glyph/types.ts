@@ -253,7 +253,14 @@ export interface RubyLayoutOptions {
   script?: string | null;
   language?: string | null;
   features?: string[];
+  /** Variable-font axes for the **base** text. */
   variations?: string[];
+  /**
+   * Variable-font axes for the **ruby** text. Ruby renders far smaller than its
+   * base, so a size-tracking axis such as `opsz` must differ between the two.
+   * Defaults to {@link variations}.
+   */
+  rubyVariations?: string[];
   maxWidth?: number | null;
   wrapStrategy?: LineWrapStrategy;
   /** Soft UTF-16 phrase spans whose interior breaks should be avoided. */

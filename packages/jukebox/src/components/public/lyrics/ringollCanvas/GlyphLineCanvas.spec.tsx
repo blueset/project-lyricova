@@ -52,7 +52,10 @@ const runtime = vi.hoisted(() => {
 vi.mock("../glyph/glyphRuntime", async () => {
   const React = await import("react");
   return {
-    GLYPH_VARIATIONS: ["wght=600"] as const,
+    // Mirrors the real size-tracking helper so the spec still asserts that the
+    // component feeds the painter the axes for the size it is rendering.
+    glyphVariations: (fontSize: number) =>
+      ["wght=600", `opsz=${fontSize}`] as const,
     canvasPixelRatio: () => 1,
     useGlyphRuntime: () => runtime.object,
     useGlyphRuntimeVersion: (rt: {

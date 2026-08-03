@@ -41,7 +41,7 @@ import {
   type CanvasTextLayout,
 } from "./canvasTextWrap";
 import {
-  GLYPH_VARIATIONS,
+  glyphVariations,
   GlyphRuntimeProvider,
   canvasPixelRatio,
   responsiveFontSize,
@@ -530,7 +530,7 @@ function drawSegment(
           {
             cache,
             fontSize,
-            variations: GLYPH_VARIATIONS,
+            variations: glyphVariations(fontSize),
           },
           1,
         );
@@ -546,7 +546,7 @@ function drawSegment(
           revealed,
           inactiveColor,
           activeColor,
-          variations: GLYPH_VARIATIONS,
+          variations: glyphVariations(fontSize),
         });
       }
 
@@ -636,7 +636,8 @@ export function drawRubyPlacement(
     revealed,
     inactiveColor,
     activeColor,
-    variations = GLYPH_VARIATIONS,
+    // Ruby carries its own optical size: it renders far smaller than its base.
+    variations = glyphVariations(ruby.fontSize),
   } = params;
   const baselineY = lineTop + ruby.y;
   const [rangeStart, rangeEnd] = ruby.annotation.utf16Range;

@@ -165,12 +165,17 @@ export function layoutRubyParagraph(
     language,
     features,
     variations,
+    rubyVariations,
     maxWidth,
     wrapStrategy,
     phraseRanges,
     lineHeight,
     onInvalidAnnotation = "skip",
   } = request;
+
+  // Ruby renders far smaller than its base, so it carries its own optical size.
+  // Falling back to the base list keeps callers that do not size-track working.
+  const rubyAxes = rubyVariations ?? variations;
 
   assertFinitePositiveSize(fontSize, "fontSize");
   const rubyFontSize = resolveRubyFontSize(request);
@@ -186,7 +191,7 @@ export function layoutRubyParagraph(
     script,
     language,
     features,
-    variations,
+    variations: rubyAxes,
   };
 
   const prepared = valid.map((annotation) =>
@@ -236,7 +241,7 @@ export function layoutRubyParagraph(
       shaper,
       paragraphLayout,
       item,
-      { rubyFontSize, rubyFontIds, variations, outlineCache },
+      { rubyFontSize, rubyFontIds, variations: rubyAxes, outlineCache },
       issues,
       furigana,
       text,

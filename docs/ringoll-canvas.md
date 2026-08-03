@@ -216,15 +216,33 @@ translation must never render _larger_ than the line it translates.
 
 ## Font variations
 
-Every canvas renderer shapes with `wght=600, opsz=72` (`GLYPH_VARIATIONS`).
+`glyphVariations(fontSize)` (`glyph/fontVariations.ts`) is the single source of shaping
+axes: `wght=600` plus an `opsz` that **tracks the size actually being rendered**, exactly
+as CSS `font-optical-sizing: auto` does. Base text and ruby therefore get *different*
+optical sizes, since ruby renders at roughly half the base size.
 
-`opsz=72` is not decoration. Mona Sans exposes an `opsz` axis spanning `0–100` whose
-**default is `0`**, while all 160 of its named instances use `72` — so pinning only
-`wght` rendered Latin at an optical size the font was never designed for. Measured over
-"Blessings for your everyday" at 60 px, `opsz=0` is 7 % wider with 3 % less ink than
-`opsz=72`: **11 % less dense**, which reads as a lighter weight beside CJK even though
-the stems are identical (both fonts give `0.130 em` at `wght=600`). Source Han Sans has
-no `opsz` axis and unknown axes are ignored per font, so one shared list is safe.
+This matters because Mona Sans exposes an `opsz` axis spanning `0–100` whose **default
+is `0`**, while all 160 of its named instances sit at `72`. Pinning only `wght` rendered
+Latin at an optical size the font was never designed for. Measured on
+"Blessings for your everyday":
+
+| font size | `opsz=0` density | tracking (`opsz` = size) | `opsz=72` |
+| --- | --- | --- | --- |
+| 22 px | 6.42 | 6.78 (+5.5 %) | 7.21 |
+| 40 px | 11.23 | 11.98 (+6.7 %) | 12.36 |
+| 56 px | 15.29 | 16.92 (+10.7 %) | 16.89 |
+
+Tracking recovers most of the density and, at display sizes, is indistinguishable from
+pinning `72`; at small sizes it stays deliberately a little more open, which is the
+legibility behaviour an optical size axis exists to provide. Source Han Sans has no
+`opsz` axis and unknown axes are ignored per face, so one list is safe for a mixed chain.
+
+Two notes on what this is *not*. Stroke weight was never wrong: both fonts give a
+`0.130 em` stem at `wght=600`, and a rendered mixed line measures Latin at 14 px vs CJK
+13 px at `fontSize: 100`. And measuring apparent weight from a screenshot needs care —
+an unsung line is drawn at `0.4` alpha, so a fixed ink threshold erodes thin Latin stems
+far more than thick CJK strokes and can fabricate a 30 % difference that disappears once
+the threshold is dropped to the background floor.
 
 ## Discipline this renderer follows
 

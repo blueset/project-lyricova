@@ -6,6 +6,7 @@ import type {
   FillExtent,
 } from "../glyph/canvasGlyphGeometry";
 import { drawCluster } from "../glyph/canvasGlyphRenderer";
+import { glyphVariations } from "../glyph/fontVariations";
 import type {
   ClusterRenderStyle,
   GlyphCanvasContext,
@@ -483,7 +484,6 @@ export function paintLine(
         activeColor,
         inactiveColor,
         baseAlpha: lineAlpha,
-        variations,
       });
     }
 
@@ -500,7 +500,12 @@ interface PaintRubyParams {
   activeColor: string;
   inactiveColor: string;
   baseAlpha: number;
-  variations: readonly string[];
+  /**
+   * Axes for the ruby glyphs. Defaults to {@link glyphVariations} of the ruby's
+   * own size - **not** the base line's, since a size-tracking axis such as
+   * `opsz` must follow the text it is actually rendering.
+   */
+  rubyVariations?: readonly string[];
 }
 
 /**
@@ -526,8 +531,12 @@ function paintRubyPlacement(
     activeColor,
     inactiveColor,
     baseAlpha,
-    variations,
+    rubyVariations,
   } = params;
+
+  // Ruby renders far smaller than its base, so it gets its own optical size
+  // rather than inheriting the base line's.
+  const rubyAxes = rubyVariations ?? glyphVariations(ruby.fontSize);
 
   const xStart = ruby.inkLeft;
   const xEnd = ruby.inkRight;
@@ -544,7 +553,7 @@ function paintRubyPlacement(
           glyph.fontId,
           glyph.glyphId,
           ruby.fontSize,
-          variations,
+          rubyAxes,
         );
         if (!path) continue;
         const flip = glyphFlipMatrix({

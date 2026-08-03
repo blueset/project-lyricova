@@ -10,7 +10,7 @@ import {
 } from "../../../../hooks/useMediaClock";
 import type { GlyphCanvasContext } from "../glyph/canvasGlyphRenderer";
 import {
-  GLYPH_VARIATIONS,
+  glyphVariations,
   canvasPixelRatio,
   useGlyphRuntime,
   useGlyphRuntimeVersion,
@@ -230,7 +230,7 @@ export function GlyphLineCanvas({
           inactiveColor: UNSUNG_COLOR,
           alignment: segment.alignment,
           contentWidth: maxWidth,
-          variations: GLYPH_VARIATIONS,
+          variations: glyphVariations(fontSize),
         },
         cache,
       );
