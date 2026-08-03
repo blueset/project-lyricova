@@ -115,6 +115,13 @@ export interface InterludeLine {
   endTime: number;
   /** Line role (`1` = right/duet). Optional; defaults to non-duet. */
   role?: number;
+  /**
+   * The line's text. A line whose content is empty (or absent) renders nothing,
+   * so it is treated as *instrumental time* rather than as a gap boundary - see
+   * {@link findInterludeGaps}. Optional, so a caller that has no content to give
+   * keeps the previous behaviour of treating every line as a boundary.
+   */
+  content?: string;
 }
 
 /** A qualifying instrumental gap between two lines, with static geometry. */
@@ -124,7 +131,11 @@ export interface InterludeGap {
    * line. The indicator is inserted after this line.
    */
   anchorLineIndex: number;
-  /** Index of the upcoming line the indicator is anchored above (`anchorLineIndex + 1`). */
+  /**
+   * Index of the upcoming line the indicator is anchored above. Usually
+   * `anchorLineIndex + 1`, but blank lines between the two are skipped, so the
+   * two indices can be further apart.
+   */
   nextLineIndex: number;
   /** Absolute gap start (seconds). `0` for the leading gap. */
   startTime: number;
@@ -147,6 +158,16 @@ function isValidLine(line: InterludeLine | undefined): line is InterludeLine {
 }
 
 /**
+ * Whether a line puts anything on screen. `content` is optional, so a line that
+ * omits it entirely is treated as *having* content (callers that do not track
+ * text keep the original every-line-is-a-boundary behaviour); only an explicitly
+ * empty/whitespace-only string marks a line as blank.
+ */
+function hasContent(line: InterludeLine): boolean {
+  return line.content === undefined || line.content.trim().length > 0;
+}
+
+/**
  * Computes the static list of qualifying interlude gaps for `lines`.
  *
  * For every boundary `k` from `-1` (the gap *before* the first line) through
@@ -165,25 +186,58 @@ function isValidLine(line: InterludeLine | undefined): line is InterludeLine {
  * to a zero/negative-length window and fall below the threshold, so they are
  * skipped too. Original line indices are preserved (we never sort), so
  * `anchorLineIndex`/`nextLineIndex` always refer to positions in the input.
+ *
+ * ## Empty lines are instrumental time, not boundaries
+ *
+ * A line with no {@link InterludeLine.content} renders nothing, so bounding a
+ * gap with it would hide real interludes: a 10 s instrumental break authored as
+ * `[sung] [empty] [sung]` would be split into two short gaps by the empty line's
+ * timestamps and neither half would reach the threshold, even though the
+ * listener sees ten silent seconds. Blank lines are therefore skipped when
+ * locating boundaries, and the gap spans from the previous *content* line's end
+ * to the next *content* line's start - covering the blank line's own span. The
+ * emitted indices still point at those content lines in the original array.
  */
 export function findInterludeGaps(
   lines: readonly InterludeLine[],
 ): InterludeGap[] {
   const gaps: InterludeGap[] = [];
-  const lastBoundary = lines.length - 2;
+
+  // Only lines that actually render can bound a gap; blank lines fall *inside*
+  // one. Original indices are carried along so the emitted anchor/next indices
+  // still address the caller's array.
+  //
+  // Filtering is by content *only*, never by validity: a malformed line that
+  // has content stays in and is rejected by the `isValidLine` checks below,
+  // exactly as before, because its timing is unknown and it must keep blocking
+  // the adjacent boundary rather than being dissolved into a gap whose length
+  // we would then have to invent. A line that is *both* blank and malformed is
+  // dropped like any other blank line - that is deliberate, since its timing is
+  // never needed, so a broken timestamp on a line that renders nothing should
+  // not suppress a real interlude around it.
+  const visible: { line: InterludeLine; index: number }[] = [];
+  lines.forEach((line, index) => {
+    if (hasContent(line)) visible.push({ line, index });
+  });
+
+  const lastBoundary = visible.length - 2;
 
   for (let k = -1; k <= lastBoundary; k += 1) {
-    const nextLineIndex = k + 1;
-    const next = lines[nextLineIndex];
-    if (!isValidLine(next)) continue;
+    const nextEntry = visible[k + 1];
+    if (!nextEntry || !isValidLine(nextEntry.line)) continue;
+    const next = nextEntry.line;
+    const nextLineIndex = nextEntry.index;
 
     let gapStart: number;
+    let anchorLineIndex: number;
     if (k === -1) {
       gapStart = 0;
+      anchorLineIndex = -1;
     } else {
-      const prev = lines[k];
-      if (!isValidLine(prev)) continue;
-      gapStart = prev.endTime;
+      const prevEntry = visible[k];
+      if (!isValidLine(prevEntry.line)) continue;
+      gapStart = prevEntry.line.endTime;
+      anchorLineIndex = prevEntry.index;
     }
 
     const gapEnd = Math.max(
@@ -198,7 +252,7 @@ export function findInterludeGaps(
     if (!(duration >= MIN_INTERLUDE_GAP_SECONDS)) continue;
 
     gaps.push({
-      anchorLineIndex: k,
+      anchorLineIndex,
       nextLineIndex,
       startTime: gapStart,
       endTime: gapEnd,

@@ -13,6 +13,7 @@ import {
   INTERLUDE_DOT_SIZE_MULTIPLIER,
   INTERLUDE_LOOKAHEAD_SECONDS,
   INTERLUDE_TARGET_BREATHE_MS,
+  INTERLUDE_TRAILING_OFFSET_SECONDS,
   MIN_INTERLUDE_GAP_SECONDS,
   type InterludeGap,
   type InterludeLine,
@@ -474,3 +475,89 @@ describe("layout constants", () => {
 // Type-level sanity: a bare { startTime, endTime } is a valid InterludeLine.
 const _bareLine: InterludeLine = { startTime: 0, endTime: 1 };
 void _bareLine;
+
+describe("findInterludeGaps with blank lines", () => {
+  it("spans a gap through a blank line instead of splitting it in two", () => {
+    // A 10 s instrumental break authored as sung / blank / sung. Bounded by the
+    // blank line's own timestamps neither half reaches the 4 s threshold, so the
+    // listener would see ten silent seconds and no indicator.
+    const gaps = findInterludeGaps([
+      { startTime: 0, endTime: 2, content: "first" },
+      { startTime: 5, endTime: 8, content: "   " },
+      { startTime: 12, endTime: 14, content: "second" },
+    ]);
+
+    const between = gaps.filter((gap) => gap.anchorLineIndex === 0);
+    expect(between).toHaveLength(1);
+    expect(between[0].startTime).toBe(2);
+    expect(between[0].endTime).toBeCloseTo(
+      12 - INTERLUDE_TRAILING_OFFSET_SECONDS,
+      6,
+    );
+    // The indices still address the caller's array, skipping the blank line.
+    expect(between[0].nextLineIndex).toBe(2);
+  });
+
+  it("does not treat a blank line as the upcoming line to lead into", () => {
+    const gaps = findInterludeGaps([
+      { startTime: 0, endTime: 1, content: "first" },
+      { startTime: 20, endTime: 21, content: "" },
+    ]);
+    // The only remaining content line is the first, so there is nothing to lead
+    // into and no gap is emitted.
+    expect(gaps.filter((gap) => gap.anchorLineIndex === 0)).toHaveLength(0);
+  });
+
+  it("keeps every line a boundary when no content is supplied", () => {
+    // Callers that do not track text must see the original behaviour. The
+    // middle line here would be dissolved if a missing `content` counted as
+    // blank, merging two sub-threshold gaps (2.75 s and 3.75 s) into one 9.75 s
+    // gap that would then be emitted - so the assertion can actually fail.
+    const withoutContent = findInterludeGaps([
+      { startTime: 0, endTime: 2 },
+      { startTime: 5, endTime: 8 },
+      { startTime: 12, endTime: 14 },
+    ]);
+    expect(withoutContent).toHaveLength(0);
+
+    // Same shape, but the middle line is explicitly blank: now it dissolves.
+    const withBlank = findInterludeGaps([
+      { startTime: 0, endTime: 2, content: "a" },
+      { startTime: 5, endTime: 8, content: "" },
+      { startTime: 12, endTime: 14, content: "b" },
+    ]);
+    expect(withBlank).toHaveLength(1);
+    expect(withBlank[0].anchorLineIndex).toBe(0);
+  });
+
+  it("lets a malformed line with content keep blocking its boundary", () => {
+    // Blank and malformed are different. A blank line has trustworthy timing
+    // and merely draws nothing, so a gap may span it. A malformed line whose
+    // *content* is real has unknown timing, so it must still block rather than
+    // let us invent a gap length across it.
+    const gaps = findInterludeGaps([
+      { startTime: 0, endTime: 2, content: "first" },
+      { startTime: Number.NaN, endTime: Number.NaN, content: "broken" },
+      { startTime: 100, endTime: 102, content: "later" },
+    ]);
+    // Boundary 0->1 is rejected (next is malformed) and 1->2 is rejected (prev
+    // is malformed); only the leading gap before the first line may survive.
+    expect(gaps.every((gap) => gap.anchorLineIndex === -1)).toBe(true);
+  });
+
+  it("dissolves a line that is both blank and malformed", () => {
+    // Its timing is never needed - it renders nothing - so a broken timestamp
+    // on a blank line must not suppress a real interlude between the lines
+    // around it.
+    const gaps = findInterludeGaps([
+      { startTime: 0, endTime: 2, content: "first" },
+      { startTime: Number.NaN, endTime: Number.NaN, content: "" },
+      { startTime: 12, endTime: 14, content: "later" },
+    ]);
+    const between = gaps.filter((gap) => gap.anchorLineIndex === 0);
+    expect(between).toHaveLength(1);
+    // Computed entirely from the two valid content lines.
+    expect(between[0].startTime).toBe(2);
+    expect(between[0].nextLineIndex).toBe(2);
+  });
+});

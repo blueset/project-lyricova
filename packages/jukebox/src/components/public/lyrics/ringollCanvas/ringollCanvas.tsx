@@ -135,6 +135,9 @@ function RingollCanvasLyricsInner({
           startTime: segment.startTime,
           endTime: segment.endTime,
           role: segment.role,
+          // Blank lines render nothing, so they count as instrumental time
+          // rather than splitting a gap in two (see `findInterludeGaps`).
+          content: segment.content,
         })),
       ),
     [segments],

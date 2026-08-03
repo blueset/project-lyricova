@@ -76,13 +76,13 @@ darken the band through premultiplied interpolation.
 
 The front travels from `extent.left - fadeWidth/2` to `extent.right + fadeWidth/2`
 (`karaokeSoftFillFront`), so the band is fully clear of the ink at both ends. This
-matters: because the band is *centred* on the front, travelling only across the
+matters: because the band is _centred_ on the front, travelling only across the
 extent would leave the trailing half-band straddling the last glyphs at
 `fraction === 1`, dimming every sung glyph permanently.
 
 **Deviation from AMLL.** AMLL additionally pads a line's first glyph by
 `+1.5 × fadeWidth` and its last by `+0.5 × fadeWidth`. That clearance is an artefact
-of AMLL masking a whole *word span* with one gradient; here the band is *cluster-local*
+of AMLL masking a whole _word span_ with one gradient; here the band is _cluster-local_
 and already resolves completely at both ends, so the padding is not ported. The only
 behaviour it would add is a slight timing shift (the front covering more distance in
 the same time), which would require a line-level extent the painter does not carry.
@@ -139,6 +139,67 @@ on the same media clock:
   interlude.
 
 They freeze while playback is paused.
+
+**Blank lines count as instrumental time.** A line with no content renders nothing, so
+bounding a gap with its timestamps would hide real interludes: a 10 s break authored as
+`[sung] [blank] [sung]` splits into two sub-threshold halves and shows no indicator at
+all, even though the listener sees ten silent seconds. `findInterludeGaps` therefore
+skips contentless lines when locating boundaries and spans the gap through them.
+A malformed line that _has content_ still blocks its boundary — a blank line has
+trustworthy timing, a malformed one does not, so it must not dissolve into a gap whose
+length we would then have to invent. A line that is both blank and malformed is dropped
+like any other blank line, since its timing is never needed.
+
+## Line states and colour
+
+The reveal should read as **one boundary sweeping down the page**, so a future line is
+painted at exactly the same colour as the not-yet-sung portion of the active line:
+
+|                             | main text                            | translation  |
+| --------------------------- | ------------------------------------ | ------------ |
+| Active line, sung portion   | white `1.0`                          | white `0.75` |
+| Active line, unsung portion | white `0.4`                          | —            |
+| Passed line (fully swept)   | white `1.0`, then `×0.5` row opacity | white `0.75` |
+| Future line (fully unsung)  | white `0.4`                          | white `0.3`  |
+
+This is a **deviation from AMLL**, which additionally dims a non-active line to `0.2`.
+Ringoll's row chrome already separates lines by depth — a distance-proportional blur on
+every non-active row plus `opacity: 0.5` on passed ones — so AMLL's multiplier would put
+a future line at `0.08` alpha and make it illegible. Dropping it also lines the canvas
+renderer up with the DOM Ringoll it derives from, which shows passed lines at `0.5`.
+
+The translation is always **one step behind its own line** (`×0.75` of whichever main
+text alpha that row actually paints) rather than sitting at a fixed opacity. Note that
+this follows the line's _reveal_ state, not `isActive`: a passed line is fully swept, so
+its main text paints with the sung colour just like the active line's sung portion, and
+only a future line is entirely unsung. Its
+size is derived from the row's own main text — `max(14px, 0.5 × main)`, capped at the
+main size. The floor is applied before the cap because on a narrow viewport a _minor_
+line's main text is already near the responsive floor; legibility wins there, but a
+translation must never render _larger_ than the line it translates.
+
+## Line states and geometry
+
+- **Becoming active scales the row `0.97 → 1`** (AMLL), driven by the same spring as
+  `y`, so the change is one coordinated motion. The transform origin follows the row's
+  role — top-left, top-right or top-centre — so the line grows outward from its own
+  text anchor instead of drifting sideways.
+
+  The scale sits on an **inner** box, never on the row element itself. The virtualizer
+  measures rows with `getBoundingClientRect()`, which reports the _transformed_ box,
+  while the `ResizeObserver` behind the re-measure watches `contentRect`, which is
+  transform-blind and would never fire on a scale change. A scaled row would therefore
+  cache `0.97 ×` its real height forever — and since a row mounts at
+  `scale: isActive ? 1 : 0.97`, whichever row was active at mount would cache a
+  _different_ height from every other row and skew every `top` below it. A transform on
+  a child does not affect its parent's layout box.
+
+- **A blank line reserves a 44 px row and renders no canvas.** 44 px is the smallest
+  comfortable touch target in Apple's HIG, and the row owns the seek `onClick`. Skipping
+  the canvas is what lets that minimum actually govern: `GlyphLineCanvas` falls back to
+  an estimated height even with nothing to lay out, which together with the row padding
+  already exceeded 44 px — so the blank row was only tappable by accident, while still
+  paying for a canvas and a media-clock subscription to paint nothing.
 
 ## Discipline this renderer follows
 

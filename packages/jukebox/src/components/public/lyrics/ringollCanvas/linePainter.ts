@@ -77,11 +77,21 @@ export const SUNG_COLOR = `rgba(255, 255, 255, ${SUNG_ALPHA})`;
 export const UNSUNG_COLOR = `rgba(255, 255, 255, ${UNSUNG_ALPHA})`;
 
 /**
- * Line-level alpha AMLL applies to a line that is not the active one (`0.2`),
- * composed *under* the per-cluster sung/unsung colours via `drawCluster`'s
- * `baseAlpha`. The active line uses `1`.
+ * Line-level alpha for a line that is not the active one.
+ *
+ * **Deviation from AMLL,** which dims an inactive line to `0.2` *on top of* the
+ * per-cluster sung/unsung colours. Here it is `1`, so an inactive line paints at
+ * exactly its cluster colour: a future line is entirely unsung and therefore
+ * lands on {@link UNSUNG_COLOR} - the same colour as the not-yet-sung portion of
+ * the active line, which is what makes the reveal read as one continuous
+ * boundary sweeping down the page rather than each line having its own palette.
+ *
+ * Ringoll's row chrome already separates inactive lines by depth: the spring
+ * applies `opacity: 0.5` to passed lines and a distance-proportional blur to
+ * every non-active row. Multiplying AMLL's `0.2` on top of that made future
+ * lines effectively `0.08` alpha - illegible.
  */
-export const INACTIVE_LINE_ALPHA = 0.2;
+export const INACTIVE_LINE_ALPHA = 1;
 
 /** Emphasis glow colour - AMLL blooms a white halo behind held syllables. */
 export const GLOW_COLOR = "#ffffff";
@@ -358,7 +368,11 @@ export interface LinePaintOptions {
   fontSize: number;
   /** Whether this is a background/minor line (larger float amplitude). */
   minor: boolean;
-  /** Line-level alpha: `1` when active, {@link INACTIVE_LINE_ALPHA} otherwise. */
+  /**
+   * Line-level alpha composed under the per-cluster colours: `1` when active,
+   * {@link INACTIVE_LINE_ALPHA} otherwise. Kept as a knob even though both are
+   * currently `1` (see {@link INACTIVE_LINE_ALPHA}).
+   */
   lineAlpha: number;
   /** Sung colour. */
   activeColor: string;

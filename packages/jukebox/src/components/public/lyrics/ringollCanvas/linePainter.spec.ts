@@ -46,6 +46,7 @@ import {
   SWEEP_FADE_RATIO,
   UNSUNG_ALPHA,
   UNSUNG_COLOR,
+  INACTIVE_LINE_ALPHA,
   buildWordContexts,
   lineRevealedOffset,
   paintLine,
@@ -255,6 +256,16 @@ describe("sweep constants", () => {
     expect(UNSUNG_ALPHA).toBe(0.4);
     expect(SUNG_COLOR).toBe("rgba(255, 255, 255, 1)");
     expect(UNSUNG_COLOR).toBe("rgba(255, 255, 255, 0.4)");
+  });
+
+  it("leaves an inactive line at its unsung colour, unlike AMLL", () => {
+    // The review asks a future line to read as the *same* colour as the
+    // not-yet-sung portion of the active line, so the reveal looks like one
+    // boundary sweeping down the page. AMLL's extra 0.2 line dim would have
+    // put a future line at 0.4 x 0.2 = 0.08 alpha on top of Ringoll's own
+    // depth blur and passed-line opacity - illegible.
+    expect(INACTIVE_LINE_ALPHA).toBe(1);
+    expect(UNSUNG_ALPHA * INACTIVE_LINE_ALPHA).toBe(UNSUNG_ALPHA);
   });
 
   it("derives the soft band width from the font size", () => {

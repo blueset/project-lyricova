@@ -221,6 +221,10 @@ export function GlyphLineCanvas({
           endTime: segment.endTime,
           fontSize,
           minor: segment.minor,
+          // Both are currently `1`: an inactive line is separated by the row
+          // chrome's depth blur and passed-line opacity, not by an extra dim, so
+          // a future line lands on `UNSUNG_COLOR` exactly like the unsung part
+          // of the active line. See `INACTIVE_LINE_ALPHA`.
           lineAlpha: isActive ? 1 : INACTIVE_LINE_ALPHA,
           activeColor: SUNG_COLOR,
           inactiveColor: UNSUNG_COLOR,

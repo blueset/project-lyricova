@@ -52,7 +52,7 @@ vi.mock("./GlyphLineCanvas", async () => {
 // not remount its box on re-render.
 const spring = vi.hoisted(() => ({
   startCalls: [] as Array<{
-    to: { y: number; opacity: number; filter: string };
+    to: { y: number; opacity: number; filter: string; scale: number };
     delay: number;
     immediate: boolean;
   }>,
@@ -94,7 +94,14 @@ vi.mock("@react-spring/web", async () => {
   };
 });
 
-import { RowRenderer, type RingollCanvasRowProps } from "./RowRenderer";
+import {
+  SUNG_TRANSLATION_COLOR,
+  UNSUNG_TRANSLATION_COLOR,
+  RowRenderer,
+  isEmptyLine,
+  translationFontSize,
+  type RingollCanvasRowProps,
+} from "./RowRenderer";
 
 // --- Fixtures --------------------------------------------------------------
 
@@ -329,41 +336,67 @@ describe("RingollCanvas RowRenderer", () => {
       expect(container.textContent).not.toContain("Hello");
     });
 
-    it("dims the translation for an inactive line below the anchor (absoluteIndex > 0)", () => {
+    // The translation is coloured relative to whatever its own line shows, so
+    // it is keyed off `isActive` alone - not off the row's scroll distance as
+    // the earlier `opacity-40` rule was. A *passed* line is inactive too, and
+    // now dims with the rest of them.
+    function renderTranslation(overrides: Partial<RingollCanvasRowProps>) {
       const row = makeRow({
         attachments: makeAttachments({ translations: { en: "Hello" } }),
       });
       const { container } = render(
-        <RowRenderer
-          {...makeProps({
-            row,
-            transLang: "en",
-            absoluteIndex: 3,
-            isActive: false,
-          })}
-        />,
+        <RowRenderer {...makeProps({ row, transLang: "en", ...overrides })} />,
       );
-      expect(container.querySelector('[lang="en"]')?.className).toContain(
-        "opacity-40",
-      );
+      return container.querySelector('[lang="en"]') as HTMLElement;
+    }
+
+    it("keeps the active line's translation just behind its sung text", () => {
+      const node = renderTranslation({ absoluteIndex: 0, isActive: true });
+      expect(node.style.color).toBe(SUNG_TRANSLATION_COLOR);
     });
 
-    it("does not dim the translation for a passed or active line", () => {
+    it("dims the translation of a future line to match its unsung text", () => {
+      const node = renderTranslation({ absoluteIndex: 3, isActive: false });
+      expect(node.style.color).toBe(UNSUNG_TRANSLATION_COLOR);
+    });
+
+    it("keeps a passed line's translation beside its sung text, not its unsung", () => {
+      // A passed line is fully swept, so its main text paints with the *sung*
+      // colour exactly like the active line's sung portion. Keying the
+      // translation off `isActive` would drop it to 0.3 next to 1.0 main text -
+      // 30% of its own line instead of the intended 75%.
+      const node = renderTranslation({ absoluteIndex: -3, isActive: false });
+      expect(node.style.color).toBe(SUNG_TRANSLATION_COLOR);
+    });
+
+    it("holds the same 0.75 ratio to its own main text in every line state", () => {
+      const alphaOf = (color: string) =>
+        Number(/rgba\([^)]*,\s*([\d.]+)\)/.exec(color)?.[1]);
+      // Main text alpha the canvas actually paints in each state.
+      expect(alphaOf(SUNG_TRANSLATION_COLOR) / 1).toBeCloseTo(0.75, 6);
+      expect(alphaOf(UNSUNG_TRANSLATION_COLOR) / 0.4).toBeCloseTo(0.75, 6);
+    });
+
+    it("sizes the translation from the row's own main text, not the em cascade", () => {
+      const major = renderTranslation({ fontSize: 56 });
+      expect(major.style.fontSize).toBe(`${translationFontSize(56)}px`);
+
+      // A minor row's main text is already reduced, so its translation follows
+      // that reduced size rather than the document font size.
       const row = makeRow({
-        attachments: makeAttachments({ translations: { en: "Hello" } }),
+        attachments: makeAttachments({
+          translations: { en: "Hello" },
+          minor: true,
+        }),
       });
       const { container } = render(
-        <RowRenderer
-          {...makeProps({
-            row,
-            transLang: "en",
-            absoluteIndex: -3,
-            isActive: false,
-          })}
-        />,
+        <RowRenderer {...makeProps({ row, transLang: "en", fontSize: 56 })} />,
       );
-      expect(container.querySelector('[lang="en"]')?.className).not.toContain(
-        "opacity-40",
+      const minorSize = (container.querySelector('[lang="en"]') as HTMLElement)
+        .style.fontSize;
+      expect(minorSize).toBe(`${translationFontSize(56 * 0.62)}px`);
+      expect(parseFloat(minorSize)).toBeLessThan(
+        parseFloat(major.style.fontSize),
       );
     });
   });
@@ -437,5 +470,141 @@ describe("RingollCanvas RowRenderer", () => {
       rerender(<RowRenderer {...props} fontSize={props.fontSize + 4} />);
       expect(glyphCanvas.renderCount).toBeGreaterThan(before);
     });
+  });
+});
+
+describe("translationFontSize", () => {
+  it("is always smaller than the main text once above the floor", () => {
+    for (const main of [22, 30, 40, 56]) {
+      expect(translationFontSize(main)).toBeLessThan(main);
+    }
+  });
+
+  it("stops shrinking at the readable floor", () => {
+    // 0.5 x 22 = 11, below the floor, so the floor wins.
+    expect(translationFontSize(22)).toBe(14);
+  });
+
+  it("never renders larger than the text it translates", () => {
+    // A minor line on a narrow viewport: the floor would exceed the main text,
+    // so the cap pulls it back down to parity rather than inverting the
+    // hierarchy.
+    expect(translationFontSize(10)).toBe(10);
+  });
+
+  it("scales with the responsive size in between", () => {
+    expect(translationFontSize(56)).toBe(28);
+    expect(translationFontSize(40)).toBe(20);
+  });
+});
+
+describe("isEmptyLine", () => {
+  it("treats missing, empty and whitespace-only content as empty", () => {
+    expect(isEmptyLine(undefined)).toBe(true);
+    expect(isEmptyLine(null)).toBe(true);
+    expect(isEmptyLine("")).toBe(true);
+    expect(isEmptyLine("   \n\t ")).toBe(true);
+  });
+
+  it("treats any real text as non-empty", () => {
+    expect(isEmptyLine("a")).toBe(false);
+    expect(isEmptyLine("hello")).toBe(false);
+  });
+});
+
+describe("empty lines stay tappable", () => {
+  it("gives a contentless line a touch-sized minimum height", () => {
+    const { container } = render(
+      <RowRenderer
+        {...makeProps({
+          row: makeRow({ content: "" }),
+          glyphSegment: makeGlyphSegment({ content: "" }),
+        })}
+      />,
+    );
+    const row = rowOf(container);
+    expect(row.dataset.empty).toBe("true");
+    expect(row.style.minHeight).toBe("44px");
+  });
+
+  it("renders no canvas for a blank line, so the minimum actually governs", () => {
+    // Without this the minimum is inert: GlyphLineCanvas falls back to
+    // `estimateHeight` (>= 16px) even with nothing to lay out, which plus the
+    // row's 32px of padding already exceeds 44px. The blank row was only
+    // tappable by accident, and paid for a canvas plus a media-clock
+    // subscription to paint nothing.
+    render(
+      <RowRenderer
+        {...makeProps({
+          row: makeRow({ content: "   " }),
+          glyphSegment: makeGlyphSegment({ content: "   " }),
+        })}
+      />,
+    );
+    expect(screen.queryByTestId("glyph-line-canvas")).toBeNull();
+  });
+
+  it("still renders a canvas for a line with content", () => {
+    render(<RowRenderer {...makeProps()} />);
+    expect(screen.queryByTestId("glyph-line-canvas")).not.toBeNull();
+  });
+
+  it("leaves a line with content to its natural height", () => {
+    const { container } = render(<RowRenderer {...makeProps()} />);
+    const row = rowOf(container);
+    expect(row.dataset.empty).toBe("false");
+    expect(row.style.minHeight).toBe("");
+  });
+});
+
+describe("active line scale", () => {
+  it("starts a non-active row slightly shrunk and animates it to full size", () => {
+    const { rerender } = render(
+      <RowRenderer {...makeProps({ isActive: false })} />,
+    );
+    expect(spring.startCalls.at(-1)?.to.scale).toBe(0.97);
+
+    rerender(<RowRenderer {...makeProps({ isActive: true })} />);
+    expect(spring.startCalls.at(-1)?.to.scale).toBe(1);
+  });
+
+  it("scales about the row's own alignment anchor", () => {
+    for (const [role, origin] of [
+      [0, "origin-top-left"],
+      [1, "origin-top-right"],
+      [2, "origin-top"],
+    ] as const) {
+      const { container } = render(
+        <RowRenderer
+          {...makeProps({
+            row: makeRow({ attachments: makeAttachments({ role }) }),
+          })}
+        />,
+      );
+      // Scaling about the aligned edge keeps the text anchor put instead of
+      // drifting the line sideways as it grows.
+      const inner = rowOf(container).firstElementChild as HTMLElement;
+      expect(inner.className).toContain(origin);
+    }
+  });
+
+  it("keeps the scale off the element the virtualizer measures", () => {
+    // The virtualizer sizes rows with `getBoundingClientRect()`, which reports
+    // the *transformed* box, while the ResizeObserver behind `remeasure`
+    // watches `contentRect`, which is transform-blind and so never fires on a
+    // scale change. A scale on the row itself would therefore report ~0.97x its
+    // real height and cache it forever - and since a row mounts at
+    // `scale: isActive ? 1 : 0.97`, whichever row was active at mount would
+    // cache a different height from all the others, skewing every `top` below
+    // it. A transform on a child does not affect the parent's layout box.
+    const { container } = render(
+      <RowRenderer {...makeProps({ isActive: false })} />,
+    );
+    const row = rowOf(container);
+    expect(row.style.transform).toBe("");
+    expect(row.style.scale).toBe("");
+
+    const inner = row.firstElementChild as HTMLElement;
+    expect(inner.style.scale).toBe("0.97");
   });
 });
