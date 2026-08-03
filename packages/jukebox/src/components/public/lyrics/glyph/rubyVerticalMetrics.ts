@@ -18,9 +18,25 @@ import type { RubyLayoutShaper } from "./types";
  *   Hangul actually live - tops out at 0.880 em, so ruby placed against `hhea`
  *   floats 0.210 em higher than the characters it annotates.
  *
- * `sTypoAscender`/`sTypoDescender` give the right box: for Source Han they are
- * exactly the ideographic em box (880 / -120 per 1000 upem), and for Latin
- * faces like Mona Sans they equal `hhea`, so those chains are unaffected.
+ * `sTypoAscender`/`sTypoDescender` give the right box **for fonts that fill it
+ * in properly**: for Source Han they are exactly the ideographic em box
+ * (880 / -120 per 1000 upem).
+ *
+ * Not every font does. Mona Sans reports `sTypo` identical to its `hhea`
+ * (1090 / -320) - a *line box*, the very thing this anchor rejects `hhea` for,
+ * and 0.210 em taller than Source Han's. Because `baseAscentEm` is a `max`
+ * shared across the document, a single Latin ruby base was enough to lift the
+ * ruby row of *every* line by that much.
+ *
+ * A font whose `sTypo` box is byte-identical to its `hhea` box has effectively
+ * declined to declare a typographic box (the `OS/2` spec permits copying, and
+ * many Latin faces do). Only for those fonts is the reservation capped by the
+ * ink the annotated bases actually produce - see
+ * {@link ResolveRubyVerticalMetricsOptions.baseInkAscentEm}. Fonts that *do*
+ * declare a distinct box keep it verbatim, so Source Han still anchors ruby to
+ * the ideographic em box rather than to whichever kanji happen to be on the
+ * line - which is what JLReq specifies and what keeps ruby height stable
+ * regardless of content.
  *
  * **`sTypo` is not an ink bound.** Source Han's own Latin coverage reaches 995
  * and -244 per 1000 upem, well past its box. `measureTypoBoxOverflow` reports
@@ -54,6 +70,28 @@ type MetricsShaper = Pick<RubyLayoutShaper, "fontMetrics">;
  * Em-relative `sTypo` box of one font, falling back to `hhea` when the font's
  * `OS/2` table predates `sTypo*` (v0 tables) or reports a degenerate box.
  */
+/**
+ * Whether the font declares a typographic box *distinct* from its line box.
+ *
+ * `OS/2` allows `sTypoAscender`/`sTypoDescender` to simply repeat
+ * `hhea.ascender`/`descender`, which many Latin faces (Mona Sans included) do.
+ * Such a font has told us nothing about where its text actually sits, so the
+ * caller may fall back to measured ink; a font that does declare a real box
+ * (Source Han's ideographic em box) is authoritative and used as-is.
+ */
+export function declaresTypoBox(
+  shaper: MetricsShaper,
+  fontId: FontId,
+): boolean {
+  const m = shaper.fontMetrics(fontId);
+  const typoAscender = m.typoAscender ?? null;
+  const typoDescender = m.typoDescender ?? null;
+  if (typoAscender === null || typoDescender === null) return false;
+  // A zero/inverted box is unusable, matching `typoBoxEm`'s own fallback.
+  if (!(typoAscender > 0 && typoDescender < 0)) return false;
+  return typoAscender !== m.ascender || typoDescender !== m.descender;
+}
+
 export function typoBoxEm(
   shaper: MetricsShaper,
   fontId: FontId,
@@ -81,15 +119,47 @@ export function typoBoxEm(
  * Returns `null` when neither set has a member, leaving the caller to fall back
  * to paragraph metrics.
  */
+export interface ResolveRubyVerticalMetricsOptions {
+  /**
+   * Tallest ink each base font actually produces across the paragraph's
+   * *annotated* ranges, as a fraction of the base font size.
+   *
+   * Applied **only** to fonts that declare no distinct typographic box (their
+   * `sTypo` equals their `hhea`), which then reserve
+   * `min(sTypoAscender, measured ink)`. Mona Sans fills `sTypo` with its line
+   * box (1.090 em) though its capitals reach just 0.729 em, and a `max` over
+   * fonts would otherwise let that one font lift the ruby row for the whole
+   * document.
+   *
+   * Fonts with a real typographic box - Source Han's ideographic em box - are
+   * never capped: ruby belongs above the em box, not above whichever glyphs the
+   * line happens to contain.
+   *
+   * A font missing from the map, or measuring no ink at all (a fully blank
+   * annotated range), also falls back to its `sTypo` box.
+   */
+  baseInkAscentEm?: ReadonlyMap<FontId, number>;
+}
+
 export function resolveRubyVerticalMetrics(
   shaper: MetricsShaper,
   baseFontIds: Iterable<FontId>,
   rubyFontIds: Iterable<FontId>,
+  options: ResolveRubyVerticalMetricsOptions = {},
 ): RubyVerticalMetrics | null {
   let baseAscentEm = 0;
   let sawBase = false;
   for (const fontId of baseFontIds) {
-    baseAscentEm = Math.max(baseAscentEm, typoBoxEm(shaper, fontId).ascentEm);
+    const typoAscentEm = typoBoxEm(shaper, fontId).ascentEm;
+    const inkAscentEm = options.baseInkAscentEm?.get(fontId);
+    const capByInk =
+      !declaresTypoBox(shaper, fontId) &&
+      inkAscentEm !== undefined &&
+      inkAscentEm > 0;
+    baseAscentEm = Math.max(
+      baseAscentEm,
+      capByInk ? Math.min(typoAscentEm, inkAscentEm) : typoAscentEm,
+    );
     sawBase = true;
   }
 

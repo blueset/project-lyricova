@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   collectRubyClearanceLoss,
+  declaresTypoBox,
   resolveRubyVerticalMetrics,
   typoBoxEm,
 } from "./rubyVerticalMetrics";
@@ -150,5 +151,75 @@ describe("collectRubyClearanceLoss", () => {
         anchors,
       ),
     ).toEqual([{ fontId: 0, overlap: expect.closeTo(2.84, 5) }]);
+  });
+});
+
+describe("capping the base reservation by measured ink", () => {
+  it("stops a Latin line box from lifting the whole document's ruby row", () => {
+    // Font 0 is Mona Sans-shaped: its sTypo is really its hhea line box
+    // (1.090 em) though capitals reach only 0.729 em. Uncapped, a single Latin
+    // ruby base raised the shared anchor by 0.21 em over the pan-CJK box and
+    // pushed ruby visibly away from the text on *every* line.
+    const uncapped = resolveRubyVerticalMetrics(shaper, [0], [1]);
+    expect(uncapped?.baseAscentEm).toBeCloseTo(1.09, 6);
+
+    const capped = resolveRubyVerticalMetrics(shaper, [0], [1], {
+      baseInkAscentEm: new Map([[0, 0.729]]),
+    });
+    expect(capped?.baseAscentEm).toBeCloseTo(0.729, 6);
+  });
+
+  it("never reserves more than sTypo even when ink overshoots it", () => {
+    // sTypo stays the upper bound; overshoot is surfaced as a clearance issue
+    // rather than silently inflating every line.
+    const metrics = resolveRubyVerticalMetrics(shaper, [0], [1], {
+      baseInkAscentEm: new Map([[0, 2]]),
+    });
+    expect(metrics?.baseAscentEm).toBeCloseTo(1.09, 6);
+  });
+
+  it("caps only the font that declared no typographic box", () => {
+    // Font 1 (pan-CJK) declares sTypo 880 against hhea 1160, so its box is
+    // authoritative and survives verbatim - ruby belongs above the ideographic
+    // em box, not above whichever kanji the line happens to contain (JLReq).
+    // Font 0 copied hhea into sTypo, so it is capped to its ink.
+    const metrics = resolveRubyVerticalMetrics(shaper, [0, 1], [1], {
+      baseInkAscentEm: new Map([
+        [0, 0.729], // Latin capitals
+        [1, 0.813], // kanji ink, below the em box
+      ]),
+    });
+    expect(metrics?.baseAscentEm).toBeCloseTo(0.88, 6);
+  });
+
+  it("keeps a real typographic box even when its ink falls short", () => {
+    const metrics = resolveRubyVerticalMetrics(shaper, [1], [1], {
+      baseInkAscentEm: new Map([[1, 0.5]]),
+    });
+    expect(metrics?.baseAscentEm).toBeCloseTo(0.88, 6);
+  });
+
+  it("distinguishes the two cases by sTypo vs hhea", () => {
+    expect(declaresTypoBox(shaper, 0)).toBe(false); // sTypo == hhea
+    expect(declaresTypoBox(shaper, 1)).toBe(true); // 880 vs 1160
+  });
+
+  it("falls back to sTypo for a font with no measured ink", () => {
+    // A fully blank annotated range must not collapse the reservation to zero.
+    for (const ink of [undefined, 0]) {
+      const map = ink === undefined ? new Map() : new Map([[0, ink]]);
+      const metrics = resolveRubyVerticalMetrics(shaper, [0], [1], {
+        baseInkAscentEm: map,
+      });
+      expect(metrics?.baseAscentEm).toBeCloseTo(1.09, 6);
+    }
+  });
+
+  it("leaves the ruby side untouched", () => {
+    const metrics = resolveRubyVerticalMetrics(shaper, [0], [1], {
+      baseInkAscentEm: new Map([[0, 0.729]]),
+    });
+    expect(metrics?.rubyAscentEm).toBeCloseTo(0.88, 6);
+    expect(metrics?.rubyDescentEm).toBeCloseTo(0.12, 6);
   });
 });

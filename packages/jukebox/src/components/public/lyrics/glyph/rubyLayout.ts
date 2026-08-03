@@ -267,10 +267,16 @@ export function layoutRubyParagraph(
   // to see the natural value: if we only echoed the anchor back, the first
   // annotated line would pin it forever and a later line needing a taller box
   // would silently be laid out against the smaller one.
+  const annotatedBases = annotatedBaseFonts(
+    paragraphLayout,
+    placements,
+    fontSize,
+  );
   const naturalRubyMetrics = resolveRubyVerticalMetrics(
     shaper,
-    annotatedBaseFonts(paragraphLayout, placements),
+    annotatedBases.fonts,
     rubyFonts(placements),
+    { baseInkAscentEm: annotatedBases.inkAscentEm },
   );
   const verticalMetrics = request.rubyMetrics ?? naturalRubyMetrics;
   const rubyRow = resolveRubyRowMetrics(
@@ -437,11 +443,23 @@ export function resolveRubyRowMetrics(
  * are excluded on purpose: nothing is placed above them, so their box must not
  * inflate the ruby row.
  */
+/**
+ * The fonts shaping *annotated* base ranges, along with the tallest ink each one
+ * actually reaches there (as a fraction of `fontSize`).
+ *
+ * The ink figure caps how much space that font may reserve above the base: a
+ * font whose `sTypo` box is really a line box (Mona Sans fills it with `hhea`)
+ * would otherwise lift the shared ruby row for the whole document. Unannotated
+ * runs are excluded - no ruby sits above them.
+ */
 function annotatedBaseFonts(
   paragraph: ParagraphLayout,
   placements: readonly PendingRubyPlacement[],
-): Set<number> {
+  fontSize: number,
+): { fonts: Set<number>; inkAscentEm: Map<number, number> } {
   const fonts = new Set<number>();
+  const inkAscentEm = new Map<number, number>();
+  const usableSize = fontSize > 0 ? fontSize : 1;
   for (const placement of placements) {
     const [start, end] = placement.annotation.utf16Range;
     for (const cluster of paragraph.lines[placement.lineIndex]!.clusters) {
@@ -450,10 +468,15 @@ function annotatedBaseFonts(
         cluster.source.utf16End <= end
       ) {
         fonts.add(cluster.fontId);
+        const em = cluster.bounds.yMax / usableSize;
+        inkAscentEm.set(
+          cluster.fontId,
+          Math.max(inkAscentEm.get(cluster.fontId) ?? 0, em),
+        );
       }
     }
   }
-  return fonts;
+  return { fonts, inkAscentEm };
 }
 
 /** Fonts that shaped ruby glyphs; the ruby chain may fall back per grapheme. */
