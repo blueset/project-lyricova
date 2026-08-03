@@ -342,6 +342,23 @@ const FADE_OUT_MS = 375;
 const DOTS_TAIL_MS = 750;
 
 /**
+ * Length of the trailing window the whole choreography is squeezed into, in ms.
+ *
+ * AMLL scales every stage to the *full* gap, which turns the dots into a
+ * progress bar for the interlude: across a 30 s break the fill creeps forward
+ * for half a minute and the breathing period stretches to match. Anchoring the
+ * animation to the **end** of the gap instead makes it a countdown into the next
+ * line - the reading that actually helps a listener - and makes every interlude
+ * behave identically regardless of length.
+ *
+ * `4000` is deliberately {@link MIN_INTERLUDE_GAP_SECONDS}: since no shorter gap
+ * qualifies, the window is the entire gap for a minimum-length interlude and a
+ * trailing slice of any longer one, so no stage is ever compressed below the
+ * timings it was tuned for.
+ */
+export const INTERLUDE_ANIMATION_WINDOW_MS = 4000;
+
+/**
  * `easeOutExpo` easing (AMLL). `easeOutExpo(0) === 0`, `easeOutExpo(1) === 1`,
  * rising very steeply at first. Used for the dots' grow-in.
  */
@@ -431,8 +448,14 @@ export function interludeDotsState(
   if (!(elapsedMs >= 0)) return hiddenDotsState();
   if (elapsedMs > durationMs) return hiddenDotsState();
 
-  const d = elapsedMs;
-  const D = durationMs;
+  // Re-base onto the trailing animation window so the choreography counts down
+  // into the next line instead of stretching across the whole gap. Everything
+  // below is unchanged - it just runs on window-relative time.
+  const windowStart = Math.max(0, durationMs - INTERLUDE_ANIMATION_WINDOW_MS);
+  const d = elapsedMs - windowStart;
+  const D = durationMs - windowStart;
+  // Before the window opens there is nothing to show.
+  if (d < 0) return hiddenDotsState();
   const remaining = D - d;
 
   // Breathing: round the period so a whole number of breaths fits the gap.

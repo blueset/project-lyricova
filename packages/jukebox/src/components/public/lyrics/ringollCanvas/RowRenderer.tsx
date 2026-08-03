@@ -78,7 +78,7 @@ const INACTIVE_LINE_SCALE = 0.97;
  * Guidelines; the row is `box-border`, so this bounds the *whole* row including
  * its `py-4`.
  */
-const EMPTY_LINE_MIN_HEIGHT = 44;
+export const EMPTY_LINE_MIN_HEIGHT = 44;
 
 /**
  * Translation size relative to the main text of the same row, and the floor
@@ -297,7 +297,13 @@ const InnerRowRenderer = forwardRef<HTMLDivElement, RingollCanvasRowProps>(
         ref={setRowRef}
         style={{
           ...rowSprings,
-          ...(empty ? { minHeight: EMPTY_LINE_MIN_HEIGHT } : null),
+          // A blank row has no canvas to give it a box, so it needs both
+          // dimensions stated explicitly. `maxWidth` is exactly what
+          // `GlyphLineCanvas` sizes its root to, so the hit area of a blank line
+          // matches every other line's instead of shrink-wrapping to nothing.
+          ...(empty
+            ? { minHeight: EMPTY_LINE_MIN_HEIGHT, width: maxWidth }
+            : null),
         }}
         onClick={onClick}
         data-role={role}

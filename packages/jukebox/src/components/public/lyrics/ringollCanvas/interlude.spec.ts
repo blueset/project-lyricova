@@ -7,6 +7,7 @@ import {
   interludeAnchorOffsetPx,
   interludeDotsState,
   INTERLUDE_ANCHOR_OFFSET_RATIO,
+  INTERLUDE_ANIMATION_WINDOW_MS,
   INTERLUDE_DOT_COUNT,
   INTERLUDE_DOT_DIAMETER,
   INTERLUDE_DOT_GAP_EM,
@@ -235,14 +236,16 @@ describe("activeInterlude", () => {
 });
 
 describe("interludeDotsState", () => {
-  const D = 8000;
+  // Exactly the trailing animation window, so window-relative time equals
+  // gap-relative time and each stage constant can be asserted directly.
+  const D = 4000;
 
   it("matches a hand-computed reference frame", () => {
-    const s = interludeDotsState(3000, D);
-    expect(s.scale).toBeCloseTo(0.707378, 5);
+    const s = interludeDotsState(1500, D);
+    expect(s.scale).toBeCloseTo(0.717998, 5);
     expect(s.opacity).toBe(1);
-    expect(s.dotOpacities[0]).toBeCloseTo(0.931034, 5);
-    expect(s.dotOpacities[1]).toBeCloseTo(0.25, 6);
+    expect(s.dotOpacities[0]).toBeCloseTo(1, 6);
+    expect(s.dotOpacities[1]).toBeCloseTo(0.288462, 5);
     expect(s.dotOpacities[2]).toBeCloseTo(0.25, 6);
   });
 
@@ -286,7 +289,7 @@ describe("interludeDotsState", () => {
     });
 
     it("breathes within +/-5% of 1 (times the 0.7 multiplier) mid-interlude", () => {
-      const big = 10000;
+      const big = 4000;
       let min = Infinity;
       let max = -Infinity;
       for (let d = 2000; d <= big - 750; d += 50) {
@@ -303,8 +306,8 @@ describe("interludeDotsState", () => {
 
     it("includes the 0.7 size multiplier in the output", () => {
       // Mid-interlude the only scale factors are breathing and 0.7.
-      const s = interludeDotsState(5000, 10000);
-      expect(s.scale / breathingScale(5000, 10000)).toBeCloseTo(
+      const s = interludeDotsState(2000, 4000);
+      expect(s.scale / breathingScale(2000, 4000)).toBeCloseTo(
         INTERLUDE_DOT_SIZE_MULTIPLIER,
         6,
       );
@@ -317,31 +320,31 @@ describe("interludeDotsState", () => {
 
       // Early in the flourish the multiplier exceeds 1 (bump), because
       // easeInOutBack dips negative there.
-      expect(flourish(5400, 6000)).toBeCloseTo(1 - easeInOutBack(0.1), 6);
-      expect(flourish(5400, 6000)).toBeGreaterThan(1);
+      expect(flourish(3400, 4000)).toBeCloseTo(1 - easeInOutBack(0.1), 6);
+      expect(flourish(3400, 4000)).toBeGreaterThan(1);
 
       // At the very end it collapses to half (x reaches only 0.5), not zero.
-      expect(flourish(6000, 6000)).toBeCloseTo(0.5, 6);
+      expect(flourish(4000, 4000)).toBeCloseTo(0.5, 6);
 
       // Absolute scale: the bump raises it above the pre-flourish entry frame,
       // then it ends well below that entry.
-      const entry = interludeDotsState(5250, 6000).scale; // remaining == 750, no flourish yet
+      const entry = interludeDotsState(3250, 4000).scale; // remaining == 750, no flourish yet
       let peak = -Infinity;
-      for (let d = 5251; d <= 6000; d += 5) {
-        peak = Math.max(peak, interludeDotsState(d, 6000).scale);
+      for (let d = 3251; d <= 4000; d += 5) {
+        peak = Math.max(peak, interludeDotsState(d, 4000).scale);
       }
       expect(peak).toBeGreaterThan(entry);
-      expect(interludeDotsState(6000, 6000).scale).toBeLessThan(entry);
+      expect(interludeDotsState(4000, 4000).scale).toBeLessThan(entry);
     });
   });
 
   describe("per-dot opacity", () => {
-    const big = 10000; // dotsDuration = 9250
+    const big = 4000; // dotsDuration = 3250
 
     it("fills left-to-right, clamped between the 0.25 floor and 1.0 ceiling", () => {
-      const s = interludeDotsState(5000, big);
+      const s = interludeDotsState(2000, big);
       expect(s.dotOpacities[0]).toBeCloseTo(1, 6); // leading dot at the ceiling
-      expect(s.dotOpacities[1]).toBeCloseTo(0.466216, 5);
+      expect(s.dotOpacities[1]).toBeCloseTo(0.634615, 5);
       expect(s.dotOpacities[2]).toBeCloseTo(0.25, 6); // trailing dot at the floor
       // Monotonically non-increasing across dots (left fills before right).
       expect(s.dotOpacities[0]).toBeGreaterThanOrEqual(s.dotOpacities[1]!);
@@ -561,3 +564,53 @@ describe("findInterludeGaps with blank lines", () => {
     expect(between[0].nextLineIndex).toBe(2);
   });
 });
+
+describe("trailing animation window", () => {
+  it("shows nothing until the window opens on a long interlude", () => {
+    // A 30 s break: the choreography is a countdown into the next line, not a
+    // progress bar for the whole gap.
+    const D = 30000;
+    for (const d of [0, 5000, 20000, 25999]) {
+      expect(interludeDotsState(d, D)).toEqual({
+        scale: 0,
+        opacity: 0,
+        dotOpacities: [0, 0, 0],
+      });
+    }
+    expect(interludeDotsState(27000, D).opacity).toBeGreaterThan(0);
+  });
+
+  it("plays an identical animation regardless of interlude length", () => {
+    // Same distance from the end => same frame, for any gap at or above the
+    // window length.
+    for (const offset of [0, 250, 1200, 2500, 3500]) {
+      const short = interludeDotsState(4000 - offset, 4000);
+      const long = interludeDotsState(30000 - offset, 30000);
+      expect(long.scale).toBeCloseTo(short.scale, 10);
+      expect(long.opacity).toBeCloseTo(short.opacity, 10);
+      long.dotOpacities.forEach((o, i) =>
+        expect(o).toBeCloseTo(short.dotOpacities[i]!, 10),
+      );
+    }
+  });
+
+  it("still uses the whole gap when it is exactly the window", () => {
+    // The window is MIN_INTERLUDE_GAP_SECONDS, so the shortest qualifying gap
+    // is never compressed below the timings each stage was tuned for.
+    expect(INTERLUDE_ANIMATION_WINDOW_MS).toBe(
+      MIN_INTERLUDE_GAP_SECONDS * 1000,
+    );
+    expect(interludeDotsState(0, 4000).opacity).toBe(0); // pre-ramp, not pre-window
+    expect(interludeDotsState(1000, 4000).opacity).toBe(1);
+  });
+
+  it("keeps the dots fully filled by the end of any interlude", () => {
+    for (const D of [4000, 9000, 30000]) {
+      const last = interludeDotsState(D - DOTS_TAIL_EQUIV, D);
+      expect(last.dotOpacities[2]).toBeGreaterThan(0.25);
+    }
+  });
+});
+
+/** The per-dot fill completes `DOTS_TAIL_MS` before the window ends. */
+const DOTS_TAIL_EQUIV = 750;

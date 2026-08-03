@@ -148,7 +148,9 @@ describe("InterludeDots choreography", () => {
   it("writes scale and per-dot opacity from interludeDotsState (start, mid, near-end)", () => {
     const { player } = renderDots();
 
-    for (const currentTime of [2.6, 10, 19.7]) {
+    // The choreography occupies the trailing 4 s of the gap ([15.75, 19.75]
+    // here), so the sampled frames are start/mid/near-end *of that window*.
+    for (const currentTime of [16.4, 17.75, 19.7]) {
       tick(player, currentTime);
       const state = expectedState(currentTime, GAP);
 
@@ -171,12 +173,12 @@ describe("InterludeDots choreography", () => {
 
   it("keeps the group hidden (opacity 0) during the first 500 ms", () => {
     const { player } = renderDots();
-    tick(player, 2.1); // elapsed 100 ms < 500 ms
+    tick(player, 15.85); // 100 ms into the trailing window, < 500 ms
 
     const group = screen.getByTestId("interlude-dots-group");
     expect(group.style.opacity).toBe("0");
     // The model agrees the indicator is hidden this early.
-    expect(expectedState(2.1, GAP).opacity).toBe(0);
+    expect(expectedState(15.85, GAP).opacity).toBe(0);
   });
 
   it("right-aligns the indicator for a duet gap", () => {
@@ -216,12 +218,12 @@ describe("InterludeDots is driven off the DOM, not React", () => {
 
   it("freezes on the last painted frame when playback pauses mid-interlude", () => {
     const { player } = renderDots();
-    tick(player, 10); // mid-interlude, playing
+    tick(player, 17.75); // mid animation window, playing
 
     const group = screen.getByTestId("interlude-dots-group");
     const frozenTransform = group.style.transform;
     const frozenOpacity = group.style.opacity;
-    expect(frozenTransform).toBe(`scale(${expectedState(10, GAP).scale})`);
+    expect(frozenTransform).toBe(`scale(${expectedState(17.75, GAP).scale})`);
     expect(frozenOpacity).not.toBe("0");
 
     // Pausing at the same position must not reset or jump the indicator, and it

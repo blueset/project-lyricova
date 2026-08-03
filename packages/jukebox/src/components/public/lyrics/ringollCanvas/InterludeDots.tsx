@@ -11,7 +11,6 @@ import {
 import type { PlaybackSnapshot } from "../../../../hooks/types";
 import {
   activeInterlude,
-  interludeAnchorOffsetPx,
   interludeDotsState,
   INTERLUDE_DOT_COUNT,
   INTERLUDE_DOT_DIAMETER,
@@ -131,7 +130,6 @@ export function InterludeDots({
   activeGapRef.current = activeGap;
 
   const safeFontSize = Number.isFinite(fontSize) && fontSize > 0 ? fontSize : 0;
-  const anchorOffsetPx = interludeAnchorOffsetPx(safeFontSize);
 
   // Imperatively paint the current frame straight to the DOM. No React state is
   // touched, so animation never triggers a re-render.
@@ -197,10 +195,11 @@ export function InterludeDots({
         activeGap.isNextDuet ? "justify-end" : "justify-start",
         className,
       )}
-      style={{
-        fontSize: `${safeFontSize}px`,
-        marginBottom: `${anchorOffsetPx}px`,
-      }}
+      // Vertical placement is owned by the container that anchors this overlay
+      // (it centres the group in the blank-line band); AMLL's `dotMargin` is
+      // deliberately not applied as a margin here, since inside a centring
+      // parent it would skew the group off-centre by half its value.
+      style={{ fontSize: `${safeFontSize}px` }}
     >
       <div
         ref={groupRef}

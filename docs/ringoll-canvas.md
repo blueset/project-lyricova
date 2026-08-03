@@ -127,6 +127,14 @@ The three vertical contributions — float, emphasis lift, bob — **sum** into 
 ### Interlude dots
 
 Shown when a gap between lines is `≥ 4000 ms`, ending `250 ms` before the next line.
+The choreography below is **re-based onto the trailing 4000 ms of the gap**, not
+stretched across all of it. AMLL scales every stage to the full gap, which turns the
+dots into a progress bar — across a 30 s break the fill creeps forward for half a minute
+and the breathing period stretches to match. Anchoring to the end makes it a countdown
+into the next line and makes every interlude behave identically regardless of length.
+The window is deliberately the same 4000 ms as the minimum qualifying gap, so the
+shortest interlude uses its whole span and no stage is ever compressed below the timing
+it was tuned for.
 Three DOM circles — they need no text shaping, so canvas would buy nothing — animated
 on the same media clock:
 
@@ -194,12 +202,29 @@ translation must never render _larger_ than the line it translates.
   _different_ height from every other row and skew every `top` below it. A transform on
   a child does not affect its parent's layout box.
 
-- **A blank line reserves a 44 px row and renders no canvas.** 44 px is the smallest
+- **A blank line reserves a 44 px row at the full wrap width, and renders no canvas.**
+  Content rows take their width from the canvas root (`width: maxWidth`), so without an
+  explicit width a canvas-less row would shrink-wrap to nothing and be far harder to tap
+  than its neighbours. The interlude overlay is centred in a band of exactly this
+  height, so the dots land in the middle of a blank line's hit area — which is where
+  they appear, since blank lines *are* the interludes. 44 px is the smallest
   comfortable touch target in Apple's HIG, and the row owns the seek `onClick`. Skipping
   the canvas is what lets that minimum actually govern: `GlyphLineCanvas` falls back to
   an estimated height even with nothing to lay out, which together with the row padding
   already exceeded 44 px — so the blank row was only tappable by accident, while still
   paying for a canvas and a media-clock subscription to paint nothing.
+
+## Font variations
+
+Every canvas renderer shapes with `wght=600, opsz=72` (`GLYPH_VARIATIONS`).
+
+`opsz=72` is not decoration. Mona Sans exposes an `opsz` axis spanning `0–100` whose
+**default is `0`**, while all 160 of its named instances use `72` — so pinning only
+`wght` rendered Latin at an optical size the font was never designed for. Measured over
+"Blessings for your everyday" at 60 px, `opsz=0` is 7 % wider with 3 % less ink than
+`opsz=72`: **11 % less dense**, which reads as a lighter weight beside CJK even though
+the stems are identical (both fonts give `0.130 em` at `wght=600`). Source Han Sans has
+no `opsz` axis and unknown axes are ignored per font, so one shared list is safe.
 
 ## Discipline this renderer follows
 

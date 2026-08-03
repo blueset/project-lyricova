@@ -46,8 +46,20 @@ import type { RubyVerticalMetrics } from "./rubyVerticalMetrics";
 
 /** OpenType features every canvas renderer shapes with. */
 export const GLYPH_FEATURES = ["palt=1"] as const;
-/** Variable-font axis settings every canvas renderer shapes with. */
-export const GLYPH_VARIATIONS = ["wght=600"] as const;
+/**
+ * Variable-font axis settings every canvas renderer shapes with.
+ *
+ * `opsz=72` is **not** optional padding. Mona Sans exposes an `opsz` axis whose
+ * range is `0-100` but whose *default is `0`*, while all 160 of its named
+ * instances use `72`. Pinning only `wght` therefore rendered Latin at an optical
+ * size the font was never designed to be used at: measured over
+ * "Blessings for your everyday" at 60 px, `opsz=0` is 7% wider with 3% less ink
+ * than `opsz=72`, i.e. **11% less dense** - which reads as a lighter weight
+ * beside CJK text even though the stems are identical (0.130 em at `wght=600`).
+ * Source Han Sans has no `opsz` axis, so it is unaffected; unknown axes are
+ * ignored per font, which is why one shared list is safe.
+ */
+export const GLYPH_VARIATIONS = ["wght=600", "opsz=72"] as const;
 
 /**
  * Probe text guaranteeing a usable base font: the chain's first member is the
