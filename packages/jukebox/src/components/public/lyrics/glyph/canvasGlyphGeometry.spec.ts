@@ -10,6 +10,7 @@ import {
   glyphFlipMatrix,
   IDENTITY,
   karaokeFillClip,
+  karaokeFillFront,
   multiply,
   rotation,
   scaling,
@@ -274,5 +275,49 @@ describe("karaokeFillClip", () => {
   it("clamps out-of-range fractions", () => {
     expect(karaokeFillClip(extent, 2, "ltr").width).toBe(40);
     expect(karaokeFillClip(extent, -1, "ltr").width).toBe(0);
+  });
+});
+
+describe("karaokeFillFront", () => {
+  const extent: FillExtent = { left: 0, right: 40, top: -10, bottom: 4 };
+
+  it("tracks the ltr clip's right (leading) edge", () => {
+    for (const fraction of [0, 0.25, 0.5, 1]) {
+      const clip = karaokeFillClip(extent, fraction, "ltr");
+      expect(karaokeFillFront(extent, fraction, "ltr")).toBeCloseTo(
+        clip.x + clip.width,
+        6,
+      );
+    }
+    expect(karaokeFillFront(extent, 0.25, "ltr")).toBe(10);
+  });
+
+  it("tracks the rtl clip's left (leading) edge", () => {
+    for (const fraction of [0, 0.25, 0.5, 1]) {
+      const clip = karaokeFillClip(extent, fraction, "rtl");
+      expect(karaokeFillFront(extent, fraction, "rtl")).toBeCloseTo(clip.x, 6);
+    }
+    expect(karaokeFillFront(extent, 0.25, "rtl")).toBe(30);
+  });
+
+  it("sits at the reading-start edge at 0 and the far edge at 1", () => {
+    expect(karaokeFillFront(extent, 0, "ltr")).toBe(0);
+    expect(karaokeFillFront(extent, 1, "ltr")).toBe(40);
+    expect(karaokeFillFront(extent, 0, "rtl")).toBe(40);
+    expect(karaokeFillFront(extent, 1, "rtl")).toBe(0);
+  });
+
+  it("clamps out-of-range fractions", () => {
+    expect(karaokeFillFront(extent, 2, "ltr")).toBe(40);
+    expect(karaokeFillFront(extent, -1, "ltr")).toBe(0);
+    expect(karaokeFillFront(extent, 2, "rtl")).toBe(0);
+    expect(karaokeFillFront(extent, -1, "rtl")).toBe(40);
+  });
+
+  it("honours a negative left bearing / advance overshoot in the span", () => {
+    const wide: FillExtent = { left: -6, right: 46, top: -30, bottom: 12 };
+    // Half-swept front is the midpoint of the full [-6, 46] span.
+    expect(karaokeFillFront(wide, 0.5, "ltr")).toBe(20);
+    expect(karaokeFillFront(wide, 0.5, "rtl")).toBe(20);
   });
 });

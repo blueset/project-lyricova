@@ -257,13 +257,17 @@ export function layoutRubyParagraph(
   }
 
   const placements = [...pendingByLine.values()].flat();
-  const verticalMetrics =
-    request.rubyMetrics ??
-    resolveRubyVerticalMetrics(
-      shaper,
-      annotatedBaseFonts(paragraphLayout, placements),
-      rubyFonts(placements),
-    );
+  // Always resolve what *this* paragraph's own fonts need, even when the caller
+  // supplies a shared anchor. A caller accumulating a document-wide maximum has
+  // to see the natural value: if we only echoed the anchor back, the first
+  // annotated line would pin it forever and a later line needing a taller box
+  // would silently be laid out against the smaller one.
+  const naturalRubyMetrics = resolveRubyVerticalMetrics(
+    shaper,
+    annotatedBaseFonts(paragraphLayout, placements),
+    rubyFonts(placements),
+  );
+  const verticalMetrics = request.rubyMetrics ?? naturalRubyMetrics;
   const rubyRow = resolveRubyRowMetrics(
     paragraphLayout,
     fontSize,
@@ -320,6 +324,7 @@ export function layoutRubyParagraph(
     baseDirection: paragraphLayout.baseDirection,
     rubyRow,
     rubyMetrics: verticalMetrics,
+    naturalRubyMetrics,
     rubies: lines.flatMap((line) => line.rubies),
     issues,
     missingFontRanges: paragraphLayout.missingFontRanges ?? [],

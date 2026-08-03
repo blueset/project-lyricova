@@ -453,6 +453,13 @@ FIXTURE_URL="http://<LAN_IP>:4173/glyph.html" \
   not covered by the automated suite or claimed as supported.
 - **No real Android device coverage in this environment** — see above.
 
+## Related
+
+[`ringoll-canvas.md`](./ringoll-canvas.md) documents **Ringoll Canvas**, a renderer
+built on this engine that keeps Ringoll's virtualized scrolling and adds AMLL's
+karaoke sweep, per-character emphasis and interlude dots. It shares this PoC's runtime
+(`glyph/glyphRuntime.tsx`) rather than duplicating it.
+
 ## Further reading
 
 - [`packages/glyph-renderer/README.md`](../packages/glyph-renderer/README.md) —

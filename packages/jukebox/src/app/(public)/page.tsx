@@ -38,6 +38,17 @@ const GlyphCanvasLyrics = dynamic(
   { ssr: false },
 );
 
+// Ringoll's scrolling architecture with its text painted by the WASM glyph
+// engine, plus AMLL's karaoke sweep, emphasis and interlude dots. Lazily loaded
+// for the same reason as the PoC above: it pulls in the shaper and fonts.
+const RingollCanvasLyrics = dynamic(
+  () =>
+    import("@/components/public/lyrics/ringollCanvas/ringollCanvas").then(
+      (m) => m.RingollCanvasLyrics,
+    ),
+  { ssr: false },
+);
+
 const args = new URLSearchParams(
   typeof window === "object" ? (window?.location?.search ?? "") : "",
 );
@@ -104,6 +115,7 @@ const MODULE_LIST = {
   "Stroke": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <StrokeLyrics lyrics={lyrics} />,
   "PIP (Alpha)": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <PictureInPictureLyrics lyrics={lyrics} />,
   "Glyph Canvas (PoC)": (lyrics: LyricsKitLyrics, transLangIdx = 0) => <GlyphCanvasLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
+  "Ringoll Canvas": (lyrics: LyricsKitLyrics, transLangIdx = 0) => <RingollCanvasLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
 } as const;
 
 export default function Index() {

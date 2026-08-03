@@ -3,10 +3,9 @@
 import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import {
   lineBreakOpportunities,
-  type GlyphShaper,
   type ShapedCluster,
 } from "@lyricova/glyph-renderer";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { cn } from "@lyricova/components/utils";
 import { useAppContext } from "@/components/public/AppContext";
 import { useResizeObserver } from "../../../../hooks/useResizeObserver";
@@ -22,7 +21,7 @@ import type {
   GlyphCanvasContext,
 } from "./canvasGlyphRenderer";
 import { drawCluster } from "./canvasGlyphRenderer";
-import { GlyphPathCache } from "./glyphOutlineCache";
+import type { GlyphPathCache } from "./glyphOutlineCache";
 import {
   clusterFill,
   revealedOffset,
@@ -41,11 +40,15 @@ import {
   wrapCanvasText,
   type CanvasTextLayout,
 } from "./canvasTextWrap";
-import { createGlyphShaper, initGlyphRuntime } from "./fontLoader";
-import { GlyphFontManager, type GlyphFontSelection } from "./glyphFontManager";
-import { layoutRubyParagraph } from "./rubyLayout";
-import type { RubyLayoutIssue, RubyLayoutResult } from "./types";
-import type { RubyVerticalMetrics } from "./rubyVerticalMetrics";
+import {
+  GLYPH_VARIATIONS,
+  GlyphRuntimeProvider,
+  canvasPixelRatio,
+  responsiveFontSize,
+  useGlyphRuntime,
+  useGlyphRuntimeVersion,
+} from "./glyphRuntime";
+import type { RubyLayoutResult } from "./types";
 
 /**
  * Proof-of-concept "Glyph Canvas" lyric renderer built on
@@ -53,20 +56,43 @@ import type { RubyVerticalMetrics } from "./rubyVerticalMetrics";
  *
  * The whole module is lazily imported (see `MODULE_LIST` in
  * `src/app/(public)/page.tsx`) so neither the WASM shaper nor any font is
- * loaded until this renderer is actually selected. On mount it initializes the
- * WASM runtime from the local byte route and creates an empty {@link GlyphShaper}
- * plus a coverage-aware {@link GlyphFontManager}, but it does **not** prefetch
- * the fallback chain: it reaches `ready` as soon as the runtime/manager exist.
+ * loaded until this renderer is actually selected.
  *
- * Fonts are then downloaded *per lyric line*: because {@link draw} is
- * synchronous and driven by the media clock, each segment's font
- * {@link GlyphFontSelection} is resolved off the clock into a synchronously
- * readable cache (keyed by the segment's shaped text). A segment whose
- * selection is not yet cached is skipped for the current frame while an async
- * `ensureFontsFor(...)` is kicked off (deduped per text); on completion the
- * selection is cached, that segment's layout is invalidated, and the current
- * snapshot is repainted. This means a Latin-only line never downloads the
- * multi-megabyte Source Han members at all.
+ * ## What this component owns vs. what the runtime owns
+ *
+ * The WASM shaper, the coverage-aware font manager, the glyph-outline cache,
+ * the paragraph layout cache and the document-level ruby anchors used to live
+ * here. They were hoisted into {@link ./glyphRuntime} so a future virtualized
+ * renderer (one canvas *per row*) can share a single copy across every row
+ * instead of each row re-initializing WASM and re-downloading fonts. This
+ * component now *consumes* that shared runtime and keeps only what is genuinely
+ * its own: the single full-viewport `<canvas>` and its synchronous draw loop,
+ * the {@link useMediaClock} wiring, segment selection/stacking, the karaoke
+ * fill and cluster entrance animation, native-canvas translation layout
+ * ({@link wrapCanvasText}), the non-fatal warning banner, and reveal-tag
+ * validation.
+ *
+ * It is mounted standalone from `page.tsx` (not inside a provider), so
+ * {@link GlyphCanvasLyrics} wraps its own {@link GlyphRuntimeProvider} around an
+ * inner component that reads the runtime via {@link useGlyphRuntime}. A caller
+ * that already owns a provider (the virtualized renderer) would render the
+ * inner component directly.
+ *
+ * ## The pull-based runtime contract
+ *
+ * {@link draw} is synchronous and driven by the media clock, so it cannot await
+ * fonts. It calls {@link GlyphRuntime.layoutLine} for each active line, which
+ * resolves the line's font selection internally and returns `null` while the
+ * fonts are still in flight (a Latin-only line therefore never downloads the
+ * multi-megabyte Source Han members). A line whose layout is not ready is
+ * simply skipped for this frame - its translation still draws - and the runtime
+ * bumps a version counter when the fonts land. This component subscribes with
+ * {@link useGlyphRuntimeVersion} and repaints the current snapshot on every
+ * bump, rather than the runtime pushing a draw into it.
+ *
+ * `translationCacheRef` stays local on purpose: native-canvas translation
+ * measurement needs the `CanvasRenderingContext2D` this component owns, which
+ * the runtime deliberately does not.
  *
  * Painting is driven exclusively by {@link useMediaClock}/{@link PlaybackSnapshot}
  * - there is no independent `requestAnimationFrame` loop and no per-frame React
@@ -78,8 +104,6 @@ interface Props {
   lyrics: LyricsKitLyrics;
   transLangIdx?: number;
 }
-
-type LoadStatus = "loading" | "ready" | "error";
 
 const PADDING = 32;
 const SEGMENT_GAP = 16;
@@ -94,124 +118,10 @@ const MINOR_INACTIVE = "rgba(255, 255, 255, 0.22)";
 const MINOR_ACTIVE = "rgba(255, 255, 255, 0.7)";
 const TRANSLATION_COLOR = "rgba(255, 255, 255, 0.75)";
 const TRANSLATION_FONT = "ui-sans-serif, system-ui, sans-serif";
-const GLYPH_FEATURES = ["palt=1"] as const;
-const GLYPH_VARIATIONS = ["wght=600"] as const;
-
-/**
- * Probe text used to guarantee a usable base font. The chain's first member is
- * the small Latin fallback (`mona-sans-latin-otf`), which by construction
- * covers ASCII including U+0020 SPACE, so selecting for a lone space fetches
- * *only* that ~1.31 MiB font. It is used to shape lines whose coverage-driven
- * selection is empty (e.g. an all-emoji line) so the shaper never receives an
- * empty font chain (which would throw `EmptyFontChain`); the uncoverable
- * characters simply render as tofu.
- */
-const BASE_FALLBACK_PROBE = " ";
-
-/**
- * Absolute cap on ruby size for this renderer, in CSS px. The base size is
- * viewport-responsive (see {@link responsiveFontSize}), so ruby tracks it by
- * ratio; this cap keeps furigana from becoming a distracting second headline
- * at the largest base sizes. It is a *design* decision belonging to this
- * player overlay, which is why the ruby layout engine takes it as a parameter
- * rather than baking one in.
- */
-const RUBY_FONT_SIZE_MAX = 20;
-/** Floor for the same reason, so ruby stays legible on a narrow viewport. */
-const RUBY_FONT_SIZE_MIN = 10;
-/**
- * Clearance between the ruby row and the base text's typographic top, as a
- * fraction of the ruby size.
- *
- * The layout anchors the row to the base font's `OS/2` sTypo box, so with a gap
- * of `0` the two boxes touch exactly. A small positive gap both looks better
- * and absorbs the fonts that draw past their declared box (see the
- * `rubyClearanceLost` issue).
- */
-const RUBY_GAP_EM = 0.25;
-
-/**
- * Ruby layout issues are non-fatal by contract, so the layout returns them
- * rather than throwing. Without a consumer they would vanish silently, which
- * makes a genuine problem (a malformed furigana range, ruby colliding with the
- * base text) invisible in a browser.
- *
- * Each distinct issue is logged once per line and kind: layouts are cached, but
- * a resize re-runs them at a new font size, and repeating the same warning on
- * every resize frame would be worse than useless. `console.warn` rather than
- * `error` because every one of them is recovered from - the annotation is
- * skipped, clamped, or nudged - and none stops the render.
- */
-const reportedRubyIssues = new Set<string>();
-
-export function reportRubyIssues(
-  lineIndex: number,
-  issues: readonly RubyLayoutIssue[],
-): void {
-  for (const issue of issues) {
-    const key = `${lineIndex}\u0000${issue.kind}`;
-    if (reportedRubyIssues.has(key)) continue;
-    reportedRubyIssues.add(key);
-    console.warn(
-      `[GlyphCanvas] ruby layout issue on line ${lineIndex + 1}: ${issue.kind}`,
-      issue,
-    );
-  }
-}
-
-/**
- * Widens the document-level ruby anchors to cover `candidate`. Returns `true`
- * when anything grew, which invalidates rows computed from the narrower value.
- */
-function widenRubyMetrics(
-  ref: { current: RubyVerticalMetrics | null },
-  candidate: RubyVerticalMetrics | null,
-): boolean {
-  if (!candidate) return false;
-  const current = ref.current;
-  if (!current) {
-    ref.current = { ...candidate };
-    return true;
-  }
-  const merged: RubyVerticalMetrics = {
-    baseAscentEm: Math.max(current.baseAscentEm, candidate.baseAscentEm),
-    rubyAscentEm: Math.max(current.rubyAscentEm, candidate.rubyAscentEm),
-    rubyDescentEm: Math.max(current.rubyDescentEm, candidate.rubyDescentEm),
-  };
-  const grew =
-    merged.baseAscentEm > current.baseAscentEm ||
-    merged.rubyAscentEm > current.rubyAscentEm ||
-    merged.rubyDescentEm > current.rubyDescentEm;
-  if (grew) ref.current = merged;
-  return grew;
-}
-
-function getDevicePixelRatio(): number {
-  if (typeof window === "undefined") return 1;
-  return window.devicePixelRatio || 1;
-}
-
-function responsiveFontSize(width: number, height: number): number {
-  const basis = Math.min(width, height * 1.6);
-  return Math.max(22, Math.min(56, Math.round(basis / 16)));
-}
 
 function errorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   return String(error);
-}
-
-/**
- * The full text shaped for a segment: its base content plus every furigana
- * `content` (ruby is shaped too, with the same fallback chain). Font selection
- * must cover all of it, so this is the key used for both the selection cache
- * and the `ensureFontsFor(...)` argument.
- */
-function segmentShapeText(segment: GlyphLyricSegment): string {
-  if (segment.furigana.length === 0) return segment.content;
-  let text = segment.content;
-  for (const annotation of segment.furigana) text += annotation.content;
-  return text;
 }
 
 interface SegmentLayout {
@@ -225,48 +135,36 @@ interface SegmentLayout {
   translationLayout: CanvasTextLayout | null;
 }
 
-export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
+export function GlyphCanvasLyrics(props: Props) {
+  // This PoC is mounted standalone from `page.tsx`, not inside a provider, so
+  // it owns the shared runtime here rather than pushing that requirement onto
+  // callers (see the module doc). A future virtualized renderer will instead
+  // host one <GlyphRuntimeProvider> around many rows and render the inner
+  // component directly, so the runtime is shared across rows.
+  return (
+    <GlyphRuntimeProvider>
+      <GlyphCanvasLyricsInner {...props} />
+    </GlyphRuntimeProvider>
+  );
+}
+
+function GlyphCanvasLyricsInner({ lyrics, transLangIdx }: Props) {
   const { playerRef } = useAppContext();
+  // The shared WASM/font/layout runtime. Its `status`/`error`/`escalationError`
+  // drive the loading/error/warning UI below; `layoutLine`/`pathCache` drive the
+  // draw loop. It returns `null` from its synchronous getters while work is in
+  // flight and bumps a version we subscribe to (see `runtimeVersion`).
+  const runtime = useGlyphRuntime();
+  const { status, error, escalationError, resetDocument } = runtime;
   const language = lyrics.translationLanguages?.[transLangIdx ?? 0] ?? null;
   const trackDuration = lyrics.length ?? null;
 
-  const [status, setStatus] = useState<LoadStatus>("loading");
-  const [error, setError] = useState<string | null>(null);
-  // Non-fatal: a line whose extra fallback font could not be loaded (its
-  // `escalateFallback()` rejected). Surfaced in the warning banner so the
-  // partially-rendered (tofu) line is observable without blanking the view.
-  const [escalationError, setEscalationError] = useState<string | null>(null);
-
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const shaperRef = useRef<GlyphShaper | null>(null);
-  const fontManagerRef = useRef<GlyphFontManager | null>(null);
-  const cacheRef = useRef<GlyphPathCache | null>(null);
-  const layoutCacheRef = useRef<Map<string, RubyLayoutResult>>(new Map());
-  // Reverse index: shaped text -> the layout cache keys produced for it, so a
-  // single text's cached layouts can be invalidated precisely when its font
-  // selection changes (readiness / escalation) without clearing the whole cache.
-  const layoutKeysByTextRef = useRef<Map<string, Set<string>>>(new Map());
+  // Native-canvas translation measurement cache. Deliberately kept local rather
+  // than in the runtime: it is keyed by (and produced from) the
+  // `CanvasRenderingContext2D` this component owns, which the runtime does not.
   const translationCacheRef = useRef<Map<string, CanvasTextLayout>>(new Map());
-  // Component-local, synchronously readable font selection cache keyed by a
-  // segment's shaped text (see `segmentShapeText`). `draw` reads this without
-  // awaiting; misses kick off an async preparation.
-  const selectionCacheRef = useRef<Map<string, GlyphFontSelection>>(new Map());
-  // Texts with an in-flight `ensureFontsFor(...)` preparation (per-text dedupe).
-  // Document-level ruby anchors. Each paragraph reports the boxes of the fonts
-  // it actually used; widening a shared value and dropping stale layouts keeps
-  // every line's ruby row identical instead of letting it track each line's own
-  // script. Monotonic, so it converges after the first few distinct scripts.
-  const rubyMetricsRef = useRef<RubyVerticalMetrics | null>(null);
-  const preparingRef = useRef<Set<string>>(new Set());
-  // Texts whose escalation decision has already been made, so escalation can
-  // never loop (each text is considered exactly once).
-  const escalatedRef = useRef<Set<string>>(new Set());
-  // Lazily-loaded, memoized guaranteed base selection (see BASE_FALLBACK_PROBE).
-  const baseSelectionRef = useRef<Promise<GlyphFontSelection> | null>(null);
   const snapshotRef = useRef<PlaybackSnapshot | null>(null);
-  // Points at the latest `draw` so async preparations repaint the *current*
-  // snapshot without being a dependency of the stable callbacks below.
-  const drawRef = useRef<(snapshot: PlaybackSnapshot | null) => void>(() => {});
 
   const {
     ref: containerRef,
@@ -310,209 +208,6 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
     return { invalidTimingLines: invalid, timingWarnings: warnings };
   }, [segments]);
 
-  const layoutForSegment = useCallback(
-    (
-      segment: GlyphLyricSegment,
-      fontSize: number,
-      maxWidth: number | null,
-      selection: GlyphFontSelection,
-    ): RubyLayoutResult | null => {
-      const shaper = shaperRef.current;
-      if (!shaper) return null;
-      const trimmed = segment.content.trim();
-      if (trimmed.length === 0) return null;
-
-      const shapeText = segmentShapeText(segment);
-      // The selected manifest ids are part of the key: escalating a text to a
-      // broader chain yields a different key, so its earlier (subset) layout is
-      // never wrongly reused.
-      const key = `${segment.lineIndex}\u0000${segment.content}\u0000${fontSize}\u0000${maxWidth ?? "-"}\u0000balanced\u0000${GLYPH_FEATURES.join(",")}\u0000${GLYPH_VARIATIONS.join(",")}\u0000${selection.fontManifestIds.join(",")}\u0000${reserveRubyRow ? "ruby" : "noruby"}`;
-      let keys = layoutKeysByTextRef.current.get(shapeText);
-      if (!keys) {
-        keys = new Set();
-        layoutKeysByTextRef.current.set(shapeText, keys);
-      }
-      keys.add(key);
-      const cached = layoutCacheRef.current.get(key);
-      if (cached) return cached;
-
-      try {
-        const phraseRanges = autoPhraseRanges(segment.content, {
-          language: "ja",
-        }).phraseRanges;
-        const result = layoutRubyParagraph(shaper, {
-          text: segment.content,
-          furigana: segment.furigana,
-          fontIds: selection.fontIds,
-          fontSize,
-          rubyFontSizeMin: RUBY_FONT_SIZE_MIN,
-          rubyFontSizeMax: RUBY_FONT_SIZE_MAX,
-          rubyGap:
-            Math.min(
-              Math.max(fontSize * 0.5, RUBY_FONT_SIZE_MIN),
-              RUBY_FONT_SIZE_MAX,
-            ) * RUBY_GAP_EM,
-          reserveRubyRow,
-          ...(rubyMetricsRef.current
-            ? { rubyMetrics: rubyMetricsRef.current }
-            : {}),
-          maxWidth,
-          wrapStrategy: "balanced",
-          phraseRanges,
-          language: "ja",
-          onInvalidAnnotation: "skip",
-          features: [...GLYPH_FEATURES],
-          variations: [...GLYPH_VARIATIONS],
-        });
-        reportRubyIssues(segment.lineIndex, result.issues);
-        if (widenRubyMetrics(rubyMetricsRef, result.rubyMetrics)) {
-          // The shared anchors grew, so every cached row height is now stale.
-          layoutCacheRef.current.clear();
-        }
-        layoutCacheRef.current.set(key, result);
-        return result;
-      } catch (err) {
-        // A per-line shaping failure must not blank the whole view; skip this
-        // line's base text (translation, if any, still draws) and log it.
-        console.warn(
-          `[GlyphCanvas] failed to lay out line ${segment.lineIndex}:`,
-          err,
-        );
-        return null;
-      }
-    },
-    [reserveRubyRow],
-  );
-
-  // Drops every cached layout produced for `text` (its font selection changed).
-  const invalidateLayoutForText = useCallback((text: string) => {
-    const keys = layoutKeysByTextRef.current.get(text);
-    if (!keys) return;
-    for (const key of keys) layoutCacheRef.current.delete(key);
-    keys.clear();
-  }, []);
-
-  // Memoized, guaranteed-usable base selection (only the small Latin font). Used
-  // when a coverage-driven selection is empty so shaping never gets an empty
-  // chain. Mirrors the manager's retry-on-failure: a failed attempt is cleared.
-  const ensureBaseSelection = useCallback(
-    (manager: GlyphFontManager): Promise<GlyphFontSelection> => {
-      if (baseSelectionRef.current) return baseSelectionRef.current;
-      const attempt = (async () => {
-        const probe = await manager.ensureFontsFor(BASE_FALLBACK_PROBE);
-        if (probe.fontManifestIds.length > 0) return probe;
-        // Even the ASCII-space probe was uncoverable (should not happen with a
-        // real Latin base font): fall back to loading the whole chain.
-        const escalation = await manager.escalateFallback();
-        return {
-          fontIds: escalation.fontIds,
-          fontManifestIds: escalation.fontManifestIds,
-        };
-      })();
-      const tracked = attempt.catch((err) => {
-        if (baseSelectionRef.current === tracked)
-          baseSelectionRef.current = null;
-        throw err;
-      });
-      baseSelectionRef.current = tracked;
-      return tracked;
-    },
-    [],
-  );
-
-  // Resolves (once per text) the font selection a segment needs, off the media
-  // clock, then caches it and repaints the current snapshot. Degrades to the
-  // whole chain if the coverage route is unavailable, and only surfaces the
-  // visible error state if that fallback also fails.
-  const prepareSelection = useCallback(
-    (text: string) => {
-      const manager = fontManagerRef.current;
-      if (!manager) return;
-      if (selectionCacheRef.current.has(text)) return;
-      if (preparingRef.current.has(text)) return;
-      preparingRef.current.add(text);
-
-      const isCurrent = () => fontManagerRef.current === manager;
-
-      void (async () => {
-        let selection: GlyphFontSelection | null = null;
-        try {
-          const selected = await manager.ensureFontsFor(text);
-          selection =
-            selected.fontManifestIds.length > 0
-              ? selected
-              : await ensureBaseSelection(manager);
-        } catch {
-          // Degradation: the coverage route (or a byte fetch) failed. Rather
-          // than surfacing a hard error for a transient outage, load the whole
-          // chain so the renderer still draws with the full fallback.
-          try {
-            const escalation = await manager.escalateFallback();
-            selection = {
-              fontIds: escalation.fontIds,
-              fontManifestIds: escalation.fontManifestIds,
-            };
-          } catch (fatal) {
-            selection = null;
-            if (isCurrent()) {
-              setError(errorMessage(fatal));
-              setStatus("error");
-            }
-          }
-        } finally {
-          preparingRef.current.delete(text);
-        }
-
-        if (!selection || !isCurrent()) return;
-        selectionCacheRef.current.set(text, selection);
-        invalidateLayoutForText(text);
-        drawRef.current(snapshotRef.current);
-      })();
-    },
-    [ensureBaseSelection, invalidateLayoutForText],
-  );
-
-  // Escalation: only worthwhile when a chain font *declares* coverage for the
-  // still-missing text but is not yet registered. Emoji and other genuinely
-  // uncoverable characters return `false` and are left as tofu (never pulling
-  // the multi-megabyte chain). Runs at most once per text.
-  const maybeEscalate = useCallback(
-    (text: string) => {
-      const manager = fontManagerRef.current;
-      if (!manager) return;
-      const isCurrent = () => fontManagerRef.current === manager;
-
-      void (async () => {
-        let worthwhile = false;
-        try {
-          worthwhile = await manager.hasUnregisteredCoverageFor(text);
-        } catch {
-          worthwhile = false;
-        }
-        if (!worthwhile || !isCurrent()) return;
-        try {
-          const escalation = await manager.escalateFallback();
-          if (!isCurrent()) return;
-          selectionCacheRef.current.set(text, {
-            fontIds: escalation.fontIds,
-            fontManifestIds: escalation.fontManifestIds,
-          });
-          invalidateLayoutForText(text);
-          drawRef.current(snapshotRef.current);
-        } catch (err) {
-          // The broader fallback could not be loaded. Keep the one-attempt-per
-          // -text invariant (the text is already in `escalatedRef`, so no frame
-          // retries and no re-layout loop), but make the failure observable via
-          // the non-fatal warning banner instead of silently leaving tofu -
-          // and never blank out the working lyrics with the fatal overlay.
-          console.warn("[GlyphCanvas] font escalation failed:", err);
-          if (isCurrent()) setEscalationError(errorMessage(err));
-        }
-      })();
-    },
-    [invalidateLayoutForText],
-  );
-
   const translationLayoutForSegment = useCallback(
     (
       segment: GlyphLyricSegment,
@@ -555,13 +250,13 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
   const draw = useCallback(
     (snapshot: PlaybackSnapshot | null) => {
       const canvas = canvasRef.current;
-      const cache = cacheRef.current;
+      const cache = runtime.pathCache;
       if (!canvas || !cache) return;
       if (width <= 0 || height <= 0) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const dpr = getDevicePixelRatio();
+      const dpr = canvasPixelRatio();
       const backingWidth = Math.max(1, Math.round(width * dpr));
       const backingHeight = Math.max(1, Math.round(height * dpr));
       if (canvas.width !== backingWidth) canvas.width = backingWidth;
@@ -582,27 +277,23 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
           responsiveFontSize(width, height) * (segment.minor ? MINOR_RATIO : 1),
         );
 
+        // The runtime resolves this line's font selection internally (base text
+        // plus every ruby reading, shaped with the same chain) and returns
+        // `null` while those fonts are still loading. It also owns escalation
+        // when a layout reports missing ranges. So there is nothing to
+        // pre-resolve or re-check here: a `null` layout simply skips this line's
+        // base text for the frame - its translation still draws below - and the
+        // runtime bumps the version we subscribe to, repainting once fonts land.
         let layout: RubyLayoutResult | null = null;
         if (segment.content.trim().length > 0) {
-          const shapeText = segmentShapeText(segment);
-          const selection = selectionCacheRef.current.get(shapeText);
-          if (selection) {
-            layout = layoutForSegment(segment, fontSize, maxWidth, selection);
-            if (
-              layout &&
-              layout.missingFontRanges.length > 0 &&
-              !escalatedRef.current.has(shapeText)
-            ) {
-              // Consider escalation exactly once per text, and only when it can
-              // actually help (a coverable-but-unregistered chain font exists).
-              escalatedRef.current.add(shapeText);
-              maybeEscalate(shapeText);
-            }
-          } else {
-            // Selection not ready: skip this segment's base text for this frame
-            // and kick off a deduped async preparation that redraws on success.
-            prepareSelection(shapeText);
-          }
+          layout = runtime.layoutLine({
+            lineIndex: segment.lineIndex,
+            text: segment.content,
+            furigana: segment.furigana,
+            fontSize,
+            maxWidth,
+            reserveRubyRow,
+          });
         }
 
         const translationFontSize = Math.round(fontSize * TRANSLATION_RATIO);
@@ -646,109 +337,38 @@ export function GlyphCanvasLyrics({ lyrics, transLangIdx }: Props) {
       segments,
       width,
       height,
-      layoutForSegment,
+      runtime,
+      reserveRubyRow,
       translationLayoutForSegment,
       invalidTimingLines,
-      prepareSelection,
-      maybeEscalate,
     ],
   );
 
-  // Keep `drawRef` pointed at the latest `draw` for async preparations.
+  // The runtime is pull-based: `layoutLine` returns `null` while a line's fonts
+  // are still loading and bumps a version when they (or an escalation, or the
+  // shared document-level ruby anchors) land. Subscribe to that version and
+  // repaint the current snapshot on every bump. This replaces the old code's
+  // direct `drawRef.current(snapshotRef.current)` call from inside the async
+  // font preparation, which the runtime now owns.
+  const runtimeVersion = useGlyphRuntimeVersion(runtime);
   useEffect(() => {
-    drawRef.current = draw;
-  }, [draw]);
+    draw(snapshotRef.current);
+  }, [runtimeVersion, draw]);
 
-  // Initialize the WASM runtime and create the shaper + coverage-aware font
-  // manager once, on mount. Crucially this does NOT prefetch the fallback
-  // chain: `ready` is reached as soon as the runtime and manager exist; fonts
-  // are fetched lazily, per line, by `prepareSelection`.
+  // New lyrics / new language: drop the local translation measurement cache, and
+  // tell the runtime this is a new document. Registered fonts and their coverage
+  // stay (content-addressed and expensive to refetch), but the escalation
+  // attempts, the non-fatal escalation error and the document-level ruby anchors
+  // all belong to the *previous* document and must not leak into this one.
   useEffect(() => {
-    // These Maps/Sets are created once (via useRef) and never reassigned, so
-    // capturing them here is safe for the cleanup below.
-    const layoutCache = layoutCacheRef.current;
-    const layoutKeys = layoutKeysByTextRef.current;
-    const translationCache = translationCacheRef.current;
-    const selectionCache = selectionCacheRef.current;
-    const preparing = preparingRef.current;
-    const escalated = escalatedRef.current;
-    let cancelled = false;
-    const controller = new AbortController();
-    setStatus("loading");
-    setError(null);
-    setEscalationError(null);
-
-    (async () => {
-      try {
-        await initGlyphRuntime({ signal: controller.signal });
-        if (cancelled) return;
-        const shaper = createGlyphShaper();
-        const manager = new GlyphFontManager({ shaper });
-        shaperRef.current = shaper;
-        fontManagerRef.current = manager;
-        cacheRef.current = new GlyphPathCache({
-          lookup: (fontId, glyphId, fontSize, variations) =>
-            shaper.glyphOutline({
-              fontId,
-              glyphId,
-              fontSize,
-              variations: [...variations],
-            }),
-        });
-        layoutCache.clear();
-        layoutKeys.clear();
-        translationCache.clear();
-        selectionCache.clear();
-        preparing.clear();
-        escalated.clear();
-        baseSelectionRef.current = null;
-        setStatus("ready");
-      } catch (err) {
-        if (cancelled) return;
-        setError(errorMessage(err));
-        setStatus("error");
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-      // `cacheRef` is (re)assigned inside the async init above, so the current
-      // value at unmount is the one to free.
-      cacheRef.current?.clear();
-      cacheRef.current = null;
-      layoutCache.clear();
-      layoutKeys.clear();
-      translationCache.clear();
-      selectionCache.clear();
-      preparing.clear();
-      escalated.clear();
-      baseSelectionRef.current = null;
-      shaperRef.current?.free();
-      shaperRef.current = null;
-      // Null the manager last: in-flight async preparations gate on its
-      // identity, so this makes their post-await work a no-op.
-      fontManagerRef.current = null;
-    };
-  }, []);
-
-  // New lyrics / new language invalidate cached layouts (the font selection
-  // cache is content-addressed by shaped text and stays valid across these).
-  // A lyrics change is also a natural boundary to give each text one fresh
-  // escalation attempt and clear any stale per-line font warning.
-  useEffect(() => {
-    layoutCacheRef.current.clear();
-    layoutKeysByTextRef.current.clear();
     translationCacheRef.current.clear();
-    escalatedRef.current.clear();
-    setEscalationError(null);
-  }, [segments]);
+    resetDocument();
+  }, [segments, resetDocument]);
 
-  // Dimensions change the wrap width, so cached layouts are stale. Redraw the
-  // current snapshot at the new size.
+  // Dimensions change the wrap width, so the local translation measurements are
+  // stale (the runtime keys its own layout cache by width and re-lays out on
+  // demand). Drop them and redraw the current snapshot at the new size.
   useEffect(() => {
-    layoutCacheRef.current.clear();
-    layoutKeysByTextRef.current.clear();
     translationCacheRef.current.clear();
     draw(snapshotRef.current);
   }, [width, height, draw]);

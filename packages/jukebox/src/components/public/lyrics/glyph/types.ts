@@ -419,6 +419,16 @@ export interface RubyLayoutResult {
    * across the document and re-run with it, keeping every line's row identical.
    */
   rubyMetrics: RubyVerticalMetrics | null;
+  /**
+   * What **this paragraph's own** fonts need, independent of any supplied
+   * {@link RubyLayoutOptions.rubyMetrics}. Identical to {@link rubyMetrics}
+   * when the caller supplied none.
+   *
+   * This is the value to accumulate a document-wide maximum from:
+   * {@link rubyMetrics} echoes back whatever was passed in, so widening from it
+   * would pin the anchor to the first annotated paragraph forever.
+   */
+  naturalRubyMetrics: RubyVerticalMetrics | null;
   rubies: RubyPlacement[];
   issues: RubyLayoutIssue[];
   /**

@@ -33,17 +33,34 @@ class FakePath implements CanvasPathReceiver {
   closePath(): void {}
 }
 
+/** A `CanvasGradient` that just records its colour stops for assertions. */
+class FakeGradient implements CanvasGradient {
+  readonly stops: { offset: number; color: string }[] = [];
+  addColorStop(offset: number, color: string): void {
+    this.stops.push({ offset, color });
+  }
+}
+
 interface FillRecord {
   pathId: number;
   matrix: Affine;
   fillStyle: string | CanvasGradient | CanvasPattern;
   alpha: number;
   origin: Point;
+  composite: string;
+  shadowBlur: number;
+  shadowColor: string;
 }
 
 interface RectRecord {
   args: readonly [number, number, number, number];
   matrix: Affine;
+}
+
+interface GradientRecord {
+  coords: readonly [number, number, number, number];
+  matrix: Affine;
+  gradient: FakeGradient;
 }
 
 /**
@@ -54,14 +71,21 @@ interface RectRecord {
 class RecordingContext implements GlyphCanvasContext {
   globalAlpha = 1;
   fillStyle: string | CanvasGradient | CanvasPattern = "#000000";
+  shadowBlur = 0;
+  shadowColor = "rgba(0, 0, 0, 0)";
+  globalCompositeOperation = "source-over";
   private current: Affine = IDENTITY;
   private readonly stack: {
     matrix: Affine;
     alpha: number;
     fillStyle: string | CanvasGradient | CanvasPattern;
+    shadowBlur: number;
+    shadowColor: string;
+    composite: string;
   }[] = [];
   readonly fills: FillRecord[] = [];
   readonly rects: RectRecord[] = [];
+  readonly gradients: GradientRecord[] = [];
   clipCount = 0;
 
   save(): void {
@@ -69,6 +93,9 @@ class RecordingContext implements GlyphCanvasContext {
       matrix: this.current,
       alpha: this.globalAlpha,
       fillStyle: this.fillStyle,
+      shadowBlur: this.shadowBlur,
+      shadowColor: this.shadowColor,
+      composite: this.globalCompositeOperation,
     });
   }
   restore(): void {
@@ -77,6 +104,9 @@ class RecordingContext implements GlyphCanvasContext {
       this.current = state.matrix;
       this.globalAlpha = state.alpha;
       this.fillStyle = state.fillStyle;
+      this.shadowBlur = state.shadowBlur;
+      this.shadowColor = state.shadowColor;
+      this.globalCompositeOperation = state.composite;
     }
   }
   transform(
@@ -96,6 +126,20 @@ class RecordingContext implements GlyphCanvasContext {
   clip(): void {
     this.clipCount += 1;
   }
+  createLinearGradient(
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+  ): CanvasGradient {
+    const gradient = new FakeGradient();
+    this.gradients.push({
+      coords: [x0, y0, x1, y1],
+      matrix: this.current,
+      gradient,
+    });
+    return gradient;
+  }
   fill(path: Path2D): void {
     this.fills.push({
       pathId: (path as unknown as FakePath).id,
@@ -103,6 +147,9 @@ class RecordingContext implements GlyphCanvasContext {
       fillStyle: this.fillStyle,
       alpha: this.globalAlpha,
       origin: apply(this.current, { x: 0, y: 0 }),
+      composite: this.globalCompositeOperation,
+      shadowBlur: this.shadowBlur,
+      shadowColor: this.shadowColor,
     });
   }
 }
@@ -500,5 +547,338 @@ describe("drawParagraph", () => {
     expect(run()).toEqual(run());
     // The shared cache built exactly one path per distinct glyph (3 glyphs).
     expect(cache.size).toBe(3);
+  });
+});
+
+describe("drawCluster soft-edge karaoke sweep", () => {
+  // Fixture cluster spans advance [0, 20] with ink matching it, so the fill
+  // extent is exactly [0, 20]; line box gives the vertical band.
+  const singleGlyphLine = () =>
+    paragraph([line([cluster(0, 20, [glyph(10, 20)])])]);
+
+  it("fades via a gradient (no clip) with the band centred on the ltr front", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () => solidStyle({ fillFraction: 0.5, softEdgeWidth: 8 }),
+    });
+
+    // Soft mode never clips - the gradient's transparent tail is the boundary.
+    expect(ctx.clipCount).toBe(0);
+    expect(ctx.rects).toHaveLength(0);
+
+    // Inactive fill, then the gradient (active) fill of the same glyph.
+    expect(ctx.fills).toHaveLength(2);
+    expect(ctx.fills[0].fillStyle).toBe("#111111");
+    expect(ctx.fills[1].fillStyle).toBe(ctx.gradients[0].gradient);
+
+    // front = 0 + 20*0.5 = 10; band = front +/- softEdgeWidth/2 -> [6, 14].
+    expect(ctx.gradients).toHaveLength(1);
+    expect(ctx.gradients[0].coords).toEqual([6, 0, 14, 0]);
+    const [x0, , x1] = ctx.gradients[0].coords;
+    expect((x0 + x1) / 2).toBe(10); // centred on the front
+    // Solid sung colour -> transparent (same RGB, alpha 0) so the inactive
+    // pass shows through without darkening.
+    expect(ctx.gradients[0].gradient.stops).toEqual([
+      { offset: 0, color: "#eeeeee" },
+      { offset: 1, color: "#eeeeee00" },
+    ]);
+  });
+
+  it("mirrors the gradient axis for an rtl fill", () => {
+    const ctx = new RecordingContext();
+    const layout = paragraph([
+      line([cluster(0, 20, [glyph(10, 20)], { direction: "rtl" })]),
+    ]);
+
+    drawParagraph(ctx, layout, {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () => solidStyle({ fillFraction: 0.5, softEdgeWidth: 8 }),
+    });
+
+    // rtl front = 20 - 20*0.5 = 10; solid edge on the right, transparent left.
+    expect(ctx.clipCount).toBe(0);
+    expect(ctx.gradients[0].coords).toEqual([14, 0, 6, 0]);
+    const [x0, , x1] = ctx.gradients[0].coords;
+    expect((x0 + x1) / 2).toBe(10);
+    expect(ctx.gradients[0].gradient.stops).toEqual([
+      { offset: 0, color: "#eeeeee" },
+      { offset: 1, color: "#eeeeee00" },
+    ]);
+  });
+
+  it("skips the active pass entirely at fraction 0 (no gradient, no clip)", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () => solidStyle({ fillFraction: 0, softEdgeWidth: 8 }),
+    });
+
+    expect(ctx.fills).toHaveLength(1);
+    expect(ctx.fills[0].fillStyle).toBe("#111111");
+    expect(ctx.gradients).toHaveLength(0);
+    expect(ctx.clipCount).toBe(0);
+  });
+
+  it("still paints the gradient (never a clip) at fraction 1 so ink is not cut", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () => solidStyle({ fillFraction: 1, softEdgeWidth: 8 }),
+    });
+
+    // The band is centred on the front, so the front travels half a band past
+    // each edge: at fraction 1 the *solid* stop lands exactly on the far edge
+    // (20), leaving every pixel of ink fully sung. Were the front to stop at
+    // the edge itself, the trailing half-band would straddle the glyph and
+    // every sung cluster would keep a permanently dimmed edge.
+    expect(ctx.clipCount).toBe(0);
+    expect(ctx.rects).toHaveLength(0);
+    expect(ctx.fills).toHaveLength(2);
+    expect(ctx.fills[1].fillStyle).toBe(ctx.gradients[0].gradient);
+    expect(ctx.gradients[0].coords).toEqual([20, 0, 28, 0]);
+    expect(ctx.gradients[0].gradient.stops[0]).toEqual({
+      offset: 0,
+      color: "#eeeeee",
+    });
+  });
+
+  it("leaves no ink partially lit just after the sweep starts", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () =>
+        solidStyle({ fillFraction: Number.EPSILON, softEdgeWidth: 8 }),
+    });
+
+    // Mirror of the fraction-1 case: the *transparent* stop starts on the
+    // reading-start edge (0), so nothing ahead of the front is pre-lit.
+    const [x0, , x1] = ctx.gradients[0].coords;
+    expect(x1).toBeCloseTo(0, 6);
+    expect(x0).toBeCloseTo(-8, 6);
+  });
+
+  it("keeps the band inside the travel for RTL at both endpoints", () => {
+    const front = (fraction: number) => {
+      const ctx = new RecordingContext();
+      drawParagraph(ctx, singleGlyphLine(), {
+        cache: makeCache(),
+        fontSize: 32,
+        resolveCluster: () =>
+          solidStyle({
+            fillFraction: fraction,
+            softEdgeWidth: 8,
+            fillDirection: "rtl",
+          }),
+      });
+      return ctx.gradients[0].coords;
+    };
+
+    // RTL sweeps right-to-left: solid trails the front on the right.
+    expect(front(1)[0]).toBeCloseTo(0, 6);
+    expect(front(Number.EPSILON)[2]).toBeCloseTo(20, 6);
+  });
+
+  it("fades to the active colour at zero alpha, not `transparent` or the inactive colour", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () =>
+        solidStyle({
+          inactiveColor: "rgba(255, 255, 255, 0.32)",
+          activeColor: "rgba(255, 255, 255, 0.98)",
+          fillFraction: 0.5,
+          softEdgeWidth: 8,
+        }),
+    });
+
+    const stops = ctx.gradients[0].gradient.stops;
+    expect(stops[0].color).toBe("rgba(255, 255, 255, 0.98)");
+    // Same RGB as the sung colour, alpha forced to 0 (avoids premultiplied
+    // darkening); not the `transparent` keyword and not the inactive colour.
+    expect(stops[1].color).toBe("rgba(255, 255, 255, 0)");
+    expect(stops[1].color).not.toBe("transparent");
+    expect(stops[1].color).not.toBe("rgba(255, 255, 255, 0.32)");
+  });
+
+  it("compensates each glyph's pen offset so the band is continuous across a cluster", () => {
+    const ctx = new RecordingContext();
+    // Two glyphs: pen offsets 0 and 12. The cluster-local band is [6, 14] for
+    // both; each glyph's gradient is pre-shifted by -offset.x.
+    const layout = paragraph([
+      line([cluster(0, 20, [glyph(10, 12), glyph(11, 8)])]),
+    ]);
+
+    drawParagraph(ctx, layout, {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () => solidStyle({ fillFraction: 0.5, softEdgeWidth: 8 }),
+    });
+
+    // 2 inactive + 2 gradient fills; one gradient per glyph.
+    expect(ctx.fills).toHaveLength(4);
+    expect(ctx.gradients).toHaveLength(2);
+    expect(ctx.gradients[0].coords).toEqual([6, 0, 14, 0]); // offset 0
+    expect(ctx.gradients[1].coords).toEqual([-6, 0, 2, 0]); // offset 12
+    for (const g of ctx.gradients) {
+      expect(g.gradient.stops).toEqual([
+        { offset: 0, color: "#eeeeee" },
+        { offset: 1, color: "#eeeeee00" },
+      ]);
+    }
+  });
+
+  it("falls back to the hard clip when the active colour is not a string", () => {
+    const ctx = new RecordingContext();
+    const patternLike = new FakeGradient(); // a non-string CanvasGradient
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () =>
+        solidStyle({
+          activeColor: patternLike,
+          fillFraction: 0.5,
+          softEdgeWidth: 8,
+        }),
+    });
+
+    // No linear gradient built by the renderer; the hard clip path runs.
+    expect(ctx.gradients).toHaveLength(0);
+    expect(ctx.clipCount).toBe(1);
+    expect(ctx.rects).toHaveLength(1);
+    const [rx, , rw] = ctx.rects[0].args;
+    expect(rx).toBe(0);
+    expect(rw).toBe(10);
+    expect(ctx.fills[1].fillStyle).toBe(patternLike);
+  });
+
+  it("keeps the hard-edge clip when softEdgeWidth is absent", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () => solidStyle({ fillFraction: 0.5 }),
+    });
+
+    expect(ctx.gradients).toHaveLength(0);
+    expect(ctx.clipCount).toBe(1);
+    expect(ctx.rects).toHaveLength(1);
+  });
+});
+
+describe("drawCluster glow", () => {
+  const singleGlyphLine = () =>
+    paragraph([line([cluster(0, 20, [glyph(10, 20)])])]);
+
+  it("paints an additive, blurred glow before the text and never leaks its state", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () =>
+        solidStyle({
+          fillFraction: 0.5,
+          glow: { blur: 6, color: "#ffffff", alpha: 0.5 },
+        }),
+    });
+
+    // Glow first, then inactive, then the (hard-clipped) active pass.
+    expect(ctx.fills).toHaveLength(3);
+    const [glowFill, inactiveFill, activeFill] = ctx.fills;
+
+    expect(glowFill.pathId).toBe(inactiveFill.pathId); // same glyph, painted first
+    expect(glowFill.fillStyle).toBe("#ffffff");
+    expect(glowFill.composite).toBe("lighter"); // additive (AMLL plus-lighter)
+    expect(glowFill.shadowBlur).toBe(6);
+    expect(glowFill.shadowColor).toBe("#ffffff");
+    expect(glowFill.alpha).toBeCloseTo(0.5, 6); // baseAlpha 1 * opacity 1 * glow.alpha
+
+    // Text passes run under default compositing with the shadow reset.
+    expect(inactiveFill.composite).toBe("source-over");
+    expect(inactiveFill.shadowBlur).toBe(0);
+    expect(activeFill.composite).toBe("source-over");
+    expect(activeFill.shadowBlur).toBe(0);
+
+    // And the context itself is fully restored afterwards.
+    expect(ctx.globalCompositeOperation).toBe("source-over");
+    expect(ctx.shadowBlur).toBe(0);
+    expect(ctx.shadowColor).toBe("rgba(0, 0, 0, 0)");
+  });
+
+  it("skips the glow pass entirely when alpha is 0", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () =>
+        solidStyle({
+          fillFraction: 0,
+          glow: { blur: 6, color: "#ffffff", alpha: 0 },
+        }),
+    });
+
+    expect(ctx.fills).toHaveLength(1); // inactive only
+    expect(ctx.fills.every((f) => f.composite === "source-over")).toBe(true);
+    expect(ctx.fills.every((f) => f.shadowBlur === 0)).toBe(true);
+  });
+
+  it("skips the glow pass entirely when blur is 0", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () =>
+        solidStyle({
+          fillFraction: 0,
+          glow: { blur: 0, color: "#ffffff", alpha: 0.8 },
+        }),
+    });
+
+    expect(ctx.fills).toHaveLength(1);
+    expect(ctx.fills.every((f) => f.composite === "source-over")).toBe(true);
+    expect(ctx.fills.every((f) => f.shadowBlur === 0)).toBe(true);
+  });
+
+  it("composes glow with the soft-edge sweep (glow first, gradient active, no clip)", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () =>
+        solidStyle({
+          fillFraction: 0.5,
+          softEdgeWidth: 8,
+          glow: { blur: 5, color: "#ffffff", alpha: 0.6 },
+        }),
+    });
+
+    expect(ctx.fills).toHaveLength(3);
+    const [glowFill, , activeFill] = ctx.fills;
+    expect(glowFill.composite).toBe("lighter");
+    expect(glowFill.shadowBlur).toBe(5);
+
+    // Active pass is the soft-edge gradient, under default compositing, no clip.
+    expect(ctx.clipCount).toBe(0);
+    expect(ctx.gradients).toHaveLength(1);
+    expect(activeFill.fillStyle).toBe(ctx.gradients[0].gradient);
+    expect(activeFill.composite).toBe("source-over");
+    expect(activeFill.shadowBlur).toBe(0);
   });
 });

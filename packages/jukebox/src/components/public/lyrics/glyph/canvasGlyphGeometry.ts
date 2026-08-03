@@ -301,3 +301,59 @@ export function karaokeFillClip(
     height: extent.bottom - extent.top,
   };
 }
+
+/**
+ * The cluster-local screen `x` of the karaoke fill *front* - the moving
+ * boundary between sung and unsung text - for a given `fraction` (0..1,
+ * clamped) and `direction`. This is exactly the leading edge of
+ * {@link karaokeFillClip}: the clip's **right** edge for `"ltr"`, its **left**
+ * edge for `"rtl"`. At `fraction === 0` it sits at the reading-start edge
+ * (`left` for ltr, `right` for rtl); at `fraction === 1` at the far edge.
+ *
+ * The soft-edge (gradient) karaoke sweep centres its fixed-width transition
+ * band on this value, so it fades across precisely the boundary the hard clip
+ * would otherwise cut at - the two revealing styles stay in lock-step.
+ */
+export function karaokeFillFront(
+  extent: FillExtent,
+  fraction: number,
+  direction: FillDirection,
+): number {
+  const clamped = clamp01(fraction);
+  const fillWidth = (extent.right - extent.left) * clamped;
+  return direction === "rtl"
+    ? extent.right - fillWidth
+    : extent.left + fillWidth;
+}
+
+/**
+ * The karaoke fill front for a **soft-edge** (gradient) sweep, whose fixed-width
+ * transition band is centred on the returned value.
+ *
+ * This is deliberately *not* {@link karaokeFillFront}. A centred band extends
+ * `softEdgeWidth / 2` either side of the front, so a front that only travels
+ * `[left, right]` leaves half a band straddling the cluster at both extremes:
+ * at `fraction === 1` the trailing half-band still crosses the glyph, so every
+ * fully-sung cluster keeps a permanently dimmed edge (~0.7 brightness at the
+ * very edge for a full-width glyph), and just past `fraction === 0` the leading
+ * half-band already lights ink the front has not reached.
+ *
+ * Extending the travel by half a band at each end makes `fraction === 0` put
+ * the transparent edge exactly at the reading-start edge (nothing lit) and
+ * `fraction === 1` put the solid edge exactly at the far edge (everything
+ * solid), so the soft sweep agrees with the hard clip at both endpoints while
+ * still fading in between.
+ */
+export function karaokeSoftFillFront(
+  extent: FillExtent,
+  fraction: number,
+  direction: FillDirection,
+  softEdgeWidth: number,
+): number {
+  const clamped = clamp01(fraction);
+  const half = Math.max(0, softEdgeWidth) / 2;
+  const start = extent.left - half;
+  const end = extent.right + half;
+  const travel = (end - start) * clamped;
+  return direction === "rtl" ? end - travel : start + travel;
+}
