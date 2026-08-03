@@ -15,7 +15,10 @@ import {
   useGlyphRuntime,
   useGlyphRuntimeVersion,
 } from "../glyph/glyphRuntime";
-import type { GlyphLyricSegment } from "../glyph/lyricSegments";
+import type {
+  GlyphLyricSegment,
+  SegmentAlignment,
+} from "../glyph/lyricSegments";
 import type { RubyLayoutResult } from "../glyph/types";
 import {
   INACTIVE_LINE_ALPHA,
@@ -25,6 +28,25 @@ import {
   paintLine,
 } from "./linePainter";
 import { buildWords } from "./wordModel";
+
+/**
+ * Auto margins that place the fixed-width canvas box within its row, mirroring
+ * the alignment the glyphs are painted with. Logical properties so an RTL row
+ * places the box against the correct edge.
+ */
+function boxMargins(alignment: SegmentAlignment): {
+  marginInlineStart?: string;
+  marginInlineEnd?: string;
+} {
+  switch (alignment) {
+    case "end":
+      return { marginInlineStart: "auto" };
+    case "center":
+      return { marginInlineStart: "auto", marginInlineEnd: "auto" };
+    default:
+      return { marginInlineEnd: "auto" };
+  }
+}
 
 /**
  * A single lyric line rendered to its own `<canvas>` with the Apple Music-like
@@ -284,11 +306,20 @@ export function GlyphLineCanvas({
       className={cn(className)}
       data-testid="glyph-line-canvas-root"
       data-active={isActive ? "true" : "false"}
+      data-alignment={segment.alignment}
       style={{
         position: "relative",
         width: maxWidth,
         height,
         overflow: "visible",
+        // The painted rows are aligned *within* this box (`contentWidth` is
+        // `maxWidth`), so the box itself has to sit where the row's alignment
+        // says - otherwise the text centres on the box while the DOM
+        // translation beside it centres on the whole row, and the two visibly
+        // disagree. One shared `maxWidth` is deliberately narrower than a row
+        // that carries no horizontal padding (role 2), and `text-center` on the
+        // row does nothing to a block box, so this must be explicit.
+        ...boxMargins(segment.alignment),
       }}
     >
       <canvas

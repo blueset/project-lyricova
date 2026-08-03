@@ -186,6 +186,20 @@ main size. The floor is applied before the cap because on a narrow viewport a _m
 line's main text is already near the responsive floor; legibility wins there, but a
 translation must never render _larger_ than the line it translates.
 
+## Row alignment
+
+Glyphs are aligned **inside** the canvas box — `paintLine` offsets each wrapped row
+within `contentWidth`, which is the shared `maxWidth`. That box is deliberately
+narrower than the row: one wrap width is used for every role so all lines wrap
+identically, and it is computed for the widest role inset (`pl-8` + `pr-12`), while a
+centred row (role 2) carries no horizontal padding at all.
+
+So the box has to be *placed* within the row to match, via auto inline margins keyed to
+the same `alignment` the glyphs use. `text-center` on the row cannot do this — it does
+not move a block box. Without the margins a centred line's glyphs centre on the box
+while the DOM translation beside it centres on the whole row, and the two visibly
+disagree; an end-aligned line ends at the box's edge rather than the row's.
+
 ## Line states and geometry
 
 - **Becoming active scales the row `0.97 → 1`** (AMLL), driven by the same spring as

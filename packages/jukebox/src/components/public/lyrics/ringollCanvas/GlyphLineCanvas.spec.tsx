@@ -271,3 +271,48 @@ describe("GlyphLineCanvas", () => {
     expect(runtime.unsubscribeSpy).toHaveBeenCalled();
   });
 });
+
+describe("box placement within the row", () => {
+  /** The canvas box for a line of the given role alignment. */
+  function rootFor(alignment: "start" | "center" | "end") {
+    const { container } = renderLine({ segment: makeSegment({ alignment }) });
+    return container.querySelector(
+      '[data-testid="glyph-line-canvas-root"]',
+    ) as HTMLElement;
+  }
+
+  // The glyphs are aligned *inside* this box (`contentWidth` is `maxWidth`), so
+  // if the box does not itself sit where the row's alignment says, the canvas
+  // text and the DOM translation beside it centre on different boxes and
+  // visibly disagree. `text-center` on the row cannot do this: it does not
+  // move a block box.
+  it("centres the box for a centred row", () => {
+    const root = rootFor("center");
+    expect(root.style.marginInlineStart).toBe("auto");
+    expect(root.style.marginInlineEnd).toBe("auto");
+  });
+
+  it("pushes the box to the inline end for an end-aligned row", () => {
+    const root = rootFor("end");
+    expect(root.style.marginInlineStart).toBe("auto");
+    expect(root.style.marginInlineEnd).toBe("");
+  });
+
+  it("leaves the box at the inline start for a start-aligned row", () => {
+    const root = rootFor("start");
+    expect(root.style.marginInlineStart).toBe("");
+    expect(root.style.marginInlineEnd).toBe("auto");
+  });
+
+  it("exposes the alignment for debugging", () => {
+    expect(rootFor("center").dataset.alignment).toBe("center");
+  });
+
+  it("keeps the box at the shared wrap width", () => {
+    // Placement must not change the box's size: the painted rows are aligned
+    // against exactly this width.
+    for (const alignment of ["start", "center", "end"] as const) {
+      expect(rootFor(alignment).style.width).toBe("300px");
+    }
+  });
+});
