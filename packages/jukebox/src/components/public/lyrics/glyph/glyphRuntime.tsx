@@ -46,7 +46,7 @@ import type { RubyVerticalMetrics } from "./rubyVerticalMetrics";
  */
 
 /** OpenType features every canvas renderer shapes with. */
-export const GLYPH_FEATURES = ["palt=1"] as const;
+export const GLYPH_FEATURES = ["palt=1", "ss01=1", "ss03=1", "cv01=1"] as const;
 /**
  * Variable-font axis settings, derived from the size being rendered.
  *

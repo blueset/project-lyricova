@@ -153,7 +153,7 @@ const rowContainerClasses = cn(
   // role % 3 === 1
   "data-[role='1']:text-end data-[role='1']:py-4 data-[role='1']:pr-8 data-[role='1']:pl-12 data-[role='1']:right-0 data-[role='1']:rounded-tl-[0.75rem] data-[role='1']:rounded-bl-[0.75rem]",
   // role % 3 === 2
-  "data-[role='2']:text-center data-[role='2']:py-4 data-[role='2']:w-full data-[role='2']:rounded-[0.75rem]",
+  "data-[role='2']:text-center data-[role='2']:py-4 data-[role='2']:w-full data-[role='2']:rounded-0 data-[role='2']:left-0 data-[role='2']:right-0",
 
   // minor
   "data-[minor='true']:text-xl",
