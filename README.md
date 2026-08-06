@@ -29,14 +29,40 @@ in VocaDB.net.</small>
 - `lyricova`: Lyrics blog (similar to version 1).
 - `components`: Common front-end logic and components shared between `jukebox` and `lyricova`.
 - `lyrics-kit`: Fetch and parse lyrics from various sources.
+- `glyph-renderer`: A Rust/wasm crate that renders lyrics in a canvas with glyphs and effects.
 
 ## Install
 
 - Database
-  - Create a MySQL user and grant it access to the database.
-  - Setup a MySQL database and initialize the schema with Drizzle:
+  - `docker compose` now ships a `mysql` service (MySQL 9.7) with a persistent
+    `mysql_data` volume, so you no longer need to provision one by hand. It is
+    published on `127.0.0.1:3306` only.
+  - Create a MySQL user and grant it access to the database (the compose
+    service does this from `MYSQL_USER`/`MYSQL_PASSWORD`, default
+    `lyricova`/`lyricova`).
+  - `DB_URI` must resolve to the database from wherever it runs: use the
+    `mysql` service name from inside compose, and `127.0.0.1:3306` from the
+    host.
+  - Initialize (or update) the schema with Drizzle. From a deployment that runs
+    the published image, use the one-shot `migrate` service — it runs the very
+    image you are deploying, so the migration files always match the running
+    code, and it needs no checkout, Node install or dev toolchain on the host:
+
+    ```bash
+    docker compose --profile migrate run --rm migrate
+    ```
+
+    From a source checkout (e.g. for local development), the equivalent is:
+
     ```bash
     npm run db:migrate --workspace @lyricova/api
+    ```
+
+    Point it at the published port when the database is the compose service:
+
+    ```bash
+    DB_URI="mysql://lyricova:lyricova@127.0.0.1:3306/lyricova?ssl=false" \
+      npm run db:migrate --workspace @lyricova/api
     ```
 - Music file storage
   - Create a directory for storing music files (defaulted to
@@ -44,11 +70,24 @@ in VocaDB.net.</small>
 - Environment variables
   - Configure the environment variables in `.env` file. Refer to `.env.sample`
     for examples.
+  - **`NEXT_PUBLIC_*` are build-time, not runtime.** Next.js inlines them into
+    the client bundle when the app is compiled, so with the self-contained
+    Docker image they must be passed as **build args**, not container
+    environment. `docker compose` forwards
+    `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`,
+    `NEXT_PUBLIC_CLARITY_PROJECT_ID` and `NEXT_PUBLIC_TELEMETRY_ENABLED` from
+    your shell or `.env` into the build.
+  - The image already fixes the values that are properties of the image rather
+    than of a deployment: `YTDLP_PATH`, `MUSIC_FILES_PATH`, `NODE_ENV`,
+    `API_PORT`/`LYRICOVA_PORT`/`JUKEBOX_PORT` and `API_INTERNAL_URL` (all three
+    processes share one network namespace). `FFMPEG_PATH` is left unset on
+    purpose — the code falls back to `ffmpeg` on `PATH`, which the image
+    provides.
   - For the production sibling domains, set `AUTH_ALLOWED_HOSTS` to both hosts,
     `AUTH_TRUSTED_ORIGINS` and `WEBAUTHN_ORIGINS` to their exact HTTPS origins,
     and set both `WEBAUTHN_RP_ID` and `AUTH_COOKIE_DOMAIN` to `1a23.studio`.
 - Node.js
-  - Install Node.js 24 LTS and npm 10.9.2 or newer.
+  - Install Node.js 24 LTS (24.15.0 or newer) and npm 12.0.0 or newer.
   - Install dependencies:
     ```bash
     npm install
@@ -57,6 +96,16 @@ in VocaDB.net.</small>
     ```bash
     npm run build
     ```
+    This is a topological Turborepo build. It also compiles the
+    `@lyricova/glyph-renderer` Rust/wasm crate (via `wasm-pack`, needing a
+    stable Rust toolchain + the `wasm32-unknown-unknown` target) into its
+    git-ignored `pkg/` (WASM) and `build/` (JS) — `@lyricova/jukebox` imports
+    these at build time and serves the WASM at runtime. Jukebox's own
+    `dev`/`build`/`start` also bootstrap the crate automatically; see
+    [`docs/development-and-build.md` §4.1](docs/development-and-build.md). This
+    crate powers the experimental "Glyph Canvas (PoC)" lyrics renderer — see
+    [`docs/glyph-canvas-poc.md`](docs/glyph-canvas-poc.md) for what it is, the
+    platform research behind it, and its known limitations.
   - Create a Lyricova user in the database as admin.
     ```bash
     npx --workspace @lyricova/api lyricova-admin user add --username <username> --email <email> --role admin --display-name <display-name>
@@ -69,10 +118,59 @@ in VocaDB.net.</small>
     reference and the legacy-auth migration recovery flow.
 - Runtime
   - Runtime is supported by Docker.
-  - Build the image: `docker-compose build`
-  - Run the container: `docker-compose up -d`
+  - Run it: `docker compose up -d` (no local build — this pulls the published
+    image)
   - Lyricova blog is listening at port 59742 (`lyric`)
   - Jukebox is listening at port 58532 (`jukeb`)
+  - There are three interchangeable variants of the app service. They all
+    publish the same host ports, so run exactly one:
+
+    | Service              | Profile     | Source of the app                                          |
+    | -------------------- | ----------- | ---------------------------------------------------------- |
+    | `lyricova`           | _(default)_ | Pulls `ghcr.io/blueset/project-lyricova:nightly`           |
+    | `lyricova-build`     | `build`     | Builds the same image from this checkout                   |
+    | `lyricova-bindmount` | `bindmount` | Runtime OS deps only; serves a host build via a bind mount |
+    | `migrate`            | `migrate`   | One-shot: applies Drizzle migrations, then exits           |
+
+  - **`lyricova` (default)** runs the image published by the
+    [container workflow](#container-publishing-github-actions). `:nightly` is a
+    moving tag, so `pull_policy` is `always`; Compose's default (`missing`)
+    would otherwise pin you forever to the first image pulled. To deploy or roll
+    back to a specific commit, point `LYRICOVA_IMAGE` at an immutable tag:
+    ```bash
+    LYRICOVA_IMAGE=ghcr.io/blueset/project-lyricova:sha-1a2b3c4 docker compose up -d
+    ```
+  - **`lyricova-build`** builds that same **self-contained image** locally: the
+    multi-stage `Dockerfile` installs the full dependency tree, provisions a
+    Rust toolchain + `wasm32-unknown-unknown`, and runs the topological
+    `npm run build` (including the `@lyricova/glyph-renderer` wasm crate)
+    inside the image, then ships the compiled output on top of an
+    `npm ci --omit=dev` tree. **No host build is required**, and **no database
+    is needed to build the image** — nothing in the build graph queries the DB
+    (GraphQL/OpenAPI codegen reads the committed `packages/api/schema.graphql`,
+    the API build is `tsc`/eslint only, the drizzle pool connects lazily, and
+    both Next apps fetch with `cache: "no-store"`, so no route is prerendered
+    with data). A database is still required at **runtime** and for
+    `db:migrate`. It is tagged separately (`project-lyricova:local`) so it never
+    clobbers a pulled `:nightly`:
+    ```bash
+    docker compose --profile build up -d --build lyricova-build
+    ```
+    This profile declares the `posthog_api_key` build secret, so export
+    `POSTHOG_API_KEY` (an empty value is fine — the build then skips sourcemap
+    upload) before invoking it.
+  - Note that the repo is deliberately **not** bind-mounted over `/app` in
+    either image-based mode: doing so would shadow the artifacts compiled into
+    the image.
+  - **`lyricova-bindmount`** keeps the previous workflow as a fallback. Its
+    image carries runtime OS dependencies only and bind-mounts the repo, so you
+    must **build on the host first** (`npm install && npm run build`) —
+    including `@lyricova/glyph-renderer`'s `pkg/`/`build/`. Jukebox's
+    `prestart` hook verifies those prebuilt artifacts exist (and are not stale)
+    and fails fast if the host build was skipped. Start it with:
+    ```bash
+    docker compose --profile bindmount up -d lyricova-bindmount
+    ```
 
 ## `lyricova-admin` CLI
 
@@ -128,37 +226,6 @@ those commands and must be revoked separately with `user passkeys revoke`
 if needed. Destructive "revoke all" operations (`sessions revoke --all`,
 `passkeys revoke --all`) prompt for confirmation on a TTY and require
 `--yes` when run non-interactively (e.g. from a script).
-
-### Recovering from the legacy → Better Auth migration
-
-The `Users` table now stores identity/role fields directly, while
-credentials live in `AuthAccounts`/`AuthSessions`/`UserPasskeys` (Better
-Auth). Migrating an existing database follows this order:
-
-1. **Preflight** — before migrating, run
-   `npm run auth:preflight --workspace @lyricova/api` (after `npm run
-build:ts`) to check for legacy data that can't migrate cleanly (missing
-   usernames/emails, duplicate normalized usernames/emails, invalid roles, or
-   no active administrator). Fix any reported issues in the database first.
-2. **Migrate** — run `npm run db:migrate --workspace @lyricova/api`. The
-   command safely records `0000_baseline` as already applied when it detects
-   the complete pre-existing Lyricova schema; empty databases still apply the
-   baseline normally, and incomplete/partially migrated schemas are rejected.
-   The
-   generated migration backfills an `AuthAccounts` "credential" row from each
-   user's legacy password hash into `AuthAccounts` for audit and recovery
-   tracking, but authentication accepts Argon2id hashes only. Existing
-   Passport sessions and browser JWTs are intentionally invalidated. Legacy
-   WebAuthn rows cannot supply the counters and device metadata required by the
-   new passkey model, so they are removed.
-3. **Recover with the CLI** — if the migration leaves an account unusable
-   (including every account that still has a legacy hash), use
-   `lyricova-admin auth audit` to list required resets, then run
-   `lyricova-admin user reset-password` for each affected account. Password
-   resets write a fresh Argon2id hash to `AuthAccounts` and revoke existing
-   sessions. Complete all resets before deploying or restarting the
-   Argon2-only API. Operators can then sign in with the new password and enroll
-   new passkeys.
 
 ## Etymology
 

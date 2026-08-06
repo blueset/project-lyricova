@@ -1,0 +1,10 @@
+import base from "../../eslint.base.mjs";
+import prettier from "eslint-config-prettier";
+
+export default [
+  {
+    ignores: ["build/**", "pkg/**", "target/**", "node_modules/**"],
+  },
+  ...base,
+  prettier,
+];

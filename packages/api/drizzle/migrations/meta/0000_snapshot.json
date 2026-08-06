@@ -83,7 +83,7 @@
         "Album_sortOredr_index": {
           "name": "Album_sortOredr_index",
           "columns": [
-            "sortOrder"
+            "`sortOrder`(512)"
           ],
           "isUnique": false
         }

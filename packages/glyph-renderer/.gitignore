@@ -1,0 +1,15 @@
+# Rust build output.
+/target
+
+# wasm-pack build output (regenerate with `npm run build:wasm`).
+/pkg
+/pkg-*
+
+# TypeScript build output (regenerate with `npm run build:ts`).
+/build
+
+# Cross-process bootstrap build lock (packages/glyph-renderer/scripts/ensure-build.mjs).
+/.glyph-build.lock
+
+# npm
+/node_modules

@@ -1,11 +1,13 @@
 "use client";
 import { useQuery, skipToken } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
+import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { useMemo, useRef, useState } from "react";
 import { FocusedLyrics } from "@/components/public/lyrics/focused";
 import { PlainLyrics } from "@/components/public/lyrics/plain";
 import { LyricsSwitchButton } from "@/components/public/LyricsSwitchButton";
+import type { MenuEntry } from "@/components/public/LyricsSwitchButton";
 import type { LyricsKitLyrics } from "@lyricova/components/gql/schema";
 import { SlantedLyrics } from "@/components/public/lyrics/slanted";
 import { ParagraphLyrics } from "@/components/public/lyrics/paragraph";
@@ -25,6 +27,28 @@ import { LyricsTranslationLanguageSwitchButton } from "@/components/public/Lyric
 import TooltipIconButton from "@/components/dashboard/TooltipIconButton";
 import { Maximize, Minimize } from "lucide-react";
 import { cn } from "@lyricova/components/utils";
+
+// Lazily loaded proof-of-concept WASM glyph renderer. Loading it dynamically
+// (client-only) keeps the WASM shaper and multi-megabyte base font out of the
+// bundle until this mode is actually selected.
+const GlyphCanvasLyrics = dynamic(
+  () =>
+    import("@/components/public/lyrics/glyph/glyphCanvas").then(
+      (m) => m.GlyphCanvasLyrics,
+    ),
+  { ssr: false },
+);
+
+// Ringoll's scrolling architecture with its text painted by the WASM glyph
+// engine, plus AMLL's karaoke sweep, emphasis and interlude dots. Lazily loaded
+// for the same reason as the PoC above: it pulls in the shaper and fonts.
+const RingollCanvasLyrics = dynamic(
+  () =>
+    import("@/components/public/lyrics/ringollCanvas/ringollCanvas").then(
+      (m) => m.RingollCanvasLyrics,
+    ),
+  { ssr: false },
+);
 
 const args = new URLSearchParams(
   typeof window === "object" ? (window?.location?.search ?? "") : "",
@@ -76,31 +100,147 @@ const LYRICS_QUERY = graphql(`
   }
 `);
 
-// prettier-ignore
+// Keys are stable ids: they are persisted, never displayed, and must not change.
 const MODULE_LIST = {
-  "Focused": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="plain" />,
-  "Focused Glow": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="glow" />,
-  "Focused Glow Seg": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <FocusedLyrics lyrics={lyrics} transLangIdx={transLangIdx} variant="glowPerSyllable" />,
-  "Plain": (lyrics: LyricsKitLyrics, transLangIdx = 0) => <PlainLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
-  "Ringoll": (lyrics: LyricsKitLyrics, transLangIdx = 0) => <RingollLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
-  "AMLL": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <AMLLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
-  "Nicokara": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <KaraokeJaLyrics lyrics={lyrics} />,
-  "Slanted": (lyrics: LyricsKitLyrics, transLangIdx?: number) => <SlantedLyrics lyrics={lyrics} transLangIdx={transLangIdx} />,
-  "Paragraph": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <ParagraphLyrics lyrics={lyrics} />,
-  "Typing/Focused": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <TypingFocusedLyrics lyrics={lyrics} />,
-  "Typing/Stacked": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <TypingStackedLyrics lyrics={lyrics} />,
-  "Stroke": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <StrokeLyrics lyrics={lyrics} />,
-  "PIP (Alpha)": (lyrics: LyricsKitLyrics, _transLangIdx?: number) => <PictureInPictureLyrics lyrics={lyrics} />,
-} as const;
+  focused: {
+    label: "Focused (Plain)",
+    path: ["Focused"],
+    render: (lyrics: LyricsKitLyrics, transLangIdx?: number) => (
+      <FocusedLyrics
+        lyrics={lyrics}
+        transLangIdx={transLangIdx}
+        variant="plain"
+      />
+    ),
+  },
+  focusedGlow: {
+    label: "Focused (Glow)",
+    path: ["Focused"],
+    render: (lyrics: LyricsKitLyrics, transLangIdx?: number) => (
+      <FocusedLyrics
+        lyrics={lyrics}
+        transLangIdx={transLangIdx}
+        variant="glow"
+      />
+    ),
+  },
+  focusedGlowSeg: {
+    label: "Focused (Glow Seg)",
+    path: ["Focused"],
+    render: (lyrics: LyricsKitLyrics, transLangIdx?: number) => (
+      <FocusedLyrics
+        lyrics={lyrics}
+        transLangIdx={transLangIdx}
+        variant="glowPerSyllable"
+      />
+    ),
+  },
+  plain: {
+    label: "Plain",
+    render: (lyrics: LyricsKitLyrics, transLangIdx = 0) => (
+      <PlainLyrics lyrics={lyrics} transLangIdx={transLangIdx} />
+    ),
+  },
+  ringollCanvas: {
+    label: "Ringoll Canvas",
+    render: (lyrics: LyricsKitLyrics, transLangIdx = 0) => (
+      <RingollCanvasLyrics lyrics={lyrics} transLangIdx={transLangIdx} />
+    ),
+  },
+  ringoll: {
+    label: "Ringoll",
+    render: (lyrics: LyricsKitLyrics, transLangIdx = 0) => (
+      <RingollLyrics lyrics={lyrics} transLangIdx={transLangIdx} />
+    ),
+  },
+  amll: {
+    label: "AMLL",
+    render: (lyrics: LyricsKitLyrics, transLangIdx?: number) => (
+      <AMLLyrics lyrics={lyrics} transLangIdx={transLangIdx} />
+    ),
+  },
+  nicokara: {
+    label: "Nicokara",
+    render: (lyrics: LyricsKitLyrics, _transLangIdx?: number) => (
+      <KaraokeJaLyrics lyrics={lyrics} />
+    ),
+  },
+  slanted: {
+    label: "Slanted",
+    path: ["Classic"],
+    render: (lyrics: LyricsKitLyrics, transLangIdx?: number) => (
+      <SlantedLyrics lyrics={lyrics} transLangIdx={transLangIdx} />
+    ),
+  },
+  paragraph: {
+    label: "Paragraph",
+    path: ["Classic"],
+    render: (lyrics: LyricsKitLyrics, _transLangIdx?: number) => (
+      <ParagraphLyrics lyrics={lyrics} />
+    ),
+  },
+  typingFocused: {
+    label: "Typing (Focused)",
+    path: ["Typing"],
+    render: (lyrics: LyricsKitLyrics, _transLangIdx?: number) => (
+      <TypingFocusedLyrics lyrics={lyrics} />
+    ),
+  },
+  typingStacked: {
+    label: "Typing (Stacked)",
+    path: ["Typing"],
+    render: (lyrics: LyricsKitLyrics, _transLangIdx?: number) => (
+      <TypingStackedLyrics lyrics={lyrics} />
+    ),
+  },
+  stroke: {
+    label: "Stroke",
+    path: ["Classic"],
+    render: (lyrics: LyricsKitLyrics, _transLangIdx?: number) => (
+      <StrokeLyrics lyrics={lyrics} />
+    ),
+  },
+  pipAlpha: {
+    path: ["Alpha"],
+    label: "PIP (Alpha)",
+    render: (lyrics: LyricsKitLyrics, _transLangIdx?: number) => (
+      <PictureInPictureLyrics lyrics={lyrics} />
+    ),
+  },
+  glyphCanvasPoC: {
+    label: "Glyph (PoC)",
+    path: ["Alpha"],
+    render: (lyrics: LyricsKitLyrics, transLangIdx = 0) => (
+      <GlyphCanvasLyrics lyrics={lyrics} transLangIdx={transLangIdx} />
+    ),
+  },
+} as const satisfies Record<
+  string,
+  {
+    label: string;
+    path?: string[];
+    render: (lyrics: LyricsKitLyrics, transLangIdx?: number) => ReactNode;
+  }
+>;
+
+type ModuleId = keyof typeof MODULE_LIST;
+
+const MODULE_ITEMS: MenuEntry<ModuleId>[] = (
+  Object.keys(MODULE_LIST) as ModuleId[]
+).map((value) => {
+  const entry = MODULE_LIST[value] as { label: string; path?: string[] };
+  return { value, label: entry.label, path: entry.path && [...entry.path] };
+});
 
 export default function Index() {
-  const [module, setModule] = useClientPersistentState<
-    keyof typeof MODULE_LIST
-  >("Focused", "module", "lyricovaPlayer");
+  const [module, setModule] = useClientPersistentState<ModuleId>(
+    "focused",
+    "module",
+    "lyricovaPlayer",
+  );
   const [translationLanguageIdx, setTranslationLanguageIdx] = useState(0);
 
-  const keys = Object.keys(MODULE_LIST) as (keyof typeof MODULE_LIST)[];
-  const moduleNode = MODULE_LIST[module] ?? MODULE_LIST[keys[0]];
+  const moduleNode = (MODULE_LIST[module] ?? MODULE_LIST.focused).render;
   const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
   const currentSong = useAppSelector(currentSongSelector);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -201,10 +341,10 @@ export default function Index() {
         selectedLanguageIdx={translationLanguageIdx}
         setSelectedLanguageIdx={setTranslationLanguageIdx}
       />
-      <LyricsSwitchButton<keyof typeof MODULE_LIST>
-        module={module}
-        setModule={setModule}
-        moduleNames={keys}
+      <LyricsSwitchButton<ModuleId>
+        items={MODULE_ITEMS}
+        value={module}
+        onChange={setModule}
       />
     </div>
   );

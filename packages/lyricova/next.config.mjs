@@ -85,6 +85,12 @@ const config = withPostHogConfig(
     sourcemaps: {
       enabled: uploadSourcemaps,
       releaseName: "lyricova-blog",
+      // PostHog derives releaseVersion from the current git commit by default,
+      // but the Docker build context excludes `.git`, so that detection finds
+      // no repository and uploads maps with no release attached (silently, exit
+      // 0). SOURCE_COMMIT is supplied as a build arg; `undefined` restores the
+      // git-based default for local/CI builds that do have a repository.
+      releaseVersion: process.env.SOURCE_COMMIT || undefined,
       deleteAfterUpload: true,
     },
   },

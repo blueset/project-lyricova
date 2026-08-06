@@ -33,6 +33,14 @@ export default withPostHogConfig(
     transpilePackages: ["@lyricova/components"],
     async rewrites() {
       return [
+        // Same rationale for the local WASM byte route consumed by the Glyph
+        // Canvas renderer (src/app/api/glyph-renderer/wasm): a self-rewrite
+        // keeps it resolving locally instead of falling through to the
+        // generic `/api/:path*` backend proxy below.
+        {
+          source: "/api/glyph-renderer/:path*",
+          destination: "/api/glyph-renderer/:path*",
+        },
         {
           source: "/api/:path*",
           destination: "http://localhost:8083/api/:path*",
@@ -67,6 +75,10 @@ export default withPostHogConfig(
     sourcemaps: {
       enabled: uploadSourcemaps,
       releaseName: "lyricova-jukebox",
+      // See the note in packages/lyricova/next.config.mjs: `.git` is excluded
+      // from the Docker build context, so PostHog's git-based releaseVersion
+      // detection finds nothing and silently uploads unattached sourcemaps.
+      releaseVersion: process.env.SOURCE_COMMIT || undefined,
       deleteAfterUpload: true,
     },
   },

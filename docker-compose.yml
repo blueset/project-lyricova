@@ -1,18 +1,161 @@
-version: "3.9"
+# Database settings. Every value below can be overridden from the shell or from
+# the `.env` file that Compose reads for interpolation (the same file the app
+# services load via `env_file`). Defaults match .devcontainer/docker-compose.yml.
+#
+#   MYSQL_DATABASE / MYSQL_USER / MYSQL_PASSWORD / MYSQL_ROOT_PASSWORD
+#   DB_URI  — the connection string the API actually uses.
+#   TZ      — the schema stores `datetime` (not `timestamp`) columns and mysql2
+#             defaults to `timezone: "local"`, so the app and the server must
+#             agree on a zone or stored times shift. Keep both on UTC.
+#
+# NOTE: DB_URI is intentionally NOT built from the MYSQL_* variables above
+# (Compose cannot nest defaults reliably), so if you change MYSQL_USER,
+# MYSQL_PASSWORD or MYSQL_DATABASE, set DB_URI to match.
+x-lyricova-common: &lyricova-common
+  ports:
+    - "59742:8001"
+    - "58532:8002"
+  environment:
+    LYRICOVA_PORT: 8001
+    JUKEBOX_PORT: 8002
+    TZ: ${TZ:-UTC}
+    # `mysql` is the service name below; an entry in `.env` wins over this
+    # default, so pointing at an external database still works.
+    DB_URI: ${DB_URI:-mysql://lyricova:lyricova@mysql:3306/lyricova?ssl=false}
+  env_file:
+    - .env
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  volumes:
+    - /var/lyricova/music:/var/music/
+  depends_on:
+    mysql:
+      condition: service_healthy
 
 services:
-  lyricova:
-    build: .
-    ports:
-      - "59742:8001"
-      - "58532:8002"
+  # MySQL 8.0+ is required by the schema.
+  mysql:
+    image: mysql:9.7
+    # The Drizzle migrations do not specify a per-table CHARSET/COLLATE, so every
+    # table inherits the *database* default. Pinned to utf8mb4_0900_ai_ci — the
+    # MySQL 8.0+ default (UCA 9.0.0)
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=${MYSQL_COLLATION:-utf8mb4_0900_ai_ci}
     environment:
-      LYRICOVA_PORT: 8001
-      JUKEBOX_PORT: 8002
+      TZ: ${TZ:-UTC}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-lyricova}
+      MYSQL_USER: ${MYSQL_USER:-lyricova}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-lyricova}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # Published on loopback only. `drizzle-kit` is a devDependency and is
+    # therefore absent from the runtime image, so `npm run db:migrate` has to be
+    # run from the host against this port — see README.
+    ports:
+      - "127.0.0.1:3306:3306"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mysqladmin ping -h 127.0.0.1 -u root -p"$$MYSQL_ROOT_PASSWORD" --silent',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  # PRIMARY: run the image published by .github/workflows/publish-container.yml.
+  # Pin to a `sha-<short>` tag via LYRICOVA_IMAGE to deploy a specific commit or to roll back.
+  lyricova:
+    image: ${LYRICOVA_IMAGE:-ghcr.io/blueset/project-lyricova:nightly}
+    pull_policy: ${LYRICOVA_PULL_POLICY:-always}
+    <<: *lyricova-common
+
+  # OPT-IN, one-shot: apply Drizzle migrations using the SAME image that is
+  # being deployed, so the migration files always match the running code. Needs
+  # no checkout, no Node and no dev toolchain on the host:
+  #   docker compose --profile migrate run --rm migrate
+  #
+  # Deliberately does NOT reuse *lyricova-common: that anchor publishes the app
+  # ports, which would clash with an already-running stack. It also sets no
+  # `restart` policy — a failed migration must stay failed and visible.
+  #
+  # `npm run db:migrate` = adopt-drizzle-baseline.mjs && drizzle-kit migrate.
+  # The adopt step is a no-op once `__drizzle_migrations` has rows; on a
+  # pre-Drizzle database it records the baseline as already-applied instead of
+  # trying to recreate existing tables.
+  #
+  # Migrations are NOT run automatically on container start: drizzle's MySQL
+  # migrator takes no advisory lock (concurrent replicas would race), DDL
+  # auto-commits so a partial failure is not rolled back, and rolling back to an
+  # older image does not roll back the schema. Running this explicitly keeps
+  # schema changes a deliberate, observable step.
+  migrate:
+    profiles: ["migrate"]
+    image: ${LYRICOVA_IMAGE:-ghcr.io/blueset/project-lyricova:nightly}
+    working_dir: /app/packages/api
+    command: npm run db:migrate
+    environment:
+      TZ: ${TZ:-UTC}
+      DB_URI: ${DB_URI:-mysql://lyricova:lyricova@mysql:3306/lyricova?ssl=false}
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+
+  # OPT-IN: build the same self-contained image from this checkout instead of
+  # pulling it. Compiles every package (including the glyph-renderer Rust/wasm
+  # crate) inside the image, so no host build and no database are needed. Tagged
+  # separately so it never clobbers a pulled `:nightly`.
+  #   docker compose --profile build up -d --build lyricova-build
+  lyricova-build:
+    profiles: ["build"]
+    image: ${LYRICOVA_LOCAL_IMAGE:-project-lyricova:local}
+    build:
+      context: .
+      target: runtime
+      # NEXT_PUBLIC_* are inlined into the client bundle at BUILD time, so they
+      # must be passed here rather than as runtime environment. They are public
+      # client-side identifiers, not secrets.
+      args:
+        NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY:-}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-/ingest}
+        NEXT_PUBLIC_CLARITY_PROJECT_ID: ${NEXT_PUBLIC_CLARITY_PROJECT_ID:-}
+        NEXT_PUBLIC_TELEMETRY_ENABLED: ${NEXT_PUBLIC_TELEMETRY_ENABLED:-}
+        # Ties uploaded sourcemaps to a commit. PostHog would normally derive
+        # this from git, but `.git` is not in the build context.
+        SOURCE_COMMIT: ${SOURCE_COMMIT:-}
+        POSTHOG_ENV_ID: ${POSTHOG_ENV_ID:-}
+      # Personal API key with write access -> BuildKit secret, never an ARG
+      # (ARGs are readable from the published image with `docker history`).
+      # Sourcemap upload stays disabled unless POSTHOG_API_KEY is set.
+      secrets:
+        - posthog_api_key
+    <<: *lyricova-common
+
+  # OPT-IN: the legacy bind-mount workflow, kept as a fallback for iterating
+  # against a host checkout. The image carries runtime OS deps only, so you MUST
+  # build on the host first (`npm install && npm run build`); jukebox's
+  # `prestart` hook fails fast if those artifacts are missing.
+  #   docker compose --profile bindmount up -d lyricova-bindmount
+  lyricova-bindmount:
+    profiles: ["bindmount"]
+    build:
+      context: .
+      target: host-build
+    <<: *lyricova-common
     volumes:
       - .:/app
       - /var/lyricova/music:/var/music/
-    env_file:
-      - .env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+
+volumes:
+  mysql_data:
+
+secrets:
+  posthog_api_key:
+    environment: POSTHOG_API_KEY

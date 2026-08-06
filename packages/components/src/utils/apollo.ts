@@ -23,7 +23,7 @@ const errorLink = new ErrorLink(({ error }) => {
   if (CombinedGraphQLErrors.is(error)) {
     error.errors.forEach(({ message, locations, path }) => {
       console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+        `[GraphQL error]: Message:`, message, `Location:`, locations, `Path:`, path,
       );
       if (!telemetryEnabled) return;
       posthog?.captureException(new Error(message), {

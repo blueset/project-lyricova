@@ -29,6 +29,13 @@
       "when": 1783808489919,
       "tag": "0003_auth-verification-timestamps",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1785965319210,
+      "tag": "0004_collation-utf8mb4-0900-ai-ci",
+      "breakpoints": true
     }
   ]
 }
