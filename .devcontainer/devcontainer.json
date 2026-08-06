@@ -19,11 +19,14 @@
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
-      "configureZshAsDefaultShell": false,
+      "configureZshAsDefaultShell": true,
       "installOhMyZsh": true,
       "installOhMyZshConfig": true,
       "upgradePackages": false,
       "username": "none"
+    },
+    "ghcr.io/goropikari/devcontainer-feature/zellij:1": {
+      "version": "latest"
     },
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/copilot-cli:1": {},
@@ -57,7 +60,7 @@
   // "shutdownAction": "none",
 
   // Dev-only CLI tooling; intentionally not in the prod Dockerfile.
-  "onCreateCommand": "apt-get update && apt-get install -y --no-install-recommends ripgrep xxd",
+  "onCreateCommand": "apt-get update && apt-get install -y --no-install-recommends ripgrep xxd && install -Dm644 '${containerWorkspaceFolder}/.devcontainer/zellij/config.kdl' \"$HOME/.config/zellij/config.kdl\" && install -Dm755 '${containerWorkspaceFolder}/.devcontainer/devshell' \"$HOME/.local/bin/devshell\"",
 
   "postCreateCommand": "npm ci --legacy-peer-deps && npm run build:ts -w @lyricova/api && npm run codegen -w @lyricova/components",
 

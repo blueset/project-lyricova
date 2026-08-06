@@ -1,0 +1,21 @@
+#!/bin/sh
+# `docker exec` does not inherit the host/SSH environment: it only supplies the
+# image's ENV plus a hardcoded TERM=xterm. Ensure UTF-8 and modern terminal
+# capabilities before attaching to the persistent Zellij session.
+ctype="${LC_ALL:-${LC_CTYPE:-$LANG}}"
+case "$ctype" in
+*UTF-8 | *utf8 | *UTF8 | *utf-8) ;;
+*) LC_ALL=en_US.UTF-8 && export LC_ALL ;;
+esac
+unset ctype
+
+# Upgrade the TERM that `docker exec` hardcodes, but respect a real one if the
+# caller propagated it with `docker exec -e TERM=...`.
+if [ -z "$TERM" ] || [ "$TERM" = "xterm" ] || [ "$TERM" = "dumb" ]; then
+	TERM=xterm-256color
+fi
+export TERM
+: "${COLORTERM:=truecolor}"
+export COLORTERM
+
+exec zellij attach --create dev
