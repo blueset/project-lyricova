@@ -50,11 +50,6 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
     volumes:
       - mysql_data:/var/lib/mysql
-    # Published on loopback only. `drizzle-kit` is a devDependency and is
-    # therefore absent from the runtime image, so `npm run db:migrate` has to be
-    # run from the host against this port — see README.
-    ports:
-      - "127.0.0.1:3306:3306"
     healthcheck:
       test:
         [
