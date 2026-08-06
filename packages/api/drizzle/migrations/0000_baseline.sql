@@ -278,7 +278,7 @@ ALTER TABLE `TagOfEntries` ADD CONSTRAINT `TagOfEntries_entryId_Entries_id_fk` F
 ALTER TABLE `UserPublicKeyCredentials` ADD CONSTRAINT `UserPublicKeyCredentials_userId_Users_id_fk` FOREIGN KEY (`userId`) REFERENCES `Users`(`id`) ON DELETE no action ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE `Verses` ADD CONSTRAINT `Verses_entryId_Entries_id_fk` FOREIGN KEY (`entryId`) REFERENCES `Entries`(`id`) ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE `VideoFiles` ADD CONSTRAINT `VideoFiles_songId_Songs_id_fk` FOREIGN KEY (`songId`) REFERENCES `Songs`(`id`) ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-CREATE INDEX `Album_sortOredr_index` ON `Albums` (`sortOrder`);--> statement-breakpoint
+CREATE INDEX `Album_sortOredr_index` ON `Albums` (`sortOrder`(512));--> statement-breakpoint
 CREATE INDEX `artistId` ON `ArtistOfAlbums` (`artistId`);--> statement-breakpoint
 CREATE INDEX `artistId` ON `ArtistOfSongs` (`artistId`);--> statement-breakpoint
 CREATE INDEX `baseVoiceBankId` ON `Artists` (`baseVoiceBankId`);--> statement-breakpoint

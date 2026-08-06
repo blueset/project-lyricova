@@ -40,4 +40,16 @@ const run = (args) => {
 };
 
 run(["sourcemap", "inject", "--directory", "dist"]);
-run(["sourcemap", "upload", "--directory", "dist"]);
+
+// The CLI auto-derives --release-name/--release-version from git when they are
+// omitted. That silently yields *no* release association inside the Docker
+// build, where `.git` is excluded from the context, so pass them explicitly
+// whenever we can. SOURCE_COMMIT is supplied as a build arg; when it is unset
+// (a normal local build inside a git checkout) the CLI's own git detection
+// still applies.
+const uploadArgs = ["sourcemap", "upload", "--directory", "dist"];
+uploadArgs.push("--release-name", "lyricova-api");
+if (process.env.SOURCE_COMMIT) {
+  uploadArgs.push("--release-version", process.env.SOURCE_COMMIT);
+}
+run(uploadArgs);

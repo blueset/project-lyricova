@@ -51,7 +51,12 @@ export const Albums = mysqlTable(
     updatedOn: datetime("updatedOn", { mode: "date" }).notNull(),
     creationDate: datetime("creationDate", { mode: "date" }).notNull(),
   },
-  (t) => [index("Album_sortOredr_index").on(t.sortOrder)],
+  // `sortOrder` is varchar(4096) — 16 KB in utf8mb4, far past InnoDB's
+  // 3072-byte index key limit — so this index covers a 512-character (2048
+  // byte) prefix, matching production. Drizzle has no typed prefix-length API,
+  // so the indexed column is expressed as raw SQL. A plain `.on(t.sortOrder)`
+  // makes a fresh database fail with "ERROR 1071: Specified key was too long".
+  (t) => [index("Album_sortOredr_index").on(sql`\`sortOrder\`(512)`)],
 );
 
 export const Artists = mysqlTable(

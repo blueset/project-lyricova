@@ -28,8 +28,10 @@ git-ignored), so some changes require a regeneration step before types line up.
 
 ## Prerequisites
 
-- Node.js 24 LTS for the monorepo runtime, builds, and development containers.
-- npm 10.9.2 or newer, matching the root `packageManager` pin.
+- Node.js 24 LTS (24.15.0 or newer) for the monorepo runtime, builds, and
+  development containers.
+- npm 12.0.0 or newer, matching the root `packageManager` pin. (npm 12 requires
+  Node.js `^24.15.0`, hence the Node floor above.)
 - `lyrics-kit` supports Node.js 22 or newer when consumed as a standalone
   package.
 - A stable Rust toolchain via [`rustup`](https://rustup.rs/) with the
@@ -268,10 +270,10 @@ the WASM (and the fingerprint) alongside `build/`.
 Analytics events are **suppressed outside production builds**. The gate lives in
 two places:
 
-| Runtime                                            | Gate                                                     |
-| -------------------------------------------------- | -------------------------------------------------------- |
-| Browser (`@lyricova/components`, Next.js apps)      | `isTelemetryEnabled()` in `packages/components/src/utils/telemetry.ts` |
-| Node API server (`@lyricova/api`)                   | `isTelemetryEnabled()` in `packages/api/src/utils/posthog.ts` (`postHog` stays `undefined` when off) |
+| Runtime                                        | Gate                                                                                                 |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Browser (`@lyricova/components`, Next.js apps) | `isTelemetryEnabled()` in `packages/components/src/utils/telemetry.ts`                               |
+| Node API server (`@lyricova/api`)              | `isTelemetryEnabled()` in `packages/api/src/utils/posthog.ts` (`postHog` stays `undefined` when off) |
 
 Both return `process.env.NODE_ENV === "production"`, so `npm run dev` never
 initialises PostHog/Clarity nor sends events. Overrides:
@@ -414,23 +416,52 @@ cross-referenced with the canonical `lyricova-schema.sql` dump).
   [§5.3](#53-graphql--api-schema-changes-resolver--type--field) (update the Pothos
   object type, re-emit, re-run codegen).
 
-### 5.5 Docker / runtime (prebuilt artifacts)
+### 5.5 Docker / runtime
 
-The container image (`Dockerfile`) provisions only the **runtime** OS deps
-(mecab, `yt-dlp`, ffmpeg, `concurrently`) — it does **not** compile the apps.
-`docker-compose.yml` bind-mounts the repo (`.:/app`) and the `CMD` runs each
-package's `npm run start`, so the container serves the artifacts you built on
-the **host** first:
+`docker-compose.yml` offers three interchangeable app services (they share host
+ports, so run one):
+
+| Service              | Profile     | Source of the app                                  |
+| -------------------- | ----------- | -------------------------------------------------- |
+| `lyricova`           | _(default)_ | Pulls `ghcr.io/blueset/project-lyricova:nightly`   |
+| `lyricova-build`     | `build`     | Builds the self-contained image from the checkout  |
+| `lyricova-bindmount` | `bindmount` | Runtime OS deps only + a host build via bind mount |
+| `migrate`            | `migrate`   | One-shot: `npm run db:migrate`, then exits         |
+
+The default path needs no local build at all:
+
+```bash
+docker compose up -d      # pulls :nightly and runs it
+docker compose --profile migrate run --rm migrate   # apply schema migrations
+```
+
+The `migrate` service runs the same image with `npm run db:migrate`
+(`adopt-drizzle-baseline.mjs && drizzle-kit migrate`). The runtime stage ships
+`drizzle.config.ts`, `scripts/`, `drizzle/migrations/` and `drizzle-kit` for
+exactly this. Note `drizzle-kit generate` is **not** usable there: it needs
+`src/drizzle/schema.ts`, which the image does not carry — `migrate` reads only
+`out` and `dbCredentials` from the config.
+
+The `Dockerfile` is multi-stage. Its `runtime` target (used by `lyricova` and
+`lyricova-build`) compiles **every** package inside the image — including the
+`glyph-renderer` Rust/wasm crate, for which the builder stage provisions a
+stable toolchain plus `wasm32-unknown-unknown`:
+
+```bash
+docker compose --profile build up -d --build lyricova-build
+```
+
+Its `host-build` target is the **prebuilt-artifact** runtime: OS deps only
+(mecab, `yt-dlp`, ffmpeg, `concurrently`), with the repo bind-mounted at `/app`,
+so the container serves the artifacts you built on the **host** first:
 
 ```bash
 npm run build            # host: turbo build (incl. glyph-renderer pkg/ + build/)
-docker-compose build     # image: OS runtime deps only
-docker-compose up -d
+docker compose --profile bindmount up -d --build lyricova-bindmount
 ```
 
-Because the container is a **prebuilt-artifact** runtime (no Rust toolchain), it
-is intentionally **not** provisioned to build `glyph-renderer` from source.
-Instead, jukebox's `prestart` hook runs the bootstrap in `--check` mode: it
+Because that variant has **no Rust toolchain**, it cannot build
+`glyph-renderer` from source. Instead, jukebox's `prestart` hook runs the bootstrap in `--check` mode: it
 **verifies** `packages/glyph-renderer/{build,pkg}` exist (delivered via the bind
 mount) and fails fast with a clear message if you forgot the host `npm run
 build`, rather than trying — and failing — to compile wasm in the container.

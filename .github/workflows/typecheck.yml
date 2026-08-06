@@ -33,12 +33,17 @@ jobs:
     name: Lint & type-check (tsc + tsgo)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
+
+      # setup-node ships the npm bundled with Node 24 (11.x); the repo pins
+      # npm 12 via the root package.json `packageManager` field.
+      - name: Pin npm to the repo's packageManager version
+        run: npm install -g npm@12.0.2
 
       - name: Install Rust toolchain (for @lyricova/glyph-renderer wasm build)
         uses: dtolnay/rust-toolchain@stable
@@ -91,12 +96,17 @@ jobs:
     name: Lyrics animations (Chromium + Firefox)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
+
+      # setup-node ships the npm bundled with Node 24 (11.x); the repo pins
+      # npm 12 via the root package.json `packageManager` field.
+      - name: Pin npm to the repo's packageManager version
+        run: npm install -g npm@12.0.2
 
       - name: Install Rust toolchain (for @lyricova/glyph-renderer wasm build)
         uses: dtolnay/rust-toolchain@stable

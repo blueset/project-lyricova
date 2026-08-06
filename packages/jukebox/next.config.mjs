@@ -75,6 +75,10 @@ export default withPostHogConfig(
     sourcemaps: {
       enabled: uploadSourcemaps,
       releaseName: "lyricova-jukebox",
+      // See the note in packages/lyricova/next.config.mjs: `.git` is excluded
+      // from the Docker build context, so PostHog's git-based releaseVersion
+      // detection finds nothing and silently uploads unattached sourcemaps.
+      releaseVersion: process.env.SOURCE_COMMIT || undefined,
       deleteAfterUpload: true,
     },
   },

@@ -1,0 +1,204 @@
+# Container image build & publish to GHCR.
+#
+# Builds the `runtime` stage of the repo-root Dockerfile — the self-contained
+# image that compiles every workspace package (including the
+# `@lyricova/glyph-renderer` Rust/wasm crate) inside the builder stage — and
+# publishes it to `ghcr.io/<owner>/<repo>:nightly`.
+#
+# No database or `.env` is required: nothing in the build graph queries the DB
+# (GraphQL/OpenAPI codegen reads the committed `packages/api/schema.graphql`,
+# the API build is `tsc`/eslint only, the drizzle pool connects lazily, and
+# both Next apps fetch with `cache: "no-store"`, so no route is prerendered
+# with data). `POSTHOG_SOURCEMAPS`/`CI` are not forwarded into the build, so
+# the PostHog sourcemap upload step self-skips and needs no secrets.
+#
+# The image is built and loaded locally FIRST, smoke-tested, and only then
+# pushed, so a broken artifact layout can never be published as `:nightly`.
+name: Publish container
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  # Never let two publishes race for the same mutable `:nightly` tag. This one
+  # does not cancel in progress: a half-pushed image is worse than a slow queue.
+  group: publish-container
+  cancel-in-progress: false
+
+env:
+  # `github.repository` is already lowercase for this repo; docker/metadata-action
+  # lowercases it for the tags it generates regardless.
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  publish:
+    name: Build runtime image & push :nightly
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # The builder stage carries the full dev dependency tree, a Rust
+      # toolchain + cargo target dir and two Next builds, on top of a ~1.5 GB
+      # runtime base, then the image is exported to the local daemon for the
+      # smoke test. Reclaim the preinstalled toolchains we don't use (~20 GB).
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android \
+                      /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive tags and OCI labels
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+          # `nightly` is the moving tag requested for master; the immutable
+          # `sha-<short>` tag makes a bad nightly trivially rollback-able.
+          tags: |
+            type=raw,value=nightly
+            type=sha
+          labels: |
+            org.opencontainers.image.title=Project Lyricova
+            org.opencontainers.image.description=Lyricova API, blog and jukebox
+
+      # Single-platform (linux/amd64) on purpose. `platforms` selects the
+      # architecture of the IMAGE — the node:24 base plus every native binary in
+      # it (Node itself, mecab, ffmpeg, yt-dlp, @node-rs/argon2, @resvg/resvg-js)
+      # — NOT the Rust target. The crate always compiles to
+      # wasm32-unknown-unknown, whose output is architecture-independent.
+      # Adding linux/arm64 would make the entire builder stage (npm ci, tsc,
+      # next build, rustc, wasm-opt) run under QEMU emulation on an amd64
+      # runner, which is the real cost. If arm64 is ever wanted, the cheap route
+      # is a matrix across the native `ubuntu-24.04-arm` runners plus a manifest
+      # merge — not QEMU.
+      #
+      # The registry cache keeps the Actions cache quota (10 GB, shared with the
+      # npm cache in typecheck.yml) free. On a public repo, GHCR storage and
+      # bandwidth — including this cache tag — are not billed.
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: runtime
+          load: true
+          push: false
+          # NEXT_PUBLIC_* are inlined into the client bundle at build time, so
+          # they must be supplied here. They are public client-side identifiers
+          # (not secrets), hence repository *variables* rather than secrets;
+          # unset ones simply disable that integration.
+          build-args: |
+            NEXT_PUBLIC_POSTHOG_KEY=${{ vars.NEXT_PUBLIC_POSTHOG_KEY }}
+            NEXT_PUBLIC_POSTHOG_HOST=${{ vars.NEXT_PUBLIC_POSTHOG_HOST || '/ingest' }}
+            NEXT_PUBLIC_CLARITY_PROJECT_ID=${{ vars.NEXT_PUBLIC_CLARITY_PROJECT_ID }}
+            POSTHOG_ENV_ID=${{ vars.POSTHOG_ENV_ID }}
+            SOURCE_COMMIT=${{ github.sha }}
+          # The personal API key is mounted as a BuildKit secret, so it never
+          # reaches the image config the way a build-arg would. If the secret is
+          # unset the build simply skips sourcemap upload.
+          secrets: |
+            posthog_api_key=${{ secrets.POSTHOG_API_KEY }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max
+          # Avoids the "unknown/unknown" platform entries provenance
+          # attestations produce in the GHCR package UI.
+          provenance: false
+
+      # Guards the artifact layout that is easy to get wrong in a multi-stage
+      # copy: jukebox refuses to boot unless glyph-renderer's prebuilt
+      # `pkg/`+`build/` are present AND match a fingerprint re-derived from the
+      # crate sources, and the API reads fonts from `src/`, not `dist/`.
+      - name: Smoke-test the image
+        run: |
+          set -euo pipefail
+          IMAGE_REF="$(printf '%s\n' "${{ steps.meta.outputs.tags }}" | head -n1)"
+          echo "Testing $IMAGE_REF"
+
+          echo '--- glyph-renderer artifacts (jukebox prestart hook) ---'
+          docker run --rm -w /app/packages/jukebox "$IMAGE_REF" \
+            node scripts/ensure-glyph-renderer.mjs --check
+
+          echo '--- compiled entrypoints and runtime assets ---'
+          docker run --rm "$IMAGE_REF" node -e '
+            const { existsSync, readdirSync } = require("node:fs");
+            const required = [
+              "/app/packages/api/dist/server.js",
+              "/app/packages/lyricova/.next",
+              "/app/packages/jukebox/.next",
+              "/app/packages/glyph-renderer/pkg/glyph_renderer_bg.wasm",
+              "/app/packages/components/build/index.js",
+              "/app/packages/lyrics-kit/build/main/index.js",
+            ];
+            const missing = required.filter((p) => !existsSync(p));
+            if (missing.length) {
+              console.error("Missing from image:\n  " + missing.join("\n  "));
+              process.exit(1);
+            }
+            // The API serves fonts from src/, which tsc never copies to dist/.
+            const fonts = readdirSync("/app/packages/api/src/fonts")
+              .filter((f) => /\.(otf|ttf|woff2)$/.test(f));
+            if (fonts.length === 0) {
+              console.error("No font assets in /app/packages/api/src/fonts");
+              process.exit(1);
+            }
+            console.log(`OK - all artifacts present (${fonts.length} font files)`);
+          '
+
+          echo '--- production dependency resolution ---'
+          docker run --rm -w /app/packages/api "$IMAGE_REF" \
+            node --input-type=module -e 'await import("better-auth"); await import("drizzle-orm"); console.log("OK - api deps resolve")'
+          docker run --rm -w /app/packages/lyricova "$IMAGE_REF" \
+            node -e 'require.resolve("next"); console.log("OK - next resolves")'
+
+          echo '--- migration tooling (docker compose --profile migrate) ---'
+          # drizzle-kit only reaches this image because it is copied explicitly;
+          # it is a devDependency and `npm ci --omit=dev` would otherwise drop it.
+          docker run --rm -w /app/packages/api "$IMAGE_REF" \
+            npx drizzle-kit --version
+          docker run --rm -w /app/packages/api "$IMAGE_REF" node -e '
+            const { existsSync, readdirSync } = require("node:fs");
+            for (const p of ["drizzle.config.ts", "scripts/adopt-drizzle-baseline.mjs",
+                             "drizzle/migrations/meta/_journal.json"]) {
+              if (!existsSync(p)) { console.error("Missing: " + p); process.exit(1); }
+            }
+            const sql = readdirSync("drizzle/migrations").filter((f) => f.endsWith(".sql"));
+            if (sql.length === 0) { console.error("No migration SQL in image"); process.exit(1); }
+            console.log(`OK - migration tooling present (${sql.length} migrations)`);
+          '
+
+      - name: Push image
+        run: |
+          set -euo pipefail
+          printf '%s\n' "${{ steps.meta.outputs.tags }}" | while read -r tag; do
+            [ -n "$tag" ] || continue
+            echo "Pushing $tag"
+            docker push "$tag"
+          done
+
+      - name: Summary
+        run: |
+          {
+            echo "### Published \`:nightly\`"
+            echo
+            echo '```'
+            printf '%s\n' "${{ steps.meta.outputs.tags }}"
+            echo '```'
+            echo
+            echo "Pull with \`docker pull ${{ env.IMAGE }}:nightly\`"
+          } >> "$GITHUB_STEP_SUMMARY"

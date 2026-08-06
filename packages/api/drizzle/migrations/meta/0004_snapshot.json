@@ -1,8 +1,8 @@
 {
+  "id": "128a8771-210b-43d7-8532-bb6a2eb2fcb2",
+  "prevId": "1ccb4a09-6250-44c3-be71-0fbc9a7c7e78",
   "version": "5",
   "dialect": "mysql",
-  "id": "24e2d0c6-9091-40d5-ae34-1155385bafa9",
-  "prevId": "f798b6ab-60c9-4822-8543-7226f3cc95e6",
   "tables": {
     "Albums": {
       "name": "Albums",
@@ -182,28 +182,28 @@
         "ArtistOfAlbums_albumId_Albums_id_fk": {
           "name": "ArtistOfAlbums_albumId_Albums_id_fk",
           "tableFrom": "ArtistOfAlbums",
-          "tableTo": "Albums",
           "columnsFrom": [
             "albumId"
           ],
+          "tableTo": "Albums",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "ArtistOfAlbums_artistId_Artists_id_fk": {
           "name": "ArtistOfAlbums_artistId_Artists_id_fk",
           "tableFrom": "ArtistOfAlbums",
-          "tableTo": "Artists",
           "columnsFrom": [
             "artistId"
           ],
+          "tableTo": "Artists",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -320,28 +320,28 @@
         "ArtistOfSongs_songId_Songs_id_fk": {
           "name": "ArtistOfSongs_songId_Songs_id_fk",
           "tableFrom": "ArtistOfSongs",
-          "tableTo": "Songs",
           "columnsFrom": [
             "songId"
           ],
+          "tableTo": "Songs",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "ArtistOfSongs_artistId_Artists_id_fk": {
           "name": "ArtistOfSongs_artistId_Artists_id_fk",
           "tableFrom": "ArtistOfSongs",
-          "tableTo": "Artists",
           "columnsFrom": [
             "artistId"
           ],
+          "tableTo": "Artists",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -457,15 +457,15 @@
         "Artists_baseVoiceBankId_Artists_id_fk": {
           "name": "Artists_baseVoiceBankId_Artists_id_fk",
           "tableFrom": "Artists",
-          "tableTo": "Artists",
           "columnsFrom": [
             "baseVoiceBankId"
           ],
+          "tableTo": "Artists",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {
@@ -595,15 +595,15 @@
         "AuthAccounts_userId_Users_id_fk": {
           "name": "AuthAccounts_userId_Users_id_fk",
           "tableFrom": "AuthAccounts",
-          "tableTo": "Users",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "Users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -711,15 +711,15 @@
         "AuthSessions_userId_Users_id_fk": {
           "name": "AuthSessions_userId_Users_id_fk",
           "tableFrom": "AuthSessions",
-          "tableTo": "Users",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "Users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -768,14 +768,14 @@
           "name": "creationDate",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "updatedOn": {
           "name": "updatedOn",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
@@ -902,15 +902,15 @@
         "Entries_authorId_Users_id_fk": {
           "name": "Entries_authorId_Users_id_fk",
           "tableFrom": "Entries",
-          "tableTo": "Users",
           "columnsFrom": [
             "authorId"
           ],
+          "tableTo": "Users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -992,28 +992,28 @@
         "FileInPlaylists_fileId_MusicFiles_id_fk": {
           "name": "FileInPlaylists_fileId_MusicFiles_id_fk",
           "tableFrom": "FileInPlaylists",
-          "tableTo": "MusicFiles",
           "columnsFrom": [
             "fileId"
           ],
+          "tableTo": "MusicFiles",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "FileInPlaylists_playlistId_Playlists_slug_fk": {
           "name": "FileInPlaylists_playlistId_Playlists_slug_fk",
           "tableFrom": "FileInPlaylists",
-          "tableTo": "Playlists",
           "columnsFrom": [
             "playlistId"
           ],
+          "tableTo": "Playlists",
           "columnsTo": [
             "slug"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -1246,28 +1246,28 @@
         "MusicFiles_songId_Songs_id_fk": {
           "name": "MusicFiles_songId_Songs_id_fk",
           "tableFrom": "MusicFiles",
-          "tableTo": "Songs",
           "columnsFrom": [
             "songId"
           ],
+          "tableTo": "Songs",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "set null"
         },
         "MusicFiles_albumId_Albums_id_fk": {
           "name": "MusicFiles_albumId_Albums_id_fk",
           "tableFrom": "MusicFiles",
-          "tableTo": "Albums",
           "columnsFrom": [
             "albumId"
           ],
+          "tableTo": "Albums",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {
@@ -1364,15 +1364,15 @@
         "Pulses_entryId_Entries_id_fk": {
           "name": "Pulses_entryId_Entries_id_fk",
           "tableFrom": "Pulses",
-          "tableTo": "Entries",
           "columnsFrom": [
             "entryId"
           ],
+          "tableTo": "Entries",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -1526,28 +1526,28 @@
         "SongInAlbums_songId_Songs_id_fk": {
           "name": "SongInAlbums_songId_Songs_id_fk",
           "tableFrom": "SongInAlbums",
-          "tableTo": "Songs",
           "columnsFrom": [
             "songId"
           ],
+          "tableTo": "Songs",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "SongInAlbums_albumId_Albums_id_fk": {
           "name": "SongInAlbums_albumId_Albums_id_fk",
           "tableFrom": "SongInAlbums",
-          "tableTo": "Albums",
           "columnsFrom": [
             "albumId"
           ],
+          "tableTo": "Albums",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -1621,28 +1621,28 @@
         "SongOfEntries_songId_Songs_id_fk": {
           "name": "SongOfEntries_songId_Songs_id_fk",
           "tableFrom": "SongOfEntries",
-          "tableTo": "Songs",
           "columnsFrom": [
             "songId"
           ],
+          "tableTo": "Songs",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "SongOfEntries_entryId_Entries_id_fk": {
           "name": "SongOfEntries_entryId_Entries_id_fk",
           "tableFrom": "SongOfEntries",
-          "tableTo": "Entries",
           "columnsFrom": [
             "entryId"
           ],
+          "tableTo": "Entries",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -1751,15 +1751,15 @@
         "Songs_originalId_Songs_id_fk": {
           "name": "Songs_originalId_Songs_id_fk",
           "tableFrom": "Songs",
-          "tableTo": "Songs",
           "columnsFrom": [
             "originalId"
           ],
+          "tableTo": "Songs",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {
@@ -1833,28 +1833,28 @@
         "TagOfEntries_tagId_Tags_slug_fk": {
           "name": "TagOfEntries_tagId_Tags_slug_fk",
           "tableFrom": "TagOfEntries",
-          "tableTo": "Tags",
           "columnsFrom": [
             "tagId"
           ],
+          "tableTo": "Tags",
           "columnsTo": [
             "slug"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "TagOfEntries_entryId_Entries_id_fk": {
           "name": "TagOfEntries_entryId_Entries_id_fk",
           "tableFrom": "TagOfEntries",
-          "tableTo": "Entries",
           "columnsFrom": [
             "entryId"
           ],
+          "tableTo": "Entries",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -2021,15 +2021,15 @@
         "UserPasskeys_userId_Users_id_fk": {
           "name": "UserPasskeys_userId_Users_id_fk",
           "tableFrom": "UserPasskeys",
-          "tableTo": "Users",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "Users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -2284,15 +2284,15 @@
         "Verses_entryId_Entries_id_fk": {
           "name": "Verses_entryId_Entries_id_fk",
           "tableFrom": "Verses",
-          "tableTo": "Entries",
           "columnsFrom": [
             "entryId"
           ],
+          "tableTo": "Entries",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -2394,15 +2394,15 @@
         "VideoFiles_songId_Songs_id_fk": {
           "name": "VideoFiles_songId_Songs_id_fk",
           "tableFrom": "VideoFiles",
-          "tableTo": "Songs",
           "columnsFrom": [
             "songId"
           ],
+          "tableTo": "Songs",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -2419,9 +2419,9 @@
   },
   "views": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
+    "tables": {}
   },
   "internal": {
     "tables": {},
