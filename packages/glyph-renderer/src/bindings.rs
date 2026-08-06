@@ -25,23 +25,31 @@ fn to_js_error<E: std::fmt::Display>(err: E) -> JsValue {
     js_sys::Error::new(&err.to_string()).into()
 }
 
-/// Deserializes a request object, treating own-enumerable keys whose value is
-/// JS `undefined` as if the key were absent.
+/// Deserializes a request object, recursively treating own-enumerable keys
+/// whose value is JS `undefined` as if the key were absent.
 ///
 /// `serde-wasm-bindgen` decodes a *present* `undefined` as a unit value, which
 /// fails `#[serde(default)]` enum/`Option` fields - e.g. `{ baseDirection:
 /// undefined }` throws `invalid type: unit value, expected enum TextDirection`.
-/// That is a common shape for JS/TS callers who build a request by spreading
-/// optional fields, so it is normalized here (an *absent* key or an explicit
-/// `null` already worked and are left untouched).
+/// That is a common shape for JS/TS callers who build requests and nested
+/// request entries by spreading optional fields, so it is normalized here (an
+/// *absent* key or an explicit `null` already worked and are left untouched).
 fn deserialize_request<T: serde::de::DeserializeOwned>(request: JsValue) -> Result<T, JsValue> {
     serde_wasm_bindgen::from_value(strip_undefined_keys(request)).map_err(to_js_error)
 }
 
-/// Returns a shallow copy of a plain object with own keys whose value is
-/// `undefined` removed; non-objects (and arrays) are returned unchanged.
+/// Recursively copies arrays and plain objects, removing object keys whose
+/// value is `undefined`; primitive values are returned unchanged.
 fn strip_undefined_keys(value: JsValue) -> JsValue {
-    if !value.is_object() || js_sys::Array::is_array(&value) {
+    if js_sys::Array::is_array(&value) {
+        let array: js_sys::Array = value.unchecked_into();
+        return array
+            .iter()
+            .map(strip_undefined_keys)
+            .collect::<js_sys::Array>()
+            .into();
+    }
+    if !value.is_object() {
         return value;
     }
     let obj: js_sys::Object = value.unchecked_into();
@@ -49,7 +57,8 @@ fn strip_undefined_keys(value: JsValue) -> JsValue {
     for key in js_sys::Object::keys(&obj).iter() {
         if let Ok(v) = js_sys::Reflect::get(&obj, &key) {
             if !v.is_undefined() {
-                let _ = js_sys::Reflect::set(&out, &key, &v);
+                let normalized = strip_undefined_keys(v);
+                let _ = js_sys::Reflect::set(&out, &key, &normalized);
             }
         }
     }
