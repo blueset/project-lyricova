@@ -31,7 +31,7 @@
     "test": "vitest run",
     "auth:preflight": "node dist/auth/preflight.js",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node scripts/adopt-drizzle-baseline.mjs && drizzle-kit migrate"
+    "db:migrate": "node scripts/adopt-drizzle-baseline.mjs && node scripts/migrate.mjs"
   },
   "repository": {
     "type": "git",

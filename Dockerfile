@@ -281,20 +281,8 @@ COPY --from=builder /app/packages/api/schema.graphql ./packages/api/
 # published image (`docker compose --profile migrate run --rm migrate`) without
 # a source checkout, a Node install, or the dev toolchain on the deploy host.
 # The migration SQL + meta/_journal.json arrive with `drizzle/` above; this adds
-# the config and the adopt-baseline guard (~24 KB).
-#
-# `drizzle-kit migrate` reads only `out` and `dbCredentials` from the config —
-# it never loads `schema` — so `src/drizzle/schema.ts` is not required here, and
-# `drizzle-kit generate` is correspondingly NOT usable in this image.
-COPY --from=builder /app/packages/api/drizzle.config.ts ./packages/api/
+# the runtime migrator and the adopt-baseline guard.
 COPY --from=builder /app/packages/api/scripts ./packages/api/scripts
-
-# drizzle-kit is a devDependency, but it currently survives `npm ci --omit=dev`
-# because better-auth declares it as an *optional peer dependency*. That is
-# incidental and would vanish on a dependency bump, so copy it explicitly (~10 MB,
-# <1% of the image) rather than depend on a transitive accident. The `.bin`
-# symlink comes from the prod-deps stage. The CI smoke test asserts this works.
-COPY --from=builder /app/node_modules/drizzle-kit ./node_modules/drizzle-kit
 
 COPY --from=builder /app/packages/lyricova/.next ./packages/lyricova/.next
 COPY --from=builder /app/packages/lyricova/public ./packages/lyricova/public

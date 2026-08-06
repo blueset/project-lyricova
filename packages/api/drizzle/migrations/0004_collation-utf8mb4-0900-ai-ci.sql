@@ -11,13 +11,20 @@
 -- The charset is utf8mb4 before and after, so no column type changes and no
 -- index key lengths change (`Albums.sortOrder` keeps its 512-char prefix).
 --
--- BEHAVIOUR CHANGE: utf8mb4_0900_ai_ci is accent-insensitive, so it treats
--- あ = ア and は = ば as equal where utf8mb4_general_ci treated them as
--- distinct. Before applying this to a populated database, check that no UNIQUE
--- column gains a duplicate, e.g.:
+-- BEHAVIOUR CHANGE: utf8mb4_0900_ai_ci is accent-, case-, kana- and
+-- width-insensitive, so it treats あ = ア, は = ば and ASCII/full-width forms
+-- as equal where utf8mb4_general_ci treated them as distinct. Before applying
+-- this to a populated database, check that no UNIQUE column gains a duplicate,
+-- e.g.:
 --   SELECT path COLLATE utf8mb4_0900_ai_ci AS k, COUNT(*) c
 --     FROM MusicFiles GROUP BY k HAVING c > 1;
 -- (repeat for VideoFiles.path, Users.username, Users.email, Tags.name).
+--
+-- FuriganaMappings is deliberately different: its composite primary key is an
+-- exact source-text/reading identity. Width, punctuation, kana form, dakuten
+-- and small-kana differences are meaningful there, so converting that table to
+-- utf8mb4_0900_bin preserves every code-point distinction while still fixing
+-- supplementary-plane character weights.
 --
 -- Foreign keys are disabled for the duration because MySQL rejects a charset
 -- change on a column referenced by an FK whose parent has not been converted
@@ -49,7 +56,7 @@ ALTER TABLE `Entries` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_c
 --> statement-breakpoint
 ALTER TABLE `FileInPlaylists` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 --> statement-breakpoint
-ALTER TABLE `FuriganaMappings` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+ALTER TABLE `FuriganaMappings` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
 --> statement-breakpoint
 ALTER TABLE `MusicFiles` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 --> statement-breakpoint

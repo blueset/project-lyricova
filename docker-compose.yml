@@ -78,7 +78,8 @@ services:
   # ports, which would clash with an already-running stack. It also sets no
   # `restart` policy — a failed migration must stay failed and visible.
   #
-  # `npm run db:migrate` = adopt-drizzle-baseline.mjs && drizzle-kit migrate.
+  # `npm run db:migrate` runs the baseline guard, then the verbose runtime
+  # migrator from scripts/migrate.mjs.
   # The adopt step is a no-op once `__drizzle_migrations` has rows; on a
   # pre-Drizzle database it records the baseline as already-applied instead of
   # trying to recreate existing tables.

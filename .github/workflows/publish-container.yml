@@ -167,13 +167,11 @@ jobs:
             node -e 'require.resolve("next"); console.log("OK - next resolves")'
 
           echo '--- migration tooling (docker compose --profile migrate) ---'
-          # drizzle-kit only reaches this image because it is copied explicitly;
-          # it is a devDependency and `npm ci --omit=dev` would otherwise drop it.
           docker run --rm -w /app/packages/api "$IMAGE_REF" \
-            npx drizzle-kit --version
+            node --input-type=module -e 'await import("drizzle-orm/mysql2/migrator"); await import("mysql2/promise"); console.log("OK - migration deps resolve")'
           docker run --rm -w /app/packages/api "$IMAGE_REF" node -e '
             const { existsSync, readdirSync } = require("node:fs");
-            for (const p of ["drizzle.config.ts", "scripts/adopt-drizzle-baseline.mjs",
+            for (const p of ["scripts/adopt-drizzle-baseline.mjs", "scripts/migrate.mjs",
                              "drizzle/migrations/meta/_journal.json"]) {
               if (!existsSync(p)) { console.error("Missing: " + p); process.exit(1); }
             }

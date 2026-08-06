@@ -436,11 +436,11 @@ docker compose --profile migrate run --rm migrate   # apply schema migrations
 ```
 
 The `migrate` service runs the same image with `npm run db:migrate`
-(`adopt-drizzle-baseline.mjs && drizzle-kit migrate`). The runtime stage ships
-`drizzle.config.ts`, `scripts/`, `drizzle/migrations/` and `drizzle-kit` for
-exactly this. Note `drizzle-kit generate` is **not** usable there: it needs
-`src/drizzle/schema.ts`, which the image does not carry — `migrate` reads only
-`out` and `dbCredentials` from the config.
+(`adopt-drizzle-baseline.mjs && migrate.mjs`). The runtime stage ships
+`scripts/` and `drizzle/migrations/`; the migration script uses the production
+`drizzle-orm` and `mysql2` dependencies and logs each statement before
+execution. `drizzle-kit generate` remains a development-only command and is
+not usable in the runtime image.
 
 The `Dockerfile` is multi-stage. Its `runtime` target (used by `lyricova` and
 `lyricova-build`) compiles **every** package inside the image — including the
