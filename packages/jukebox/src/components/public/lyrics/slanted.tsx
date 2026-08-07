@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { cn } from "@lyricova/components/utils";
 import { safeDuration } from "../../../frontendUtils/safeDuration";
+import { getSelectedTranslation } from "./translation";
 
 interface Props {
   lyrics: LyricsKitLyrics;
@@ -159,7 +160,7 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
                   )}
                   ref={idx === currentFrameId ? currentTranslation : null}
                 >
-                  {v.attachments.translations[lang]}
+                  {getSelectedTranslation(v.attachments.translations, lang)}
                 </span>
               );
             })}

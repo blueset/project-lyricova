@@ -10,6 +10,7 @@ import type { GlyphLyricSegment } from "../glyph/lyricSegments";
 import { useResizeObserver } from "../../../../hooks/useResizeObserver";
 import { GlyphLineCanvas } from "./GlyphLineCanvas";
 import { SUNG_ALPHA, UNSUNG_ALPHA } from "./linePainter";
+import { getSelectedTranslation } from "../translation";
 
 /**
  * Ringoll's row chrome, with the DOM karaoke text swapped for
@@ -291,6 +292,10 @@ const InnerRowRenderer = forwardRef<HTMLDivElement, RingollCanvasRowProps>(
     // Only a line below the anchor is still unsung; the active line and every
     // passed line paint with the sung colour (see TRANSLATION_ALPHA_RATIO).
     const unsung = absoluteIndex > 0 && !isActive;
+    const translation = getSelectedTranslation(
+      row.attachments.translations,
+      transLang,
+    );
 
     return (
       <animated.div
@@ -341,7 +346,7 @@ const InnerRowRenderer = forwardRef<HTMLDivElement, RingollCanvasRowProps>(
             }}
             lang={transLang}
           >
-            {transLang ? row.attachments.translations[transLang] : undefined}
+            {translation}
           </div>
         </animated.div>
       </animated.div>

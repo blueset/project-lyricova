@@ -12,6 +12,7 @@ import { safeDuration } from "../../../frontendUtils/safeDuration";
 import type { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { useSpring, animated } from "@react-spring/web";
 import { useWebAnimationController } from "../../../hooks/useWebAnimationController";
+import { getSelectedTranslation } from "./translation";
 
 /** Render a timed opacity span controlled by its parent lyrics line. */
 const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
@@ -95,6 +96,11 @@ const InnerRowRenderer = forwardRef<
       api.start({ to: { y: top }, immediate: isUserScrolling });
     }, [api, isUserScrolling, top]);
 
+    const translation = getSelectedTranslation(
+      row.attachments.translations,
+      transLang,
+    );
+
     return (
       <animated.div
         ref={ref}
@@ -116,7 +122,7 @@ const InnerRowRenderer = forwardRef<
           ref={animationRef}
         />
         <div className="text-[0.8em]" lang={transLang}>
-          {transLang ? row.attachments.translations[transLang] : null}
+          {translation}
         </div>
       </animated.div>
     );

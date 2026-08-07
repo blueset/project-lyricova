@@ -195,6 +195,18 @@ describe("buildLyricSegments", () => {
     expect(noLang[0]!.translation).toBe("fallback");
   });
 
+  it("selects an untagged translation by its empty-string language key", () => {
+    const lyrics = makeLyrics(
+      [makeLine("a", 0, { translations: { "": "untagged" } })],
+      [""],
+    );
+
+    const [segment] = buildLyricSegments(lyrics, {
+      translationLanguage: "",
+    });
+    expect(segment!.translation).toBe("untagged");
+  });
+
   it("bounds the final untimed line by track duration then a default", () => {
     const withTrack = buildLyricSegments(
       makeLyrics([makeLine("last", 10)], [], 25),

@@ -8,6 +8,7 @@ import { useAppContext } from "../AppContext";
 import { usePlayerState } from "../../../hooks/usePlayerState";
 import dynamic from "next/dynamic";
 import { useMediaClock } from "../../../hooks/useMediaClock";
+import { getSelectedTranslation } from "./translation";
 
 const LyricPlayer = dynamic(
   () => import("../compat/amllLyricsPlayer").then((m) => m.LyricPlayer),
@@ -84,7 +85,8 @@ export function AMLLyrics({ lyrics, transLangIdx }: Props) {
       }
       const amllLine: AAMLyricLine = {
         words: amllWords,
-        translatedLyric: line.attachments.translations[lang] ?? "",
+        translatedLyric:
+          getSelectedTranslation(line.attachments.translations, lang) ?? "",
         romanLyric: "",
         startTime: startTime * 1000,
         endTime: endTime * 1000,

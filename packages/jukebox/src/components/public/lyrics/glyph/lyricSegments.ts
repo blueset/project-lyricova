@@ -4,6 +4,7 @@ import type {
 } from "@lyricova/components/gql/schema";
 import type { RevealTag } from "./karaokeTiming";
 import type { FuriganaAnnotationInput } from "./types";
+import { getSelectedTranslation } from "../translation";
 
 /**
  * Segment model for the Glyph Canvas renderer.
@@ -138,12 +139,8 @@ function resolveTranslation(
   language: string | null | undefined,
 ): string | null {
   const { translations, translation } = line.attachments;
-  if (language) {
-    const value = (translations as Record<string, string | undefined>)?.[
-      language
-    ];
-    if (typeof value === "string" && value.length > 0) return value;
-  }
+  const value = getSelectedTranslation(translations, language);
+  if (typeof value === "string" && value.length > 0) return value;
   return translation && translation.length > 0 ? translation : null;
 }
 

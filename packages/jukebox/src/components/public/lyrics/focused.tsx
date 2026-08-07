@@ -14,6 +14,7 @@ import { cn } from "@lyricova/components/utils";
 import { safeDuration } from "../../../frontendUtils/safeDuration";
 import { useWebAnimationController } from "../../../hooks/useWebAnimationController";
 import { readPlaybackSnapshot } from "../../../hooks/useMediaClock";
+import { getSelectedTranslation } from "./translation";
 
 const TRANSITION: Transition = {
   duration: 0.2,
@@ -83,6 +84,10 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
     ref,
   ) {
     if (!line) return null;
+    const translation = getSelectedTranslation(
+      line.attachments.translations,
+      transLang,
+    );
 
     return (
       <motion.div
@@ -117,9 +122,9 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
             style: { textWrap: "balance", wordBreak: "auto-phrase" },
           }}
         />
-        {transLang && line.attachments.translations[transLang] && (
+        {translation && (
           <div lang={transLang || "zh"} className="mt-2 block text-[0.6em]">
-            {line.attachments.translations[transLang]}
+            {translation}
           </div>
         )}
       </motion.div>
@@ -143,6 +148,10 @@ const GlowLineElementGenerator = (full: boolean) =>
   forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
     function GlowLineElement({ line, start, end, transLang, idx }, ref) {
       if (!line) return null;
+      const translation = getSelectedTranslation(
+        line.attachments.translations,
+        transLang,
+      );
 
       const content = (
         <>
@@ -154,12 +163,12 @@ const GlowLineElementGenerator = (full: boolean) =>
             timedSpan={full ? TimedSpan : TimedSpanPerSyllable}
             ref={ref}
           />
-          {transLang && line.attachments?.translations[transLang] && (
+          {translation && (
             <div
               className="block text-[0.6em] bg-cover bg-center bg-fixed"
               lang={transLang || "zh"}
             >
-              {line.attachments.translations[transLang]}
+              {translation}
             </div>
           )}
         </>

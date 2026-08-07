@@ -4,6 +4,7 @@ import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import type { RowRendererProps } from "../components/LyricsVirtualizer";
 import { RingollLineRenderer } from "./LineRenderer";
 import { cn } from "@lyricova/components/utils";
+import { getSelectedTranslation } from "../translation";
 
 const rowContainerClasses = cn(
   "absolute",
@@ -67,6 +68,11 @@ const InnerRowRenderer = forwardRef<
       });
     }, [absoluteIndex, api, isActive, isActiveScroll, isUserScrolling, top]);
 
+    const translation = getSelectedTranslation(
+      row.attachments.translations,
+      transLang,
+    );
+
     return (
       <animated.div
         ref={ref}
@@ -93,7 +99,7 @@ const InnerRowRenderer = forwardRef<
           style={{ wordBreak: "auto-phrase" }} // wordBreak
           lang={transLang}
         >
-          {transLang ? row.attachments.translations[transLang] : undefined}
+          {translation}
         </div>
       </animated.div>
     );

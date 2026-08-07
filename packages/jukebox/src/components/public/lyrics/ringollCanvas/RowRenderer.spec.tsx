@@ -328,6 +328,16 @@ describe("RingollCanvas RowRenderer", () => {
       expect(translation?.textContent).toBe("Hello");
     });
 
+    it("renders an untagged translation selected by the empty-string key", () => {
+      const row = makeRow({
+        attachments: makeAttachments({ translations: { "": "翻訳" } }),
+      });
+      const { container } = render(
+        <RowRenderer {...makeProps({ row, transLang: "" })} />,
+      );
+      expect(container.textContent).toContain("翻訳");
+    });
+
     it("renders no translation text when no language is selected", () => {
       const row = makeRow({
         attachments: makeAttachments({ translations: { en: "Hello" } }),
