@@ -249,6 +249,32 @@ describe("GlyphLineCanvas", () => {
     expect(ctxCalls.clearRect).toBe(afterFirst);
   });
 
+  it("continues repainting an inactive final-word glow until it settles", () => {
+    renderLine({
+      isActive: false,
+      segment: makeSegment({
+        content: "ECHO",
+        startTime: 55.149,
+        endTime: 61.912,
+        timeTags: [
+          { index: 0, time: 55.149 },
+          { index: 1, time: 55.556 },
+          { index: 4, time: 61.912 },
+        ],
+      }),
+    });
+
+    act(() => clock.onSnapshot?.(snapshot(61.913)));
+    const duringTail = ctxCalls.clearRect;
+    act(() => clock.onSnapshot?.(snapshot(62)));
+    expect(ctxCalls.clearRect).toBeGreaterThan(duringTail);
+
+    act(() => clock.onSnapshot?.(snapshot(67)));
+    const settled = ctxCalls.clearRect;
+    act(() => clock.onSnapshot?.(snapshot(68)));
+    expect(ctxCalls.clearRect).toBe(settled);
+  });
+
   it("survives layoutLine returning null by rendering an estimated height", () => {
     runtime.layoutLine.mockReturnValue(null);
     const { onHeightChange } = renderLine();

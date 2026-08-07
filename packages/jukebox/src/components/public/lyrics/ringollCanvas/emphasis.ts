@@ -45,8 +45,12 @@ export const BOB_AMPLITUDE_EM = 0.05;
 export const BOB_AMPLITUDE_MINOR_EM = 0.1;
 /** The bob starts this many ms *before* the scale/glow clock so its peak leads. */
 const BOB_LEAD_MS = 400;
-/** The bob plays over this multiple of the emphasis duration. */
-const BOB_DURATION_FACTOR = 1.4;
+/**
+ * Upper duration factor for transient emphasis motion. AMLL's bob lasts
+ * `1.4 * du`; the final staggered character glow ends just before the same
+ * bound because its delay window is `< 0.4 * du`.
+ */
+export const EMPHASIS_TRANSIENT_DURATION_FACTOR = 1.4;
 
 /**
  * Whether a word consists entirely of CJK-like script (Han ideographs,
@@ -459,7 +463,7 @@ export function emphasisBobOffsetEm(
   const amplitudeEm = options.amplitudeEm ?? BOB_AMPLITUDE_EM;
   const x = clamp01(
     (timeMs - (wordStartMs - BOB_LEAD_MS)) /
-      (BOB_DURATION_FACTOR * params.durationMs),
+      (EMPHASIS_TRANSIENT_DURATION_FACTOR * params.durationMs),
   );
   return -amplitudeEm * Math.sin(Math.PI * x);
 }

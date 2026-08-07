@@ -25,6 +25,7 @@ import {
   SUNG_COLOR,
   UNSUNG_COLOR,
   lineRevealedOffset,
+  lineTransientAnimationEndTime,
   paintLine,
 } from "./linePainter";
 import { buildWords, leadingRevealEnd } from "./wordModel";
@@ -145,6 +146,10 @@ export function GlyphLineCanvas({
     () => leadingRevealEnd(segment.timeTags, segment.content.length),
     [segment.timeTags, segment.content],
   );
+  const transientAnimationEndTime = useMemo(
+    () => lineTransientAnimationEndTime(words, segment.content),
+    [words, segment.content],
+  );
 
   const draw = useCallback(
     (snapshot: PlaybackSnapshot | null) => {
@@ -200,9 +205,15 @@ export function GlyphLineCanvas({
       const fullyUnsung = revealed <= REVEAL_EPSILON;
       const fullySung =
         contentLength > 0 && revealed >= contentLength - REVEAL_EPSILON;
+      const animatingTransientTail =
+        fullySung &&
+        time >= segment.endTime &&
+        time < transientAnimationEndTime;
       // Static once fully swept (or not started) and not the active line; while
-      // active, every media-clock snapshot remains eligible for repaint.
-      const animating = isActive || (!fullyUnsung && !fullySung);
+      // active, or while AMLL-style emphasis is settling after line end, every
+      // media-clock snapshot remains eligible for repaint.
+      const animating =
+        isActive || (!fullyUnsung && !fullySung) || animatingTransientTail;
       const timeKey = animating
         ? Math.round(time * 1000)
         : fullySung
@@ -284,6 +295,7 @@ export function GlyphLineCanvas({
       isActive,
       words,
       initialRevealEnd,
+      transientAnimationEndTime,
       onHeightChange,
     ],
   );

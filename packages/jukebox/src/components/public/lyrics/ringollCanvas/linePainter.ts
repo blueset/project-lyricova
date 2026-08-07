@@ -25,6 +25,7 @@ import {
   charEmphasis,
   emphasisBobOffsetEm,
   emphasisParams,
+  EMPHASIS_TRANSIENT_DURATION_FACTOR,
   shouldEmphasize,
   type EmphasisParams,
 } from "./emphasis";
@@ -167,6 +168,34 @@ export function lineRevealedOffset(params: LineRevealParams): number {
     }
   }
   return revealed;
+}
+
+/**
+ * Absolute time when a line's transient emphasis glow/bob is guaranteed to
+ * have settled. Persistent base float is intentionally excluded because its
+ * final pose can be cached once the transient effects reach rest.
+ *
+ * AMLL lets element emphasis animations continue after the lyric line itself
+ * is disabled. The last character's staggered glow ends before `1.4 * du`, and
+ * the bob uses that same duration factor, so this conservative bound avoids
+ * freezing a passed line mid-glow without needing layout-dependent char counts.
+ */
+export function lineTransientAnimationEndTime(
+  words: readonly LyricWord[],
+  content: string,
+): number {
+  let endTime = Number.NEGATIVE_INFINITY;
+  for (const word of words) {
+    const [start, end] = word.utf16Range;
+    if (!shouldEmphasize(word, content.slice(start, end))) continue;
+    const params = emphasisParams(word.duration * 1000, word.isLast);
+    endTime = Math.max(
+      endTime,
+      word.startTime +
+        (params.durationMs * EMPHASIS_TRANSIENT_DURATION_FACTOR) / 1000,
+    );
+  }
+  return endTime;
 }
 
 /** The `0..1` karaoke fill fraction for a ruby annotation's base UTF-16 range. */

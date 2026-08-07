@@ -49,6 +49,7 @@ import {
   INACTIVE_LINE_ALPHA,
   buildWordContexts,
   lineRevealedOffset,
+  lineTransientAnimationEndTime,
   paintLine,
   resolveClusterStyle,
   rubyRevealFraction,
@@ -384,6 +385,39 @@ describe("lineRevealedOffset", () => {
     const early = lineRevealedOffset({ ...base, time: 0.5 });
     const late = lineRevealedOffset({ ...base, time: 1.5 });
     expect(late).toBeGreaterThan(early);
+  });
+});
+
+describe("lineTransientAnimationEndTime", () => {
+  it("keeps the sample ECHO glow alive after its authored line end", () => {
+    const words = buildWords(
+      [
+        { index: 0, time: 55.149 },
+        { index: 1, time: 55.556 },
+        { index: 4, time: 61.912 },
+      ],
+      4,
+      61.912,
+    );
+
+    const animationEnd = lineTransientAnimationEndTime(words, "ECHO");
+
+    expect(animationEnd).toBeGreaterThan(61.912);
+    expect(animationEnd).toBeCloseTo(66.23408, 5);
+  });
+
+  it("has no transient tail when no word qualifies for emphasis", () => {
+    const words = buildWords(
+      [
+        { index: 0, time: 0 },
+        { index: 1, time: 0.5 },
+      ],
+      2,
+      1,
+    );
+    expect(lineTransientAnimationEndTime(words, "AB")).toBe(
+      Number.NEGATIVE_INFINITY,
+    );
   });
 });
 
