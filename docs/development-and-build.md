@@ -32,6 +32,9 @@ git-ignored), so some changes require a regeneration step before types line up.
   development containers.
 - npm 12.0.0 or newer, matching the root `packageManager` pin. (npm 12 requires
   Node.js `^24.15.0`, hence the Node floor above.)
+- Run `corepack enable npm` once after installing Node.js. The resulting npm
+  shim reads the repository's exact version from the root `packageManager`
+  field; CI and container builds enable it automatically.
 - `lyrics-kit` supports Node.js 22 or newer when consumed as a standalone
   package.
 - A stable Rust toolchain via [`rustup`](https://rustup.rs/) with the

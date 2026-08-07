@@ -42,16 +42,14 @@ RUN python3 -m venv /opt/yt-dlp && \
     /opt/yt-dlp/bin/pip install "yt-dlp[default,curl-cffi]" && \
     ln -s /opt/yt-dlp/bin/yt-dlp /usr/local/bin/yt-dlp
 
-# Pin npm explicitly. `node:24` bundles whichever npm shipped with the latest
-# 24.x at image build time, so without this the toolchain silently drifts
-# between rebuilds. Keep in sync with the root package.json `packageManager`.
+# Corepack does not shim npm by default. Enable its npm shim so every stage uses
+# the exact version from the root package.json `packageManager` field instead
+# of whichever npm happens to ship with the current `node:24` image.
 #
-# Deliberately placed AFTER the apt/neologd/yt-dlp layers: NPM_VERSION is the
-# most frequently bumped input in this stage, and an ARG invalidates every
-# layer below it. Pinning first would rebuild ~60s of OS provisioning on every
-# npm bump; here it rebuilds only this ~10s layer.
-ARG NPM_VERSION=12.0.2
-RUN npm install -g "npm@${NPM_VERSION}" && npm --version
+# Deliberately copied AFTER the apt/neologd/yt-dlp layers so package metadata
+# changes do not rebuild ~60s of OS provisioning.
+COPY package.json ./
+RUN corepack enable npm && npm --version
 
 COPY mecabrc /etc/
 
@@ -86,8 +84,9 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
     && cargo --version && rustc --version
 
 # Install dependencies from the manifests alone so this layer is cached until
-# the lockfile or a package.json actually changes.
-COPY package.json package-lock.json ./
+# the lockfile or a package.json actually changes. The root package.json was
+# copied above to select the npm version through Corepack.
+COPY package-lock.json ./
 COPY packages/api/package.json ./packages/api/
 COPY packages/components/package.json ./packages/components/
 COPY packages/glyph-renderer/package.json ./packages/glyph-renderer/

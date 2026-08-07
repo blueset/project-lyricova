@@ -40,10 +40,10 @@ jobs:
           node-version: 24
           cache: npm
 
-      # setup-node ships the npm bundled with Node 24 (11.x); the repo pins
-      # npm 12 via the root package.json `packageManager` field.
-      - name: Pin npm to the repo's packageManager version
-        run: npm install -g npm@12.0.2
+      # Corepack does not shim npm by default. Once enabled, npm resolves the
+      # exact version from the root package.json `packageManager` field.
+      - name: Enable the repo's pinned npm
+        run: corepack enable npm
 
       - name: Install MeCab for API Japanese romanization tests
         run: |
@@ -108,10 +108,10 @@ jobs:
           node-version: 24
           cache: npm
 
-      # setup-node ships the npm bundled with Node 24 (11.x); the repo pins
-      # npm 12 via the root package.json `packageManager` field.
-      - name: Pin npm to the repo's packageManager version
-        run: npm install -g npm@12.0.2
+      # Corepack does not shim npm by default. Once enabled, npm resolves the
+      # exact version from the root package.json `packageManager` field.
+      - name: Enable the repo's pinned npm
+        run: corepack enable npm
 
       - name: Install Rust toolchain (for @lyricova/glyph-renderer wasm build)
         uses: dtolnay/rust-toolchain@stable
