@@ -81,7 +81,6 @@
     "react-hook-form": "^7.55.0",
     "react-redux": "^9.2.0",
     "react-scenejs": "^1.1.0",
-    "react-virtualized-auto-sizer": "^2.0.3",
     "react-wrap-balancer": "^0.2.3",
     "redux-persist": "^6.0.0",
     "rxjs": "^7.8.2",

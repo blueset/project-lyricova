@@ -1,7 +1,6 @@
 import type { Track } from "./AppContext";
 import { MoreVertical, GripVertical, Trash } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { AutoSizer as AutoResizer } from "react-virtualized-auto-sizer";
 import type { CSSProperties } from "react";
 import React from "react";
 import type {
@@ -195,74 +194,67 @@ export default function CurrentPlaylist() {
   }, [nowPlaying, rowVirtualizer, tracks]);
 
   return (
-    <div className="flex-1 flex-grow">
-      <AutoResizer
-        renderProp={({ height, width }) => (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable
-              droppableId="droppable-currentPlaylist"
-              mode="virtual"
-              isDropDisabled={false}
-              isCombineEnabled={false}
-              ignoreContainerClipping={false}
-              renderClone={(
-                provided: DraggableProvided,
-                snapshot: DraggableStateSnapshot,
-                rubric: DraggableRubric,
-              ) => (
-                <CurrentPlaylistItem
-                  index={rubric.source.index}
-                  track={tracks[rubric.source.index]}
-                  isDragging={snapshot.isDragging}
-                  provided={provided}
-                />
-              )}
-            >
-              {(droppableProvided: DroppableProvided) => {
-                return (
-                  <div
-                    className="overflow-y-auto"
-                    style={{ height, width }}
-                    ref={(r) => {
-                      droppableProvided.innerRef(r);
-                      if (r !== null && parentRef.current !== r) {
-                        parentRef.current = r;
-                        if (nowPlaying !== null) {
-                          // Scroll to initial position on mount
-                          rowVirtualizer._willUpdate();
-                          rowVirtualizer.scrollToIndex(nowPlaying, {
-                            align: "start",
-                          });
-                        }
-                      }
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: rowVirtualizer.getTotalSize(),
-                        width: "100%",
-                        position: "relative",
-                      }}
-                    >
-                      {rowVirtualizer
-                        .getVirtualItems()
-                        .map(({ index, size, start }) => (
-                          <Row
-                            key={index}
-                            index={index}
-                            item={tracks[index]}
-                            height={size}
-                            start={start}
-                          />
-                        ))}
-                    </div>
-                  </div>
-                );
+    <div className="min-h-0 flex-1 overflow-hidden">
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable
+          droppableId="droppable-currentPlaylist"
+          mode="virtual"
+          isDropDisabled={false}
+          isCombineEnabled={false}
+          ignoreContainerClipping={false}
+          renderClone={(
+            provided: DraggableProvided,
+            snapshot: DraggableStateSnapshot,
+            rubric: DraggableRubric,
+          ) => (
+            <CurrentPlaylistItem
+              index={rubric.source.index}
+              track={tracks[rubric.source.index]}
+              isDragging={snapshot.isDragging}
+              provided={provided}
+            />
+          )}
+        >
+          {(droppableProvided: DroppableProvided) => (
+            <div
+              className="size-full overflow-y-auto"
+              ref={(r) => {
+                droppableProvided.innerRef(r);
+                if (r !== null && parentRef.current !== r) {
+                  parentRef.current = r;
+                  if (nowPlaying !== null) {
+                    // Scroll to initial position on mount
+                    rowVirtualizer._willUpdate();
+                    rowVirtualizer.scrollToIndex(nowPlaying, {
+                      align: "start",
+                    });
+                  }
+                }
               }}
-            </Droppable>
-          </DragDropContext>
-        )}
-      />
+            >
+              <div
+                style={{
+                  height: rowVirtualizer.getTotalSize(),
+                  width: "100%",
+                  position: "relative",
+                }}
+              >
+                {rowVirtualizer
+                  .getVirtualItems()
+                  .map(({ index, size, start }) => (
+                    <Row
+                      key={index}
+                      index={index}
+                      item={tracks[index]}
+                      height={size}
+                      start={start}
+                    />
+                  ))}
+              </div>
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 }

@@ -14,7 +14,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
-import { AutoSizer as AutoResizer } from "react-virtualized-auto-sizer";
 import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import { NextComposedLink, useAuthContext } from "@lyricova/components";
@@ -218,14 +217,17 @@ export default function LibraryTracks() {
     },
   });
 
-  const parentRefCallback = useCallback((elm: HTMLDivElement) => {
-    if (!parentRef.current) {
-      parentRef.current = elm;
-      rowVirtualizer.measure();
-    } else {
-      parentRef.current = elm;
-    }
-  }, [rowVirtualizer]);
+  const parentRefCallback = useCallback(
+    (elm: HTMLDivElement) => {
+      if (!parentRef.current) {
+        parentRef.current = elm;
+        rowVirtualizer.measure();
+      } else {
+        parentRef.current = elm;
+      }
+    },
+    [rowVirtualizer],
+  );
 
   const sliderLookup = useMemo(() => {
     const rows = [null, ...entries];
@@ -280,80 +282,68 @@ export default function LibraryTracks() {
 
   return (
     <div className="px-4 h-full relative overflow-hidden">
-      <AutoResizer
-        renderProp={({ height, width }) => (
-          <>
-            <TooltipProvider>
-              <Tooltip delayDuration={0} open={isDragging}>
-                <div className="absolute top-1 bottom-1 right-2 z-50">
-                  <Slider
-                    orientation="vertical"
-                    className="h-full"
-                    onValueChange={onScrollSliderChange}
-                    onValueCommit={() => setIsDragging(false)}
-                    value={[scrollLength - scrollDistance]}
-                    min={height ?? 0}
-                    max={scrollLength}
-                    track={false}
-                    renderThumb={(index) => (
-                      <TooltipTrigger asChild key={index}>
-                        <SliderThumb key={index} />
-                      </TooltipTrigger>
-                    )}
-                  />
-                </div>
-                <TooltipContent
-                  side="left"
-                  className="h-16 w-16 min-w-16 text-2xl flex items-center justify-center text-center bg-primary text-primary-foreground rounded-full"
-                >
-                  {(() => {
-                    const index =
-                      _.sortedLastIndexBy(
-                        sliderLookup,
-                        {
-                          index: scrollLength - (scrollLength - scrollDistance),
-                          name: "",
-                        },
-                        "index",
-                      ) - 1;
-                    return sliderLookup[Math.max(0, index)]?.name ?? "#";
-                  })()}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <div
-              style={{
-                width,
-                height,
-                overflowY: "auto",
-                scrollbarWidth: "none",
-              }}
-              ref={parentRefCallback}
-            >
-              <div
-                style={{
-                  height: rowVirtualizer.getTotalSize(),
-                  width: "100%",
-                  position: "relative",
-                }}
-              >
-                {rowVirtualizer
-                  .getVirtualItems()
-                  .map(({ index, size, start }) => (
-                    <Row
-                      key={index}
-                      index={index}
-                      height={size}
-                      start={start}
-                      data={entries}
-                      isScrolling={isDragging}
-                    />
-                  ))}
-              </div>
-            </div>
-          </>
-        )}
-      />
+      <TooltipProvider>
+        <Tooltip delayDuration={0} open={isDragging}>
+          <div className="absolute top-1 bottom-1 right-2 z-50">
+            <Slider
+              orientation="vertical"
+              className="h-full"
+              onValueChange={onScrollSliderChange}
+              onValueCommit={() => setIsDragging(false)}
+              value={[scrollLength - scrollDistance]}
+              min={rowVirtualizer.scrollRect?.height ?? 0}
+              max={scrollLength}
+              track={false}
+              renderThumb={(index) => (
+                <TooltipTrigger asChild key={index}>
+                  <SliderThumb key={index} />
+                </TooltipTrigger>
+              )}
+            />
+          </div>
+          <TooltipContent
+            side="left"
+            className="h-16 w-16 min-w-16 text-2xl flex items-center justify-center text-center bg-primary text-primary-foreground rounded-full"
+          >
+            {(() => {
+              const index =
+                _.sortedLastIndexBy(
+                  sliderLookup,
+                  {
+                    index: scrollLength - (scrollLength - scrollDistance),
+                    name: "",
+                  },
+                  "index",
+                ) - 1;
+              return sliderLookup[Math.max(0, index)]?.name ?? "#";
+            })()}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <div
+        className="size-full overflow-y-auto"
+        style={{ scrollbarWidth: "none" }}
+        ref={parentRefCallback}
+      >
+        <div
+          style={{
+            height: rowVirtualizer.getTotalSize(),
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          {rowVirtualizer.getVirtualItems().map(({ index, size, start }) => (
+            <Row
+              key={index}
+              index={index}
+              height={size}
+              start={start}
+              data={entries}
+              isScrolling={isDragging}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
