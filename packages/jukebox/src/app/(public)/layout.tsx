@@ -164,7 +164,7 @@ function IndexLayout({ children }: Props) {
         navigator.mediaSession.setActionHandler("stop", function () {
           dispatch(stop());
         });
-      } catch {}
+      } catch { }
 
       try {
         navigator.mediaSession.setActionHandler("seekto", function (event) {
@@ -176,7 +176,7 @@ function IndexLayout({ children }: Props) {
             playerRef.current.currentTime = event.seekTime;
           }
         });
-      } catch {}
+      } catch { }
     }
   });
 
@@ -299,7 +299,7 @@ function IndexLayout({ children }: Props) {
         <AuthContext noRedirect>
           <div
             data-collapsed={isCollapsed ? "true" : undefined}
-            className="h-lvh flex flex-col not-data-collapsed:md:flex-row group/player"
+            className="h-dvh flex flex-col not-data-collapsed:md:flex-row group/player"
           >
             <BackgroundCanvas
               coverUrl={currentSong ? getTrackCoverURL(currentSong) : undefined}
@@ -312,7 +312,7 @@ function IndexLayout({ children }: Props) {
                 className={cn(
                   "z-10",
                   "group-data-collapsed/player:order-1 group-data-collapsed/player:w-full",
-                  "group-not-data-collapsed/player:md:w-[clamp(25em,33%,45em)] group-not-data-collapsed/player:md:p-6 group-not-data-collapsed/player:h-lvh group-not-data-collapsed/player:md:h-full group-not-data-collapsed/player:absolute group-not-data-collapsed/player:md:static group-not-data-collapsed/player:inset-0",
+                  "group-not-data-collapsed/player:md:w-[clamp(25em,33%,45em)] group-not-data-collapsed/player:md:p-6 group-not-data-collapsed/player:h-dvh group-not-data-collapsed/player:md:h-full group-not-data-collapsed/player:absolute group-not-data-collapsed/player:md:static group-not-data-collapsed/player:inset-0",
                 )}
               >
                 <Card
@@ -333,7 +333,7 @@ function IndexLayout({ children }: Props) {
             >
               <DetailsPanel
                 coverUrl={null}
-                // coverUrl={currentSong ? getTrackCoverURL(currentSong) : null}
+              // coverUrl={currentSong ? getTrackCoverURL(currentSong) : null}
               >
                 {children}
               </DetailsPanel>
