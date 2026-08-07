@@ -1,4 +1,4 @@
-import { assertValidPassword } from "../auth/accountService.js";
+import { assertValidPassword } from "../auth/accountPolicy.js";
 
 /**
  * Secure password acquisition for the CLI. Passwords must never be accepted

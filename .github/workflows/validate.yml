@@ -1,4 +1,4 @@
-# Type-check & lint gate for the monorepo.
+# Build, test, lint, and type-check gate for the monorepo.
 #
 # This workflow validates the codebase with BOTH the classic TypeScript
 # compiler (`tsc`, pinned to 6.0.x) and the native TypeScript 7 compiler
@@ -18,19 +18,19 @@
 # `wasm32-unknown-unknown` target, then explicitly build/test the package so
 # its `pkg/` output exists before ESLint/tsc/tsgo type-check `ts/index.ts`
 # and before any future consumer (e.g. `@lyricova/jukebox`) needs it.
-name: Type-check
+name: Validation
 
 on:
   pull_request:
   workflow_dispatch:
 
 concurrency:
-  group: typecheck-${{ github.ref }}
+  group: validation-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  typecheck:
-    name: Lint & type-check (tsc + tsgo)
+  validate:
+    name: Build, test, lint & type-check (tsc + tsgo)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -44,6 +44,11 @@ jobs:
       # npm 12 via the root package.json `packageManager` field.
       - name: Pin npm to the repo's packageManager version
         run: npm install -g npm@12.0.2
+
+      - name: Install MeCab for API Japanese romanization tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes mecab mecab-ipadic-utf8
 
       - name: Install Rust toolchain (for @lyricova/glyph-renderer wasm build)
         uses: dtolnay/rust-toolchain@stable

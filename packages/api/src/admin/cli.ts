@@ -2,20 +2,9 @@ import { parseArgs } from "node:util";
 import { createInterface } from "node:readline/promises";
 import {
   AccountServiceError,
-  addUser,
-  auditAuthMigration,
-  disableUser,
-  enableUser,
-  listPasskeys,
-  listSessions,
-  listUsers,
-  resetPassword,
-  revokePasskeys,
-  revokeSessions,
-  updateUser,
   type Role,
   type UserIdentifier,
-} from "../auth/accountService.js";
+} from "../auth/accountPolicy.js";
 import {
   formatAuditResult,
   formatPasskeyList,
@@ -549,11 +538,26 @@ export async function execute(
   parsed: ParsedCommand,
   io: CliIO,
 ): Promise<void> {
+  if (parsed.command === "help") {
+    io.stdout(HELP_TEXT);
+    return;
+  }
+
+  const {
+    addUser,
+    auditAuthMigration,
+    disableUser,
+    enableUser,
+    listPasskeys,
+    listSessions,
+    listUsers,
+    resetPassword,
+    revokePasskeys,
+    revokeSessions,
+    updateUser,
+  } = await import("../auth/accountService.js");
+
   switch (parsed.command) {
-    case "help": {
-      io.stdout(HELP_TEXT);
-      return;
-    }
     case "user-add": {
       assertValidRoleOption(parsed.role);
       const password = await acquirePassword(io, parsed.passwordStdin);

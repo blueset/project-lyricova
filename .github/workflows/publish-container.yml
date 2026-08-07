@@ -88,7 +88,7 @@ jobs:
       # merge — not QEMU.
       #
       # The registry cache keeps the Actions cache quota (10 GB, shared with the
-      # npm cache in typecheck.yml) free. On a public repo, GHCR storage and
+      # npm cache in validate.yml) free. On a public repo, GHCR storage and
       # bandwidth — including this cache tag — are not billed.
       - name: Build image
         uses: docker/build-push-action@v7

@@ -222,7 +222,7 @@ How each entry point ensures the artifacts exist **before** jukebox needs them:
 | `npm run test` / `npm test -w …/jukebox`    | jukebox `pretest` hook (vitest reads `pkg/` + `build/`)                                                                               |
 | `npm run test:browser`                      | jukebox `pretest:browser` hook (the vite fixture serves `pkg/` wasm)                                                                  |
 | `npm run start -w @lyricova/jukebox` (prod) | jukebox `prestart` hook **verifies only** (`--check`, no build)                                                                       |
-| CI (`.github/workflows/typecheck.yml`)      | explicit `npm run build -w @lyricova/glyph-renderer` before lint/typecheck                                                            |
+| CI (`.github/workflows/validate.yml`)       | explicit `npm run build -w @lyricova/glyph-renderer` before tests, lint, and type-checking                                             |
 
 `lint` deliberately has **no** hook: eslint's config is not type-aware and never
 resolves the built package, and glyph-renderer's own `lint` doesn't build, so
@@ -503,9 +503,9 @@ npm run test              # turbo run test            (jest)
 > `npm run build -w @lyricova/glyph-renderer` once before a bare `npm run
 typecheck` on a clean tree.
 >
-> A ready-to-enable GitHub Actions workflow that runs the lint + `tsc` + `tsgo`
-> gates lives at `.github/workflows/typecheck.yml` (triggered on pull requests
-> and manual dispatch).
+> The GitHub Actions validation workflow runs builds, tests, lint, `tsc`, and
+> `tsgo` from `.github/workflows/validate.yml` on pull requests and manual
+> dispatch.
 
 ---
 

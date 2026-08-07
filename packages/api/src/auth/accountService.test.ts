@@ -6,7 +6,7 @@ import {
   normalizeDisplayName,
   normalizeEmail,
   normalizeUsername,
-} from "./accountService.js";
+} from "./accountPolicy.js";
 
 /**
  * These cover the pure validation/guard helpers only — accountService's
