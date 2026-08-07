@@ -9,6 +9,15 @@ case "$ctype" in
 esac
 unset ctype
 
+# VS Code terminals set this runtime directory, while `docker exec` terminals
+# often do not. Zellij derives its socket location from it, so normalize the
+# missing value to ensure every terminal attaches to the same session.
+if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+	XDG_RUNTIME_DIR="/tmp/user/$(id -u)"
+	(umask 077 && mkdir -p "$XDG_RUNTIME_DIR") || exit 1
+	export XDG_RUNTIME_DIR
+fi
+
 # Upgrade the TERM that `docker exec` hardcodes, but respect a real one if the
 # caller propagated it with `docker exec -e TERM=...`.
 if [ -z "$TERM" ] || [ "$TERM" = "xterm" ] || [ "$TERM" = "dumb" ]; then
