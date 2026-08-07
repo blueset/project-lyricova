@@ -276,6 +276,7 @@ COPY --from=builder /app/packages/api/dist ./packages/api/dist
 COPY --from=builder /app/packages/api/src ./packages/api/src
 COPY --from=builder /app/packages/api/drizzle ./packages/api/drizzle
 COPY --from=builder /app/packages/api/schema.graphql ./packages/api/
+COPY --from=builder /app/packages/api/mecabUserDict/CustomDictWeightedCombined.dic ./packages/api/mecabUserDict/
 
 # Everything `npm run db:migrate` needs, so migrations can be applied from the
 # published image (`docker compose --profile migrate run --rm migrate`) without
