@@ -30,9 +30,9 @@ import {
 import { buildWords, leadingRevealEnd } from "./wordModel";
 
 /**
- * Auto margins that place the fixed-width canvas box within its row, mirroring
- * the alignment the glyphs are painted with. Logical properties so an RTL row
- * places the box against the correct edge.
+ * Auto margins that place the compact painted box within its row, mirroring
+ * the alignment of the glyphs. Logical properties ensure an RTL row uses the
+ * correct edge.
  */
 function boxMargins(alignment: SegmentAlignment): {
   marginInlineStart?: string;
@@ -127,10 +127,15 @@ export function GlyphLineCanvas({
   const lastPaintRef = useRef<string | null>(null);
   /** Last *reported* height, so `onHeightChange` fires only on real changes. */
   const heightRef = useRef<number>(-1);
+  /** Last occupied width committed to React state. */
+  const widthRef = useRef<number>(-1);
 
   const [height, setHeight] = useState<number>(() =>
     estimateHeight(fontSize, reserveRubyRow),
   );
+  // Keep the full allocation until layout resolves so a loading line does not
+  // briefly collapse before its fonts become available.
+  const [paintedWidth, setPaintedWidth] = useState(maxWidth);
 
   const words = useMemo(
     () => buildWords(segment.timeTags, segment.content.length, segment.endTime),
@@ -166,13 +171,18 @@ export function GlyphLineCanvas({
 
       const paragraphHeight =
         layout?.height ?? estimateHeight(fontSize, reserveRubyRow);
+      const paragraphWidth = layout ? Math.max(1, layout.width) : maxWidth;
 
-      // Report height changes (never per-frame: `paragraphHeight` only moves
-      // when the layout resolves or a sizing prop changes).
+      // Commit geometry changes only when layout resolves or a sizing prop
+      // changes; playback snapshots never alter either dimension.
       if (heightRef.current !== paragraphHeight) {
         heightRef.current = paragraphHeight;
         setHeight(paragraphHeight);
         onHeightChange?.(paragraphHeight);
+      }
+      if (widthRef.current !== paragraphWidth) {
+        widthRef.current = paragraphWidth;
+        setPaintedWidth(paragraphWidth);
       }
 
       const time = snapshot?.currentTime ?? 0;
@@ -207,6 +217,7 @@ export function GlyphLineCanvas({
         segment.minor ? 1 : 0,
         layout ? 1 : 0,
         Math.round(paragraphHeight),
+        Math.round(paragraphWidth * 1000),
         timeKey,
       ].join("|");
       if (signature === lastPaintRef.current) return;
@@ -214,7 +225,7 @@ export function GlyphLineCanvas({
 
       const margin = Math.ceil(fontSize * CANVAS_PADDING_EM);
       const dpr = canvasPixelRatio();
-      const cssWidth = maxWidth + margin * 2;
+      const cssWidth = paragraphWidth + margin * 2;
       const cssHeight = paragraphHeight + margin * 2;
       const backingWidth = Math.max(1, Math.round(cssWidth * dpr));
       const backingHeight = Math.max(1, Math.round(cssHeight * dpr));
@@ -257,7 +268,7 @@ export function GlyphLineCanvas({
           activeColor: SUNG_COLOR,
           inactiveColor: UNSUNG_COLOR,
           alignment: segment.alignment,
-          contentWidth: maxWidth,
+          contentWidth: paragraphWidth,
           variations: glyphVariations(fontSize),
         },
         cache,
@@ -316,16 +327,11 @@ export function GlyphLineCanvas({
       data-alignment={segment.alignment}
       style={{
         position: "relative",
-        width: maxWidth,
+        width: paintedWidth,
         height,
         overflow: "visible",
-        // The painted rows are aligned *within* this box (`contentWidth` is
-        // `maxWidth`), so the box itself has to sit where the row's alignment
-        // says - otherwise the text centres on the box while the DOM
-        // translation beside it centres on the whole row, and the two visibly
-        // disagree. One shared `maxWidth` is deliberately narrower than a row
-        // that carries no horizontal padding (role 2), and `text-center` on the
-        // row does nothing to a block box, so this must be explicit.
+        // The compact box aligns itself within whichever width the row gets
+        // from the lyrics and translation content.
         ...boxMargins(segment.alignment),
       }}
     >

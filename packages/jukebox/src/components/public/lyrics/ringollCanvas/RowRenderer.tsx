@@ -298,9 +298,8 @@ const InnerRowRenderer = forwardRef<HTMLDivElement, RingollCanvasRowProps>(
         style={{
           ...rowSprings,
           // A blank row has no canvas to give it a box, so it needs both
-          // dimensions stated explicitly. `maxWidth` is exactly what
-          // `GlyphLineCanvas` sizes its root to, so the hit area of a blank line
-          // matches every other line's instead of shrink-wrapping to nothing.
+          // dimensions stated explicitly. Keep the shared wrap width as its
+          // click/tap area even though non-empty rows shrink to their content.
           ...(empty
             ? { minHeight: EMPTY_LINE_MIN_HEIGHT, width: maxWidth }
             : null),

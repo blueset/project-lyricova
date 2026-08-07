@@ -189,12 +189,12 @@ afterEach(() => {
 // --- Tests -----------------------------------------------------------------
 
 describe("GlyphLineCanvas", () => {
-  it("mounts and renders a canvas inside a text-box-sized container", () => {
+  it("shrink-wraps the painted box to the laid-out text", () => {
     renderLine();
     const root = screen.getByTestId("glyph-line-canvas-root");
     expect(root).toBeTruthy();
-    expect(root.style.width).toBe("300px");
-    expect(screen.getByTestId("glyph-line-canvas")).toBeTruthy();
+    expect(root.style.width).toBe("100px");
+    expect(screen.getByTestId("glyph-line-canvas").style.width).toBe("160px");
     // The media clock is the sole timing source: the component registered a
     // snapshot callback.
     expect(clock.onSnapshot).toBeTypeOf("function");
@@ -207,6 +207,14 @@ describe("GlyphLineCanvas", () => {
     expect(screen.getByTestId("glyph-line-canvas-root").style.height).toBe(
       "40px",
     );
+  });
+
+  it("preserves an occupied width wider than the wrapping allocation", () => {
+    runtime.layoutLine.mockReturnValue({ ...MOCK_LAYOUT, width: 350 });
+    renderLine();
+    const root = screen.getByTestId("glyph-line-canvas-root");
+    expect(root.style.width).toBe("350px");
+    expect(screen.getByTestId("glyph-line-canvas").style.width).toBe("410px");
   });
 
   it("redraws on each distinct media-clock snapshot of an active line", () => {
@@ -249,6 +257,9 @@ describe("GlyphLineCanvas", () => {
     expect(screen.getByTestId("glyph-line-canvas-root").style.height).toBe(
       "48px",
     );
+    expect(screen.getByTestId("glyph-line-canvas-root").style.width).toBe(
+      "300px",
+    );
     // It still cleared a canvas (drew empty), and never threw.
     expect(ctxCalls.clearRect).toBeGreaterThan(0);
   });
@@ -262,6 +273,9 @@ describe("GlyphLineCanvas", () => {
     runtime.layoutLine.mockReturnValue(MOCK_LAYOUT);
     act(() => runtime.bump());
     expect(onHeightChange).toHaveBeenLastCalledWith(40);
+    expect(screen.getByTestId("glyph-line-canvas-root").style.width).toBe(
+      "100px",
+    );
   });
 
   it("unsubscribes from the runtime on unmount", () => {
@@ -281,11 +295,9 @@ describe("box placement within the row", () => {
     ) as HTMLElement;
   }
 
-  // The glyphs are aligned *inside* this box (`contentWidth` is `maxWidth`), so
-  // if the box does not itself sit where the row's alignment says, the canvas
-  // text and the DOM translation beside it centre on different boxes and
-  // visibly disagree. `text-center` on the row cannot do this: it does not
-  // move a block box.
+  // The compact painted box aligns inside the row's natural width, which may
+  // be wider when the translation has more content. `text-center` on the row
+  // cannot move a block box, so the root must express the alignment itself.
   it("centres the box for a centred row", () => {
     const root = rootFor("center");
     expect(root.style.marginInlineStart).toBe("auto");
@@ -308,11 +320,9 @@ describe("box placement within the row", () => {
     expect(rootFor("center").dataset.alignment).toBe("center");
   });
 
-  it("keeps the box at the shared wrap width", () => {
-    // Placement must not change the box's size: the painted rows are aligned
-    // against exactly this width.
+  it("keeps every alignment at the occupied text width", () => {
     for (const alignment of ["start", "center", "end"] as const) {
-      expect(rootFor(alignment).style.width).toBe("300px");
+      expect(rootFor(alignment).style.width).toBe("100px");
     }
   });
 });

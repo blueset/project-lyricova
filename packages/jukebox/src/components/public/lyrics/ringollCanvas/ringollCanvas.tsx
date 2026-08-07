@@ -50,14 +50,12 @@ interface Props {
 }
 
 /**
- * Horizontal insets removed from the measured container width to get the shared
- * wrap width. They mirror the Tailwind chrome so the canvas never lays a line
- * wider than the row box it sits in: `px-8` on the sticky viewport
- * ({@link RingollContainerDiv}'s `viewportClassName`) plus the widest role inset
- * on a row (`pl-8` + `pr-12` = `2rem + 3rem`). A single value is used for every
- * role so all lines wrap identically ("all lines agree").
+ * Horizontal inset removed from the measured container width to get the shared
+ * wrap width. It mirrors the widest role inset on a row (`pl-8` + `pr-12` =
+ * `2rem + 3rem`). The sticky viewport's `px-8` does not reduce the containing
+ * block of its absolutely positioned rows, so it must not be deducted here. A
+ * single value is used for every role so all lines wrap identically.
  */
-const VIEWPORT_PADDING_X = 32;
 const ROW_PADDING_X = 80;
 
 /**
@@ -173,10 +171,7 @@ function RingollCanvasLyricsInner({
 
   // One font size and wrap width for the whole document, so every row agrees.
   const fontSize = responsiveFontSize(stableSize.width, stableSize.height);
-  const maxWidth = Math.max(
-    1,
-    Math.floor(stableSize.width - VIEWPORT_PADDING_X * 2 - ROW_PADDING_X),
-  );
+  const maxWidth = Math.max(1, Math.floor(stableSize.width - ROW_PADDING_X));
 
   return (
     <div ref={sizeRef} className="relative size-full">

@@ -527,10 +527,10 @@ describe("empty lines stay tappable", () => {
     expect(row.style.minHeight).toBe("44px");
   });
 
-  it("gives a blank line the same hit-area width as a line with lyrics", () => {
-    // Content rows take their width from GlyphLineCanvas' root (`width:
-    // maxWidth`). A blank row has no canvas, so without an explicit width it
-    // shrink-wraps to nothing and becomes far harder to tap than its neighbours.
+  it("gives a blank line the full shared-width hit area", () => {
+    // Content rows shrink to their laid-out text. A blank row has no canvas, so
+    // without an explicit width it would shrink to nothing and become hard to
+    // tap.
     const { container } = render(
       <RowRenderer
         {...makeProps({
