@@ -22,6 +22,7 @@ import {
 import { EMPTY_LINE_MIN_HEIGHT, RowRenderer } from "./RowRenderer";
 import { InterludeDots } from "./InterludeDots";
 import { findInterludeGaps } from "./interlude";
+import { buildPresentationSegments } from "./presentationTiming";
 
 /**
  * "Ringoll Canvas" - the DOM Ringoll renderer's scrolling architecture and row
@@ -67,8 +68,11 @@ const ROW_PADDING_X = 80;
  */
 const RESIZE_DEBOUNCE_MS = 150;
 
-/** Fraction of the lyric area the active line is anchored at (see `alignAnchor`). */
-const ANCHOR_FRACTION = "10%";
+/**
+ * Fraction of the lyric area the active line is anchored at (see `alignAnchor`).
+ * 4 Tailwind units to compensate for the lyrics line padding.
+ */
+const ANCHOR_FRACTION = "calc(10% + var(--spacing) * 4)";
 
 export function RingollCanvasLyrics({
   lyrics,
@@ -98,6 +102,10 @@ function RingollCanvasLyricsInner({
         trackDuration: lyrics.length ?? null,
       }),
     [lyrics, lang],
+  );
+  const presentationSegments = useMemo(
+    () => buildPresentationSegments(segments),
+    [segments],
   );
 
   // New document: drop the runtime's per-document derived state (escalation
@@ -132,6 +140,9 @@ function RingollCanvasLyricsInner({
     () =>
       findInterludeGaps(
         segments.map((segment) => ({
+          // Dots remain anchored to authored timestamps. Presentation lead-in
+          // only controls row activation/scrolling and must not shorten the
+          // fixed trailing countdown or move its 250 ms end offset.
           startTime: segment.startTime,
           endTime: segment.endTime,
           role: segment.role,
@@ -171,6 +182,7 @@ function RingollCanvasLyricsInner({
     <div ref={sizeRef} className="relative size-full">
       <LyricsVirtualizer
         rows={lyrics.lines}
+        timingSegments={presentationSegments}
         estimatedRowHeight={20}
         containerAs={RingollContainerDiv}
         viewportClassName="p-4 px-8"

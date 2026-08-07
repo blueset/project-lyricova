@@ -57,7 +57,7 @@ import {
   type LinePaintOptions,
 } from "./linePainter";
 import type { LyricWord } from "./wordModel";
-import { buildWords } from "./wordModel";
+import { buildWords, leadingRevealEnd } from "./wordModel";
 
 // --- Recording canvas (mirrors canvasGlyphRenderer.spec.ts) ----------------
 
@@ -276,15 +276,16 @@ describe("sweep constants", () => {
 });
 
 describe("lineRevealedOffset", () => {
-  it("reveals an untimed line linearly across its whole content", () => {
+  it("reveals an untimed line all at once at its authored start", () => {
     const params = {
       words: [] as LyricWord[],
       contentLength: 10,
       startTime: 0,
       endTime: 10,
     };
-    expect(lineRevealedOffset({ ...params, time: 5 })).toBeCloseTo(5, 6);
     expect(lineRevealedOffset({ ...params, time: -1 })).toBe(0);
+    expect(lineRevealedOffset({ ...params, time: 0 })).toBe(10);
+    expect(lineRevealedOffset({ ...params, time: 5 })).toBe(10);
     expect(lineRevealedOffset({ ...params, time: 20 })).toBe(10);
   });
 
@@ -349,6 +350,25 @@ describe("lineRevealedOffset", () => {
         time: 1.5,
       }),
     ).toBeCloseTo(3, 6);
+  });
+
+  it("reveals a prefix at line start before sweeping the first tagged word", () => {
+    const tags = [{ index: 2, time: 12 }];
+    const words = buildWords(tags, 4, 14);
+    const params = {
+      words,
+      contentLength: 4,
+      startTime: 10,
+      endTime: 14,
+      leadingRevealEnd: leadingRevealEnd(tags, 4),
+    };
+
+    expect(lineRevealedOffset({ ...params, time: 9.999 })).toBe(0);
+    expect(lineRevealedOffset({ ...params, time: 10 })).toBe(2);
+    expect(lineRevealedOffset({ ...params, time: 11.999 })).toBe(2);
+    expect(lineRevealedOffset({ ...params, time: 12 })).toBe(2);
+    expect(lineRevealedOffset({ ...params, time: 13 })).toBeCloseTo(3, 6);
+    expect(lineRevealedOffset({ ...params, time: 14 })).toBe(4);
   });
 
   it("advances monotonically for words derived by buildWords", () => {
@@ -693,6 +713,7 @@ describe("paintLine", () => {
     time: 0.25,
     startTime: 0,
     endTime: 0.5,
+    leadingRevealEnd: 0,
     fontSize: FONT_SIZE,
     minor: false,
     lineAlpha: 1,

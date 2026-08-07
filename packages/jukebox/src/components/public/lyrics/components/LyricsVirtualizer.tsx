@@ -1,10 +1,11 @@
 import type React from "react";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { cn } from "@lyricova/components/utils";
 import type { LyricsKitLyricsLine } from "@lyricova/components/gql/schema";
 import {
+  lyricsToSegments,
   type LyricsSegment,
-  useActiveLyrcsRanges,
+  useActiveLyricsSegmentRanges,
 } from "../../../../hooks/useActiveLyricsRanges";
 import { useAppContext } from "../../AppContext";
 import type { VirtualizerRowRenderProps } from "./useLyricsVirtualizer";
@@ -39,6 +40,12 @@ export interface LyricsVirtualizerProps<
   containerAs?: TELement;
   containerProps?: React.ComponentProps<TELement>;
   viewportClassName?: string;
+  /**
+   * Optional presentation schedule for active-row and scroll timing. Row
+   * rendering, click-to-seek, and lyric animation still use the authored
+   * timestamps derived from {@link rows}.
+   */
+  timingSegments?: LyricsSegment[];
 }
 
 /**
@@ -56,12 +63,14 @@ export function LyricsVirtualizer({
   containerAs: ContainerAs = "div",
   containerProps = {},
   viewportClassName,
+  timingSegments,
 }: LyricsVirtualizerProps<LyricsKitLyricsLine>) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { playerRef } = useAppContext();
-  const { currentFrame, segments, playerState } = useActiveLyrcsRanges(
-    rows,
+  const segments = useMemo(() => lyricsToSegments(rows), [rows]);
+  const { currentFrame, playerState } = useActiveLyricsSegmentRanges(
+    timingSegments ?? segments,
     playerRef,
   );
 

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildWords, wordProgress, type LyricWord } from "./wordModel";
+import {
+  buildWords,
+  leadingRevealEnd,
+  wordProgress,
+  type LyricWord,
+} from "./wordModel";
 import type { RevealTag } from "../glyph/karaokeTiming";
 
 describe("buildWords", () => {
@@ -60,10 +65,10 @@ describe("buildWords", () => {
     });
   });
 
-  it("does not synthesize a word before the first tag", () => {
-    // The [0, 2) prefix is revealed before the first keyframe: not a word.
+  it("keeps the prefix out of the word list and exposes it for immediate reveal", () => {
     const words = buildWords([{ index: 2, time: 5 }], 5, 10);
     expect(words[0].utf16Range[0]).toBe(2);
+    expect(leadingRevealEnd([{ index: 2, time: 5 }], 5)).toBe(2);
   });
 
   it("drops zero-width ranges yet keeps word indices contiguous", () => {
@@ -157,6 +162,18 @@ describe("buildWords", () => {
     );
     expect(words.filter((w) => w.isLast)).toHaveLength(1);
     expect(words[words.length - 1].isLast).toBe(true);
+  });
+});
+
+describe("leadingRevealEnd", () => {
+  it("returns zero when the first timed word starts at the beginning", () => {
+    expect(leadingRevealEnd([{ index: 0, time: 5 }], 4)).toBe(0);
+    expect(leadingRevealEnd([], 4)).toBe(0);
+  });
+
+  it("rejects a malformed first index", () => {
+    expect(leadingRevealEnd([{ index: 99, time: 5 }], 4)).toBe(0);
+    expect(leadingRevealEnd([{ index: -1, time: 5 }], 4)).toBe(0);
   });
 });
 

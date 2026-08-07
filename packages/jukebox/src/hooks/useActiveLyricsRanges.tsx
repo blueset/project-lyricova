@@ -20,7 +20,7 @@ interface LyricsKeyframeInfo {
 }
 
 /** Convert lyrics to time segments, and sort by start the end time. */
-function lyricsToSegments(
+export function lyricsToSegments(
   lines: LyricsKitLyricsLine[] | LyricsLine[],
 ): LyricsSegment[] {
   const segments: LyricsSegment[] = lines
@@ -121,15 +121,19 @@ function segmentsToKeyframes(
   return keyframes;
 }
 
+export function useActiveLyricsSegmentRanges(
+  segments: LyricsSegment[],
+  playerRef: RefObject<HTMLAudioElement>,
+): PlayerLyricsState<LyricsKeyframeInfo> & { segments: LyricsSegment[] } {
+  const keyframes = useMemo(() => segmentsToKeyframes(segments), [segments]);
+  const result = usePlayerLyricsState(keyframes, playerRef);
+  return { segments, ...result };
+}
+
 export function useActiveLyrcsRanges(
   lines: LyricsKitLyricsLine[] | LyricsLine[],
   playerRef: RefObject<HTMLAudioElement>,
 ): PlayerLyricsState<LyricsKeyframeInfo> & { segments: LyricsSegment[] } {
-  const { segments, keyframes } = useMemo(() => {
-    const segments = lyricsToSegments(lines);
-    const keyframes = segmentsToKeyframes(segments);
-    return { segments, keyframes };
-  }, [lines]);
-  const result = usePlayerLyricsState(keyframes, playerRef);
-  return { segments, ...result };
+  const segments = useMemo(() => lyricsToSegments(lines), [lines]);
+  return useActiveLyricsSegmentRanges(segments, playerRef);
 }

@@ -149,8 +149,8 @@ function resolveTranslation(
 
 /**
  * Builds the normalized segment model for a whole lyrics document. Untimed
- * lines (no reveal tags) get an empty `timeTags` array and are revealed
- * linearly by the timing mapper.
+ * lines (no reveal tags) get an empty `timeTags` array; Ringoll Canvas reveals
+ * those lines as a whole at their authored start.
  */
 export function buildLyricSegments(
   lyrics: LyricsKitLyrics,

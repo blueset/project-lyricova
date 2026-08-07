@@ -13,7 +13,7 @@ import type {
 } from "../glyph/canvasGlyphRenderer";
 import type { GlyphPathCache } from "../glyph/glyphOutlineCache";
 import { alignmentOffset } from "../glyph/glyphCanvasLayout";
-import { clusterFill, revealedOffset } from "../glyph/karaokeTiming";
+import { clusterFill } from "../glyph/karaokeTiming";
 import type { SegmentAlignment } from "../glyph/lyricSegments";
 import type { RubyLayoutResult, RubyPlacement } from "../glyph/types";
 import {
@@ -103,16 +103,18 @@ export function sweepFadeWidth(fontSize: number): number {
 }
 
 export interface LineRevealParams {
-  /** Per-word timing model (empty for an untimed line). */
+  /** Per-word timing model (empty for an untimed or prefix-only line). */
   words: readonly LyricWord[];
   /** Current playback time, in **seconds**. */
   time: number;
   /** Line content length, in UTF-16 code units. */
   contentLength: number;
-  /** Absolute reveal start time (seconds); only used for an untimed line. */
+  /** Absolute reveal start time (seconds); untimed lines step here. */
   startTime: number;
-  /** Absolute reveal end time (seconds); only used for an untimed line. */
+  /** Authored line end time (seconds); untimed whole-line reveal ignores it. */
   endTime: number;
+  /** UTF-16 prefix revealed immediately at {@link startTime}. */
+  leadingRevealEnd?: number;
 }
 
 /**
@@ -123,27 +125,36 @@ export interface LineRevealParams {
  * right edge of every finished word, interpolates *linearly* across the one
  * word currently being sung (via {@link wordProgress}, mapped onto that word's
  * own UTF-16 range), and holds otherwise - which is exactly how a word's front
- * meets the next at their shared boundary. For an untimed line (no words) it
- * falls back to {@link revealedOffset}'s linear reveal across the whole line,
- * so both paths feed one continuous offset into {@link clusterFill}.
+ * meets the next at their shared boundary. An untimed line has no authored
+ * internal pacing, so it steps from fully unsung to fully sung at its authored
+ * {@link LineRevealParams.startTime}.
  */
 export function lineRevealedOffset(params: LineRevealParams): number {
-  const { words, time, contentLength, startTime, endTime } = params;
+  const {
+    words,
+    time,
+    contentLength,
+    startTime,
+    leadingRevealEnd = 0,
+  } = params;
+  const initialReveal = Number.isFinite(leadingRevealEnd)
+    ? Math.min(contentLength, Math.max(0, leadingRevealEnd))
+    : 0;
   if (words.length === 0) {
-    return revealedOffset({
-      tags: [],
-      contentLength,
-      startTime,
-      endTime,
-      currentTime: time,
-    });
+    return time < startTime
+      ? 0
+      : initialReveal > 0
+        ? initialReveal
+        : contentLength;
   }
 
   // Words are ordered by index and (running-max normalised) time, so the first
   // word that has not finished bounds the front: earlier words are fully swept,
   // the active word interpolates, and a not-yet-started word stops the walk
   // (the front holds at the previous word's end through any inter-word gap).
-  let revealed = 0;
+  if (time < startTime) return 0;
+
+  let revealed = initialReveal;
   for (const word of words) {
     const [start, end] = word.utf16Range;
     if (time >= word.endTime) {
@@ -357,14 +368,16 @@ export interface LinePaintOptions {
   layout: RubyLayoutResult;
   /** The line's base text; word ranges and content length index into it (UTF-16). */
   content: string;
-  /** Per-word timing model (empty for an untimed line). */
+  /** Per-word timing model (empty for an untimed or prefix-only line). */
   words: readonly LyricWord[];
   /** Current playback time, in **seconds**. */
   time: number;
-  /** Absolute reveal start time (seconds); the untimed linear reveal's start. */
+  /** Absolute reveal start time (seconds); untimed lines step here. */
   startTime: number;
-  /** Absolute reveal end time (seconds); the untimed linear reveal's end. */
+  /** Authored line end time (seconds), retained for the segment contract. */
   endTime: number;
+  /** UTF-16 prefix revealed immediately at {@link startTime}. */
+  leadingRevealEnd: number;
   /** Base font size the line was laid out at, in layout units. */
   fontSize: number;
   /** Whether this is a background/minor line (larger float amplitude). */
@@ -416,6 +429,7 @@ export function paintLine(
     time,
     startTime,
     endTime,
+    leadingRevealEnd,
     fontSize,
     minor,
     lineAlpha,
@@ -434,6 +448,7 @@ export function paintLine(
     contentLength: content.length,
     startTime,
     endTime,
+    leadingRevealEnd,
   });
   const wordContexts = buildWordContexts(layout, content, words);
 

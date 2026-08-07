@@ -27,7 +27,7 @@ import {
   lineRevealedOffset,
   paintLine,
 } from "./linePainter";
-import { buildWords } from "./wordModel";
+import { buildWords, leadingRevealEnd } from "./wordModel";
 
 /**
  * Auto margins that place the fixed-width canvas box within its row, mirroring
@@ -136,6 +136,10 @@ export function GlyphLineCanvas({
     () => buildWords(segment.timeTags, segment.content.length, segment.endTime),
     [segment.timeTags, segment.content, segment.endTime],
   );
+  const initialRevealEnd = useMemo(
+    () => leadingRevealEnd(segment.timeTags, segment.content.length),
+    [segment.timeTags, segment.content],
+  );
 
   const draw = useCallback(
     (snapshot: PlaybackSnapshot | null) => {
@@ -180,13 +184,14 @@ export function GlyphLineCanvas({
             contentLength,
             startTime: segment.startTime,
             endTime: segment.endTime,
+            leadingRevealEnd: initialRevealEnd,
           })
         : 0;
       const fullyUnsung = revealed <= REVEAL_EPSILON;
       const fullySung =
         contentLength > 0 && revealed >= contentLength - REVEAL_EPSILON;
       // Static once fully swept (or not started) and not the active line; while
-      // active, the emphasis/float animate so every frame differs.
+      // active, every media-clock snapshot remains eligible for repaint.
       const animating = isActive || (!fullyUnsung && !fullySung);
       const timeKey = animating
         ? Math.round(time * 1000)
@@ -241,6 +246,7 @@ export function GlyphLineCanvas({
           time,
           startTime: segment.startTime,
           endTime: segment.endTime,
+          leadingRevealEnd: initialRevealEnd,
           fontSize,
           minor: segment.minor,
           // Both are currently `1`: an inactive line is separated by the row
@@ -266,6 +272,7 @@ export function GlyphLineCanvas({
       reserveRubyRow,
       isActive,
       words,
+      initialRevealEnd,
       onHeightChange,
     ],
   );

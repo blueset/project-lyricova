@@ -63,10 +63,10 @@ export interface LyricWord {
  *
  * Notes on the contract:
  * - Fewer than one tag yields `[]`: an untimed line has no words and the
- *   caller reveals it linearly instead.
- * - The region before the first tag (`[0, tags[0].index)`) is intentionally
- *   *not* a word - words begin at the first keyframe, exactly as the
- *   tag-to-word correspondence dictates.
+ *   caller reveals the whole line at its authored start instead.
+ * - The region before the first tag (`[0, tags[0].index)`) is not a word. The
+ *   caller reveals that prefix immediately at the authored line start via
+ *   {@link leadingRevealEnd}, so it receives no word float or emphasis.
  * - Zero-*duration* words (equal start/end time) are legal and retained; AMLL
  *   treats them as instant. Only zero-*width* ranges are dropped.
  */
@@ -117,6 +117,28 @@ export function buildWords(
     words[words.length - 1].isLast = true;
   }
   return words;
+}
+
+/**
+ * End offset of text that precedes the first timed word.
+ *
+ * A first tag at a non-zero UTF-16 index means the prefix is already present
+ * when the line starts; the tag opens the following timed word rather than
+ * delaying the prefix until the tag's own timestamp.
+ */
+export function leadingRevealEnd(
+  tags: readonly RevealTag[],
+  contentLength: number,
+): number {
+  const firstIndex = tags[0]?.index;
+  if (
+    !Number.isInteger(firstIndex) ||
+    firstIndex <= 0 ||
+    firstIndex > contentLength
+  ) {
+    return 0;
+  }
+  return firstIndex;
 }
 
 /** Clamps to `[0, 1]`, mapping `NaN` to `0`. */
