@@ -15,6 +15,7 @@ import {
   INTERLUDE_DOT_COUNT,
   INTERLUDE_DOT_DIAMETER,
   INTERLUDE_DOT_GAP_EM,
+  interludeAnchorOffsetPx,
   type InterludeGap,
 } from "./interlude";
 
@@ -82,10 +83,20 @@ function isSameGap(a: InterludeGap | null, b: InterludeGap | null): boolean {
   if (a === null || b === null) return false;
   return (
     a.anchorLineIndex === b.anchorLineIndex &&
+    a.nextLineIndex === b.nextLineIndex &&
     a.startTime === b.startTime &&
     a.endTime === b.endTime &&
     a.isNextDuet === b.isNextDuet
   );
+}
+
+/**
+ * A skipped index between the bounding content lines means the gap contains at
+ * least one blank row. Leading gaps use the same rule: `-1 -> 0` has no blank
+ * row, while `-1 -> 1` does.
+ */
+function hasBlankLineAnchor(gap: InterludeGap): boolean {
+  return gap.nextLineIndex > gap.anchorLineIndex + 1;
 }
 
 export interface InterludeDotsProps {
@@ -93,12 +104,15 @@ export interface InterludeDotsProps {
   gaps: readonly InterludeGap[];
   /** Base font size in CSS px, for em-relative sizing and the anchor offset. */
   fontSize: number;
+  /** Height of the blank lyric row used to center dots for authored blanks. */
+  blankLineHeight: number;
   className?: string;
 }
 
 export function InterludeDots({
   gaps,
   fontSize,
+  blankLineHeight,
   className,
 }: InterludeDotsProps): ReactElement | null {
   const { playerRef } = useAppContext();
@@ -185,21 +199,33 @@ export function InterludeDots({
 
   if (!activeGap) return null;
 
+  const anchorsToBlankLine = hasBlankLineAnchor(activeGap);
+  const safeBlankLineHeight =
+    Number.isFinite(blankLineHeight) && blankLineHeight > 0
+      ? blankLineHeight
+      : 0;
+
   return (
     <div
       data-testid="interlude-dots"
       data-next-duet={activeGap.isNextDuet ? "true" : "false"}
+      data-anchor-mode={anchorsToBlankLine ? "blank-line" : "before-line"}
       className={cn(
-        "pointer-events-none flex w-full",
+        "pointer-events-none flex w-full items-center",
         // Match the lyric rows' role alignment: duet/right-role -> right.
         activeGap.isNextDuet ? "justify-end" : "justify-start",
         className,
       )}
-      // Vertical placement is owned by the container that anchors this overlay
-      // (it centres the group in the blank-line band); AMLL's `dotMargin` is
-      // deliberately not applied as a margin here, since inside a centring
-      // parent it would skew the group off-centre by half its value.
-      style={{ fontSize: `${safeFontSize}px` }}
+      style={{
+        fontSize: `${safeFontSize}px`,
+        // Authored blank rows own a real 44 px hit area, so use that same band.
+        // Otherwise the virtualizer has already aligned the upcoming line at
+        // the anchor; lift the dots fully above it, then apply AMLL's margin.
+        height: anchorsToBlankLine ? `${safeBlankLineHeight}px` : undefined,
+        transform: anchorsToBlankLine
+          ? undefined
+          : `translateY(calc(-100% - ${interludeAnchorOffsetPx(safeFontSize)}px))`,
+      }}
     >
       <div
         ref={groupRef}

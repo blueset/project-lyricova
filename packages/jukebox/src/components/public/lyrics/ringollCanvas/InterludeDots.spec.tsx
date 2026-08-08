@@ -25,6 +25,7 @@ const DUET_LINES: InterludeLine[] = [
 const GAPS = findInterludeGaps(NON_DUET_LINES);
 const DUET_GAPS = findInterludeGaps(DUET_LINES);
 const GAP = GAPS[0];
+const BLANK_LINE_HEIGHT = 44;
 
 /**
  * The model's own answer for a given media time, computed via the *real*
@@ -59,12 +60,14 @@ function makePlayer({ currentTime = 0, paused = false } = {}) {
 function renderDots({
   gaps = GAPS,
   fontSize = 40,
+  blankLineHeight = BLANK_LINE_HEIGHT,
   currentTime = 0,
   paused = false,
   onRender,
 }: {
   gaps?: readonly InterludeGap[];
   fontSize?: number;
+  blankLineHeight?: number;
   currentTime?: number;
   paused?: boolean;
   onRender?: ProfilerProps["onRender"];
@@ -73,7 +76,11 @@ function renderDots({
   const playerRef = { current: player } as { current: HTMLAudioElement };
   const tree = (
     <AppContext playerRef={playerRef}>
-      <InterludeDots gaps={gaps} fontSize={fontSize} />
+      <InterludeDots
+        gaps={gaps}
+        fontSize={fontSize}
+        blankLineHeight={blankLineHeight}
+      />
     </AppContext>
   );
   const view = render(
@@ -141,6 +148,46 @@ describe("InterludeDots visibility", () => {
     expect(screen.queryByTestId("interlude-dots")).toBeTruthy();
     tick(player, 100); // past the gap end
     expect(screen.queryByTestId("interlude-dots")).toBeNull();
+  });
+});
+
+describe("InterludeDots positioning", () => {
+  it.each([
+    {
+      name: "before the first line",
+      gaps: findInterludeGaps([
+        { startTime: 10, endTime: 12, content: "first" },
+      ]),
+      currentTime: 5,
+    },
+    {
+      name: "between adjacent content lines",
+      gaps: GAPS,
+      currentTime: 5,
+    },
+  ])("places dots above the upcoming line $name", ({ gaps, currentTime }) => {
+    renderDots({ gaps, currentTime });
+
+    const container = screen.getByTestId("interlude-dots");
+    expect(container.dataset.anchorMode).toBe("before-line");
+    expect(container.style.height).toBe("");
+    expect(container.style.transform).toBe(
+      "translateY(calc(-100% - 16px))",
+    );
+  });
+
+  it("centers dots in the blank-row band when the gap spans an empty line", () => {
+    const gaps = findInterludeGaps([
+      { startTime: 0, endTime: 2, content: "first" },
+      { startTime: 8, endTime: 10, content: " " },
+      { startTime: 20, endTime: 22, content: "second" },
+    ]);
+    renderDots({ gaps, currentTime: 5 });
+
+    const container = screen.getByTestId("interlude-dots");
+    expect(container.dataset.anchorMode).toBe("blank-line");
+    expect(container.style.height).toBe(`${BLANK_LINE_HEIGHT}px`);
+    expect(container.style.transform).toBe("");
   });
 });
 
@@ -248,7 +295,11 @@ describe("InterludeDots lifecycle & robustness", () => {
 
     const view = render(
       <AppContext playerRef={playerRef}>
-        <InterludeDots gaps={GAPS} fontSize={40} />
+        <InterludeDots
+          gaps={GAPS}
+          fontSize={40}
+          blankLineHeight={BLANK_LINE_HEIGHT}
+        />
       </AppContext>,
     );
     tick(player, 10); // enter the gap, schedule a frame

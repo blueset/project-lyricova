@@ -207,14 +207,14 @@ function RingollCanvasLyricsInner({
           positioned over the lyric area with the viewport's horizontal inset. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 flex items-center px-8"
-        // The band starts at the active-line anchor and is exactly as tall as a
-        // blank row, so centring within it puts the dots in the middle of an
-        // empty line's hit area - which is where they appear during the
-        // interludes that empty lines represent.
-        style={{ top: ANCHOR_FRACTION, height: EMPTY_LINE_MIN_HEIGHT }}
+        className="pointer-events-none absolute inset-x-0 px-8"
+        style={{ top: ANCHOR_FRACTION }}
       >
-        <InterludeDots gaps={gaps} fontSize={fontSize} />
+        <InterludeDots
+          gaps={gaps}
+          fontSize={fontSize}
+          blankLineHeight={EMPTY_LINE_MIN_HEIGHT}
+        />
       </div>
     </div>
   );
