@@ -6,20 +6,39 @@ import { useMemo } from "react";
 import type { LyricsLine } from "lyrics-kit/core";
 
 export interface LyricsSegment {
+  /** Index of the line after the input has been sorted by `position`. */
   lineIndex: number;
-  /** start time in seconds */
+  /** Inclusive segment start time, in seconds. */
   start: number;
-  /** end time in seconds */
+  /** Segment end time, in seconds. Always greater than or equal to `start`. */
   end: number;
 }
 
 interface LyricsKeyframeInfo {
+  /** Line indexes whose segments include the current playback time. */
   activeSegments: number[];
+  /** Inclusive start of the cumulative line range to render. */
   rangeStart: number;
+  /** Exclusive end of the cumulative line range to render. */
   rangeEnd: number;
 }
 
-/** Convert lyrics to time segments, and sort by start the end time. */
+/**
+ * Convert lyric lines into playback segments ordered by start time, then end
+ * time.
+ *
+ * Lines are first ordered by `position`, so each returned `lineIndex` refers
+ * to that ordered list rather than the original input order. A segment starts
+ * at the line position (or at zero when the position is `NaN`) and ends at the
+ * last attached time tag, the next line's position, or one second after its
+ * start, in that order of availability. End times are clamped to the segment
+ * start so malformed timing data cannot produce a negative duration.
+ *
+ * @param lines Lyric lines containing absolute line positions and optional
+ * word-level time tags.
+ * @returns A new array of normalized playback segments. The input is not
+ * mutated.
+ */
 export function lyricsToSegments(
   lines: LyricsKitLyricsLine[] | LyricsLine[],
 ): LyricsSegment[] {
@@ -49,7 +68,15 @@ export function lyricsToSegments(
   return segments;
 }
 
-/** convert segments to a list of keyframes where the data is the array of line IDs in the keyframe. */
+/**
+ * Build timeline keyframes from segment start and end events.
+ *
+ * Each keyframe records the line indexes active at that instant and a
+ * half-open `[rangeStart, rangeEnd)` window suitable for rendering or
+ * virtualizing lyrics. The range advances monotonically as playback moves
+ * through the timeline; it is not limited to the currently active segments.
+ * Events sharing a timestamp are folded into a single keyframe.
+ */
 function segmentsToKeyframes(
   segments: LyricsSegment[],
 ): PlayerLyricsKeyframe<LyricsKeyframeInfo>[] {
@@ -121,6 +148,19 @@ function segmentsToKeyframes(
   return keyframes;
 }
 
+/**
+ * Track the active lyric segments and render range for an audio element.
+ *
+ * Segment keyframes are recomputed only when the `segments` array identity
+ * changes. The returned frame data contains active segment indexes and the
+ * cumulative half-open range of line indexes to render.
+ *
+ * @param segments Timed lyric segments, with `lineIndex` values matching the
+ * consumer's line order.
+ * @param playerRef Ref to the audio element that supplies the playback clock.
+ * @returns The current player-driven keyframe state together with the same
+ * `segments` array.
+ */
 export function useActiveLyricsSegmentRanges(
   segments: LyricsSegment[],
   playerRef: RefObject<HTMLAudioElement>,
@@ -130,6 +170,17 @@ export function useActiveLyricsSegmentRanges(
   return { segments, ...result };
 }
 
+/**
+ * Convert lyric lines to segments and track their active playback range.
+ *
+ * Conversion is recomputed only when the `lines` array identity changes. The
+ * returned segments use indexes from the position-sorted line order; callers
+ * should use that same ordering when resolving frame indexes back to lines.
+ *
+ * @param lines Lyric lines to normalize and synchronize with playback.
+ * @param playerRef Ref to the audio element that supplies the playback clock.
+ * @returns The current player-driven keyframe state and normalized segments.
+ */
 export function useActiveLyrcsRanges(
   lines: LyricsKitLyricsLine[] | LyricsLine[],
   playerRef: RefObject<HTMLAudioElement>,
