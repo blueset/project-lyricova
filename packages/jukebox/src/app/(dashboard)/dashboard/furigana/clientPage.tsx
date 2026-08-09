@@ -24,11 +24,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@lyricova/components/components/ui/tooltip";
-import { Edit, Eye, EyeOff, Database, Save, X } from "lucide-react";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@lyricova/components/components/ui/select";
+import { Progress } from "@lyricova/components/components/ui/progress";
+import { ProgressButton } from "@lyricova/components/components/ui/progress-button";
+import { Edit, Eye, EyeOff, Database, Save, Sparkles, X } from "lucide-react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Textarea } from "@lyricova/components/components/ui/textarea";
 import { Input } from "@lyricova/components/components/ui/input";
+import { fetchEventData } from "fetch-sse";
 
 const GET_FURIGANA_MAPPING_QUERY = graphql(`
   query FuriganaMappings {
@@ -55,6 +65,26 @@ const UPDATE_FURIGANA_MAPPINGS_MUTATION = graphql(`
     updateFuriganaMappings(mappings: $mappings)
   }
 `);
+
+const GET_LLM_MODELS_QUERY = graphql(`
+  query FuriganaLLMModels($key: String!, $default: String!) {
+    getSiteMeta(key: $key, default: $default)
+  }
+`);
+
+const FALLBACK_LLM_MODELS = [
+  "o4-mini",
+  "o3-mini",
+  "openai/o4-mini",
+  "openai/o3-mini",
+  "openai/o1-mini",
+  "google/gemma-3-27b-it:free",
+  "qwen/qwq-32b:free",
+  "qwen/qwen2.5-vl-72b-instruct:free",
+  "meta-llama/llama-4-maverick:free",
+  "meta-llama/llama-4-scout:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+];
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line unused-imports/no-unused-vars -- generic required to match the augmented interface signature
@@ -94,16 +124,53 @@ export default function FuriganaManager() {
   const [showAll, setShowAll] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [bulkUpdateInput, setBulkUpdateInput] = useState("");
+  const [selectedModel, setSelectedModel] = useState("");
+  const [isLLMRunning, setIsLLMRunning] = useState(false);
+  const [llmProgress, setLLMProgress] = useState(0);
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<EditFormData | null>(null);
   const [validationErrors, setValidationErrors] = useState<{
     segmentedText?: string;
     segmentedFurigana?: string;
   }>({});
+  const llmAbortControllerRef = useRef<AbortController | null>(null);
   const apolloClient = useApolloClient();
 
   const { data, loading, error, refetch } = useQuery(
     GET_FURIGANA_MAPPING_QUERY,
+  );
+  const { data: llmModelsData } = useQuery(GET_LLM_MODELS_QUERY, {
+    variables: {
+      key: "llmModels",
+      default: JSON.stringify(FALLBACK_LLM_MODELS),
+    },
+  });
+
+  const llmModels = useMemo(() => {
+    try {
+      const models = JSON.parse(llmModelsData?.getSiteMeta ?? "");
+      if (
+        Array.isArray(models) &&
+        models.length > 0 &&
+        models.every((model) => typeof model === "string")
+      ) {
+        return models as string[];
+      }
+    } catch {
+      // Use the built-in list when site metadata is absent or invalid.
+    }
+    return FALLBACK_LLM_MODELS;
+  }, [llmModelsData]);
+
+  const incompleteMappings = useMemo(
+    () =>
+      data?.furiganaMappings
+        .filter(
+          (mapping) =>
+            !mapping.segmentedText || !mapping.segmentedFurigana,
+        )
+        .map(({ text, furigana }) => ({ text, furigana })) ?? [],
+    [data],
   );
 
   const rows = useMemo(() => {
@@ -248,8 +315,16 @@ export default function FuriganaManager() {
         const mappings = input
           .trim()
           .split("\n")
-          .map((line) => {
+          .filter(Boolean)
+          .map((line, index) => {
             const [segmentedText, segmentedFurigana] = line.split(";");
+            if (
+              !segmentedText ||
+              !segmentedFurigana ||
+              line.split(";").length !== 2
+            ) {
+              throw new Error(`Invalid mapping on line ${index + 1}.`);
+            }
             return {
               segmentedText,
               segmentedFurigana,
@@ -302,44 +377,94 @@ export default function FuriganaManager() {
     }
   }, [apolloClient, rows]);
 
-  const prompt = useMemo(
+  const manualBatchInput = useMemo(
     () =>
-      data?.furiganaMappings
-        ? `Your task is to split a Japanese kanji word and it's yomigana into separated kanji when possible, unless it's a Jukujikun or Ateji that are not separable.
-
----
-Input:
-世界;せかい
-歌声;うたごえ
-今日;きょう
-宇宙;うちゅう
-宇宙;そら
-Output:
-世,界;せ,かい
-歌,声;うた,ごえ
-今日;きょう
-宇,宙;う,ちゅう
-宇宙;そら
----
-Input:
-${data.furiganaMappings
-          .filter((i) => !i.segmentedText || !i.segmentedFurigana)
-          .map((i) => i.text + ";" + i.furigana)
-          .join("\n")}
-Output:
-`
-        : null,
-    [data],
+      incompleteMappings
+        .map(({ text, furigana }) => `${text};${furigana}`)
+        .join("\n"),
+    [incompleteMappings],
   );
 
-  // Define the type for the editable form data if it's not already accessible
-  // Assuming EditFormData is defined in the parent scope or imported
-  // type EditFormData = {
-  //   text: string;
-  //   furigana: string;
-  //   segmentedText: string | null;
-  //   segmentedFurigana: string | null;
-  // };
+  const handleLLMMapping = useCallback(async () => {
+    if (!incompleteMappings.length) {
+      toast.info("There are no incomplete mappings.");
+      return;
+    }
+
+    const model = selectedModel || llmModels[0];
+    const abortController = new AbortController();
+    llmAbortControllerRef.current = abortController;
+    setIsLLMRunning(true);
+    setLLMProgress(0);
+    let chunkBuffer = "";
+    let resultReceived = false;
+
+    try {
+      await fetchEventData("/api/llm/furigana-mapping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: { mappings: incompleteMappings, model },
+        signal: abortController.signal,
+        onMessage: (event) => {
+          if (!event?.data) return;
+          const eventData = JSON.parse(event.data) as {
+            chunk?: string;
+            mappings?: string;
+            error?: string;
+          };
+          if (eventData.error) {
+            throw new Error(eventData.error);
+          }
+          if (eventData.chunk) {
+            chunkBuffer += eventData.chunk;
+            const completedMappings = (
+              chunkBuffer.match(/"segmentedFurigana"\s*:/g) ?? []
+            ).length;
+            setLLMProgress(
+              Math.min(
+                95,
+                Math.round(
+                  (completedMappings / incompleteMappings.length) * 100,
+                ),
+              ),
+            );
+          }
+          if (eventData.mappings) {
+            resultReceived = true;
+            setBulkUpdateInput(eventData.mappings);
+            setLLMProgress(100);
+          }
+        },
+        onClose: () => {
+          if (resultReceived) {
+            toast.success("LLM mappings generated.");
+          }
+        },
+        onError: (eventError) => {
+          throw new Error(String(eventError));
+        },
+      });
+      if (!resultReceived) {
+        throw new Error("The LLM response did not contain any mappings.");
+      }
+    } catch (llmError) {
+      if (abortController.signal.aborted) {
+        toast.info("LLM mapping canceled.");
+      } else {
+        console.error(llmError);
+        toast.error(
+          llmError instanceof Error ? llmError.message : String(llmError),
+        );
+      }
+    } finally {
+      llmAbortControllerRef.current = null;
+      setIsLLMRunning(false);
+    }
+  }, [incompleteMappings, llmModels, selectedModel]);
+
+  const handleCancelLLMMapping = useCallback(() => {
+    llmAbortControllerRef.current?.abort();
+  }, []);
 
   interface EditableCellProps {
     initialValue: string | null;
@@ -604,18 +729,65 @@ Output:
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 overflow-auto -mx-6 px-6">
-              <Button
-                variant="outline"
-                onClick={handlePredictMapping}
-                className="w-full"
-              >
-                <Database />
-                Predict with Dictionary
-              </Button>
+              <div className="flex flex-row flex-wrap gap-2 w-full">
+                <Select
+                  value={selectedModel || llmModels[0]}
+                  onValueChange={setSelectedModel}
+                  disabled={isLLMRunning}
+                >
+                  <SelectTrigger className="grow">
+                    <SelectValue placeholder="Select an LLM model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {llmModels.map((model) => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <ProgressButton
+                  variant="outline"
+                  onClick={handleLLMMapping}
+                  progress={isLLMRunning ? llmProgress || true : false}
+                  disabled={!incompleteMappings.length}
+                >
+                  <Sparkles />
+                  Generate with LLM
+                </ProgressButton>
+                {isLLMRunning ? (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleCancelLLMMapping}
+                  >
+                    <X />
+                  </Button>
+                ) : (
+                  <Button variant="outline" onClick={handlePredictMapping}>
+                    <Database />
+                    Dictionary
+                  </Button>
+                )}
+              </div>
+              {isLLMRunning && (
+                <div className="space-y-1">
+                  <Progress value={llmProgress} />
+                  <p className="text-xs text-muted-foreground">
+                    Generating mappings with {selectedModel || llmModels[0]} (
+                    {llmProgress}%)
+                  </p>
+                </div>
+              )}
               <details className="text-sm text-muted-foreground">
-                <summary className="cursor-pointer">GPT-4 Prompt</summary>
+                <summary className="cursor-pointer">
+                  Input for manual LLM update
+                </summary>
+                <p className="mt-2">
+                  Syntax example: <code>世界;せかい</code>
+                </p>
                 <pre className="mt-2 rounded bg-muted p-4 overflow-x-auto whitespace-pre-wrap">
-                  {prompt}
+                  {manualBatchInput}
                 </pre>
               </details>
               <Textarea
@@ -658,10 +830,17 @@ Output:
     isDialogOpen,
     setIsDialogOpen,
     handlePredictMapping,
-    prompt,
+    manualBatchInput,
     bulkUpdateInput,
     setBulkUpdateInput,
     handleBulkUpdate,
+    handleLLMMapping,
+    handleCancelLLMMapping,
+    incompleteMappings.length,
+    isLLMRunning,
+    llmModels,
+    llmProgress,
+    selectedModel,
     showAll,
     setShowAll,
   ]);

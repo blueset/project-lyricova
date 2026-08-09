@@ -222,3 +222,80 @@ export function getTranslationAlignmentLLMPrompt(
     },
   ] as ModelMessage[];
 }
+
+export interface FuriganaMappingPromptInput {
+  text: string;
+  furigana: string;
+}
+
+export function getFuriganaMappingLLMPrompt(
+  mappings: FuriganaMappingPromptInput[],
+): ModelMessage[] {
+  return [
+    {
+      role: "system",
+      content: `Split each Japanese word and its reading into matching segments.
+
+# Rules
+* Split compounds by kanji when the reading can be assigned to each part.
+* Keep jukujikun, ateji, and other inseparable readings as one segment.
+* segmentedText joined without commas must exactly equal text.
+* segmentedFurigana joined without commas must exactly equal furigana.
+* segmentedText and segmentedFurigana must have the same number of comma-separated segments.
+* Preserve the input order and return exactly one result for every input.
+* Return only a JSON array. Do not use Markdown fences or add commentary.
+
+# Output format
+[{"text":"世界","furigana":"せかい","segmentedText":"世,界","segmentedFurigana":"せ,かい"}]`,
+    },
+    {
+      role: "user",
+      content: JSON.stringify([
+        { text: "世界", furigana: "せかい" },
+        { text: "歌声", furigana: "うたごえ" },
+        { text: "今日", furigana: "きょう" },
+        { text: "宇宙", furigana: "うちゅう" },
+        { text: "宇宙", furigana: "そら" },
+      ]),
+    },
+    {
+      role: "assistant",
+      content: JSON.stringify([
+        {
+          text: "世界",
+          furigana: "せかい",
+          segmentedText: "世,界",
+          segmentedFurigana: "せ,かい",
+        },
+        {
+          text: "歌声",
+          furigana: "うたごえ",
+          segmentedText: "歌,声",
+          segmentedFurigana: "うた,ごえ",
+        },
+        {
+          text: "今日",
+          furigana: "きょう",
+          segmentedText: "今日",
+          segmentedFurigana: "きょう",
+        },
+        {
+          text: "宇宙",
+          furigana: "うちゅう",
+          segmentedText: "宇,宙",
+          segmentedFurigana: "う,ちゅう",
+        },
+        {
+          text: "宇宙",
+          furigana: "そら",
+          segmentedText: "宇宙",
+          segmentedFurigana: "そら",
+        },
+      ]),
+    },
+    {
+      role: "user",
+      content: JSON.stringify(mappings),
+    },
+  ];
+}
