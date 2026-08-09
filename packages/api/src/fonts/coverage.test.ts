@@ -33,6 +33,18 @@ const REGION_SAMPLES: Record<string, string> = {
   "source-han-sans-tc-vf": "繁體漢",
 };
 
+const SCRIPT_SAMPLES: Record<string, string> = {
+  "noto-sans-thai-looped-vf-ttf": "วันนี้อากาศดี",
+  "noto-sans-lao-looped-vf-ttf": "ສະບາຍດີ",
+  "noto-sans-hebrew-vf-ttf": "שלום",
+  "noto-sans-arabic-vf-ttf": "مرحبا",
+};
+
+const PLANGOTHIC_SAMPLES: Record<string, string> = {
+  "plangothic-p1-regular-ttf": "𠀀",
+  "plangothic-p2-regular-ttf": "𰀀",
+};
+
 describe("region subset binaries", () => {
   it("ships each region subset as a raw CFF OpenType (OTTO) SFNT", async () => {
     for (const id of Object.keys(REGION_SAMPLES)) {
@@ -84,6 +96,41 @@ describe("getFontCoverage", () => {
       const ranges = coverageFor(id, payload.fonts);
       for (const ch of samples) {
         expect(inRanges(ranges, ch.codePointAt(0)!)).toBe(true);
+      }
+    }
+  });
+
+  it("covers representative characters for every script fallback", async () => {
+    const { payload } = await getFontCoverage();
+    for (const [id, samples] of Object.entries(SCRIPT_SAMPLES)) {
+      const ranges = coverageFor(id, payload.fonts);
+      for (const ch of samples) {
+        expect(inRanges(ranges, ch.codePointAt(0)!)).toBe(true);
+      }
+    }
+  });
+
+  it("covers Han extensions missing from every earlier CJK fallback", async () => {
+    const { payload } = await getFontCoverage();
+    const earlierCjk = [
+      "source-han-sans-jp-vf",
+      "source-han-sans-sc-vf",
+      "source-han-sans-tc-vf",
+      "source-han-sans-vf-otf",
+    ].map((id) => coverageFor(id, payload.fonts));
+    const p1 = coverageFor("plangothic-p1-regular-ttf", payload.fonts);
+
+    for (const [id, samples] of Object.entries(PLANGOTHIC_SAMPLES)) {
+      const ranges = coverageFor(id, payload.fonts);
+      for (const ch of samples) {
+        const codepoint = ch.codePointAt(0)!;
+        expect(inRanges(ranges, codepoint)).toBe(true);
+        for (const earlierRanges of earlierCjk) {
+          expect(inRanges(earlierRanges, codepoint)).toBe(false);
+        }
+        if (id === "plangothic-p2-regular-ttf") {
+          expect(inRanges(p1, codepoint)).toBe(false);
+        }
       }
     }
   });

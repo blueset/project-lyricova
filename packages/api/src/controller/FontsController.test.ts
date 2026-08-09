@@ -113,14 +113,30 @@ describe("GET /api/fonts/:fontId", () => {
     );
   });
 
-  it("serves the Thai-capable raw TTF", async () => {
-    const entry = FONT_MANIFEST.find((e) => e.id === "noto-sans-thai-vf-ttf")!;
-    const response = await fetch(`${baseUrl}/${entry.id}`);
+  it.each([
+    "noto-sans-thai-looped-vf-ttf",
+    "noto-sans-lao-looped-vf-ttf",
+    "noto-sans-hebrew-vf-ttf",
+    "noto-sans-arabic-vf-ttf",
+  ])("serves the script fallback %s as a raw TTF", async (id) => {
+    const response = await fetch(`${baseUrl}/${id}`);
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("font/ttf");
     const bytes = new Uint8Array(await response.arrayBuffer());
     expect(Array.from(bytes.subarray(0, 4))).toEqual([0, 1, 0, 0]);
   });
+
+  it.each(["plangothic-p1-regular-ttf", "plangothic-p2-regular-ttf"])(
+    "serves the terminal Han fallback %s as a raw TTF",
+    async (id) => {
+      const response = await fetch(`${baseUrl}/${id}`);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("font/ttf");
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      expect(Array.from(bytes.subarray(0, 4))).toEqual([0, 1, 0, 0]);
+      expect(bytes.byteLength).toBeGreaterThan(10 * 1024 * 1024);
+    },
+  );
 
   it.each([
     "source-han-sans-jp-vf",

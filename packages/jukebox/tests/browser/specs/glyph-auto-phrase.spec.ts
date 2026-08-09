@@ -52,7 +52,7 @@ test("segments and renders Thai without missing glyph coverage", async ({
   const layout = await page.evaluate(
     ({ value, phraseRanges }) =>
       window.__glyph.layout(value, {
-        fontChain: ["noto-sans-thai-vf-ttf", "mona-sans-latin-otf"],
+        fontChain: ["noto-sans-thai-looped-vf-ttf", "mona-sans-latin-otf"],
         phraseRanges,
         maxWidth: 180,
         wrapStrategy: "balanced",

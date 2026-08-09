@@ -35,6 +35,9 @@ export interface FontManifestEntry {
     | "japanese"
     | "han-latin"
     | "thai"
+    | "lao"
+    | "hebrew"
+    | "arabic"
     | "simplified-chinese"
     | "traditional-chinese";
   /**
@@ -45,8 +48,7 @@ export interface FontManifestEntry {
   rawSfnt: boolean;
   /**
    * Whether the binary is small enough to fetch eagerly on a lyrics view.
-   * `false` marks the multi-megabyte base font (the raw Source Han Sans
-   * Kanji subset used by the Glyph Canvas renderer) that must only ever be
+   * `false` marks multi-megabyte CJK fallback fonts that must only ever be
    * fetched lazily, on demand, once that renderer is actually selected.
    * The delivery route serves both alike; this is guidance for the
    * *consumer*.
@@ -113,14 +115,74 @@ export const FONT_MANIFEST = [
     eagerFetch: false,
   },
   {
-    // Noto Sans Thai variable font from the Google Fonts repository, licensed
-    // under the SIL Open Font License 1.1. The accompanying license text is
-    // stored as NotoSansThai-OFL.txt in this directory.
-    id: "noto-sans-thai-vf-ttf",
-    fileName: "NotoSansThai-VF.ttf",
+    // PlanGothic P1 Regular 2.9.5795 from the project's official GitHub
+    // release. It extends Source Han Sans across BMP and supplementary-plane
+    // Han characters. Licensed under the SIL Open Font License 1.1; see
+    // Plangothic-OFL.txt.
+    id: "plangothic-p1-regular-ttf",
+    fileName: "PlangothicP1-Regular.ttf",
     contentType: "font/ttf",
-    family: "Noto Sans Thai",
+    family: "PlanGothic P1",
+    script: "han-latin",
+    rawSfnt: true,
+    eagerFetch: false,
+  },
+  {
+    // PlanGothic P2 Regular 2.9.5795 from the project's official GitHub
+    // release. It carries later supplementary-plane Han extensions not present
+    // in P1. Licensed under the SIL Open Font License 1.1; see
+    // Plangothic-OFL.txt.
+    id: "plangothic-p2-regular-ttf",
+    fileName: "PlangothicP2-Regular.ttf",
+    contentType: "font/ttf",
+    family: "PlanGothic P2",
+    script: "han-latin",
+    rawSfnt: true,
+    eagerFetch: false,
+  },
+  {
+    // Noto Sans Thai Looped variable font from the Google Fonts repository,
+    // licensed under the SIL Open Font License 1.1. The accompanying license
+    // text is stored as NotoSansThaiLooped-OFL.txt in this directory.
+    id: "noto-sans-thai-looped-vf-ttf",
+    fileName: "NotoSansThaiLooped-VF.ttf",
+    contentType: "font/ttf",
+    family: "Noto Sans Thai Looped",
     script: "thai",
+    rawSfnt: true,
+    eagerFetch: true,
+  },
+  {
+    // Noto Sans Lao Looped variable font from the Google Fonts repository.
+    // Licensed under the SIL Open Font License 1.1; see
+    // NotoSansLaoLooped-OFL.txt.
+    id: "noto-sans-lao-looped-vf-ttf",
+    fileName: "NotoSansLaoLooped-VF.ttf",
+    contentType: "font/ttf",
+    family: "Noto Sans Lao Looped",
+    script: "lao",
+    rawSfnt: true,
+    eagerFetch: true,
+  },
+  {
+    // Noto Sans Hebrew variable font from the Google Fonts repository.
+    // Licensed under the SIL Open Font License 1.1; see NotoSansHebrew-OFL.txt.
+    id: "noto-sans-hebrew-vf-ttf",
+    fileName: "NotoSansHebrew-VF.ttf",
+    contentType: "font/ttf",
+    family: "Noto Sans Hebrew",
+    script: "hebrew",
+    rawSfnt: true,
+    eagerFetch: true,
+  },
+  {
+    // Noto Sans Arabic variable font from the Google Fonts repository.
+    // Licensed under the SIL Open Font License 1.1; see NotoSansArabic-OFL.txt.
+    id: "noto-sans-arabic-vf-ttf",
+    fileName: "NotoSansArabic-VF.ttf",
+    contentType: "font/ttf",
+    family: "Noto Sans Arabic",
+    script: "arabic",
     rawSfnt: true,
     eagerFetch: true,
   },

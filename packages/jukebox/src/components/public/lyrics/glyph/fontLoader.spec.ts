@@ -100,22 +100,27 @@ describe("loadGlyphFonts", () => {
     expect(shaper.freed).toBe(false);
   });
 
-  it("uses the deterministic demo fallback chain (Latin first, full Source Han VF last)", () => {
+  it("uses the deterministic fallback chain (Latin first, PlanGothic P2 last)", () => {
     // Inter replaced Mona Sans here: Mona is Latin-only (no Cyrillic, two Greek
     // code points) while Inter maps 2852 code points in a smaller file. Mona
     // stays in the API manifest, but client-side validation is derived from
     // *this* chain, so it is no longer fetchable from the browser.
     expect(DEFAULT_GLYPH_FONT_CHAIN[0]).toBe("inter-variable-ttf");
     expect(DEFAULT_GLYPH_FONT_CHAIN[DEFAULT_GLYPH_FONT_CHAIN.length - 1]).toBe(
-      "source-han-sans-vf-otf",
+      "plangothic-p2-regular-ttf",
     );
     expect(DEFAULT_GLYPH_FONT_CHAIN).toEqual([
       "inter-variable-ttf",
-      "noto-sans-thai-vf-ttf",
+      "noto-sans-thai-looped-vf-ttf",
+      "noto-sans-lao-looped-vf-ttf",
+      "noto-sans-hebrew-vf-ttf",
+      "noto-sans-arabic-vf-ttf",
       "source-han-sans-jp-vf",
       "source-han-sans-sc-vf",
       "source-han-sans-tc-vf",
       "source-han-sans-vf-otf",
+      "plangothic-p1-regular-ttf",
+      "plangothic-p2-regular-ttf",
     ]);
   });
 

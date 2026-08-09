@@ -40,8 +40,8 @@ export function createGlyphShaper(): GlyphShaper {
  * only fetched when a line's text actually needs it, so the multi-megabyte
  * Source Han members below are downloaded lazily (often never), not on mount.
  *
- * The order is latin → Thai → the Source Han region subsets (JP, SC, TC) →
- * the full Source Han VF catch-all:
+ * The order is Latin → Thai → Lao → Hebrew → Arabic → the Source Han region
+ * subsets (JP, SC, TC) → full Source Han → PlanGothic P1 → PlanGothic P2:
  *
  * 1. `inter-variable-ttf` — Latin/Greek/Cyrillic variable fallback (~859 KiB);
  *    also the natural guaranteed base font for otherwise-uncoverable lines.
@@ -49,18 +49,26 @@ export function createGlyphShaper(): GlyphShaper {
  *    Greek code points) in a larger file; Inter maps 2852 code points against
  *    Mona's 568. Mona stays whitelisted in the API manifest, so swapping back
  *    is a one-line change here.
- * 2. `noto-sans-thai-vf-ttf` — Thai shaping and outlines (~214 KB). Kept for
- *    Thai coverage; its position is functionally neutral because selection is
- *    coverage-driven, not position-driven.
- * 3. `source-han-sans-jp-vf` — Adobe's official Japanese region subset of
+ * 2. `noto-sans-thai-looped-vf-ttf` — looped Thai shaping and outlines
+ *    (~214 KiB).
+ * 3. `noto-sans-lao-looped-vf-ttf` — looped Lao shaping and outlines
+ *    (~226 KiB).
+ * 4. `noto-sans-hebrew-vf-ttf` — Hebrew shaping and outlines (~110 KiB).
+ * 5. `noto-sans-arabic-vf-ttf` — Arabic shaping and outlines (~825 KiB).
+ *    These script fallbacks are coverage-selected, so their relative positions
+ *    are functionally neutral for script-specific glyphs.
+ * 6. `source-han-sans-jp-vf` — Adobe's official Japanese region subset of
  *    Source Han Sans (~8.0 MiB).
- * 4. `source-han-sans-sc-vf` — official Simplified Chinese (CN) region subset
+ * 7. `source-han-sans-sc-vf` — official Simplified Chinese (CN) region subset
  *    (~14.9 MiB).
- * 5. `source-han-sans-tc-vf` — official Traditional Chinese (TW) region subset
+ * 8. `source-han-sans-tc-vf` — official Traditional Chinese (TW) region subset
  *    (~10.0 MiB).
- * 6. `source-han-sans-vf-otf` — full Source Han Sans variable OTF (~29.3 MiB),
- *    the final catch-all for any Han/kana/Hangul codepoint the region subsets
- *    miss.
+ * 9. `source-han-sans-vf-otf` — full Source Han Sans variable OTF (~29.3 MiB),
+ *    the broad Han/kana/Hangul fallback for codepoints the region subsets miss.
+ * 10. `plangothic-p1-regular-ttf` — PlanGothic Plane 1 static TTF
+ *     (~19.5 MiB), extending Han coverage beyond Source Han.
+ * 11. `plangothic-p2-regular-ttf` — PlanGothic Plane 2 static TTF
+ *     (~11.9 MiB), the terminal fallback for later supplementary-plane Han.
  *
  * The renderer shapes every member with OpenType `palt=1`, `wght=600` and an
  * `opsz` that tracks the rendered size (see `fontVariations.ts`). Axis ranges
@@ -69,11 +77,16 @@ export function createGlyphShaper(): GlyphShaper {
  */
 export const GLYPH_FONT_MANIFEST_IDS = [
   "inter-variable-ttf",
-  "noto-sans-thai-vf-ttf",
+  "noto-sans-thai-looped-vf-ttf",
+  "noto-sans-lao-looped-vf-ttf",
+  "noto-sans-hebrew-vf-ttf",
+  "noto-sans-arabic-vf-ttf",
   "source-han-sans-jp-vf",
   "source-han-sans-sc-vf",
   "source-han-sans-tc-vf",
   "source-han-sans-vf-otf",
+  "plangothic-p1-regular-ttf",
+  "plangothic-p2-regular-ttf",
 ] as const;
 
 export type GlyphFontManifestId = (typeof GLYPH_FONT_MANIFEST_IDS)[number];

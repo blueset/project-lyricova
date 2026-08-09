@@ -13,8 +13,9 @@ const MONA_SANS_VF: &[u8] = include_bytes!("../../api/src/fonts/Mona-Sans-VF.ttf
 /// Pan-CJK variable font; its `OS/2` sTypo box (the ideographic em box) is
 /// much tighter than its loose `hhea` line metrics - the reason this API exists.
 const SOURCE_HAN_SANS_VF: &[u8] = include_bytes!("../../api/src/fonts/SourceHanSans-VF.otf");
-/// Thai variable font; like Mona Sans its `hhea` and sTypo metrics agree.
-const NOTO_SANS_THAI_VF: &[u8] = include_bytes!("../../api/src/fonts/NotoSansThai-VF.ttf");
+/// Looped Thai variable font; like Mona Sans its `hhea` and sTypo metrics agree.
+const NOTO_SANS_THAI_LOOPED_VF: &[u8] =
+    include_bytes!("../../api/src/fonts/NotoSansThaiLooped-VF.ttf");
 
 fn metrics_of(font: &[u8]) -> FontMetrics {
     let mut registry = FontRegistry::new();
@@ -55,14 +56,14 @@ fn mona_sans_hhea_and_typo_metrics_are_identical() {
 }
 
 #[test]
-fn noto_sans_thai_hhea_and_typo_metrics_are_identical() {
-    let m = metrics_of(NOTO_SANS_THAI_VF);
+fn noto_sans_thai_looped_hhea_and_typo_metrics_are_identical() {
+    let m = metrics_of(NOTO_SANS_THAI_LOOPED_VF);
 
     // Another script whose `hhea` and sTypo metrics agree.
-    assert_eq!(m.ascender, 1061);
-    assert_eq!(m.descender, -450);
-    assert_eq!(m.typo_ascender, Some(1061));
-    assert_eq!(m.typo_descender, Some(-450));
+    assert_eq!(m.ascender, 1250);
+    assert_eq!(m.descender, -350);
+    assert_eq!(m.typo_ascender, Some(1250));
+    assert_eq!(m.typo_descender, Some(-350));
 }
 
 #[test]
@@ -71,7 +72,7 @@ fn units_per_em_is_reported() {
     // design units into em-relative values.
     assert_eq!(metrics_of(MONA_SANS_VF).units_per_em, 1000);
     assert_eq!(metrics_of(SOURCE_HAN_SANS_VF).units_per_em, 1000);
-    assert_eq!(metrics_of(NOTO_SANS_THAI_VF).units_per_em, 1000);
+    assert_eq!(metrics_of(NOTO_SANS_THAI_LOOPED_VF).units_per_em, 1000);
 }
 
 #[test]

@@ -9,7 +9,12 @@ describe("FONT_MANIFEST", () => {
       [
         "inter-variable-ttf",
         "mona-sans-latin-otf",
-        "noto-sans-thai-vf-ttf",
+        "noto-sans-arabic-vf-ttf",
+        "noto-sans-hebrew-vf-ttf",
+        "noto-sans-lao-looped-vf-ttf",
+        "noto-sans-thai-looped-vf-ttf",
+        "plangothic-p1-regular-ttf",
+        "plangothic-p2-regular-ttf",
         "source-han-sans-vf-otf",
         "source-han-sans-jp-vf",
         "source-han-sans-sc-vf",
@@ -31,14 +36,19 @@ describe("FONT_MANIFEST", () => {
     }
   });
 
-  it("marks the full VF and all region subsets as non-eager, everything else eager", () => {
+  it("marks every multi-megabyte CJK fallback as non-eager", () => {
     const eagerness = Object.fromEntries(
       FONT_MANIFEST.map((entry) => [entry.id, entry.eagerFetch]),
     );
     expect(eagerness).toEqual({
       "inter-variable-ttf": true,
       "mona-sans-latin-otf": true,
-      "noto-sans-thai-vf-ttf": true,
+      "noto-sans-thai-looped-vf-ttf": true,
+      "noto-sans-lao-looped-vf-ttf": true,
+      "noto-sans-hebrew-vf-ttf": true,
+      "noto-sans-arabic-vf-ttf": true,
+      "plangothic-p1-regular-ttf": false,
+      "plangothic-p2-regular-ttf": false,
       "source-han-sans-vf-otf": false,
       "source-han-sans-jp-vf": false,
       "source-han-sans-sc-vf": false,
@@ -55,7 +65,7 @@ describe("FONT_MANIFEST", () => {
           contentType: expect.any(String),
           family: expect.any(String),
           script: expect.stringMatching(
-            /^(latin|japanese|han-latin|thai|simplified-chinese|traditional-chinese)$/,
+            /^(latin|japanese|han-latin|thai|lao|hebrew|arabic|simplified-chinese|traditional-chinese)$/,
           ),
           rawSfnt: expect.any(Boolean),
           eagerFetch: expect.any(Boolean),

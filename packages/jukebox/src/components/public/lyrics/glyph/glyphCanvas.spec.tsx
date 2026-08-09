@@ -14,11 +14,16 @@ const managerMocks = vi.hoisted(() => ({
 
 const DEMO_CHAIN = [
   "mona-sans-latin-otf",
-  "noto-sans-thai-vf-ttf",
+  "noto-sans-thai-looped-vf-ttf",
+  "noto-sans-lao-looped-vf-ttf",
+  "noto-sans-hebrew-vf-ttf",
+  "noto-sans-arabic-vf-ttf",
   "source-han-sans-jp-vf",
   "source-han-sans-sc-vf",
   "source-han-sans-tc-vf",
   "source-han-sans-vf-otf",
+  "plangothic-p1-regular-ttf",
+  "plangothic-p2-regular-ttf",
 ];
 
 vi.mock("./fontLoader", () => ({
@@ -103,7 +108,7 @@ const MISSING = [{ utf8Start: 0, utf8End: 3, utf16Start: 0, utf16End: 1 }];
 
 function fullChainSelection() {
   return {
-    fontIds: [1, 2, 3, 4, 5, 6],
+    fontIds: DEMO_CHAIN.map((_, index) => index + 1),
     fontManifestIds: DEMO_CHAIN,
     newlyLoaded: DEMO_CHAIN,
   };
@@ -331,7 +336,7 @@ describe("GlyphCanvasLyrics degradation", () => {
     await waitFor(() => expect(layoutMock).toHaveBeenCalled());
     // Degraded, but still drawing with the full fallback chain and no error.
     const request = layoutMock.mock.calls.at(-1)![1];
-    expect(request.fontIds).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(request.fontIds).toEqual(DEMO_CHAIN.map((_, index) => index + 1));
     expect(status()).toBe("ready");
     expect(screen.queryByTestId("glyph-canvas-error")).toBeNull();
   });

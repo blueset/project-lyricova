@@ -150,24 +150,31 @@ shaping"](../packages/jukebox/README.md#font-delivery-for-browser-glyph-shaping)
 first-match-wins fallback chain the Glyph Canvas renderer selects from, in
 order:
 
-1. `mona-sans-latin-otf` — Latin variable fallback (and the natural guaranteed
-   base font for otherwise-uncoverable lines), ~1.31 MiB (1,372,268 bytes),
-   with `wdth`/`wght`/`opsz`/`ital` axes. Taken verbatim from
-   [github/mona-sans](https://github.com/github/mona-sans/tree/main/fonts/variable)
-   (`MonaSansVF[wdth,wght,opsz,ital].ttf`) rather than generated in-tree, so it
-   retains the upstream `liga` set (`ff`, `ffi`, `fi`, `fl`, `fy`, `ti`, `tt`).
-   Its default instance is wght=200 (Thin); shape with `wght=400` for Regular.
-2. `noto-sans-thai-vf-ttf` — Thai variable font, ~214 KB (218,652 bytes),
-   distributed under the SIL Open Font License 1.1. Kept for Thai coverage; its
-   chain position is functionally neutral because selection is coverage-driven.
-3. `source-han-sans-jp-vf` — Adobe's official Japanese (JP) region-specific
+1. `inter-variable-ttf` — Latin/Greek/Cyrillic variable fallback (and the
+   natural guaranteed base font for otherwise-uncoverable lines), ~859 KiB
+   (879,708 bytes).
+2. `noto-sans-thai-looped-vf-ttf` — looped Thai variable font, ~214 KiB
+   (218,660 bytes).
+3. `noto-sans-lao-looped-vf-ttf` — looped Lao variable font, ~226 KiB
+   (231,556 bytes).
+4. `noto-sans-hebrew-vf-ttf` — Hebrew variable font, ~110 KiB
+   (112,640 bytes).
+5. `noto-sans-arabic-vf-ttf` — Arabic variable font, ~825 KiB
+   (844,676 bytes). The script-specific fonts are distributed under the SIL
+   Open Font License 1.1 and selected by coverage.
+6. `source-han-sans-jp-vf` — Adobe's official Japanese (JP) region-specific
    subset variable font, **~8.0 MiB** (8,423,476 bytes).
-4. `source-han-sans-sc-vf` — official Simplified Chinese (CN) region subset,
+7. `source-han-sans-sc-vf` — official Simplified Chinese (CN) region subset,
    **~14.9 MiB** (15,636,088 bytes).
-5. `source-han-sans-tc-vf` — official Traditional Chinese (TW) region subset,
+8. `source-han-sans-tc-vf` — official Traditional Chinese (TW) region subset,
    **~10.0 MiB** (10,495,320 bytes).
-6. `source-han-sans-vf-otf` — full raw Source Han Sans variable OTF, the final
-   Han/kana/Hangul catch-all, **~29.3 MiB** (30,767,092 bytes).
+9. `source-han-sans-vf-otf` — full raw Source Han Sans variable OTF, the broad
+   Han/kana/Hangul fallback, **~29.3 MiB** (30,767,092 bytes).
+10. `plangothic-p1-regular-ttf` — PlanGothic P1 static TTF for additional BMP
+    and supplementary-plane Han, **~19.5 MiB** (20,410,664 bytes).
+11. `plangothic-p2-regular-ttf` — PlanGothic P2 static TTF, the terminal
+    fallback for later supplementary-plane Han, **~11.9 MiB** (12,459,248
+    bytes).
 
 The three region subsets are taken verbatim from the
 [Source Han Sans `release` branch](https://github.com/adobe-fonts/source-han-sans/tree/release#region-specific-subset-variable-fonts)
@@ -177,8 +184,9 @@ repertoire and differ mainly in region-specific glyph forms; Hangul appears in
 none of them, which is precisely the case the loader escalates to the full VF
 for.
 
-All Source Han members are marked `eagerFetch: false` and shaped with OpenType
-`palt=1` and variation `wght=600`.
+All Source Han and PlanGothic members are marked `eagerFetch: false`. The
+renderer requests OpenType `palt=1` and variation `wght=600`; static PlanGothic
+faces ignore the unsupported variation request.
 
 ### Lazy, coverage-driven loading
 
@@ -201,9 +209,10 @@ exist. Fonts are then fetched **per lyric line**:
   text); on completion the selection is cached, the line's layout is
   invalidated, and the current snapshot is repainted.
 
-The upshot: a Latin-only line downloads only the ~1.31 MiB Latin font and never
-touches the multi-megabyte Source Han members; a Japanese line pulls just the
-~8.0 MiB JP subset, not the ~29.3 MiB full VF. This is exercised end-to-end by
+The upshot: a Latin-only line downloads only the ~859 KiB Latin font and never
+touches the multi-megabyte CJK members; a Japanese line pulls just the ~8.0 MiB
+JP subset, not the ~29.3 MiB full VF or PlanGothic. Han extensions missing from
+Source Han select only P1 or P2. This is exercised end-to-end by
 `tests/browser/specs/glyph-lazy-fonts.spec.ts`.
 
 ### Escalation rule
@@ -403,13 +412,19 @@ Jukebox integration layer (`src/components/public/lyrics/glyph/`):
 - Playwright suite: 83 passing across Chromium, Firefox, and emulated mobile
   Chromium.
 - Served WASM binary: 871,236 bytes (~851 KiB).
-- Font payloads (all Source Han members are `eagerFetch: false` and fetched
-  lazily, per line, only when a line's coverage needs them):
-  `mona-sans-latin-otf` 1,372,268 bytes, `noto-sans-thai-vf-ttf` 218,652 bytes,
+- Font payloads (all Source Han and PlanGothic members are `eagerFetch: false`
+  and fetched lazily, per line, only when a line's coverage needs them):
+  `inter-variable-ttf` 879,708 bytes,
+  `noto-sans-thai-looped-vf-ttf` 218,660 bytes,
+  `noto-sans-lao-looped-vf-ttf` 231,556 bytes,
+  `noto-sans-hebrew-vf-ttf` 112,640 bytes,
+  `noto-sans-arabic-vf-ttf` 844,676 bytes,
   `source-han-sans-jp-vf` 8,423,476 bytes (~8.0 MiB),
   `source-han-sans-sc-vf` 15,636,088 bytes (~14.9 MiB),
   `source-han-sans-tc-vf` 10,495,320 bytes (~10.0 MiB), and
-  `source-han-sans-vf-otf` 30,767,092 bytes (~29.3 MiB).
+  `source-han-sans-vf-otf` 30,767,092 bytes (~29.3 MiB),
+  `plangothic-p1-regular-ttf` 20,410,664 bytes (~19.5 MiB), and
+  `plangothic-p2-regular-ttf` 12,459,248 bytes (~11.9 MiB).
 - Playwright `@smoke` perf budget (`glyph-smoke.spec.ts`, desktop Chromium):
   150 frames, one shaping pass (`shapeCalls === 1`), avg **~0.125 ms/frame**
   (max ~2.9 ms), against a generous 8 ms/frame budget — outline-cache misses
