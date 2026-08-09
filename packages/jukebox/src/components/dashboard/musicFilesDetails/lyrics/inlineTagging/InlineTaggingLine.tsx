@@ -111,7 +111,7 @@ function InlineTaggingLine({
           : undefined,
       relativeProgress:
         state.inlineTagging.currentLine.indices.includes(index) ||
-        state.inlineTagging.currentLine.borderIndex === index
+          state.inlineTagging.currentLine.borderIndex === index
           ? 0
           : state.inlineTagging.currentLine.borderIndex >= index
             ? -1
@@ -254,7 +254,7 @@ function InlineTaggingLine({
                 (coords[t.range[1] - 1] ?? 0) - (coords[t.range[0] - 1] ?? 0),
             }}
             ref={(el) => {
-              if (el && el.scrollWidth > el.clientWidth) {
+              if (el && el.clientWidth && el.scrollWidth > el.clientWidth) {
                 el.style.scale = `${el.clientWidth / el.scrollWidth} 1`;
               }
             }}
@@ -303,9 +303,9 @@ function InlineTaggingLine({
                 <span
                   className={cn(
                     hasDotCursor &&
-                      dotCursorIndex1 === idx &&
-                      dotCursorIndex2 === 0 &&
-                      "text-error-foreground",
+                    dotCursorIndex1 === idx &&
+                    dotCursorIndex2 === 0 &&
+                    "text-error-foreground",
                   )}
                 >
                   □
@@ -318,9 +318,9 @@ function InlineTaggingLine({
                       key={i}
                       className={cn(
                         hasDotCursor &&
-                          dotCursorIndex1 === idx &&
-                          dotCursorIndex2 === i &&
-                          "text-error-foreground",
+                        dotCursorIndex1 === idx &&
+                        dotCursorIndex2 === i &&
+                        "text-error-foreground",
                       )}
                     >
                       {i === 0 ? "◣" : "❚"}
@@ -333,9 +333,8 @@ function InlineTaggingLine({
         {hasCursor && (
           <span
             style={{
-              transform: `translateX(calc(${
-                coords[(cursorIndex ?? 0) - 1] ?? 0
-              }px - 1em))`,
+              transform: `translateX(calc(${coords[(cursorIndex ?? 0) - 1] ?? 0
+                }px - 1em))`,
             }}
             className="absolute z-10 scale-y-200 text-info-foreground origin-top-right"
           >
