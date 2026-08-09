@@ -498,13 +498,11 @@ export default function YouTubeDlDownloadSteps({
                   .map((v) => {
                     let badgeLabel = v.format;
                     if (v.abr) {
-                      badgeLabel = `${badgeLabel}, ♪${v.abr}k@[${
-                        v.acodec || "Unknown codec"
-                      }]`;
+                      badgeLabel = `${badgeLabel}, ♪${v.abr}k@[${v.acodec || "Unknown codec"
+                        }]`;
                     }
-                    badgeLabel = `${badgeLabel}, ${
-                      v.filesize ? filesize(v.filesize) : "Unknown size"
-                    }, ${v.ext}`;
+                    badgeLabel = `${badgeLabel}, ${v.filesize ? filesize(v.filesize) : "Unknown size"
+                      }, ${v.ext}`;
                     return (
                       <Badge key={v.format_id} variant="secondary">
                         {badgeLabel}
@@ -565,20 +563,19 @@ export default function YouTubeDlDownloadSteps({
             </div>
           )}
           <div className="flex gap-2 mt-4">
-            <Button
-              disabled={
-                downloadState === null ||
-                downloadState === undefined ||
-                downloadState < 0
-              }
-              variant="default"
-              asChild
-            >
-              <NextComposedLink href={`/dashboard/review/${downloadState}`}>
+            {downloadState !== null && downloadState >= 0 ? (
+              <Button variant="default" asChild>
+                <NextComposedLink href={`/dashboard/review/${downloadState}`}>
+                  <ExternalLink className="mr-2" />
+                  Review file
+                </NextComposedLink>
+              </Button>
+            ) : (
+              <Button disabled variant="default">
                 <ExternalLink className="mr-2" />
                 Review file
-              </NextComposedLink>
-            </Button>
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setStep((v) => v - 1)}>
               Back
             </Button>
