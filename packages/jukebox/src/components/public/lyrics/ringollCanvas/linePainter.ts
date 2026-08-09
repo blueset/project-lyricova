@@ -1,5 +1,9 @@
 import type { LayoutLine, ShapedCluster } from "@lyricova/glyph-renderer";
-import { glyphFlipMatrix, karaokeFillClip } from "../glyph/canvasGlyphGeometry";
+import {
+  clusterFillExtent,
+  glyphFlipMatrix,
+  karaokeFillClip,
+} from "../glyph/canvasGlyphGeometry";
 import type {
   ClusterTransform,
   FillDirection,
@@ -21,11 +25,13 @@ import {
   BASE_FLOAT_RISE_MINOR_EM,
   BOB_AMPLITUDE_EM,
   BOB_AMPLITUDE_MINOR_EM,
+  BOB_LEAD_MS,
   baseFloatOffsetEm,
   charEmphasis,
   emphasisBobOffsetEm,
   emphasisParams,
   EMPHASIS_TRANSIENT_DURATION_FACTOR,
+  EMPHASIS_STAGGER_DIVISOR,
   shouldEmphasize,
   type EmphasisParams,
 } from "./emphasis";
@@ -176,9 +182,8 @@ export function lineRevealedOffset(params: LineRevealParams): number {
  * final pose can be cached once the transient effects reach rest.
  *
  * AMLL lets element emphasis animations continue after the lyric line itself
- * is disabled. The last character's staggered glow ends before `1.4 * du`, and
- * the bob uses that same duration factor, so this conservative bound avoids
- * freezing a passed line mid-glow without needing layout-dependent char counts.
+ * is disabled. The bob starts 400 ms early but lasts `1.4 * du` from each
+ * cluster's staggered start, so long words can settle later than the glow.
  */
 export function lineTransientAnimationEndTime(
   words: readonly LyricWord[],
@@ -187,13 +192,57 @@ export function lineTransientAnimationEndTime(
   let endTime = Number.NEGATIVE_INFINITY;
   for (const word of words) {
     const [start, end] = word.utf16Range;
-    if (!shouldEmphasize(word, content.slice(start, end))) continue;
+    const wordText = content.slice(start, end);
+    if (!shouldEmphasize(word, wordText)) continue;
     const params = emphasisParams(word.duration * 1000, word.isLast);
+    // Before layout resolves, UTF-16 length is a safe upper bound for the
+    // shaped-cluster count: ligatures/combining sequences may merge units, not
+    // create more source units. Overestimating only extends repaint slightly.
+    const charCount = Math.max(1, wordText.trim().length);
+    const lastStaggerMs =
+      (params.durationMs / (EMPHASIS_STAGGER_DIVISOR * charCount)) *
+      (charCount - 1);
+    const glowEndMs = lastStaggerMs + params.durationMs;
+    const bobEndMs =
+      lastStaggerMs -
+      BOB_LEAD_MS +
+      params.durationMs * EMPHASIS_TRANSIENT_DURATION_FACTOR;
     endTime = Math.max(
       endTime,
-      word.startTime +
-        (params.durationMs * EMPHASIS_TRANSIENT_DURATION_FACTOR) / 1000,
+      word.startTime + Math.max(glowEndMs, bobEndMs) / 1000,
     );
+  }
+  return endTime;
+}
+
+/**
+ * Absolute time when reversing every word's persistent base float at
+ * `deactivationTime` has returned the line to rest.
+ *
+ * Web Animations reversal runs from each animation's current time, not always
+ * from its full duration. The remaining reverse time is therefore the clamped
+ * elapsed portion of that word's `max(1s, duration)` float clock.
+ */
+export function lineFloatDescentEndTime(
+  words: readonly LyricWord[],
+  deactivationTime: number,
+): number {
+  if (!Number.isFinite(deactivationTime) || words.length === 0) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  let endTime = deactivationTime;
+  for (const word of words) {
+    const duration = Number.isFinite(word.duration)
+      ? Math.max(1, word.duration)
+      : 1;
+    const wordStartTime = Number.isFinite(word.startTime)
+      ? word.startTime
+      : deactivationTime;
+    const animationTimeAtDeactivate = Math.min(
+      duration,
+      Math.max(0, deactivationTime - wordStartTime),
+    );
+    endTime = Math.max(endTime, deactivationTime + animationTimeAtDeactivate);
   }
   return endTime;
 }
@@ -277,10 +326,17 @@ export interface ResolveClusterStyleParams {
   revealed: number;
   /** Soft sweep band width in layout units (see {@link sweepFadeWidth}). */
   fadeWidth: number;
+  /**
+   * Shared sweep front in this cluster's local x coordinates. Omitted callers
+   * retain the renderer's independent per-cluster fraction behaviour.
+   */
+  softEdgeFront?: number;
   /** Base font size in layout units (scales the em-relative emphasis/float). */
   fontSize: number;
   /** Current playback time, in **milliseconds** (`time * 1000`). */
   timeMs: number;
+  /** When the line's persistent word floats began reversing, in milliseconds. */
+  floatReverseStartMs?: number;
   /** Whether this is a background/minor line (doubles the float amplitude). */
   minor: boolean;
   /** Sung colour (its alpha carries {@link SUNG_ALPHA}). */
@@ -337,6 +393,12 @@ export function resolveClusterStyle(
     fillDirection,
     softEdgeWidth: fadeWidth,
   };
+  if (
+    params.softEdgeFront !== undefined &&
+    Number.isFinite(params.softEdgeFront)
+  ) {
+    style.softEdgeFront = params.softEdgeFront;
+  }
 
   if (!word) return style;
 
@@ -348,6 +410,7 @@ export function resolveClusterStyle(
   let offsetXEm = 0;
   let offsetYEm = baseFloatOffsetEm(timeMs, wordStartMs, wordDurationMs, {
     amplitudeEm: minor ? BASE_FLOAT_RISE_MINOR_EM : BASE_FLOAT_RISE_EM,
+    reverseStartMs: params.floatReverseStartMs,
   });
   let scale = 1;
   let glow: ClusterRenderStyle["glow"];
@@ -366,6 +429,8 @@ export function resolveClusterStyle(
     offsetYEm += emphasis.offsetYEm;
     offsetYEm += emphasisBobOffsetEm(word.params, timeMs, wordStartMs, {
       amplitudeEm: minor ? BOB_AMPLITUDE_MINOR_EM : BOB_AMPLITUDE_EM,
+      charIndex: word.charIndex,
+      charCount: word.charCount,
     });
     scale = emphasis.scale;
     if (emphasis.glowAlpha > 0 && emphasis.glowRadiusEm > 0) {
@@ -401,6 +466,8 @@ export interface LinePaintOptions {
   words: readonly LyricWord[];
   /** Current playback time, in **seconds**. */
   time: number;
+  /** Absolute time when the line's base floats began reversing, in seconds. */
+  floatReverseStartTime?: number;
   /** Absolute reveal start time (seconds); untimed lines step here. */
   startTime: number;
   /** Authored line end time (seconds), retained for the segment contract. */
@@ -434,6 +501,133 @@ export interface LinePaintOptions {
   variations: readonly string[];
 }
 
+interface SweepClusterSpan {
+  cluster: ShapedCluster;
+  line: LayoutLine;
+  lineIndex: number;
+  clusterIndex: number;
+  advance: number;
+  pathStart: number;
+  pathEnd: number;
+}
+
+function localFrontToPath(span: SweepClusterSpan, localFront: number): number {
+  return span.cluster.direction === "rtl"
+    ? span.pathStart + span.advance - localFront
+    : span.pathStart + localFront;
+}
+
+/**
+ * Maps the line's logical reveal position onto one continuous reading-path
+ * coordinate, then converts that coordinate back to each cluster's local x.
+ *
+ * Cluster advances form the path in logical source order, including whitespace
+ * clusters, so this changes only the soft band's spatial handoff: authored
+ * timing, instant prefixes and whitespace pacing remain untouched. At a shared
+ * source boundary the previous cluster receives a front at its reading-end
+ * edge while the next receives the same front at its reading-start edge. The
+ * renderer can therefore paint both halves of one gradient simultaneously.
+ */
+export function buildContinuousSweepFronts(
+  layout: RubyLayoutResult,
+  revealed: number,
+  contentLength: number,
+  fadeWidth: number,
+): Map<ShapedCluster, number> {
+  const spans: SweepClusterSpan[] = [];
+  layout.lines.forEach((placement, lineIndex) => {
+    const line: LayoutLine = {
+      ...placement.line,
+      top: placement.top,
+      baseline: placement.baseline,
+      height: placement.height,
+    };
+    placement.line.clusters.forEach((cluster, clusterIndex) => {
+      spans.push({
+        cluster,
+        line,
+        lineIndex,
+        clusterIndex,
+        advance:
+          Number.isFinite(cluster.advance) && cluster.advance > 0
+            ? cluster.advance
+            : 0,
+        pathStart: 0,
+        pathEnd: 0,
+      });
+    });
+  });
+
+  spans.sort(
+    (a, b) =>
+      a.cluster.source.utf16Start - b.cluster.source.utf16Start ||
+      a.cluster.source.utf16End - b.cluster.source.utf16End ||
+      a.lineIndex - b.lineIndex ||
+      a.clusterIndex - b.clusterIndex,
+  );
+  if (spans.length === 0) return new Map();
+
+  let path = 0;
+  for (const span of spans) {
+    span.pathStart = path;
+    path += span.advance;
+    span.pathEnd = path;
+  }
+
+  const logicalEnd =
+    Number.isFinite(contentLength) && contentLength > 0 ? contentLength : 0;
+  const logical = Number.isFinite(revealed)
+    ? Math.min(logicalEnd, Math.max(0, revealed))
+    : 0;
+  const halfFade = Math.max(0, fadeWidth) / 2;
+  const first = spans[0]!;
+  const firstExtent = clusterFillExtent(first.cluster, first.line);
+  const firstLocalFront =
+    first.cluster.direction === "rtl"
+      ? firstExtent.right + halfFade
+      : firstExtent.left - halfFade;
+  const startPathFront = localFrontToPath(first, firstLocalFront);
+  const last = spans[spans.length - 1]!;
+  const lastExtent = clusterFillExtent(last.cluster, last.line);
+  const lastLocalFront =
+    last.cluster.direction === "rtl"
+      ? lastExtent.left - halfFade
+      : lastExtent.right + halfFade;
+  const endPathFront = localFrontToPath(last, lastLocalFront);
+
+  let pathFront: number;
+  if (logical <= 0) {
+    pathFront = startPathFront;
+  } else if (logical >= logicalEnd) {
+    pathFront = endPathFront;
+  } else {
+    pathFront = startPathFront;
+    for (const span of spans) {
+      const { utf16Start, utf16End } = span.cluster.source;
+      if (logical < utf16Start) break;
+      if (logical <= utf16End) {
+        const sourceLength = utf16End - utf16Start;
+        const fraction =
+          sourceLength > 0 ? (logical - utf16Start) / sourceLength : 1;
+        const spanStart = span === first ? startPathFront : span.pathStart;
+        const spanEnd = span === last ? endPathFront : span.pathEnd;
+        pathFront = spanStart + fraction * (spanEnd - spanStart);
+        break;
+      }
+      pathFront = span.pathEnd;
+    }
+  }
+
+  const fronts = new Map<ShapedCluster, number>();
+  for (const span of spans) {
+    const traveled = pathFront - span.pathStart;
+    const localFront =
+      span.cluster.direction === "rtl" ? span.advance - traveled : traveled;
+    fronts.set(span.cluster, localFront);
+  }
+  return fronts;
+}
+
 /**
  * Paints one lyric line onto `ctx`, which the caller must have already put in
  * *paragraph space*: the current transform maps `(0, 0)` to the paragraph's
@@ -456,6 +650,7 @@ export function paintLine(
     content,
     words,
     time,
+    floatReverseStartTime,
     startTime,
     endTime,
     leadingRevealEnd,
@@ -471,6 +666,10 @@ export function paintLine(
 
   const fadeWidth = sweepFadeWidth(fontSize);
   const timeMs = time * 1000;
+  const floatReverseStartMs =
+    floatReverseStartTime !== undefined
+      ? floatReverseStartTime * 1000
+      : undefined;
   const revealed = lineRevealedOffset({
     words,
     time,
@@ -480,6 +679,12 @@ export function paintLine(
     leadingRevealEnd,
   });
   const wordContexts = buildWordContexts(layout, content, words);
+  const sweepFronts = buildContinuousSweepFronts(
+    layout,
+    revealed,
+    content.length,
+    fadeWidth,
+  );
 
   for (const placement of layout.lines) {
     const alignX =
@@ -502,8 +707,10 @@ export function paintLine(
         cluster,
         revealed,
         fadeWidth,
+        softEdgeFront: sweepFronts.get(cluster),
         fontSize,
         timeMs,
+        floatReverseStartMs,
         minor,
         activeColor,
         inactiveColor,

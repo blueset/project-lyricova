@@ -337,6 +337,36 @@ describe("baseFloatOffsetEm", () => {
       expect(baseFloatOffsetEm(t, 0, 2000, opts)).toBeLessThanOrEqual(0);
     }
   });
+
+  it("runs the ease-out clock backwards after line deactivation", () => {
+    const reverseStartMs = 2000;
+    const atReverse = baseFloatOffsetEm(2000, 0, 1000, { reverseStartMs });
+    const halfwayDown = baseFloatOffsetEm(2500, 0, 1000, {
+      reverseStartMs,
+    });
+    const settled = baseFloatOffsetEm(3000, 0, 1000, { reverseStartMs });
+
+    expect(atReverse).toBeCloseTo(-0.05, 6);
+    expect(halfwayDown).toBeCloseTo(baseFloatOffsetEm(500, 0, 1000), 10);
+    expect(settled).toBeCloseTo(0, 10);
+  });
+
+  it("reverses from a partially completed lift without jumping", () => {
+    const reverseStartMs = 1500;
+    const before = baseFloatOffsetEm(reverseStartMs, 1000, 2000);
+    const atReverse = baseFloatOffsetEm(reverseStartMs, 1000, 2000, {
+      reverseStartMs,
+    });
+    expect(atReverse).toBeCloseTo(before, 10);
+    expect(baseFloatOffsetEm(1750, 1000, 2000, { reverseStartMs })).toBeCloseTo(
+      baseFloatOffsetEm(1250, 1000, 2000),
+      10,
+    );
+    expect(baseFloatOffsetEm(2000, 1000, 2000, { reverseStartMs })).toBeCloseTo(
+      0,
+      10,
+    );
+  });
 });
 
 describe("emphasisBobOffsetEm", () => {
@@ -411,6 +441,33 @@ describe("emphasisBobOffsetEm", () => {
     for (let t = -600; t <= 3200; t += 200) {
       expect(emphasisBobOffsetEm(params, t, 0, opts)).toBeLessThanOrEqual(0);
     }
+  });
+
+  it("staggers the bob across shaped-cluster positions", () => {
+    const charCount = 4;
+    const lastIndex = charCount - 1;
+    const lastStagger = (params.durationMs / (2.5 * charCount)) * lastIndex;
+
+    expect(
+      emphasisBobOffsetEm(params, -250, 0, {
+        charIndex: 0,
+        charCount,
+      }),
+    ).toBeLessThan(0);
+    expect(
+      emphasisBobOffsetEm(params, -250, 0, {
+        charIndex: lastIndex,
+        charCount,
+      }),
+    ).toBeCloseTo(0, 10);
+
+    const lastPeak = -400 + lastStagger + 0.7 * params.durationMs;
+    expect(
+      emphasisBobOffsetEm(params, lastPeak, 0, {
+        charIndex: lastIndex,
+        charCount,
+      }),
+    ).toBeCloseTo(-BOB_AMPLITUDE_EM, 6);
   });
 });
 

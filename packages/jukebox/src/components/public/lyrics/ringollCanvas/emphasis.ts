@@ -43,8 +43,10 @@ export const BOB_AMPLITUDE_EM = 0.05;
  * line, so the two lifts double together (doubling one alone is a subtle bug).
  */
 export const BOB_AMPLITUDE_MINOR_EM = 0.1;
+/** Divisor in AMLL's per-character stagger: `du / (2.5 * count) * index`. */
+export const EMPHASIS_STAGGER_DIVISOR = 2.5;
 /** The bob starts this many ms *before* the scale/glow clock so its peak leads. */
-const BOB_LEAD_MS = 400;
+export const BOB_LEAD_MS = 400;
 /**
  * Upper duration factor for transient emphasis motion. AMLL's bob lasts
  * `1.4 * du`; the final staggered character glow ends just before the same
@@ -338,7 +340,7 @@ export function charEmphasis(
 ): CharEmphasis {
   const { amount, blur, durationMs: du } = params;
   const n = Math.max(1, charCount);
-  const stagger = (du / (2.5 * n)) * charIndex;
+  const stagger = (du / (EMPHASIS_STAGGER_DIVISOR * n)) * charIndex;
   const e = emphasisEnvelope(clamp01((timeMs - (wordStartMs + stagger)) / du));
   return {
     scale: 1 + 0.1 * amount * e,
@@ -366,24 +368,29 @@ export const BASE_FLOAT_RISE_MINOR_EM = 0.1;
 const easeOut = cubicBezier(0, 0, 0.58, 1);
 
 /**
- * Amplitude-override options shared by the two em-relative vertical lifts,
- * {@link baseFloatOffsetEm} and {@link emphasisBobOffsetEm}. Both default to
- * their normal-line amplitude; a background / `minor` line overrides **both**
- * with the matching `*_MINOR_EM` constant.
- *
- * The renderer makes one `amplitudeEm` decision per line from its `minor` flag,
- * so a future reader must keep the two lifts in lockstep: doubling one and not
- * the other desynchronises them - a subtle visual bug nobody would trace back.
+ * Options for the persistent base word float.
  */
 export interface BaseFloatOptions {
   /**
-   * Peak lift in em. For {@link baseFloatOffsetEm} it defaults to
-   * {@link BASE_FLOAT_RISE_EM} (`0.05`; minor {@link BASE_FLOAT_RISE_MINOR_EM}
-   * `0.1`); for {@link emphasisBobOffsetEm} it defaults to
-   * {@link BOB_AMPLITUDE_EM} (`0.05`; minor {@link BOB_AMPLITUDE_MINOR_EM}
-   * `0.1`).
+   * Peak lift in em. Defaults to {@link BASE_FLOAT_RISE_EM}; minor lines pass
+   * {@link BASE_FLOAT_RISE_MINOR_EM}.
    */
   amplitudeEm?: number;
+  /**
+   * Playback time when the owning line was deactivated. From this instant the
+   * float's animation clock runs backwards, matching AMLL's
+   * `playbackRate = -1`. Omitted means the one-way lift remains filled.
+   */
+  reverseStartMs?: number;
+}
+
+export interface EmphasisBobOptions {
+  /** Peak lift in em; defaults to {@link BOB_AMPLITUDE_EM}. */
+  amplitudeEm?: number;
+  /** Shaped-cluster index within the word. Defaults to the leading cluster. */
+  charIndex?: number;
+  /** Number of shaped non-whitespace clusters in the word. */
+  charCount?: number;
 }
 
 /**
@@ -405,7 +412,7 @@ export interface BaseFloatOptions {
  *    one; a non-emphasised word simply has the latter two at zero.
  *
  * The amplitude is **em-relative** so it scales with font size, and takes the
- * shared {@link BaseFloatOptions} override: the default is
+ * {@link BaseFloatOptions} override: the default is
  * {@link BASE_FLOAT_RISE_EM}; a background / `minor` line passes
  * {@link BASE_FLOAT_RISE_MINOR_EM} via `options.amplitudeEm` - and must pass
  * {@link BOB_AMPLITUDE_MINOR_EM} to {@link emphasisBobOffsetEm} for the same
@@ -425,7 +432,20 @@ export function baseFloatOffsetEm(
 ): number {
   const amplitudeEm = options.amplitudeEm ?? BASE_FLOAT_RISE_EM;
   const du = Math.max(EMPHASIS_MIN_DURATION_MS, wordDurationMs);
-  const x = clamp01((timeMs - wordStartMs) / du);
+  let animationTimeMs = timeMs - wordStartMs;
+  if (
+    options.reverseStartMs !== undefined &&
+    Number.isFinite(options.reverseStartMs) &&
+    timeMs >= options.reverseStartMs
+  ) {
+    const animationTimeAtReverse = Math.min(
+      du,
+      Math.max(0, options.reverseStartMs - wordStartMs),
+    );
+    animationTimeMs =
+      animationTimeAtReverse - (timeMs - options.reverseStartMs);
+  }
+  const x = clamp01(animationTimeMs / du);
   return -amplitudeEm * easeOut(x);
 }
 
@@ -436,16 +456,17 @@ export function baseFloatOffsetEm(
  * - the glyph is already lifting as it flares.
  *
  * Like {@link baseFloatOffsetEm}, the amplitude is em-relative and takes the
- * same shared {@link BaseFloatOptions} override: it defaults to
+ * {@link EmphasisBobOptions} override: it defaults to
  * {@link BOB_AMPLITUDE_EM} (`0.05`) and a background / `minor` line passes
  * {@link BOB_AMPLITUDE_MINOR_EM} (`0.1`), mirroring AMLL's `isBG` `y *= 2`. A
  * `minor` line must pass the `*_MINOR_EM` constant to **both** this function
  * and {@link baseFloatOffsetEm} so the two lifts stay proportional.
  *
- * AMLL staggers this per character identically to {@link charEmphasis}; we
- * model it at the word level (the `charIndex = 0` clock) because the lead
- * already dominates the visual effect. Returns em (`<= 0`; up is `-y`); times
- * are in **milliseconds** and share the origin of `wordStartMs`.
+ * AMLL staggers this per character identically to {@link charEmphasis}. Ringoll
+ * Canvas uses shaped non-whitespace clusters as that character unit: combining
+ * sequences and ligatures remain atomic, while ordinary graphemes receive the
+ * intended traveling wave. Returns em (`<= 0`; up is `-y`); times are in
+ * **milliseconds** and share the origin of `wordStartMs`.
  *
  * A non-positive (or non-finite) `params.durationMs` short-circuits to `0`:
  * `du` is the denominator of the phase ratio, so `0` would divide to
@@ -457,13 +478,20 @@ export function emphasisBobOffsetEm(
   params: EmphasisParams,
   timeMs: number,
   wordStartMs: number,
-  options: BaseFloatOptions = {},
+  options: EmphasisBobOptions = {},
 ): number {
   if (!(params.durationMs > 0)) return 0;
   const amplitudeEm = options.amplitudeEm ?? BOB_AMPLITUDE_EM;
+  const charCount = Math.max(1, options.charCount ?? 1);
+  const charIndex = Math.min(
+    charCount - 1,
+    Math.max(0, options.charIndex ?? 0),
+  );
+  const stagger =
+    (params.durationMs / (EMPHASIS_STAGGER_DIVISOR * charCount)) * charIndex;
   const x = clamp01(
-    (timeMs - (wordStartMs - BOB_LEAD_MS)) /
-      (EMPHASIS_TRANSIENT_DURATION_FACTOR * params.durationMs),
+    (timeMs - (wordStartMs + stagger - BOB_LEAD_MS)) /
+    (EMPHASIS_TRANSIENT_DURATION_FACTOR * params.durationMs),
   );
   return -amplitudeEm * Math.sin(Math.PI * x);
 }

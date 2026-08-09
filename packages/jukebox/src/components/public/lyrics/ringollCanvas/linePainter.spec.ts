@@ -47,7 +47,9 @@ import {
   UNSUNG_ALPHA,
   UNSUNG_COLOR,
   INACTIVE_LINE_ALPHA,
+  buildContinuousSweepFronts,
   buildWordContexts,
+  lineFloatDescentEndTime,
   lineRevealedOffset,
   lineTransientAnimationEndTime,
   paintLine,
@@ -403,7 +405,7 @@ describe("lineTransientAnimationEndTime", () => {
     const animationEnd = lineTransientAnimationEndTime(words, "ECHO");
 
     expect(animationEnd).toBeGreaterThan(61.912);
-    expect(animationEnd).toBeCloseTo(66.23408, 5);
+    expect(animationEnd).toBeCloseTo(67.868, 5);
   });
 
   it("has no transient tail when no word qualifies for emphasis", () => {
@@ -418,6 +420,34 @@ describe("lineTransientAnimationEndTime", () => {
     expect(lineTransientAnimationEndTime(words, "AB")).toBe(
       Number.NEGATIVE_INFINITY,
     );
+  });
+});
+
+describe("lineFloatDescentEndTime", () => {
+  it("waits for the longest current float clock to reverse to zero", () => {
+    const words: LyricWord[] = [
+      {
+        index: 0,
+        utf16Range: [0, 2],
+        startTime: 0,
+        endTime: 2,
+        duration: 2,
+        isLast: false,
+      },
+      {
+        index: 1,
+        utf16Range: [2, 4],
+        startTime: 2,
+        endTime: 2.5,
+        duration: 0.5,
+        isLast: true,
+      },
+    ];
+    expect(lineFloatDescentEndTime(words, 3)).toBe(5);
+  });
+
+  it("returns no tail for an untimed line", () => {
+    expect(lineFloatDescentEndTime([], 3)).toBe(Number.NEGATIVE_INFINITY);
   });
 });
 
@@ -532,6 +562,8 @@ describe("resolveClusterStyle", () => {
       wordStartMs,
       {
         amplitudeEm: BOB_AMPLITUDE_EM,
+        charIndex: emphasizedContext.charIndex,
+        charCount: emphasizedContext.charCount,
       },
     );
 
@@ -604,6 +636,40 @@ describe("resolveClusterStyle", () => {
     expect(style.transform?.translate?.y).toBeCloseTo(floatEm * FONT_SIZE, 6);
     expect(style.transform?.scale).toBeUndefined();
     expect(style.glow).toBeUndefined();
+  });
+
+  it("reverses the persistent float after line deactivation", () => {
+    const plainWord: LyricWord = {
+      index: 0,
+      utf16Range: [0, 5],
+      startTime: 1,
+      endTime: 2,
+      duration: 1,
+      isLast: true,
+    };
+    const context: ClusterWordContext = {
+      word: plainWord,
+      charIndex: 0,
+      charCount: 3,
+      emphasized: false,
+      params: emphasisParams(1000, true),
+    };
+    const style = resolveClusterStyle({
+      cluster,
+      revealed: 5,
+      fadeWidth,
+      fontSize: FONT_SIZE,
+      timeMs: 2500,
+      floatReverseStartMs: 2000,
+      minor: false,
+      activeColor: SUNG_COLOR,
+      inactiveColor: UNSUNG_COLOR,
+      word: context,
+    });
+    const expected = baseFloatOffsetEm(2500, 1000, 1000, {
+      reverseStartMs: 2000,
+    });
+    expect(style.transform?.translate?.y).toBeCloseTo(expected * FONT_SIZE, 6);
   });
 
   it("doubles the float amplitude on a minor line", () => {
@@ -707,6 +773,58 @@ describe("buildWordContexts", () => {
   });
 });
 
+describe("buildContinuousSweepFronts", () => {
+  const clusters = buildClusters([
+    { char: "a", advance: 10 },
+    { char: "b", advance: 30 },
+  ]);
+  const layout = wrapLayout(buildLine(clusters));
+
+  it("places both sides of a shared boundary under the same sweep band", () => {
+    const fronts = buildContinuousSweepFronts(layout, 1, 2, 8);
+    expect(fronts.get(clusters[0])).toBeCloseTo(10, 6);
+    expect(fronts.get(clusters[1])).toBeCloseTo(0, 6);
+  });
+
+  it("keeps the whole line unsung and sung at its outer endpoints", () => {
+    const start = buildContinuousSweepFronts(layout, 0, 2, 8);
+    expect(start.get(clusters[0])).toBeCloseTo(-4, 6);
+
+    const end = buildContinuousSweepFronts(layout, 2, 2, 8);
+    expect(end.get(clusters[1])).toBeCloseTo(34, 6);
+  });
+
+  it("moves continuously away from the extended line endpoints", () => {
+    const start = buildContinuousSweepFronts(layout, 0, 2, 8);
+    const justAfterStart = buildContinuousSweepFronts(layout, 0.001, 2, 8);
+    expect(
+      Math.abs(
+        (justAfterStart.get(clusters[0]) ?? 0) - (start.get(clusters[0]) ?? 0),
+      ),
+    ).toBeLessThan(0.1);
+
+    const justBeforeEnd = buildContinuousSweepFronts(layout, 1.999, 2, 8);
+    const end = buildContinuousSweepFronts(layout, 2, 2, 8);
+    expect(
+      Math.abs(
+        (end.get(clusters[1]) ?? 0) - (justBeforeEnd.get(clusters[1]) ?? 0),
+      ),
+    ).toBeLessThan(0.1);
+  });
+
+  it("maps an rtl cluster from its reading-start edge to its reading-end edge", () => {
+    const rtlClusters = buildClusters([
+      { char: "א", advance: 12 },
+      { char: "b", advance: 10 },
+    ]);
+    rtlClusters[0] = { ...rtlClusters[0]!, direction: "rtl" };
+    const rtlLayout = wrapLayout(buildLine(rtlClusters));
+    const fronts = buildContinuousSweepFronts(rtlLayout, 1, 2, 8);
+    expect(fronts.get(rtlClusters[0])).toBeCloseTo(0, 6);
+    expect(fronts.get(rtlClusters[1])).toBeCloseTo(0, 6);
+  });
+});
+
 describe("rubyRevealFraction", () => {
   it("tracks the annotation's base UTF-16 range", () => {
     const ruby = {
@@ -766,8 +884,8 @@ describe("paintLine", () => {
     expect(ctx.fills.length).toBeGreaterThan(0);
     // Every cluster gets an unsung base pass.
     expect(ctx.fills.some((f) => f.fillStyle === UNSUNG_COLOR)).toBe(true);
-    // The revealed cluster's sung pass uses the soft-edge gradient.
-    expect(ctx.gradientCount).toBeGreaterThan(0);
+    // Both sides of the shared boundary paint one continuous soft band.
+    expect(ctx.gradientCount).toBe(2);
     // paintLine leaves the stack exactly as it found it.
     expect(ctx.depth).toBe(0);
   });

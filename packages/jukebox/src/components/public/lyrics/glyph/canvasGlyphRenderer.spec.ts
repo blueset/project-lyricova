@@ -625,6 +625,47 @@ describe("drawCluster soft-edge karaoke sweep", () => {
     expect(ctx.clipCount).toBe(0);
   });
 
+  it("paints an explicit shared front even when the local fraction is zero", () => {
+    const ctx = new RecordingContext();
+
+    drawParagraph(ctx, singleGlyphLine(), {
+      cache: makeCache(),
+      fontSize: 32,
+      resolveCluster: () =>
+        solidStyle({
+          fillFraction: 0,
+          softEdgeWidth: 8,
+          softEdgeFront: 0,
+        }),
+    });
+
+    expect(ctx.clipCount).toBe(0);
+    expect(ctx.gradients).toHaveLength(1);
+    expect(ctx.gradients[0].coords).toEqual([-4, 0, 4, 0]);
+  });
+
+  it("keeps explicit shared fronts fully inactive/active beyond the outer edges", () => {
+    const drawAt = (softEdgeFront: number) => {
+      const ctx = new RecordingContext();
+      drawParagraph(ctx, singleGlyphLine(), {
+        cache: makeCache(),
+        fontSize: 32,
+        resolveCluster: () => solidStyle({ softEdgeWidth: 8, softEdgeFront }),
+      });
+      return ctx;
+    };
+
+    const inactive = drawAt(-4);
+    expect(inactive.gradients).toHaveLength(0);
+    expect(inactive.fills).toHaveLength(1);
+    expect(inactive.fills[0].fillStyle).toBe("#111111");
+
+    const active = drawAt(24);
+    expect(active.gradients).toHaveLength(0);
+    expect(active.fills).toHaveLength(2);
+    expect(active.fills[1].fillStyle).toBe("#eeeeee");
+  });
+
   it("still paints the gradient (never a clip) at fraction 1 so ink is not cut", () => {
     const ctx = new RecordingContext();
 

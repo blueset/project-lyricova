@@ -118,6 +118,14 @@ export interface ClusterRenderStyle {
    * units. `0`/omitted keeps the hard-edged clip.
    */
   softEdgeWidth?: number;
+  /**
+   * Explicit soft-edge front in cluster-local x coordinates. When supplied
+   * with {@link softEdgeWidth}, this takes precedence over
+   * {@link fillFraction} for the gradient position and may sit outside the
+   * cluster. That lets adjacent clusters render two halves of one shared
+   * line-level sweep band instead of clamping/restarting it at each boundary.
+   */
+  softEdgeFront?: number;
   /** Soft glow painted behind the glyphs (AMLL emphasis). Omitted = no glow. */
   glow?: {
     /** Blur radius in layout units. */
@@ -332,51 +340,90 @@ export function drawCluster(
   paintGlyphs(ctx, offsets, paths);
 
   // Active (sung) pass: the same glyphs revealed up to the karaoke front.
-  const fraction = clamp01(style.fillFraction ?? 0);
-  if (fraction > 0) {
-    const direction: FillDirection =
-      style.fillDirection ?? (cluster.direction === "rtl" ? "rtl" : "ltr");
-    // Union of the logical advance box and the glyph ink (both axes), so at
-    // fraction 1 every pixel of ink - negative side bearings, ink past the
-    // advance, and ascenders/descenders beyond a short line box - is reachable.
-    const extent = clusterFillExtent(cluster, line);
+  const direction: FillDirection =
+    style.fillDirection ?? (cluster.direction === "rtl" ? "rtl" : "ltr");
+  // Union of the logical advance box and the glyph ink (both axes), so at
+  // fraction 1 every pixel of ink - negative side bearings, ink past the
+  // advance, and ascenders/descenders beyond a short line box - is reachable.
+  const extent = clusterFillExtent(cluster, line);
+  const softEdgeWidth = style.softEdgeWidth ?? 0;
+  const activeColor = style.activeColor;
+  const explicitSoftFront = style.softEdgeFront;
 
-    const softEdgeWidth = style.softEdgeWidth ?? 0;
-    const activeColor = style.activeColor;
-    if (softEdgeWidth > 0 && typeof activeColor === "string") {
-      // Soft edge: fade the sung colour out across a fixed-width band centred on
-      // the fill front. No clip - the gradient's transparent tail *is* the
-      // reveal boundary, and ink is never cut (matters at fraction 1, where the
-      // band sits past the far edge). The band is built in cluster-local space
-      // so it rides the emphasis transform (see `paintGlyphsSoftEdge`).
-      const front = karaokeSoftFillFront(
-        extent,
-        fraction,
-        direction,
-        softEdgeWidth,
-      );
-      const half = softEdgeWidth / 2;
-      const solidEdge = direction === "rtl" ? front + half : front - half;
-      const transparentEdge = direction === "rtl" ? front - half : front + half;
-      paintGlyphsSoftEdge(
-        ctx,
-        offsets,
-        paths,
-        solidEdge,
-        transparentEdge,
-        activeColor,
-        withZeroAlpha(activeColor),
-      );
-    } else {
-      // Hard edge: clip to the karaoke fill rectangle and re-fill solid.
-      const clip = karaokeFillClip(extent, fraction, direction);
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(clip.x, clip.y, clip.width, clip.height);
-      ctx.clip();
-      ctx.fillStyle = activeColor;
-      paintGlyphs(ctx, offsets, paths);
-      ctx.restore();
+  if (
+    softEdgeWidth > 0 &&
+    typeof activeColor === "string" &&
+    explicitSoftFront !== undefined &&
+    Number.isFinite(explicitSoftFront)
+  ) {
+    const half = softEdgeWidth / 2;
+    const solidEdge =
+      direction === "rtl" ? explicitSoftFront + half : explicitSoftFront - half;
+    const transparentEdge =
+      direction === "rtl" ? explicitSoftFront - half : explicitSoftFront + half;
+    const fullyTransparent =
+      direction === "rtl"
+        ? transparentEdge >= extent.right
+        : transparentEdge <= extent.left;
+    if (!fullyTransparent) {
+      const fullySolid =
+        direction === "rtl"
+          ? solidEdge <= extent.left
+          : solidEdge >= extent.right;
+      if (fullySolid) {
+        ctx.fillStyle = activeColor;
+        paintGlyphs(ctx, offsets, paths);
+      } else {
+        paintGlyphsSoftEdge(
+          ctx,
+          offsets,
+          paths,
+          solidEdge,
+          transparentEdge,
+          activeColor,
+          withZeroAlpha(activeColor),
+        );
+      }
+    }
+  } else {
+    const fraction = clamp01(style.fillFraction ?? 0);
+    if (fraction > 0) {
+      if (softEdgeWidth > 0 && typeof activeColor === "string") {
+        // Soft edge: fade the sung colour out across a fixed-width band centred on
+        // the fill front. No clip - the gradient's transparent tail *is* the
+        // reveal boundary, and ink is never cut (matters at fraction 1, where the
+        // band sits past the far edge). The band is built in cluster-local space
+        // so it rides the emphasis transform (see `paintGlyphsSoftEdge`).
+        const front = karaokeSoftFillFront(
+          extent,
+          fraction,
+          direction,
+          softEdgeWidth,
+        );
+        const half = softEdgeWidth / 2;
+        const solidEdge = direction === "rtl" ? front + half : front - half;
+        const transparentEdge =
+          direction === "rtl" ? front - half : front + half;
+        paintGlyphsSoftEdge(
+          ctx,
+          offsets,
+          paths,
+          solidEdge,
+          transparentEdge,
+          activeColor,
+          withZeroAlpha(activeColor),
+        );
+      } else {
+        // Hard edge: clip to the karaoke fill rectangle and re-fill solid.
+        const clip = karaokeFillClip(extent, fraction, direction);
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(clip.x, clip.y, clip.width, clip.height);
+        ctx.clip();
+        ctx.fillStyle = activeColor;
+        paintGlyphs(ctx, offsets, paths);
+        ctx.restore();
+      }
     }
   }
 

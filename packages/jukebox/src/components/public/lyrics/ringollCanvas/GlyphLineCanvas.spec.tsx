@@ -249,7 +249,7 @@ describe("GlyphLineCanvas", () => {
     expect(ctxCalls.clearRect).toBe(afterFirst);
   });
 
-  it("continues repainting an inactive final-word glow until it settles", () => {
+  it("continues repainting inactive emphasis and descent tails until they settle", () => {
     renderLine({
       isActive: false,
       segment: makeSegment({
@@ -269,9 +269,34 @@ describe("GlyphLineCanvas", () => {
     act(() => clock.onSnapshot?.(snapshot(62)));
     expect(ctxCalls.clearRect).toBeGreaterThan(duringTail);
 
-    act(() => clock.onSnapshot?.(snapshot(67)));
+    act(() => clock.onSnapshot?.(snapshot(69)));
     const settled = ctxCalls.clearRect;
-    act(() => clock.onSnapshot?.(snapshot(68)));
+    act(() => clock.onSnapshot?.(snapshot(70)));
+    expect(ctxCalls.clearRect).toBe(settled);
+  });
+
+  it("continues repainting a non-emphasized line while its word float descends", () => {
+    renderLine({
+      isActive: false,
+      segment: makeSegment({
+        content: "AB",
+        startTime: 0,
+        endTime: 1,
+        timeTags: [
+          { index: 0, time: 0 },
+          { index: 1, time: 0.5 },
+        ],
+      }),
+    });
+
+    act(() => clock.onSnapshot?.(snapshot(1.1)));
+    const duringDescent = ctxCalls.clearRect;
+    act(() => clock.onSnapshot?.(snapshot(1.2)));
+    expect(ctxCalls.clearRect).toBeGreaterThan(duringDescent);
+
+    act(() => clock.onSnapshot?.(snapshot(2.1)));
+    const settled = ctxCalls.clearRect;
+    act(() => clock.onSnapshot?.(snapshot(2.2)));
     expect(ctxCalls.clearRect).toBe(settled);
   });
 

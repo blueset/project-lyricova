@@ -24,6 +24,7 @@ import {
   INACTIVE_LINE_ALPHA,
   SUNG_COLOR,
   UNSUNG_COLOR,
+  lineFloatDescentEndTime,
   lineRevealedOffset,
   lineTransientAnimationEndTime,
   paintLine,
@@ -150,6 +151,10 @@ export function GlyphLineCanvas({
     () => lineTransientAnimationEndTime(words, segment.content),
     [words, segment.content],
   );
+  const floatDescentEndTime = useMemo(
+    () => lineFloatDescentEndTime(words, segment.endTime),
+    [words, segment.endTime],
+  );
 
   const draw = useCallback(
     (snapshot: PlaybackSnapshot | null) => {
@@ -209,11 +214,19 @@ export function GlyphLineCanvas({
         fullySung &&
         time >= segment.endTime &&
         time < transientAnimationEndTime;
+      const animatingFloatDescent =
+        fullySung &&
+        !isActive &&
+        time >= segment.endTime &&
+        time < floatDescentEndTime;
       // Static once fully swept (or not started) and not the active line; while
-      // active, or while AMLL-style emphasis is settling after line end, every
-      // media-clock snapshot remains eligible for repaint.
+      // active, or while AMLL-style emphasis/descent motion is settling after
+      // line end, every media-clock snapshot remains eligible for repaint.
       const animating =
-        isActive || (!fullyUnsung && !fullySung) || animatingTransientTail;
+        isActive ||
+        (!fullyUnsung && !fullySung) ||
+        animatingTransientTail ||
+        animatingFloatDescent;
       const timeKey = animating
         ? Math.round(time * 1000)
         : fullySung
@@ -266,6 +279,8 @@ export function GlyphLineCanvas({
           content,
           words,
           time,
+          floatReverseStartTime:
+            !isActive && time >= segment.endTime ? segment.endTime : undefined,
           startTime: segment.startTime,
           endTime: segment.endTime,
           leadingRevealEnd: initialRevealEnd,
@@ -296,6 +311,7 @@ export function GlyphLineCanvas({
       words,
       initialRevealEnd,
       transientAnimationEndTime,
+      floatDescentEndTime,
       onHeightChange,
     ],
   );
