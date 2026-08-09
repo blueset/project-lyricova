@@ -55,14 +55,14 @@ const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
           isStatic
             ? { opacity: 1 }
             : {
-                maskImage: `linear-gradient(
+              maskImage: `linear-gradient(
                   to right,
                   color-mix(in srgb, currentcolor ${FILLED_OPACITY}%, transparent) 50%,
                   color-mix(in srgb, currentcolor ${BLANK_OPACITY}%, transparent) 50%
                 )`,
-                maskSize: "200% 100%",
-                maskRepeat: "no-repeat",
-              }
+              maskSize: "200% 100%",
+              maskRepeat: "no-repeat",
+            }
         }
       >
         {children}
@@ -85,6 +85,7 @@ export const RingollLineRenderer = memo(
         lineContainerProps={{
           className: "font-semibold leading-snug text-balance",
           style: { wordBreak: "auto-phrase" },
+          dir: "auto",
         }}
         timedSpan={TimedSpan}
         ref={ref}

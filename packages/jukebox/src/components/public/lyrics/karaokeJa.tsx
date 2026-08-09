@@ -150,24 +150,24 @@ function buildPages(lyrics: LyricsKitLyrics, duration: number): KaraokePage[] {
 // Line = -1 means countdown
 type KaraokeJaState =
   | {
-      /**
-       * Null to hide the page.
-       */
-      pageIdx: number;
-      /**
-       * Line Index.
-       * * -1 for countdown
-       * * `lines.length` to stay on the end of the page
-       * * `null` to stay on the beginning of the page
-       */
-      lineIdx: number | null;
-      showNext: boolean;
-    }
+    /**
+     * Null to hide the page.
+     */
+    pageIdx: number;
+    /**
+     * Line Index.
+     * * -1 for countdown
+     * * `lines.length` to stay on the end of the page
+     * * `null` to stay on the beginning of the page
+     */
+    lineIdx: number | null;
+    showNext: boolean;
+  }
   | {
-      pageIdx: null;
-      lineIdx: null;
-      showNext: false;
-    };
+    pageIdx: null;
+    lineIdx: null;
+    showNext: false;
+  };
 
 function useNicokaraLyricsState(
   lyrics: LyricsKitLyrics,
@@ -299,7 +299,7 @@ function LyricsLine({
       data-pending={!done && !activeRef ? "true" : undefined}
       data-active={activeRef ? "true" : undefined}
     >
-      <span className="before absolute top-0 left-0 text-white [filter:url(#nicokaraBefore)]">
+      <span className="before absolute top-0 left-0 text-white [filter:url(#nicokaraBefore)]" dir="auto">
         {content}
       </span>
       <span
@@ -318,14 +318,14 @@ function LyricsLine({
 function LyricsLineHTML({ textLine, furiganaLine }: LyricsLineProps): string {
   const content = furiganaLine
     ? furiganaLine
-        .map(([text, ruby]) => {
-          if (text === ruby) {
-            return `<span>${text}</span>`;
-          } else {
-            return `<ruby>${text}<rp>(</rp><rt>${ruby}</rt><rp>)</rp></ruby>`;
-          }
-        })
-        .join("")
+      .map(([text, ruby]) => {
+        if (text === ruby) {
+          return `<span>${text}</span>`;
+        } else {
+          return `<ruby>${text}<rp>(</rp><rt>${ruby}</rt><rp>)</rp></ruby>`;
+        }
+      })
+      .join("")
     : `<span>${textLine}</span>`;
   return `<span style="position:relative;font-weight: 800;font-family: Source Han Serif,Noto Serif CJK,Noto Serif JP,serif;white-space:pre;">${content}</span>`;
 }
@@ -349,11 +349,11 @@ function buildPageClasses(
     const line = lyrics.lines[v];
     return line
       ? measureElement(
-          LyricsLineHTML({
-            textLine: line.content,
-            furiganaLine: furigana?.[v],
-          }),
-        ).width
+        LyricsLineHTML({
+          textLine: line.content,
+          furiganaLine: furigana?.[v],
+        }),
+      ).width
       : 0;
   });
 

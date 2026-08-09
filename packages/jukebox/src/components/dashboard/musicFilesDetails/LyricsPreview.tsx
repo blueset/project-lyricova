@@ -106,6 +106,7 @@ const LyricsRow = forwardRef<LyricsRowRefs, LyricsRowProps>(function LyricsRow(
         ref={animationTargetRef}
         className="furigana group-data-[active=true]/lyrics-row:inline group-data-[active=true]/lyrics-row:bg-linear-to-r group-data-[active=true]/lyrics-row:from-info-foreground/30 group-data-[active=true]/lyrics-row:to-info-foreground/30 group-data-[active=true]/lyrics-row:bg-blend-difference group-data-[active=true]/lyrics-row:bg-no-repeat"
         style={{ backgroundSize: "0% 100%" }}
+        dir="auto"
       >
         <FuriganaLyricsLine lyricsKitLine={line} />
       </div>

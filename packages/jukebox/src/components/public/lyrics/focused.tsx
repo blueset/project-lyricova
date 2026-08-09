@@ -35,16 +35,16 @@ const TimedSpanGenerator = (full: boolean) =>
         return node.animate(
           full
             ? [
-                { opacity: "0.3" },
-                { opacity: "1", offset: 0.1 },
-                { opacity: "1" },
-              ]
+              { opacity: "0.3" },
+              { opacity: "1", offset: 0.1 },
+              { opacity: "1" },
+            ]
             : [
-                { opacity: "0.3" },
-                { opacity: "1", offset: 0.1 },
-                { opacity: "1", offset: 0.9 },
-                { opacity: "0.6", offset: 1 },
-              ],
+              { opacity: "0.3" },
+              { opacity: "1", offset: 0.1 },
+              { opacity: "1", offset: 0.9 },
+              { opacity: "0.6", offset: 1 },
+            ],
           {
             delay: startTime * 1000,
             duration: duration * 1000,
@@ -120,6 +120,7 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
           ref={ref}
           lineContainerProps={{
             style: { textWrap: "balance", wordBreak: "auto-phrase" },
+            dir: "auto",
           }}
         />
         {translation && (

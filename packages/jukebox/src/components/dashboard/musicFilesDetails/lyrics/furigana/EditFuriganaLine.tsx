@@ -28,9 +28,9 @@ interface FloatingWindowProps {
 type RenderableFuriganaElement =
   | string
   | {
-      base: string;
-      value: string;
-    };
+    base: string;
+    value: string;
+  };
 
 export default function EditFuriganaLine() {
   const { line, addFuriganaToSelectedLine, removeFuriganaFromSelectedLine } =
@@ -180,14 +180,14 @@ export default function EditFuriganaLine() {
 
   const floatingWindowBaseText = floatingWindow
     ? ((renderableFurigana[floatingWindow.nodeIdx] as string)?.slice?.(
-        floatingWindow.start,
-        floatingWindow.end,
-      ) ?? "❓")
+      floatingWindow.start,
+      floatingWindow.end,
+    ) ?? "❓")
     : "";
 
   return (
     <div>
-      <div className="font-medium text-3xl" ref={lineContainerRef}>
+      <div className="font-medium text-3xl" ref={lineContainerRef} dir="auto">
         {renderableFurigana.map((v, idx) => {
           if (typeof v === "string")
             return (
