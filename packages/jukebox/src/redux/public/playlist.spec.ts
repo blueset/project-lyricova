@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Track } from "./playlist";
 import {
+  addTrackToNext,
   loadTracks,
   removeTrack,
+  stop,
   toggleShuffle,
   visualPlaylistSelector,
 } from "./playlist";
@@ -19,6 +21,18 @@ const tracks = [
 ] as unknown as Track[];
 
 describe("Playlist reducer slice", () => {
+  it("should add the next track first when no track is playing", () => {
+    store.dispatch(loadTracks(tracks.slice(0, 2)));
+    store.dispatch(stop());
+    store.dispatch(addTrackToNext(tracks[2]));
+
+    expect(visualPlaylistSelector(store.getState())).toEqual([
+      tracks[2],
+      tracks[0],
+      tracks[1],
+    ]);
+  });
+
   it("should delete items properly when shuffled", () => {
     store.dispatch(loadTracks(tracks));
     if (!store.getState().playlist.shuffleMapping)

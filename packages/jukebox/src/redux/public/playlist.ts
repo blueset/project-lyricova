@@ -98,7 +98,7 @@ const playlistSlice = createSlice({
       state.playNow = !!action.payload;
     },
     addTrackToNext: (state, action: PayloadAction<Track>) => {
-      let index = state.nowPlaying ?? 0;
+      let index = state.nowPlaying ?? -1;
       if (state.shuffleMapping !== null) {
         state.shuffleMapping.splice(index + 1, 0, state.tracks.length);
         index = state.tracks.length - 1;

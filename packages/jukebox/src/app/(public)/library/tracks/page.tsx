@@ -35,6 +35,7 @@ import {
   AlertDescription,
 } from "@lyricova/components/components/ui/alert";
 import { Skeleton } from "@lyricova/components/components/ui/skeleton";
+import { virtualRowIndexToTrackIndex } from "./virtualRowIndex";
 
 const MUSIC_FILES_COUNT_QUERY = graphql(`
   query GetMusicFiles {
@@ -64,11 +65,11 @@ const Row = React.memo(
     data: GetMusicFilesQuery["musicFiles"]["edges"][number]["node"][];
     isScrolling: boolean;
   }) => {
-    const item = index == 0 ? null : data[index - 1];
+    const trackIndex = virtualRowIndexToTrackIndex(index);
     const dispatch = useAppDispatch();
     const { user } = useAuthContext();
 
-    if (item === null) {
+    if (trackIndex === null) {
       const playAll = () => {
         dispatch(loadTracks(data.slice()));
         dispatch(playTrack({ track: 0, playNow: true }));
@@ -112,12 +113,13 @@ const Row = React.memo(
       );
     }
 
+    const item = data[trackIndex];
     const handlePlayNext = () => {
       dispatch(addTrackToNext(item));
     };
     const handlePlayInList = () => {
       dispatch(loadTracks(data.slice()));
-      dispatch(playTrack({ track: index, playNow: true }));
+      dispatch(playTrack({ track: trackIndex, playNow: true }));
     };
 
     return (
