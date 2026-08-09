@@ -202,6 +202,7 @@ const InnerRowRenderer = forwardRef<HTMLDivElement, RingollCanvasRowProps>(
       top,
       absoluteIndex,
       isActive,
+      isCompacted = false,
       isActiveScroll,
       isUserScrolling,
       onClick,
@@ -215,8 +216,8 @@ const InnerRowRenderer = forwardRef<HTMLDivElement, RingollCanvasRowProps>(
     const [springs, api] = useSpring(() => ({
       from: {
         y: top,
-        opacity: 1,
-        filter: "blur(0)",
+        opacity: isCompacted ? 0 : 1,
+        filter: isCompacted ? "blur(2px)" : "blur(0)",
         scale: isActive ? 1 : INACTIVE_LINE_SCALE,
       },
       config: { mass: 0.85, friction: 15, tension: 100 },
@@ -225,22 +226,33 @@ const InnerRowRenderer = forwardRef<HTMLDivElement, RingollCanvasRowProps>(
     useEffect(() => {
       const old = api.current[0]?.get().y;
       const direction = old > top ? 1 : -1;
-      const delay = isActiveScroll
-        ? 0
-        : Math.max(0, absoluteIndex * direction) * 30;
+      const delay =
+        isActiveScroll || isCompacted
+          ? 0
+          : Math.max(0, absoluteIndex * direction) * 30;
       api.start({
         to: {
           y: top,
-          opacity: absoluteIndex <= 0 && !isActive ? 0.5 : 1,
-          filter: isActiveScroll
-            ? "blur(0)"
-            : `blur(${Math.abs(absoluteIndex) * 0.3}px)`,
-          scale: isActive ? 1 : INACTIVE_LINE_SCALE,
+          opacity: isCompacted ? 0 : absoluteIndex <= 0 && !isActive ? 0.5 : 1,
+          filter: isCompacted
+            ? "blur(2px)"
+            : isActiveScroll
+              ? "blur(0)"
+              : `blur(${Math.abs(absoluteIndex) * 0.3}px)`,
+          scale: isActive && !isCompacted ? 1 : INACTIVE_LINE_SCALE,
         },
         delay,
         immediate: isUserScrolling,
       });
-    }, [absoluteIndex, api, isActive, isActiveScroll, isUserScrolling, top]);
+    }, [
+      absoluteIndex,
+      api,
+      isActive,
+      isActiveScroll,
+      isCompacted,
+      isUserScrolling,
+      top,
+    ]);
 
     // The row's own DOM element, kept so we can re-report its box on a late
     // size change (see the module doc). The forwarded measurement ref is stored
@@ -309,11 +321,16 @@ const InnerRowRenderer = forwardRef<HTMLDivElement, RingollCanvasRowProps>(
             ? { minHeight: EMPTY_LINE_MIN_HEIGHT, width: maxWidth }
             : null),
         }}
-        onClick={onClick}
+        onClick={isCompacted ? undefined : onClick}
+        aria-hidden={isCompacted || undefined}
         data-role={role}
         data-minor={minor}
         data-empty={empty ? "true" : "false"}
-        className={rowContainerClasses}
+        data-compacted={isCompacted ? "true" : "false"}
+        className={cn(
+          rowContainerClasses,
+          isCompacted && "pointer-events-none",
+        )}
       >
         <animated.div
           style={{ scale }}
@@ -362,6 +379,7 @@ export const RowRenderer = memo(
     prev.top === next.top &&
     prev.transLang === next.transLang &&
     prev.isActive === next.isActive &&
+    prev.isCompacted === next.isCompacted &&
     prev.absoluteIndex === next.absoluteIndex &&
     prev.isActiveScroll === next.isActiveScroll &&
     prev.isUserScrolling === next.isUserScrolling &&

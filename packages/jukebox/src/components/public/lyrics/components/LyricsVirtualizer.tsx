@@ -12,11 +12,15 @@ import type { VirtualizerRowRenderProps } from "./useLyricsVirtualizer";
 import { useLyricsVirtualizer } from "./useLyricsVirtualizer";
 import type { LyricsAnimationRef } from "./AnimationRef.type";
 import { readPlaybackSnapshot } from "../../../../hooks/useMediaClock";
+import type { LyricsViewportPaddingInput } from "./lyricsLayoutProjection";
+
+const EMPTY_ACTIVE_ROWS: number[] = [];
 
 export interface RowRendererProps<T> {
   row: T;
   segment: LyricsSegment;
   isActive?: boolean;
+  isCompacted?: boolean;
   isActiveScroll?: boolean;
   isUserScrolling?: boolean;
   ref?: React.Ref<HTMLDivElement>;
@@ -46,6 +50,19 @@ export interface LyricsVirtualizerProps<
    * timestamps derived from {@link rows}.
    */
   timingSegments?: LyricsSegment[];
+  /**
+   * In compact mode, overflowing inactive rows inside the cumulative active
+   * frontier are removed from layout while auto-follow is enabled. Nearby
+   * removed rows stay mounted long enough for the row renderer's compacted
+   * state to animate out. Manual scrolling restores the natural document flow.
+   */
+  activeRangeMode?: "continuous" | "compact";
+  /**
+   * Layout-specific viewport area reserved around an active range. Compact
+   * mode uses these guards both to decide when the natural range overflows and
+   * to keep the projected range inside the usable viewport.
+   */
+  activeRangeViewportPadding?: LyricsViewportPaddingInput;
 }
 
 /**
@@ -64,6 +81,8 @@ export function LyricsVirtualizer({
   containerProps = {},
   viewportClassName,
   timingSegments,
+  activeRangeMode = "continuous",
+  activeRangeViewportPadding,
 }: LyricsVirtualizerProps<LyricsKitLyricsLine>) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -104,6 +123,7 @@ export function LyricsVirtualizer({
       index,
       absoluteIndex,
       top,
+      isCompacted,
       rowRefHandler,
       isActiveScroll,
       isUserScrolling,
@@ -116,6 +136,7 @@ export function LyricsVirtualizer({
         },
         top,
         absoluteIndex,
+        isCompacted,
         isActiveScroll,
         isUserScrolling,
         isActive: activeSegments?.includes(index) ?? false,
@@ -145,6 +166,9 @@ export function LyricsVirtualizer({
     rowRenderer: virtualizerRowRender,
     estimatedRowHeight,
     rowCount: rows.length,
+    activeRows: activeSegments ?? EMPTY_ACTIVE_ROWS,
+    compactActiveRange: activeRangeMode === "compact",
+    activeRangeViewportPadding,
   });
 
   return (

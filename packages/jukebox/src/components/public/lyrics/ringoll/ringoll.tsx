@@ -3,6 +3,15 @@ import { LyricsVirtualizer } from "../components/LyricsVirtualizer";
 import { RowRenderer } from "./RowRenderer";
 import type { ComponentProps } from "react";
 import { cn } from "@lyricova/components/utils";
+import { bottomFutureLineViewportPadding } from "../components/activeRangeViewportPadding";
+import type { LyricsViewportSize } from "../components/lyricsLayoutProjection";
+
+/** Tailwind's default `text-4xl` size used by the main DOM Ringoll line. */
+const RINGOLL_MAIN_FONT_SIZE_PX = 36;
+
+function ringollActiveRangeViewportPadding({ height }: LyricsViewportSize) {
+  return bottomFutureLineViewportPadding(RINGOLL_MAIN_FONT_SIZE_PX, height);
+}
 
 const RingollContainerDiv = (props: ComponentProps<"div">) => (
   <div
@@ -31,6 +40,8 @@ export function RingollLyrics({ lyrics, transLangIdx }: Props) {
       viewportClassName="p-4 px-8"
       align="start"
       alignAnchor={0.1}
+      activeRangeMode="compact"
+      activeRangeViewportPadding={ringollActiveRangeViewportPadding}
     >
       {(props) =>
         props.row && (

@@ -13,6 +13,15 @@ import type { LyricsAnimationRef } from "./components/AnimationRef.type";
 import { useSpring, animated } from "@react-spring/web";
 import { useWebAnimationController } from "../../../hooks/useWebAnimationController";
 import { getSelectedTranslation } from "./translation";
+import { centeredFutureLineViewportPadding } from "./components/activeRangeViewportPadding";
+import type { LyricsViewportSize } from "./components/lyricsLayoutProjection";
+
+/** `text-[1.5em]` against the layout's 16px base font. */
+const PLAIN_MAIN_FONT_SIZE_PX = 24;
+
+function plainActiveRangeViewportPadding({ height }: LyricsViewportSize) {
+  return centeredFutureLineViewportPadding(PLAIN_MAIN_FONT_SIZE_PX, height);
+}
 
 /** Render a timed opacity span controlled by its parent lyrics line. */
 const TimedSpan = forwardRef<LyricsAnimationRef, TimedSpanProps>(
@@ -80,6 +89,7 @@ const InnerRowRenderer = forwardRef<
       segment,
       top,
       isActive,
+      isCompacted = false,
       animationRef,
       onClick,
       transLang,
@@ -107,12 +117,17 @@ const InnerRowRenderer = forwardRef<
         style={{
           ...springs,
         }}
-        className={lineClasses}
-        onClick={onClick}
+        onClick={isCompacted ? undefined : onClick}
+        aria-hidden={isCompacted || undefined}
         data-role={row.attachments.role}
         data-minor={row.attachments.minor}
         data-active={isActive}
         data-past={absoluteIndex < 0}
+        data-compacted={isCompacted ? "true" : "false"}
+        className={cn(
+          lineClasses,
+          isCompacted && "pointer-events-none !opacity-0",
+        )}
         lang="ja"
       >
         <MemoedLineRenderer
@@ -137,6 +152,7 @@ const RowRenderer = memo(
     prev.top === next.top &&
     prev.transLang === next.transLang &&
     prev.isActive === next.isActive &&
+    prev.isCompacted === next.isCompacted &&
     prev.absoluteIndex === next.absoluteIndex &&
     prev.isActiveScroll === next.isActiveScroll &&
     prev.isUserScrolling === next.isUserScrolling,
@@ -161,6 +177,8 @@ export function PlainLyrics({ lyrics, transLangIdx }: Props) {
       viewportClassName="p-4"
       align="center"
       alignAnchor={0.5}
+      activeRangeMode="compact"
+      activeRangeViewportPadding={plainActiveRangeViewportPadding}
     >
       {(props) =>
         props.row && (

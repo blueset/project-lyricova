@@ -5,7 +5,7 @@ import type {
   LyricsKitLyricsLine,
 } from "@lyricova/components/gql/schema";
 import type { ComponentProps, ReactElement } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { cn } from "@lyricova/components/utils";
 import { LyricsVirtualizer } from "../components/LyricsVirtualizer";
@@ -23,6 +23,8 @@ import { EMPTY_LINE_MIN_HEIGHT, RowRenderer } from "./RowRenderer";
 import { InterludeDots } from "./InterludeDots";
 import { findInterludeGaps } from "./interlude";
 import { buildPresentationSegments } from "./presentationTiming";
+import { bottomFutureLineViewportPadding } from "../components/activeRangeViewportPadding";
+import type { LyricsViewportSize } from "../components/lyricsLayoutProjection";
 
 /**
  * "Ringoll Canvas" - the DOM Ringoll renderer's scrolling architecture and row
@@ -172,6 +174,11 @@ function RingollCanvasLyricsInner({
   // One font size and wrap width for the whole document, so every row agrees.
   const fontSize = responsiveFontSize(stableSize.width, stableSize.height);
   const maxWidth = Math.max(1, Math.floor(stableSize.width - ROW_PADDING_X));
+  const activeRangeViewportPadding = useCallback(
+    ({ height: viewportHeight }: LyricsViewportSize) =>
+      bottomFutureLineViewportPadding(fontSize, viewportHeight),
+    [fontSize],
+  );
 
   return (
     <div ref={sizeRef} className="relative size-full">
@@ -183,6 +190,8 @@ function RingollCanvasLyricsInner({
         viewportClassName="p-4 px-8"
         align="start"
         alignAnchor={0.1}
+        activeRangeMode="compact"
+        activeRangeViewportPadding={activeRangeViewportPadding}
       >
         {(props) => {
           const segment = props.row && segmentByLine.get(props.row);

@@ -36,6 +36,7 @@ const InnerRowRenderer = forwardRef<
       top,
       absoluteIndex,
       isActive,
+      isCompacted = false,
       isActiveScroll,
       isUserScrolling,
       animationRef,
@@ -45,28 +46,43 @@ const InnerRowRenderer = forwardRef<
     ref,
   ) => {
     const [springs, api] = useSpring(() => ({
-      from: { y: top, opacity: 1, filter: "blur(0)" },
+      from: {
+        y: top,
+        opacity: isCompacted ? 0 : 1,
+        filter: isCompacted ? "blur(2px)" : "blur(0)",
+      },
       config: { mass: 0.85, friction: 15, tension: 100 },
     }));
 
     useEffect(() => {
       const old = api.current[0]?.get().y;
       const direction = old > top ? 1 : -1;
-      const delay = isActiveScroll
-        ? 0
-        : Math.max(0, absoluteIndex * direction) * 30;
+      const delay =
+        isActiveScroll || isCompacted
+          ? 0
+          : Math.max(0, absoluteIndex * direction) * 30;
       api.start({
         to: {
           y: top,
-          opacity: absoluteIndex <= 0 && !isActive ? 0.5 : 1,
-          filter: isActiveScroll
-            ? "blur(0)"
-            : `blur(${Math.abs(absoluteIndex) * 0.3}px)`,
+          opacity: isCompacted ? 0 : absoluteIndex <= 0 && !isActive ? 0.5 : 1,
+          filter: isCompacted
+            ? "blur(2px)"
+            : isActiveScroll
+              ? "blur(0)"
+              : `blur(${Math.abs(absoluteIndex) * 0.3}px)`,
         },
         delay,
         immediate: isUserScrolling,
       });
-    }, [absoluteIndex, api, isActive, isActiveScroll, isUserScrolling, top]);
+    }, [
+      absoluteIndex,
+      api,
+      isActive,
+      isActiveScroll,
+      isCompacted,
+      isUserScrolling,
+      top,
+    ]);
 
     const translation = getSelectedTranslation(
       row.attachments.translations,
@@ -79,10 +95,15 @@ const InnerRowRenderer = forwardRef<
         style={{
           ...springs,
         }}
-        onClick={onClick}
+        onClick={isCompacted ? undefined : onClick}
+        aria-hidden={isCompacted || undefined}
         data-role={row.attachments.role % 3}
         data-minor={row.attachments.minor}
-        className={rowContainerClasses}
+        data-compacted={isCompacted ? "true" : "false"}
+        className={cn(
+          rowContainerClasses,
+          isCompacted && "pointer-events-none",
+        )}
       >
         <RingollLineRenderer
           line={row}
@@ -114,6 +135,7 @@ export const RowRenderer = memo(
     prev.top === next.top &&
     prev.transLang === next.transLang &&
     prev.isActive === next.isActive &&
+    prev.isCompacted === next.isCompacted &&
     prev.absoluteIndex === next.absoluteIndex &&
     prev.isActiveScroll === next.isActiveScroll &&
     prev.isUserScrolling === next.isUserScrolling,

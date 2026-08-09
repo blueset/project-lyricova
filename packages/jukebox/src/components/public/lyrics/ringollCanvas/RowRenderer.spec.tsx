@@ -157,6 +157,7 @@ function makeProps(
     top: 0,
     absoluteIndex: 0,
     isActive: false,
+    isCompacted: false,
     isActiveScroll: false,
     isUserScrolling: false,
     transLang: undefined,
@@ -302,6 +303,32 @@ describe("RingollCanvas RowRenderer", () => {
         <RowRenderer {...makeProps({ absoluteIndex: -3, isActive: true })} />,
       );
       expect(lastStart().to.opacity).toBe(1);
+    });
+
+    it("fades and disables a row while its layout slot is compacted", () => {
+      const onClick = vi.fn();
+      const { container } = render(
+        <RowRenderer
+          {...makeProps({
+            isCompacted: true,
+            isActive: false,
+            absoluteIndex: 0,
+            onClick,
+          })}
+        />,
+      );
+
+      const call = lastStart();
+      expect(call.delay).toBe(0);
+      expect(call.to.opacity).toBe(0);
+      expect(call.to.filter).toBe("blur(2px)");
+      expect(call.to.scale).toBe(0.97);
+
+      const row = rowOf(container);
+      expect(row.dataset.compacted).toBe("true");
+      expect(row.getAttribute("aria-hidden")).toBe("true");
+      fireEvent.click(row);
+      expect(onClick).not.toHaveBeenCalled();
     });
 
     it("scales the depth blur with |absoluteIndex|", () => {
@@ -478,6 +505,15 @@ describe("RingollCanvas RowRenderer", () => {
       const before = glyphCanvas.renderCount;
 
       rerender(<RowRenderer {...props} fontSize={props.fontSize + 4} />);
+      expect(glyphCanvas.renderCount).toBeGreaterThan(before);
+    });
+
+    it("re-renders when compaction state changes", () => {
+      const props = makeProps();
+      const { rerender } = render(<RowRenderer {...props} />);
+      const before = glyphCanvas.renderCount;
+
+      rerender(<RowRenderer {...props} isCompacted />);
       expect(glyphCanvas.renderCount).toBeGreaterThan(before);
     });
   });
