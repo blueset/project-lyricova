@@ -3,9 +3,10 @@ import { toast } from "sonner";
 import { useApolloClient } from "@apollo/client/react";
 import EditFuriganaLine from "./EditFuriganaLine";
 import { FuriganaLineButton } from "./FuriganaLineButton";
-import { CheckSquare, Wand2 } from "lucide-react";
+import { CheckSquare, Scissors, Wand2 } from "lucide-react";
 import { useVocaDBFurigana } from "./FuriganaRomajiMatching";
 import { ApplyAllFurigana } from "./ApplyAllFurigana";
+import { applyFuriganaMappingsToLine } from "./applyFuriganaMappings";
 import { Button } from "@lyricova/components/components/ui/button";
 import { Toggle } from "@lyricova/components/components/ui/toggle";
 import {
@@ -17,6 +18,7 @@ import {
 import { useLyricsStore } from "../state/editorState";
 import { useShallow } from "zustand/shallow";
 import { graphql } from "@lyricova/components/gql";
+import { FURIGANA } from "lyrics-kit/core";
 
 const KARAOKE_TRANSLITERATION_QUERY = graphql(`
   query EditFuriganaKaraoke($text: String!) {
@@ -77,6 +79,32 @@ export default function EditFurigana({ fileId, songId }: Props) {
     }
   }, [apolloClient, setFurigana]);
 
+  const applyFuriganaMappings = useCallback(async () => {
+    try {
+      const lines = useLyricsStore.getState().lyrics?.lines ?? [];
+      const result = await apolloClient.query({
+        query: KARAOKE_TRANSLITERATION_QUERY,
+        variables: { text: lines.map((line) => line.content).join("\n") },
+        fetchPolicy: "network-only",
+      });
+      const data = result.data;
+      if (data) {
+        setFurigana(
+          lines.map((line, index) =>
+            applyFuriganaMappingsToLine(
+              line.content,
+              line.attachments?.[FURIGANA]?.attachment ?? [],
+              data.transliterate.karaoke[index] ?? [],
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      console.error(`Error occurred while applying furigana mappings: ${e}`, e);
+      toast.error(`Error occurred while applying furigana mappings: ${e}`);
+    }
+  }, [apolloClient, setFurigana]);
+
   return (
     <div className="gap-4 grid grid-cols-1 sm:grid-cols-12">
       <div className="top-0 left-0 z-10 sticky col-span-full">
@@ -92,6 +120,18 @@ export default function EditFurigana({ fileId, songId }: Props) {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Overwrite with generated furigana</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" onClick={applyFuriganaMappings}>
+                  <Scissors />{" "}
+                  <span className="hidden md:inline">Monoruby</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Split existing furigana using known mappings to create monoruby segments
+              </TooltipContent>
             </Tooltip>
 
             <ApplyAllFurigana />
