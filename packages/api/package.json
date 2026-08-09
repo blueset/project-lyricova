@@ -67,7 +67,7 @@
     "@pothos/plugin-drizzle": "^0.8.0",
     "@pothos/plugin-scope-auth": "^4.1.6",
     "@resvg/resvg-js": "^2.4.1",
-    "@scalar/express-api-reference": "^0.8.21",
+    "@scalar/express-api-reference": "^0.8.48",
     "ai": "^6.0.219",
     "better-auth": "^1.6.23",
     "budoux": "^0.7.0",
