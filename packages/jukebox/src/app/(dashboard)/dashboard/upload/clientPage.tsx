@@ -225,7 +225,7 @@ export default function UploadMusicFiles() {
 
         const body = new FormData();
         body.append("file", item.file, item.file.name);
-        request.open("POST", "/api/files/upload");
+        request.open("POST", "/upload/music");
         request.withCredentials = true;
         request.send(body);
       }),
