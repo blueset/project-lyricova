@@ -271,6 +271,7 @@ function InlineTaggingLine({
           backgroundImage: "linear-gradient(0deg, #923cbd, #923cbd)",
           backgroundSize: "0px 100%",
         }}
+        dir="auto"
       >
         {[...lineContent].map((i, idx) => (
           <span
