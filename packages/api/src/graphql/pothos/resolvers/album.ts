@@ -2,9 +2,26 @@ import { eq, sql } from "drizzle-orm";
 import { builder } from "../builder.js";
 import { AlbumRef } from "../types/refs.js";
 import { db } from "../../../drizzle/client.js";
-import { Albums, ArtistOfAlbums, SongInAlbums } from "../../../drizzle/schema.js";
+import {
+  Albums,
+  ArtistOfAlbums,
+  SongInAlbums,
+} from "../../../drizzle/schema.js";
 import { serializeEnumArray } from "../../../drizzle/enumArray.js";
 import _ from "lodash";
+
+const albumSortCollator = new Intl.Collator("en", {
+  sensitivity: "base",
+});
+
+// MySQL filesorts the full, wide album rows and can exhaust sort_buffer_size.
+function sortAlbums<T extends { sortOrder: string | null }>(albums: T[]): T[] {
+  return albums.sort((a, b) => {
+    if (a.sortOrder === null) return b.sortOrder === null ? 0 : -1;
+    if (b.sortOrder === null) return 1;
+    return albumSortCollator.compare(a.sortOrder, b.sortOrder);
+  });
+}
 
 const ArtistOfAlbumInput = builder.inputType("ArtistOfAlbumInput", {
   fields: (t) => ({
@@ -47,10 +64,7 @@ builder.queryField("album", (t) =>
 builder.queryField("albums", (t) =>
   t.field({
     type: [AlbumRef],
-    resolve: async () =>
-      db.query.Albums.findMany({
-        orderBy: (a, { asc }) => [asc(a.sortOrder)],
-      }),
+    resolve: async () => sortAlbums(await db.query.Albums.findMany()),
   }),
 );
 
@@ -58,9 +72,9 @@ builder.queryField("albumsHasFiles", (t) =>
   t.field({
     type: [AlbumRef],
     resolve: async () =>
-      db.query.Albums.findMany({
-        orderBy: (a, { asc }) => [asc(a.sortOrder)],
-        where: sql`(
+      sortAlbums(
+        await db.query.Albums.findMany({
+          where: sql`(
         SELECT
           COUNT(MusicFiles.id) 
         FROM SongInAlbums 
@@ -71,7 +85,8 @@ builder.queryField("albumsHasFiles", (t) =>
         WHERE 
           SongInAlbums.albumId = Albums.id and MusicFiles.albumId = Albums.id 
       ) > 0`,
-      }),
+        }),
+      ),
   }),
 );
 

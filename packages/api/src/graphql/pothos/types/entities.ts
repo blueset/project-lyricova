@@ -66,7 +66,9 @@ builder.drizzleObjectFields("Songs", (t) => {
           where: eq(ArtistOfSongs.songId, song.id),
           with: { artist: true },
         });
-        return rows.map((r) => ({ ...r.artist, ArtistOfSong: r })) as any;
+        return rows.flatMap((r) =>
+          r.artist ? [{ ...r.artist, ArtistOfSong: r }] : [],
+        ) as any;
       },
     }),
     albums: t.field({
@@ -77,7 +79,9 @@ builder.drizzleObjectFields("Songs", (t) => {
           where: eq(SongInAlbums.songId, song.id),
           with: { album: true },
         });
-        return rows.map((r) => ({ ...r.album, SongInAlbum: r })) as any;
+        return rows.flatMap((r) =>
+          r.album ? [{ ...r.album, SongInAlbum: r }] : [],
+        ) as any;
       },
     }),
     SongInAlbum: t.field({
@@ -116,7 +120,9 @@ builder.drizzleObjectFields("Albums", (t) => {
           where: eq(SongInAlbums.albumId, album.id),
           with: { song: true },
         });
-        return rows.map((r) => ({ ...r.song, SongInAlbum: r })) as any;
+        return rows.flatMap((r) =>
+          r.song ? [{ ...r.song, SongInAlbum: r }] : [],
+        ) as any;
       },
     }),
     artists: t.field({
@@ -127,7 +133,9 @@ builder.drizzleObjectFields("Albums", (t) => {
           where: eq(ArtistOfAlbums.albumId, album.id),
           with: { artist: true },
         });
-        return rows.map((r) => ({ ...r.artist, ArtistOfAlbum: r })) as any;
+        return rows.flatMap((r) =>
+          r.artist ? [{ ...r.artist, ArtistOfAlbum: r }] : [],
+        ) as any;
       },
     }),
     SongInAlbum: t.field({
@@ -168,7 +176,9 @@ builder.drizzleObjectFields("Artists", (t) => {
           where: eq(ArtistOfSongs.artistId, artist.id),
           with: { song: true },
         });
-        return rows.map((r) => ({ ...r.song, ArtistOfSong: r })) as any;
+        return rows.flatMap((r) =>
+          r.song ? [{ ...r.song, ArtistOfSong: r }] : [],
+        ) as any;
       },
     }),
     albums: t.field({
@@ -179,7 +189,9 @@ builder.drizzleObjectFields("Artists", (t) => {
           where: eq(ArtistOfAlbums.artistId, artist.id),
           with: { album: true },
         });
-        return rows.map((r) => ({ ...r.album, ArtistOfAlbum: r })) as any;
+        return rows.flatMap((r) =>
+          r.album ? [{ ...r.album, ArtistOfAlbum: r }] : [],
+        ) as any;
       },
     }),
     ArtistOfSong: t.field({
