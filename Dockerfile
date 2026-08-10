@@ -26,8 +26,8 @@ WORKDIR /app
 # Install mecab and mecab-ipadic-neologd, plus ffmpeg and the Python used for
 # yt-dlp. `git`/`make`/`curl`/`xz-utils`/`file` are build inputs for neologd.
 RUN apt-get update && apt-get install -y \
-      mecab libmecab-dev mecab-ipadic-utf8 git make curl xz-utils file ffmpeg \
-      python3 python3-venv \
+    mecab libmecab-dev mecab-ipadic-utf8 git make curl xz-utils file ffmpeg \
+    python3 python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
 # Make sudo dummy replacement, so we don't weaken docker security.
@@ -80,7 +80,7 @@ FROM os-base AS builder
 ENV PATH=/root/.cargo/bin:$PATH
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
     sh -s -- -y --no-modify-path --profile minimal \
-      --default-toolchain stable --target wasm32-unknown-unknown \
+    --default-toolchain stable --target wasm32-unknown-unknown \
     && cargo --version && rustc --version
 
 # Install dependencies from the manifests alone so this layer is cached until
@@ -103,8 +103,8 @@ RUN npm ci --no-audit --no-fund
 # if the fetch fails the build still works, the binary is simply fetched later
 # (and is not needed at all unless sourcemap upload is enabled).
 RUN node node_modules/@posthog/cli/run-posthog-cli.js --version >/dev/null 2>&1 \
-      && echo "posthog-cli binary warmed" \
-      || echo "WARNING: could not pre-fetch posthog-cli binary; it will be fetched during build if needed"
+    && echo "posthog-cli binary warmed" \
+    || echo "WARNING: could not pre-fetch posthog-cli binary; it will be fetched during build if needed"
 
 COPY . .
 
@@ -164,13 +164,13 @@ ENV SOURCE_COMMIT=${SOURCE_COMMIT} \
 # @lyricova/api CLI step.
 RUN --mount=type=secret,id=posthog_api_key \
     if [ -s /run/secrets/posthog_api_key ]; then \
-      POSTHOG_API_KEY="$(cat /run/secrets/posthog_api_key)"; \
-      export POSTHOG_API_KEY; \
-      export POSTHOG_CLI_API_KEY="$POSTHOG_API_KEY"; \
-      export POSTHOG_SOURCEMAPS=1; \
-      echo "PostHog sourcemap upload enabled (release ${SOURCE_COMMIT:-<unset>})"; \
+    POSTHOG_API_KEY="$(cat /run/secrets/posthog_api_key)"; \
+    export POSTHOG_API_KEY; \
+    export POSTHOG_CLI_API_KEY="$POSTHOG_API_KEY"; \
+    export POSTHOG_SOURCEMAPS=1; \
+    echo "PostHog sourcemap upload enabled (release ${SOURCE_COMMIT:-<unset>})"; \
     else \
-      echo "No posthog_api_key secret: skipping sourcemap upload"; \
+    echo "No posthog_api_key secret: skipping sourcemap upload"; \
     fi; \
     npm run build
 
@@ -203,6 +203,8 @@ RUN npm ci --omit=dev --no-audit --no-fund
 FROM os-base AS serve-base
 
 ENV NODE_ENV=production
+ENV DENO_INSTALL=/usr/local
+ENV PATH="${DENO_INSTALL}/bin:${PATH}"
 
 # Defaults matching docker-compose; override via the environment.
 ENV LYRICOVA_PORT=8001
@@ -215,7 +217,11 @@ ENV API_PORT=8083
 # still overridable (e.g. if the API is ever split into its own container).
 ENV API_INTERNAL_URL=http://localhost:8083
 
-RUN npm install -g concurrently
+RUN apt-get update && apt-get install -y unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -fsSL https://deno.land/install.sh | sh \
+    && deno --version \
+    && npm install -g concurrently
 
 EXPOSE 8001 8002
 
