@@ -19,13 +19,15 @@ import {
  * 2. **Base expansion** - whatever overhang cannot absorb spreads the base
  *    characters apart (JLReq 3.3.6 fig. 127 / 3.3.7 fig. 130). This is
  *    pre-measured into paragraph layout via `ParagraphRequest.rangeAdvances`
- *    so wrapping is correct on the first pass.
+ *    so wrapping is correct on the first pass in the common case. A line-edge
+ *    annotation gets one bounded retry when ruby-aligned placement makes the
+ *    composed line wider than the available box.
  *
- * Doing overhang first is what keeps the base text undisturbed in the common
- * Japanese case (kana neighbours grant a full ruby em each side) while still
- * making expansion the dominant mechanism for fully romanized lines, where
- * every neighbour is a western character or another annotated base and the
- * budget is therefore zero.
+ * Horizontal ruby remains centred over its base, so each half-overhang must fit
+ * independently: spare room on one side cannot compensate for a tighter
+ * opposite side. This keeps the base undisturbed when both neighbours grant
+ * enough room, while making expansion dominant next to ideographic/western
+ * characters whose budget is zero.
  */
 
 /** Per-side maximum overhang for one annotation, in layout units. */
@@ -61,8 +63,9 @@ export function resolveOverhangTable(
  * touches the start or end of the paragraph - the budget is `Infinity`: JLReq
  * sets the line head and line end *ruby-aligned*, so the ruby is free to stick
  * out past the base and is only constrained later, by the line's content box.
- * That also means an edge annotation never asks for base expansion it does not
- * need.
+ * The first pass therefore leaves the edge base undisturbed; `rubyLayout.ts`
+ * reserves the full ruby advance on one retry only when that placement would
+ * otherwise make the line overflow.
  *
  * This is the **pre-layout** approximation: it can only see source adjacency,
  * so it cannot know that a neighbour will wrap onto another line, nor how wide

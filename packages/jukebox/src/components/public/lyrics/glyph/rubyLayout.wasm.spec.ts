@@ -5,6 +5,7 @@ import { describe, expect, it, beforeAll } from "vitest";
 import { GlyphShaper, initGlyphRenderer } from "@lyricova/glyph-renderer";
 import { layoutRubyParagraph } from "./rubyLayout";
 import type { FuriganaAnnotationInput } from "./types";
+import { glyphVariations } from "./fontVariations";
 
 /**
  * Real (non-fake) integration smoke test: exercises `layoutRubyParagraph`
@@ -52,6 +53,10 @@ const latinFontPath = resolve(
   glyphRendererDir,
   "../api/src/fonts/Mona-Sans-Regular.otf",
 );
+const productionJapaneseFontPath = resolve(
+  glyphRendererDir,
+  "../api/src/fonts/SourceHanSansJP-VF.otf",
+);
 
 describe.skipIf(SKIP_WASM_INTEGRATION)(
   "layoutRubyParagraph (real wasm shaper)",
@@ -59,6 +64,7 @@ describe.skipIf(SKIP_WASM_INTEGRATION)(
     let shaper: GlyphShaper;
     let fontId: number;
     let latinFontId: number;
+    let productionJapaneseFontId: number;
 
     beforeAll(async () => {
       // No try/catch: a missing/broken wasm binary or font asset must fail
@@ -70,6 +76,12 @@ describe.skipIf(SKIP_WASM_INTEGRATION)(
       fontId = shaper.registerFont(new Uint8Array(fontBytes));
       const latinFontBytes = readFileSync(latinFontPath);
       latinFontId = shaper.registerFont(new Uint8Array(latinFontBytes));
+      const productionJapaneseFontBytes = readFileSync(
+        productionJapaneseFontPath,
+      );
+      productionJapaneseFontId = shaper.registerFont(
+        new Uint8Array(productionJapaneseFontBytes),
+      );
     });
 
     it("shapes and places real Japanese furigana without relying on shaper internals", () => {
@@ -282,6 +294,96 @@ describe.skipIf(SKIP_WASM_INTEGRATION)(
         );
         expect(covered.length).toBeGreaterThan(0);
         expect(ruby.baseX[1]).toBeGreaterThan(ruby.baseX[0]);
+      }
+    });
+
+    it("reflows the exact long 閄 annotation before the following kana", () => {
+      const content =
+        "ものかげからきゅうにとびだしてひとをおどろかせるときにはっするこえ";
+      const result = layoutRubyParagraph(shaper, {
+        text: "閄は",
+        furigana: [{ content, leftIndex: 0, rightIndex: 1 }],
+        fontIds: [productionJapaneseFontId],
+        fontSize: 56,
+        rubyFontSize: 20,
+        rubyRowFontSize: 20,
+        rubyGap: 5,
+        reserveRubyRow: true,
+        maxWidth: 628,
+        wrapStrategy: "balanced",
+        language: "ja",
+        features: ["palt=1", "ss01=1", "ss03=1", "cv01=1"],
+        variations: [...glyphVariations(56)],
+        rubyVariations: [...glyphVariations(20)],
+      });
+
+      expect(result.issues).toEqual([]);
+      expect(result.lines).toHaveLength(2);
+      expect(result.rubies).toHaveLength(1);
+      const ruby = result.rubies[0]!;
+      expect(ruby.lineIndex).toBe(0);
+      expect(result.lines[0]!.line.source.utf16End).toBe(1);
+      expect(result.lines[1]!.line.source.utf16Start).toBe(1);
+      expect(result.lines[0]!.occupiedWidth).toBeLessThanOrEqual(628 + 1e-3);
+      expect(ruby.baseX[1] - ruby.baseX[0]).toBeCloseTo(ruby.runs[0]!.width, 2);
+    });
+
+    it("keeps the long line-head ruby centered when the line is wide enough", () => {
+      const content =
+        "ものかげからきゅうにとびだしてひとをおどろかせるときにはっするこえ";
+      const result = layoutRubyParagraph(shaper, {
+        text: "閄は",
+        furigana: [{ content, leftIndex: 0, rightIndex: 1 }],
+        fontIds: [productionJapaneseFontId],
+        fontSize: 56,
+        rubyFontSize: 20,
+        maxWidth: 1186,
+        wrapStrategy: "balanced",
+        language: "ja",
+        features: ["palt=1", "ss01=1", "ss03=1", "cv01=1"],
+        variations: [...glyphVariations(56)],
+        rubyVariations: [...glyphVariations(20)],
+      });
+
+      expect(result.issues).toEqual([]);
+      expect(result.lines).toHaveLength(1);
+      const ruby = result.rubies[0]!;
+      const base = result.lines[0]!.line.clusters.find(
+        (cluster) => cluster.source.utf16Start === 0,
+      )!;
+      const runsLeft = Math.min(...ruby.runs.map((run) => run.x));
+      const runsRight = Math.max(...ruby.runs.map((run) => run.x + run.width));
+      expect((runsLeft + runsRight) / 2).toBeCloseTo(
+        base.x + base.advance / 2,
+        2,
+      );
+      // The following hiragana absorbs at most one 20px ruby em; the rest is
+      // pre-measured spacing, not an asymmetric ruby shift.
+      expect(runsRight - ruby.baseX[1]).toBeLessThanOrEqual(20 + 1e-2);
+    });
+
+    it("reports the exact long 閄 annotation when even its ruby cannot fit", () => {
+      const content =
+        "ものかげからきゅうにとびだしてひとをおどろかせるときにはっするこえ";
+      const result = layoutRubyParagraph(shaper, {
+        text: "閄は",
+        furigana: [{ content, leftIndex: 0, rightIndex: 1 }],
+        fontIds: [productionJapaneseFontId],
+        fontSize: 56,
+        rubyFontSize: 20,
+        maxWidth: 400,
+        language: "ja",
+        features: ["palt=1", "ss01=1", "ss03=1", "cv01=1"],
+        variations: [...glyphVariations(56)],
+        rubyVariations: [...glyphVariations(20)],
+      });
+
+      const issue = result.issues.find(
+        (candidate) => candidate.kind === "rubyTooWide",
+      );
+      expect(issue).toMatchObject({ kind: "rubyTooWide", maxWidth: 400 });
+      if (issue?.kind === "rubyTooWide") {
+        expect(issue.width).toBeGreaterThan(400);
       }
     });
 

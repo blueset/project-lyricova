@@ -99,9 +99,10 @@ export type RubyLayoutIssue =
     }
   | {
       /**
-       * The ruby run needed more overhang on one side than the adjacent
-       * character's JLReq class permits (see `rubyOverhang.ts`). It was
-       * clamped to the budget and re-centered as closely as possible.
+       * A centered ruby run needs more overhang on one side than the adjacent
+       * character's JLReq class permits (see `rubyOverhang.ts`). The placement
+       * remains centered over its base; this reports that the paragraph layout
+       * could not supply enough base expansion for the requested budget.
        */
       kind: "overhangClamped";
       annotation: FuriganaAnnotationInput;
@@ -153,6 +154,19 @@ export type RubyLayoutIssue =
       side: "left" | "right";
       /** How far past the content box the ink reached, in layout units. */
       overflow: number;
+    }
+  | {
+      /**
+       * One ruby annotation is intrinsically wider than the line's content
+       * box. Repositioning cannot make it fit without clipping or scaling, so
+       * the caller may retry with a smaller ruby font.
+       */
+      kind: "rubyTooWide";
+      annotation: FuriganaAnnotationInput;
+      /** Measured ruby ink width in layout units. */
+      width: number;
+      /** Available line width in layout units. */
+      maxWidth: number;
     };
 
 /** A furigana annotation whose indices have been validated and converted. */
@@ -191,6 +205,14 @@ export interface RubyLayoutOptions {
    * positive size.
    */
   rubyFontSize?: number;
+  /**
+   * Font size used only to reserve the shared ruby row. Defaults to the
+   * resolved {@link RubyLayoutOptions.rubyFontSize}. A renderer that scales an
+   * exceptional overwide annotation may keep this at the document's preferred
+   * ruby size so line advance remains uniform. Must be at least as large as the
+   * resolved ruby glyph size.
+   */
+  rubyRowFontSize?: number;
   /**
    * Ruby size as a fraction of {@link RubyLayoutOptions.fontSize}. Defaults to
    * {@link DEFAULT_RUBY_FONT_SIZE_RATIO}. This is the *relative* behaviour:
@@ -320,7 +342,7 @@ export interface RubyPlacement {
   /**
    * Line-relative y position of the ruby row's baseline. Shared by every ruby
    * annotation of the whole layout: the row is reserved deterministically
-   * from the resolved ruby font size and `rubyGap` (see
+   * from the resolved row font size and `rubyGap` (see
    * {@link RubyLayoutResult.rubyRow}), never from per-line measured ink, so
    * line advance is uniform across the document.
    */
@@ -391,7 +413,7 @@ export interface LinePlacement {
 
 /**
  * Deterministic vertical geometry of the single ruby row reserved above every
- * line. Derived from the resolved ruby font size, the base font's em-relative
+ * line. Derived from the resolved row font size, the base font's em-relative
  * ascent/descent, and `rubyGap` - never from per-line measured ink - so every
  * line advances identically whether or not it carries ruby.
  */
@@ -400,7 +422,7 @@ export interface RubyRowMetrics {
   height: number;
   /** Offset of the ruby baseline from the top of the reserved row. */
   baseline: number;
-  /** Resolved ruby font size used for the row and every ruby run. */
+  /** Font size used to reserve the row; ruby runs may be smaller when fitted. */
   fontSize: number;
 }
 
@@ -461,8 +483,8 @@ export class RubyLayoutError extends Error {
 }
 
 /**
- * Thrown when a request-level layout option (`fontSize`, `rubyFontSize`, or
- * `rubyGap`) is non-finite or out of its valid range. Unlike
+ * Thrown when a request-level layout option (`fontSize`, `rubyFontSize`,
+ * `rubyRowFontSize`, or `rubyGap`) is non-finite or out of its valid range. Unlike
  * {@link RubyLayoutError} (a per-annotation, skippable concern), a malformed
  * layout option makes the whole request meaningless, so this is always
  * thrown - it is never subject to `onInvalidAnnotation`.

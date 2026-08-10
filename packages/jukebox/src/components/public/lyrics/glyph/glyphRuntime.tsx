@@ -68,6 +68,9 @@ const RUBY_FONT_SIZE_MIN = 10;
 const RUBY_FONT_SIZE_MAX = 20;
 /** Clearance between the ruby row and the base text's typographic top, in ruby em. */
 const RUBY_GAP_EM = 0.25;
+/** Small margin so fitted ruby does not oscillate on sub-pixel width changes. */
+const RUBY_FIT_SAFETY = 0.995;
+const MAX_RUBY_FIT_RETRIES = 2;
 
 export interface GlyphLineLayoutRequest {
   /** Stable identity of the line, used only for diagnostics. */
@@ -439,34 +442,71 @@ export function useCreateGlyphRuntime(): GlyphRuntime {
       if (cached) return cached;
 
       try {
-        const rubyFontSize = Math.min(
+        const preferredRubyFontSize = Math.min(
           Math.max(request.fontSize * 0.5, RUBY_FONT_SIZE_MIN),
           RUBY_FONT_SIZE_MAX,
         );
-        const result = layoutRubyParagraph(shaper, {
-          text: request.text,
-          furigana: request.furigana,
-          fontIds: selection.fontIds,
-          fontSize: request.fontSize,
-          rubyFontSizeMin: RUBY_FONT_SIZE_MIN,
-          rubyFontSizeMax: RUBY_FONT_SIZE_MAX,
-          rubyGap: rubyFontSize * RUBY_GAP_EM,
-          reserveRubyRow: request.reserveRubyRow,
-          ...(rubyMetricsRef.current
-            ? { rubyMetrics: rubyMetricsRef.current }
-            : {}),
-          maxWidth: request.maxWidth,
-          wrapStrategy: "balanced",
-          phraseRanges: autoPhraseRanges(request.text, { language: "ja" })
-            .phraseRanges,
+        const phraseRanges = autoPhraseRanges(request.text, {
           language: "ja",
-          onInvalidAnnotation: "skip",
-          features: [...GLYPH_FEATURES],
-          // Base and ruby render at different sizes, so each gets its own
-          // optical size rather than sharing the base's.
-          variations: [...glyphVariations(request.fontSize)],
-          rubyVariations: [...glyphVariations(rubyFontSize)],
-        });
+        }).phraseRanges;
+        let fittedRubyFontSize = preferredRubyFontSize;
+        let result: RubyLayoutResult | null = null;
+
+        for (let attempt = 0; attempt <= MAX_RUBY_FIT_RETRIES; attempt += 1) {
+          result = layoutRubyParagraph(shaper, {
+            text: request.text,
+            furigana: request.furigana,
+            fontIds: selection.fontIds,
+            fontSize: request.fontSize,
+            rubyFontSize: fittedRubyFontSize,
+            // Keep every line's reserved row at the preferred document size
+            // even if this exceptional annotation needs smaller glyphs.
+            rubyRowFontSize: preferredRubyFontSize,
+            rubyGap: preferredRubyFontSize * RUBY_GAP_EM,
+            reserveRubyRow: request.reserveRubyRow,
+            ...(rubyMetricsRef.current
+              ? { rubyMetrics: rubyMetricsRef.current }
+              : {}),
+            maxWidth: request.maxWidth,
+            wrapStrategy: "balanced",
+            phraseRanges,
+            language: "ja",
+            onInvalidAnnotation: "skip",
+            features: [...GLYPH_FEATURES],
+            // Base and ruby render at different sizes, so each gets its own
+            // optical size rather than sharing the base's.
+            variations: [...glyphVariations(request.fontSize)],
+            rubyVariations: [...glyphVariations(fittedRubyFontSize)],
+          });
+
+          const tooWide = result.issues.filter(
+            (
+              issue,
+            ): issue is Extract<RubyLayoutIssue, { kind: "rubyTooWide" }> =>
+              issue.kind === "rubyTooWide",
+          );
+          if (
+            tooWide.length === 0 ||
+            fittedRubyFontSize <= RUBY_FONT_SIZE_MIN ||
+            attempt === MAX_RUBY_FIT_RETRIES
+          ) {
+            break;
+          }
+
+          const scale = Math.min(
+            ...tooWide.map(
+              (issue) => (issue.maxWidth / issue.width) * RUBY_FIT_SAFETY,
+            ),
+          );
+          const nextSize = Math.max(
+            RUBY_FONT_SIZE_MIN,
+            fittedRubyFontSize * scale,
+          );
+          if (nextSize >= fittedRubyFontSize - 0.01) break;
+          fittedRubyFontSize = nextSize;
+        }
+
+        if (!result) return null;
         reportRubyIssues(request.lineIndex, result.issues);
         // Widen from the paragraph's *natural* metrics, never from the anchor we
         // just supplied - layout echoes that straight back, so widening from it

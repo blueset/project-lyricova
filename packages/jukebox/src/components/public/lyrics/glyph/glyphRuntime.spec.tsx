@@ -208,6 +208,62 @@ describe("useCreateGlyphRuntime", () => {
     );
   });
 
+  it("fits intrinsically overwide ruby without shrinking the shared row", async () => {
+    layoutRubyParagraph.mockImplementation(
+      (_shaper: unknown, layoutRequest: Record<string, unknown>) => {
+        const rubyFontSize = layoutRequest.rubyFontSize as number;
+        if (rubyFontSize > 13) {
+          return layoutResult({
+            issues: [
+              {
+                kind: "rubyTooWide",
+                annotation: {
+                  content: "reading",
+                  leftIndex: 0,
+                  rightIndex: 1,
+                },
+                width: 500,
+                maxWidth: 400,
+              },
+            ],
+          });
+        }
+        return layoutResult({
+          rubyRow: {
+            height: 8,
+            baseline: 6,
+            fontSize: layoutRequest.rubyRowFontSize,
+          },
+        });
+      },
+    );
+    const lineRequest = request({
+      text: "\u5c71",
+      furigana: [{ content: "reading", leftIndex: 0, rightIndex: 1 }],
+    });
+    const { result } = await readyRuntime();
+    result.current.layoutLine(lineRequest);
+    await waitFor(() =>
+      expect(result.current.layoutLine(lineRequest)).not.toBeNull(),
+    );
+
+    expect(layoutRubyParagraph).toHaveBeenCalledTimes(2);
+    const first = layoutRubyParagraph.mock.calls[0]![1] as Record<
+      string,
+      unknown
+    >;
+    const fitted = layoutRubyParagraph.mock.calls[1]![1] as Record<
+      string,
+      unknown
+    >;
+    expect(first.rubyFontSize).toBe(16);
+    expect(first.rubyRowFontSize).toBe(16);
+    expect(first.rubyGap).toBe(4);
+    expect(fitted.rubyFontSize).toBeCloseTo(12.736, 5);
+    expect(fitted.rubyRowFontSize).toBe(16);
+    expect(fitted.rubyGap).toBe(4);
+  });
+
   it("shares document-level ruby anchors and drops layouts widened by them", async () => {
     layoutRubyParagraph.mockImplementation(
       echoingLayout({
@@ -280,9 +336,10 @@ describe("useCreateGlyphRuntime", () => {
     layoutRubyParagraph.mockImplementationOnce(() => {
       throw new Error("bad font");
     });
-    expect(
-      result.current.layoutLine(request({ lineIndex: 2, text: "x" })),
-    ).toBeNull();
+    const failingRequest = request({ lineIndex: 2, text: "x" });
+    result.current.layoutLine(failingRequest);
+    await waitFor(() => expect(ensureFontsFor).toHaveBeenCalledWith("x"));
+    expect(result.current.layoutLine(failingRequest)).toBeNull();
     expect(result.current.status).toBe("ready");
     warn.mockRestore();
   });

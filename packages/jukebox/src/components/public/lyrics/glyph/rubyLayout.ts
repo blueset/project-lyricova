@@ -39,6 +39,7 @@ import {
 import {
   DEFAULT_RUBY_FONT_SIZE_RATIO,
   RubyLayoutError,
+  RubyLayoutOptionsError,
   type FuriganaAnnotationInput,
   type LinePlacement,
   type NormalizedFuriganaAnnotation,
@@ -110,6 +111,27 @@ interface PreparedAnnotation {
   distribution: RangeAdvanceDistribution;
 }
 
+interface RubyLayoutPassContext {
+  shaper: RubyLayoutShaper;
+  request: RubyLayoutRequest;
+  valid: readonly NormalizedFuriganaAnnotation[];
+  validationIssues: readonly RubyLayoutIssue[];
+  prepared: readonly PreparedAnnotation[];
+  rubyFontSize: number;
+  rubyRowFontSize: number;
+  rubyFontIds: ShapeRequest["fontIds"];
+  rubyGap: number;
+  rubyAxes: string[] | undefined;
+  outlineCache: GlyphOutlineCache;
+  forceFullAdvance: ReadonlySet<number>;
+}
+
+interface RubyLayoutPassOutput {
+  result: RubyLayoutResult;
+  /** Issues present at the point `onInvalidAnnotation: "throw"` historically checked. */
+  annotationIssues: RubyLayoutIssue[];
+}
+
 /**
  * Lays out a paragraph of base text with horizontal furigana ruby
  * (`ruby-position: over`) using `@lyricova/glyph-renderer`, following the
@@ -123,21 +145,25 @@ interface PreparedAnnotation {
  * 3. **Pre-shape** every annotation's ruby text and resolve its per-side
  *    overhang budget from the adjacent source characters' JLReq classes. That
  *    yields each base range's minimum required advance
- *    (`rubyWidth - leftBudget - rightBudget`), fed to paragraph layout as a
- *    `rangeAdvance` so base expansion is **pre-measured**: line breaking,
- *    cluster positions and line widths are correct on the first pass, with no
- *    iteration.
+ *    (`rubyWidth - 2 * min(leftBudget, rightBudget)`), fed to paragraph layout
+ *    as a `rangeAdvance` so base expansion is **pre-measured** while the ruby
+ *    remains centred: line breaking, cluster positions and line widths are
+ *    correct on the first pass, with no iteration in the common case.
  * 4. Lay out the base paragraph, with each base range also passed as a
  *    `noBreakRange` so a base+ruby pair is an unbreakable atom.
- * 5. Verify every base range landed on exactly one line (a mandatory break
+ * 5. If JLReq's ruby-aligned line-edge placement makes the composed line
+ *    wider than `maxWidth`, retry once with that edge atom reserving the ruby's
+ *    full advance. This lets line breaking move following/preceding text away
+ *    instead of discovering the ruby width only during painting.
+ * 6. Verify every base range landed on exactly one line (a mandatory break
  *    inside a base range could still split one - reported as a
  *    `splitAcrossLines` issue, annotation skipped).
- * 6. Place each ruby run over its (possibly expanded) base box: centred for
+ * 7. Place each ruby run over its (possibly expanded) base box: centred for
  *    mono ruby, nakatsuki 2:1:1 distribution for group ruby, always set solid
  *    for proportional non-CJK runs (see `rubyPlacement.ts`).
- * 7. Resolve overhang against the real adjacent clusters, then run the
+ * 8. Resolve overhang against the real adjacent clusters, then run the
  *    per-line collision pass and the line head/end clamp.
- * 8. Reserve one deterministic ruby row above **every** line, so line advance
+ * 9. Reserve one deterministic ruby row above **every** line, so line advance
  *    never jitters between annotated and un-annotated lines.
  *
  * Never throws for malformed `furigana` input by default (`onInvalidAnnotation:
@@ -158,7 +184,7 @@ export function layoutRubyParagraph(
     fontSize,
     rubyFontIds = fontIds,
     rubyGap = 0,
-    reserveRubyRow,
+    rubyRowFontSize: requestedRubyRowFontSize,
     rubyOverhang,
     baseDirection,
     script,
@@ -167,9 +193,6 @@ export function layoutRubyParagraph(
     variations,
     rubyVariations,
     maxWidth,
-    wrapStrategy,
-    phraseRanges,
-    lineHeight,
     onInvalidAnnotation = "skip",
   } = request;
 
@@ -179,6 +202,13 @@ export function layoutRubyParagraph(
 
   assertFinitePositiveSize(fontSize, "fontSize");
   const rubyFontSize = resolveRubyFontSize(request);
+  const rubyRowFontSize = requestedRubyRowFontSize ?? rubyFontSize;
+  assertFinitePositiveSize(rubyRowFontSize, "rubyRowFontSize");
+  if (rubyRowFontSize < rubyFontSize) {
+    throw new RubyLayoutOptionsError(
+      `rubyRowFontSize must be greater than or equal to rubyFontSize (got ${rubyRowFontSize} < ${rubyFontSize}).`,
+    );
+  }
   assertFiniteNonNegative(rubyGap, "rubyGap");
 
   const { valid, issues } = validateFuriganaAnnotations(text, furigana);
@@ -205,6 +235,76 @@ export function layoutRubyParagraph(
     ),
   );
 
+  const outlineCache: GlyphOutlineCache = new Map();
+  const passContext = {
+    shaper,
+    request,
+    valid,
+    validationIssues: issues,
+    prepared,
+    rubyFontSize,
+    rubyRowFontSize,
+    rubyFontIds,
+    rubyGap,
+    rubyAxes,
+    outlineCache,
+  };
+  let selected = layoutRubyPass({
+    ...passContext,
+    forceFullAdvance: new Set(),
+  });
+
+  if (maxWidth !== null && maxWidth !== undefined && maxWidth > 0) {
+    const forceFullAdvance = overflowingEdgeAnnotations(
+      selected.result,
+      maxWidth,
+      rubyFontSize * GEOMETRY_EPSILON_EM,
+    );
+    if (forceFullAdvance.size > 0) {
+      selected = layoutRubyPass({ ...passContext, forceFullAdvance });
+    }
+  }
+
+  if (onInvalidAnnotation === "throw" && selected.annotationIssues.length > 0) {
+    throw new RubyLayoutError(selected.annotationIssues);
+  }
+
+  return selected.result;
+}
+
+function layoutRubyPass(context: RubyLayoutPassContext): RubyLayoutPassOutput {
+  const {
+    shaper,
+    request,
+    valid,
+    validationIssues,
+    prepared,
+    rubyFontSize,
+    rubyRowFontSize,
+    rubyFontIds,
+    rubyGap,
+    rubyAxes,
+    outlineCache,
+    forceFullAdvance,
+  } = context;
+  const {
+    text,
+    furigana,
+    fontIds,
+    fontSize,
+    reserveRubyRow,
+    baseDirection,
+    script,
+    language,
+    features,
+    variations,
+    maxWidth,
+    wrapStrategy,
+    phraseRanges,
+    lineHeight,
+  } = request;
+  const issues = [...validationIssues];
+
   const paragraphRequest: ParagraphRequest = {
     text,
     fontIds,
@@ -223,17 +323,17 @@ export function layoutRubyParagraph(
       annotation.utf16Range[1],
     ]),
     rangeAdvances: prepared
-      .filter((item) => item.minAdvance > 0)
       .map((item): RangeAdvance => ({
         start: item.annotation.utf16Range[0],
         end: item.annotation.utf16Range[1],
-        minAdvance: item.minAdvance,
+        minAdvance: forceFullAdvance.has(item.annotation.sourceIndex)
+          ? Math.max(item.minAdvance, item.run.width)
+          : item.minAdvance,
         distribution: item.distribution,
-      })),
+      }))
+      .filter((item) => item.minAdvance > 0),
   };
   const paragraphLayout = shaper.layoutParagraph(paragraphRequest);
-
-  const outlineCache: GlyphOutlineCache = new Map();
   const pendingByLine = new Map<number, PendingRubyPlacement[]>();
 
   for (const item of prepared) {
@@ -251,10 +351,7 @@ export function layoutRubyParagraph(
     list.push(pending);
     pendingByLine.set(pending.lineIndex, list);
   }
-
-  if (onInvalidAnnotation === "throw" && issues.length > 0) {
-    throw new RubyLayoutError(issues);
-  }
+  const annotationIssues = [...issues];
 
   const epsilon = rubyFontSize * GEOMETRY_EPSILON_EM;
   for (const pendingList of pendingByLine.values()) {
@@ -282,7 +379,7 @@ export function layoutRubyParagraph(
   const rubyRow = resolveRubyRowMetrics(
     paragraphLayout,
     fontSize,
-    rubyFontSize,
+    rubyRowFontSize,
     rubyGap,
     reserveRubyRow ?? pendingByLine.size > 0,
     verticalMetrics,
@@ -292,7 +389,7 @@ export function layoutRubyParagraph(
     placements,
     verticalMetrics,
     fontSize,
-    rubyFontSize,
+    rubyRowFontSize,
     rubyGap,
     issues,
   );
@@ -327,8 +424,7 @@ export function layoutRubyParagraph(
   });
 
   const lastMetrics = adjustedMetrics[adjustedMetrics.length - 1];
-
-  return {
+  const result: RubyLayoutResult = {
     lines,
     height: lastMetrics ? lastMetrics.top + lastMetrics.height : 0,
     width: lines.reduce((max, line) => Math.max(max, line.occupiedWidth), 0),
@@ -340,6 +436,28 @@ export function layoutRubyParagraph(
     issues,
     missingFontRanges: paragraphLayout.missingFontRanges ?? [],
   };
+  return { result, annotationIssues };
+}
+
+function overflowingEdgeAnnotations(
+  result: RubyLayoutResult,
+  maxWidth: number,
+  epsilon: number,
+): Set<number> {
+  const sourceIndexes = new Set<number>();
+  for (const line of result.lines) {
+    if (line.occupiedWidth <= maxWidth + epsilon) continue;
+    for (const ruby of line.rubies) {
+      const [start, end] = ruby.annotation.utf16Range;
+      if (
+        start === line.line.source.utf16Start ||
+        end === line.line.source.utf16End
+      ) {
+        sourceIndexes.add(ruby.annotation.sourceIndex);
+      }
+    }
+  }
+  return sourceIndexes;
 }
 
 /**
@@ -409,12 +527,12 @@ export function resolveRubyFontSize(request: {
 export function resolveRubyRowMetrics(
   paragraph: Pick<ParagraphLayout, "ascent" | "descent">,
   fontSize: number,
-  rubyFontSize: number,
+  rubyRowFontSize: number,
   rubyGap: number,
   reserve: boolean,
   metrics: RubyVerticalMetrics | null,
 ): RubyRowMetrics {
-  if (!reserve) return { height: 0, baseline: 0, fontSize: rubyFontSize };
+  if (!reserve) return { height: 0, baseline: 0, fontSize: rubyRowFontSize };
 
   // Without usable font metrics, fall back to the paragraph's own (hhea-based)
   // ratios: less faithful, but never worse than having no row at all.
@@ -425,8 +543,8 @@ export function resolveRubyRowMetrics(
   };
 
   const baseAscent = resolved.baseAscentEm * fontSize;
-  const rubyAscent = resolved.rubyAscentEm * rubyFontSize;
-  const rubyDescent = resolved.rubyDescentEm * rubyFontSize;
+  const rubyAscent = resolved.rubyAscentEm * rubyRowFontSize;
+  const rubyDescent = resolved.rubyDescentEm * rubyRowFontSize;
   const height = Math.max(
     0,
     baseAscent + rubyGap + rubyDescent + rubyAscent - paragraph.ascent,
@@ -434,7 +552,7 @@ export function resolveRubyRowMetrics(
   return {
     height,
     baseline: height + paragraph.ascent - baseAscent - rubyGap - rubyDescent,
-    fontSize: rubyFontSize,
+    fontSize: rubyRowFontSize,
   };
 }
 
@@ -502,7 +620,7 @@ function reportRubyClearanceLoss(
   placements: readonly PendingRubyPlacement[],
   metrics: RubyVerticalMetrics | null,
   fontSize: number,
-  rubyFontSize: number,
+  rubyRowFontSize: number,
   rubyGap: number,
   issues: RubyLayoutIssue[],
 ): void {
@@ -528,7 +646,7 @@ function reportRubyClearanceLoss(
 
   const losses = collectRubyClearanceLoss(annotations, {
     baseTypoTop: metrics.baseAscentEm * fontSize,
-    rubyReservedDescent: metrics.rubyDescentEm * rubyFontSize,
+    rubyReservedDescent: metrics.rubyDescentEm * rubyRowFontSize,
     rubyGap,
   });
   for (const loss of losses) {
@@ -566,8 +684,13 @@ function prepareAnnotation(
     run,
     budget,
     rubySpaceable: isFixedWidthRun(annotation.content),
-    // Whatever overhang cannot absorb has to come from base expansion.
-    minAdvance: Math.max(0, run.width - budget.left - budget.right),
+    // Horizontal ruby stays centred over its base. Base expansion must
+    // therefore make the *same* half-overhang fit on both sides; spare budget
+    // on one side cannot compensate for a tighter opposite side.
+    minAdvance: Math.max(
+      0,
+      run.width - 2 * Math.min(budget.left, budget.right),
+    ),
     distribution: baseSpaceable ? "even" : "whitespace",
   };
 }
@@ -633,7 +756,7 @@ function placeAnnotation(
         spaceable: item.rubySpaceable,
       });
 
-  const runs = applyOverhang(
+  const runs = validateCenteredOverhang(
     placed,
     baseX,
     clampBudgetToNeighbours(text, line, utf16Start, utf16End, item.budget),
@@ -727,23 +850,18 @@ function clampBudgetToNeighbours(
 }
 
 /**
- * Shifts an already-placed ruby run so its overhang past each edge of the base
- * box stays inside that side's budget.
+ * Verifies that an already-centred ruby run stays inside each side's overhang
+ * budget.
  *
- * The ruby stays centred whenever both sides fit. When one side's budget is
- * tighter, the run is shifted asymmetrically - as close to centred as the
- * budgets allow - which is preferable to clipping. Only when the two budgets
- * together genuinely cannot hold the excess is the run centred anyway, the
- * clamp accepted, and an `overhangClamped` issue recorded.
- *
- * That last branch is deliberately hard to reach: `minAdvance` was sized as
- * `rubyWidth - leftBudget - rightBudget`, so base expansion already guarantees
- * the two budgets can hold whatever is left. It fires only when the post-layout
- * budget came out *smaller* than the pre-layout one - i.e. a glyph-limited
- * neighbour narrower than one ruby em (see {@link clampBudgetToNeighbours}) -
- * or when the engine could not expand the base at all.
+ * JLReq's horizontal nakatsuki rule keeps the ruby and base centres aligned;
+ * line-head/line-end alignment moves that whole complex, not the ruby relative
+ * to its base (Figure 141). `minAdvance` pre-expands the base so the centred
+ * half-overhang fits the tighter side. This check only reports the rare case
+ * where the real post-layout budget is smaller than the pre-layout estimate
+ * (for example, a narrow glyph-limited punctuation neighbour), or where a
+ * shaper did not honour the requested range advance.
  */
-function applyOverhang(
+function validateCenteredOverhang(
   runs: readonly RubyRun[],
   baseX: readonly [number, number],
   budget: RubyOverhangBudget,
@@ -754,38 +872,21 @@ function applyOverhang(
   if (runs.length === 0) return [...runs];
   const runsLeft = Math.min(...runs.map((r) => r.x));
   const runsRight = Math.max(...runs.map((r) => r.x + r.width));
-  const excess = runsRight - runsLeft - (baseX[1] - baseX[0]);
-  if (excess <= epsilon) return [...runs];
-
-  const half = excess / 2;
-  let left = Math.min(half, budget.left);
-  const right = Math.min(excess - left, budget.right);
-  left = excess - right;
-
-  if (left > budget.left + epsilon) {
-    if (half > budget.left + epsilon) {
-      issues.push({
-        kind: "overhangClamped",
-        annotation: rawAnnotation,
-        side: "left",
-        requested: half,
-        allowed: budget.left,
-      });
-    }
-    if (half > budget.right + epsilon) {
-      issues.push({
-        kind: "overhangClamped",
-        annotation: rawAnnotation,
-        side: "right",
-        requested: half,
-        allowed: budget.right,
-      });
-    }
-    left = half;
+  const overhang = {
+    left: Math.max(0, baseX[0] - runsLeft),
+    right: Math.max(0, runsRight - baseX[1]),
+  };
+  for (const side of ["left", "right"] as const) {
+    if (overhang[side] <= budget[side] + epsilon) continue;
+    issues.push({
+      kind: "overhangClamped",
+      annotation: rawAnnotation,
+      side,
+      requested: overhang[side],
+      allowed: budget[side],
+    });
   }
-
-  const shift = baseX[0] - left - runsLeft;
-  return runs.map((run) => ({ ...run, x: run.x + shift }));
+  return [...runs];
 }
 
 /**
@@ -860,15 +961,35 @@ interface LineBox {
   occupiedWidth: number;
 }
 
+interface LineHorizontalBounds {
+  left: number;
+  right: number;
+}
+
+function lineHorizontalBounds(
+  line: LayoutLine,
+  pendingList: readonly PendingRubyPlacement[],
+): LineHorizontalBounds {
+  return {
+    left: Math.min(0, ...pendingList.map((pending) => pending.inkLeft)),
+    right: Math.max(
+      line.width,
+      ...pendingList.map((pending) => pending.inkRight),
+    ),
+  };
+}
+
 /**
  * Resolves a line's true occupied box under JLReq's *ruby-aligned* line head
  * and line end: overhanging ruby ink sticks out past the base text, and the
  * ruby - not the base - sits flush with the line edge.
  *
  * Ruby must never leave the hanmen, so rather than clipping, the line's whole
- * content is shifted inward by however far its ruby overhangs to the left. If
- * the resulting box would still exceed `maxWidth`, the offending runs are
- * pulled back in and an `outsideLineBox` issue is recorded.
+ * content is shifted inward by however far its ruby overhangs to the left.
+ * Right-overhanging ruby that can fit is pulled inward without letting that
+ * shift create a new left overflow. An annotation intrinsically wider than
+ * the box is left intact and reported as `rubyTooWide`, so a higher layer can
+ * deliberately scale it instead of silently clipping it.
  */
 function clampLineBox(
   line: LayoutLine,
@@ -882,23 +1003,44 @@ function clampLineBox(
     return { contentOffsetX: 0, occupiedWidth: line.width };
   }
 
-  const inkLeft = Math.min(0, ...pendingList.map((p) => p.inkLeft));
-  const contentOffsetX = -inkLeft;
-
   if (maxWidth !== null && Number.isFinite(maxWidth) && maxWidth > 0) {
+    const tooWide = new Set<PendingRubyPlacement>();
     for (const pending of pendingList) {
-      const overflow = pending.inkRight + contentOffsetX - maxWidth;
+      const width = pending.inkRight - pending.inkLeft;
+      if (width <= maxWidth + epsilon) continue;
+      tooWide.add(pending);
+      issues.push({
+        kind: "rubyTooWide",
+        annotation: rawAnnotations[pending.annotation.sourceIndex]!,
+        width,
+        maxWidth,
+      });
+    }
+
+    for (const pending of pendingList) {
+      if (tooWide.has(pending)) continue;
+      const bounds = lineHorizontalBounds(line, pendingList);
+      const overflow = pending.inkRight - (bounds.left + maxWidth);
       if (overflow <= epsilon) continue;
+
+      // Shifting farther than this would make the annotation establish a new
+      // left edge, replacing right overflow with equal left overflow.
+      const available = Math.max(0, pending.inkLeft - bounds.left);
+      const shift = Math.min(overflow, available);
+      if (shift <= epsilon) continue;
       issues.push({
         kind: "outsideLineBox",
         annotation: rawAnnotations[pending.annotation.sourceIndex]!,
         side: "right",
         overflow,
       });
-      shiftPlacement(pending, -overflow);
+      shiftPlacement(pending, -shift);
     }
   }
 
-  const inkRight = Math.max(line.width, ...pendingList.map((p) => p.inkRight));
-  return { contentOffsetX, occupiedWidth: inkRight - inkLeft };
+  const bounds = lineHorizontalBounds(line, pendingList);
+  return {
+    contentOffsetX: -bounds.left,
+    occupiedWidth: bounds.right - bounds.left,
+  };
 }

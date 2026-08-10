@@ -615,6 +615,34 @@ describe("layoutRubyParagraph", () => {
       },
     );
 
+    it.each([0, -1, NaN, Infinity, -Infinity])(
+      "throws RubyLayoutOptionsError for rubyRowFontSize=%s",
+      (rubyRowFontSize) => {
+        expect(() =>
+          layoutRubyParagraph(trivialShaper(), {
+            text: "A",
+            furigana: [],
+            fontIds: [0],
+            fontSize: 20,
+            rubyRowFontSize,
+          }),
+        ).toThrow(RubyLayoutOptionsError);
+      },
+    );
+
+    it("rejects a ruby row smaller than the ruby glyphs it must contain", () => {
+      expect(() =>
+        layoutRubyParagraph(trivialShaper(), {
+          text: "A",
+          furigana: [],
+          fontIds: [0],
+          fontSize: 20,
+          rubyFontSize: 10,
+          rubyRowFontSize: 9,
+        }),
+      ).toThrow(RubyLayoutOptionsError);
+    });
+
     it.each([-1, NaN, Infinity, -Infinity])(
       "throws RubyLayoutOptionsError for rubyGap=%s",
       (rubyGap) => {
@@ -832,6 +860,164 @@ describe("layoutRubyParagraph: base expansion is pre-measured", () => {
     expect(request.noBreakRanges).toEqual([[0, 1]]);
   });
 
+  it("reflows an overwide paragraph-edge ruby before following text", () => {
+    const text = "\u9584\u306f";
+    const content =
+      "\u3082\u306e\u304b\u3052\u304b\u3089\u304d\u3085\u3046\u306b\u3068\u3073\u3060\u3057\u3066\u3072\u3068\u3092\u304a\u3069\u308d\u304b\u305b\u308b\u3068\u304d\u306b\u306f\u3063\u3059\u308b\u3053\u3048";
+    const rubyAdvance = [...content].length * 2;
+    const maxWidth = rubyAdvance + 5;
+    const centredAdvance = rubyAdvance - 2 * 10;
+    const centredEdge = (centredAdvance - 10) / 2;
+    const natural = buildParagraphLayout([
+      buildLine(
+        buildClusters([
+          {
+            char: "\u9584",
+            advance: 10,
+            leadingSpace: centredEdge,
+            trailingSpace: centredEdge,
+          },
+          { char: "\u306f", advance: 20 },
+        ]),
+      ),
+    ]);
+    const edge = (rubyAdvance - 10) / 2;
+    const reflowed = buildParagraphLayout([
+      buildLine(
+        buildClusters([
+          {
+            char: "\u9584",
+            advance: 10,
+            leadingSpace: edge,
+            trailingSpace: edge,
+          },
+        ]),
+        { top: 0 },
+      ),
+      buildLine(buildClusters([{ char: "\u306f", advance: 20 }], 1), {
+        top: 10,
+      }),
+    ]);
+    const shaper = makeShaper(
+      natural,
+      fakeShape(2),
+      fakeGlyphOutline(() => null),
+    );
+    vi.mocked(shaper.layoutParagraph).mockImplementation((request) =>
+      request.rangeAdvances?.some(
+        (range) => range.start === 0 && range.minAdvance >= rubyAdvance,
+      )
+        ? reflowed
+        : natural,
+    );
+
+    const result = layoutRubyParagraph(shaper, {
+      text,
+      furigana: [{ content, leftIndex: 0, rightIndex: 1 }],
+      fontIds: [0],
+      fontSize: 20,
+      maxWidth,
+    });
+
+    expect(shaper.layoutParagraph).toHaveBeenCalledTimes(2);
+    const first = vi.mocked(shaper.layoutParagraph).mock.calls[0]![0];
+    const second = vi.mocked(shaper.layoutParagraph).mock.calls[1]![0];
+    expect(first.rangeAdvances).toEqual([
+      {
+        start: 0,
+        end: 1,
+        minAdvance: centredAdvance,
+        distribution: "even",
+      },
+    ]);
+    expect(second.rangeAdvances).toEqual([
+      {
+        start: 0,
+        end: 1,
+        minAdvance: rubyAdvance,
+        distribution: "even",
+      },
+    ]);
+    expect(result.issues).toEqual([]);
+    expect(result.lines).toHaveLength(2);
+    expect(result.rubies[0]).toMatchObject({
+      lineIndex: 0,
+      baseX: [0, rubyAdvance],
+    });
+    expect(result.lines[0]!.occupiedWidth).toBeCloseTo(rubyAdvance, 5);
+    expect(result.lines[0]!.occupiedWidth).toBeLessThanOrEqual(maxWidth);
+    expect(result.lines[1]!.line.source.utf16Start).toBe(1);
+  });
+
+  it("reflows ruby at the head of an interior wrapped line", () => {
+    const initial = buildParagraphLayout([
+      buildLine(buildClusters([{ char: "\u306e", advance: 10 }], 0), {
+        top: 0,
+      }),
+      buildLine(
+        buildClusters(
+          [
+            { char: "\u5c71", advance: 10 },
+            { char: "\u306e", advance: 10 },
+          ],
+          1,
+        ),
+        { top: 10 },
+      ),
+    ]);
+    const reflowed = buildParagraphLayout([
+      buildLine(buildClusters([{ char: "\u306e", advance: 10 }], 0), {
+        top: 0,
+      }),
+      buildLine(
+        buildClusters(
+          [
+            {
+              char: "\u5c71",
+              advance: 10,
+              leadingSpace: 4,
+              trailingSpace: 4,
+            },
+          ],
+          1,
+        ),
+        { top: 10 },
+      ),
+      buildLine(buildClusters([{ char: "\u306e", advance: 10 }], 2), {
+        top: 20,
+      }),
+    ]);
+    const shaper = makeShaper(
+      initial,
+      fakeShape(6),
+      fakeGlyphOutline(() => null),
+    );
+    vi.mocked(shaper.layoutParagraph).mockImplementation((request) =>
+      request.rangeAdvances?.some(
+        (range) => range.start === 1 && range.minAdvance >= 18,
+      )
+        ? reflowed
+        : initial,
+    );
+
+    const result = layoutRubyParagraph(shaper, {
+      text: "\u306e\u5c71\u306e",
+      furigana: [{ content: "abc", leftIndex: 1, rightIndex: 2 }],
+      fontIds: [0],
+      fontSize: 20,
+      maxWidth: 20,
+    });
+
+    expect(shaper.layoutParagraph).toHaveBeenCalledTimes(2);
+    expect(result.issues).toEqual([]);
+    expect(result.lines).toHaveLength(3);
+    expect(result.rubies[0]).toMatchObject({
+      lineIndex: 1,
+      baseX: [0, 18],
+    });
+    expect(result.lines[1]!.occupiedWidth).toBeCloseTo(18, 5);
+  });
+
   it("subtracts the overhang both kana neighbours grant before expanding", () => {
     const request = rangeAdvancesFor(
       "\u306e\u5c71\u306e",
@@ -949,12 +1135,20 @@ describe("layoutRubyParagraph: overhang budgets", () => {
     expect(run.x).toBeCloseTo(10 - 7, 5);
   });
 
-  it("resolves the two sides independently, shifting asymmetrically to stay centred", () => {
+  it("expands against the tighter side without shifting ruby off center", () => {
     // Ideographic on the left (0 budget), hiragana on the right (1 ruby em).
+    // Horizontal nakatsuki keeps the centres aligned, so the right-hand spare
+    // budget cannot compensate for the left side: the base expands to the full
+    // 16-unit ruby width.
     const line = buildLine(
       buildClusters([
         { char: "\u5b57", advance: 10 },
-        { char: "\u5c71", advance: 10 },
+        {
+          char: "\u5c71",
+          advance: 10,
+          leadingSpace: 3,
+          trailingSpace: 3,
+        },
         { char: "\u306e", advance: 10 },
       ]),
     );
@@ -967,12 +1161,18 @@ describe("layoutRubyParagraph: overhang budgets", () => {
       fontSize: 20,
     });
 
-    // 16-wide ruby over a 10-wide base: excess 6, all of which the right-hand
-    // hiragana can absorb, so the run sits flush with the base's left edge.
     expect(result.issues).toEqual([]);
+    expect(shaper.layoutParagraph).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rangeAdvances: [
+          { start: 1, end: 2, minAdvance: 16, distribution: "even" },
+        ],
+      }),
+    );
     const run = result.rubies[0]!.runs[0]!;
+    expect(result.rubies[0]!.baseX).toEqual([10, 26]);
     expect(run.x).toBeCloseTo(10, 5);
-    expect(run.x + run.width - 20).toBeCloseTo(6, 5);
+    expect(run.x + run.width).toBeCloseTo(26, 5);
   });
 
   it("never overhangs past a bracket glyph itself", () => {
@@ -1262,6 +1462,33 @@ describe("layoutRubyParagraph: line head and end", () => {
     );
     expect(overflowIssues).toHaveLength(1);
     expect(result.rubies[0]!.inkRight).toBeLessThanOrEqual(20 + 1e-6);
+  });
+
+  it("reports ruby that is intrinsically wider than the content box", () => {
+    const line = buildLine(buildClusters([{ char: "\u5c71", advance: 10 }]));
+    const shaper = makeShaper(
+      buildParagraphLayout([line]),
+      fakeShape(10),
+      fakeGlyphOutline(() => null),
+    );
+
+    const result = layoutRubyParagraph(shaper, {
+      text: "\u5c71",
+      furigana: [{ content: "abcdef", leftIndex: 0, rightIndex: 1 }],
+      fontIds: [0],
+      fontSize: 20,
+      maxWidth: 40,
+    });
+
+    expect(result.issues).toEqual([
+      {
+        kind: "rubyTooWide",
+        annotation: { content: "abcdef", leftIndex: 0, rightIndex: 1 },
+        width: 60,
+        maxWidth: 40,
+      },
+    ]);
+    expect(result.lines[0]!.occupiedWidth).toBeCloseTo(60, 5);
   });
 });
 
