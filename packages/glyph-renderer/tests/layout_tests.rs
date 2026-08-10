@@ -156,6 +156,30 @@ fn line_break_opportunities_report_utf8_and_utf16_and_mandatory() {
     assert!(hello.last().unwrap().mandatory);
 }
 
+#[test]
+fn line_break_opportunities_apply_unicode_17_quotation_rules() {
+    let text = "たどり着くまでは“僕ら止まれない”";
+    let breaks = line_break_opportunities(text);
+    let allowed_utf16: Vec<_> = breaks
+        .iter()
+        .filter(|item| !item.mandatory)
+        .map(|item| item.utf16_index)
+        .collect();
+
+    assert!(
+        allowed_utf16.contains(&8),
+        "Unicode 17 LB19/LB19a permits a break before the initial quote"
+    );
+    assert!(
+        !allowed_utf16.contains(&9),
+        "the initial quote must stay with the quoted text"
+    );
+    assert!(
+        !allowed_utf16.contains(&16),
+        "the final quote must stay with the quoted text"
+    );
+}
+
 // --------------------------------------------------------------------------
 // Ligatures & combining sequences -> safe shaped clusters
 // --------------------------------------------------------------------------

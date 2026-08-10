@@ -297,6 +297,42 @@ describe.skipIf(SKIP_WASM_INTEGRATION)(
       }
     });
 
+    it("breaks before an initial curly quote under Unicode 17 LB19", () => {
+      const result = layoutRubyParagraph(shaper, {
+        text: "たどり着くまでは“僕ら止まれない”",
+        furigana: [
+          { content: "つ", leftIndex: 3, rightIndex: 4 },
+          { content: "ぼく", leftIndex: 9, rightIndex: 10 },
+          { content: "と", leftIndex: 11, rightIndex: 12 },
+        ],
+        fontIds: [productionJapaneseFontId],
+        fontSize: 56,
+        maxWidth: 800,
+        wrapStrategy: "balanced",
+        phraseRanges: [
+          [0, 1],
+          [1, 8],
+          [8, 16],
+          [16, 17],
+        ],
+        language: "ja",
+        features: ["palt=1"],
+        variations: [...glyphVariations(56)],
+        rubyVariations: [...glyphVariations(20)],
+      });
+
+      expect(result.issues).toEqual([]);
+      expect(
+        result.lines.map((line) => [
+          line.line.source.utf16Start,
+          line.line.source.utf16End,
+        ]),
+      ).toEqual([
+        [0, 8],
+        [8, 17],
+      ]);
+    });
+
     it("reflows the exact long 閄 annotation before the following kana", () => {
       const content =
         "ものかげからきゅうにとびだしてひとをおどろかせるときにはっするこえ";

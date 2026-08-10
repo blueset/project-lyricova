@@ -21,7 +21,7 @@ rustybuzz = "0.20"
 ttf-parser = { version = "0.25", features = ["gvar-alloc"] }
 unicode-bidi = "0.3"
 unicode-segmentation = "1"
-unicode-linebreak = "0.1"
+uniworld = "0.2"
 wasm-bindgen = "0.2"
 js-sys = "0.3"
 serde = { version = "1", features = ["derive"] }

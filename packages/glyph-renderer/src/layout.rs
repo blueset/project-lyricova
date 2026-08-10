@@ -13,7 +13,7 @@
 //!    [`crate::shaping::segment_by_fallback`]: a base character and its
 //!    combining marks / ZWJ sequence are never split across two fonts.
 //! 3. **UAX #14 line breaking** - legal break opportunities come from the
-//!    [`unicode_linebreak`] crate; [`line_break_opportunities`] exposes them
+//!    [`uniworld`] crate; [`line_break_opportunities`] exposes them
 //!    directly and [`layout_paragraph`] uses them (plus per-cluster advances)
 //!    to produce width-constrained greedy or balanced lines.
 //! 4. **Safe shaped clusters** - one or more positioned glyphs (ligatures,
@@ -31,8 +31,10 @@ use rustybuzz::ttf_parser::GlyphId;
 use rustybuzz::{BufferClusterLevel, Direction as HbDirection, Face, Language, Script};
 use serde::{Deserialize, Serialize};
 use unicode_bidi::{BidiInfo, Level, ParagraphInfo};
-use unicode_linebreak::{linebreaks, BreakOpportunity};
 use unicode_script::{Script as UScript, UnicodeScript};
+use uniworld::linebreak::{
+    line_break_opportunities as uniworld_line_break_opportunities, BreakAction,
+};
 
 use crate::shaping::{
     self, FontId, FontRegistry, PositionedGlyph, ShapeError, TextDirection, Utf16Map,
@@ -296,11 +298,12 @@ pub struct ParagraphRequest {
 /// The final opportunity is the mandatory break at end of text.
 pub fn line_break_opportunities(text: &str) -> Vec<LineBreak> {
     let utf16 = Utf16Map::new(text);
-    linebreaks(text)
+    collect_line_break_opportunities(text)
+        .into_iter()
         .map(|(index, opportunity)| LineBreak {
             utf8_index: index as u32,
             utf16_index: utf16.to_utf16(index as u32),
-            mandatory: matches!(opportunity, BreakOpportunity::Mandatory),
+            mandatory: opportunity == BreakAction::Mandatory,
         })
         .collect()
 }
@@ -736,12 +739,22 @@ fn accumulate_glyph(
 
 /// Builds a byte-index -> mandatory map of UAX #14 break opportunities.
 fn break_map(text: &str) -> HashMap<u32, bool> {
-    linebreaks(text)
-        .map(|(index, opportunity)| {
-            (
-                index as u32,
-                matches!(opportunity, BreakOpportunity::Mandatory),
-            )
+    collect_line_break_opportunities(text)
+        .into_iter()
+        .map(|(index, opportunity)| (index as u32, opportunity == BreakAction::Mandatory))
+        .collect()
+}
+
+/// Converts UniWorld's dense byte-indexed action table into the sparse
+/// opportunity list consumed by the paragraph layout and public bindings.
+fn collect_line_break_opportunities(text: &str) -> Vec<(usize, BreakAction)> {
+    let actions = uniworld_line_break_opportunities(text);
+    text.char_indices()
+        .map(|(index, _)| index)
+        .chain(std::iter::once(text.len()))
+        .filter_map(|index| {
+            let action = actions[index];
+            (action != BreakAction::Prohibited).then_some((index, action))
         })
         .collect()
 }
