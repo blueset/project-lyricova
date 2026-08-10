@@ -2,6 +2,15 @@
 
 import { Button } from "@lyricova/components/components/ui/button";
 import { Progress } from "@lyricova/components/components/ui/progress";
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+} from "@lyricova/components/components/ui/attachment";
 import { filesize } from "filesize";
 import {
   CircleCheck,
@@ -40,6 +49,15 @@ interface UploadQueueItem {
   error?: string;
   result?: UploadResult;
   retryable: boolean;
+}
+
+function attachmentState(item: UploadQueueItem) {
+  if (item.status === "queued") return "idle";
+  if (item.status === "uploading") {
+    return item.progress >= 100 ? "processing" : "uploading";
+  }
+  if (item.status === "error") return "error";
+  return "done";
 }
 
 function newQueueId(): string {
@@ -109,7 +127,7 @@ export default function UploadMusicFiles() {
             progress: 0,
             error: duplicate
               ? "This file is already in the queue."
-              : validationError ?? undefined,
+              : (validationError ?? undefined),
             retryable: false,
           });
         }
@@ -234,9 +252,7 @@ export default function UploadMusicFiles() {
 
   const uploadQueued = useCallback(async () => {
     if (uploadGuard.current) return;
-    const queued = itemsRef.current.filter(
-      (item) => item.status === "queued",
-    );
+    const queued = itemsRef.current.filter((item) => item.status === "queued");
     if (queued.length === 0) return;
     uploadGuard.current = true;
     setUploading(true);
@@ -288,9 +304,7 @@ export default function UploadMusicFiles() {
             })}
           />
           <Upload className="mx-auto mb-3 size-10 text-muted-foreground" />
-          <div className="font-medium">
-            Drop MP3, FLAC, or AIFF files here
-          </div>
+          <div className="font-medium">Drop MP3, FLAC, or AIFF files here</div>
           <div className="mt-1 text-sm text-muted-foreground">
             Up to 50 files per queue and 500 MiB per file. You can also paste
             copied music files from the clipboard.
@@ -319,16 +333,25 @@ export default function UploadMusicFiles() {
         ) : (
           <div className="flex flex-col gap-2">
             {items.map((item) => (
-              <div
+              <Attachment
                 key={item.id}
-                className="flex items-center gap-3 rounded-lg border p-3"
+                state={attachmentState(item)}
+                className="w-full"
               >
-                <FileAudio className="size-5 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-medium">{item.file.name}</div>
-                  <div className="text-xs text-muted-foreground">
+                <AttachmentMedia>
+                  {item.status === "success" ? (
+                    <CircleCheck />
+                  ) : item.status === "error" ? (
+                    <CircleX />
+                  ) : (
+                    <FileAudio />
+                  )}
+                </AttachmentMedia>
+                <AttachmentContent>
+                  <AttachmentTitle>{item.file.name}</AttachmentTitle>
+                  <AttachmentDescription>
                     {filesize(item.file.size)}
-                  </div>
+                  </AttachmentDescription>
                   {item.status === "uploading" && (
                     <div className="mt-2 space-y-1">
                       <Progress
@@ -343,14 +366,12 @@ export default function UploadMusicFiles() {
                     </div>
                   )}
                   {item.error && (
-                    <div className="mt-1 flex items-start gap-1 text-sm text-destructive">
-                      <CircleX className="mt-0.5 size-4 shrink-0" />
-                      <span>{item.error}</span>
-                    </div>
+                    <AttachmentDescription className="whitespace-normal">
+                      {item.error}
+                    </AttachmentDescription>
                   )}
                   {item.status === "success" && item.result && (
-                    <div className="mt-1 flex items-center gap-1 text-sm text-green-700 dark:text-green-400">
-                      <CircleCheck className="size-4" />
+                    <AttachmentDescription className="text-green-700 dark:text-green-400">
                       <a
                         className="underline underline-offset-2"
                         href={item.result.reviewUrl}
@@ -359,43 +380,49 @@ export default function UploadMusicFiles() {
                       >
                         Review file #{item.result.id}
                       </a>
-                    </div>
+                    </AttachmentDescription>
                   )}
-                </div>
-                {item.retryable && item.status === "error" && (
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    title="Retry"
-                    onClick={() =>
-                      updateItem(item.id, {
-                        status: "queued",
-                        progress: 0,
-                        error: undefined,
-                        retryable: false,
-                      })
-                    }
-                  >
-                    <RotateCcw />
-                  </Button>
+                </AttachmentContent>
+                {(item.retryable || item.status !== "uploading") && (
+                  <AttachmentActions className="gap-1">
+                    {item.retryable && item.status === "error" && (
+                      <AttachmentAction
+                        type="button"
+                        size="icon-sm"
+                        title="Retry"
+                        aria-label={`Retry ${item.file.name}`}
+                        onClick={() =>
+                          updateItem(item.id, {
+                            status: "queued",
+                            progress: 0,
+                            error: undefined,
+                            retryable: false,
+                          })
+                        }
+                      >
+                        <RotateCcw />
+                      </AttachmentAction>
+                    )}
+                    {item.status !== "uploading" && (
+                      <AttachmentAction
+                        type="button"
+                        size="icon-sm"
+                        title="Remove"
+                        aria-label={`Remove ${item.file.name}`}
+                        onClick={() =>
+                          commitItems((current) =>
+                            current.filter(
+                              (candidate) => candidate.id !== item.id,
+                            ),
+                          )
+                        }
+                      >
+                        <Trash2 />
+                      </AttachmentAction>
+                    )}
+                  </AttachmentActions>
                 )}
-                {item.status !== "uploading" && (
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    title="Remove"
-                    onClick={() =>
-                      commitItems((current) =>
-                        current.filter((candidate) => candidate.id !== item.id),
-                      )
-                    }
-                  >
-                    <Trash2 />
-                  </Button>
-                )}
-              </div>
+              </Attachment>
             ))}
           </div>
         )}
