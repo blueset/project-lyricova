@@ -1,12 +1,12 @@
 import fs from "fs";
 import Path from "path";
 import { hashFile } from "hasha";
-import ffprobe from "ffprobe-client";
 import { eq } from "drizzle-orm";
 import { db } from "../drizzle/client.js";
 import { MusicFiles, FileInPlaylists } from "../drizzle/schema.js";
 import { MUSIC_FILES_PATH } from "./secret.js";
 import { writeAsync as ffMetadataWrite } from "./ffmetadata.js";
+import { probeMediaFile } from "./mp3Normalization.js";
 
 /**
  * Drizzle port of the filesystem/audio-coupled `MusicFile` model methods
@@ -42,8 +42,11 @@ export function fullPathOf(relPath: string): string {
   return Path.resolve(MUSIC_FILES_PATH!, relPath);
 }
 
-async function getSongMetadata(fullPath: string): Promise<GenericMetadata> {
-  const metadata = await ffprobe(fullPath);
+async function getSongMetadata(
+  fullPath: string,
+  signal?: AbortSignal,
+): Promise<GenericMetadata> {
+  const metadata = await probeMediaFile(fullPath, signal);
   const tags = metadata.format?.tags ?? {};
   const duration = parseFloat(metadata.format?.duration ?? "");
   let playlists: string[] = [];
@@ -84,17 +87,21 @@ export interface BuiltSongEntry {
 /** Build the insert values for a new music file at `fullPath`. */
 export async function buildSongEntry(
   fullPath: string,
+  signal?: AbortSignal,
 ): Promise<BuiltSongEntry> {
-  const md5Promise = hashFile(fullPath, { algorithm: "md5" });
-  const metadataPromise = getSongMetadata(fullPath);
-  const md5 = await md5Promise;
+  const md5Promise = hashFile(fullPath, { algorithm: "md5", signal });
+  const metadataPromise = getSongMetadata(fullPath, signal);
+  const [md5, songMetadata] = await Promise.all([
+    md5Promise,
+    metadataPromise,
+  ]);
   const {
     songId,
     albumId,
     playlists,
     lyrics: _lyrics,
     ...metadata
-  } = await metadataPromise;
+  } = songMetadata;
   const lrcPath = fullPath.substr(0, fullPath.lastIndexOf(".")) + ".lrc";
   const hasLyrics = fs.existsSync(lrcPath);
 

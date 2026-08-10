@@ -36,6 +36,7 @@ import {
 } from "../types/pagination.js";
 import type { PubSubSessionPayload } from "../pubsub.js";
 import { pubsub, TOPIC_MUSIC_FILE_SCAN_PROGRESS } from "../pubsub.js";
+import { SUPPORTED_MUSIC_FILE_GLOB } from "../../../utils/musicFileTypes.js";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter((val) => !other.has(val)));
@@ -165,7 +166,7 @@ builder.mutationField("scan", (t) =>
       // spelled out as case-insensitive character classes (mp3/flac/aiff in any
       // case). Results are absolute paths; order is irrelevant (used as a Set).
       const filePaths = fs.globSync(
-        `${MUSIC_FILES_PATH!}**/*.{[mM][pP]3,[fF][lL][aA][cC],[aA][iI][fF][fF]}`,
+        `${MUSIC_FILES_PATH!}**/*.${SUPPORTED_MUSIC_FILE_GLOB}`,
       );
       const knownPathsSet: Set<string> = new Set(
         databaseEntries.flatMap((entry) =>
@@ -215,19 +216,45 @@ builder.mutationField("scan", (t) =>
         console.log("entries_to_add done.");
 
         const now = new Date();
-        await limit.map(entriesToAdd, async (built) => {
-          const inserted = await db.insert(MusicFiles).values({
-            ...built.values,
-            creationDate: now,
-            updatedOn: now,
-          });
+        const insertionResults = await limit.map(entriesToAdd, async (built) => {
+          const filePath = built.values.path;
+          if (typeof filePath !== "string") {
+            throw new Error("Scanned music file path is missing.");
+          }
+          let fileId: number;
+          try {
+            const inserted = await db.insert(MusicFiles).values({
+              ...built.values,
+              creationDate: now,
+              updatedOn: now,
+            });
+            fileId = inserted[0].insertId;
+          } catch (error) {
+            if (
+              !(
+                error instanceof Error &&
+                "code" in error &&
+                error.code === "ER_DUP_ENTRY"
+              )
+            ) {
+              throw error;
+            }
+            const existing = await db.query.MusicFiles.findFirst({
+              columns: { id: true },
+              where: eq(MusicFiles.path, filePath),
+            });
+            if (!existing) {
+              throw new Error("Concurrent music file enrollment failed.");
+            }
+            return false;
+          }
           if (built.playlistSlugs.length > 0)
-            await replaceFilePlaylists(
-              inserted[0].insertId,
-              built.playlistSlugs,
-            );
+            await replaceFilePlaylists(fileId, built.playlistSlugs);
+          return true;
         });
-        progressObj.added += entriesToAdd.length;
+        const added = insertionResults.filter(Boolean).length;
+        progressObj.added += added;
+        progressObj.unchanged += insertionResults.length - added;
       }
 
       console.log("entries added.");

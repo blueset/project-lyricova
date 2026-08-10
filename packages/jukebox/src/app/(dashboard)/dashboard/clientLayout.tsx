@@ -39,6 +39,7 @@ import {
   ListMusic,
   RefreshCw,
   Download,
+  Upload,
   FileDown,
   FileType2,
   Settings,
@@ -226,6 +227,11 @@ export default function DashboardLayout({ children }: Props) {
                             text="Download"
                             href="/dashboard/download"
                             icon={<Download />}
+                          />
+                          <SideNavMenuItem
+                            text="Upload"
+                            href="/dashboard/upload"
+                            icon={<Upload />}
                           />
                         </SidebarMenu>
                       </SidebarGroupContent>

@@ -1,10 +1,10 @@
 import { eq, inArray } from "drizzle-orm";
 import { db } from "../drizzle/client.js";
-import { MusicFiles } from "../drizzle/schema.js";
+import { FileInPlaylists, MusicFiles } from "../drizzle/schema.js";
 import { fullPathOf } from "../utils/musicFileScan.js";
 
 type MusicFile = typeof MusicFiles.$inferSelect;
-import type { Request, Response } from "express";
+import type { Request, RequestHandler, Response } from "express";
 import { requireNumericParams } from "../utils/numericParam.js";
 import { compat } from "../utils/expressCompat.js";
 import { Router } from "express";
@@ -25,6 +25,18 @@ import { downloadFromStream } from "../utils/download.js";
 import { adminOnlyMiddleware } from "../utils/adminOnlyMiddleware.js";
 import { temporaryFile, temporaryDirectory } from "tempy";
 import pLimit from "p-limit";
+import {
+  hasAudioStream,
+  isDetectedMusicFormatSupported,
+  resolveMusicUploadDestination,
+  SUPPORTED_MUSIC_FILE_GLOB,
+} from "../utils/musicFileTypes.js";
+import { buildSongEntry as buildMusicFileEntry } from "../utils/musicFileScan.js";
+import {
+  isMp3ConstantBitrate,
+  normalizeMp3ConstantBitrate,
+  probeMediaFile,
+} from "../utils/mp3Normalization.js";
 
 function setDifference<T>(self: Set<T>, other: Set<T>): Set<T> {
   return new Set([...self].filter((val) => !other.has(val)));
@@ -56,6 +68,7 @@ const SONG_ID_TAG = "LyricovaSongID",
 export class MusicFileController {
   public router: Router;
   private readonly uploadDirectory: string;
+  private readonly musicUpload: ReturnType<typeof multer>;
 
   private static randomName(): string {
     return crypto.randomBytes(16).toString("hex");
@@ -82,10 +95,28 @@ export class MusicFileController {
         );
       },
     });
+    this.musicUpload = multer({
+      storage: multer.diskStorage({
+        destination: (_req, _file, callback) =>
+          callback(null, this.uploadDirectory),
+        filename: (_req, _file, callback) =>
+          callback(null, MusicFileController.randomName()),
+      }),
+      limits: {
+        fileSize: 500 * 1024 * 1024,
+        files: 1,
+      },
+    });
     this.router = Router();
     requireNumericParams(this.router, "id");
     this.router.get("/scan", this.scan);
     this.router.get("/", this.getSongs);
+    this.router.post(
+      "/upload",
+      adminOnlyMiddleware,
+      this.parseMusicUpload,
+      this.uploadMusicFile,
+    );
     this.router.get("/:id/file", this.getSongFile);
     this.router.get("/:id/lrc", this.getSongLRC);
     this.router.get("/:id/lrcx", this.getSongLRCX);
@@ -99,6 +130,394 @@ export class MusicFileController {
     this.router.get("/:id", this.getSong);
     this.router.patch("/:id", adminOnlyMiddleware, this.writeToSong);
   }
+
+  private parseMusicUpload: RequestHandler = (req, res, next) => {
+    const upload = compat(this.musicUpload.single("file"));
+    upload(req, res, (error?: unknown) => {
+      if (!error) {
+        next();
+        return;
+      }
+      if (error instanceof multer.MulterError) {
+        if (error.code === "LIMIT_FILE_SIZE") {
+          res.status(413).json({ message: "File exceeds the 500 MiB limit." });
+          return;
+        }
+        res.status(400).json({ message: "Invalid music file upload." });
+        return;
+      }
+      console.error("Music upload parsing failed", error);
+      res.status(500).json({ message: "Music file upload failed." });
+    });
+  };
+
+  /**
+   * @openapi
+   * /files/upload:
+   *   post:
+   *     summary: Upload and enroll one music file
+   *     tags:
+   *       - Music Files
+   *     security:
+   *       - sessionCookie: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - file
+   *             properties:
+   *               file:
+   *                 type: string
+   *                 format: binary
+   *     responses:
+   *       201:
+   *         description: Music file uploaded and enrolled
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               required:
+   *                 - id
+   *                 - fileName
+   *                 - path
+   *                 - reviewUrl
+   *               properties:
+   *                 id:
+   *                   type: integer
+   *                 fileName:
+   *                   type: string
+   *                 path:
+   *                   type: string
+   *                 reviewUrl:
+   *                   type: string
+   *       400:
+   *         description: Missing, unsupported, or malformed file
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               required:
+   *                 - message
+   *               properties:
+   *                 message:
+   *                   type: string
+   *       401:
+   *         $ref: '#/components/responses/Unauthorized'
+   *       403:
+   *         description: Administrator permission is required
+   *         content:
+   *           text/plain:
+   *             schema:
+   *               type: string
+   *       409:
+   *         description: A file with the same name already exists
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               required:
+   *                 - message
+   *               properties:
+   *                 message:
+   *                   type: string
+   *       413:
+   *         description: File exceeds the upload limit
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               required:
+   *                 - message
+   *               properties:
+   *                 message:
+   *                   type: string
+   *       422:
+   *         description: File is not valid readable audio
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               required:
+   *                 - message
+   *               properties:
+   *                 message:
+   *                   type: string
+   *       500:
+   *         description: Music file upload failed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               required:
+   *                 - message
+   *               properties:
+   *                 message:
+   *                   type: string
+   */
+  private uploadMusicFile = async (req: Request, res: Response) => {
+    if (!req.file) {
+      res.status(400).json({ message: "A music file is required." });
+      return;
+    }
+
+    const uploadedFile = req.file;
+    const temporaryPath = uploadedFile.path;
+    const processingAbort = new AbortController();
+    const abortProcessing = () => processingAbort.abort();
+    req.once("aborted", abortProcessing);
+    res.once("close", () => {
+      if (!res.writableEnded) abortProcessing();
+    });
+    if (req.aborted) processingAbort.abort();
+    let normalizedPath: string | undefined;
+    let destinationPath: string | undefined;
+    let destinationCreated = false;
+    const cleanup = async () => {
+      await fs.promises.unlink(temporaryPath).catch(() => undefined);
+      if (normalizedPath) {
+        await fs.promises.unlink(normalizedPath).catch(() => undefined);
+      }
+      if (destinationCreated && destinationPath) {
+        await fs.promises.unlink(destinationPath).catch(() => undefined);
+      }
+    };
+
+    try {
+      let destination: ReturnType<typeof resolveMusicUploadDestination>;
+      try {
+        destination = resolveMusicUploadDestination(
+          uploadedFile.originalname,
+          MUSIC_FILES_PATH!,
+        );
+      } catch (error) {
+        await cleanup();
+        res.status(400).json({
+          message:
+            error instanceof Error
+              ? error.message
+              : "Invalid upload filename.",
+        });
+        return;
+      }
+      destinationPath = destination.fullPath;
+
+      if (uploadedFile.size === 0) {
+        await cleanup();
+        res.status(400).json({ message: "The uploaded file is empty." });
+        return;
+      }
+
+      const existingFile = await db.query.MusicFiles.findFirst({
+        columns: { id: true },
+        where: eq(MusicFiles.path, destination.fileName),
+      });
+      if (existingFile) {
+        await cleanup();
+        res.status(409).json({
+          message: `A file named "${destination.fileName}" is already enrolled.`,
+        });
+        return;
+      }
+
+      let built: Awaited<ReturnType<typeof buildMusicFileEntry>>;
+      let sourcePath = temporaryPath;
+      try {
+        const probe = await probeMediaFile(
+          temporaryPath,
+          processingAbort.signal,
+        );
+        if (
+          !hasAudioStream(probe.streams) ||
+          !isDetectedMusicFormatSupported(
+            destination.fileName,
+            probe.format?.format_name,
+          )
+        ) {
+          throw new Error("Unsupported audio container.");
+        }
+      } catch (error) {
+        if (processingAbort.signal.aborted) {
+          console.info("Music file upload cancelled during validation.");
+          await cleanup();
+          return;
+        }
+        console.warn("Rejected invalid uploaded music file", error);
+        await cleanup();
+        res.status(422).json({
+          message: "The uploaded file is not a valid supported music file.",
+        });
+        return;
+      }
+
+      if (destination.fileName.toLowerCase().endsWith(".mp3")) {
+        try {
+          const alreadyNormalized = await isMp3ConstantBitrate(
+            temporaryPath,
+            128,
+            processingAbort.signal,
+          );
+          if (!alreadyNormalized) {
+            normalizedPath = temporaryFile({ extension: "mp3" });
+            await normalizeMp3ConstantBitrate(
+              temporaryPath,
+              normalizedPath,
+              128,
+              processingAbort.signal,
+            );
+            if (
+              !(await isMp3ConstantBitrate(
+                normalizedPath,
+                128,
+                processingAbort.signal,
+              ))
+            ) {
+              throw new Error("Normalized MP3 did not have the target bitrate.");
+            }
+            sourcePath = normalizedPath;
+          }
+        } catch (error) {
+          if (processingAbort.signal.aborted) {
+            console.info("Music file upload cancelled during normalization.");
+            await cleanup();
+            return;
+          }
+          console.error("MP3 normalization failed", error);
+          await cleanup();
+          res.status(500).json({ message: "MP3 normalization failed." });
+          return;
+        }
+      }
+
+      try {
+        built = await buildMusicFileEntry(
+          sourcePath,
+          processingAbort.signal,
+        );
+      } catch (error) {
+        if (processingAbort.signal.aborted) {
+          console.info("Music file upload cancelled during enrollment.");
+          await cleanup();
+          return;
+        }
+        console.warn("Rejected normalized uploaded music file", error);
+        await cleanup();
+        res.status(422).json({
+          message: "The uploaded file could not be read after processing.",
+        });
+        return;
+      }
+
+      if (req.aborted || res.destroyed) {
+        console.info("Music file upload cancelled before enrollment.");
+        await cleanup();
+        return;
+      }
+
+      try {
+        await fs.promises.copyFile(
+          sourcePath,
+          destination.fullPath,
+          fs.constants.COPYFILE_EXCL,
+        );
+        destinationCreated = true;
+      } catch (error) {
+        await cleanup();
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "EEXIST"
+        ) {
+          res.status(409).json({
+            message: `A file named "${destination.fileName}" already exists.`,
+          });
+          return;
+        }
+        throw error;
+      }
+
+      if (processingAbort.signal.aborted || req.aborted || res.destroyed) {
+        console.info("Music file upload cancelled before database enrollment.");
+        await cleanup();
+        return;
+      }
+
+      const now = new Date();
+      let fileId: number;
+      try {
+        fileId = await db.transaction(async (tx) => {
+          const inserted = await tx.insert(MusicFiles).values({
+            ...built.values,
+            path: destination.fileName,
+            creationDate: now,
+            updatedOn: now,
+          });
+          const id = inserted[0].insertId;
+          const playlistSlugs = [...new Set(built.playlistSlugs)];
+          if (playlistSlugs.length > 0) {
+            await tx.insert(FileInPlaylists).values(
+              playlistSlugs.map((playlistId, sortOrder) => ({
+                fileId: id,
+                playlistId,
+                sortOrder,
+                creationDate: now,
+                updatedOn: now,
+              })),
+            );
+          }
+          return id;
+        });
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "ER_DUP_ENTRY"
+        ) {
+          const concurrentlyEnrolled = await db.query.MusicFiles.findFirst({
+            columns: { id: true },
+            where: eq(MusicFiles.path, destination.fileName),
+          });
+          if (concurrentlyEnrolled) {
+            destinationCreated = false;
+            await cleanup();
+            res.status(201).json({
+              id: concurrentlyEnrolled.id,
+              fileName: destination.fileName,
+              path: destination.fileName,
+              reviewUrl: `/dashboard/review/${concurrentlyEnrolled.id}`,
+            });
+            return;
+          }
+        }
+        throw error;
+      }
+
+      destinationCreated = false;
+      await cleanup();
+      res.status(201).json({
+        id: fileId,
+        fileName: destination.fileName,
+        path: destination.fileName,
+        reviewUrl: `/dashboard/review/${fileId}`,
+      });
+    } catch (error) {
+      await cleanup();
+      console.error("Music file upload failed", error);
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "ER_DUP_ENTRY"
+      ) {
+        res.status(409).json({
+          message: "A file with the same database path already exists.",
+        });
+        return;
+      }
+      res.status(500).json({ message: "Music file upload failed." });
+    }
+  };
 
   /**
    * @openapi
@@ -309,7 +728,7 @@ export class MusicFileController {
     // spelled out as case-insensitive character classes (mp3/flac/aiff in any
     // case). Results are absolute paths; order is irrelevant (used as a Set).
     const filePaths = fs.globSync(
-      `${MUSIC_FILES_PATH}/**/*.{[mM][pP]3,[fF][lL][aA][cC],[aA][iI][fF][fF]}`,
+      `${MUSIC_FILES_PATH}/**/*.${SUPPORTED_MUSIC_FILE_GLOB}`,
     );
     const knownPathsSet: Set<string> = new Set(
       databaseEntries.flatMap((entry) =>
