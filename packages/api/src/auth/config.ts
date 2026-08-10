@@ -72,6 +72,10 @@ export const authConfig = {
   cookieDomain:
     process.env["AUTH_COOKIE_DOMAIN"] ??
     (webAuthnRpId === "1a23.studio" ? "1a23.studio" : null),
+  ipAddressHeaders: csvEnvironment(
+    "AUTH_IP_ADDRESS_HEADERS",
+    production ? ["cf-connecting-ip", "x-forwarded-for"] : ["x-forwarded-for"],
+  ),
   webAuthnRpId,
   webAuthnOrigins: csvEnvironment(
     "WEBAUTHN_ORIGINS",

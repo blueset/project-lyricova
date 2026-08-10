@@ -105,6 +105,9 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: "lyricova",
     useSecureCookies: authConfig.production,
+    ipAddress: {
+      ipAddressHeaders: [...authConfig.ipAddressHeaders],
+    },
     database: {
       generateId: ({ model }) =>
         model === "user" || model === "Users"

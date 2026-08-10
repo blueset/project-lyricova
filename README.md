@@ -85,7 +85,9 @@ in VocaDB.net.</small>
     provides.
   - For the production sibling domains, set `AUTH_ALLOWED_HOSTS` to both hosts,
     `AUTH_TRUSTED_ORIGINS` and `WEBAUTHN_ORIGINS` to their exact HTTPS origins,
-    and set both `WEBAUTHN_RP_ID` and `AUTH_COOKIE_DOMAIN` to `1a23.studio`.
+    set `AUTH_IP_ADDRESS_HEADERS` to
+    `cf-connecting-ip,x-forwarded-for` when routing through Cloudflare, and set
+    both `WEBAUTHN_RP_ID` and `AUTH_COOKIE_DOMAIN` to `1a23.studio`.
 - Node.js
   - Install Node.js 24 LTS (24.15.0 or newer) and npm 12.0.0 or newer.
   - Install dependencies:

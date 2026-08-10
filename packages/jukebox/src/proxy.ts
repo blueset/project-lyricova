@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+const CLIENT_IP_HEADERS = ["cf-connecting-ip", "x-forwarded-for"] as const;
+
 function sessionCheckDetails(request: NextRequest, sessionUrl: URL) {
   const cookie = request.headers.get("cookie") ?? "";
   return {
@@ -13,7 +15,23 @@ function sessionCheckDetails(request: NextRequest, sessionUrl: URL) {
     hasSessionCookie: /(?:^|;\s*)(?:__Secure-)?lyricova\.session_token=/.test(
       cookie,
     ),
+    clientIpHeaders: Object.fromEntries(
+      CLIENT_IP_HEADERS.map((name) => [name, request.headers.has(name)]),
+    ),
   };
+}
+
+function sessionRequestHeaders(request: NextRequest): Headers {
+  const headers = new Headers({
+    cookie: request.headers.get("cookie") ?? "",
+    "x-forwarded-host": request.headers.get("host") ?? request.nextUrl.host,
+    "x-forwarded-proto": request.nextUrl.protocol.slice(0, -1),
+  });
+  for (const name of CLIENT_IP_HEADERS) {
+    const value = request.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+  return headers;
 }
 
 async function hasSession(request: NextRequest): Promise<boolean> {
@@ -25,11 +43,7 @@ async function hasSession(request: NextRequest): Promise<boolean> {
 
   try {
     const response = await fetch(sessionUrl, {
-      headers: {
-        cookie: request.headers.get("cookie") ?? "",
-        "x-forwarded-host": request.headers.get("host") ?? request.nextUrl.host,
-        "x-forwarded-proto": request.nextUrl.protocol.slice(0, -1),
-      },
+      headers: sessionRequestHeaders(request),
       cache: "no-store",
     });
     const responseText = await response.text();
