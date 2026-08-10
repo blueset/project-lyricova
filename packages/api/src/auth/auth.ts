@@ -49,6 +49,7 @@ export const auth = betterAuth({
     window: 60,
     max: 100,
     customRules: {
+      "/get-session": false,
       "/sign-in/username": {
         window: 60,
         max: 5,

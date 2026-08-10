@@ -52,6 +52,7 @@ async function hasSession(request: NextRequest): Promise<boolean> {
         ...details,
         status: response.status,
         statusText: response.statusText,
+        retryAfter: response.headers.get("retry-after"),
         contentType: response.headers.get("content-type"),
         responseBody: responseText.slice(0, 1_000),
       });
