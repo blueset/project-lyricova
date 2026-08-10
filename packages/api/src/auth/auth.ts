@@ -12,6 +12,7 @@ const DAY = 60 * 60 * 24;
 const AUDITED_PATHS = new Set([
   "/sign-in/username",
   "/sign-in/passkey",
+  "/passkey/verify-authentication",
   "/sign-out",
   "/passkey/verify-registration",
   "/passkey/update-passkey",
