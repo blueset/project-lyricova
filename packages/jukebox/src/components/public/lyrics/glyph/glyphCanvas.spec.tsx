@@ -16,6 +16,7 @@ const DEMO_CHAIN = [
   "mona-sans-latin-otf",
   "noto-sans-thai-looped-vf-ttf",
   "noto-sans-lao-looped-vf-ttf",
+  "noto-sans-devanagari-vf-ttf",
   "noto-sans-hebrew-vf-ttf",
   "noto-sans-arabic-vf-ttf",
   "source-han-sans-jp-vf",

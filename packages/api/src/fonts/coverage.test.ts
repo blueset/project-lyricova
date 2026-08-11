@@ -36,6 +36,7 @@ const REGION_SAMPLES: Record<string, string> = {
 const SCRIPT_SAMPLES: Record<string, string> = {
   "noto-sans-thai-looped-vf-ttf": "วันนี้อากาศดี",
   "noto-sans-lao-looped-vf-ttf": "ສະບາຍດີ",
+  "noto-sans-devanagari-vf-ttf": "नमस्ते",
   "noto-sans-hebrew-vf-ttf": "שלום",
   "noto-sans-arabic-vf-ttf": "مرحبا",
 };

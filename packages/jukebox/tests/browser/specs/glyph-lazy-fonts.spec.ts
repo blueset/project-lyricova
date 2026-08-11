@@ -68,6 +68,7 @@ test("selects each dedicated script fallback", async ({ page }) => {
   const samples = [
     ["วันนี้อากาศดี", "noto-sans-thai-looped-vf-ttf"],
     ["ສະບາຍດີ", "noto-sans-lao-looped-vf-ttf"],
+    ["नमस्ते", "noto-sans-devanagari-vf-ttf"],
     ["שלום", "noto-sans-hebrew-vf-ttf"],
     ["مرحبا", "noto-sans-arabic-vf-ttf"],
   ] as const;

@@ -36,6 +36,7 @@ export interface FontManifestEntry {
     | "han-latin"
     | "thai"
     | "lao"
+    | "devanagari"
     | "hebrew"
     | "arabic"
     | "simplified-chinese"
@@ -161,6 +162,18 @@ export const FONT_MANIFEST = [
     contentType: "font/ttf",
     family: "Noto Sans Lao Looped",
     script: "lao",
+    rawSfnt: true,
+    eagerFetch: true,
+  },
+  {
+    // Noto Sans Devanagari variable font from the Google Fonts repository.
+    // Licensed under the SIL Open Font License 1.1; see
+    // NotoSansDevanagari-OFL.txt.
+    id: "noto-sans-devanagari-vf-ttf",
+    fileName: "NotoSansDevanagari-VF.ttf",
+    contentType: "font/ttf",
+    family: "Noto Sans Devanagari",
+    script: "devanagari",
     rawSfnt: true,
     eagerFetch: true,
   },

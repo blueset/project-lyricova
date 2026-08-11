@@ -116,6 +116,7 @@ describe("GET /api/fonts/:fontId", () => {
   it.each([
     "noto-sans-thai-looped-vf-ttf",
     "noto-sans-lao-looped-vf-ttf",
+    "noto-sans-devanagari-vf-ttf",
     "noto-sans-hebrew-vf-ttf",
     "noto-sans-arabic-vf-ttf",
   ])("serves the script fallback %s as a raw TTF", async (id) => {
