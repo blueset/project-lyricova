@@ -3,20 +3,6 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "env": [
-        "POSTHOG_SOURCEMAPS",
-        "POSTHOG_ENV_ID",
-        "POSTHOG_API_KEY",
-        "SOURCE_COMMIT",
-        "CI"
-      ],
-      "passThroughEnv": [
-        "POSTHOG_CLI_API_KEY",
-        "POSTHOG_CLI_PROJECT_ID",
-        "POSTHOG_CLI_HOST",
-        "POSTHOG_CLI_DRY_RUN",
-        "API_INTERNAL_URL"
-      ],
       "outputs": [
         ".next/**",
         "!.next/cache/**",
@@ -24,6 +10,22 @@
         "dist/**",
         "pkg/**"
       ]
+    },
+    "@lyricova/components#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**", "src/gql/**"]
+    },
+    "@lyricova/blog#build": {
+      "dependsOn": ["^build"],
+      "env": ["POSTHOG_SOURCEMAPS", "POSTHOG_ENV_ID", "CI"],
+      "passThroughEnv": ["POSTHOG_API_KEY", "API_INTERNAL_URL"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "@lyricova/jukebox#build": {
+      "dependsOn": ["^build"],
+      "env": ["POSTHOG_SOURCEMAPS", "POSTHOG_ENV_ID", "CI"],
+      "passThroughEnv": ["POSTHOG_API_KEY", "API_INTERNAL_URL"],
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "typecheck": {
       "dependsOn": [],

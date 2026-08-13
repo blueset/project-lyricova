@@ -9,8 +9,7 @@
 # (GraphQL/OpenAPI codegen reads the committed `packages/api/schema.graphql`,
 # the API build is `tsc`/eslint only, the drizzle pool connects lazily, and
 # both Next apps fetch with `cache: "no-store"`, so no route is prerendered
-# with data). `POSTHOG_SOURCEMAPS`/`CI` are not forwarded into the build, so
-# the PostHog sourcemap upload step self-skips and needs no secrets.
+# with data). PostHog upload remains optional and self-skips without its secret.
 #
 # The image is built and loaded locally FIRST, smoke-tested, and only then
 # pushed, so a broken artifact layout can never be published as `:nightly`.
@@ -40,9 +39,15 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v7
+
+      - name: Set up Turborepo Remote Cache
+        uses: vercel/setup-turborepo-remote-cache-action@v1.0.0
+        with:
+          team: ${{ vars.TURBO_TEAM }}
 
       # The builder stage carries the full dev dependency tree, a Rust
       # toolchain + cargo target dir and two Next builds, on top of a ~1.5 GB
@@ -107,11 +112,14 @@ jobs:
             NEXT_PUBLIC_CLARITY_PROJECT_ID=${{ vars.NEXT_PUBLIC_CLARITY_PROJECT_ID }}
             POSTHOG_ENV_ID=${{ vars.POSTHOG_ENV_ID }}
             SOURCE_COMMIT=${{ github.sha }}
+            TURBO_TEAM=${{ vars.TURBO_TEAM }}
           # The personal API key is mounted as a BuildKit secret, so it never
           # reaches the image config the way a build-arg would. If the secret is
           # unset the build simply skips sourcemap upload.
           secrets: |
             posthog_api_key=${{ secrets.POSTHOG_API_KEY }}
+          secret-envs: |
+            turbo_token=TURBO_TOKEN
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache

@@ -15,10 +15,12 @@ const withBundleAnalyzer = analyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-// Upload PostHog sourcemaps during CI builds by default; opt in locally with
-// POSTHOG_SOURCEMAPS=1, or force off with POSTHOG_SOURCEMAPS=0. (Note: `next
-// build` always sets NODE_ENV=production, so CI is the reliable prod signal.)
-const uploadSourcemaps = (() => {
+// Generate PostHog sourcemaps during CI builds by default; opt in locally with
+// POSTHOG_SOURCEMAPS=1, or force off with POSTHOG_SOURCEMAPS=0. The package
+// build runs PostHog's CLI in dry-run mode so this phase only generates maps.
+// The root post-build script uploads and deletes them after Turbo has cached
+// the complete, deterministic `.next` output.
+const generateSourcemaps = (() => {
   const flag = process.env.POSTHOG_SOURCEMAPS;
   if (flag === "1" || flag === "true") return true;
   if (flag === "0" || flag === "false") return false;
@@ -73,13 +75,9 @@ export default withPostHogConfig(
     personalApiKey: process.env.POSTHOG_API_KEY,
     projectId: process.env.POSTHOG_ENV_ID,
     sourcemaps: {
-      enabled: uploadSourcemaps,
+      enabled: generateSourcemaps,
       releaseName: "lyricova-jukebox",
-      // See the note in packages/lyricova/next.config.mjs: `.git` is excluded
-      // from the Docker build context, so PostHog's git-based releaseVersion
-      // detection finds nothing and silently uploads unattached sourcemaps.
-      releaseVersion: process.env.SOURCE_COMMIT || undefined,
-      deleteAfterUpload: true,
+      deleteAfterUpload: false,
     },
   },
 );

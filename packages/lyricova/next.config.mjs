@@ -15,10 +15,12 @@ const withBundleAnalyzer = analyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-// Upload PostHog sourcemaps during CI builds by default; opt in locally with
-// POSTHOG_SOURCEMAPS=1, or force off with POSTHOG_SOURCEMAPS=0. (Note: `next
-// build` always sets NODE_ENV=production, so CI is the reliable prod signal.)
-const uploadSourcemaps = (() => {
+// Generate PostHog sourcemaps during CI builds by default; opt in locally with
+// POSTHOG_SOURCEMAPS=1, or force off with POSTHOG_SOURCEMAPS=0. The package
+// build runs PostHog's CLI in dry-run mode so this phase only generates maps.
+// The root post-build script uploads and deletes them after Turbo has cached
+// the complete, deterministic `.next` output.
+const generateSourcemaps = (() => {
   const flag = process.env.POSTHOG_SOURCEMAPS;
   if (flag === "1" || flag === "true") return true;
   if (flag === "0" || flag === "false") return false;
@@ -83,15 +85,9 @@ const config = withPostHogConfig(
     personalApiKey: process.env.POSTHOG_API_KEY,
     projectId: process.env.POSTHOG_ENV_ID,
     sourcemaps: {
-      enabled: uploadSourcemaps,
+      enabled: generateSourcemaps,
       releaseName: "lyricova-blog",
-      // PostHog derives releaseVersion from the current git commit by default,
-      // but the Docker build context excludes `.git`, so that detection finds
-      // no repository and uploads maps with no release attached (silently, exit
-      // 0). SOURCE_COMMIT is supplied as a build arg; `undefined` restores the
-      // git-based default for local/CI builds that do have a repository.
-      releaseVersion: process.env.SOURCE_COMMIT || undefined,
-      deleteAfterUpload: true,
+      deleteAfterUpload: false,
     },
   },
 );

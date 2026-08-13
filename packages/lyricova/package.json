@@ -4,7 +4,8 @@
   "description": "A lyrics-focused blog for Project Lyricova",
   "scripts": {
     "dev": "cross-env PORT=8081 next dev",
-    "build": "next build",
+    "build": "cross-env POSTHOG_CLI_DRY_RUN=true next build",
+    "posthog": "node ../../scripts/posthog-sourcemaps.mjs blog",
     "typecheck": "tsc --noEmit",
     "typecheck:native": "tsgo --noEmit",
     "start": "next start",

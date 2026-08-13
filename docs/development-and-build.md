@@ -87,13 +87,13 @@ lyrics-kit ─┐
 
 ### What each package's `build` / `dev` does
 
-| Package                                | `build`                                                                 | `dev`                                                                                                                             |
-| -------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `@lyricova/api`                        | `build:ts` (tsc) → `lint` → `posthog` sourcemaps                        | `nodemon dist/server.js` + `tsc -w` + **`pothos:emit:watch`** (re-emits `schema.graphql`)                                         |
-| `@lyricova/components`                 | **`codegen`** → `tsc` → `tsc-alias`                                     | **`codegen:watch`** (regenerates typed docs + schema types) + `tsc -w` + `tsc-alias -w`                                           |
-| `@lyricova/glyph-renderer`             | `build:wasm` (**`wasm-pack`** → `pkg/`) → `build:ts` (`tsc` → `build/`) | _no `dev` task_ — its only consumer (`jukebox`) bootstraps it via a `predev` hook (see [§4.1](#41-glyph-renderer-wasm-artifacts)) |
-| `@lyricova/jukebox`                    | `next build` (`prebuild` bootstraps `glyph-renderer`)                   | `next dev` (PORT 8082; `predev` bootstraps `glyph-renderer`)                                                                      |
-| `@lyricova/blog` (`packages/lyricova`) | `next build`                                                            | `next dev` (PORT 8081)                                                                                                            |
+| Package                                | `build`                                                                           | `dev`                                                                                                                             |
+| -------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `@lyricova/api`                        | `build:ts` (tsc) → `lint`                                                         | `nodemon dist/server.js` + `tsc -w` + **`pothos:emit:watch`** (re-emits `schema.graphql`)                                         |
+| `@lyricova/components`                 | **`codegen`** → `tsc` → `tsc-alias`                                               | **`codegen:watch`** (regenerates typed docs + schema types) + `tsc -w` + `tsc-alias -w`                                           |
+| `@lyricova/glyph-renderer`             | `build:wasm` (**`wasm-pack`** → `pkg/`) → `build:ts` (`tsc` → `build/`)           | _no `dev` task_ — its only consumer (`jukebox`) bootstraps it via a `predev` hook (see [§4.1](#41-glyph-renderer-wasm-artifacts)) |
+| `@lyricova/jukebox`                    | `next build` in PostHog CLI dry-run mode (`prebuild` bootstraps `glyph-renderer`) | `next dev` (PORT 8082; `predev` bootstraps `glyph-renderer`)                                                                      |
+| `@lyricova/blog` (`packages/lyricova`) | `next build` in PostHog CLI dry-run mode                                          | `next dev` (PORT 8081)                                                                                                            |
 
 ---
 
@@ -102,7 +102,11 @@ lyrics-kit ─┐
 ### `npm run build`
 
 `turbo run build` respects the topology above, so a clean build "just works":
-codegen runs inside the `components` build before the apps compile.
+codegen runs inside the `components` build before the apps compile. The root
+script then runs `scripts/posthog-sourcemaps.mjs`: when sourcemap processing is
+enabled, it injects/uploads the API and both Next outputs and deletes the maps.
+Keeping this release-specific side effect outside Turbo means a cache hit can
+restore the deterministic pre-upload artifacts without skipping the upload.
 
 ### `npm run dev`
 
@@ -225,7 +229,7 @@ How each entry point ensures the artifacts exist **before** jukebox needs them:
 | `npm run test` / `npm test -w …/jukebox`    | jukebox `pretest` hook (vitest reads `pkg/` + `build/`)                                                                               |
 | `npm run test:browser`                      | jukebox `pretest:browser` hook (the vite fixture serves `pkg/` wasm)                                                                  |
 | `npm run start -w @lyricova/jukebox` (prod) | jukebox `prestart` hook **verifies only** (`--check`, no build)                                                                       |
-| CI (`.github/workflows/validate.yml`)       | explicit `npm run build -w @lyricova/glyph-renderer` before tests, lint, and type-checking                                             |
+| CI (`.github/workflows/validate.yml`)       | explicit `npm run build -w @lyricova/glyph-renderer` before tests, lint, and type-checking                                            |
 
 `lint` deliberately has **no** hook: eslint's config is not type-aware and never
 resolves the built package, and glyph-renderer's own `lint` doesn't build, so
@@ -286,7 +290,10 @@ initialises PostHog/Clarity nor sends events. Overrides:
   `NEXT_PUBLIC_` variant).
 - `…=0` — force telemetry off even in production.
 
-Sourcemap uploads are separate and controlled by `POSTHOG_SOURCEMAPS`.
+Sourcemap uploads are separate and controlled by `POSTHOG_SOURCEMAPS`. When
+enabled, the Next package builds generate maps with `POSTHOG_CLI_DRY_RUN=true`;
+the root post-build script performs the real upload after Turbo has cached the
+complete output.
 
 ---
 
@@ -453,6 +460,18 @@ stable toolchain plus `wasm32-unknown-unknown`:
 ```bash
 docker compose --profile build up -d --build lyricova-build
 ```
+
+The publish workflow uses two complementary caches:
+
+- BuildKit imports/exports `ghcr.io/<owner>/<repo>:buildcache` for Docker
+  layers such as OS provisioning, dependency installation and image assembly.
+- Turborepo uses Vercel Remote Cache for package outputs. This still helps when
+  `COPY . .` invalidates the Docker build layer, because unchanged workspace
+  tasks can be restored instead of recompiled.
+
+The short-lived Turbo token is obtained with GitHub OIDC and mounted only on
+the build `RUN`; local/Compose builds without it continue with Turbo's local
+cache. See [Container publishing](./container-publishing.md).
 
 Its `host-build` target is the **prebuilt-artifact** runtime: OS deps only
 (mecab, `yt-dlp`, ffmpeg, `concurrently`), with the repo bind-mounted at `/app`,

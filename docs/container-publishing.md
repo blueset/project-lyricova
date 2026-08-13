@@ -5,13 +5,35 @@ push to `master` (and on manual dispatch), smoke-tests it, then pushes it to
 `ghcr.io/<owner>/<repo>:nightly` plus an immutable `sha-<short>` tag. GHCR
 storage and bandwidth are free for public packages.
 
-The workflow needs no configuration to succeed, but the optional analytics and
-error-tracking integrations are only wired up if you configure the following
-under **Settings → Secrets and variables → Actions**. Note carefully which tab
-each belongs to:
+## Required Remote Cache setup
+
+The publish workflow requires a Vercel Turborepo Remote Cache connection:
+
+1. In the Vercel team, create a **Turborepo CLI OIDC policy** for
+   `blueset/project-lyricova`. Restrict it to
+   `.github/workflows/publish-container.yml` and `master` when possible.
+2. Under **Settings → Secrets and variables → Actions → Variables**, add
+   `TURBO_TEAM` with the Vercel team slug or ID.
+
+The workflow grants `id-token: write` and uses
+`vercel/setup-turborepo-remote-cache-action` to exchange GitHub's OIDC token for
+a short-lived `TURBO_TOKEN`. `docker/build-push-action` forwards that token with
+`secret-envs`; the Dockerfile mounts it only on the `npm run build` instruction.
+It is never a build argument, image environment variable or layer.
+
+The existing GHCR BuildKit cache remains enabled. It reuses Docker layers,
+whereas Turbo Remote Cache restores unchanged workspace outputs after a source
+change invalidates the `COPY . .` layer.
+
+## Optional analytics and error tracking
+
+The analytics and error-tracking integrations are wired up only if you
+configure the following under **Settings → Secrets and variables → Actions**.
+Note carefully which tab each belongs to:
 
 | Name                             | Tab         | Purpose                                                                                                     |
 | -------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------- |
+| `TURBO_TEAM`                     | Variables   | **Required.** Vercel team slug or ID used by the OIDC Remote Cache exchange.                                |
 | `POSTHOG_API_KEY`                | **Secrets** | PostHog _personal_ API key. Enables sourcemap upload so production stack traces resolve.                    |
 | `POSTHOG_ENV_ID`                 | Variables   | PostHog project id that sourcemaps are uploaded to.                                                         |
 | `NEXT_PUBLIC_POSTHOG_KEY`        | Variables   | Client-side PostHog project key.                                                                            |
@@ -30,6 +52,14 @@ The workflow also passes `SOURCE_COMMIT=${{ github.sha }}`. PostHog normally
 infers the release version from git, but `.git` is excluded from the Docker
 build context, so without this the upload silently succeeds with no release
 attached and stack traces stay unmapped.
+
+PostHog processing is deliberately outside Turbo's cacheable package tasks.
+The two Next builds generate source maps with the PostHog CLI in dry-run mode,
+and the API compiler emits its normal maps. Turbo caches those complete,
+pre-upload artifacts. The root post-build script then injects/uploads all three
+releases using `SOURCE_COMMIT` and deletes the maps before the runtime stage is
+assembled. A Remote Cache hit therefore skips compilation without skipping a
+per-commit release upload.
 
 To build locally with the same wiring:
 

@@ -7,7 +7,7 @@
     "npm": ">=12.0.0"
   },
   "scripts": {
-    "build": "turbo run build",
+    "build": "turbo run build && npm run posthog:sourcemaps",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
@@ -18,7 +18,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "knip": "knip",
-    "knip:production": "knip --production --strict"
+    "knip:production": "knip --production --strict",
+    "posthog:sourcemaps": "node scripts/posthog-sourcemaps.mjs"
   },
   "workspaces": [
     "packages/*"

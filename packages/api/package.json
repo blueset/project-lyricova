@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "npm run serve",
-    "build": "npm run build:ts && npm run lint && npm run posthog",
+    "build": "npm run build:ts && npm run lint",
     "serve": "node dist/server.js",
     "dev:node": "nodemon dist/server.js",
     "dev": "concurrently -n node,tscr,emit -c green,blue,yellow npm:dev:node npm:dev:ts npm:pothos:emit:watch",
@@ -25,7 +25,7 @@
     "dev:node-debug": "nodemon --inspect dist/server.js",
     "dev:debug-b": "npm run dev serve-debug",
     "dev:debug": "concurrently -n node,tscr -c green,blue npm:dev:node-debug npm:dev:ts",
-    "posthog": "node scripts/posthog-sourcemaps.mjs",
+    "posthog": "node ../../scripts/posthog-sourcemaps.mjs api",
     "openapi": "node scripts/emit-openapi.mjs && openapi-typescript openapi.json -o src/openapi/schema.ts",
     "pothos:emit": "tsc ; node scripts/emit-pothos-schema.mjs",
     "test": "vitest run",

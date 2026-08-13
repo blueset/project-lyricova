@@ -149,20 +149,27 @@ ENV SOURCE_COMMIT=${SOURCE_COMMIT} \
     POSTHOG_ENV_ID=${POSTHOG_ENV_ID} \
     POSTHOG_CLI_PROJECT_ID=${POSTHOG_ENV_ID}
 
+# Vercel team slug for Turborepo Remote Cache. The short-lived access token is
+# supplied only to the build RUN as a BuildKit secret and never persisted.
+ARG TURBO_TEAM=""
+
 # Topological Turborepo build: lyrics-kit + glyph-renderer (wasm) -> components
 # -> api / jukebox / lyricova.
 #
 # The PostHog personal API key is a real secret with write access, so it is
-# mounted as a BuildKit secret rather than passed as an ARG: ARG values persist
-# in the image config and are readable with `docker history` by anyone who can
-# pull the (public) image. The secret is only visible to this one RUN and never
-# lands in a layer.
+# mounted as BuildKit secrets rather than passed as ARGs: ARG values persist in
+# the image config and are readable with `docker history` by anyone who can pull
+# the (public) image. The secrets are only visible to this one RUN and never land
+# in a layer.
 #
-# Sourcemap upload self-enables only when the secret is actually present, so
-# builds without it behave exactly as before. Both upload paths are fed:
-# POSTHOG_API_KEY for the Next.js plugin, POSTHOG_CLI_API_KEY for the
-# @lyricova/api CLI step.
-RUN --mount=type=secret,id=posthog_api_key \
+# Next.js generates sourcemaps with PostHog's CLI in dry-run mode. Turbo caches
+# those complete artifacts, then the root post-build script injects/uploads the
+# maps for SOURCE_COMMIT and deletes them before the runtime stage is assembled.
+# A Turbo cache hit therefore skips compilation without skipping the release
+# side effect.
+RUN --mount=type=secret,id=turbo_token,env=TURBO_TOKEN \
+    --mount=type=secret,id=posthog_api_key \
+    export TURBO_TEAM; \
     if [ -s /run/secrets/posthog_api_key ]; then \
     POSTHOG_API_KEY="$(cat /run/secrets/posthog_api_key)"; \
     export POSTHOG_API_KEY; \
@@ -170,6 +177,7 @@ RUN --mount=type=secret,id=posthog_api_key \
     export POSTHOG_SOURCEMAPS=1; \
     echo "PostHog sourcemap upload enabled (release ${SOURCE_COMMIT:-<unset>})"; \
     else \
+    export POSTHOG_SOURCEMAPS=0; \
     echo "No posthog_api_key secret: skipping sourcemap upload"; \
     fi; \
     npm run build

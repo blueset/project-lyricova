@@ -161,6 +161,13 @@ in VocaDB.net.</small>
     This profile declares the `posthog_api_key` build secret, so export
     `POSTHOG_API_KEY` (an empty value is fine — the build then skips sourcemap
     upload) before invoking it.
+    The GitHub container workflow additionally uses Vercel Turborepo Remote
+    Cache: BuildKit's GHCR cache reuses Docker layers, while Turbo restores
+    unchanged package outputs after a source change invalidates `COPY . .`.
+    Local Compose builds have no cache credential by default and fall back to
+    Turbo's local cache. See
+    [`docs/container-publishing.md`](docs/container-publishing.md) for the OIDC
+    setup required by the publish workflow.
   - Note that the repo is deliberately **not** bind-mounted over `/app` in
     either image-based mode: doing so would shadow the artifacts compiled into
     the image.
