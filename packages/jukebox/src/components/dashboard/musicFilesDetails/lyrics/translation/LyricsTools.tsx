@@ -14,13 +14,15 @@ import {
 import { CircularProgress } from "@lyricova/components/components/ui/circular-progress";
 import { ButtonGroup } from "@lyricova/components/components/ui/button-group";
 import { ChevronDownIcon, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useLyricsStore } from "../state/editorState";
 import { useShallow } from "zustand/shallow";
 import { fetchEventData } from "fetch-sse";
 import { toast } from "sonner";
 import { useQuery } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
+import { useAutoScroll } from "./useAutoScroll";
+import { estimateJsonArrayLength } from "./estimateJsonArrayLength";
 
 const GET_LLM_MODELS_QUERY = graphql(`
   query GetLLMModels($key: String!, $default: String!) {
@@ -95,25 +97,17 @@ export default function LyricsTools() {
   const [isAlignmentLoading, setIsAlignmentLoading] = useState(false);
   const [chunkBuffer, setChunkBuffer] = useState<string>("");
   const [reasoningBuffer, setReasoningBuffer] = useState<string>("");
-  const reasoningContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  const isScrolledToBottom = useCallback(() => {
-    const container = reasoningContainerRef.current;
-    if (!container) return false;
-    return (
-      Math.abs(
-        container.scrollHeight - container.clientHeight - container.scrollTop,
-      ) < 1
-    );
-  }, []);
-
-  useEffect(() => {
-    if (reasoningContainerRef.current && isScrolledToBottom()) {
-      reasoningContainerRef.current.scrollTop =
-        reasoningContainerRef.current.scrollHeight;
-    }
-  }, [reasoningBuffer, isScrolledToBottom]);
+  const {
+    ref: outputContainerRef,
+    onScroll: handleOutputScroll,
+    resetAutoScroll: resetOutputAutoScroll,
+  } = useAutoScroll<HTMLDivElement>(`${reasoningBuffer}\0${chunkBuffer}`);
+  const {
+    ref: reasoningContainerRef,
+    onScroll: handleReasoningScroll,
+    resetAutoScroll: resetReasoningAutoScroll,
+  } = useAutoScroll<HTMLDivElement>(reasoningBuffer);
 
   const handleAlignment = useCallback(
     (model?: string) => async () => {
@@ -126,6 +120,8 @@ export default function LyricsTools() {
       setIsAlignmentLoading(true);
       setChunkBuffer("");
       setReasoningBuffer("");
+      resetOutputAutoScroll();
+      resetReasoningAutoScroll();
       try {
         abortControllerRef.current = new AbortController();
         const { signal } = abortControllerRef.current;
@@ -150,19 +146,7 @@ export default function LyricsTools() {
               } else if (data.chunk) {
                 setChunkBuffer((prev) => prev + data.chunk);
               } else if (data.reasoning) {
-                const wasScrolledToBottom = isScrolledToBottom();
-                setReasoningBuffer((prev) => {
-                  const newValue = prev + data.reasoning;
-                  if (wasScrolledToBottom && reasoningContainerRef.current) {
-                    setTimeout(() => {
-                      reasoningContainerRef.current?.scrollTo(
-                        0,
-                        reasoningContainerRef.current.scrollHeight,
-                      );
-                    }, 0);
-                  }
-                  return newValue;
-                });
+                setReasoningBuffer((prev) => prev + data.reasoning);
               }
             } catch (e) {
               console.error("Error parsing event data:", e);
@@ -191,7 +175,7 @@ export default function LyricsTools() {
         setIsAlignmentLoading(false);
       }
     },
-    [setTextareaValue, isScrolledToBottom],
+    [resetOutputAutoScroll, resetReasoningAutoScroll, setTextareaValue],
   );
 
   const handleCancelAlignment = useCallback(() => {
@@ -209,9 +193,8 @@ export default function LyricsTools() {
         100,
         Math.max(
           0,
-          (chunkBuffer.split("\n").length * 100) /
-            ((useLyricsStore.getState().lyrics?.lines?.length ?? 0) * 4 + 2 ||
-              1),
+          (estimateJsonArrayLength(chunkBuffer) * 100) /
+            (useLyricsStore.getState().lyrics?.lines?.length || 1),
         ),
       )
     : undefined;
@@ -258,12 +241,15 @@ export default function LyricsTools() {
           </HoverCardTrigger>
           {(chunkBuffer || reasoningBuffer) && (
             <HoverCardContent
+              ref={outputContainerRef}
+              onScroll={handleOutputScroll}
               className="p-4 w-auto max-w-[80ch] overflow-y-auto max-h-(--radix-hover-card-content-available-height)"
               side="bottom"
             >
               {reasoningBuffer && (
                 <div
                   ref={reasoningContainerRef}
+                  onScroll={handleReasoningScroll}
                   className="mt-4 p-4 max-h-16 overflow-y-auto text-muted-foreground italic whitespace-pre-wrap"
                 >
                   {reasoningBuffer}
