@@ -13,7 +13,8 @@ The publish workflow requires a Vercel Turborepo Remote Cache connection:
    `blueset/project-lyricova`. Restrict it to
    `.github/workflows/publish-container.yml` and `master` when possible.
 2. Under **Settings → Secrets and variables → Actions → Variables**, add
-   `TURBO_TEAM` with the Vercel team slug or ID.
+   `TURBO_TEAM` with the Vercel team slug or ID, `TURBO_AUDIENCE` with the
+   policy audience, and `TURBO_POLICY_ID` with the policy's ID.
 
 The workflow grants `id-token: write` and uses
 `vercel/setup-turborepo-remote-cache-action` to exchange GitHub's OIDC token for
@@ -34,6 +35,8 @@ Note carefully which tab each belongs to:
 | Name                             | Tab         | Purpose                                                                                                     |
 | -------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------- |
 | `TURBO_TEAM`                     | Variables   | **Required.** Vercel team slug or ID used by the OIDC Remote Cache exchange.                                |
+| `TURBO_AUDIENCE`                 | Variables   | **Required.** Audience configured on the Vercel Turborepo CLI OIDC policy.                                  |
+| `TURBO_POLICY_ID`                | Variables   | **Required.** Selects the exact Vercel Turborepo CLI OIDC policy.                                           |
 | `POSTHOG_API_KEY`                | **Secrets** | PostHog _personal_ API key. Enables sourcemap upload so production stack traces resolve.                    |
 | `POSTHOG_ENV_ID`                 | Variables   | PostHog project id that sourcemaps are uploaded to.                                                         |
 | `NEXT_PUBLIC_POSTHOG_KEY`        | Variables   | Client-side PostHog project key.                                                                            |

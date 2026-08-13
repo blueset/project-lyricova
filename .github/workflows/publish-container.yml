@@ -53,12 +53,15 @@ jobs:
         shell: bash
         env:
           TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+          TURBO_AUDIENCE: ${{ vars.TURBO_AUDIENCE }}
+          TURBO_POLICY_ID: ${{ vars.TURBO_POLICY_ID }}
         run: |
           set -euo pipefail
 
           oidc_token="$(
             curl -sS -f -G \
               -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              --data-urlencode "audience=$TURBO_AUDIENCE" \
               "$ACTIONS_ID_TOKEN_REQUEST_URL" |
               jq -r .value
           )"
@@ -86,6 +89,7 @@ jobs:
               --data "subject_token_type=urn:ietf:params:oauth:token-type:id_token" \
               --data "requested_token_type=urn:ietf:params:oauth:token-type:access_token" \
               --data-urlencode "team_id_or_slug=$TURBO_TEAM" \
+              --data-urlencode "policy_id=$TURBO_POLICY_ID" \
               --data-urlencode "subject_token=$oidc_token"
           )"
           echo "Vercel token exchange HTTP status: $status"
@@ -97,6 +101,8 @@ jobs:
         uses: vercel/setup-turborepo-remote-cache-action@v1.0.0
         with:
           team: ${{ vars.TURBO_TEAM }}
+          audience: ${{ vars.TURBO_AUDIENCE }}
+          policy: ${{ vars.TURBO_POLICY_ID }}
 
       # The builder stage carries the full dev dependency tree, a Rust
       # toolchain + cargo target dir and two Next builds, on top of a ~1.5 GB
