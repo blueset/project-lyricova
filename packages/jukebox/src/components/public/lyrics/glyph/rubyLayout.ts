@@ -102,7 +102,10 @@ interface PreparedAnnotation {
   annotation: NormalizedFuriganaAnnotation;
   /** Whole ruby content shaped once, contextually - never re-shaped afterwards. */
   run: ResolvedShapeRun;
-  /** Class-derived overhang budget per side, from the adjacent *source* characters. */
+  /**
+   * Overhang budget per side, from the adjacent source character's class,
+   * except that a boundary shared with another ruby annotation grants none.
+   */
   budget: RubyOverhangBudget;
   /** Whether the ruby run itself may have inter-cluster spacing distributed into it. */
   rubySpaceable: boolean;
@@ -143,8 +146,10 @@ interface RubyLayoutPassOutput {
  * 2. Validate/convert furigana `leftIndex`/`rightIndex` (see
  *    `furiganaValidation.ts` for why this is necessary despite the API docs).
  * 3. **Pre-shape** every annotation's ruby text and resolve its per-side
- *    overhang budget from the adjacent source characters' JLReq classes. That
- *    yields each base range's minimum required advance
+ *    overhang budget from the adjacent source characters' JLReq classes.
+ *    A boundary shared with another ruby annotation grants no overhang, since
+ *    that neighbouring base's ruby already occupies the same row. That yields
+ *    each base range's minimum required advance
  *    (`rubyWidth - 2 * min(leftBudget, rightBudget)`), fed to paragraph layout
  *    as a `rangeAdvance` so base expansion is **pre-measured** while the ruby
  *    remains centred: line breaking, cluster positions and line widths are
@@ -213,6 +218,12 @@ export function layoutRubyParagraph(
 
   const { valid, issues } = validateFuriganaAnnotations(text, furigana);
   const overhangTable = resolveOverhangTable(rubyOverhang);
+  const annotatedStarts = new Set(
+    valid.map((annotation) => annotation.utf16Range[0]),
+  );
+  const annotatedEnds = new Set(
+    valid.map((annotation) => annotation.utf16Range[1]),
+  );
 
   const rubyShapeOptions: RubyShapeOptions = {
     fontIds: rubyFontIds,
@@ -232,6 +243,10 @@ export function layoutRubyParagraph(
       rubyShapeOptions,
       rubyFontSize,
       overhangTable,
+      {
+        left: annotatedEnds.has(annotation.utf16Range[0]),
+        right: annotatedStarts.has(annotation.utf16Range[1]),
+      },
     ),
   );
 
@@ -661,18 +676,23 @@ function prepareAnnotation(
   rubyShapeOptions: RubyShapeOptions,
   rubyFontSize: number,
   overhangTable: OverhangTable,
+  adjacentRuby: Readonly<{ left: boolean; right: boolean }>,
 ): PreparedAnnotation {
   const [utf16Start, utf16End] = annotation.utf16Range;
   const run = resolveShapeRun(
     shaper.shape({ text: annotation.content, ...rubyShapeOptions }),
   );
-  const budget = resolveOverhangBudget(
+  const classBudget = resolveOverhangBudget(
     text,
     utf16Start,
     utf16End,
     rubyFontSize,
     overhangTable,
   );
+  const budget = {
+    left: adjacentRuby.left ? 0 : classBudget.left,
+    right: adjacentRuby.right ? 0 : classBudget.right,
+  };
 
   // Proportional (Latin/Cyrillic/Hangul/digit) base runs are never
   // letterspaced: their excess is absorbed by inter-word whitespace when there

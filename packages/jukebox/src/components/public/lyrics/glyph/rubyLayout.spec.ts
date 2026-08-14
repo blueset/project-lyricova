@@ -1235,6 +1235,48 @@ describe("layoutRubyParagraph: overhang budgets", () => {
 });
 
 describe("layoutRubyParagraph: adjacent ruby collisions", () => {
+  it("pre-expands adjacent middle dots so their ruby labels cannot overlap", () => {
+    const line = buildLine(
+      buildClusters([
+        { char: "\u300c", advance: 10 },
+        { char: "\u30fb", advance: 10, leadingSpace: 4, trailingSpace: 4 },
+        { char: "\u30fb", advance: 10, leadingSpace: 4, trailingSpace: 4 },
+        { char: "\u30fb", advance: 10, leadingSpace: 4, trailingSpace: 4 },
+        { char: "\u300d", advance: 10 },
+      ]),
+    );
+    const shaper = makeShaper(buildParagraphLayout([line]), fakeShape(6));
+
+    const result = layoutRubyParagraph(shaper, {
+      text: "\u300c\u30fb\u30fb\u30fb\u300d",
+      furigana: [
+        { content: "\u30c9\u30a5\u30f3", leftIndex: 1, rightIndex: 2 },
+        { content: "\u30c9\u30a5\u30f3", leftIndex: 2, rightIndex: 3 },
+        { content: "\u30c9\u30a5\u30f3", leftIndex: 3, rightIndex: 4 },
+      ],
+      fontIds: [0],
+      fontSize: 20,
+    });
+
+    expect(shaper.layoutParagraph).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rangeAdvances: [
+          { start: 1, end: 2, minAdvance: 18, distribution: "even" },
+          { start: 2, end: 3, minAdvance: 18, distribution: "even" },
+          { start: 3, end: 4, minAdvance: 18, distribution: "even" },
+        ],
+      }),
+    );
+    expect(result.issues).toEqual([]);
+    const ordered = [...result.rubies].sort((a, b) => a.baseX[0] - b.baseX[0]);
+    expect(ordered).toHaveLength(3);
+    for (let i = 1; i < ordered.length; i++) {
+      expect(ordered[i]!.inkLeft).toBeGreaterThanOrEqual(
+        ordered[i - 1]!.inkRight - 1e-6,
+      );
+    }
+  });
+
   it("pushes only the following run apart, keeping the preceding one fixed", () => {
     // Two over-long annotations separated by a single hiragana, which grants
     // both of them a full ruby em of overhang into the same 10 units.
