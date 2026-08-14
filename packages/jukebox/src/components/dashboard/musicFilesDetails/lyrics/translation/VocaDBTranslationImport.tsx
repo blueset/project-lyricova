@@ -52,12 +52,12 @@ export default function VocaDBTranslationImport({
               size="sm"
               onClick={() => handleImportTranslation(translation)}
             >
-              {translation.cultureCodes?.join(", ")}
+              {translation.cultureCodes?.join(", ") || "en?"}
             </Button>
           </TooltipTrigger>
           <TooltipContent>
             <div>
-              {translation.cultureCodes?.join(", ")} – {translation.source}
+              {translation.cultureCodes?.join(", ") || "en?"} – {translation.source}
               <br />
               {translation.value?.substring(0, 100)}…
             </div>
