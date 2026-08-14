@@ -10,8 +10,10 @@ storage and bandwidth are free for public packages.
 The publish workflow requires a Vercel Turborepo Remote Cache connection:
 
 1. In the Vercel team, create a **Turborepo CLI OIDC policy** for
-   `blueset/project-lyricova`. Restrict it to
-   `.github/workflows/publish-container.yml` and `master` when possible.
+   `blueset/project-lyricova`, use the default
+   `https://github.com/blueset` audience, and leave the optional branch/workflow
+   restrictions blank. During initial rollout, Vercel rejected an otherwise
+   matching policy that specified both restrictions with `Not authorized`.
 2. Under **Settings → Secrets and variables → Actions → Variables**, add
    `TURBO_TEAM` with the Vercel team slug or ID, `TURBO_AUDIENCE` with the
    policy audience, and `TURBO_POLICY_ID` with the policy's ID.
