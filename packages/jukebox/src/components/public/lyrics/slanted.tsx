@@ -27,9 +27,12 @@ export function SlantedLyrics({ lyrics, transLangIdx }: Props) {
   const translationContainer = useRef<HTMLDivElement>(null);
   const translationWrapper = useRef<HTMLDivElement>(null);
   const currentTranslation = useRef<HTMLSpanElement>(null);
-  const lang = lyrics.translationLanguages[transLangIdx ?? 0];
+  const effectiveTransLangIdx = transLangIdx ?? 0;
+  const lang = lyrics.translationLanguages[effectiveTransLangIdx];
 
-  const hasTranslation = lyrics.translationLanguages.length > 0;
+  const hasTranslation =
+    effectiveTransLangIdx >= 0 &&
+    effectiveTransLangIdx < lyrics.translationLanguages.length;
 
   const { playerState, currentFrameId, startTimes, endTimes } =
     usePlainPlayerLyricsState(lyrics, playerRef);

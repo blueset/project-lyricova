@@ -23,7 +23,10 @@ import { LyricsFullScreenOverlay } from "@/components/public/LyricsFullScreenOve
 import { PictureInPictureLyrics } from "@/components/public/lyrics/pip";
 import { AMLLyrics } from "@/components/public/lyrics/amll";
 import { RingollLyrics } from "@/components/public/lyrics/ringoll/ringoll";
-import { LyricsTranslationLanguageSwitchButton } from "@/components/public/LyricsTranslationLanguageSwitchButton";
+import {
+  HIDDEN_TRANSLATION_LANGUAGE_INDEX,
+  LyricsTranslationLanguageSwitchButton,
+} from "@/components/public/LyricsTranslationLanguageSwitchButton";
 import TooltipIconButton from "@/components/dashboard/TooltipIconButton";
 import { Maximize, Minimize } from "lucide-react";
 import { cn } from "@lyricova/components/utils";
@@ -238,7 +241,9 @@ export default function Index() {
     "module",
     "lyricovaPlayer",
   );
-  const [translationLanguageIdx, setTranslationLanguageIdx] = useState(0);
+  const [translationLanguageIdx, setTranslationLanguageIdx] = useState(
+    HIDDEN_TRANSLATION_LANGUAGE_INDEX,
+  );
 
   const moduleNode = (MODULE_LIST[module] ?? MODULE_LIST.focused).render;
   const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
@@ -257,7 +262,10 @@ export default function Index() {
     const languages =
       lyricsQuery.data?.musicFile?.lyrics?.translationLanguages ?? [];
     setTranslationLanguageIdx((idx) =>
-      Math.max(0, Math.min(idx, languages.length - 1)),
+      Math.max(
+        HIDDEN_TRANSLATION_LANGUAGE_INDEX,
+        Math.min(idx, languages.length - 1),
+      ),
     );
     return languages;
   }, [lyricsQuery.data?.musicFile?.lyrics?.translationLanguages]);
