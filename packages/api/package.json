@@ -91,7 +91,7 @@
     "mecab-async": "^0.1.2",
     "mime": "^4.1.0",
     "multer": "^2.2.0",
-    "mysql2": "^3.9.8",
+    "mysql2": "^3.24.2",
     "node-id3": "^0.2.1",
     "novel-segment": "^2.7.53",
     "p-limit": "^7.3.0",
