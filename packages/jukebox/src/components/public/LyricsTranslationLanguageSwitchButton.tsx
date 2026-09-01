@@ -17,7 +17,7 @@ const DEFAULT_FONT_WIDTH = 100;
 interface Props {
   languages: (string | undefined)[];
   selectedLanguageIdx: number;
-  setSelectedLanguageIdx: (idx: number) => void;
+  onSelectedLanguageIdxChange: (idx: number) => void;
 }
 
 function setFontWidth(element: HTMLSpanElement, width: number) {
@@ -29,19 +29,19 @@ function setFontWidth(element: HTMLSpanElement, width: number) {
 export function LyricsTranslationLanguageSwitchButton({
   languages,
   selectedLanguageIdx,
-  setSelectedLanguageIdx,
+  onSelectedLanguageIdxChange,
 }: Props) {
   const languageCodeRef = useRef<HTMLSpanElement>(null);
   const selectedLanguage = languages[selectedLanguageIdx];
   const hasKnownLanguage = Boolean(selectedLanguage);
 
   const handleNext = useCallback(() => {
-    setSelectedLanguageIdx(
+    onSelectedLanguageIdxChange(
       selectedLanguageIdx >= languages.length - 1
         ? HIDDEN_TRANSLATION_LANGUAGE_INDEX
         : selectedLanguageIdx + 1,
     );
-  }, [languages, selectedLanguageIdx, setSelectedLanguageIdx]);
+  }, [languages, onSelectedLanguageIdxChange, selectedLanguageIdx]);
 
   useLayoutEffect(() => {
     const element = languageCodeRef.current;

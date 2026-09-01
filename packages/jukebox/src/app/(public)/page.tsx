@@ -3,7 +3,7 @@ import { useQuery, skipToken } from "@apollo/client/react";
 import { graphql } from "@lyricova/components/gql";
 import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { FocusedLyrics } from "@/components/public/lyrics/focused";
 import { PlainLyrics } from "@/components/public/lyrics/plain";
 import { LyricsSwitchButton } from "@/components/public/LyricsSwitchButton";
@@ -235,15 +235,40 @@ const MODULE_ITEMS: MenuEntry<ModuleId>[] = (
   return { value, label: entry.label, path: entry.path && [...entry.path] };
 });
 
+type TranslationLanguagePreference =
+  | { mode: "off" }
+  | { mode: "language"; language: string | null };
+
+const DEFAULT_TRANSLATION_LANGUAGE_PREFERENCE = {
+  mode: "off",
+} as const satisfies TranslationLanguagePreference;
+
+function resolveTranslationLanguageIdx(
+  languages: (string | undefined)[],
+  preference: TranslationLanguagePreference,
+): number {
+  if (languages.length === 0 || preference.mode === "off") {
+    return HIDDEN_TRANSLATION_LANGUAGE_INDEX;
+  }
+
+  const matchingIdx = languages.findIndex(
+    (language) => (language ?? null) === preference.language,
+  );
+  return matchingIdx >= 0 ? matchingIdx : 0;
+}
+
 export default function Index() {
   const [module, setModule] = useClientPersistentState<ModuleId>(
     "focused",
     "module",
     "lyricovaPlayer",
   );
-  const [translationLanguageIdx, setTranslationLanguageIdx] = useState(
-    HIDDEN_TRANSLATION_LANGUAGE_INDEX,
-  );
+  const [translationLanguagePreference, setTranslationLanguagePreference] =
+    useClientPersistentState<TranslationLanguagePreference>(
+      DEFAULT_TRANSLATION_LANGUAGE_PREFERENCE,
+      "translationLanguage",
+      "lyricovaPlayer",
+    );
 
   const moduleNode = (MODULE_LIST[module] ?? MODULE_LIST.focused).render;
   const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
@@ -258,17 +283,30 @@ export default function Index() {
     currentSong?.id ? { variables: { id: currentSong.id } } : skipToken,
   );
 
-  const languages = useMemo(() => {
-    const languages =
-      lyricsQuery.data?.musicFile?.lyrics?.translationLanguages ?? [];
-    setTranslationLanguageIdx((idx) =>
-      Math.max(
-        HIDDEN_TRANSLATION_LANGUAGE_INDEX,
-        Math.min(idx, languages.length - 1),
-      ),
-    );
-    return languages;
-  }, [lyricsQuery.data?.musicFile?.lyrics?.translationLanguages]);
+  const languages = useMemo(
+    () => lyricsQuery.data?.musicFile?.lyrics?.translationLanguages ?? [],
+    [lyricsQuery.data?.musicFile?.lyrics?.translationLanguages],
+  );
+  const translationLanguageIdx = resolveTranslationLanguageIdx(
+    languages,
+    translationLanguagePreference,
+  );
+  const handleTranslationLanguageChange = useCallback(
+    (idx: number) => {
+      if (idx === HIDDEN_TRANSLATION_LANGUAGE_INDEX) {
+        setTranslationLanguagePreference(
+          DEFAULT_TRANSLATION_LANGUAGE_PREFERENCE,
+        );
+        return;
+      }
+
+      setTranslationLanguagePreference({
+        mode: "language",
+        language: languages[idx] ?? null,
+      });
+    },
+    [languages, setTranslationLanguagePreference],
+  );
 
   const MessageBox = ({ children }: { children: ReactNode }) => (
     <div
@@ -347,7 +385,7 @@ export default function Index() {
       <LyricsTranslationLanguageSwitchButton
         languages={languages}
         selectedLanguageIdx={translationLanguageIdx}
-        setSelectedLanguageIdx={setTranslationLanguageIdx}
+        onSelectedLanguageIdxChange={handleTranslationLanguageChange}
       />
       <LyricsSwitchButton<ModuleId>
         items={MODULE_ITEMS}
