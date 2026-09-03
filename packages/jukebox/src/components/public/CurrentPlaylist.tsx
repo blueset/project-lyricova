@@ -1,8 +1,9 @@
 import type { Track } from "./AppContext";
-import { MoreVertical, GripVertical, Trash } from "lucide-react";
+import { MoreVertical, GripVertical, Shuffle, Trash } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 import React from "react";
+import { useQuery } from "@apollo/client/react";
 import type {
   DropResult,
   DraggableProvided,
@@ -14,12 +15,15 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAppDispatch, useAppSelector } from "../../redux/public/store";
 import {
+  loadTracks,
   moveTrack,
   playTrack,
   removeTrack,
+  toggleShuffle,
   visualPlaylistSelector,
 } from "../../redux/public/playlist";
 import { cn } from "@lyricova/components/utils";
+import { graphql } from "@lyricova/components/gql";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +32,18 @@ import {
 } from "@lyricova/components/components/ui/dropdown-menu";
 import { Button } from "@lyricova/components/components/ui/button";
 import { shallowEqual } from "react-redux";
+
+const MUSIC_FILES_QUERY = graphql(`
+  query GetMusicFiles {
+    musicFiles(first: -1) {
+      edges {
+        node {
+          ...MusicFileForPlaylistAttributes
+        }
+      }
+    }
+  }
+`);
 
 function CurrentPlaylistItem({
   provided,
@@ -159,6 +175,11 @@ export default function CurrentPlaylist() {
   const dispatch = useAppDispatch();
   const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
   const tracks = useAppSelector(visualPlaylistSelector, shallowEqual);
+  const libraryTracksQuery = useQuery(MUSIC_FILES_QUERY, {
+    skip: tracks.length > 0,
+  });
+  const libraryTracks =
+    libraryTracksQuery.data?.musicFiles.edges.map(({ node }) => node) ?? [];
 
   function onDragEnd(result: DropResult) {
     if (!result.destination) {
@@ -192,6 +213,33 @@ export default function CurrentPlaylist() {
       rowVirtualizer.scrollToIndex(nowPlaying, { align: "start" });
     }
   }, [nowPlaying, rowVirtualizer, tracks]);
+
+  if (tracks.length === 0) {
+    const shuffleAll = () => {
+      dispatch(loadTracks(libraryTracks));
+      dispatch(toggleShuffle());
+      dispatch(playTrack({ track: 0, playNow: true }));
+    };
+
+    return (
+      <div className="min-h-0 flex-1 flex flex-col items-center justify-center gap-2 p-4">
+        <Button
+          variant="outline"
+          className="cursor-pointer"
+          disabled={libraryTracksQuery.loading || libraryTracks.length === 0}
+          onClick={shuffleAll}
+        >
+          <Shuffle />
+          {libraryTracksQuery.loading ? "Loading library..." : "Shuffle all"}
+        </Button>
+        {libraryTracksQuery.error && (
+          <p className="text-sm text-destructive" role="alert">
+            Unable to load the music library.
+          </p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-0 flex-1 overflow-hidden">
