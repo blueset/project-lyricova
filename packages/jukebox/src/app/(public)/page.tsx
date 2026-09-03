@@ -4,6 +4,7 @@ import { graphql } from "@lyricova/components/gql";
 import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { useCallback, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { FocusedLyrics } from "@/components/public/lyrics/focused";
 import { PlainLyrics } from "@/components/public/lyrics/plain";
 import { LyricsSwitchButton } from "@/components/public/LyricsSwitchButton";
@@ -27,9 +28,16 @@ import {
   HIDDEN_TRANSLATION_LANGUAGE_INDEX,
   LyricsTranslationLanguageSwitchButton,
 } from "@/components/public/LyricsTranslationLanguageSwitchButton";
-import TooltipIconButton from "@/components/dashboard/TooltipIconButton";
-import { Maximize, Minimize } from "lucide-react";
 import { cn } from "@lyricova/components/utils";
+import {
+  LyricsPresentationButton,
+  type LyricsPresentationMode,
+} from "@/components/public/LyricsPresentationButton";
+import { useDocumentPictureInPicture } from "@/hooks/useDocumentPictureInPicture";
+import { PresentationWindowProvider } from "@/hooks/usePresentationWindow";
+import { toast } from "sonner";
+import { BackgroundCanvas } from "@/components/public/BackgroundCanvas/BackgroundCanvas";
+import { useAppContext } from "@/components/public/AppContext";
 
 // Lazily loaded proof-of-concept WASM glyph renderer. Loading it dynamically
 // (client-only) keeps the WASM shaper and multi-megabyte base font out of the
@@ -273,10 +281,28 @@ export default function Index() {
   const moduleNode = (MODULE_LIST[module] ?? MODULE_LIST.focused).render;
   const nowPlaying = useAppSelector((s) => s.playlist.nowPlaying);
   const currentSong = useAppSelector(currentSongSelector);
+  const textureUrl = useAppSelector((s) => s.display.textureUrl);
+  const { playerRef } = useAppContext();
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const lyricsHostRef = useRef<HTMLDivElement>(null);
 
   const isFullscreen = useAppSelector((s) => s.display.isFullscreen);
   const dispatch = useAppDispatch();
+  const handlePictureInPictureError = useCallback((error: unknown) => {
+    const detail = error instanceof Error ? `: ${error.message}` : "";
+    toast.error(`Unable to open lyrics in Picture-in-Picture${detail}`);
+  }, []);
+  const {
+    isOpening: isDocumentPictureInPictureOpening,
+    isSupported: isDocumentPictureInPictureSupported,
+    open: openDocumentPictureInPicture,
+    pipWindow,
+    portalContainer: pictureInPicturePortalContainer,
+    returnToOpener,
+  } = useDocumentPictureInPicture({
+    hostRef: lyricsHostRef,
+    onError: handlePictureInPictureError,
+  });
 
   const lyricsQuery = useQuery(
     LYRICS_QUERY,
@@ -307,6 +333,46 @@ export default function Index() {
     },
     [languages, setTranslationLanguagePreference],
   );
+
+  const handleEnterFullscreen = useCallback(async () => {
+    if (isFullscreen) return;
+    dispatch(toggleFullscreen());
+
+    try {
+      const wakeLock = await navigator.wakeLock?.request("screen");
+      if (wakeLock) {
+        wakeLockRef.current = wakeLock;
+        wakeLock.addEventListener("release", () => {
+          if (wakeLockRef.current === wakeLock) wakeLockRef.current = null;
+        });
+      } else {
+        wakeLockRef.current = null;
+      }
+    } catch (error) {
+      wakeLockRef.current = null;
+      console.error("Failed to request the screen wake lock", error);
+    }
+  }, [dispatch, isFullscreen]);
+
+  const handleExitFullscreen = useCallback(async () => {
+    if (!isFullscreen) return;
+    dispatch(toggleFullscreen());
+    await document.exitFullscreen?.().catch(() => {
+      /* No-op */
+    });
+
+    const wakeLock = wakeLockRef.current;
+    wakeLockRef.current = null;
+    if (wakeLock) {
+      await wakeLock.release().catch((error: unknown) => {
+        console.error("Failed to release the screen wake lock", error);
+      });
+    }
+  }, [dispatch, isFullscreen]);
+
+  const handleEnterDocumentPictureInPicture = useCallback(() => {
+    void openDocumentPictureInPicture();
+  }, [openDocumentPictureInPicture]);
 
   const MessageBox = ({ children }: { children: ReactNode }) => (
     <div
@@ -347,62 +413,104 @@ export default function Index() {
     node = <MessageBox>No lyrics.</MessageBox>;
   }
 
+  const presentationMode: LyricsPresentationMode = pipWindow
+    ? "pictureInPicture"
+    : isFullscreen
+      ? "fullscreen"
+      : "normal";
+
   const controls = (
     <div
       className={cn(
         "absolute top-0 right-4 flex flex-row gap-2",
-        isFullscreen && "pt-2",
+        presentationMode !== "normal" && "pt-2",
       )}
       onClick={(evt) => evt.stopPropagation()}
     >
-      <TooltipIconButton
-        title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-        variant="ghostBright"
-        onClick={async () => {
-          dispatch(toggleFullscreen());
-          if (isFullscreen) {
-            document.exitFullscreen?.()?.catch(() => {
-              /* No-op */
-            });
-            if (wakeLockRef.current) {
-              wakeLockRef.current.release();
-            }
-          } else {
-            const wakeLock = await navigator.wakeLock?.request("screen");
-            if (wakeLock) {
-              wakeLockRef.current = wakeLock;
-              wakeLock.addEventListener("release", () => {
-                wakeLockRef.current = null;
-              });
-            } else {
-              wakeLockRef.current = null;
-            }
-          }
-        }}
-      >
-        {isFullscreen ? <Minimize /> : <Maximize />}
-      </TooltipIconButton>
+      <LyricsPresentationButton
+        isDocumentPictureInPictureOpening={
+          isDocumentPictureInPictureOpening
+        }
+        isDocumentPictureInPictureSupported={
+          isDocumentPictureInPictureSupported
+        }
+        mode={presentationMode}
+        onEnterDocumentPictureInPicture={
+          handleEnterDocumentPictureInPicture
+        }
+        onEnterFullscreen={handleEnterFullscreen}
+        onExitFullscreen={handleExitFullscreen}
+        onReturnToMainWindow={returnToOpener}
+      />
       <LyricsTranslationLanguageSwitchButton
         languages={languages}
         selectedLanguageIdx={translationLanguageIdx}
         onSelectedLanguageIdxChange={handleTranslationLanguageChange}
+        useNativeTooltip={presentationMode === "pictureInPicture"}
       />
       <LyricsSwitchButton<ModuleId>
         items={MODULE_ITEMS}
         value={module}
         onChange={setModule}
+        useNativeSelect={presentationMode === "pictureInPicture"}
       />
     </div>
   );
 
+  const lyricsPresentation = (
+    <PresentationWindowProvider value={pipWindow}>
+      <div className="relative isolate size-full overflow-hidden" lang="ja">
+        {presentationMode === "pictureInPicture" && (
+          <BackgroundCanvas
+            coverUrl={
+              currentSong ? `/api/files/${currentSong.id}/cover` : undefined
+            }
+            textureUrl={textureUrl}
+            playerRef={playerRef}
+            hasLyrics={currentSong?.hasLyrics || false}
+          />
+        )}
+        <div
+          className={cn(
+            "relative size-full overflow-hidden",
+            presentationMode === "pictureInPicture" && "z-10",
+          )}
+        >
+          {node}
+          {presentationMode === "normal" ? (
+            controls
+          ) : (
+            <LyricsFullScreenOverlay
+              mode={
+                presentationMode === "fullscreen"
+                  ? "fullscreen"
+                  : "pictureInPicture"
+              }
+            >
+              {controls}
+            </LyricsFullScreenOverlay>
+          )}
+        </div>
+      </div>
+    </PresentationWindowProvider>
+  );
+
   return (
     <>
-      {node}
-      {isFullscreen ? (
-        <LyricsFullScreenOverlay>{controls}</LyricsFullScreenOverlay>
-      ) : (
-        controls
-      )}
+      <div
+        ref={lyricsHostRef}
+        className="relative size-full overflow-hidden"
+        lang="ja"
+      >
+        {pipWindow ? (
+          <MessageBox>Lyrics are open in Picture-in-Picture.</MessageBox>
+        ) : (
+          lyricsPresentation
+        )}
+      </div>
+      {pipWindow &&
+        pictureInPicturePortalContainer &&
+        createPortal(lyricsPresentation, pictureInPicturePortalContainer)}
     </>
   );
 }

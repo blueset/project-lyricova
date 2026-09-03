@@ -20,8 +20,11 @@ import FuriganaLyricsLine from "../../FuriganaLyricsLine";
 import gsap from "gsap";
 import { graphql } from "@lyricova/components/gql";
 import { cn } from "@lyricova/components/utils";
-import { readPlaybackSnapshot } from "../../../hooks/useMediaClock";
-import { synchronizeGsapTimeline } from "../../../hooks/useTrackwiseTimelineControl";
+import {
+  readPlaybackSnapshot,
+  useMediaClock,
+} from "../../../hooks/useMediaClock";
+import { seekGsapTimeline } from "../../../hooks/useTrackwiseTimelineControl";
 
 type Timeline = gsap.core.Timeline;
 const COUNTDOWN_DURATION = 3;
@@ -611,6 +614,16 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
   // Line object or -1 for countdown.
   const timelineForRef = useRef<LyricsKitLyricsLine | -1 | null>(null);
 
+  useMediaClock(playerRef, (snapshot) => {
+    const timeline = timelineRef.current;
+    if (!timeline) return;
+    seekGsapTimeline(
+      timeline,
+      snapshot,
+      currentLineStartRef.current ?? 0,
+    );
+  });
+
   useEffect(() => {
     const activeSpan = activeRef.current;
     const shouldUseTimelineFor =
@@ -715,7 +728,7 @@ export function KaraokeJaLyrics({ lyrics }: Props) {
     const player = playerRef.current;
     if (timeline && player) {
       const start = currentLineStartRef.current || 0;
-      synchronizeGsapTimeline(timeline, readPlaybackSnapshot(player), start);
+      seekGsapTimeline(timeline, readPlaybackSnapshot(player), start);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

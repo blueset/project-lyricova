@@ -11,6 +11,7 @@ import { cn } from "@lyricova/components/utils";
 import { Maximize, Rewind, Pause, Play, FastForward } from "lucide-react";
 import { useAppSelector } from "../../redux/public/store";
 import { currentSongSelector } from "../../redux/public/playlist";
+import { usePresentationWindow } from "../../hooks/usePresentationWindow";
 
 interface SO extends ScreenOrientation {
   lock(orientation: string): Promise<void>;
@@ -18,10 +19,13 @@ interface SO extends ScreenOrientation {
 
 export function LyricsFullScreenOverlay({
   children,
+  mode = "fullscreen",
 }: {
   children?: ReactNode;
+  mode?: "fullscreen" | "pictureInPicture";
 }) {
   const { playerRef } = useAppContext();
+  const presentationWindow = usePresentationWindow();
   const currentSong = useAppSelector(currentSongSelector);
   const [isPlaying, setIsPlaying] = useNamedState(
     !playerRef.current?.paused,
@@ -32,7 +36,7 @@ export function LyricsFullScreenOverlay({
     "web" | "0" | "90" | "180" | "270"
   >("web", "fullscreenMode");
   const toggleVisibleTimeout = useRef<number | null>(null);
-  const lastClickTime = useRef<number>(0);
+  const lastClickTime = useRef<number | null>(null);
   const onPlay = useCallback(() => {
     setIsPlaying(true);
   }, [setIsPlaying]);
@@ -79,8 +83,12 @@ export function LyricsFullScreenOverlay({
 
   const toggleVisible: ComponentProps<"div">["onClick"] = useCallback(
     (event) => {
-      const now = performance.now();
-      if (now - lastClickTime.current < 500) {
+      if (!presentationWindow) return;
+      const now = presentationWindow.performance.now();
+      if (
+        lastClickTime.current !== null &&
+        now - lastClickTime.current < 500
+      ) {
         // if double click left half
         if (event.clientX < event.currentTarget.clientWidth / 2) {
           rewind5(event);
@@ -90,10 +98,10 @@ export function LyricsFullScreenOverlay({
       } else {
         setIsVisible((v) => {
           if (toggleVisibleTimeout.current) {
-            window.clearTimeout(toggleVisibleTimeout.current);
+            presentationWindow.clearTimeout(toggleVisibleTimeout.current);
           }
           if (!v) {
-            toggleVisibleTimeout.current = window.setTimeout(() => {
+            toggleVisibleTimeout.current = presentationWindow.setTimeout(() => {
               setIsVisible(false);
               toggleVisibleTimeout.current = null;
             }, 2000);
@@ -103,7 +111,7 @@ export function LyricsFullScreenOverlay({
       }
       lastClickTime.current = now;
     },
-    [forward5, rewind5, setIsVisible],
+    [forward5, presentationWindow, rewind5, setIsVisible],
   );
 
   useEffect(() => {
@@ -120,16 +128,33 @@ export function LyricsFullScreenOverlay({
   }, [onPause, onPlay, playerRef]);
 
   useEffect(() => {
+    if (!presentationWindow || mode !== "fullscreen") return;
+    const presentationDocument = presentationWindow.document;
     const onFullscreenChange = () => {
-      if (!document.fullscreenElement) {
+      if (!presentationDocument.fullscreenElement) {
         setFullscreenMode("web");
       }
     };
-    document.addEventListener("fullscreenchange", onFullscreenChange);
+    presentationDocument.addEventListener(
+      "fullscreenchange",
+      onFullscreenChange,
+    );
     return () => {
-      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      presentationDocument.removeEventListener(
+        "fullscreenchange",
+        onFullscreenChange,
+      );
     };
-  }, [setFullscreenMode]);
+  }, [mode, presentationWindow, setFullscreenMode]);
+
+  useEffect(
+    () => () => {
+      if (toggleVisibleTimeout.current && presentationWindow) {
+        presentationWindow.clearTimeout(toggleVisibleTimeout.current);
+      }
+    },
+    [presentationWindow],
+  );
 
   return (
     <div
@@ -146,44 +171,48 @@ export function LyricsFullScreenOverlay({
         )}
       >
         {children}
-        <div className="absolute top-0 left-0 p-2">
-          <ToggleGroup
-            className="z-10"
-            type="single"
-            value={fullscreenMode}
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Fullscreen"
-            onValueChange={async (
-              value: "web" | "0" | "90" | "180" | "270",
-            ) => {
-              if (value) {
+        {mode === "fullscreen" && (
+          <div className="absolute top-0 left-0 p-2">
+            <ToggleGroup
+              className="z-10"
+              type="single"
+              value={fullscreenMode}
+              onClick={(e) => e.stopPropagation()}
+              aria-label="Fullscreen"
+              onValueChange={async (
+                value: "web" | "0" | "90" | "180" | "270",
+              ) => {
+                if (!value || !presentationWindow) return;
+                const presentationDocument = presentationWindow.document;
+                const presentationScreen = presentationWindow.screen;
+
                 if (value === "web") {
-                  await document?.exitFullscreen?.().catch(() => {
+                  await presentationDocument.exitFullscreen?.().catch(() => {
                     /* No-op */
                   });
-                  screen?.orientation?.unlock?.();
+                  presentationScreen.orientation?.unlock?.();
                 } else {
-                  await document.body?.requestFullscreen?.();
+                  await presentationDocument.body?.requestFullscreen?.();
                   if (value === "0") {
-                    (screen?.orientation as SO)
+                    (presentationScreen.orientation as SO)
                       ?.lock?.("portrait-primary")
                       .catch(() => {
                         /* No-op */
                       });
                   } else if (value === "90") {
-                    (screen?.orientation as SO)
+                    (presentationScreen.orientation as SO)
                       ?.lock?.("landscape-primary")
                       .catch(() => {
                         /* No-op */
                       });
                   } else if (value === "180") {
-                    (screen?.orientation as SO)
+                    (presentationScreen.orientation as SO)
                       ?.lock?.("portrait-secondary")
                       .catch(() => {
                         /* No-op */
                       });
                   } else if (value === "270") {
-                    (screen?.orientation as SO)
+                    (presentationScreen.orientation as SO)
                       ?.lock?.("landscape-secondary")
                       .catch(() => {
                         /* No-op */
@@ -191,18 +220,18 @@ export function LyricsFullScreenOverlay({
                   }
                 }
                 setFullscreenMode(value);
-              }
-            }}
-          >
-            <ToggleGroupItem value="web" aria-label="Fullscreen">
-              <Maximize />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="0">0°</ToggleGroupItem>
-            <ToggleGroupItem value="90">90°</ToggleGroupItem>
-            <ToggleGroupItem value="180">180°</ToggleGroupItem>
-            <ToggleGroupItem value="270">270°</ToggleGroupItem>
-          </ToggleGroup>
-        </div>
+              }}
+            >
+              <ToggleGroupItem value="web" aria-label="Fullscreen">
+                <Maximize />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="0">0°</ToggleGroupItem>
+              <ToggleGroupItem value="90">90°</ToggleGroupItem>
+              <ToggleGroupItem value="180">180°</ToggleGroupItem>
+              <ToggleGroupItem value="270">270°</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        )}
         <div className="absolute bottom-0 left-0 z-10 flex max-w-[min(32rem,calc(100%-2rem))] items-center gap-3 p-4 text-white">
           <img
             src={

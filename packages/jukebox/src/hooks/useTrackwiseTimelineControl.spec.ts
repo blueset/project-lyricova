@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { synchronizeGsapTimeline } from "./useTrackwiseTimelineControl";
+import {
+  seekGsapTimeline,
+  synchronizeGsapTimeline,
+} from "./useTrackwiseTimelineControl";
 
 function timelineStub() {
   return {
@@ -40,5 +43,26 @@ describe("synchronizeGsapTimeline", () => {
 
     expect(timeline.timeScale).toHaveBeenCalledWith(0.75);
     expect(timeline.pause).toHaveBeenCalledWith(2, false);
+  });
+});
+
+describe("seekGsapTimeline", () => {
+  it("keeps the timeline paused while seeking to the media clock", () => {
+    const timeline = timelineStub();
+
+    seekGsapTimeline(
+      timeline,
+      {
+        currentTime: 12,
+        duration: 20,
+        playbackRate: 1.25,
+        state: "playing",
+      },
+      10,
+    );
+
+    expect(timeline.timeScale).toHaveBeenCalledWith(1.25);
+    expect(timeline.pause).toHaveBeenCalledWith(2, false);
+    expect(timeline.play).not.toHaveBeenCalled();
   });
 });

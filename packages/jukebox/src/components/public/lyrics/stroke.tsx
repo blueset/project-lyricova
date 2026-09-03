@@ -10,7 +10,11 @@ import { useCallback, useRef, useEffect, useState } from "react";
 import { useResizeObserver } from "../../../hooks/useResizeObserver";
 import { Scene } from "react-scenejs";
 import { cn } from "@lyricova/components/utils";
-import { readPlaybackSnapshot } from "../../../hooks/useMediaClock";
+import {
+  readPlaybackSnapshot,
+  useMediaClock,
+} from "../../../hooks/useMediaClock";
+import type { PlaybackSnapshot } from "../../../hooks/types";
 
 const ANIMATION_THRESHOLD = 0.25;
 
@@ -66,7 +70,7 @@ function extractLinesFromTextNode(textNode: Text) {
   // then looking at the Range's client rectangles, we can determine which
   // characters belong in which rendered line.
   const textContent = textNode.textContent;
-  const range = document.createRange();
+  const range = textNode.ownerDocument.createRange();
   const lines: string[][] = [];
   let lineCharacters: string[] = [];
 
@@ -188,8 +192,10 @@ function LyricsLineElement({
       const lines = sizerSpan.firstChild
         ? extractLinesFromTextNode(sizerSpan.firstChild as Text)
         : [];
+      const ownerWindow = textRef.current.ownerDocument.defaultView;
+      if (!ownerWindow) return;
       const lineHeight =
-        parseFloat(window.getComputedStyle(textRef.current).fontSize) * 1.2;
+        parseFloat(ownerWindow.getComputedStyle(textRef.current).fontSize) * 1.2;
 
       // Generate segmented lyrics line
       const segmentedLines = lines
@@ -277,6 +283,22 @@ interface Props {
   lyrics: LyricsKitLyrics;
 }
 
+export function synchronizeStrokeScene(
+  scene: Scene,
+  snapshot: PlaybackSnapshot,
+  startTime: number,
+  isComplete: boolean,
+) {
+  scene.pause();
+  if (isComplete) {
+    scene.setTime("100%");
+    return;
+  }
+
+  scene.getItem().setPlaySpeed(snapshot.playbackRate);
+  scene.setTime(snapshot.currentTime - startTime);
+}
+
 /**
  * Render stroke lyrics and synchronize the active line's Scene with playback.
  */
@@ -288,22 +310,25 @@ export function StrokeLyrics({ lyrics }: Props) {
   const { currentFrame, currentFrameId, endTime, playerState } =
     usePlainPlayerLyricsState(lyrics, playerRef);
 
+  useMediaClock(playerRef, (snapshot) => {
+    if (!progressorScene) return;
+    synchronizeStrokeScene(
+      progressorScene,
+      snapshot,
+      currentFrame?.start ?? 0,
+      currentFrameId >= lyrics.lines.length,
+    );
+  });
+
   useEffect(() => {
     const player = playerRef.current;
     if (!progressorScene || !player) return;
-    if (currentFrameId >= lyrics.lines.length) {
-      progressorScene.setTime("100%");
-    } else {
-      const startTime = currentFrame?.start ?? 0;
-      const snapshot = readPlaybackSnapshot(player);
-      progressorScene.getItem().setPlaySpeed(snapshot.playbackRate);
-      progressorScene.setTime(snapshot.currentTime - startTime);
-      if (snapshot.state === "playing") {
-        progressorScene.play();
-      } else {
-        progressorScene.pause();
-      }
-    }
+    synchronizeStrokeScene(
+      progressorScene,
+      readPlaybackSnapshot(player),
+      currentFrame?.start ?? 0,
+      currentFrameId >= lyrics.lines.length,
+    );
   }, [
     currentFrame,
     currentFrameId,

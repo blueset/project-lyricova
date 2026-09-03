@@ -1,6 +1,11 @@
 import { useCallback, useLayoutEffect, useRef } from "react";
 import { Languages } from "lucide-react";
 import { Button } from "@lyricova/components/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@lyricova/components/components/ui/tooltip";
 import { Google_Sans_Flex } from "next/font/google";
 
 const googleSansFlex = Google_Sans_Flex({
@@ -18,6 +23,7 @@ interface Props {
   languages: (string | undefined)[];
   selectedLanguageIdx: number;
   onSelectedLanguageIdxChange: (idx: number) => void;
+  useNativeTooltip?: boolean;
 }
 
 function setFontWidth(element: HTMLSpanElement, width: number) {
@@ -30,6 +36,7 @@ export function LyricsTranslationLanguageSwitchButton({
   languages,
   selectedLanguageIdx,
   onSelectedLanguageIdxChange,
+  useNativeTooltip = false,
 }: Props) {
   const languageCodeRef = useRef<HTMLSpanElement>(null);
   const selectedLanguage = languages[selectedLanguageIdx];
@@ -78,7 +85,7 @@ export function LyricsTranslationLanguageSwitchButton({
     };
 
     fitLanguageCode();
-    void document.fonts.ready.then(fitLanguageCode);
+    void element.ownerDocument.fonts.ready.then(fitLanguageCode);
 
     return () => {
       cancelled = true;
@@ -89,17 +96,17 @@ export function LyricsTranslationLanguageSwitchButton({
 
   const isShowingTranslation =
     selectedLanguageIdx !== HIDDEN_TRANSLATION_LANGUAGE_INDEX;
+  const label = isShowingTranslation
+    ? `Translation: ${selectedLanguage || "unknown language"}`
+    : "Show translation";
 
-  return (
+  const button = (
     <Button
       size="icon"
       variant={isShowingTranslation && !hasKnownLanguage ? "default" : "outline"}
       onClick={handleNext}
-      aria-label={
-        isShowingTranslation
-          ? `Translation: ${selectedLanguage || "unknown language"}`
-          : "Show translation"
-      }
+      aria-label={label}
+      title={useNativeTooltip ? label : undefined}
     >
       {hasKnownLanguage ? (
         <span
@@ -117,5 +124,14 @@ export function LyricsTranslationLanguageSwitchButton({
         <Languages />
       )}
     </Button>
+  );
+
+  if (useNativeTooltip) return button;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }

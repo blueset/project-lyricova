@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
 import { useEffect, useRef } from "react";
 import type { PlaybackSnapshot } from "./types";
+import { usePresentationWindow } from "./usePresentationWindow";
 
 const MEDIA_EVENTS: (keyof HTMLMediaElementEventMap)[] = [
   "durationchange",
@@ -75,12 +76,14 @@ export function useMediaClock(
   onSnapshot: (snapshot: PlaybackSnapshot) => void,
   { animationFrames = true }: { animationFrames?: boolean } = {},
 ) {
+  const presentationWindow = usePresentationWindow();
   const onSnapshotRef = useRef(onSnapshot);
   onSnapshotRef.current = onSnapshot;
 
   useEffect(() => {
     const player = playerRef.current;
-    if (!player) return;
+    if (!player || !presentationWindow) return;
+    const presentationDocument = presentationWindow.document;
 
     let animationFrame: number | null = null;
 
@@ -91,7 +94,7 @@ export function useMediaClock(
     };
     const stopAnimationFrames = () => {
       if (animationFrame !== null) {
-        cancelAnimationFrame(animationFrame);
+        presentationWindow.cancelAnimationFrame(animationFrame);
         animationFrame = null;
       }
     };
@@ -99,7 +102,8 @@ export function useMediaClock(
       animationFrame = null;
       const snapshot = emit();
       if (snapshot.state === "playing") {
-        animationFrame = requestAnimationFrame(onAnimationFrame);
+        animationFrame =
+          presentationWindow.requestAnimationFrame(onAnimationFrame);
       }
     };
     const startAnimationFrames = () => {
@@ -108,7 +112,8 @@ export function useMediaClock(
         animationFrame === null &&
         readPlaybackSnapshot(player).state === "playing"
       ) {
-        animationFrame = requestAnimationFrame(onAnimationFrame);
+        animationFrame =
+          presentationWindow.requestAnimationFrame(onAnimationFrame);
       }
     };
     const synchronize = () => {
@@ -120,13 +125,16 @@ export function useMediaClock(
       }
     };
     const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") synchronize();
+      if (presentationDocument.visibilityState === "visible") synchronize();
     };
 
     MEDIA_EVENTS.forEach((event) =>
       player.addEventListener(event, synchronize),
     );
-    document.addEventListener("visibilitychange", onVisibilityChange);
+    presentationDocument.addEventListener(
+      "visibilitychange",
+      onVisibilityChange,
+    );
     synchronize();
 
     return () => {
@@ -134,7 +142,10 @@ export function useMediaClock(
       MEDIA_EVENTS.forEach((event) =>
         player.removeEventListener(event, synchronize),
       );
-      document.removeEventListener("visibilitychange", onVisibilityChange);
+      presentationDocument.removeEventListener(
+        "visibilitychange",
+        onVisibilityChange,
+      );
     };
-  }, [animationFrames, playerRef]);
+  }, [animationFrames, playerRef, presentationWindow]);
 }

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { findActiveKeyframeIndex, useMediaClock } from "./useMediaClock";
 import type { PlaybackSnapshot } from "./types";
 import { usePlayerLyricsState } from "./usePlayerLyricsState";
+import { PresentationWindowProvider } from "./usePresentationWindow";
 
 describe("findActiveKeyframeIndex", () => {
   it.each([
@@ -30,6 +31,7 @@ describe("useMediaClock", () => {
         animationFrames.set(id, callback);
         return id;
       });
+
     const cancelAnimationFrame = vi
       .spyOn(window, "cancelAnimationFrame")
       .mockImplementation((id) => {
@@ -89,6 +91,60 @@ describe("useMediaClock", () => {
 
     requestAnimationFrame.mockRestore();
     cancelAnimationFrame.mockRestore();
+  });
+
+  it("uses the active presentation window for frames and visibility", () => {
+    const snapshots: PlaybackSnapshot[] = [];
+    const presentationDocument =
+      document.implementation.createHTMLDocument("PiP");
+    Object.defineProperty(presentationDocument, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
+    const requestAnimationFrame = vi.fn(() => 1);
+    const cancelAnimationFrame = vi.fn();
+    const presentationWindow = {
+      cancelAnimationFrame,
+      document: presentationDocument,
+      requestAnimationFrame,
+    } as unknown as Window;
+
+    function Harness() {
+      const playerRef = useRef<HTMLAudioElement>(null);
+      useMediaClock(playerRef, (snapshot) => snapshots.push(snapshot));
+      return <audio ref={playerRef} />;
+    }
+
+    const view = render(
+      <PresentationWindowProvider value={presentationWindow}>
+        <Harness />
+      </PresentationWindowProvider>,
+    );
+    const player = view.container.querySelector("audio")!;
+    Object.defineProperties(player, {
+      currentTime: { configurable: true, writable: true, value: 3 },
+      duration: { configurable: true, value: 20 },
+      paused: { configurable: true, value: false },
+      playbackRate: { configurable: true, value: 1 },
+      readyState: {
+        configurable: true,
+        value: HTMLMediaElement.HAVE_ENOUGH_DATA,
+      },
+    });
+
+    act(() => {
+      player.dispatchEvent(new Event("play"));
+    });
+    expect(requestAnimationFrame).toHaveBeenCalled();
+
+    player.currentTime = 7;
+    act(() => {
+      presentationDocument.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(snapshots.at(-1)?.currentTime).toBe(7);
+
+    view.unmount();
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(1);
   });
 
   it("reselects a frame when a paused schedule changes", async () => {

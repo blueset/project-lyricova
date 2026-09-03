@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { getColorSync } from "colorthief";
 import dynamic from "next/dynamic";
 import { usePlayerState } from "../../../hooks/usePlayerState";
+import { usePresentationWindow } from "../../../hooks/usePresentationWindow";
 
 const BackgroundRenderNoSSR = dynamic(
   () => import("../compat/amllBackground").then((m) => m.BackgroundRender),
@@ -30,9 +31,9 @@ const fallbackBackgroundStyle: CSSProperties = {
     "radial-gradient(circle at 18% 20%, hsla(var(--brand-hue, 250), 60%, 32%, 0.85), transparent 34%), radial-gradient(circle at 82% 28%, hsla(calc(var(--brand-hue, 250) + 75), 58%, 28%, 0.65), transparent 36%), linear-gradient(135deg, hsl(var(--brand-hue, 250), 42%, 13%), hsl(calc(var(--brand-hue, 250) + 35), 38%, 8%))",
 };
 
-function getSupportsWebGL2() {
+function getSupportsWebGL2(targetDocument: Document) {
   try {
-    const canvas = document.createElement("canvas");
+    const canvas = targetDocument.createElement("canvas");
     const gl = canvas.getContext("webgl2", {
       alpha: true,
       depth: false,
@@ -48,22 +49,26 @@ function getSupportsWebGL2() {
 }
 
 export function BackgroundCanvas({ coverUrl, textureUrl, playerRef }: Props) {
+  const presentationWindow = usePresentationWindow();
   const _playerState = usePlayerState(playerRef);
   const [supportsWebGL2, setSupportsWebGL2] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (textureUrl) return;
-    setSupportsWebGL2(getSupportsWebGL2());
-  }, [textureUrl]);
+    if (textureUrl || !presentationWindow) return;
+    setSupportsWebGL2(getSupportsWebGL2(presentationWindow.document));
+  }, [presentationWindow, textureUrl]);
 
   useEffect(() => {
+    if (!presentationWindow) return;
+    const presentationDocument = presentationWindow.document;
+
     if (textureUrl) {
-      document.body.style.removeProperty("--brand-hue");
+      presentationDocument.body.style.removeProperty("--brand-hue");
     } else if (!coverUrl) {
-      document.body.style.removeProperty("--brand-hue");
+      presentationDocument.body.style.removeProperty("--brand-hue");
     } else {
       let canceled = false;
-      const image = new Image();
+      const image = presentationDocument.createElement("img");
       image.crossOrigin = "anonymous";
       const albumImageLoaded = new Promise<void>((resolve, reject) => {
         if (image.complete && image.naturalWidth) {
@@ -85,10 +90,10 @@ export function BackgroundCanvas({ coverUrl, textureUrl, playerRef }: Props) {
           if (!dominant) return;
           const hue = dominant.oklch().h;
           if (canceled) return;
-          document.body.style.setProperty("--brand-hue", `${hue}`);
+          presentationDocument.body.style.setProperty("--brand-hue", `${hue}`);
         } catch (err) {
           console.error("Failed to extract hue", err);
-          document.body.style.removeProperty("--brand-hue");
+          presentationDocument.body.style.removeProperty("--brand-hue");
         }
       })();
 
@@ -96,7 +101,7 @@ export function BackgroundCanvas({ coverUrl, textureUrl, playerRef }: Props) {
         canceled = true;
       };
     }
-  }, [textureUrl, coverUrl]);
+  }, [coverUrl, presentationWindow, textureUrl]);
 
   if (textureUrl) {
     return (
@@ -112,6 +117,11 @@ export function BackgroundCanvas({ coverUrl, textureUrl, playerRef }: Props) {
       </div>
     );
   } else {
-    return <div className="fixed inset-0 size-full" style={fallbackBackgroundStyle} />;
+    return (
+      <div
+        className="fixed inset-0 size-full"
+        style={fallbackBackgroundStyle}
+      />
+    );
   }
 }

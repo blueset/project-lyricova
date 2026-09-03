@@ -82,24 +82,49 @@ interface Props<T extends string> {
   items: MenuEntry<T>[];
   value: T;
   onChange: (value: T) => void;
+  useNativeSelect?: boolean;
 }
 
 export function LyricsSwitchButton<T extends string>({
   items,
   value,
   onChange,
+  useNativeSelect = false,
 }: Props<T>) {
   const tree = useMemo(() => buildMenuTree(items), [items]);
   const selected = items.find((item) => item.value === value);
+  const title = [
+    ...(selected?.path ?? []),
+    selected?.label ?? value,
+  ].join(" / ");
+
+  if (useNativeSelect) {
+    return (
+      <label className="relative">
+        <span className="sr-only">Lyrics renderer</span>
+        <select
+          className="h-9 max-w-48 appearance-none truncate rounded-md border bg-background py-1.5 pr-8 pl-3 text-sm font-medium shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          title={title}
+          value={value}
+          onChange={(event) => onChange(event.target.value as T)}
+        >
+          {items.map((item) => (
+            <option key={item.value} value={item.value}>
+              {[...(item.path ?? []), item.label].join(" / ")}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute top-1/2 right-2 size-4 -translate-y-1/2 opacity-50" />
+      </label>
+    );
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          title={[...(selected?.path ?? []), selected?.label ?? value].join(
-            " / ",
-          )}
+          title={title}
         >
           {selected?.label ?? value}
           <ChevronDown />

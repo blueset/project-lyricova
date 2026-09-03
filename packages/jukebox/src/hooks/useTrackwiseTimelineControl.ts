@@ -1,7 +1,7 @@
 import type { RefObject } from "react";
 import { useEffect } from "react";
 import type { PlaybackSnapshot, PlayerState } from "./types";
-import { readPlaybackSnapshot } from "./useMediaClock";
+import { readPlaybackSnapshot, useMediaClock } from "./useMediaClock";
 
 type Timeline = gsap.core.Timeline;
 
@@ -25,19 +25,41 @@ export function synchronizeGsapTimeline(
 }
 
 /**
- * Synchronize a track-wide GSAP timeline with the media element.
+ * Seek a GSAP timeline from media-clock snapshots without starting GSAP's
+ * opener-window ticker.
+ */
+export function seekGsapTimeline(
+  timeline: Timeline,
+  snapshot: PlaybackSnapshot,
+  offset = 0,
+) {
+  timeline.timeScale(snapshot.playbackRate);
+  timeline.pause(snapshot.currentTime - offset, false);
+}
+
+/**
+ * Drive a track-wide GSAP timeline directly from the media element.
  *
- * `playerState` invalidates the effect, while the media element remains the
- * source of truth for the exact time, playback rate, and paused state.
+ * The timeline stays paused and is sought on the active presentation window's
+ * media-clock frames, so a visible PiP window does not depend on the opener's
+ * potentially throttled GSAP ticker.
  */
 export function useTrackwiseTimelineControl(
   playerRef: RefObject<HTMLMediaElement>,
   playerState: PlayerState,
   timeline: Timeline | null,
 ) {
+  useMediaClock(
+    playerRef,
+    (snapshot) => {
+      if (timeline) seekGsapTimeline(timeline, snapshot);
+    },
+    { animationFrames: timeline !== null },
+  );
+
   useEffect(() => {
     const player = playerRef.current;
     if (!player || !timeline) return;
-    synchronizeGsapTimeline(timeline, readPlaybackSnapshot(player));
+    seekGsapTimeline(timeline, readPlaybackSnapshot(player));
   }, [playerRef, playerState, timeline]);
 }

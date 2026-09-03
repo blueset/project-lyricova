@@ -301,12 +301,12 @@ export function PictureInPictureLyrics({ lyrics }: Props) {
 
     const onPointerDown = () => {
       video.play();
-      document.removeEventListener("pointerdown", onPointerDown);
+      video.ownerDocument.removeEventListener("pointerdown", onPointerDown);
     };
 
-    document.addEventListener("pointerdown", onPointerDown);
+    video.ownerDocument.addEventListener("pointerdown", onPointerDown);
     return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
+      video.ownerDocument.removeEventListener("pointerdown", onPointerDown);
     };
   }, []);
 
