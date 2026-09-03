@@ -9,6 +9,8 @@ import {
 } from "@lyricova/components/components/ui/toggle-group";
 import { cn } from "@lyricova/components/utils";
 import { Maximize, Rewind, Pause, Play, FastForward } from "lucide-react";
+import { useAppSelector } from "../../redux/public/store";
+import { currentSongSelector } from "../../redux/public/playlist";
 
 interface SO extends ScreenOrientation {
   lock(orientation: string): Promise<void>;
@@ -20,6 +22,7 @@ export function LyricsFullScreenOverlay({
   children?: ReactNode;
 }) {
   const { playerRef } = useAppContext();
+  const currentSong = useAppSelector(currentSongSelector);
   const [isPlaying, setIsPlaying] = useNamedState(
     !playerRef.current?.paused,
     "isPlaying",
@@ -199,6 +202,25 @@ export function LyricsFullScreenOverlay({
             <ToggleGroupItem value="180">180°</ToggleGroupItem>
             <ToggleGroupItem value="270">270°</ToggleGroupItem>
           </ToggleGroup>
+        </div>
+        <div className="absolute bottom-0 left-0 z-10 flex max-w-[min(32rem,calc(100%-2rem))] items-center gap-3 p-4 text-white">
+          <img
+            src={
+              currentSong?.hasCover
+                ? `/api/files/${currentSong.id}/cover`
+                : "/images/disk-256.jpg"
+            }
+            alt={currentSong?.trackName || "Album cover"}
+            className="size-16 shrink-0 rounded-md object-cover shadow-lg"
+          />
+          <div className="min-w-0 drop-shadow-md">
+            <div className="truncate text-lg font-semibold leading-tight">
+              {currentSong?.trackName || "No title"}
+            </div>
+            <div className="truncate text-sm leading-tight text-white/70">
+              {currentSong?.artistName || "Unknown artist"}
+            </div>
+          </div>
         </div>
       </div>
       <Button
