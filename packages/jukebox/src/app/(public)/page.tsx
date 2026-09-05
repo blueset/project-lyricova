@@ -38,6 +38,7 @@ import { PresentationWindowProvider } from "@/hooks/usePresentationWindow";
 import { toast } from "sonner";
 import { BackgroundCanvas } from "@/components/public/BackgroundCanvas/BackgroundCanvas";
 import { useAppContext } from "@/components/public/AppContext";
+import { Button } from "@lyricova/components/components/ui/button";
 
 // Lazily loaded proof-of-concept WASM glyph renderer. Loading it dynamically
 // (client-only) keeps the WASM shaper and multi-megabyte base font out of the
@@ -503,7 +504,12 @@ export default function Index() {
         lang="ja"
       >
         {pipWindow ? (
-          <MessageBox>Lyrics are open in Picture-in-Picture.</MessageBox>
+          <MessageBox>
+            <span>Lyrics are open in Picture-in-Picture.</span>
+            <Button className="mt-6 not-italic" onClick={returnToOpener}>
+              Return to main window
+            </Button>
+          </MessageBox>
         ) : (
           lyricsPresentation
         )}
