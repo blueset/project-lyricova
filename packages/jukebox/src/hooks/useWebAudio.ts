@@ -1,5 +1,10 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import type { WebAudioPlayerState } from "./types";
+import {
+  outputContextTimeAtPerformanceTime,
+  playbackProgressAtContextTime,
+  type WebAudioPlaybackSegment,
+} from "./webAudioPresentationClock";
 
 let globalAudioContext: AudioContext | undefined = undefined;
 let globalAudioGain: GainNode | undefined = undefined;
@@ -7,6 +12,15 @@ let globalAudioGain: GainNode | undefined = undefined;
 let cachedWebAudioBuffer: {
   [mediaUrl: string]: AudioBuffer;
 } = {};
+
+function closeActivePlaybackSegment(
+  segments: WebAudioPlaybackSegment[],
+  contextTime: number,
+) {
+  const segment = segments.at(-1);
+  if (!segment || segment.endContextTime !== undefined) return;
+  segment.endContextTime = Math.max(segment.contextTime, contextTime);
+}
 
 /**
  * Manage audio playback with Web Audio API.
@@ -57,6 +71,7 @@ export function useWebAudio(mediaUrl: string) {
     };
 
     async function load() {
+      playbackSegmentsRef.current = [];
       setPlayerStatus((ps) => {
         if (ps.state === "playing" && ps.bufferSource) {
           ps.bufferSource?.stop();
@@ -89,6 +104,7 @@ export function useWebAudio(mediaUrl: string) {
   const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
   playerStatusRef.current = playerStatus;
   const bufferSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const playbackSegmentsRef = useRef<WebAudioPlaybackSegment[]>([]);
 
   const getBufferSource = useCallback(() => {
     const bufferSource = audioContext.createBufferSource();
@@ -109,6 +125,11 @@ export function useWebAudio(mediaUrl: string) {
       currentTime - playerStatus.progress / playerStatus.rate;
     const bufferSource = getBufferSource();
     bufferSource.start(currentTime, playerStatus.progress);
+    playbackSegmentsRef.current.push({
+      contextTime: currentTime,
+      progress: playerStatus.progress,
+      rate: playerStatus.rate,
+    });
     setPlayerStatus({
       state: "playing",
       rate: playerStatus.rate,
@@ -125,6 +146,7 @@ export function useWebAudio(mediaUrl: string) {
     const currentTime = audioContext.currentTime;
     const progress =
       (currentTime - playerStatus.startingOffset) * playerStatus.rate;
+    closeActivePlaybackSegment(playbackSegmentsRef.current, currentTime);
     setPlayerStatus((ps) => {
       if (ps.state === "playing" && ps.bufferSource) {
         ps.bufferSource?.stop();
@@ -153,7 +175,13 @@ export function useWebAudio(mediaUrl: string) {
             bufferSourceRef.current?.disconnect();
           }
           const bufferSource = getBufferSource();
-          bufferSource.start(audioContext.currentTime, progress);
+          bufferSource.start(currentTime, progress);
+          closeActivePlaybackSegment(playbackSegmentsRef.current, currentTime);
+          playbackSegmentsRef.current.push({
+            contextTime: currentTime,
+            progress,
+            rate: playerStatus.rate,
+          });
           return {
             state: "playing",
             rate: playerStatus.rate,
@@ -177,6 +205,12 @@ export function useWebAudio(mediaUrl: string) {
         playerStatus.bufferSource.playbackRate.value = rate;
         const progress =
           (currentTime - playerStatus.startingOffset) * playerStatus.rate;
+        closeActivePlaybackSegment(playbackSegmentsRef.current, currentTime);
+        playbackSegmentsRef.current.push({
+          contextTime: currentTime,
+          progress,
+          rate,
+        });
         setPlayerStatus((ps) => {
           if (ps.state !== "playing") return ps;
           return {
@@ -205,6 +239,46 @@ export function useWebAudio(mediaUrl: string) {
     return (currentTime - playerStatus.startingOffset) * playerStatus.rate;
   }, [audioContext]);
 
+  const getAudibleProgress = useCallback(
+    (eventPerformanceTime?: number) => {
+      const playerStatus = playerStatusRef.current;
+      if (playerStatus.state === "paused") return playerStatus.progress;
+
+      const getOutputTimestamp = audioContext.getOutputTimestamp;
+      if (typeof getOutputTimestamp !== "function") return getProgress();
+
+      const now = performance.now();
+      const hasCompatibleEventTimestamp =
+        typeof eventPerformanceTime === "number" &&
+        Number.isFinite(eventPerformanceTime) &&
+        Math.abs(eventPerformanceTime - now) < 60_000;
+      const performanceTime = hasCompatibleEventTimestamp
+        ? eventPerformanceTime
+        : now;
+
+      try {
+        const outputContextTime = outputContextTimeAtPerformanceTime(
+          getOutputTimestamp.call(audioContext),
+          performanceTime,
+        );
+        if (outputContextTime === null) return getProgress();
+
+        const progress = playbackProgressAtContextTime(
+          playbackSegmentsRef.current,
+          outputContextTime,
+        );
+        if (progress === null) return getProgress();
+        return Math.max(
+          0,
+          Math.min(progress, audioBuffer?.duration ?? Infinity),
+        );
+      } catch {
+        return getProgress();
+      }
+    },
+    [audioBuffer?.duration, audioContext, getProgress],
+  );
+
   return {
     playerStatus,
     play,
@@ -212,6 +286,7 @@ export function useWebAudio(mediaUrl: string) {
     seek,
     setRate,
     getProgress,
+    getAudibleProgress,
     audioContext,
     audioBuffer,
   };

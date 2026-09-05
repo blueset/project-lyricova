@@ -182,8 +182,16 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
 
   const listRef = useRef<HTMLUListElement>(null);
 
-  const { playerStatus, play, pause, seek, setRate, getProgress, audioBuffer } =
-    useWebAudio(`/api/files/${fileId}/file`);
+  const {
+    playerStatus,
+    play,
+    pause,
+    seek,
+    setRate,
+    getProgress,
+    getAudibleProgress,
+    audioBuffer,
+  } = useWebAudio(`/api/files/${fileId}/file`);
   const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
   playerStatusRef.current = playerStatus;
 
@@ -193,11 +201,10 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
 
   // Update time tags
   const onFrame = useCallback(() => {
-    const playerStatus = playerStatusRef.current;
     const currentLine = useLyricsStore.getState().tagging.currentLine;
     const lines = useLyricsStore.getState().lyrics?.lines ?? [];
 
-    const time = getProgress();
+    const time = getAudibleProgress();
     setPlaybackProgress(time);
 
     if (
@@ -225,7 +232,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
       );
       setCurrentLine(record);
     }
-  }, [getProgress, setCurrentLine, setPlaybackProgress]);
+  }, [getAudibleProgress, setCurrentLine, setPlaybackProgress]);
 
   useAnimationFrame(
     onFrame,
@@ -349,7 +356,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
       if (code === "Space" || key === " " || key === "Spacebar") {
         ev.preventDefault();
         if (!audioBuffer) return;
-        const time = getProgress();
+        const time = getAudibleProgress(ev.timeStamp);
         if (!isInExtrapolateMode) {
           setTimestampAtCursor(time);
           setCurrentLine(BLANK_LINE);
@@ -412,6 +419,7 @@ export default function WebAudioTaggingLyrics({ fileId }: Props) {
     };
   }, [
     audioBuffer,
+    getAudibleProgress,
     getProgress,
     moveCursor,
     pause,

@@ -72,8 +72,16 @@ interface Props {
  * and all timelines are killed when the editor unmounts.
  */
 export default function InlineTagging({ fileId }: Props) {
-  const { playerStatus, play, pause, seek, setRate, getProgress, audioBuffer } =
-    useWebAudio(`/api/files/${fileId}/file`);
+  const {
+    playerStatus,
+    play,
+    pause,
+    seek,
+    setRate,
+    getProgress,
+    getAudibleProgress,
+    audioBuffer,
+  } = useWebAudio(`/api/files/${fileId}/file`);
   const playerStatusRef = useRef<WebAudioPlayerState>(playerStatus);
   playerStatusRef.current = playerStatus;
 
@@ -225,7 +233,9 @@ export default function InlineTagging({ fileId }: Props) {
         if (event.key === " ") {
           event.preventDefault();
           event.stopPropagation();
-          useLyricsStore.getState().inlineTagging.setMark(getProgress());
+          useLyricsStore
+            .getState()
+            .inlineTagging.setMark(getAudibleProgress(event.timeStamp));
           useLyricsStore.getState().inlineTagging.moveDotCursorRight();
         } else if (event.key === "Backspace") {
           event.preventDefault();
@@ -248,7 +258,7 @@ export default function InlineTagging({ fileId }: Props) {
             },
           } = useLyricsStore.getState();
           if (lyrics?.lines[row]?.attachments?.[DOTS]?.values?.[col] === -1) {
-            setMark(getProgress());
+            setMark(getAudibleProgress(event.timeStamp));
             moveDotCursorRight();
           }
         }
@@ -262,7 +272,7 @@ export default function InlineTagging({ fileId }: Props) {
         window.removeEventListener("keyup", handleLabelKeyUp);
       };
     }
-  }, [getProgress, section, seek]);
+  }, [getAudibleProgress, section, seek]);
 
   const timelinesRef = useRef<(gsap.core.Timeline | undefined)[]>([]);
 
@@ -283,7 +293,7 @@ export default function InlineTagging({ fileId }: Props) {
       return null;
     });
 
-    const time = getProgress();
+    const time = getAudibleProgress();
     setPlaybackProgress(time);
 
     if (
@@ -320,7 +330,7 @@ export default function InlineTagging({ fileId }: Props) {
       );
       setCurrentLine(record);
     }
-  }, [getProgress, setPlaybackProgress]);
+  }, [getAudibleProgress, setPlaybackProgress]);
 
   useAnimationFrame(
     onFrame,
@@ -330,7 +340,7 @@ export default function InlineTagging({ fileId }: Props) {
 
   useEffect(() => {
     const snapshot = {
-      currentTime: getProgress(),
+      currentTime: getAudibleProgress(),
       duration: audioBuffer?.duration ?? Number.NaN,
       playbackRate: playerStatus.rate,
       state: playerStatus.state,
@@ -338,7 +348,7 @@ export default function InlineTagging({ fileId }: Props) {
     timelinesRef.current.forEach((timeline) => {
       if (timeline) synchronizeGsapTimeline(timeline, snapshot);
     });
-  }, [audioBuffer?.duration, getProgress, playerStatus]);
+  }, [audioBuffer?.duration, getAudibleProgress, playerStatus]);
 
   useEffect(() => {
     return () => {
@@ -494,7 +504,7 @@ export default function InlineTagging({ fileId }: Props) {
               index={idx}
               timelinesRef={timelinesRef}
               playerStatusRef={playerStatusRef}
-              getProgress={getProgress}
+              getProgress={getAudibleProgress}
               section={section}
             />
           ))}
