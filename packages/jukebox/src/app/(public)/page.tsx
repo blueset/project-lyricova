@@ -506,7 +506,7 @@ export default function Index() {
         {pipWindow ? (
           <MessageBox>
             <span>Lyrics are open in Picture-in-Picture.</span>
-            <Button className="mt-6 not-italic" onClick={returnToOpener}>
+            <Button className="mt-6 not-italic" variant="outline" onClick={returnToOpener}>
               Return to main window
             </Button>
           </MessageBox>

@@ -22,6 +22,17 @@ const TRANSITION: Transition = {
 };
 
 /**
+ * Responsive font sizes relative to the lyrics container.
+ *
+ * `text-7xl` (4.5rem) and `text-4xl` (2.25rem) remain the maximum sizes, while
+ * the container-relative term keeps the 2:1 major/minor hierarchy at any size.
+ */
+const MAJOR_FONT_SIZE_CLASS =
+  "text-[clamp(1.75rem,min(6cqw,12cqh),4.5rem)]";
+const MINOR_FONT_SIZE_CLASS =
+  "data-[minor='true']:text-[clamp(0.875rem,min(3cqw,6cqh),2.25rem)]";
+
+/**
  * Create a timed opacity span for full-line or per-syllable focused lyrics.
  */
 const TimedSpanGenerator = (full: boolean) =>
@@ -94,7 +105,9 @@ const PlainLineElement = forwardRef<LyricsAnimationRef, LyricsLineElementProps>(
         lang="ja"
         layout
         className={cn(
-          "font-semibold leading-tight text-white/80 data-[role='1']:text-end data-[role='2']:text-center text-7xl data-[minor='true']:text-4xl",
+          "font-semibold leading-tight text-white/80 data-[role='1']:text-end data-[role='2']:text-center",
+          MAJOR_FONT_SIZE_CLASS,
+          MINOR_FONT_SIZE_CLASS,
           className,
         )}
         transition={TRANSITION}
@@ -181,7 +194,11 @@ const GlowLineElementGenerator = (full: boolean) =>
           <style>{glowKeyframes}</style>
           <motion.div
             lang="ja"
-            className="font-thin leading-tight text-white m-4 text-balance data-[role='1']:text-end data-[role='2']:text-center data-[minor='true']:text-4xl text-7xl"
+            className={cn(
+              "font-thin leading-tight text-white m-4 text-balance data-[role='1']:text-end data-[role='2']:text-center",
+              MAJOR_FONT_SIZE_CLASS,
+              MINOR_FONT_SIZE_CLASS,
+            )}
             style={{
               fontVariationSettings: "'wght' 150, 'palt' 1",
               // @ts-expect-error - TS doesn't recognize auto-phrase yet
@@ -289,6 +306,7 @@ export function FocusedLyrics({
         position: "absolute",
         inset: "20px",
         gap: "20px",
+        containerType: "size",
       }}
       layout
     >
