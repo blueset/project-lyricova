@@ -1,3 +1,4 @@
+import MeCab from "mecab-async";
 import { classifyNameLanguage } from "./index.js";
 import { alignSegments, nfkcNormalize, phoneticSkeleton } from "./normalize.js";
 import { phonotacticClassify, scorePinyin, scoreRomaji } from "./phonotactics.js";
@@ -96,6 +97,10 @@ describe("nameClassifier phonotactics", () => {
 });
 
 describe("nameClassifier reconciliation", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("romanizes Han text as Mandarin pinyin", () => {
     const romanized = romanizeAsMandarin("芮晴");
     expect(romanized).toContain("rui");
@@ -106,14 +111,39 @@ describe("nameClassifier reconciliation", () => {
     await expect(romanizeAsJapanese("湊貴大")).resolves.toContain("minato");
   });
 
+  it("romanizes a common word using the installed MeCab dictionary", async () => {
+    await expect(romanizeAsJapanese("東京")).resolves.toBe("toukyou");
+  });
+
   it("scores identical strings with perfect similarity", () => {
     expect(scoreSimilarity("minatotakahiro", "minatotakahiro")).toBe(1);
   });
 
-  it("prefers the Japanese reading for 湊貴大", async () => {
+  it("prefers the Japanese reading for 湊貴大 when MeCab supplies the name reading", async () => {
+    // NEologD knows this name; stock IPADIC splits it as ミナト/タカ/ダイ.
+    vi.spyOn(MeCab.prototype, "parseSync").mockReturnValueOnce([
+      [
+        "湊貴大\u200Cミナトタカヒロ\u200C-2836.500000\u200C名詞,固有名詞,一般,,,",
+      ],
+    ]);
+
     const result = await reconcile("Minato Takahiro", "湊貴大");
+    expect(result.japaneseReading).toBe("minatotakahiro");
     expect(result.japaneseScore).toBeGreaterThan(0.9);
     expect(result.mandarinScore).toBeLessThan(0.2);
+    expect(result.japaneseScore).toBeGreaterThan(result.mandarinScore);
+  });
+
+  it("scores the stock IPADIC reading without assuming a name-specific reading", async () => {
+    vi.spyOn(MeCab.prototype, "parseSync").mockReturnValueOnce([
+      ["湊\u200Cミナト\u200C0\u200C名詞,固有名詞,人名"],
+      ["貴\u200Cタカ\u200C0\u200C名詞,固有名詞,人名"],
+      ["大\u200Cダイ\u200C0\u200C名詞,接尾,一般"],
+    ]);
+
+    const result = await reconcile("Minato Takahiro", "湊貴大");
+    expect(result.japaneseReading).toBe("minato taka dai");
+    expect(result.japaneseScore).toBeCloseTo(0.6607142857142857);
     expect(result.japaneseScore).toBeGreaterThan(result.mandarinScore);
   });
 });

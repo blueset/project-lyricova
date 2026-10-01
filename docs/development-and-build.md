@@ -529,6 +529,23 @@ typecheck` on a clean tree.
 > `tsgo` from `.github/workflows/validate.yml` on pull requests and manual
 > dispatch.
 
+### API name-classifier tests
+
+Run the focused suite with:
+
+```bash
+npm test -w @lyricova/api -- src/utils/nameClassifier/nameClassifier.test.ts
+```
+
+The real-MeCab integration tests require `mecab` and a UTF-8 IPADIC-compatible
+dictionary. Validation CI installs `mecab-ipadic-utf8`; development and runtime
+containers use NEologD. Proper-name readings can differ: stock IPADIC reads
+`湊貴大` as `minato taka dai`, while NEologD supplies `minatotakahiro`.
+Tests that assert exact name readings and similarity scores therefore supply
+fixed MeCab token fixtures. Common-word romanization and end-to-end name
+classification still exercise the installed dictionary, without requiring
+NEologD-specific name readings.
+
 ---
 
 ## 7. TypeScript configuration & TS 7 (`tsgo`) readiness
