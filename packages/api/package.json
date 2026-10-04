@@ -70,7 +70,7 @@
     "@scalar/express-api-reference": "^0.8.48",
     "ai": "^6.0.219",
     "better-auth": "^1.6.23",
-    "budoux": "^0.7.0",
+    "budoux": "^0.9.3",
     "cheerio": "^1.0.0-rc.3",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
