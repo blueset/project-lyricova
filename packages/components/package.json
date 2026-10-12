@@ -55,8 +55,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^7.1.3",
-    "@graphql-codegen/client-preset": "^6.0.1",
+    "@graphql-codegen/cli": "^7.4.6",
+    "@graphql-codegen/client-preset": "^6.2.3",
     "@graphql-codegen/typescript": "^6.0.2",
     "@tailwindcss/postcss": "^4.1.3",
     "@types/react": "^19.1.2",
