@@ -72,7 +72,7 @@
     "better-auth": "^1.6.23",
     "budoux": "^0.9.3",
     "cheerio": "^1.0.0-rc.3",
-    "compression": "^1.7.4",
+    "compression": "^1.8.2",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
