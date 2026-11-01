@@ -98,7 +98,7 @@
     "pinyin": "^4.0.0",
     "posthog-node": "^5.39.4",
     "rss": "^1.2.2",
-    "satori": "^0.4.1",
+    "satori": "^0.63.2",
     "swagger-jsdoc": "^6.2.8",
     "tempy": "^3.2.0",
     "winston": "^3.2.1",
