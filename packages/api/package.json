@@ -58,7 +58,7 @@
     "@ai-sdk/openai": "^3.0.80",
     "@apollo/server": "^5.5.0",
     "@as-integrations/express5": "^1.1.2",
-    "@better-auth/drizzle-adapter": "^1.6.23",
+    "@better-auth/drizzle-adapter": "^1.7.7",
     "@better-auth/passkey": "^1.6.23",
     "@node-rs/argon2": "^2.0.2",
     "@openrouter/ai-sdk-provider": "^2.10.0",
