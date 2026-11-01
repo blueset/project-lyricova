@@ -69,7 +69,7 @@
     "@resvg/resvg-js": "^2.4.1",
     "@scalar/express-api-reference": "^0.8.48",
     "ai": "^6.0.219",
-    "better-auth": "^1.6.23",
+    "better-auth": "^1.7.7",
     "budoux": "^0.9.3",
     "cheerio": "^1.0.0-rc.3",
     "compression": "^1.8.2",
