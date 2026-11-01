@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@apollo/client": "^4.2.5",
-    "@better-auth/passkey": "^1.6.23",
+    "@better-auth/passkey": "^1.7.7",
     "@graphql-typed-document-node/core": "^3.2.0",
     "@hookform/resolvers": "^5.4.0",
     "@microsoft/clarity": "^1.0.0",
