@@ -24,6 +24,7 @@ import { TZDate } from "react-day-picker";
 type DateTimeInputProps = {
   className?: string;
   value?: Date;
+  /** Called for valid user edits, not when synchronizing the controlled value. */
   onChange?: (date?: Date) => void;
   format?: string;
   disabled?: boolean;
@@ -136,39 +137,26 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
       () => segments.filter((s) => s.type !== "space"),
       [segments],
     );
-    const inputStr = useMemo(() => {
-      return segments
-        .map((s) =>
-          s.value ? s.value.padStart(s.symbols.length, "0") : s.symbols,
-        )
-        .join("");
-    }, [segments]);
+    const inputStr = useMemo(() => formatSegments(segments), [segments]);
     const areAllSegmentsEmpty = useMemo(
       () => validSegments.every((s) => !s.value),
       [validSegments],
     );
 
-    const inputValue = useMemo(() => {
-      const allHasValue = !validSegments.some((s) => !s.value);
-      if (!allHasValue) return;
-      const date = parse(
-        inputStr,
-        formatStr,
-        value || new TZDate(new Date(), timezone),
-      );
-      const year = getYear(date);
-      // console.log('inputValue', {allHasValue, validSegments, inputStr, formatStr, date, year});
-      if (isValid(date) && year > 1900 && year < 2100) {
-        return date;
-      }
-    }, [validSegments, inputStr, formatStr]);
-    useEffect(() => {
-      if (!inputValue) return;
-      if (value?.getTime() !== inputValue.getTime()) {
-        // console.log('inputValueChanged', {formatStr, inputStr, value, inputValue, });
-        options.onChange?.(inputValue);
-      }
-    }, [inputValue]);
+    const inputValue = useMemo(
+      () => parseSegments(segments, formatStr, value, timezone),
+      [segments, formatStr, value, timezone],
+    );
+    const onSegmentsChange = useCallback(
+      (updatedSegments: Segment[]) => {
+        setSegments(updatedSegments);
+        const date = parseSegments(updatedSegments, formatStr, value, timezone);
+        if (date && value?.getTime() !== date.getTime()) {
+          options.onChange?.(date);
+        }
+      },
+      [formatStr, value, timezone, options.onChange],
+    );
 
     const onClick = useEventCallback(
       (event: React.MouseEvent<HTMLInputElement>) => {
@@ -238,7 +226,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           const updatedSegments = segments.map((s) =>
             s.index === segment.index ? { ...segment, value: newValue } : s,
           );
-          setSegments(updatedSegments);
+          onSegmentsChange(updatedSegments);
           segment = updatedSegments.find((s) => s.index === segment.index)!;
           shouldNext = newValue.length === length;
           if (!shouldNext) {
@@ -284,7 +272,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           const updatedSegments = segments.map((s) =>
             s.index === segment.index ? { ...segment, value: newValue } : s,
           );
-          setSegments(updatedSegments);
+          onSegmentsChange(updatedSegments);
           segment = updatedSegments.find((s) => s.index === segment.index)!;
         }
         setSelection(inputRef, segment);
@@ -298,7 +286,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
         const updatedSegments = segments.map((s) =>
           s.index === curSegment.index ? { ...curSegment, value: "" } : s,
         );
-        setSegments(updatedSegments);
+        onSegmentsChange(updatedSegments);
         const segment = updatedSegments.find(
           (s) => s.index === curSegment.index,
         )!;
@@ -413,6 +401,40 @@ interface Segment {
   index: number;
   value: string;
 }
+
+function formatSegments(segments: Segment[]) {
+  return segments
+    .map((segment) =>
+      segment.value
+        ? segment.value.padStart(segment.symbols.length, "0")
+        : segment.symbols,
+    )
+    .join("");
+}
+
+function parseSegments(
+  segments: Segment[],
+  formatStr: string,
+  value?: Date,
+  timezone?: string,
+) {
+  if (
+    !segments.length ||
+    segments.some((segment) => segment.type !== "space" && !segment.value)
+  ) {
+    return;
+  }
+  const date = parse(
+    formatSegments(segments),
+    formatStr,
+    value || new TZDate(new Date(), timezone),
+  );
+  const year = getYear(date);
+  if (isValid(date) && year > 1900 && year < 2100) {
+    return date;
+  }
+}
+
 function parseFormat(formatStr: string, value?: Date) {
   const views: Segment[] = [];
   let lastPattern: SegmentType = "space";
