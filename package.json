@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "npm@12.0.2",
   "engines": {
-    "node": ">=24.15.0",
+    "node": ">=24.22.3",
     "npm": ">=12.0.0"
   },
   "scripts": {
@@ -25,7 +25,10 @@
     "packages/*"
   ],
   "overrides": {
-    "postcss": "8.5.16"
+    "postcss": "8.5.33",
+    "satori@0.63.2": {
+      "fflate": "0.7.5"
+    }
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
@@ -41,7 +44,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@typescript/native-preview": "7.0.0-dev.20260703.1",
     "@vitejs/plugin-react": "^4.7.0",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^9.39.2",
     "eslint-plugin-unused-imports": "^4.4.1",
     "jsdom": "^29.1.1",
@@ -49,7 +52,7 @@
     "prettier": "^3.9.4",
     "turbo": "^2.9.14",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.1",
-    "vitest": "^4.1.11"
+    "typescript-eslint": "^8.74.0",
+    "vitest": "^4.1.12"
   }
 }

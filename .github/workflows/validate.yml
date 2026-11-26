@@ -37,7 +37,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: npm
 
       # Corepack does not shim npm by default. Once enabled, npm resolves the
@@ -61,7 +61,7 @@ jobs:
           workspaces: packages/glyph-renderer
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       # Build the two zero-side-effect library packages first. @lyricova/components
       # runs GraphQL codegen in its build (producing src/gql/**), which the two
@@ -105,7 +105,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: npm
 
       # Corepack does not shim npm by default. Once enabled, npm resolves the
@@ -124,7 +124,7 @@ jobs:
           workspaces: packages/glyph-renderer
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       # glyph-renderer is a jukebox dependency (imported for paragraph layout /
       # canvas rendering and served at /api/glyph-renderer/wasm), and the browser

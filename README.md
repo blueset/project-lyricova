@@ -89,7 +89,7 @@ in VocaDB.net.</small>
     `cf-connecting-ip,x-forwarded-for` when routing through Cloudflare, and set
     both `WEBAUTHN_RP_ID` and `AUTH_COOKIE_DOMAIN` to `1a23.studio`.
 - Node.js
-  - Install Node.js 24 LTS (24.15.0 or newer) and npm 12.0.0 or newer.
+  - Install Node.js 24 LTS (24.22.3 or newer) and npm 12.0.0 or newer.
   - Install dependencies:
     ```bash
     npm install

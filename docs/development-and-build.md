@@ -28,10 +28,9 @@ git-ignored), so some changes require a regeneration step before types line up.
 
 ## Prerequisites
 
-- Node.js 24 LTS (24.15.0 or newer) for the monorepo runtime, builds, and
+- Node.js 24 LTS (24.22.3 or newer) for the monorepo runtime, builds, and
   development containers.
-- npm 12.0.0 or newer, matching the root `packageManager` pin. (npm 12 requires
-  Node.js `^24.15.0`, hence the Node floor above.)
+- npm 12.0.0 or newer; use the exact root `packageManager` pin for builds.
 - Run `corepack enable npm` once after installing Node.js. The resulting npm
   shim reads the repository's exact version from the root `packageManager`
   field; CI and container builds enable it automatically.
